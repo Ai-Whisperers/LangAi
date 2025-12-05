@@ -1,0 +1,155 @@
+"""
+State definitions for the Company Researcher workflow.
+
+This module defines the state schemas used by LangGraph to manage
+the research workflow state transitions.
+"""
+
+from typing import TypedDict, Annotated, List, Dict, Any, Optional
+from datetime import datetime
+from operator import add
+
+
+# ============================================================================
+# Input State
+# ============================================================================
+
+class InputState(TypedDict):
+    """
+    Initial input to the research workflow.
+
+    Attributes:
+        company_name: Name of the company to research
+    """
+    company_name: str
+
+
+# ============================================================================
+# Overall State
+# ============================================================================
+
+class OverallState(TypedDict):
+    """
+    Complete state maintained throughout the workflow.
+
+    This state is passed between all nodes in the graph.
+    Uses Annotated types with operators to control how updates are merged.
+    """
+
+    # Input
+    company_name: str
+
+    # Query Generation
+    search_queries: List[str]
+
+    # Search Results
+    # Using 'add' operator means each node appends to the list
+    search_results: Annotated[List[Dict[str, Any]], add]
+
+    # Analysis
+    notes: List[str]  # LLM summaries of search results
+
+    # Extracted Data
+    company_overview: Optional[str]
+    key_metrics: Optional[Dict[str, Any]]
+    products_services: Optional[List[str]]
+    competitors: Optional[List[str]]
+    key_insights: Optional[List[str]]
+
+    # Metadata
+    sources: Annotated[List[Dict[str, str]], add]  # URL, title, relevance
+
+    # Quality (Phase 2)
+    quality_score: Optional[float]  # Quality score 0-100
+    iteration_count: int  # Number of research iterations
+    missing_info: Optional[List[str]]  # Missing information to research
+
+    # Metrics
+    start_time: datetime
+    total_cost: float
+    total_tokens: Dict[str, int]  # {"input": X, "output": Y}
+
+    # Report
+    report_path: Optional[str]
+
+
+# ============================================================================
+# Output State
+# ============================================================================
+
+class OutputState(TypedDict):
+    """
+    Final output from the research workflow.
+
+    Attributes:
+        company_name: Name of researched company
+        report_path: Path to generated markdown report
+        metrics: Performance metrics (time, cost, tokens)
+        success: Whether research completed successfully
+    """
+    company_name: str
+    report_path: str
+    metrics: Dict[str, Any]
+    success: bool
+
+
+# ============================================================================
+# Helper Functions
+# ============================================================================
+
+def create_initial_state(company_name: str) -> OverallState:
+    """
+    Create initial state for a new research workflow.
+
+    Args:
+        company_name: Name of company to research
+
+    Returns:
+        Initialized OverallState
+    """
+    return {
+        "company_name": company_name,
+        "search_queries": [],
+        "search_results": [],
+        "notes": [],
+        "company_overview": None,
+        "key_metrics": None,
+        "products_services": None,
+        "competitors": None,
+        "key_insights": None,
+        "sources": [],
+        "quality_score": None,
+        "iteration_count": 0,
+        "missing_info": None,
+        "start_time": datetime.now(),
+        "total_cost": 0.0,
+        "total_tokens": {"input": 0, "output": 0},
+        "report_path": None
+    }
+
+
+def create_output_state(state: OverallState) -> OutputState:
+    """
+    Convert OverallState to OutputState.
+
+    Args:
+        state: Complete workflow state
+
+    Returns:
+        OutputState with results and metrics
+    """
+    duration = (datetime.now() - state.get("start_time", datetime.now())).total_seconds()
+
+    return {
+        "company_name": state.get("company_name", ""),
+        "report_path": state.get("report_path", ""),
+        "metrics": {
+            "duration_seconds": duration,
+            "cost_usd": state.get("total_cost", 0.0),
+            "tokens": state.get("total_tokens", {"input": 0, "output": 0}),
+            "sources_count": len(state.get("sources", [])),
+            "quality_score": state.get("quality_score", 0.0),
+            "iterations": state.get("iteration_count", 0)
+        },
+        "success": state.get("report_path") is not None
+    }

@@ -1,0 +1,102 @@
+"""
+Quality checker for research output.
+
+This module evaluates the quality of research and identifies gaps.
+"""
+
+import json
+from typing import Dict, Any, List
+from anthropic import Anthropic
+
+from ..config import get_config
+from ..prompts import QUALITY_CHECK_PROMPT, format_sources_for_extraction
+
+
+def check_research_quality(
+    company_name: str,
+    extracted_data: str,
+    sources: List[Dict[str, str]]
+) -> Dict[str, Any]:
+    """
+    Check the quality of research output.
+
+    Args:
+        company_name: Name of the company
+        extracted_data: Extracted and formatted research data
+        sources: List of source dictionaries
+
+    Returns:
+        Dictionary with:
+            - quality_score: Float 0-100
+            - missing_information: List of missing items
+            - strengths: List of research strengths
+            - recommended_queries: List of search queries to fill gaps
+    """
+    config = get_config()
+    client = Anthropic(api_key=config.anthropic_api_key)
+
+    # Format sources
+    formatted_sources = format_sources_for_extraction(sources)
+
+    # Create quality check prompt
+    prompt = QUALITY_CHECK_PROMPT.format(
+        company_name=company_name,
+        extracted_data=extracted_data,
+        sources=formatted_sources
+    )
+
+    # Call Claude for quality assessment
+    response = client.messages.create(
+        model=config.llm_model,
+        max_tokens=1500,
+        temperature=0.0,
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    # Parse response
+    content = response.content[0].text
+
+    try:
+        # Extract JSON from response
+        if "```json" in content:
+            content = content.split("```json")[1].split("```")[0]
+        elif "```" in content:
+            content = content.split("```")[1].split("```")[0]
+
+        quality_data = json.loads(content.strip())
+
+        # Validate structure
+        result = {
+            "quality_score": float(quality_data.get("quality_score", 0)),
+            "missing_information": quality_data.get("missing_information", []),
+            "strengths": quality_data.get("strengths", []),
+            "recommended_queries": quality_data.get("recommended_queries", []),
+            "cost": config.calculate_llm_cost(
+                response.usage.input_tokens,
+                response.usage.output_tokens
+            ),
+            "tokens": {
+                "input": response.usage.input_tokens,
+                "output": response.usage.output_tokens
+            }
+        }
+
+        return result
+
+    except (json.JSONDecodeError, ValueError) as e:
+        # Fallback: return low quality score if parsing fails
+        print(f"[WARN] Failed to parse quality response: {e}")
+        return {
+            "quality_score": 50.0,  # Default to medium-low quality
+            "missing_information": ["Unable to assess quality"],
+            "strengths": [],
+            "recommended_queries": [],
+            "cost": config.calculate_llm_cost(
+                response.usage.input_tokens,
+                response.usage.output_tokens
+            ),
+            "tokens": {
+                "input": response.usage.input_tokens,
+                "output": response.usage.output_tokens
+            }
+        }

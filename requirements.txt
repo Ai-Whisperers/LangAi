@@ -1,0 +1,176 @@
+# Company Researcher System - Python Dependencies
+# Phase 0: MVP Requirements
+
+# =============================================================================
+# CORE DEPENDENCIES (Phase 0)
+# =============================================================================
+
+# LangGraph - Agent orchestration framework
+langgraph>=0.2.45
+
+# LangChain - LLM abstractions and utilities
+langchain>=0.3.7
+langchain-core>=0.3.15
+langchain-community>=0.3.5
+
+# LLM Providers
+langchain-anthropic>=0.3.0  # Claude 3.5 Sonnet (primary)
+langchain-openai>=0.3.0     # GPT-4o-mini (optional, for cost optimization)
+anthropic>=0.39.0           # Direct Anthropic SDK
+openai>=1.54.0              # Direct OpenAI SDK (optional)
+
+# Web Search
+tavily-python>=0.5.0        # Tavily search API
+
+# Environment & Configuration
+python-dotenv>=1.0.0        # .env file support
+pydantic>=2.9.0             # Data validation
+pydantic-settings>=2.6.0    # Settings management
+
+# Async Support
+aiohttp>=3.10.0             # Async HTTP client
+asyncio>=3.4.3              # Async I/O
+
+# =============================================================================
+# WEB SCRAPING (Phase 1+)
+# =============================================================================
+
+# Web scraping and content extraction
+playwright>=1.48.0          # Anti-bot browser automation
+beautifulsoup4>=4.12.0      # HTML parsing
+lxml>=5.3.0                 # Fast HTML/XML processing
+requests>=2.32.0            # HTTP client
+httpx>=0.27.0               # Modern HTTP client
+
+# =============================================================================
+# DATABASE & STORAGE (Phase 2+)
+# =============================================================================
+
+# PostgreSQL
+psycopg2-binary>=2.9.9      # PostgreSQL adapter
+sqlalchemy>=2.0.35          # ORM
+alembic>=1.13.0             # Database migrations
+
+# Vector Database
+qdrant-client>=1.11.0       # Qdrant vector DB
+
+# Caching
+redis>=5.2.0                # Redis client
+hiredis>=3.0.0              # Fast Redis parser
+
+# =============================================================================
+# API & WEB FRAMEWORK (Phase 3+)
+# =============================================================================
+
+# FastAPI
+fastapi>=0.115.0            # Web framework
+uvicorn[standard]>=0.32.0   # ASGI server
+python-multipart>=0.0.17    # File upload support
+websockets>=13.1            # WebSocket support
+
+# Authentication & Security
+python-jose[cryptography]>=3.3.0  # JWT tokens
+passlib[bcrypt]>=1.7.4      # Password hashing
+
+# =============================================================================
+# DATA PROCESSING
+# =============================================================================
+
+# Data manipulation
+pandas>=2.2.0               # DataFrames (optional, for financial data)
+numpy>=1.26.0               # Numerical computing
+
+# PDF & Document Processing
+pypdf2>=3.0.0               # PDF reading
+pdfplumber>=0.11.0          # Advanced PDF extraction
+
+# =============================================================================
+# LOGGING & MONITORING (Phase 3+)
+# =============================================================================
+
+# Structured logging
+structlog>=24.4.0           # Structured logging
+
+# Observability
+agentops>=0.3.0             # Agent observability (highly recommended!)
+langsmith>=0.1.0            # LangChain debugging (optional)
+
+# Error tracking
+sentry-sdk[fastapi]>=2.16.0 # Error monitoring (optional)
+
+# Metrics
+prometheus-client>=0.21.0   # Metrics export (optional)
+
+# =============================================================================
+# CLI & UTILITIES
+# =============================================================================
+
+# CLI
+typer>=0.12.0               # CLI framework
+rich>=13.9.0                # Terminal formatting
+click>=8.1.0                # CLI utilities
+
+# Progress bars
+tqdm>=4.66.0                # Progress bars
+
+# =============================================================================
+# DEVELOPMENT TOOLS
+# =============================================================================
+
+# Code Quality (install with pip install -r requirements-dev.txt)
+# black>=24.10.0            # Code formatter
+# ruff>=0.7.0               # Linter
+# mypy>=1.13.0              # Type checker
+# isort>=5.13.0             # Import sorter
+
+# Testing (install with pip install -r requirements-dev.txt)
+# pytest>=8.3.0             # Test framework
+# pytest-asyncio>=0.24.0    # Async tests
+# pytest-cov>=6.0.0         # Coverage
+# pytest-mock>=3.14.0       # Mocking
+# faker>=30.0.0             # Test data generation
+
+# =============================================================================
+# DATA SOURCE APIs (Phase 2+) - Install as needed
+# =============================================================================
+
+# Financial data
+# alpha-vantage>=2.3.1      # Stock market data
+# yfinance>=0.2.40          # Yahoo Finance
+
+# Company data
+# crunchbase-python>=0.1.0  # Startup data (community package)
+# linkedin-api>=2.2.1       # LinkedIn (unofficial)
+
+# Tech stack detection
+# builtwith>=1.3.7          # BuiltWith API
+
+# Social media
+# tweepy>=4.14.0            # Twitter API
+# praw>=7.7.1               # Reddit API
+
+# =============================================================================
+# NOTES
+# =============================================================================
+
+# Minimum Python Version: 3.11+
+
+# Quick Start Installation:
+#   pip install -r requirements.txt
+
+# Development Installation:
+#   pip install -r requirements.txt -r requirements-dev.txt
+
+# Recommended: Use virtual environment
+#   python -m venv venv
+#   source venv/bin/activate  # On Windows: venv\Scripts\activate
+#   pip install -r requirements.txt
+
+# Phase 0 (MVP) Only Needs:
+#   - langgraph, langchain, langchain-anthropic
+#   - anthropic, tavily-python
+#   - python-dotenv, pydantic
+#   - aiohttp
+
+# Install Phase 0 minimal:
+#   pip install langgraph langchain langchain-anthropic anthropic tavily-python python-dotenv pydantic aiohttp

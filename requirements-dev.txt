@@ -1,0 +1,49 @@
+# Development Dependencies
+# Install with: pip install -r requirements-dev.txt
+
+# Code Quality
+black>=24.10.0              # Code formatter
+ruff>=0.7.0                 # Fast linter (replaces flake8, pylint, etc.)
+mypy>=1.13.0                # Static type checker
+isort>=5.13.0               # Import sorter
+
+# Testing
+pytest>=8.3.0               # Test framework
+pytest-asyncio>=0.24.0      # Async test support
+pytest-cov>=6.0.0           # Code coverage
+pytest-mock>=3.14.0         # Mocking utilities
+pytest-xdist>=3.6.0         # Parallel test execution
+faker>=30.0.0               # Fake data generation
+responses>=0.25.0           # HTTP mocking
+freezegun>=1.5.0            # Time mocking
+
+# Documentation
+sphinx>=8.1.0               # Documentation generator
+sphinx-rtd-theme>=3.0.0     # Read the Docs theme
+mkdocs>=1.6.0               # Alternative docs generator
+mkdocs-material>=9.5.0      # Material theme for MkDocs
+
+# Development Tools
+ipython>=8.29.0             # Enhanced Python shell
+ipdb>=0.13.13               # IPython debugger
+watchdog>=5.0.0             # File system monitoring
+pre-commit>=4.0.0           # Git hooks framework
+
+# Profiling & Performance
+py-spy>=0.3.14              # Sampling profiler
+memray>=1.14.0              # Memory profiler
+line-profiler>=4.1.0        # Line-by-line profiling
+
+# Jupyter (for experimentation)
+jupyter>=1.1.0              # Jupyter notebook
+jupyterlab>=4.3.0           # JupyterLab
+notebook>=7.3.0             # Jupyter notebook server
+
+# Type stubs
+types-requests>=2.32.0      # Type stubs for requests
+types-redis>=4.6.0          # Type stubs for Redis
+types-aiofiles>=24.1.0      # Type stubs for aiofiles
+
+# CI/CD
+tox>=4.21.0                 # Testing in multiple environments
+coverage[toml]>=7.6.0       # Coverage with pyproject.toml support

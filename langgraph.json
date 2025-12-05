@@ -1,0 +1,10 @@
+{
+  "dependencies": [
+    "."
+  ],
+  "graphs": {
+    "company_research": "./src/graphs/research_graph.py:graph",
+    "simple_test": "./src/graphs/simple_graph.py:graph"
+  },
+  "env": ".env"
+}
