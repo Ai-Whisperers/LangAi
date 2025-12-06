@@ -93,7 +93,16 @@ structlog>=24.4.0           # Structured logging
 
 # Observability
 agentops>=0.3.0             # Agent observability (highly recommended!)
-langsmith>=0.1.0            # LangChain debugging (optional)
+langsmith>=0.1.0            # LangChain debugging & tracing (FULLY INTEGRATED)
+
+# =============================================================================
+# LANGFLOW - Visual Workflow Builder
+# =============================================================================
+
+# LangFlow for visual workflow design
+# Install with: pip install langflow
+# Or full: pip install langflow[all]
+langflow>=1.0.0             # Visual workflow builder (optional but recommended)
 
 # Error tracking
 sentry-sdk[fastapi]>=2.16.0 # Error monitoring (optional)

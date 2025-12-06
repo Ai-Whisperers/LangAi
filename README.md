@@ -1,27 +1,40 @@
-# Company Researcher System
+# Company Researcher - Multi-Agent Research System
 
-> An intelligent multi-agent AI system that automatically researches companies and generates comprehensive analysis reports in under 5 minutes for less than $0.50.
+AI-powered company research using specialized agents running in parallel.
 
-**Status:** 🔄 Phase 0 - Proof of Concept
-**Version:** 0.1.0-alpha
-**Last Updated:** December 5, 2025
+**Status**: Phase 4 Complete - Parallel Multi-Agent System
+**Version**: 0.4.0
+**Last Updated**: December 5, 2025
 
 ---
 
-## Overview
+## What It Does
 
-The Company Researcher System is a production-ready, multi-agent AI platform built with LangGraph that automates in-depth company research. Powered by Claude 3.5 Sonnet and 14 specialized AI agents, it delivers institutional-quality research reports with speed and accuracy that would take human analysts hours or days.
+The Company Researcher automatically researches companies using web search and AI analysis, delivering comprehensive reports in minutes.
 
-### Key Features
+**Key Features**:
+- **5 Specialized Agents** running in parallel: Researcher, Financial, Market, Product, Synthesizer
+- **Quality-Driven Iteration**: Automatically improves until 85%+ quality score
+- **Parallel Execution**: Fan-out/fan-in pattern for faster research
+- **Cost-Effective**: ~$0.08 per comprehensive company report
+- **Fast**: Complete research in 2-5 minutes
 
-- **Multi-Agent Architecture:** 14 specialized agents (Financial, Market, Competitor, Brand, etc.)
-- **Intelligent Orchestration:** Supervisor pattern for efficient coordination
-- **Real-Time Streaming:** WebSocket support for live research updates
-- **Long-Term Memory:** Semantic search and caching for past research
-- **Cost-Optimized:** < $0.50 per comprehensive company report
-- **Lightning Fast:** Complete research in under 5 minutes
-- **Citation-Based:** Every fact linked to authoritative sources
-- **Production-Ready:** Built-in monitoring, error handling, and observability
+---
+
+## Current Results (Phase 4)
+
+**Success Rate**: 67% (2 out of 3 companies achieve 85%+ quality)
+
+| Company | Quality Score | Iterations | Cost | Status |
+|---------|--------------|------------|------|--------|
+| Microsoft | 88.0/100 | 1 | $0.0386 | ✅ PASS |
+| Stripe | 88.0/100 | 2 | $0.1200 | ✅ PASS |
+| Tesla | 78.0/100 | 2 (max) | $0.0710 | ⚠️ Below threshold |
+
+**Average Cost**: $0.08 per research
+**Target**: 85%+ quality score
+
+See [outputs/logs/PHASE4_VALIDATION_SUMMARY.md](outputs/logs/PHASE4_VALIDATION_SUMMARY.md) for detailed results.
 
 ---
 
@@ -29,473 +42,311 @@ The Company Researcher System is a production-ready, multi-agent AI platform bui
 
 ### Prerequisites
 
-- Python 3.11+
-- PostgreSQL 14+
-- Docker (for Qdrant vector database)
-- API Keys:
-  - [Anthropic API](https://console.anthropic.com/) (Claude 3.5 Sonnet)
-  - [Tavily API](https://tavily.com/) (Web search)
+- **Python 3.11+**
+- **API Keys**:
+  - [Anthropic API](https://console.anthropic.com/) - Claude 3.5 Sonnet
+  - [Tavily API](https://tavily.com/) - Web search
 
 ### Installation
 
 ```bash
-# Clone the repository
+# Clone repository
 git clone <repository-url>
 cd "Lang ai"
 
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Activate virtual environment
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 
 # Configure environment
-cp .env.example .env
-# Edit .env with your API keys
-
-# Run Phase 0 prototype
-python src/hello_research.py "Tesla"
+cp env.example .env
+# Edit .env and add your API keys:
+#   ANTHROPIC_API_KEY=your_key_here
+#   TAVILY_API_KEY=your_key_here
 ```
 
-### Expected Output
+See [INSTALLATION.md](INSTALLATION.md) for detailed setup instructions.
 
-```markdown
-# Tesla Research Report
+### Run Your First Research
 
-## Company Overview
-Tesla, Inc. is an American electric vehicle and clean energy company...
-
-## Key Metrics
-- Revenue: $96.7B (2023)
-- Market Cap: $789B
-- Employees: 127,855
-
-## Competitors
-1. Ford Motor Company
-2. General Motors
-3. Rivian
-
-## Sources
-- [Tesla Investor Relations](https://ir.tesla.com/)
-- [SEC Filings](https://www.sec.gov/edgar)
-...
+```bash
+# Research a company
+python hello_research.py "Microsoft"
 ```
+
+**Output**: Markdown report saved to `outputs/reports/microsoft_report.md`
+
+See [QUICK_START.md](QUICK_START.md) for a complete walkthrough.
 
 ---
 
-## Architecture
+## System Architecture (Phase 4)
 
-### System Overview
+```mermaid
+graph TB
+    Start[User Request] --> Researcher[Researcher Agent]
+    Researcher --> |Company Info| QualityCheck1{Quality >= 85%?}
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│                        API Layer (FastAPI)                      │
-│  REST API  │  WebSocket  │  CLI Interface  │  Web Dashboard    │
-└──────────────────────────┬─────────────────────────────────────┘
-                           │
-┌──────────────────────────┴─────────────────────────────────────┐
-│                    Orchestration Layer                          │
-│                   (LangGraph StateGraph)                        │
-│                                                                 │
-│  ┌─────────────┐      ┌──────────────┐      ┌──────────────┐ │
-│  │ Clarification│ -->  │   Research   │ -->  │  Synthesis   │ │
-│  │    Node      │      │ Coordinator  │      │    Node      │ │
-│  └─────────────┘      └──────┬───────┘      └──────────────┘ │
-│                               │                                 │
-│  ┌────────────────────────────┴────────────────────────────┐  │
-│  │         Multi-Agent Research Layer                       │  │
-│  │   (Supervisor Pattern - 14 Specialized Agents)          │  │
-│  │                                                          │  │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │  │
-│  │  │  Deep    │ │Financial │ │  Market  │ │Competitor│  │  │
-│  │  │ Research │ │  Agent   │ │ Analyst  │ │  Scout   │  │  │
-│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘  │  │
-│  │                        ... 10 more agents                │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-┌─────────────────────────┴───────────────────────────────────┐
-│                   Data & Tool Layer                          │
-│  Tavily │ Alpha Vantage │ LinkedIn │ SEC Edgar │ ...        │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-┌─────────────────────────┴───────────────────────────────────┐
-│              Persistence Layer                               │
-│  PostgreSQL (Metadata) │ Qdrant (Vectors) │ Redis (Cache)   │
-└─────────────────────────────────────────────────────────────┘
+    QualityCheck1 --> |No| Specialists[Parallel Specialist Agents]
+    Specialists --> Financial[Financial Agent]
+    Specialists --> Market[Market Agent]
+    Specialists --> Product[Product Agent]
+
+    Financial --> Synthesizer[Synthesizer Agent]
+    Market --> Synthesizer
+    Product --> Synthesizer
+
+    Synthesizer --> QualityCheck2{Quality >= 85%?}
+    QualityCheck2 --> |No, Iteration < 2| Specialists
+    QualityCheck2 --> |Yes or Max Iterations| Report[Final Report]
+    QualityCheck1 --> |Yes| Report
+
+    Report --> End[Save to outputs/]
 ```
 
-### Technology Stack
+**Key Components**:
+- **Researcher Agent**: Initial company research and overview
+- **Financial Agent**: Revenue, profitability, financial health analysis
+- **Market Agent**: Market analysis, trends, competitive landscape
+- **Product Agent**: Product offerings, technology, roadmap
+- **Synthesizer Agent**: Combines all research into comprehensive report
+- **Quality Loop**: Iterates until 85%+ quality or max 2 iterations
 
-**Core Framework:**
-- [LangGraph](https://github.com/langchain-ai/langgraph) - Agent orchestration
-- [LangChain](https://github.com/langchain-ai/langchain) - LLM abstractions
-- [FastAPI](https://fastapi.tiangolo.com/) - REST & WebSocket API
-- [Anthropic Claude 3.5 Sonnet](https://www.anthropic.com/claude) - Primary LLM
-
-**Data & Persistence:**
-- [PostgreSQL](https://www.postgresql.org/) - Metadata & state storage
-- [Qdrant](https://qdrant.tech/) - Vector database for semantic search
-- [Redis](https://redis.io/) - Caching layer
-
-**Data Sources:**
-- [Tavily API](https://tavily.com/) - LLM-optimized web search
-- [Alpha Vantage](https://www.alphavantage.co/) - Financial data
-- [SEC Edgar](https://www.sec.gov/edgar) - Public company filings
-- LinkedIn, Twitter, Reddit APIs - Social & brand intelligence
-
-**Observability:**
-- [AgentOps](https://www.agentops.ai/) - Agent performance tracking
-- [LangSmith](https://www.langchain.com/langsmith) - LLM debugging
-- [Prometheus](https://prometheus.io/) - System metrics
+**Parallel Execution**:
+- Financial, Market, and Product agents run simultaneously
+- Custom state reducers (`merge_dicts`, `add_tokens`) handle concurrent updates
+- LangGraph fan-out/fan-in pattern for orchestration
 
 ---
 
-## Project Phases
+## The 5 Agents
 
-### Phase 0: Proof of Concept ✅ (Week 1)
-**Goal:** Validate core concept with single-agent prototype
+| Agent | Role | Responsibilities |
+|-------|------|-----------------|
+| **Researcher** | Initial research | Company overview, basic facts, search results |
+| **Financial** | Financial analysis | Revenue trends, profitability, financial health |
+| **Market** | Market intelligence | Market size, trends, competitive dynamics |
+| **Product** | Product analysis | Product offerings, technology, roadmap |
+| **Synthesizer** | Report creation | Combine all research, quality scoring, final report |
 
-- [x] Project planning and documentation
-- [ ] Hello World: Research Tesla with single agent
-- [ ] API integrations validated
-- [ ] Cost & speed targets confirmed
+---
 
-### Phase 1: Basic Research Loop (Weeks 2-3)
-**Goal:** End-to-end research workflow with LangGraph
+## Example Output
 
-- [ ] Single-agent LangGraph implementation
-- [ ] Structured state management
-- [ ] Markdown report generation
-- [ ] Basic error handling
-- [ ] Unit tests (50%+ coverage)
+See a real research report: [outputs/reports/microsoft_report.md](outputs/reports/microsoft_report.md)
 
-### Phase 2: Multi-Agent System (Weeks 4-6)
-**Goal:** Implement supervisor + 4 specialized agents
-
-- [ ] Supervisor agent coordination
-- [ ] Financial Analyst agent
-- [ ] Market Analyst agent
-- [ ] Competitor Scout agent
-- [ ] Report Writer agent
-
-### Phase 3: Production Infrastructure (Weeks 7-8)
-**Goal:** API, database, deployment
-
-- [ ] FastAPI REST API
-- [ ] WebSocket streaming
-- [ ] PostgreSQL setup
-- [ ] Docker containerization
-- [ ] CI/CD pipeline
-
-### Phase 4: Memory & Intelligence (Weeks 9-10)
-**Goal:** Long-term memory and learning
-
-- [ ] Qdrant vector database
-- [ ] Semantic search for past research
-- [ ] Cache hit logic (70%+ cost savings)
-- [ ] Source quality tracking
-
-### Phase 5: Full Agent Suite (Weeks 11-12)
-**Goal:** Complete 14-agent system
-
-- [ ] Remaining 10 specialized agents
-- [ ] Full supervisor coordination
-- [ ] Comprehensive testing (80%+ coverage)
-
-### Phase 6: Production Launch (Week 13+)
-**Goal:** Deploy and monitor
-
-- [ ] Production deployment
-- [ ] Monitoring & alerting
-- [ ] User documentation
-- [ ] Beta user testing
-
-**See [MVP_ROADMAP.md](MVP_ROADMAP.md) for detailed phase breakdown**
+**Report Structure**:
+- Executive Summary
+- Company Overview
+- Financial Analysis (from Financial Agent)
+- Market Analysis (from Market Agent)
+- Product & Technology (from Product Agent)
+- Quality Score and Confidence Assessment
+- Sources (all citations)
 
 ---
 
 ## Documentation
 
 ### Getting Started
-- [Getting Started Guide](docs/getting-started.md) - Step-by-step setup
-- [Development Setup](docs/development-setup.md) - Local environment configuration
-- [API Documentation](docs/api-specification.md) - REST & WebSocket API reference
+- [Installation Guide](INSTALLATION.md) - Setup instructions
+- [Quick Start](QUICK_START.md) - Your first research
+- [User Guide](docs/company-researcher/USER_GUIDE.md) - How to use the system
 
-### Architecture & Design
-- [Architecture Overview](docs/architecture.md) - System design and patterns
-- [Agent Specifications](docs/agent-specifications.md) - Details on all 14 agents
-- [Data Models](docs/data-models.md) - Database schemas and state structures
-- [Multi-Agent Patterns](improvements/01-multi-agent-patterns.md) - Coordination strategies
-- [Memory Systems](improvements/02-memory-systems.md) - Long-term memory design
+### Technical Documentation
+- [Architecture](docs/company-researcher/ARCHITECTURE.md) - System design and Phase 4 architecture
+- [Implementation](docs/company-researcher/IMPLEMENTATION.md) - How the code works
+- [Agent Development](docs/company-researcher/AGENT_DEVELOPMENT.md) - Creating new agents
+- [API Reference](docs/company-researcher/API_REFERENCE.md) - Function signatures and schemas
 
-### Development
-- [Testing Strategy](docs/testing-strategy.md) - Testing approach and guidelines
-- [Code Standards](CONTRIBUTING.md) - Contribution guidelines
-- [LLM Setup](docs/llm-setup.md) - LLM configuration and optimization
-- [Vector Databases](docs/vector-databases.md) - Qdrant setup and usage
+### Project History
+- [Phase Evolution](docs/company-researcher/PHASE_EVOLUTION.md) - Journey from Phase 0 to Phase 4
+- [Phase 4 Validation](outputs/logs/PHASE4_VALIDATION_SUMMARY.md) - Test results and analysis
+- [Phase 3 Validation](outputs/logs/PHASE3_VALIDATION_SUMMARY.md) - Previous phase results
 
-### Operations
-- [Deployment Guide](docs/deployment-guide.md) - Production deployment steps
-- [Monitoring](docs/monitoring.md) - Observability and alerting
-- [Cost Optimization](docs/cost-optimization.md) - Managing API costs
-
-### Project Management
-- [Documentation TODO](DOCUMENTATION_TODO.md) - Documentation roadmap
-- [Current Sprint](project-management/TODO.md) - Active tasks
-- [Backlog](project-management/BACKLOG.md) - Future features
-- [Milestones](project-management/milestones.md) - Key deliverables and dates
-
-### Research
-- [Architecture Decisions](research/decisions.md) - ADRs and technical choices
-- [Experiments Log](research/experiments.md) - A/B tests and prototypes
-- [Implementation Plan](IMPLEMENTATION_PLAN.md) - Detailed technical plan
+### Planning & Roadmap
+- [Master 20-Phase Plan](docs/planning/MASTER_20_PHASE_PLAN.md) - Future implementation roadmap
+- [External Ideas](docs/planning/external-ideas/README.md) - 159 features for future phases
 
 ---
 
-## The 14 Specialized Agents
+## Technology Stack
 
-| Agent | Role | Key Responsibilities |
-|-------|------|---------------------|
-| **Deep Research Agent** | Primary researcher | Web search, source gathering, fact extraction |
-| **Financial Analyst** | Financial data | Revenue, profit, metrics, SEC filings |
-| **Market Analyst** | Market intelligence | TAM, growth, trends, positioning |
-| **Competitor Scout** | Competition | Competitor identification, comparison |
-| **Brand Auditor** | Brand & reputation | Social media, reviews, sentiment |
-| **Sales Agent** | Sales intelligence | Customer base, channels, partnerships |
-| **Investment Agent** | Investment analysis | Funding, valuation, investors |
-| **Social Media Analyst** | Social presence | Twitter, LinkedIn, engagement |
-| **Sector Analyst** | Industry expertise | Sector trends, regulations, dynamics |
-| **Logic Critic** | Quality assurance | Fact-checking, logical consistency |
-| **Insight Generator** | Synthesis | Pattern recognition, key insights |
-| **Report Writer** | Documentation | Professional report generation |
-| **Reasoning Agent** | Complex analysis | Multi-step reasoning, inference |
-| **Generic Research** | Fallback | Handle edge cases, misc research |
+**Core**:
+- [LangGraph](https://github.com/langchain-ai/langgraph) - Agent orchestration
+- [LangChain](https://github.com/langchain-ai/langchain) - LLM framework
+- [Anthropic Claude 3.5 Sonnet](https://www.anthropic.com/claude) - Primary LLM
 
-**See [docs/agent-specifications.md](docs/agent-specifications.md) for detailed specifications**
+**Data Sources**:
+- [Tavily API](https://tavily.com/) - Web search optimized for LLMs
+
+**Language**: Python 3.11+
 
 ---
 
-## Performance Targets
+## Performance Metrics
 
-| Metric | Target | Current | Status |
-|--------|--------|---------|--------|
-| **Cost per Report** | < $0.50 | TBD | 🔄 Testing |
-| **Time per Report** | < 5 minutes | TBD | 🔄 Testing |
-| **Accuracy** | 90%+ on key metrics | TBD | 🔄 Testing |
-| **Quality Score** | 9/10 average | TBD | 🔄 Testing |
-| **Cache Hit Rate** | 30%+ (with memory) | N/A | ⏳ Phase 4 |
-| **API Uptime** | 99%+ | N/A | ⏳ Phase 3 |
+| Metric | Target | Current (Phase 4) | Status |
+|--------|--------|-------------------|--------|
+| **Success Rate** | 85%+ quality | 67% (2/3 companies) | ⚠️ Needs improvement |
+| **Cost per Report** | $0.05 | $0.08 average | ⚠️ 60% over budget |
+| **Time per Report** | < 5 min | 2-5 minutes | ✅ On target |
+| **Quality Score** | 85%+ | 84.7% average (successful) | ✅ When successful |
 
----
-
-## Example Use Cases
-
-### 1. Competitive Intelligence
-```bash
-# Research a competitor
-python src/research.py "Stripe"
-
-# Compare multiple companies
-python src/compare.py "Stripe,PayPal,Square"
-```
-
-### 2. Investment Due Diligence
-```bash
-# Deep research for investment analysis
-python src/research.py "Anthropic" --mode=deep --include=financial,competitive,market
-```
-
-### 3. Market Research
-```bash
-# Analyze multiple companies in a sector
-python src/sector_research.py --industry="Electric Vehicles" --limit=10
-```
-
-### 4. Real-Time Monitoring
-```python
-# Watch a company for changes (planned feature)
-from company_researcher import ResearchClient
-
-client = ResearchClient(api_key="...")
-client.monitor("Tesla", frequency="daily")
-```
+**Next Steps to Improve**:
+- Add more specialist agents (Phases 7-15)
+- Implement memory system (Phases 11-12)
+- Add observability (Phase 4)
+- Enhanced quality systems (Phases 5, 16-17)
 
 ---
 
-## Cost Breakdown
+## Project Phases
 
-### Per-Research Cost Estimate
+### Completed Phases
 
-| Component | Cost | Details |
-|-----------|------|---------|
-| **LLM (Claude 3.5 Sonnet)** | $0.25 - $0.40 | ~50K input tokens, ~5K output tokens |
-| **Web Search (Tavily)** | $0.01 - $0.05 | 10-50 searches @ $0.001 each |
-| **Other APIs** | $0.01 - $0.05 | Alpha Vantage, LinkedIn, etc. |
-| **Infrastructure** | $0.00 | (amortized, negligible per request) |
-| **Total** | **$0.27 - $0.50** | Within target budget |
+#### ✅ Phase 0: Initial Setup
+- Project structure
+- API integrations
+- Single-agent prototype
 
-### Monthly Cost Projections
+#### ✅ Phase 1: Basic Workflow
+- LangGraph StateGraph
+- Single-agent research loop
+- Report generation
 
-| Volume | Monthly Cost | Notes |
-|--------|--------------|-------|
-| 100 companies | $27 - $50 | Small team usage |
-| 1,000 companies | $270 - $500 | Medium scale |
-| 10,000 companies | $2,700 - $5,000 | Enterprise scale |
+#### ✅ Phase 2: Quality Iteration
+- Quality scoring logic
+- Iteration loop
+- Threshold-based decision making
 
-**With 70% cache hit rate (Phase 4):**
-- 1,000 companies → $81 - $150/month (vs $270-$500)
-- **Savings: ~$200-$350/month**
+#### ✅ Phase 3: Multi-Agent Basics
+- Multiple agents (Researcher + 3 specialists)
+- Sequential execution
+- Agent handoff patterns
+
+#### ✅ Phase 4: Parallel Multi-Agent (CURRENT)
+- **Parallel execution** of specialist agents
+- **Custom state reducers** for concurrent updates
+- **Fan-out/fan-in pattern** with LangGraph
+- **67% success rate** (2/3 companies ≥85% quality)
+
+### Future Phases
+
+See [docs/planning/MASTER_20_PHASE_PLAN.md](docs/planning/MASTER_20_PHASE_PLAN.md) for complete roadmap (20 phases, 40+ features).
+
+**Highlights**:
+- **Phases 5-6**: Observability + Quality foundation
+- **Phases 7-10**: 4 critical specialist agents
+- **Phases 11-12**: Memory system
+- **Phases 13-15**: 7 additional agents
+- **Phases 16-19**: Advanced quality + search
+- **Phase 20**: Production deployment
 
 ---
 
-## Development Workflow
+## How to Use
 
-### Running Tests
-
-```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=src --cov-report=html
-
-# Run specific test file
-pytest tests/test_financial_agent.py
-```
-
-### Code Quality
+### Basic Research
 
 ```bash
-# Format code
-black src/
+# Research a single company
+python hello_research.py "Tesla"
 
-# Lint
-ruff check src/
-
-# Type checking
-mypy src/
+# Output saved to: outputs/reports/tesla_report.md
 ```
 
-### Local Development
+### Understanding Results
 
+Each research produces:
+1. **Markdown Report**: `outputs/reports/{company}_report.md`
+2. **Quality Score**: 0-100 scale (target: 85+)
+3. **Cost**: Displayed at end of research
+4. **Sources**: All facts cited with URLs
+
+**Quality Score Interpretation**:
+- **90-100**: Excellent quality, comprehensive coverage
+- **85-89**: Good quality, meets threshold
+- **70-84**: Acceptable quality, but below threshold
+- **<70**: Poor quality, significant gaps
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+**Error: "ANTHROPIC_API_KEY not found"**
 ```bash
-# Start dependencies (PostgreSQL, Qdrant, Redis)
-docker-compose up -d
-
-# Run development server
-uvicorn src.api:app --reload
-
-# Access API docs
-open http://localhost:8000/docs
+# Solution: Add API key to .env file
+echo "ANTHROPIC_API_KEY=your_key_here" >> .env
 ```
+
+**Error: "TAVILY_API_KEY not found"**
+```bash
+# Solution: Add Tavily API key to .env file
+echo "TAVILY_API_KEY=your_key_here" >> .env
+```
+
+**Quality score too low (<85%)**
+- Normal for some companies (67% success rate)
+- System will iterate up to 2 times automatically
+- Check `outputs/logs/` for detailed analysis
+
+**Cost higher than expected**
+- Average: $0.08 per research
+- Can vary based on company complexity
+- Future phases will add caching for cost reduction
+
+See [docs/company-researcher/TROUBLESHOOTING.md](docs/company-researcher/TROUBLESHOOTING.md) for more solutions.
 
 ---
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-**Quick contribution checklist:**
-- [ ] Fork the repository
-- [ ] Create a feature branch (`git checkout -b feature/amazing-feature`)
-- [ ] Write tests for new functionality
-- [ ] Ensure tests pass (`pytest`)
-- [ ] Format code (`black`, `ruff`)
-- [ ] Commit with conventional commits (`feat:`, `fix:`, etc.)
-- [ ] Push and create a Pull Request
-
----
-
-## Roadmap
-
-- [x] **Phase 0:** Proof of Concept (Week 1)
-- [ ] **Phase 1:** Basic Research Loop (Weeks 2-3)
-- [ ] **Phase 2:** Multi-Agent System (Weeks 4-6)
-- [ ] **Phase 3:** Production Infrastructure (Weeks 7-8)
-- [ ] **Phase 4:** Memory & Intelligence (Weeks 9-10)
-- [ ] **Phase 5:** Full Agent Suite (Weeks 11-12)
-- [ ] **Phase 6:** Production Launch (Week 13+)
-
-**Future Enhancements (Post-Launch):**
-- Multi-company comparison reports
-- PDF export with branding
-- Real-time company monitoring
-- Multi-language support
-- Voice input
-- Mobile app
-
-See [project-management/BACKLOG.md](project-management/BACKLOG.md) for full feature backlog.
-
----
-
-## FAQ
-
-### How accurate is the research?
-
-Target is 90%+ accuracy on key financial metrics. The system cites all sources, allowing human verification.
-
-### Can I customize which agents run?
-
-Yes (planned for Phase 5). You'll be able to enable/disable specific agents based on your research needs.
-
-### How does caching work?
-
-Phase 4 implements semantic memory. If you research "Tesla" today and again next week, the system will return cached results (unless you force refresh).
-
-### What if I hit API rate limits?
-
-The system implements exponential backoff and retry logic. You can also configure rate limits in `.env`.
-
-### Can I self-host?
-
-Yes! The system is designed to be fully self-hostable with Docker. See [docs/deployment-guide.md](docs/deployment-guide.md).
-
-### What about data privacy?
-
-All research data stays in your infrastructure. No data is sent to third parties except for API calls (Claude, Tavily, etc.). See [docs/security.md](docs/security.md).
+This is currently a learning/development project. Future phases will add:
+- Contribution guidelines
+- Code standards
+- Testing requirements
+- Pull request templates
 
 ---
 
 ## License
 
-[License Type TBD] - See [LICENSE](LICENSE) file for details.
+[License TBD]
 
 ---
 
 ## Acknowledgments
 
-**Inspired by:**
-- [Open Deep Research](https://github.com/langchain-ai/open-deep-research) by LangChain
-- [LangGraph Examples](https://github.com/langchain-ai/langgraph/tree/main/examples)
-- [Anthropic's research on multi-agent systems](https://www.anthropic.com/research)
+**Inspired by**:
+- [LangGraph Multi-Agent Examples](https://github.com/langchain-ai/langgraph/tree/main/examples)
+- [Anthropic's work on AI agents](https://www.anthropic.com/)
 
-**Built with:**
+**Built with**:
 - [LangGraph](https://github.com/langchain-ai/langgraph) by LangChain
-- [Claude](https://www.anthropic.com/claude) by Anthropic
-- [FastAPI](https://fastapi.tiangolo.com/) by Sebastián Ramírez
-- [Qdrant](https://qdrant.tech/) vector database
+- [Claude 3.5 Sonnet](https://www.anthropic.com/claude) by Anthropic
+- [Tavily](https://tavily.com/) search API
 
 ---
 
-## Support & Contact
+## Support
 
-- **Documentation:** [docs/](docs/)
-- **Issues:** [GitHub Issues](https://github.com/your-repo/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/your-repo/discussions)
-- **Email:** [your-email@example.com]
-
----
-
-## Project Status
-
-**Current Phase:** Phase 0 - Proof of Concept
-**Progress:** 🔄 15% complete
-**Next Milestone:** Phase 0 completion (Dec 12, 2025)
-
-See [project-management/milestones.md](project-management/milestones.md) for detailed progress tracking.
+- **Documentation**: [docs/company-researcher/](docs/company-researcher/)
+- **Validation Reports**: [outputs/logs/](outputs/logs/)
+- **Planning Docs**: [docs/planning/](docs/planning/)
 
 ---
 
-**Built with ❤️ using AI agents to research companies with AI agents. Meta, right?**
+**Current Status**: Phase 4 complete with 67% success rate. Ready for Phase 5+ enhancements.
+
+See [docs/planning/MASTER_20_PHASE_PLAN.md](docs/planning/MASTER_20_PHASE_PLAN.md) for the complete roadmap to production.

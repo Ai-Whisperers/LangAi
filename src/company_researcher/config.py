@@ -37,6 +37,49 @@ class ResearchConfig(BaseSettings):
     )
 
     # ========================================================================
+    # Financial Data APIs (Phase 7)
+    # ========================================================================
+
+    alpha_vantage_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("ALPHA_VANTAGE_API_KEY"),
+        description="Alpha Vantage API key for stock data and fundamentals"
+    )
+
+    # ========================================================================
+    # Observability & Monitoring (Phase 4)
+    # ========================================================================
+
+    agentops_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("AGENTOPS_API_KEY"),
+        description="AgentOps API key for agent monitoring"
+    )
+
+    langsmith_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("LANGSMITH_API_KEY"),
+        description="LangSmith API key for LangChain tracing"
+    )
+
+    langchain_tracing_v2: bool = Field(
+        default_factory=lambda: os.getenv("LANGCHAIN_TRACING_V2", "false").lower() == "true",
+        description="Enable LangSmith tracing"
+    )
+
+    langchain_project: str = Field(
+        default_factory=lambda: os.getenv("LANGCHAIN_PROJECT", "langai-research"),
+        description="LangSmith project name"
+    )
+
+    langchain_endpoint: str = Field(
+        default_factory=lambda: os.getenv("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com"),
+        description="LangSmith API endpoint"
+    )
+
+    @property
+    def observability_enabled(self) -> bool:
+        """Check if any observability tool is configured."""
+        return bool(self.agentops_api_key) or (bool(self.langsmith_api_key) and self.langchain_tracing_v2)
+
+    # ========================================================================
     # Model Configuration
     # ========================================================================
 

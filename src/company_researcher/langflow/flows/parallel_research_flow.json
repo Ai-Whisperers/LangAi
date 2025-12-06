@@ -1,0 +1,179 @@
+{
+  "data": {
+    "nodes": [
+      {
+        "id": "input-1",
+        "type": "genericNode",
+        "position": {"x": 100, "y": 300},
+        "data": {
+          "type": "TextInput",
+          "node": {
+            "template": {
+              "input_value": {
+                "type": "str",
+                "required": true,
+                "placeholder": "Enter company name...",
+                "display_name": "Company Name",
+                "info": "Name of the company to research"
+              }
+            },
+            "display_name": "Company Name Input",
+            "description": "Enter the company name to research"
+          }
+        }
+      },
+      {
+        "id": "researcher-1",
+        "type": "genericNode",
+        "position": {"x": 350, "y": 300},
+        "data": {
+          "type": "ResearcherAgent",
+          "node": {
+            "template": {
+              "company_name": {
+                "type": "str",
+                "required": true,
+                "display_name": "Company Name"
+              },
+              "search_depth": {
+                "type": "int",
+                "value": 5,
+                "display_name": "Search Depth"
+              },
+              "max_results": {
+                "type": "int",
+                "value": 3,
+                "display_name": "Max Results"
+              }
+            },
+            "display_name": "Researcher Agent",
+            "description": "Initial company research and web search",
+            "icon": "search"
+          }
+        }
+      },
+      {
+        "id": "financial-1",
+        "type": "genericNode",
+        "position": {"x": 650, "y": 100},
+        "data": {
+          "type": "FinancialAgent",
+          "node": {
+            "template": {
+              "company_name": {"type": "str", "required": true, "display_name": "Company Name"},
+              "research_context": {"type": "dict", "required": false, "display_name": "Research Context"},
+              "use_alpha_vantage": {"type": "bool", "value": true, "display_name": "Use Alpha Vantage"},
+              "use_sec_edgar": {"type": "bool", "value": true, "display_name": "Use SEC EDGAR"}
+            },
+            "display_name": "Financial Agent",
+            "description": "Financial analysis: revenue, profitability, health",
+            "icon": "dollar-sign"
+          }
+        }
+      },
+      {
+        "id": "market-1",
+        "type": "genericNode",
+        "position": {"x": 650, "y": 300},
+        "data": {
+          "type": "MarketAgent",
+          "node": {
+            "template": {
+              "company_name": {"type": "str", "required": true, "display_name": "Company Name"},
+              "research_context": {"type": "dict", "required": false, "display_name": "Research Context"},
+              "include_tam_sam_som": {"type": "bool", "value": true, "display_name": "Include TAM/SAM/SOM"},
+              "include_trends": {"type": "bool", "value": true, "display_name": "Include Trends"}
+            },
+            "display_name": "Market Agent",
+            "description": "Market analysis: TAM/SAM/SOM, trends, competition",
+            "icon": "trending-up"
+          }
+        }
+      },
+      {
+        "id": "product-1",
+        "type": "genericNode",
+        "position": {"x": 650, "y": 500},
+        "data": {
+          "type": "ProductAgent",
+          "node": {
+            "template": {
+              "company_name": {"type": "str", "required": true, "display_name": "Company Name"},
+              "research_context": {"type": "dict", "required": false, "display_name": "Research Context"}
+            },
+            "display_name": "Product Agent",
+            "description": "Product analysis: offerings, technology, roadmap",
+            "icon": "package"
+          }
+        }
+      },
+      {
+        "id": "synthesizer-1",
+        "type": "genericNode",
+        "position": {"x": 950, "y": 300},
+        "data": {
+          "type": "SynthesizerAgent",
+          "node": {
+            "template": {
+              "company_name": {"type": "str", "required": true, "display_name": "Company Name"},
+              "financial_analysis": {"type": "str", "required": true, "display_name": "Financial Analysis"},
+              "market_analysis": {"type": "str", "required": true, "display_name": "Market Analysis"},
+              "product_analysis": {"type": "str", "required": true, "display_name": "Product Analysis"}
+            },
+            "display_name": "Synthesizer Agent",
+            "description": "Combines all analyses into comprehensive report",
+            "icon": "file-text"
+          }
+        }
+      },
+      {
+        "id": "quality-1",
+        "type": "genericNode",
+        "position": {"x": 1200, "y": 300},
+        "data": {
+          "type": "QualityChecker",
+          "node": {
+            "template": {
+              "company_name": {"type": "str", "required": true, "display_name": "Company Name"},
+              "research_data": {"type": "dict", "required": true, "display_name": "Research Data"},
+              "quality_threshold": {"type": "float", "value": 85.0, "display_name": "Quality Threshold"}
+            },
+            "display_name": "Quality Checker",
+            "description": "Validates research quality (target: 85+/100)",
+            "icon": "check-circle"
+          }
+        }
+      },
+      {
+        "id": "output-1",
+        "type": "genericNode",
+        "position": {"x": 1450, "y": 300},
+        "data": {
+          "type": "TextOutput",
+          "node": {
+            "template": {
+              "input_value": {"type": "str", "required": true, "display_name": "Output"}
+            },
+            "display_name": "Research Report",
+            "description": "Final research report output"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {"id": "e-input-researcher", "source": "input-1", "target": "researcher-1", "sourceHandle": "output", "targetHandle": "company_name"},
+      {"id": "e-r2f", "source": "researcher-1", "target": "financial-1", "sourceHandle": "output", "targetHandle": "research_context", "animated": true},
+      {"id": "e-r2m", "source": "researcher-1", "target": "market-1", "sourceHandle": "output", "targetHandle": "research_context", "animated": true},
+      {"id": "e-r2p", "source": "researcher-1", "target": "product-1", "sourceHandle": "output", "targetHandle": "research_context", "animated": true},
+      {"id": "e-f2s", "source": "financial-1", "target": "synthesizer-1", "sourceHandle": "output", "targetHandle": "financial_analysis"},
+      {"id": "e-m2s", "source": "market-1", "target": "synthesizer-1", "sourceHandle": "output", "targetHandle": "market_analysis"},
+      {"id": "e-p2s", "source": "product-1", "target": "synthesizer-1", "sourceHandle": "output", "targetHandle": "product_analysis"},
+      {"id": "e-s2q", "source": "synthesizer-1", "target": "quality-1", "sourceHandle": "output", "targetHandle": "research_data"},
+      {"id": "e-q2o", "source": "quality-1", "target": "output-1", "sourceHandle": "output", "targetHandle": "input_value"}
+    ],
+    "viewport": {"x": 0, "y": 0, "zoom": 0.8}
+  },
+  "name": "Company Researcher - Parallel Multi-Agent",
+  "description": "Full parallel multi-agent company research workflow with quality validation. Agents run in parallel for faster execution.",
+  "is_component": false
+}

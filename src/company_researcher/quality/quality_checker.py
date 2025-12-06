@@ -63,7 +63,18 @@ def check_research_quality(
         elif "```" in content:
             content = content.split("```")[1].split("```")[0]
 
-        quality_data = json.loads(content.strip())
+        # Find JSON object in content (handles extra text before/after)
+        content = content.strip()
+
+        # Try to find the JSON object boundaries
+        start_idx = content.find('{')
+        end_idx = content.rfind('}')
+
+        if start_idx >= 0 and end_idx >= 0:
+            json_str = content[start_idx:end_idx+1]
+            quality_data = json.loads(json_str)
+        else:
+            quality_data = json.loads(content)
 
         # Validate structure
         result = {

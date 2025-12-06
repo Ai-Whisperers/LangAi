@@ -1,0 +1,87 @@
+{
+  "data": {
+    "nodes": [
+      {
+        "id": "input-1",
+        "type": "genericNode",
+        "position": {"x": 100, "y": 200},
+        "data": {
+          "type": "TextInput",
+          "node": {
+            "template": {
+              "input_value": {
+                "type": "str",
+                "required": true,
+                "placeholder": "Enter company name...",
+                "display_name": "Company Name",
+                "info": "Name of the company to research"
+              }
+            },
+            "display_name": "Company Name",
+            "description": "Enter the company name to research"
+          }
+        }
+      },
+      {
+        "id": "researcher-1",
+        "type": "genericNode",
+        "position": {"x": 350, "y": 200},
+        "data": {
+          "type": "ResearcherAgent",
+          "node": {
+            "template": {
+              "company_name": {"type": "str", "required": true, "display_name": "Company Name"},
+              "search_depth": {"type": "int", "value": 5, "display_name": "Search Depth"},
+              "max_results": {"type": "int", "value": 3, "display_name": "Max Results"}
+            },
+            "display_name": "Researcher Agent",
+            "description": "Initial company research and web search",
+            "icon": "search"
+          }
+        }
+      },
+      {
+        "id": "quality-1",
+        "type": "genericNode",
+        "position": {"x": 600, "y": 200},
+        "data": {
+          "type": "QualityChecker",
+          "node": {
+            "template": {
+              "company_name": {"type": "str", "required": true, "display_name": "Company Name"},
+              "research_data": {"type": "dict", "required": true, "display_name": "Research Data"},
+              "quality_threshold": {"type": "float", "value": 85.0, "display_name": "Quality Threshold"}
+            },
+            "display_name": "Quality Checker",
+            "description": "Validates research quality",
+            "icon": "check-circle"
+          }
+        }
+      },
+      {
+        "id": "output-1",
+        "type": "genericNode",
+        "position": {"x": 850, "y": 200},
+        "data": {
+          "type": "TextOutput",
+          "node": {
+            "template": {
+              "input_value": {"type": "str", "required": true, "display_name": "Output"}
+            },
+            "display_name": "Research Output",
+            "description": "Final research output"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {"id": "e1", "source": "input-1", "target": "researcher-1", "sourceHandle": "output", "targetHandle": "company_name"},
+      {"id": "e2", "source": "researcher-1", "target": "quality-1", "sourceHandle": "output", "targetHandle": "research_data"},
+      {"id": "e3", "source": "quality-1", "target": "output-1", "sourceHandle": "output", "targetHandle": "input_value"}
+    ],
+    "viewport": {"x": 0, "y": 0, "zoom": 1}
+  },
+  "name": "Company Researcher - Basic",
+  "description": "Simple single-agent company research workflow with quality validation",
+  "is_component": false
+}

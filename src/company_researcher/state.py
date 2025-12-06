@@ -10,6 +10,41 @@ from datetime import datetime
 from operator import add
 
 
+def merge_dicts(left: Optional[Dict], right: Optional[Dict]) -> Dict:
+    """
+    Merge two dictionaries (used for concurrent updates in parallel execution).
+
+    Args:
+        left: Existing dictionary (or None)
+        right: New dictionary to merge (or None)
+
+    Returns:
+        Merged dictionary
+    """
+    if left is None:
+        left = {}
+    if right is None:
+        right = {}
+    return {**left, **right}
+
+
+def add_tokens(left: Dict[str, int], right: Dict[str, int]) -> Dict[str, int]:
+    """
+    Add token counts from two dictionaries (used for concurrent updates).
+
+    Args:
+        left: Existing token counts
+        right: New token counts to add
+
+    Returns:
+        Combined token counts
+    """
+    return {
+        "input": left.get("input", 0) + right.get("input", 0),
+        "output": left.get("output", 0) + right.get("output", 0)
+    }
+
+
 # ============================================================================
 # Input State
 # ============================================================================
@@ -64,10 +99,14 @@ class OverallState(TypedDict):
     iteration_count: int  # Number of research iterations
     missing_info: Optional[List[str]]  # Missing information to research
 
+    # Agent Coordination (Phase 3+)
+    # Using merge_dicts allows concurrent updates from parallel agents (Phase 4)
+    agent_outputs: Annotated[Optional[Dict[str, Any]], merge_dicts]  # Track agent contributions
+
     # Metrics
     start_time: datetime
-    total_cost: float
-    total_tokens: Dict[str, int]  # {"input": X, "output": Y}
+    total_cost: Annotated[float, add]  # Using add allows concurrent cost accumulation
+    total_tokens: Annotated[Dict[str, int], add_tokens]  # {"input": X, "output": Y}
 
     # Report
     report_path: Optional[str]
@@ -121,6 +160,7 @@ def create_initial_state(company_name: str) -> OverallState:
         "quality_score": None,
         "iteration_count": 0,
         "missing_info": None,
+        "agent_outputs": {},
         "start_time": datetime.now(),
         "total_cost": 0.0,
         "total_tokens": {"input": 0, "output": 0},
