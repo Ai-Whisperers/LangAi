@@ -1,4 +1,19 @@
 # Company Researcher System - Git Ignore
+# =============================================================================
+
+# =============================================================================
+# OUTPUTS - EXPLICITLY TRACKED
+# =============================================================================
+# We WANT to track research outputs for reproducibility and sharing
+# Use `git add -f outputs/` if needed
+
+# Don't ignore outputs folder - it contains valuable research data
+!outputs/
+!outputs/**
+
+# But ignore very large cache files if they exist
+outputs/**/*.gguf
+outputs/**/*.bin
 
 # =============================================================================
 # Python
@@ -46,7 +61,6 @@ htmlcov/
 .nox/
 .coverage
 .coverage.*
-.cache
 nosetests.xml
 coverage.xml
 *.cover
@@ -59,17 +73,16 @@ cover/
 *.mo
 *.pot
 
-# Django stuff:
-*.log
+# Django stuff
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
-# Flask stuff:
+# Flask stuff
 instance/
 .webassets-cache
 
-# Scrapy stuff:
+# Scrapy stuff
 .scrapy
 
 # Sphinx documentation
@@ -82,7 +95,6 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-*.ipynb
 
 # IPython
 profile_default/
@@ -166,15 +178,13 @@ cython_debug/
 # Vim
 *.swp
 *.swo
-*~
 
 # Emacs
-*~
 \#*\#
 .\#*
 
 # =============================================================================
-# OS
+# OS Files
 # =============================================================================
 
 # macOS
@@ -210,24 +220,21 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+nul
 
 # Linux
-*~
 .directory
 .Trash-*
 .nfs*
 
+# Temp files (all platforms)
+*~
+
 # =============================================================================
-# Project Specific
+# Project Specific - IGNORED
 # =============================================================================
 
-# Output files
-outputs/
-reports/
-*.md.tmp
-*.md.backup
-
-# Logs
+# Logs (outside outputs)
 logs/
 *.log
 log_*.txt
@@ -236,27 +243,22 @@ log_*.txt
 tmp/
 temp/
 .tmp/
+temp_*.txt
 
-# Database
+# Database files (outside outputs)
 *.db
 *.sqlite
-*.sqlite3
 
-# Cache
-.cache/
-cache/
-
-# Secrets
+# Secrets and credentials
 secrets/
 *.key
 *.pem
 *.p12
 .api_keys
 
-# Research data (if large)
+# Large data files (raw imports)
 data/raw/
 data/processed/
-*.csv
 *.parquet
 *.feather
 
@@ -270,50 +272,27 @@ dump.rdb
 # Playwright browsers
 .playwright/
 
-# =============================================================================
-# Development
-# =============================================================================
-
 # Profiling
 *.prof
 *.lprof
 *.pyprof
 
-# Coverage
-.coverage
-htmlcov/
-
-# Benchmarks
+# Benchmarks results
 benchmarks/results/
 
 # Docker
 *.pid
 
 # =============================================================================
-# Documentation (keep sources, ignore builds)
+# AI/ML Large Files
 # =============================================================================
 
-docs/_build/
-docs/.doctrees/
-
-# =============================================================================
-# External repos (already tracked separately)
-# =============================================================================
-
-# Don't ignore External repos - it's reference material
-# External repos/
-
-# =============================================================================
-# AI/ML
-# =============================================================================
-
-# Model files (if we store any locally)
+# Model files (very large)
 *.gguf
-*.bin
 *.safetensors
 models/
 
-# Embeddings cache
+# Embeddings cache (can be large)
 .embeddings_cache/
 
 # =============================================================================
@@ -323,17 +302,39 @@ models/
 .github/workflows/*.log
 
 # =============================================================================
-# Notes
+# Keep These Files (exceptions)
 # =============================================================================
 
-# Keep example files
+# Example and template files
 !.env.example
+!env.example
 !.gitignore.example
 
-# Keep all documentation
+# Documentation
 !docs/**
 !*.md
 !README*
 !CHANGELOG*
 !CONTRIBUTING*
 !LICENSE*
+
+# Keep Jupyter notebooks in examples
+!examples/*.ipynb
+
+# Keep research targets (YAML configs)
+!research_targets/**
+
+# =============================================================================
+# Project Directories to Track
+# =============================================================================
+
+# These are explicitly NOT ignored (tracked):
+# - outputs/          Research outputs, reports, cache
+# - research_targets/ Company YAML profiles
+# - src/              Source code
+# - scripts/          Utility scripts
+# - tests/            Test files
+# - docs/             Documentation
+# - examples/         Example code
+# - deploy/           Deployment configs
+# - .github/          GitHub Actions (except logs)
