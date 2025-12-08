@@ -1,0 +1,899 @@
+================================================================================
+OBSOLETE MARKDOWN DOCUMENTATION REPORT
+================================================================================
+Generated: 2025-12-07 17:55:19
+
+SUMMARY
+================================================================================
+Total Markdown Files: 4197
+Duplicate Documentation: 52 files
+Planning Documents: 92
+Status/Progress Documents: 39
+Phase Documents: 32
+Validation Documents: 60
+Implementation Summaries: 76
+
+================================================================================
+DUPLICATE DOCUMENTATION (Keep 1, archive others)
+================================================================================
+
+CHANGELOG.MD (2 copies):
+  - .archive\reference\Company-researcher\CHANGELOG.md
+    Modified: 2025-11-28, Size: 3090 bytes
+  - CHANGELOG.md
+    Modified: 2025-12-05, Size: 4028 bytes
+
+CONTRIBUTING.MD (2 copies):
+  - .archive\reference\Company-researcher\docs\guides\CONTRIBUTING.md
+    Modified: 2025-11-27, Size: 2051 bytes
+  - CONTRIBUTING.md
+    Modified: 2025-12-05, Size: 12098 bytes
+
+README.MD (48 copies):
+  - .agent-todos\phase-0\README.md
+    Modified: 2025-12-05, Size: 6558 bytes
+  - .agent-todos\phase-1\README.md
+    Modified: 2025-12-05, Size: 1473 bytes
+  - .agent-todos\phase-2\README.md
+    Modified: 2025-12-05, Size: 1516 bytes
+  - .agent-todos\phase-3\README.md
+    Modified: 2025-12-05, Size: 1330 bytes
+  - .agent-todos\README.md
+    Modified: 2025-12-05, Size: 5800 bytes
+  - .archive\reference\Company-researcher\.claude\commands\README.md
+    Modified: 2025-11-16, Size: 8949 bytes
+  - .archive\reference\Company-researcher\.claude\custom-resources\commands\README.md
+    Modified: 2025-11-16, Size: 8949 bytes
+  - .archive\reference\Company-researcher\.claude\custom-resources\mcp\README.md
+    Modified: 2025-11-16, Size: 2953 bytes
+  - .archive\reference\Company-researcher\.claude\custom-resources\README.md
+    Modified: 2025-11-16, Size: 6121 bytes
+  - .archive\reference\Company-researcher\.claude\mcp\README.md
+    Modified: 2025-11-20, Size: 4402 bytes
+  - .archive\reference\Company-researcher\.claude\README.md
+    Modified: 2025-11-16, Size: 12559 bytes
+  - .archive\reference\Company-researcher\archive\code\deprecated\README.md
+    Modified: 2025-12-05, Size: 5630 bytes
+  - .archive\reference\Company-researcher\archive\docs\examples\README.md
+    Modified: 2025-11-28, Size: 17624 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\api-integration\README.md
+    Modified: 2025-12-02, Size: 3775 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\code-quality\01_thread-safety\README.md
+    Modified: 2025-12-04, Size: 2950 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\code-quality\02_exception-handling\README.md
+    Modified: 2025-12-03, Size: 3310 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\code-quality\03_security\README.md
+    Modified: 2025-12-03, Size: 3484 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\code-quality\04_type-hints\README.md
+    Modified: 2025-12-03, Size: 3441 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\code-quality\05_code-duplication\README.md
+    Modified: 2025-12-03, Size: 5979 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\code-quality\06_anti-patterns\README.md
+    Modified: 2025-12-03, Size: 5635 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\code-quality\07_resource-management\README.md
+    Modified: 2025-12-03, Size: 5851 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\code-quality\08_complexity\README.md
+    Modified: 2025-12-03, Size: 6741 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\code-quality\09_hardcoded-values\README.md
+    Modified: 2025-12-03, Size: 4259 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\code-quality\10_documentation\README.md
+    Modified: 2025-12-04, Size: 5514 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\code-quality\11_miscellaneous\README.md
+    Modified: 2025-12-03, Size: 4045 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\README.md
+    Modified: 2025-11-28, Size: 1307 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\ideas\complete Implementation plan\README.md
+    Modified: 2025-11-26, Size: 1382 bytes
+  - .archive\reference\Company-researcher\data\research_targets\README.md
+    Modified: 2025-12-01, Size: 1418 bytes
+  - .archive\reference\Company-researcher\docs\architecture\patterns\README.md
+    Modified: 2025-11-26, Size: 5797 bytes
+  - .archive\reference\Company-researcher\docs\architecture\README.md
+    Modified: 2025-12-01, Size: 12441 bytes
+  - .archive\reference\Company-researcher\docs\deployment\README.md
+    Modified: 2025-11-28, Size: 8281 bytes
+  - .archive\reference\Company-researcher\docs\README.md
+    Modified: 2025-11-27, Size: 3094 bytes
+  - .archive\reference\Company-researcher\frontend\README.md
+    Modified: 2025-12-04, Size: 1450 bytes
+  - .archive\reference\Company-researcher\README.md
+    Modified: 2025-12-01, Size: 5681 bytes
+  - .archive\reference\Company-researcher\scripts\README.md
+    Modified: 2025-12-05, Size: 2448 bytes
+  - .archive\reference\Company-researcher\tests\README.md
+    Modified: 2025-11-28, Size: 13253 bytes
+  - .archive\reference\project-management\README.md
+    Modified: 2025-12-05, Size: 1472 bytes
+  - .archive\reference\research\README.md
+    Modified: 2025-12-05, Size: 2081 bytes
+  - .claude\commands\README.md
+    Modified: 2025-11-16, Size: 8949 bytes
+  - .claude\mcp\README.md
+    Modified: 2025-11-20, Size: 4402 bytes
+  - .claude\README.md
+    Modified: 2025-11-16, Size: 12559 bytes
+  - docs\archive\README.md
+    Modified: 2025-12-05, Size: 3201 bytes
+  - docs\company-researcher\README.md
+    Modified: 2025-12-05, Size: 8417 bytes
+  - docs\planning\external-ideas\README.md
+    Modified: 2025-12-05, Size: 7696 bytes
+  - docs\planning\README.md
+    Modified: 2025-12-05, Size: 16397 bytes
+  - docs\README.md
+    Modified: 2025-12-05, Size: 5698 bytes
+  - README.md
+    Modified: 2025-12-05, Size: 10697 bytes
+  - research_targets\README.md
+    Modified: 2025-12-01, Size: 1418 bytes
+
+================================================================================
+PHASE DOCUMENTS (Archive completed phases)
+================================================================================
+Found 32 phase documents
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\features\FE-001-sales-intelligence-phases.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\features\FE-002-financial-deep-dive-phases.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\features\FE-003-risk-assessment-phases.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\features\FE-004-team-talent-phases.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\features\FE-005-partnership-ecosystem-phases.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\features\FE-006-technology-product-phases.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\archive\docs\planning\ideas\complete Implementation plan\08_Phase4_Experience.md
+  Modified: 2025-11-26 19:02
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\docs\guides\REORGANIZATION_PHASE1_COMPLETE.md
+  Modified: 2025-12-05 13:00
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\docs\guides\REORGANIZATION_PHASE2_COMPLETE.md
+  Modified: 2025-12-05 13:26
+  ! Marked as completed
+
+- docs\company-researcher\PHASE_EVOLUTION.md
+  Modified: 2025-12-05 20:21
+  ! Marked as completed
+
+- docs\PHASE_10_IMPLEMENTATION_SUMMARY.md
+  Modified: 2025-12-06 19:59
+  ! Contains TODO/FIXME
+  ! Marked as completed
+
+- docs\planning\DOCUMENTATION_PHASES_PLAN.md
+  Modified: 2025-12-05 18:20
+  ! Marked as completed
+
+- docs\planning\MASTER_20_PHASE_PLAN.md
+  Modified: 2025-12-05 18:38
+  ! Marked as completed
+
+- docs\planning\phases\PHASE_1_FOUNDATION.md
+  Modified: 2025-12-05 17:21
+  ! Marked as completed
+
+- docs\planning\phases\PHASE_2_SPECIALISTS.md
+  Modified: 2025-12-05 17:22
+  ! Marked as completed
+
+- outputs\logs\microsoft_phase2_report.md
+  Modified: 2025-12-05 17:20
+
+- outputs\logs\openai_phase2_report.md
+  Modified: 2025-12-05 17:20
+
+- outputs\logs\PHASE0_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 19:48
+  ! Marked as completed
+
+- outputs\logs\PHASE1_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 19:48
+  ! Marked as completed
+
+- outputs\logs\PHASE2_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 17:21
+  ! Marked as completed
+
+- outputs\logs\PHASE3_QUALITY_FIX_REPORT.md
+  Modified: 2025-12-05 17:47
+  ! Marked as completed
+
+- outputs\logs\PHASE3_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 17:37
+  ! Marked as completed
+
+- outputs\logs\PHASE4_OBSERVABILITY_COMPLETE.md
+  Modified: 2025-12-05 20:07
+  ! Marked as completed
+
+- outputs\logs\PHASE4_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 18:13
+  ! Marked as completed
+
+- outputs\logs\PHASE5_QUALITY_COMPLETE.md
+  Modified: 2025-12-05 20:15
+
+- outputs\logs\PHASE6_ADVANCED_DOCS_COMPLETE.md
+  Modified: 2025-12-05 20:27
+  ! Marked as completed
+
+- outputs\logs\PHASE7_FINANCIAL_AGENT_COMPLETE.md
+  Modified: 2025-12-05 22:21
+
+- outputs\logs\PHASE8_MARKET_ANALYST_COMPLETE.md
+  Modified: 2025-12-05 22:40
+
+- outputs\logs\PHASES_1-9_PROGRESS_SUMMARY.md
+  Modified: 2025-12-05 22:50
+  ! Marked as completed
+
+- outputs\logs\stripe_phase2_report.md
+  Modified: 2025-12-05 17:20
+
+- outputs\logs\tesla_phase2_report.md
+  Modified: 2025-12-05 17:20
+
+- PHASE_10_STATUS.md
+  Modified: 2025-12-07 17:01
+  ! Marked as completed
+
+================================================================================
+STATUS/PROGRESS DOCUMENTS (Archive if completed)
+================================================================================
+Found 39 status documents
+
+- .agent-todos\phase-0\04-validation.md
+  Modified: 2025-12-05 16:36
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\.claude\commands\factory-status.md
+  Modified: 2025-11-16 19:54
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\.claude\custom-resources\commands\factory-status.md
+  Modified: 2025-11-16 19:54
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\agents\AG-002-no-input-validation.md
+  Modified: 2025-11-28 01:09
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\bugs\BUG-029-task-id-validation.md
+  Modified: 2025-11-28 16:19
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\bugs\BUG-034-source-type-validation.md
+  Modified: 2025-11-28 16:35
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\bugs-and-issues\031-medium-template-path-validation.md
+  Modified: 2025-11-27 20:35
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\bugs-and-issues\050-medium-no-config-validation.md
+  Modified: 2025-11-27 20:35
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\bugs-and-issues\070-medium-no-json-schema-validation.md
+  Modified: 2025-11-28 11:43
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\bugs-and-issues\101-low-missing-country-validation.md
+  Modified: 2025-11-28 11:46
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\bugs-and-issues\13-medium-no-input-validation.md
+  Modified: 2025-11-27 19:10
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\core\CO-007-no-config-validation.md
+  Modified: 2025-11-27 21:01
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\core\VAL-validation-suite.md
+  Modified: 2025-12-01 13:56
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\features\FEAT-010-progress-reporting.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\features\research_progress_tracking.md
+  Modified: 2025-11-27 17:13
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\graph\GR-001-no-state-validation.md
+  Modified: 2025-11-27 20:59
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\security\SEC-001-input-validation-improvements.md
+  Modified: 2025-11-28 16:06
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\security\SEC-003-url-validation-incomplete.md
+  Modified: 2025-11-28 16:17
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\tools\TO-002-no-url-validation.md
+  Modified: 2025-11-28 01:09
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\ux\UX-001-progress-bars.md
+  Modified: 2025-12-01 15:11
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\validation\VAL-001-research-request-validation.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\validation\VAL-002-search-query-validation.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\validation\VAL-003-prompt-path-validation.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\validation\VAL-004-vault-filename-validation.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\validation\VAL-005-search-url-revalidation.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\validation\VAL-006-plugin-attribute-validation.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\docs\development\workflows\CODE_REVIEW_CHECKLIST.md
+  Modified: 2025-11-27 14:50
+
+- .archive\reference\Company-researcher\docs\guides\API_KEY_STATUS_REPORT.md
+  Modified: 2025-12-05 12:02
+
+- .archive\reference\Company-researcher\PROJECT_STATUS.md
+  Modified: 2025-12-05 14:43
+  ! Marked as completed
+
+- .claude\commands\factory-status.md
+  Modified: 2025-11-16 19:54
+  ! Marked as completed
+
+- docs\internal\VALIDATION_REPORT.md
+  Modified: 2025-12-05 19:51
+  ! Contains TODO/FIXME
+  ! Marked as completed
+
+- docs\VALIDATION_CHECKLIST.md
+  Modified: 2025-12-05 19:49
+  ! Contains TODO/FIXME
+  ! References deprecated/obsolete content
+  ! Marked as completed
+
+- outputs\logs\PHASE0_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 19:48
+  ! Marked as completed
+
+- outputs\logs\PHASE1_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 19:48
+  ! Marked as completed
+
+- outputs\logs\PHASE2_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 17:21
+  ! Marked as completed
+
+- outputs\logs\PHASE3_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 17:37
+  ! Marked as completed
+
+- outputs\logs\PHASE4_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 18:13
+  ! Marked as completed
+
+- outputs\logs\PHASES_1-9_PROGRESS_SUMMARY.md
+  Modified: 2025-12-05 22:50
+  ! Marked as completed
+
+- PHASE_10_STATUS.md
+  Modified: 2025-12-07 17:01
+  ! Marked as completed
+
+================================================================================
+PLANNING DOCUMENTS (Review and archive old plans)
+================================================================================
+Found 92 planning documents
+
+  - .archive\planning\DOCUMENTATION_TODO.md
+    Modified: 2025-12-05, Size: 7206 bytes
+  - .archive\planning\IMPLEMENTATION_PLAN.md
+    Modified: 2025-12-05, Size: 53387 bytes
+  - .archive\reference\Company-researcher\.claude\commands\anthropic\convert-to-todowrite-template.md
+    Modified: 2025-11-16, Size: 25503 bytes
+  - .archive\reference\Company-researcher\.claude\commands\sync-todos-to-github.md
+    Modified: 2025-11-16, Size: 8391 bytes
+  - .archive\reference\Company-researcher\.claude\commands\workflow\testing-plan-integration-awesome.md
+    Modified: 2025-11-16, Size: 444 bytes
+  - .archive\reference\Company-researcher\.claude\commands\workflow\todo-awesome.md
+    Modified: 2025-11-16, Size: 3015 bytes
+  - .archive\reference\Company-researcher\.claude\custom-resources\commands\anthropic\convert-to-todowrite-template.md
+    Modified: 2025-11-16, Size: 25503 bytes
+  - .archive\reference\Company-researcher\.claude\custom-resources\commands\sync-todos-to-github.md
+    Modified: 2025-11-16, Size: 8391 bytes
+  - .archive\reference\Company-researcher\.claude\custom-resources\commands\workflow\testing-plan-integration-awesome.md
+    Modified: 2025-11-16, Size: 444 bytes
+  - .archive\reference\Company-researcher\.claude\custom-resources\commands\workflow\todo-awesome.md
+    Modified: 2025-11-16, Size: 3015 bytes
+  - .archive\reference\Company-researcher\.claude\custom-resources\IMPROVEMENT_PLAN.md
+    Modified: 2025-11-16, Size: 38273 bytes
+  - .archive\reference\Company-researcher\.claude\custom-resources\MASTER_REPO_PLAN.md
+    Modified: 2025-11-16, Size: 15545 bytes
+  - .archive\reference\Company-researcher\.claude\custom-resources\skills\code-quality\executing-plans-superpowers.md
+    Modified: 2025-11-16, Size: 2352 bytes
+  - .archive\reference\Company-researcher\.claude\custom-resources\skills\code-quality\writing-plans-superpowers.md
+    Modified: 2025-11-16, Size: 3569 bytes
+  - .archive\reference\Company-researcher\.claude\custom-resources\skills\lifestyle\travel-planner-ailabs.md
+    Modified: 2025-11-16, Size: 15590 bytes
+  - .archive\reference\Company-researcher\.claude\skills\code-quality\executing-plans-superpowers.md
+    Modified: 2025-11-16, Size: 2352 bytes
+  - .archive\reference\Company-researcher\.claude\skills\code-quality\writing-plans-superpowers.md
+    Modified: 2025-11-16, Size: 3569 bytes
+  - .archive\reference\Company-researcher\.claude\skills\lifestyle\travel-planner-ailabs.md
+    Modified: 2025-11-16, Size: 15590 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\backlog-archives\IMPROVEMENT-ROADMAP.md
+    Modified: 2025-12-01, Size: 5053 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\ideas\complete Implementation plan\05_Implementation_Roadmap.md
+    Modified: 2025-11-26, Size: 1394 bytes
+  - .archive\reference\Company-researcher\archive\docs\planning\ideas\complete Implementation plan\09_Refactoring_and_Improvement_Plan.md
+    Modified: 2025-11-26, Size: 2809 bytes
+  - .archive\reference\Company-researcher\docs\architecture\patterns\patterns\06-planning.md
+    Modified: 2025-11-26, Size: 3241 bytes
+  - .archive\reference\Company-researcher\docs\planning\architecture\REFACTOR_MASTER_PLAN.md
+    Modified: 2025-12-04, Size: 4979 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\05-Marketing-Execution\02-Content-Plan.md
+    Modified: 2025-12-02, Size: 359 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-001-Conocé-todos-nuestros-planes-y.md
+    Modified: 2025-12-02, Size: 1592 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-004-Sucursales-Claro-en-todo-el-pa.md
+    Modified: 2025-12-02, Size: 3252 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-005-Conocé-todos-nuestros-planes-y.md
+    Modified: 2025-12-04, Size: 684 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-005-Contenidos-para-planes-Pospago.md
+    Modified: 2025-12-02, Size: 2922 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-012-Planes-de-Internet-WiFi-por-Fi.md
+    Modified: 2025-12-04, Size: 660 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-019-Conocé-todos-nuestros-planes-y.md
+    Modified: 2025-12-02, Size: 1543 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-021-Conocé-todos-nuestros-planes-y.md
+    Modified: 2025-12-04, Size: 621 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-021-Planes-postpago-Claro.md
+    Modified: 2025-12-04, Size: 670 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-032-Planes-postpago-Claro.md
+    Modified: 2025-12-04, Size: 670 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-038-Más-de-55-plantillas-personali.md
+    Modified: 2025-12-04, Size: 651 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-039-Más-de-55-plantillas-personali.md
+    Modified: 2025-12-04, Size: 651 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-050-Conocé-todos-nuestros-planes-y.md
+    Modified: 2025-12-04, Size: 687 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-056-Argentina’s-Nubicom-plans-5G-r.md
+    Modified: 2025-12-04, Size: 730 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-067-Planes-de-Internet-WiFi-por-Fi.md
+    Modified: 2025-12-04, Size: 671 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-068-Planes-Prepago-para-tu-Celular.md
+    Modified: 2025-12-02, Size: 2681 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-076-Conocé-todos-nuestros-planes-y.md
+    Modified: 2025-12-04, Size: 647 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-077-Portabilidad-Planes-Claro-con-.md
+    Modified: 2025-12-04, Size: 635 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-077-Sucursales-Claro-en-todo-el-pa.md
+    Modified: 2025-12-04, Size: 627 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-084-Claro-Hogar-Planes-Hogar.md
+    Modified: 2025-12-04, Size: 603 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-085-How-to-get-Dataplan-of-claro-f.md
+    Modified: 2025-12-04, Size: 630 bytes
+  - .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-088-Planes-para-empresas-Traé-tus-.md
+    Modified: 2025-12-04, Size: 647 bytes
+  - .archive\reference\Company-researcher\outputs\COPACO\05-Marketing-Execution\02-Content-Plan.md
+    Modified: 2025-12-02, Size: 238 bytes
+  - .archive\reference\Company-researcher\outputs\COPACO\99-Sources\raw\Source-024-Copaco-plans-to-start-billing-.md
+    Modified: 2025-12-02, Size: 1225 bytes
+  - .archive\reference\Company-researcher\outputs\COPACO\99-Sources\raw\Source-032-Más-de-55-plantillas-personali.md
+    Modified: 2025-12-04, Size: 651 bytes
+  - .archive\reference\Company-researcher\outputs\COPACO\99-Sources\raw\Source-040-Más-de-55-plantillas-personali.md
+    Modified: 2025-12-04, Size: 651 bytes
+  - .archive\reference\Company-researcher\outputs\COPACO\99-Sources\raw\Source-053-Diario-HOY-Plantean-ley-para-s.md
+    Modified: 2025-12-02, Size: 5906 bytes
+  - .archive\reference\Company-researcher\outputs\COPACO\99-Sources\raw\Source-079-Diario-HOY-Plantean-ley-para-s.md
+    Modified: 2025-12-04, Size: 657 bytes
+  - .archive\reference\Company-researcher\outputs\COPACO\99-Sources\raw\Source-100-Planes-Pospago-para-tu-Celular.md
+    Modified: 2025-12-04, Size: 632 bytes
+  - .archive\reference\Company-researcher\outputs\Personal_Paraguay\05-Marketing-Execution\02-Content-Plan.md
+    Modified: 2025-12-02, Size: 249 bytes
+  - .archive\reference\Company-researcher\outputs\Personal_Paraguay\99-Sources\raw\Source-012-Planes-Pospago-Personal-Paragu.md
+    Modified: 2025-12-04, Size: 645 bytes
+  - .archive\reference\Company-researcher\outputs\Personal_Paraguay\99-Sources\raw\Source-021-Conocé-todos-nuestros-planes-y.md
+    Modified: 2025-12-02, Size: 1504 bytes
+  - .archive\reference\Company-researcher\outputs\Personal_Paraguay\99-Sources\raw\Source-062-Planes-Pospago-Personal-Paragu.md
+    Modified: 2025-12-04, Size: 618 bytes
+  - .archive\reference\Company-researcher\outputs\Personal_Paraguay\99-Sources\raw\Source-064-Planes-Pospago-Personal-Paragu.md
+    Modified: 2025-12-04, Size: 638 bytes
+  - .archive\reference\Company-researcher\outputs\Personal_Paraguay\99-Sources\raw\Source-103-Planes-Pospago.md
+    Modified: 2025-12-04, Size: 596 bytes
+  - .archive\reference\Company-researcher\outputs\Telecom_Argentina\05-Marketing-Execution\02-Content-Plan.md
+    Modified: 2025-12-02, Size: 249 bytes
+  - .archive\reference\Company-researcher\outputs\Telecom_Argentina\99-Sources\raw\Source-063-Facturas-IPLAN-Argentina-Consu.md
+    Modified: 2025-12-02, Size: 6171 bytes
+  - .archive\reference\Company-researcher\outputs\Telecom_Argentina\99-Sources\raw\Source-097-Ofertas-en-Internet-+-Plan-Mov.md
+    Modified: 2025-12-04, Size: 632 bytes
+  - .archive\reference\Company-researcher\outputs\Telecom_Argentina\99-Sources\raw\Source-102-Ofertas-en-Internet-+-Plan-Mov.md
+    Modified: 2025-12-04, Size: 632 bytes
+  - .archive\reference\Company-researcher\outputs\Tigo_Paraguay\99-Sources\raw\Source-028-Más-de-55-plantillas-personali.md
+    Modified: 2025-12-04, Size: 651 bytes
+  - .archive\reference\Company-researcher\outputs\Tigo_Paraguay\99-Sources\raw\Source-038-Más-de-55-plantillas-personali.md
+    Modified: 2025-12-04, Size: 651 bytes
+  - .archive\reference\Company-researcher\outputs\Tigo_Paraguay\99-Sources\raw\Source-094-Promo-Plan-Móvil-Pospago-de-20.md
+    Modified: 2025-12-04, Size: 634 bytes
+  - .archive\reference\Company-researcher\outputs\Vox_Paraguay\99-Sources\raw\Source-043-How-to-get-Dataplan-of-vox-fro.md
+    Modified: 2025-12-04, Size: 626 bytes
+  - .archive\reference\Company-researcher\outputs\Vox_Paraguay\99-Sources\raw\Source-044-Más-de-55-plantillas-personali.md
+    Modified: 2025-12-04, Size: 651 bytes
+  - .archive\reference\Company-researcher\outputs\Vox_Paraguay\99-Sources\raw\Source-044-Planes-de-Telefonia.md
+    Modified: 2025-12-04, Size: 595 bytes
+  - .archive\reference\Company-researcher\outputs\Vox_Paraguay\99-Sources\raw\Source-055-Planes-de-Internet.md
+    Modified: 2025-12-04, Size: 593 bytes
+  - .archive\reference\Company-researcher\outputs\Vox_Paraguay\99-Sources\raw\Source-056-How-to-get-Dataplan-of-vox-fro.md
+    Modified: 2025-12-04, Size: 626 bytes
+  - .archive\reference\Company-researcher\outputs\Vox_Paraguay\99-Sources\raw\Source-082-Planes-Corporativos.md
+    Modified: 2025-12-04, Size: 597 bytes
+  - .archive\reference\Company-researcher\outputs\Vox_Paraguay\99-Sources\raw\Source-083-Planes-de-Telefonia.md
+    Modified: 2025-12-04, Size: 595 bytes
+  - .archive\reference\Company-researcher\outputs\Vox_Paraguay\99-Sources\raw\Source-084-Planes-de-Internet.md
+    Modified: 2025-12-04, Size: 593 bytes
+  - .archive\reference\Company-researcher\outputs\Vox_Paraguay\99-Sources\raw\Source-085-How-to-get-Dataplan-of-vox-fro.md
+    Modified: 2025-12-04, Size: 626 bytes
+  - .archive\reference\Company-researcher\src\prompts\templates\marketing_execution\content_plan.md
+    Modified: 2025-12-05, Size: 571 bytes
+  - .archive\reference\project-management\TODO.md
+    Modified: 2025-12-05, Size: 3823 bytes
+  - .claude\commands\anthropic\convert-to-todowrite-template.md
+    Modified: 2025-11-16, Size: 25503 bytes
+  - .claude\commands\sync-todos-to-github.md
+    Modified: 2025-11-16, Size: 8391 bytes
+  - .claude\commands\workflow\testing-plan-integration-awesome.md
+    Modified: 2025-11-16, Size: 444 bytes
+  - .claude\commands\workflow\todo-awesome.md
+    Modified: 2025-11-16, Size: 3015 bytes
+  - .claude\skills\code-quality\executing-plans-superpowers.md
+    Modified: 2025-11-16, Size: 2352 bytes
+  - .claude\skills\code-quality\writing-plans-superpowers.md
+    Modified: 2025-11-16, Size: 3569 bytes
+  - .claude\skills\lifestyle\travel-planner-ailabs.md
+    Modified: 2025-11-16, Size: 15590 bytes
+  - docs\internal\IMPROVEMENT_PLAN.md
+    Modified: 2025-11-16, Size: 38273 bytes
+  - docs\internal\MASTER_REPO_PLAN.md
+    Modified: 2025-11-16, Size: 15545 bytes
+  - docs\internal\roadmap.md
+    Modified: 2025-12-05, Size: 14157 bytes
+  - docs\planning\DOCUMENTATION_COMPREHENSIVE_PLAN.md
+    Modified: 2025-12-05, Size: 43844 bytes
+  - docs\planning\DOCUMENTATION_PHASES_PLAN.md
+    Modified: 2025-12-05, Size: 16611 bytes
+  - docs\planning\MASTER_20_PHASE_PLAN.md
+    Modified: 2025-12-05, Size: 61466 bytes
+  - docs\planning\MASTER_PLAN_EXECUTIVE_SUMMARY.md
+    Modified: 2025-12-05, Size: 11760 bytes
+  - docs\planning\MASTER_ROADMAP.md
+    Modified: 2025-12-05, Size: 19464 bytes
+  - docs\planning\PLANNING_INTEGRATION_MAP.md
+    Modified: 2025-12-05, Size: 14741 bytes
+
+================================================================================
+IMPLEMENTATION SUMMARIES (Archive after completion)
+================================================================================
+Found 76 implementation documents
+
+- .archive\planning\IMPLEMENTATION_PLAN.md
+  Modified: 2025-12-05 15:59
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\.claude\custom-resources\skills\development\auth-implementation-patterns-wshobson.md
+  Modified: 2025-11-16 19:54
+
+- .archive\reference\Company-researcher\.claude\custom-resources\skills\infrastructure\slo-implementation-wshobson.md
+  Modified: 2025-11-16 19:54
+
+- .archive\reference\Company-researcher\.claude\custom-resources\skills\llm-development\rag-implementation-wshobson.md
+  Modified: 2025-11-16 19:54
+
+- .archive\reference\Company-researcher\.claude\skills\development\auth-implementation-patterns-wshobson.md
+  Modified: 2025-11-16 19:54
+
+- .archive\reference\Company-researcher\.claude\skills\infrastructure\slo-implementation-wshobson.md
+  Modified: 2025-11-16 19:54
+
+- .archive\reference\Company-researcher\.claude\skills\llm-development\rag-implementation-wshobson.md
+  Modified: 2025-11-16 19:54
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\backlog-archives\ISSUE-SUMMARY-2024-11-28.md
+  Modified: 2025-12-01 21:47
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\bugs\BUG-041-analysis-returns-all-na.md
+  Modified: 2025-11-28 17:08
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\archive\docs\planning\completed\features\FEAT-004-strategy-implementations.md
+  Modified: 2025-12-01 21:47
+
+- .archive\reference\Company-researcher\archive\docs\planning\ideas\complete Implementation plan\00_Executive_Summary.md
+  Modified: 2025-11-26 18:24
+
+- .archive\reference\Company-researcher\archive\docs\planning\ideas\complete Implementation plan\05_Implementation_Roadmap.md
+  Modified: 2025-11-26 18:56
+
+- .archive\reference\Company-researcher\archive\docs\planning\ideas\complete Implementation plan\06_Technical_Implementation_Details.md
+  Modified: 2025-11-26 18:31
+
+- .archive\reference\Company-researcher\archive\docs\planning\ideas\Research Idea\Investment_Analysis_Strategy.md
+  Modified: 2025-11-26 17:30
+  ! References deprecated/obsolete content
+
+- .archive\reference\Company-researcher\archive\docs\reference\Company_repos\analysis-engine.md
+  Modified: 2025-11-27 17:41
+
+- .archive\reference\Company-researcher\data\research_targets\paraguay_telecom\_gap_analysis.md
+  Modified: 2025-12-03 20:08
+
+- .archive\reference\Company-researcher\docs\architecture\patterns\ARCHITECTURE_ANALYSIS.md
+  Modified: 2025-11-26 17:30
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\docs\guides\CLEANUP_SUMMARY.md
+  Modified: 2025-12-05 12:24
+  ! Contains TODO/FIXME
+  ! References deprecated/obsolete content
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\docs\guides\REORGANIZATION_SUMMARY.md
+  Modified: 2025-12-05 13:49
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\docs\guides\SRC_ORGANIZATION_ANALYSIS.md
+  Modified: 2025-12-05 12:35
+  ! Marked as completed
+
+- .archive\reference\Company-researcher\outputs\Claro_Paraguay\00-Strategic-Context\02-Executive-Summary.md
+  Modified: 2025-12-02 20:06
+
+- .archive\reference\Company-researcher\outputs\Claro_Paraguay\03-Competitive-Landscape\03-Pricing-Analysis.md
+  Modified: 2025-12-02 20:06
+
+- .archive\reference\Company-researcher\outputs\Claro_Paraguay\03-Competitive-Landscape\05-SWOT-Analysis.md
+  Modified: 2025-12-02 20:06
+
+- .archive\reference\Company-researcher\outputs\Claro_Paraguay\08-Sales-Intelligence\01-Pain-Point-Analysis.md
+  Modified: 2025-12-02 20:06
+
+- .archive\reference\Company-researcher\outputs\Claro_Paraguay\11-News-Intelligence\02-Sentiment-Analysis.md
+  Modified: 2025-12-03 18:41
+
+- .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\raw\Source-052-Onity-SWOT-Analysis-&-Strategi.md
+  Modified: 2025-12-04 15:01
+
+- .archive\reference\Company-researcher\outputs\COPACO\00-Strategic-Context\02-Executive-Summary.md
+  Modified: 2025-12-02 20:28
+
+- .archive\reference\Company-researcher\outputs\COPACO\03-Competitive-Landscape\03-Pricing-Analysis.md
+  Modified: 2025-12-02 20:28
+
+- .archive\reference\Company-researcher\outputs\COPACO\03-Competitive-Landscape\05-SWOT-Analysis.md
+  Modified: 2025-12-02 20:28
+
+- .archive\reference\Company-researcher\outputs\COPACO\08-Sales-Intelligence\01-Pain-Point-Analysis.md
+  Modified: 2025-12-02 20:28
+
+- .archive\reference\Company-researcher\outputs\COPACO\11-News-Intelligence\02-Sentiment-Analysis.md
+  Modified: 2025-12-03 19:50
+
+- .archive\reference\Company-researcher\outputs\COPACO\99-Sources\raw\Source-046-Marketing-Mix-Analysis-of-Copa.md
+  Modified: 2025-12-04 03:24
+
+- .archive\reference\Company-researcher\outputs\COPACO\99-Sources\raw\Source-054-Marketing-Mix-Analysis-of-Copa.md
+  Modified: 2025-12-04 03:09
+
+- .archive\reference\Company-researcher\outputs\Paraguay Telecommunications\00-Market-Overview\01-Executive-Summary.md
+  Modified: 2025-12-03 20:17
+
+- .archive\reference\Company-researcher\outputs\Personal_Paraguay\00-Strategic-Context\02-Executive-Summary.md
+  Modified: 2025-12-02 20:44
+
+- .archive\reference\Company-researcher\outputs\Personal_Paraguay\03-Competitive-Landscape\03-Pricing-Analysis.md
+  Modified: 2025-12-02 20:44
+
+- .archive\reference\Company-researcher\outputs\Personal_Paraguay\03-Competitive-Landscape\05-SWOT-Analysis.md
+  Modified: 2025-12-02 20:44
+
+- .archive\reference\Company-researcher\outputs\Personal_Paraguay\08-Sales-Intelligence\01-Pain-Point-Analysis.md
+  Modified: 2025-12-02 20:44
+
+- .archive\reference\Company-researcher\outputs\Personal_Paraguay\11-News-Intelligence\02-Sentiment-Analysis.md
+  Modified: 2025-12-03 18:52
+
+- .archive\reference\Company-researcher\outputs\Personal_Paraguay\99-Sources\raw\Source-030-Company-Analysis-Definition,-I.md
+  Modified: 2025-12-04 03:31
+
+- .archive\reference\Company-researcher\outputs\Personal_Paraguay\99-Sources\raw\Source-069-Marketing-Mix-Analysis-of-YGYI.md
+  Modified: 2025-12-04 03:12
+
+- .archive\reference\Company-researcher\outputs\Telecom_Argentina\00-Strategic-Context\02-Executive-Summary.md
+  Modified: 2025-12-02 20:55
+
+- .archive\reference\Company-researcher\outputs\Telecom_Argentina\03-Competitive-Landscape\03-Pricing-Analysis.md
+  Modified: 2025-12-02 20:55
+
+- .archive\reference\Company-researcher\outputs\Telecom_Argentina\08-Sales-Intelligence\01-Pain-Point-Analysis.md
+  Modified: 2025-12-02 20:55
+
+- .archive\reference\Company-researcher\outputs\Telecom_Argentina\11-News-Intelligence\02-Sentiment-Analysis.md
+  Modified: 2025-12-03 18:56
+
+- .archive\reference\Company-researcher\outputs\Telecom_Argentina\99-Sources\raw\Source-060-Quantexa-BCG-Matrix-Analysis-–.md
+  Modified: 2025-12-04 16:59
+
+- .archive\reference\Company-researcher\outputs\Telecom_Argentina\99-Sources\raw\Source-075-Customer-Feedback-Analysis-Ste.md
+  Modified: 2025-12-04 03:15
+
+- .archive\reference\Company-researcher\outputs\Telecom_Argentina\99-Sources\raw\Source-076-How-can-sentiment-analysis-be-.md
+  Modified: 2025-12-04 03:15
+
+- .archive\reference\Company-researcher\outputs\Telecom_Argentina\99-Sources\raw\Source-082-Value-Chain-Analysis-Of-Teleco.md
+  Modified: 2025-12-04 16:59
+
+- .archive\reference\Company-researcher\outputs\Telecom_Argentina\99-Sources\raw\Source-099-Marketing-Mix-Analysis-of-Tele.md
+  Modified: 2025-12-02 20:55
+
+- .archive\reference\Company-researcher\outputs\Tigo_Paraguay\11-News-Intelligence\02-Sentiment-Analysis.md
+  Modified: 2025-12-03 19:00
+
+- .archive\reference\Company-researcher\outputs\Tigo_Paraguay\99-Sources\raw\Source-002-US-Telecom-Industry-Analysis-G.md
+  Modified: 2025-12-04 03:10
+
+- .archive\reference\Company-researcher\outputs\Tigo_Paraguay\99-Sources\raw\Source-029-Keurig-Dr-Pepper-SWOT-Analysis.md
+  Modified: 2025-12-04 17:10
+
+- .archive\reference\Company-researcher\outputs\Vox_Paraguay\11-News-Intelligence\02-Sentiment-Analysis.md
+  Modified: 2025-12-03 19:04
+
+- .archive\reference\Company-researcher\src\prompts\templates\competitive_landscape\pricing_analysis.md
+  Modified: 2025-12-05 13:50
+
+- .archive\reference\Company-researcher\src\prompts\templates\competitive_landscape\swot_analysis.md
+  Modified: 2025-12-05 13:50
+
+- .archive\reference\Company-researcher\src\prompts\templates\investment_analysis\social_media_analysis.md
+  Modified: 2025-12-05 13:50
+
+- .archive\reference\Company-researcher\src\prompts\templates\sales_intelligence\pain_point_analysis.md
+  Modified: 2025-12-05 13:50
+
+- .archive\reference\Company-researcher\src\prompts\templates\strategic_context\executive_summary.md
+  Modified: 2025-12-05 13:50
+
+- .claude\skills\development\auth-implementation-patterns-wshobson.md
+  Modified: 2025-11-16 19:54
+
+- .claude\skills\infrastructure\slo-implementation-wshobson.md
+  Modified: 2025-11-16 19:54
+
+- .claude\skills\llm-development\rag-implementation-wshobson.md
+  Modified: 2025-11-16 19:54
+
+- docs\company-researcher\IMPLEMENTATION.md
+  Modified: 2025-12-05 20:20
+
+- docs\DOCUMENTATION_ANALYSIS_AND_NEXT_STEPS.md
+  Modified: 2025-12-05 18:17
+  ! Marked as completed
+
+- docs\internal\REORGANIZATION_SUMMARY.md
+  Modified: 2025-12-05 16:39
+  ! Contains TODO/FIXME
+  ! Marked as completed
+
+- docs\PHASE_10_IMPLEMENTATION_SUMMARY.md
+  Modified: 2025-12-06 19:59
+  ! Contains TODO/FIXME
+  ! Marked as completed
+
+- docs\planning\EXTERNAL_IDEAS_DOCUMENTATION_ANALYSIS.md
+  Modified: 2025-12-05 18:30
+  ! Marked as completed
+
+- docs\planning\MASTER_PLAN_EXECUTIVE_SUMMARY.md
+  Modified: 2025-12-05 18:40
+  ! Marked as completed
+
+- docs\planning\NEW_IDEAS_SUMMARY.md
+  Modified: 2025-12-05 17:38
+  ! Marked as completed
+
+- outputs\logs\PHASE0_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 19:48
+  ! Marked as completed
+
+- outputs\logs\PHASE1_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 19:48
+  ! Marked as completed
+
+- outputs\logs\PHASE2_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 17:21
+  ! Marked as completed
+
+- outputs\logs\PHASE3_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 17:37
+  ! Marked as completed
+
+- outputs\logs\PHASE4_VALIDATION_SUMMARY.md
+  Modified: 2025-12-05 18:13
+  ! Marked as completed
+
+- outputs\logs\PHASES_1-9_PROGRESS_SUMMARY.md
+  Modified: 2025-12-05 22:50
+  ! Marked as completed
+
+- research_targets\paraguay_telecom\_gap_analysis.md
+  Modified: 2025-12-03 20:08
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+MOVE TO .archive/:
+
+1. Duplicate Documentation:
+   - Keep the most recent/complete version in root or docs/
+   - Move older duplicates to .archive/documentation/
+
+2. Completed Phase Documents:
+   - Move PHASE_*_STATUS.md and PHASE_*_SUMMARY.md to .archive/phases/
+   - Keep current phase docs in root
+
+3. Completed Status Documents:
+   - Move VALIDATION_REPORT.md, VALIDATION_CHECKLIST.md to .archive/validation/
+   - Keep only active status tracking in root
+
+4. Old Planning Documents:
+   - Move completed planning docs to .archive/planning/
+   - Keep active roadmap/planning in docs/planning/
+
+5. Implementation Summaries:
+   - Move to .archive/implementation/
+   - These are historical records, not active documentation
+
+================================================================================
+SUGGESTED ARCHIVE STRUCTURE
+================================================================================
+
+.archive/
+  documentation/     # Duplicate/old doc files
+  phases/           # Completed phase documents
+  validation/       # Validation reports and checklists
+  planning/         # Old planning documents
+  implementation/   # Implementation summaries
+  reference/        # Reference code (existing)
+
+================================================================================
+KEEP IN ACTIVE DOCUMENTATION
+================================================================================
+
+Root level:
+  - README.md (main project overview)
+  - INSTALLATION.md
+  - QUICK_START.md
+  - CONTRIBUTING.md (if exists)
+
+docs/:
+  - Current architecture documentation
+  - Active user guides
+  - API documentation
+
+docs/planning/:
+  - Active roadmap
+  - Current sprint plans

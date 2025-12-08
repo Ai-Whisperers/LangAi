@@ -1,0 +1,138 @@
+================================================================================
+QUICK CLEANUP SCAN REPORT
+================================================================================
+Scanned: src/, scripts/, tests/, docs/, .archive/
+
+SUMMARY
+================================================================================
+__pycache__ directories: 92
+Temporary files: 3
+Backup files: 1
+Empty directories: 10
+Large files (>1MB): 25
+Root level items: 3
+Total cleanup candidates: 106
+
+================================================================================
+__PYCACHE__ DIRECTORIES (Safe to delete)
+================================================================================
+Found 92 __pycache__ directories
+
+  - .archive\reference\Company-researcher\__pycache__/
+  - .archive\reference\Company-researcher\archive\code\deprecated\src_graph\graph\__pycache__/
+  - .archive\reference\Company-researcher\archive\code\deprecated\src_graph\graph\components\__pycache__/
+  - .archive\reference\Company-researcher\src\__pycache__/
+  - .archive\reference\Company-researcher\src\agents\__pycache__/
+  - .archive\reference\Company-researcher\src\application\__pycache__/
+  - .archive\reference\Company-researcher\src\application\quality\__pycache__/
+  - .archive\reference\Company-researcher\src\application\quality\evaluation\__pycache__/
+  - .archive\reference\Company-researcher\src\cli\__pycache__/
+  - .archive\reference\Company-researcher\src\cli\commands\__pycache__/
+  - .archive\reference\Company-researcher\src\cli\handlers\__pycache__/
+  - .archive\reference\Company-researcher\src\cli\output\__pycache__/
+  - .archive\reference\Company-researcher\src\core\__pycache__/
+  - .archive\reference\Company-researcher\src\core\config\__pycache__/
+  - .archive\reference\Company-researcher\src\core\di\__pycache__/
+  - .archive\reference\Company-researcher\src\core\exceptions\__pycache__/
+  - .archive\reference\Company-researcher\src\core\logging\__pycache__/
+  - .archive\reference\Company-researcher\src\core\types\__pycache__/
+  - .archive\reference\Company-researcher\src\core\validation\__pycache__/
+  - .archive\reference\Company-researcher\src\domain\models\__pycache__/
+  ... and 72 more
+
+================================================================================
+TEMPORARY FILES (Safe to delete)
+================================================================================
+Found 3 temporary files
+
+  - .archive\reference\Company-researcher\debug.log
+  - .archive\reference\Company-researcher\logs\research_output.log
+  - .archive\reference\Company-researcher\research.log
+
+================================================================================
+BACKUP FILES
+================================================================================
+Found 1 backup files
+
+  - .archive\reference\Company-researcher\backups\.env.env.backup
+
+================================================================================
+EMPTY DIRECTORIES
+================================================================================
+Found 10 empty directories
+
+  - .archive\improvements/
+  - .archive\reference\Company-researcher\.claude\custom-resources\templates/
+  - .archive\reference\Company-researcher\.specstory\history/
+  - .archive\reference\Company-researcher\archive\code\deprecated\legacy_methods/
+  - .archive\reference\Company-researcher\archive\code\deprecated\src_graph\graph\nodes/
+  - .archive\reference\Company-researcher\archive\docs\planning\completed\resolved\improvements/
+  - .archive\reference\Company-researcher\outputs\COPACO\10-SEC-Filings/
+  - .archive\reference\Company-researcher\src\dashboard/
+  - .archive\reference\Company-researcher\tests\golden\data/
+  - tests\unit\agents/
+
+================================================================================
+LARGE FILES (>1MB)
+================================================================================
+Found 25 large files
+
+      20.7MB  .archive\reference\Company-researcher\research.log
+       3.9MB  .archive\reference\Company-researcher\outputs\Vox_Paraguay\99-Sources\html\financialreports_eu_3782439_9ed9e938.html
+       3.6MB  .archive\reference\Company-researcher\outputs\Tigo_Paraguay\99-Sources\html\en_wikipedia_org_Wikipedia_Featured_article_candidates_a0e56fd8.html
+       1.7MB  .archive\reference\Company-researcher\outputs\COPACO\99-Sources\html\capedge_com_AMX-20F-2024FY_df48a92d.html
+       1.6MB  .archive\reference\Company-researcher\outputs\Telecom_Argentina\99-Sources\html\farmonaut_com_transforming-argentinas-telecom-landscape-digital-_f7a0feb4.html
+       1.6MB  .archive\reference\Company-researcher\outputs\Personal_Paraguay\99-Sources\html\vi_wikipedia_org_Danh_sách_mạng_LTE_ad827a71.html
+       1.6MB  .archive\reference\Company-researcher\outputs\Telecom_Argentina\99-Sources\html\archyde_com_telecom-argentina-5g-data-centers_07a4afc7.html
+       1.6MB  .archive\reference\Company-researcher\outputs\Tigo_Paraguay\99-Sources\html\capedge_com_TIGO-20F-2024FY_2d093bc9.html
+       1.5MB  .archive\reference\Company-researcher\outputs\Telecom_Argentina\99-Sources\html\archyde_com_amp_2deadc5b.html
+       1.4MB  .archive\reference\Company-researcher\outputs\Telecom_Argentina\99-Sources\html\timesng_com_telecom-argentina-expands_bd372a7d.html
+       1.4MB  .archive\reference\Company-researcher\outputs\Tigo_Paraguay\99-Sources\html\leviathanencyclopedia_com_Administrative_divisions_of_El_Salvador_17168b9b.html
+       1.3MB  .archive\reference\Company-researcher\outputs\Claro_Paraguay\99-Sources\html\en_wikipedia_org_List_of_LTE_networks_d7690a31.html
+       1.3MB  .archive\reference\Company-researcher\outputs\Personal_Paraguay\99-Sources\html\en_wikipedia_org_Tesla,_Inc._09322481.html
+       1.2MB  .archive\reference\Company-researcher\outputs\Tesla\99-Sources\html\en_wikipedia_org_Tesla,_Inc._09322481.html
+       1.2MB  .archive\reference\Company-researcher\outputs\COPACO\99-Sources\html\elibrary_imf_org_article-A001-en.xml_903c78d6.html
+  ... and 10 more
+
+================================================================================
+ROOT LEVEL ITEMS
+================================================================================
+Found 3 items
+
+  - .archive/ (52314 files)
+  - import_validation_output.txt (5.4KB)
+  - import_validation_report.txt (4.8KB)
+
+================================================================================
+CLEANUP COMMANDS
+================================================================================
+
+[HIGH] Clean Python cache and temp files:
+  find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null
+  find . -type f -name "*.pyc" -delete
+  find . -type f -name "*.pyo" -delete
+
+[MEDIUM] Remove backup files:
+  # Review each file first, then delete if not needed
+  rm ".archive\reference\Company-researcher\backups\.env.env.backup"
+
+[LOW] Remove empty directories:
+  find . -type d -empty -delete
+
+================================================================================
+ADDITIONAL RECOMMENDATIONS
+================================================================================
+
+1. Consider moving 'External repos/' to a separate location
+   - These are git submodules or reference repositories
+   - Keep them outside the main project directory
+
+2. Complete staged deletions:
+   git commit -m "chore: Remove obsolete files"
+
+3. Add to .gitignore:
+   __pycache__/
+   *.pyc
+   *.pyo
+   *.log
+   *_report.txt

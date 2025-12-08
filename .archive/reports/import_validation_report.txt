@@ -1,0 +1,195 @@
+================================================================================
+IMPORT VALIDATION REPORT
+================================================================================
+
+Total Files Analyzed: 97
+  ✓ Successful: 96
+  ✗ Errors: 1
+Total Imports: 603
+Total Issues Found: 1
+
+================================================================================
+FILES WITH ISSUES
+================================================================================
+
+[FILE] src\company_researcher\api\middleware.py
+   Full path: C:\Users\Alejandro\Documents\Ivan\Work\Lang ai\src\company_researcher\api\middleware.py
+   [ERROR] Syntax error: invalid syntax (middleware.py, line 363)
+
+================================================================================
+IMPORT STATISTICS
+================================================================================
+
+Import Types:
+  - from_import: 485
+  - import: 118
+
+Relative Import Levels:
+  - . (1 level): 111
+  - .. (2 level): 66
+  - ... (3 level): 9
+
+================================================================================
+MOST COMMON IMPORTS (Top 15)
+================================================================================
+
+   74  typing
+   53  datetime
+   40  enum
+   38  dataclasses
+   26  state
+   22  anthropic
+   22  config
+   20  logging
+   16  os
+   11  re
+   11  time
+   10  json
+    9  collections
+    8  agents
+    8  threading
+
+================================================================================
+FILES BY DIRECTORY
+================================================================================
+
+[DIR] src/ (1 files)
+   - __init__.py
+
+[DIR] src\company_researcher/ (5 files)
+   - __init__.py
+   - config.py
+   - observability.py
+   - prompts.py
+   - state.py
+
+[DIR] src\company_researcher\agents/ (1 files)
+   - __init__.py
+
+[DIR] src\company_researcher\agents\core/ (5 files)
+   - __init__.py
+   - analyst.py
+   - base.py
+   - researcher.py
+   - synthesizer.py
+
+[DIR] src\company_researcher\agents\financial/ (4 files)
+   - __init__.py
+   - enhanced_financial.py
+   - financial.py
+   - investment_analyst.py
+
+[DIR] src\company_researcher\agents\market/ (5 files)
+   - __init__.py
+   - comparative_analyst.py
+   - competitor_scout.py
+   - enhanced_market.py
+   - market.py
+
+[DIR] src\company_researcher\agents\quality/ (2 files)
+   - __init__.py
+   - logic_critic.py
+
+[DIR] src\company_researcher\agents\research/ (4 files)
+   - __init__.py
+   - deep_research.py
+   - reasoning.py
+   - trend_analyst.py
+
+[DIR] src\company_researcher\agents\specialized/ (5 files)
+   - __init__.py
+   - brand_auditor.py
+   - product.py
+   - sales_intelligence.py
+   - social_media.py
+
+[DIR] src\company_researcher\api/ (6 files)
+   - __init__.py
+   - app.py
+   - middleware.py
+   - models.py
+   - routes.py
+   - websocket.py
+
+[DIR] src\company_researcher\context/ (5 files)
+   - __init__.py
+   - compress_strategy.py
+   - isolate_strategy.py
+   - select_strategy.py
+   - write_strategy.py
+
+[DIR] src\company_researcher\graphs/ (3 files)
+   - __init__.py
+   - research_graph.py
+   - simple_graph.py
+
+[DIR] src\company_researcher\langflow/ (4 files)
+   - __init__.py
+   - components.py
+   - flows.py
+   - server.py
+
+[DIR] src\company_researcher\llm/ (4 files)
+   - __init__.py
+   - langchain_client.py
+   - langsmith_setup.py
+   - model_router.py
+
+[DIR] src\company_researcher\memory/ (4 files)
+   - __init__.py
+   - dual_layer.py
+   - lru_cache.py
+   - vector_store.py
+
+[DIR] src\company_researcher\monitoring/ (6 files)
+   - __init__.py
+   - alerts.py
+   - analytics.py
+   - cost_tracker.py
+   - metrics.py
+   - performance.py
+
+[DIR] src\company_researcher\orchestration/ (5 files)
+   - __init__.py
+   - research_workflow.py
+   - scheduler.py
+   - swarm_collaboration.py
+   - workflow_engine.py
+
+[DIR] src\company_researcher\output/ (4 files)
+   - __init__.py
+   - excel_exporter.py
+   - pdf_generator.py
+   - presentation_generator.py
+
+[DIR] src\company_researcher\production/ (6 files)
+   - __init__.py
+   - circuit_breaker.py
+   - config.py
+   - health.py
+   - retry.py
+   - shutdown.py
+
+[DIR] src\company_researcher\quality/ (9 files)
+   - __init__.py
+   - contradiction_detector.py
+   - cross_source_validator.py
+   - fact_extractor.py
+   - models.py
+   - quality_checker.py
+   - source_assessor.py
+   - source_attribution.py
+   - source_tracker.py
+
+[DIR] src\company_researcher\tools/ (5 files)
+   - alpha_vantage_client.py
+   - competitor_analysis_utils.py
+   - financial_analysis_utils.py
+   - market_sizing_utils.py
+   - sec_edgar_parser.py
+
+[DIR] src\company_researcher\workflows/ (4 files)
+   - __init__.py
+   - basic_research.py
+   - multi_agent_research.py
+   - parallel_agent_research.py

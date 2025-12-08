@@ -1,0 +1,8 @@
+Documentation Cleanup Log
+========================
+Date: 2025-12-07 17:58:37
+Mode: EXECUTE
+
+Files moved: 33
+Files skipped: 0
+Errors: 0
