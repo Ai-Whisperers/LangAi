@@ -18,8 +18,9 @@ from datetime import datetime
 from enum import Enum
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
+from ..base import get_agent_logger, create_empty_result
 
 
 # ============================================================================
@@ -338,8 +339,8 @@ class ReasoningAgent:
 
         response = self._client.messages.create(
             model=self._config.llm_model,
-            max_tokens=2000,
-            temperature=0.1,  # Slightly creative for reasoning
+            max_tokens=self._config.reasoning_max_tokens,
+            temperature=self._config.reasoning_temperature,
             messages=[{"role": "user", "content": prompt}]
         )
 
@@ -349,7 +350,7 @@ class ReasoningAgent:
         )
 
         return {
-            "analysis": response.content[0].text,
+            "analysis": safe_extract_text(response, agent_name="reasoning"),
             "cost": cost
         }
 
@@ -366,8 +367,8 @@ class ReasoningAgent:
 
         response = self._client.messages.create(
             model=self._config.llm_model,
-            max_tokens=800,
-            temperature=0.0,
+            max_tokens=self._config.reasoning_hypothesis_max_tokens,
+            temperature=self._config.reasoning_hypothesis_temperature,
             messages=[{"role": "user", "content": prompt}]
         )
 
@@ -377,7 +378,7 @@ class ReasoningAgent:
         )
 
         return {
-            "analysis": response.content[0].text,
+            "analysis": safe_extract_text(response, agent_name="reasoning"),
             "cost": cost
         }
 
@@ -396,8 +397,8 @@ class ReasoningAgent:
 
         response = self._client.messages.create(
             model=self._config.llm_model,
-            max_tokens=1000,
-            temperature=0.2,
+            max_tokens=self._config.reasoning_inference_max_tokens,
+            temperature=self._config.reasoning_inference_temperature,
             messages=[{"role": "user", "content": prompt}]
         )
 
@@ -407,7 +408,7 @@ class ReasoningAgent:
         )
 
         return {
-            "analysis": response.content[0].text,
+            "analysis": safe_extract_text(response, agent_name="reasoning"),
             "cost": cost
         }
 
@@ -616,45 +617,37 @@ def reasoning_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with reasoning results
     """
-    print("\n" + "=" * 70)
-    print("[AGENT: Reasoning] Strategic reasoning analysis...")
-    print("=" * 70)
-
+    logger = get_agent_logger("reasoning")
     company_name = state["company_name"]
     agent_outputs = state.get("agent_outputs", {})
 
-    if not agent_outputs:
-        print("[Reasoning] WARNING: No agent outputs available!")
+    with logger.agent_run(company_name):
+        if not agent_outputs:
+            logger.no_data()
+            return create_empty_result("reasoning")
+
+        logger.analyzing(len(agent_outputs))
+
+        # Run reasoning agent
+        agent = ReasoningAgent()
+        result = agent.reason(
+            company_name=company_name,
+            research_data=agent_outputs
+        )
+
+        logger.info(f"Generated {len(result.hypotheses)} hypotheses")
+        logger.info(f"Generated {len(result.insights)} insights")
+        logger.info(f"Confidence: {result.confidence_score:.0%}")
+        logger.complete()
+
         return {
             "agent_outputs": {
                 "reasoning": {
-                    "analysis": "No data available for reasoning",
-                    "insights": [],
-                    "cost": 0.0
+                    **result.to_dict(),
+                    "analysis": _format_result_text(result)
                 }
             }
         }
-
-    # Run reasoning agent
-    agent = ReasoningAgent()
-    result = agent.reason(
-        company_name=company_name,
-        research_data=agent_outputs
-    )
-
-    print(f"[Reasoning] Generated {len(result.hypotheses)} hypotheses")
-    print(f"[Reasoning] Generated {len(result.insights)} insights")
-    print(f"[Reasoning] Confidence: {result.confidence_score:.0%}")
-    print("=" * 70)
-
-    return {
-        "agent_outputs": {
-            "reasoning": {
-                **result.to_dict(),
-                "analysis": self._format_result_text(result)
-            }
-        }
-    }
 
 
 def _format_result_text(result: ReasoningResult) -> str:

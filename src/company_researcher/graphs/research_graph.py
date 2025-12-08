@@ -15,7 +15,7 @@ from typing import TypedDict, Annotated, List, Dict, Any
 from langgraph.graph import StateGraph, START, END
 import operator
 
-from ..llm.client_factory import get_anthropic_client, get_tavily_client, calculate_cost
+from ..llm.client_factory import get_anthropic_client, get_tavily_client, calculate_cost, safe_extract_text
 from ..config import get_config
 
 logger = logging.getLogger(__name__)
@@ -78,7 +78,7 @@ Return ONLY a JSON array of strings:
         )
 
         # Parse queries using safe JSON parsing (not ast.literal_eval)
-        queries_text = response.content[0].text.strip()
+        queries_text = safe_extract_text(response, agent_name="generate_queries").strip()
 
         # Extract JSON array from response
         json_match = re.search(r'\[.*\]', queries_text, re.DOTALL)
@@ -215,7 +215,7 @@ Return ONLY valid JSON."""
         )
 
         # Parse JSON safely
-        response_text = response.content[0].text.strip()
+        response_text = safe_extract_text(response, agent_name="extract_data").strip()
         json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
 
         if json_match:

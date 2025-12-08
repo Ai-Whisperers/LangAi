@@ -5,11 +5,14 @@ This module evaluates the quality of research and identifies gaps.
 """
 
 import json
+import logging
 from typing import Dict, Any, List
-from anthropic import Anthropic
 
 from ..config import get_config
+from ..llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ..prompts import QUALITY_CHECK_PROMPT, format_sources_for_extraction
+
+logger = logging.getLogger(__name__)
 
 
 def check_research_quality(
@@ -33,7 +36,7 @@ def check_research_quality(
             - recommended_queries: List of search queries to fill gaps
     """
     config = get_config()
-    client = Anthropic(api_key=config.anthropic_api_key)
+    client = get_anthropic_client()
 
     # Format sources
     formatted_sources = format_sources_for_extraction(sources)
@@ -53,8 +56,9 @@ def check_research_quality(
         messages=[{"role": "user", "content": prompt}]
     )
 
-    # Parse response
-    content = response.content[0].text
+    # Parse response safely
+    content = safe_extract_text(response, agent_name="quality_checker")
+    cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
 
     try:
         # Extract JSON from response
@@ -82,30 +86,28 @@ def check_research_quality(
             "missing_information": quality_data.get("missing_information", []),
             "strengths": quality_data.get("strengths", []),
             "recommended_queries": quality_data.get("recommended_queries", []),
-            "cost": config.calculate_llm_cost(
-                response.usage.input_tokens,
-                response.usage.output_tokens
-            ),
+            "cost": cost,
             "tokens": {
                 "input": response.usage.input_tokens,
                 "output": response.usage.output_tokens
             }
         }
 
+        logger.debug(f"Quality check complete - score: {result['quality_score']}")
         return result
 
-    except (json.JSONDecodeError, ValueError) as e:
+    except json.JSONDecodeError as e:
         # Fallback: return low quality score if parsing fails
-        print(f"[WARN] Failed to parse quality response: {e}")
+        logger.warning(
+            f"Failed to parse quality response as JSON: {type(e).__name__}. "
+            "Returning default quality score."
+        )
         return {
             "quality_score": 50.0,  # Default to medium-low quality
-            "missing_information": ["Unable to assess quality"],
+            "missing_information": ["Unable to parse quality assessment response"],
             "strengths": [],
             "recommended_queries": [],
-            "cost": config.calculate_llm_cost(
-                response.usage.input_tokens,
-                response.usage.output_tokens
-            ),
+            "cost": cost,
             "tokens": {
                 "input": response.usage.input_tokens,
                 "output": response.usage.output_tokens

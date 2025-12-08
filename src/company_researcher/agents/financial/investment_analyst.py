@@ -10,54 +10,28 @@ Investment-focused analysis capabilities:
 - Exit opportunity assessment
 
 This agent generates investment-grade analysis for due diligence.
+
+Note: This is a "meta-agent" that synthesizes outputs from other agents,
+so it has a different interface than standard specialist agents.
+It uses ParsingMixin for standardized extraction but doesn't inherit from
+BaseSpecialistAgent due to its different input signature.
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
+from ...types import InvestmentRating, RiskLevel, MoatStrength, GrowthStage  # Centralized enums
+from ..base import get_agent_logger, create_empty_result
+from ..base.specialist import ParsingMixin
 
 
 # ============================================================================
 # Data Models
 # ============================================================================
-
-class InvestmentRating(str, Enum):
-    """Investment rating levels."""
-    STRONG_BUY = "strong_buy"
-    BUY = "buy"
-    HOLD = "hold"
-    SELL = "sell"
-    AVOID = "avoid"
-
-
-class RiskLevel(str, Enum):
-    """Risk level categories."""
-    VERY_HIGH = "very_high"
-    HIGH = "high"
-    MODERATE = "moderate"
-    LOW = "low"
-    VERY_LOW = "very_low"
-
-
-class MoatStrength(str, Enum):
-    """Competitive moat strength."""
-    WIDE = "wide"        # Sustainable long-term advantage
-    NARROW = "narrow"    # Some competitive advantage
-    NONE = "none"        # No meaningful moat
-
-
-class GrowthStage(str, Enum):
-    """Company growth stage."""
-    HYPERGROWTH = "hypergrowth"  # >50% growth
-    HIGH_GROWTH = "high_growth"  # 20-50% growth
-    GROWTH = "growth"            # 10-20% growth
-    MATURE = "mature"            # <10% growth
-    DECLINING = "declining"      # Negative growth
+# Note: InvestmentRating, RiskLevel, MoatStrength, GrowthStage imported from types.py
 
 
 @dataclass
@@ -264,9 +238,15 @@ Begin your investment analysis:"""
 # Investment Analyst Agent
 # ============================================================================
 
-class InvestmentAnalystAgent:
+class InvestmentAnalystAgent(ParsingMixin):
     """
     Investment Analyst Agent for due diligence.
+
+    Inherits from:
+    - ParsingMixin: Standardized extraction methods
+
+    Note: This is a "meta-agent" with a different interface than standard
+    specialist agents (takes research_data dict instead of search_results list).
 
     Generates:
     - Investment thesis
@@ -312,12 +292,12 @@ class InvestmentAnalystAgent:
 
         response = self._client.messages.create(
             model=self._config.llm_model,
-            max_tokens=2500,
-            temperature=0.1,
+            max_tokens=self._config.investment_analyst_max_tokens,
+            temperature=self._config.investment_analyst_temperature,
             messages=[{"role": "user", "content": prompt}]
         )
 
-        analysis = response.content[0].text
+        analysis = safe_extract_text(response, agent_name="investment_analyst")
         cost = calculate_cost(
             response.usage.input_tokens,
             response.usage.output_tokens
@@ -444,20 +424,10 @@ class InvestmentAnalystAgent:
         return GrowthStage.GROWTH
 
     def _extract_thesis(self, analysis: str) -> str:
-        """Extract investment thesis."""
-        if "Investment Thesis" in analysis:
-            start = analysis.find("Investment Thesis")
-            section = analysis[start:start+1000]
-            # Get content after header
-            lines = section.split("\n")[1:]
-            thesis_lines = []
-            for line in lines:
-                if line.strip().startswith("##") or line.strip().startswith("**"):
-                    break
-                if line.strip():
-                    thesis_lines.append(line.strip())
-            return " ".join(thesis_lines)[:500]
-        return "Investment thesis not available"
+        """Extract investment thesis using ParsingMixin."""
+        # Use ParsingMixin.extract_section for standardized extraction
+        result = self.extract_section(analysis, "Investment Thesis", max_length=1000)
+        return result if result else "Investment thesis not available"
 
     def _extract_case(self, analysis: str, case_type: str) -> List[str]:
         """Extract bull or bear case points."""
@@ -476,25 +446,9 @@ class InvestmentAnalystAgent:
         return points[:5]
 
     def _extract_list(self, analysis: str, keyword: str) -> List[str]:
-        """Extract items near a keyword."""
-        items = []
-        lines = analysis.split("\n")
-
-        in_section = False
-        for line in lines:
-            if keyword.lower() in line.lower():
-                in_section = True
-                continue
-
-            if in_section:
-                if line.strip().startswith(("1.", "2.", "3.", "-", "•")):
-                    item = line.strip().lstrip("0123456789.-•* ").strip()
-                    if item and len(item) > 5:
-                        items.append(item[:150])
-                elif line.strip().startswith("##") or line.strip().startswith("**"):
-                    break
-
-        return items[:5]
+        """Extract items near a keyword using ParsingMixin."""
+        # Use ParsingMixin.extract_list_items for standardized extraction
+        return self.extract_list_items(analysis, keyword, max_items=5)
 
     def _extract_risk_factors(self, analysis: str) -> List[RiskFactor]:
         """Extract risk factors."""
@@ -534,15 +488,10 @@ class InvestmentAnalystAgent:
         return drivers[:5]
 
     def _extract_recommendation(self, analysis: str) -> str:
-        """Extract final recommendation."""
-        if "Recommendation" in analysis:
-            start = analysis.find("Recommendation")
-            section = analysis[start:start+500]
-            lines = section.split("\n")[1:]
-            for line in lines:
-                if line.strip() and len(line.strip()) > 20:
-                    return line.strip()[:200]
-        return "See full analysis for recommendation"
+        """Extract final recommendation using ParsingMixin."""
+        # Use ParsingMixin.extract_section for standardized extraction
+        result = self.extract_section(analysis, "Recommendation", max_length=500)
+        return result if result else "See full analysis for recommendation"
 
 
 # ============================================================================
@@ -559,44 +508,37 @@ def investment_analyst_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with investment analysis
     """
-    print("\n" + "=" * 70)
-    print("[AGENT: Investment Analyst] Generating investment analysis...")
-    print("=" * 70)
-
+    logger = get_agent_logger("investment_analyst")
     config = get_config()
     company_name = state["company_name"]
     agent_outputs = state.get("agent_outputs", {})
 
-    if not agent_outputs:
+    with logger.agent_run(company_name):
+        if not agent_outputs:
+            logger.no_data()
+            return create_empty_result("investment")
+
+        logger.analyzing(len(agent_outputs))
+
+        agent = InvestmentAnalystAgent(config)
+        result = agent.analyze(company_name, agent_outputs)
+        cost = calculate_cost(700, 2000)
+
+        logger.info(f"Rating: {result.investment_rating.value}")
+        logger.info(f"Risk: {result.overall_risk.value}")
+        logger.info(f"Moat: {result.moat_strength.value}")
+        logger.complete(cost=cost)
+
         return {
             "agent_outputs": {
                 "investment": {
-                    "analysis": "No data available",
-                    "rating": "hold",
-                    "cost": 0.0
+                    **result.to_dict(),
+                    "analysis": result.analysis,
+                    "cost": cost
                 }
-            }
+            },
+            "total_cost": cost
         }
-
-    agent = InvestmentAnalystAgent(config)
-    result = agent.analyze(company_name, agent_outputs)
-    cost = calculate_cost(700, 2000)
-
-    print(f"[Investment] Rating: {result.investment_rating.value}")
-    print(f"[Investment] Risk: {result.overall_risk.value}")
-    print(f"[Investment] Moat: {result.moat_strength.value}")
-    print("=" * 70)
-
-    return {
-        "agent_outputs": {
-            "investment": {
-                **result.to_dict(),
-                "analysis": result.analysis,
-                "cost": cost
-            }
-        },
-        "total_cost": cost
-    }
 
 
 # ============================================================================

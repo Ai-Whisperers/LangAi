@@ -9,10 +9,13 @@ Provides comprehensive market analysis including:
 - Customer intelligence
 """
 
+import logging
 from typing import Dict, Any, Optional, Callable
 
+logger = logging.getLogger(__name__)
+
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
 from ...tools.market_sizing_utils import (
     MarketTrend,
@@ -180,16 +183,14 @@ def enhanced_market_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with enhanced market analysis
     """
-    print("\n" + "=" * 70)
-    print("[AGENT: Enhanced Market] Comprehensive market analysis...")
-    print("=" * 70)
+    logger.info("Enhanced Market agent starting - comprehensive market analysis")
 
     config = get_config()
     company_name = state["company_name"]
     search_results = state.get("search_results", [])
 
     if not search_results:
-        print("[Market] WARNING: No search results available!")
+        logger.warning("No search results available for market analysis")
         return {
             "agent_outputs": {
                 "market": {
@@ -200,8 +201,8 @@ def enhanced_market_agent_node(state: OverallState) -> Dict[str, Any]:
             }
         }
 
-    print(f"[Market] Analyzing market for {company_name}...")
-    print(f"[Market] Processing {len(search_results)} sources...")
+    logger.info(f"Analyzing market for {company_name}")
+    logger.debug(f"Processing {len(search_results)} sources")
 
     # Create comprehensive analysis prompt
     prompt = create_market_analysis_prompt(company_name, search_results)
@@ -210,19 +211,18 @@ def enhanced_market_agent_node(state: OverallState) -> Dict[str, Any]:
     client = get_anthropic_client()
     response = client.messages.create(
         model=config.llm_model,
-        max_tokens=1200,  # Comprehensive analysis
-        temperature=0.0,
+        max_tokens=config.enhanced_market_max_tokens,
+        temperature=config.market_temperature,
         messages=[{"role": "user", "content": prompt}]
     )
 
-    market_analysis = response.content[0].text
+    market_analysis = safe_extract_text(response, agent_name="enhanced_market")
     cost = calculate_cost(
         response.usage.input_tokens,
         response.usage.output_tokens
     )
 
-    print(f"[Market] Analysis complete - ${cost:.4f}")
-    print("=" * 70)
+    logger.info(f"Enhanced Market analysis complete - cost: ${cost:.4f}")
 
     # Create agent output
     agent_output = {

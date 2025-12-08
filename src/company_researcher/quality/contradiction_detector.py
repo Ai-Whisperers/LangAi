@@ -14,34 +14,19 @@ Features:
 import re
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
-from enum import Enum
 from pydantic import BaseModel, Field
 from anthropic import Anthropic
 
 from ..config import get_config
+from ..llm.client_factory import safe_extract_text
+from ..types import ContradictionSeverity, ResolutionStrategy  # Centralized enums
 from .fact_extractor import ExtractedFact, FactCategory
 
 
 # ============================================================================
 # Enumerations
 # ============================================================================
-
-class ContradictionSeverity(str, Enum):
-    """Severity levels for contradictions."""
-    CRITICAL = "CRITICAL"   # Major factual disagreement affecting conclusions
-    HIGH = "HIGH"           # Significant disagreement requiring resolution
-    MEDIUM = "MEDIUM"       # Notable difference but not critical
-    LOW = "LOW"             # Minor discrepancy, acceptable variation
-
-
-class ResolutionStrategy(str, Enum):
-    """Strategies for resolving contradictions."""
-    USE_OFFICIAL = "use_official"           # Use official/authoritative source
-    USE_RECENT = "use_recent"               # Use most recent information
-    USE_MAJORITY = "use_majority"           # Use most commonly cited value
-    INVESTIGATE = "investigate"             # Requires further investigation
-    REPORT_BOTH = "report_both"             # Report both values with context
-    AVERAGE = "average"                     # Use average (for numerical values)
+# Note: ContradictionSeverity, ResolutionStrategy imported from types.py
 
 
 # ============================================================================
@@ -392,7 +377,7 @@ SEVERITY: [level]
                 messages=[{"role": "user", "content": prompt}]
             )
 
-            result_text = response.content[0].text
+            result_text = safe_extract_text(response, default="", agent_name="contradiction_detector")
 
             if "NO CONTRADICTIONS" in result_text.upper():
                 return []

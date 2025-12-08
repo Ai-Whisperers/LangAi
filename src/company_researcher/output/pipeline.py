@@ -28,12 +28,16 @@ Usage:
     )
 """
 
-from typing import Dict, Any, List, Optional
-from pathlib import Path
-from datetime import datetime
-from dataclasses import dataclass
-from threading import Lock
 import json
+import logging
+import re
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from threading import Lock
+from typing import Dict, Any, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -437,12 +441,81 @@ class ReportPipeline:
         )
 
     def _sanitize_filename(self, name: str) -> str:
-        """Sanitize company name for filename."""
-        import re
-        # Remove/replace invalid characters
-        sanitized = re.sub(r'[<>:"/\\|?*]', '', name)
+        """
+        Sanitize company name for safe filename usage.
+
+        Prevents path traversal attacks and ensures safe filenames
+        across different operating systems.
+
+        Args:
+            name: Raw company name
+
+        Returns:
+            Safe filename string
+        """
+        if not name:
+            return "unknown"
+
+        # Remove null bytes (security)
+        sanitized = name.replace('\x00', '')
+
+        # Remove path traversal sequences
+        sanitized = sanitized.replace('..', '')
+        sanitized = sanitized.replace('./', '')
+        sanitized = sanitized.replace('.\\', '')
+
+        # Remove invalid filename characters (Windows + Unix)
+        sanitized = re.sub(r'[<>:"/\\|?*\x00-\x1f]', '', sanitized)
+
+        # Replace whitespace with underscores
         sanitized = re.sub(r'\s+', '_', sanitized)
-        return sanitized[:50]  # Limit length
+
+        # Remove leading/trailing dots and spaces (Windows issue)
+        sanitized = sanitized.strip('. ')
+
+        # Remove any remaining path-like patterns
+        sanitized = re.sub(r'[/\\]', '', sanitized)
+
+        # Ensure not empty after sanitization
+        if not sanitized:
+            sanitized = "unknown"
+
+        # Limit length
+        return sanitized[:50]
+
+    def _validate_output_path(self, filepath: Path, base_dir: Path) -> Path:
+        """
+        Validate that the output path is within the allowed directory.
+
+        Prevents path traversal attacks by ensuring resolved path
+        stays within the base directory.
+
+        Args:
+            filepath: Proposed file path
+            base_dir: Allowed base directory
+
+        Returns:
+            Validated path
+
+        Raises:
+            ValueError: If path would escape base directory
+        """
+        # Resolve both paths to absolute
+        resolved_filepath = filepath.resolve()
+        resolved_base = base_dir.resolve()
+
+        # Check if filepath is within base_dir
+        try:
+            resolved_filepath.relative_to(resolved_base)
+        except ValueError:
+            logger.error(
+                f"Path traversal attempt blocked: {filepath} is outside {base_dir}"
+            )
+            raise ValueError(
+                f"Output path '{filepath}' would escape the allowed directory"
+            )
+
+        return resolved_filepath
 
 
 # Singleton instance

@@ -15,7 +15,9 @@ from typing import Any, Callable, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, get_tavily_client, calculate_cost
+from ...llm.client_factory import (
+    get_anthropic_client, get_tavily_client, calculate_cost, safe_extract_json
+)
 from ...state import OverallState
 from ...prompts import GENERATE_QUERIES_PROMPT
 
@@ -102,24 +104,25 @@ Previous research had gaps. Focus queries on:
         messages=[{"role": "user", "content": prompt}]
     )
 
-    content = response.content[0].text
+    # Parse queries using safe_extract_json with fallback
+    fallback_queries = [
+        f"{company_name} company overview",
+        f"{company_name} revenue financial performance",
+        f"{company_name} products services",
+        f"{company_name} competitors market position",
+        f"{company_name} recent news developments"
+    ]
 
-    # Parse queries
-    try:
-        if "```json" in content:
-            content = content.split("```json")[1].split("```")[0]
-        elif "```" in content:
-            content = content.split("```")[1].split("```")[0]
-        queries = json.loads(content.strip())
-    except json.JSONDecodeError:
-        # Fallback
-        queries = [
-            f"{company_name} company overview",
-            f"{company_name} revenue financial performance",
-            f"{company_name} products services",
-            f"{company_name} competitors market position",
-            f"{company_name} recent news developments"
-        ]
+    queries = safe_extract_json(
+        response,
+        default=fallback_queries,
+        agent_name="researcher"
+    )
+
+    # Ensure queries is a list
+    if not isinstance(queries, list):
+        logger.warning("Query generation returned non-list, using fallback queries")
+        queries = fallback_queries
 
     query_cost = calculate_cost(
         response.usage.input_tokens,

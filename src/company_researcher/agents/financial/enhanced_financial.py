@@ -14,10 +14,13 @@ Provides:
 - Funding analysis (for private companies)
 """
 
+import logging
 from typing import Dict, Any, Optional, Callable
 
+logger = logging.getLogger(__name__)
+
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
 from ...tools.alpha_vantage_client import AlphaVantageClient, extract_key_metrics
 from ...tools.sec_edgar_parser import (
@@ -130,9 +133,7 @@ def enhanced_financial_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with enhanced financial analysis
     """
-    print("\n" + "=" * 70)
-    print("[AGENT: Enhanced Financial] Comprehensive financial analysis...")
-    print("=" * 70)
+    logger.info("Enhanced Financial agent starting - comprehensive analysis")
 
     config = get_config()
     company_name = state["company_name"]
@@ -160,19 +161,18 @@ def enhanced_financial_agent_node(state: OverallState) -> Dict[str, Any]:
     client = get_anthropic_client()
     response = client.messages.create(
         model=config.llm_model,
-        max_tokens=1200,  # Increased for comprehensive analysis
-        temperature=0.0,
+        max_tokens=config.enhanced_financial_max_tokens,
+        temperature=config.financial_temperature,
         messages=[{"role": "user", "content": prompt}]
     )
 
-    financial_analysis = response.content[0].text
+    financial_analysis = safe_extract_text(response, agent_name="enhanced_financial")
     cost = calculate_cost(
         response.usage.input_tokens,
         response.usage.output_tokens
     )
 
-    print(f"[Enhanced Financial] Analysis complete - ${cost:.4f}")
-    print("=" * 70)
+    logger.info(f"Enhanced Financial analysis complete - cost: ${cost:.4f}")
 
     # Create agent output
     agent_output = {
@@ -220,7 +220,7 @@ def gather_financial_data(
     Returns:
         Dictionary with all available financial data
     """
-    print(f"[Enhanced Financial] Gathering data from multiple sources...")
+    logger.info("Gathering data from multiple sources")
 
     financial_data = {}
 
@@ -230,7 +230,7 @@ def gather_financial_data(
 
     # 1. Try Alpha Vantage (for stock data)
     if alpha_vantage.is_available() and ticker:
-        print(f"[Enhanced Financial] Fetching Alpha Vantage data for {ticker}...")
+        logger.debug(f"Fetching Alpha Vantage data for {ticker}")
         try:
             av_data = alpha_vantage.get_company_financials(ticker)
             financial_data["alpha_vantage"] = av_data
@@ -239,19 +239,19 @@ def gather_financial_data(
                 # Extract key metrics
                 metrics = extract_key_metrics(av_data)
                 financial_data["key_metrics"] = metrics
-                print(f"[Enhanced Financial] ✓ Alpha Vantage data fetched")
+                logger.debug("Alpha Vantage data fetched successfully")
             else:
-                print(f"[Enhanced Financial] ✗ Alpha Vantage data unavailable")
+                logger.debug("Alpha Vantage data unavailable")
         except Exception as e:
-            print(f"[Enhanced Financial] ✗ Alpha Vantage error: {e}")
+            logger.warning(f"Alpha Vantage error: {e}")
             financial_data["alpha_vantage"] = {"available": False, "error": str(e)}
     else:
-        print(f"[Enhanced Financial] ⊝ Alpha Vantage skipped (no API key or ticker)")
+        logger.debug("Alpha Vantage skipped (no API key or ticker)")
         financial_data["alpha_vantage"] = {"available": False, "reason": "No API key or ticker"}
 
     # 2. Try SEC EDGAR (for official filings)
     if is_public_company(company_name):
-        print(f"[Enhanced Financial] Fetching SEC EDGAR filings...")
+        logger.debug("Fetching SEC EDGAR filings")
         try:
             sec_data = sec_parser.get_company_financials(company_name)
             financial_data["sec_edgar"] = sec_data
@@ -261,14 +261,14 @@ def gather_financial_data(
                 financial_data["revenue_trends"] = extract_revenue_trends(sec_data)
                 financial_data["profitability"] = extract_profitability_metrics(sec_data)
                 financial_data["financial_health"] = extract_financial_health(sec_data)
-                print(f"[Enhanced Financial] ✓ SEC EDGAR data fetched")
+                logger.debug("SEC EDGAR data fetched successfully")
             else:
-                print(f"[Enhanced Financial] ✗ SEC EDGAR data unavailable")
+                logger.debug("SEC EDGAR data unavailable")
         except Exception as e:
-            print(f"[Enhanced Financial] ✗ SEC EDGAR error: {e}")
+            logger.warning(f"SEC EDGAR error: {e}")
             financial_data["sec_edgar"] = {"available": False, "error": str(e)}
     else:
-        print(f"[Enhanced Financial] ⊝ SEC EDGAR skipped (private company)")
+        logger.debug("SEC EDGAR skipped (private company)")
         financial_data["sec_edgar"] = {
             "available": False,
             "reason": "Private company - no SEC filings"

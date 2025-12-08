@@ -14,7 +14,7 @@ from typing import Any, Dict, Optional
 logger = logging.getLogger(__name__)
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
 
 
@@ -145,7 +145,7 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
         messages=[{"role": "user", "content": prompt}]
     )
 
-    synthesized_overview = response.content[0].text
+    synthesized_overview = safe_extract_text(response, agent_name="synthesizer")
     cost = calculate_cost(
         response.usage.input_tokens,
         response.usage.output_tokens

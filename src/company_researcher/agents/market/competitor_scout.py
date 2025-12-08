@@ -15,8 +15,9 @@ from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass, field
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
+from ..base import get_agent_logger, create_empty_result
 from ...tools.competitor_analysis_utils import (
     CompetitorType,
     ThreatLevel,
@@ -209,77 +210,64 @@ def competitor_scout_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with competitive intelligence analysis
     """
-    print("\n" + "=" * 70)
-    print("[AGENT: Competitor Scout] Competitive intelligence analysis...")
-    print("=" * 70)
-
+    logger = get_agent_logger("competitor_scout")
     config = get_config()
     company_name = state["company_name"]
     search_results = state.get("search_results", [])
 
-    if not search_results:
-        print("[Competitor] WARNING: No search results available!")
-        return {
-            "agent_outputs": {
-                "competitor": {
-                    "analysis": "No search results available for competitor analysis",
-                    "data_extracted": False,
-                    "competitors_found": 0,
-                    "cost": 0.0
-                }
+    with logger.agent_run(company_name):
+        if not search_results:
+            logger.no_data()
+            return create_empty_result("competitor")
+
+        logger.analyzing(len(search_results))
+
+        # Create comprehensive analysis prompt
+        prompt = create_competitor_analysis_prompt(company_name, search_results)
+
+        # Call LLM for analysis
+        client = get_anthropic_client()
+        response = client.messages.create(
+            model=config.llm_model,
+            max_tokens=config.competitor_scout_max_tokens,
+            temperature=config.llm_temperature,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        competitor_analysis = safe_extract_text(response, agent_name="competitor_scout")
+        cost = calculate_cost(
+            response.usage.input_tokens,
+            response.usage.output_tokens
+        )
+
+        # Extract structured data from analysis
+        extracted_data = extract_competitor_data(competitor_analysis)
+
+        logger.info(f"Found {extracted_data['competitor_count']} competitors")
+        logger.complete(cost=cost)
+
+        # Create agent output
+        agent_output = {
+            "analysis": competitor_analysis,
+            "data_extracted": True,
+            "competitors_found": extracted_data["competitor_count"],
+            "threat_summary": extracted_data["threat_summary"],
+            "competitive_intensity": extracted_data["competitive_intensity"],
+            "cost": cost,
+            "tokens": {
+                "input": response.usage.input_tokens,
+                "output": response.usage.output_tokens
             }
         }
 
-    print(f"[Competitor] Analyzing competitors for {company_name}...")
-    print(f"[Competitor] Processing {len(search_results)} sources...")
-
-    # Create comprehensive analysis prompt
-    prompt = create_competitor_analysis_prompt(company_name, search_results)
-
-    # Call LLM for analysis
-    client = get_anthropic_client()
-    response = client.messages.create(
-        model=config.llm_model,
-        max_tokens=1500,  # Comprehensive competitor analysis
-        temperature=0.0,
-        messages=[{"role": "user", "content": prompt}]
-    )
-
-    competitor_analysis = response.content[0].text
-    cost = calculate_cost(
-        response.usage.input_tokens,
-        response.usage.output_tokens
-    )
-
-    # Extract structured data from analysis
-    extracted_data = extract_competitor_data(competitor_analysis)
-
-    print(f"[Competitor] Found {extracted_data['competitor_count']} competitors")
-    print(f"[Competitor] Analysis complete - ${cost:.4f}")
-    print("=" * 70)
-
-    # Create agent output
-    agent_output = {
-        "analysis": competitor_analysis,
-        "data_extracted": True,
-        "competitors_found": extracted_data["competitor_count"],
-        "threat_summary": extracted_data["threat_summary"],
-        "competitive_intensity": extracted_data["competitive_intensity"],
-        "cost": cost,
-        "tokens": {
-            "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
+        return {
+            "agent_outputs": {"competitor": agent_output},
+            "total_cost": cost,
+            "total_tokens": {
+                "input": response.usage.input_tokens,
+                "output": response.usage.output_tokens
+            }
         }
-    }
-
-    return {
-        "agent_outputs": {"competitor": agent_output},
-        "total_cost": cost,
-        "total_tokens": {
-            "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
-        }
-    }
 
 
 # ==============================================================================
@@ -559,76 +547,66 @@ def competitor_scout_agent_node_traced(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with competitive intelligence analysis
     """
-    print("\n" + "=" * 70)
-    print("[AGENT: Competitor Scout] Competitive intelligence analysis (traced)...")
-    print("=" * 70)
+    logger = get_agent_logger("competitor_scout")
+    company_name = state["company_name"]
+    search_results = state.get("search_results", [])
 
-    # Try to use traced LLM
-    try:
-        from ..llm import invoke_with_tracing
+    with logger.agent_run(company_name):
+        # Try to use traced LLM
+        try:
+            from ..llm import invoke_with_tracing
 
-        company_name = state["company_name"]
-        search_results = state.get("search_results", [])
+            if not search_results:
+                logger.no_data()
+                return create_empty_result("competitor")
 
-        if not search_results:
+            logger.analyzing(len(search_results))
+            prompt = create_competitor_analysis_prompt(company_name, search_results)
+
+            # Use traced invocation
+            response = invoke_with_tracing(
+                prompt=prompt,
+                run_name="competitor_scout_analysis",
+                tags=[company_name, "competitor", "phase9"],
+                metadata={
+                    "agent": "competitor_scout",
+                    "company": company_name,
+                    "source_count": len(search_results)
+                }
+            )
+
+            # Extract data
+            extracted_data = extract_competitor_data(response.content)
+
+            logger.info(f"Found {extracted_data['competitor_count']} competitors")
+            if response.trace_url:
+                logger.info(f"Trace: {response.trace_url}")
+            logger.complete(cost=response.cost_usd)
+
             return {
                 "agent_outputs": {
                     "competitor": {
-                        "analysis": "No search results available",
-                        "data_extracted": False,
-                        "competitors_found": 0,
-                        "cost": 0.0
+                        "analysis": response.content,
+                        "data_extracted": True,
+                        "competitors_found": extracted_data["competitor_count"],
+                        "threat_summary": extracted_data["threat_summary"],
+                        "competitive_intensity": extracted_data["competitive_intensity"],
+                        "cost": response.cost_usd,
+                        "tokens": {
+                            "input": response.input_tokens,
+                            "output": response.output_tokens
+                        },
+                        "trace_url": response.trace_url
                     }
+                },
+                "total_cost": response.cost_usd,
+                "total_tokens": {
+                    "input": response.input_tokens,
+                    "output": response.output_tokens
                 }
             }
 
-        prompt = create_competitor_analysis_prompt(company_name, search_results)
-
-        # Use traced invocation
-        response = invoke_with_tracing(
-            prompt=prompt,
-            run_name="competitor_scout_analysis",
-            tags=[company_name, "competitor", "phase9"],
-            metadata={
-                "agent": "competitor_scout",
-                "company": company_name,
-                "source_count": len(search_results)
-            }
-        )
-
-        # Extract data
-        extracted_data = extract_competitor_data(response.content)
-
-        print(f"[Competitor] Found {extracted_data['competitor_count']} competitors")
-        print(f"[Competitor] Analysis complete - ${response.cost_usd:.4f}")
-        if response.trace_url:
-            print(f"[Competitor] Trace: {response.trace_url}")
-        print("=" * 70)
-
-        return {
-            "agent_outputs": {
-                "competitor": {
-                    "analysis": response.content,
-                    "data_extracted": True,
-                    "competitors_found": extracted_data["competitor_count"],
-                    "threat_summary": extracted_data["threat_summary"],
-                    "competitive_intensity": extracted_data["competitive_intensity"],
-                    "cost": response.cost_usd,
-                    "tokens": {
-                        "input": response.input_tokens,
-                        "output": response.output_tokens
-                    },
-                    "trace_url": response.trace_url
-                }
-            },
-            "total_cost": response.cost_usd,
-            "total_tokens": {
-                "input": response.input_tokens,
-                "output": response.output_tokens
-            }
-        }
-
-    except ImportError:
-        # Fall back to non-traced version
-        print("[Competitor] LLM tracing not available, using direct API")
-        return competitor_scout_agent_node(state)
+        except ImportError:
+            # Fall back to non-traced version
+            logger.warning("LLM tracing not available, using direct API")
+            return competitor_scout_agent_node(state)

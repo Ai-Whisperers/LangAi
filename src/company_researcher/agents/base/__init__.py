@@ -85,6 +85,74 @@ from .node import (
     format_search_results,
 )
 
+# Specialist agent infrastructure
+from .specialist import (
+    BaseSpecialistAgent,
+    ParsingMixin,
+    AnalysisMetrics,
+)
+
+# Search result formatting
+from .search_formatting import (
+    # Core formatter
+    SearchResultFormatter,
+    FormatterConfig,
+    SearchResultMixin,
+    # Domain-specific formatters
+    MarketSearchFormatter,
+    CompetitorSearchFormatter,
+    FinancialSearchFormatter,
+    ProductSearchFormatter,
+    SalesSearchFormatter,
+    BrandSearchFormatter,
+    # Convenience functions
+    format_market_results,
+    format_competitor_results,
+    format_financial_results,
+    format_product_results,
+    format_sales_results,
+    format_brand_results,
+)
+
+# Query generation
+from .query_generation import (
+    QueryDomain,
+    QueryConfig,
+    get_fallback_queries,
+    get_domain_queries,
+    get_gap_queries,
+    get_comprehensive_queries,
+    clean_query,
+    validate_queries,
+    parse_query_response,
+)
+
+# Error handling
+from .errors import (
+    # Exceptions
+    AgentError,
+    ParsingError,
+    LLMError,
+    SearchError,
+    ConfigurationError,
+    ValidationError,
+    ExtractionError,
+    # Severity
+    ErrorSeverity,
+    # Helpers
+    create_error_result,
+    create_empty_result_with_reason,
+    handle_agent_error,
+    # Retry
+    RetryConfig,
+    with_retry,
+    # Context manager
+    AgentErrorContext,
+    # Validation
+    validate_search_results,
+    validate_company_name,
+)
+
 __all__ = [
     # Types - Enums
     "AgentStatus",
@@ -110,4 +178,51 @@ __all__ = [
     "NodeConfig",
     "agent_node",
     "format_search_results",
+    # Specialist
+    "BaseSpecialistAgent",
+    "ParsingMixin",
+    "AnalysisMetrics",
+    # Search formatting
+    "SearchResultFormatter",
+    "FormatterConfig",
+    "SearchResultMixin",
+    "MarketSearchFormatter",
+    "CompetitorSearchFormatter",
+    "FinancialSearchFormatter",
+    "ProductSearchFormatter",
+    "SalesSearchFormatter",
+    "BrandSearchFormatter",
+    "format_market_results",
+    "format_competitor_results",
+    "format_financial_results",
+    "format_product_results",
+    "format_sales_results",
+    "format_brand_results",
+    # Query generation
+    "QueryDomain",
+    "QueryConfig",
+    "get_fallback_queries",
+    "get_domain_queries",
+    "get_gap_queries",
+    "get_comprehensive_queries",
+    "clean_query",
+    "validate_queries",
+    "parse_query_response",
+    # Error handling
+    "AgentError",
+    "ParsingError",
+    "LLMError",
+    "SearchError",
+    "ConfigurationError",
+    "ValidationError",
+    "ExtractionError",
+    "ErrorSeverity",
+    "create_error_result",
+    "create_empty_result_with_reason",
+    "handle_agent_error",
+    "RetryConfig",
+    "with_retry",
+    "AgentErrorContext",
+    "validate_search_results",
+    "validate_company_name",
 ]

@@ -19,7 +19,7 @@ from typing import Any, Callable, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
 from ...quality.fact_extractor import (
     FactExtractor,
@@ -403,12 +403,12 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
     client = get_anthropic_client()
     response = client.messages.create(
         model=config.llm_model,
-        max_tokens=800,
-        temperature=0.0,
+        max_tokens=config.logic_critic_max_tokens,
+        temperature=config.logic_critic_temperature,
         messages=[{"role": "user", "content": prompt}]
     )
 
-    critic_analysis = response.content[0].text
+    critic_analysis = safe_extract_text(response, agent_name="logic_critic")
     cost = calculate_cost(
         response.usage.input_tokens,
         response.usage.output_tokens

@@ -28,6 +28,8 @@ Usage:
 from typing import Union, List, Dict, Any, Optional
 from dataclasses import dataclass
 from pathlib import Path
+
+from .client_factory import safe_extract_text
 from threading import Lock
 import base64
 import json
@@ -136,7 +138,7 @@ class VisionAnalyzer:
         image_tokens = self._estimate_image_tokens(image_source)
 
         return ImageAnalysisResult(
-            content=response.content[0].text,
+            content=safe_extract_text(response, agent_name="vision_analyzer"),
             model=model,
             input_tokens=response.usage.input_tokens,
             output_tokens=response.usage.output_tokens,
@@ -187,7 +189,7 @@ class VisionAnalyzer:
         )
 
         return ImageAnalysisResult(
-            content=response.content[0].text,
+            content=safe_extract_text(response, agent_name="vision_analyzer"),
             model=model,
             input_tokens=response.usage.input_tokens,
             output_tokens=response.usage.output_tokens,

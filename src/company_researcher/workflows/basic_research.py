@@ -20,6 +20,7 @@ from langgraph.graph import StateGraph, END
 
 from ..state import OverallState, InputState, OutputState, create_initial_state, create_output_state
 from ..config import get_config
+from ..llm.client_factory import safe_extract_text
 from ..prompts import (
     GENERATE_QUERIES_PROMPT,
     ANALYZE_RESULTS_PROMPT,
@@ -66,7 +67,7 @@ def generate_queries_node(state: OverallState) -> Dict[str, Any]:
     )
 
     # Parse response
-    content = response.content[0].text
+    content = safe_extract_text(response, agent_name="generate_queries")
     try:
         # Extract JSON array from response
         # Claude might wrap it in markdown code blocks
@@ -193,7 +194,7 @@ def analyze_node(state: OverallState) -> Dict[str, Any]:
         messages=[{"role": "user", "content": prompt}]
     )
 
-    notes = response.content[0].text
+    notes = safe_extract_text(response, agent_name="analyze")
 
     # Update cost
     cost = config.calculate_llm_cost(
@@ -249,7 +250,7 @@ def extract_data_node(state: OverallState) -> Dict[str, Any]:
         messages=[{"role": "user", "content": prompt}]
     )
 
-    extracted_text = response.content[0].text
+    extracted_text = safe_extract_text(response, agent_name="extract_data")
 
     # Update cost
     cost = config.calculate_llm_cost(

@@ -10,7 +10,7 @@ from functools import wraps
 from dataclasses import dataclass
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
 from .types import (
     AgentResult, AgentOutput, AgentConfig, AgentStatus,
@@ -277,7 +277,8 @@ class BaseAgentNode:
                 )
 
                 # Process response
-                analysis = self.process_response(response.content[0].text, state)
+                response_text = safe_extract_text(response, agent_name=self.agent_name)
+                analysis = self.process_response(response_text, state)
 
                 self.logger.complete(cost=cost)
 

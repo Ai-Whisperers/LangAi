@@ -37,6 +37,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from ..config import get_config
+from .client_factory import safe_extract_text
 
 logger = logging.getLogger(__name__)
 
@@ -416,7 +417,7 @@ def _invoke_anthropic_direct(
 
     latency_ms = (time.time() - start_time) * 1000
 
-    content = response.content[0].text
+    content = safe_extract_text(response, agent_name="langchain_client")
     input_tokens = response.usage.input_tokens
     output_tokens = response.usage.output_tokens
     cost_usd = config.calculate_llm_cost(input_tokens, output_tokens)

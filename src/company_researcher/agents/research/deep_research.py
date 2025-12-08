@@ -18,8 +18,9 @@ from datetime import datetime
 from enum import Enum
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
+from ..base import get_agent_logger, create_empty_result
 
 
 # ============================================================================
@@ -332,8 +333,8 @@ class DeepResearchAgent:
         # Call LLM
         response = self._client.messages.create(
             model=self._config.llm_model,
-            max_tokens=2000,
-            temperature=0.0,
+            max_tokens=self._config.deep_research_max_tokens,
+            temperature=self._config.deep_research_temperature,
             messages=[{"role": "user", "content": prompt}]
         )
 
@@ -343,7 +344,7 @@ class DeepResearchAgent:
         )
 
         return {
-            "analysis": response.content[0].text,
+            "analysis": safe_extract_text(response, agent_name="deep_research"),
             "cost": cost,
             "tokens": {
                 "input": response.usage.input_tokens,
@@ -415,14 +416,15 @@ class DeepResearchAgent:
 
         response = self._client.messages.create(
             model=self._config.llm_model,
-            max_tokens=500,
-            temperature=0.3,
+            max_tokens=self._config.deep_research_query_max_tokens,
+            temperature=self._config.deep_research_query_temperature,
             messages=[{"role": "user", "content": prompt}]
         )
 
         # Parse queries from response
         queries = []
-        for line in response.content[0].text.split("\n"):
+        response_text = safe_extract_text(response, default="", agent_name="deep_research")
+        for line in response_text.split("\n"):
             if "|" in line and "Priority" in line:
                 parts = line.split("|")
                 if len(parts) >= 2:
@@ -541,47 +543,38 @@ def deep_research_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with deep research results
     """
-    print("\n" + "=" * 70)
-    print("[AGENT: Deep Research] Comprehensive research analysis...")
-    print("=" * 70)
-
+    logger = get_agent_logger("deep_research")
     company_name = state["company_name"]
     search_results = state.get("search_results", [])
 
-    if not search_results:
-        print("[DeepResearch] WARNING: No search results available!")
+    with logger.agent_run(company_name):
+        if not search_results:
+            logger.no_data()
+            return create_empty_result("deep_research")
+
+        logger.analyzing(len(search_results))
+
+        # Determine depth from config or default
+        depth = ResearchDepth.STANDARD
+
+        # Run deep research
+        agent = DeepResearchAgent()
+        result = agent.research(
+            company_name=company_name,
+            search_results=search_results,
+            depth=depth,
+            max_iterations=2
+        )
+
+        logger.info(f"Extracted {len(result['facts'])} facts")
+        logger.info(f"Identified {len(result['gaps'])} gaps")
+        logger.complete(cost=result['cost'])
+
         return {
-            "agent_outputs": {
-                "deep_research": {
-                    "analysis": "No search results available",
-                    "facts": [],
-                    "cost": 0.0
-                }
-            }
+            "agent_outputs": {"deep_research": result},
+            "total_cost": result["cost"],
+            "total_tokens": result["tokens"]
         }
-
-    # Determine depth from config or default
-    depth = ResearchDepth.STANDARD
-
-    # Run deep research
-    agent = DeepResearchAgent()
-    result = agent.research(
-        company_name=company_name,
-        search_results=search_results,
-        depth=depth,
-        max_iterations=2
-    )
-
-    print(f"[DeepResearch] Extracted {len(result['facts'])} facts")
-    print(f"[DeepResearch] Identified {len(result['gaps'])} gaps")
-    print(f"[DeepResearch] Cost: ${result['cost']:.4f}")
-    print("=" * 70)
-
-    return {
-        "agent_outputs": {"deep_research": result},
-        "total_cost": result["cost"],
-        "total_tokens": result["tokens"]
-    }
 
 
 # ============================================================================

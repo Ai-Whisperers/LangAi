@@ -10,50 +10,29 @@ Social media analysis capabilities:
 - Influencer/partnership identification
 
 This agent analyzes company social media presence and strategy.
+
+Refactored to use BaseSpecialistAgent for:
+- Reduced code duplication
+- Consistent agent interface
+- Centralized LLM calling and cost tracking
 """
 
-from typing import Dict, Any, List, Optional
+import re
+from typing import Dict, Any, List
 from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import calculate_cost
 from ...state import OverallState
+from ...types import SocialPlatform, EngagementLevel, ContentStrategy  # Centralized enums
+from ..base import get_agent_logger, create_empty_result
+from ..base.specialist import BaseSpecialistAgent, ParsingMixin
 
 
 # ============================================================================
 # Data Models
 # ============================================================================
-
-class SocialPlatform(str, Enum):
-    """Social media platforms."""
-    TWITTER = "twitter"
-    LINKEDIN = "linkedin"
-    FACEBOOK = "facebook"
-    INSTAGRAM = "instagram"
-    YOUTUBE = "youtube"
-    TIKTOK = "tiktok"
-    REDDIT = "reddit"
-
-
-class EngagementLevel(str, Enum):
-    """Engagement level categories."""
-    EXCEPTIONAL = "exceptional"
-    HIGH = "high"
-    MODERATE = "moderate"
-    LOW = "low"
-    MINIMAL = "minimal"
-
-
-class ContentStrategy(str, Enum):
-    """Content strategy types."""
-    THOUGHT_LEADERSHIP = "thought_leadership"
-    PRODUCT_FOCUSED = "product_focused"
-    COMMUNITY_BUILDING = "community_building"
-    ENTERTAINMENT = "entertainment"
-    EDUCATIONAL = "educational"
-    MIXED = "mixed"
+# Note: SocialPlatform, EngagementLevel, ContentStrategy imported from types.py
 
 
 @dataclass
@@ -227,9 +206,13 @@ Begin your social media analysis:"""
 # Social Media Agent
 # ============================================================================
 
-class SocialMediaAgent:
+class SocialMediaAgent(BaseSpecialistAgent[SocialMediaResult], ParsingMixin):
     """
     Social Media Agent for presence analysis.
+
+    Inherits from:
+    - BaseSpecialistAgent: Common agent functionality (LLM calls, formatting, cost tracking)
+    - ParsingMixin: Standardized extraction methods
 
     Analyzes:
     - Platform presence and metrics
@@ -240,59 +223,21 @@ class SocialMediaAgent:
 
     Usage:
         agent = SocialMediaAgent()
-        result = agent.analyze(
+        result = agent.analyze(  # Uses base class analyze() method
             company_name="Tesla",
             search_results=results
         )
     """
 
-    def __init__(self, config=None):
-        """Initialize agent."""
-        self._config = config or get_config()
-        self._client = get_anthropic_client()
+    # Class attributes for BaseSpecialistAgent
+    agent_name = "social_media"
 
-    def analyze(
-        self,
-        company_name: str,
-        search_results: List[Dict[str, Any]]
-    ) -> SocialMediaResult:
-        """
-        Analyze social media presence.
-
-        Args:
-            company_name: Company to analyze
-            search_results: Search results with social data
-
-        Returns:
-            SocialMediaResult
-        """
-        # Format search results
-        formatted_results = self._format_search_results(search_results)
-
-        prompt = SOCIAL_MEDIA_PROMPT.format(
+    def _get_prompt(self, company_name: str, formatted_results: str) -> str:
+        """Build the social media analysis prompt."""
+        return SOCIAL_MEDIA_PROMPT.format(
             company_name=company_name,
             search_results=formatted_results
         )
-
-        # Call LLM
-        response = self._client.messages.create(
-            model=self._config.llm_model,
-            max_tokens=2000,
-            temperature=0.1,
-            messages=[{"role": "user", "content": prompt}]
-        )
-
-        analysis = response.content[0].text
-        cost = calculate_cost(
-            response.usage.input_tokens,
-            response.usage.output_tokens
-        )
-
-        # Parse analysis into structured result
-        result = self._parse_analysis(company_name, analysis)
-        result.analysis = analysis
-
-        return result
 
     def _format_search_results(self, results: List[Dict[str, Any]]) -> str:
         """Format search results for prompt."""
@@ -368,7 +313,6 @@ class SocialMediaAgent:
         for name, platform in platforms.items():
             if name in analysis.lower():
                 # Try to extract follower count
-                import re
                 followers = 0
                 followers_pattern = rf"{name}[:\s]*.*?(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:M|K|million|thousand|followers)"
                 match = re.search(followers_pattern, analysis, re.IGNORECASE)
@@ -466,42 +410,14 @@ class SocialMediaAgent:
         return platforms[:3] if platforms else ["Unknown"]
 
     def _extract_list_section(self, analysis: str, section_keyword: str) -> List[str]:
-        """Extract items from a list section."""
-        items = []
-        lines = analysis.split("\n")
-
-        in_section = False
-        for line in lines:
-            if section_keyword.lower() in line.lower() and ("##" in line or "**" in line):
-                in_section = True
-                continue
-
-            if in_section:
-                if line.strip().startswith(("1.", "2.", "3.", "4.", "5.", "-", "•")):
-                    item = line.strip().lstrip("0123456789.-•* ").strip()
-                    if item and len(item) > 5:
-                        items.append(item[:150])
-                elif "##" in line or "**" in line:
-                    break
-
-        return items[:5]
+        """Extract items from a list section using ParsingMixin."""
+        # Delegate to ParsingMixin.extract_list_items for standardized extraction
+        return self.extract_list_items(analysis, section_keyword, max_items=5)
 
     def _extract_score(self, analysis: str) -> float:
-        """Extract social score."""
-        import re
-
-        patterns = [
-            r"Social Score[:\s]*(\d{1,3})",
-            r"Overall.*?(\d{1,3})\s*/\s*100"
-        ]
-
-        for pattern in patterns:
-            match = re.search(pattern, analysis, re.IGNORECASE)
-            if match:
-                score = float(match.group(1))
-                return min(100, score)
-
-        return 50.0
+        """Extract social score using ParsingMixin."""
+        # Delegate to ParsingMixin.extract_score for standardized extraction
+        return self.extract_score(analysis, "Social Score", default=50.0)
 
 
 # ============================================================================
@@ -518,50 +434,42 @@ def social_media_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with social media analysis
     """
-    print("\n" + "=" * 70)
-    print("[AGENT: Social Media] Social presence analysis...")
-    print("=" * 70)
-
+    logger = get_agent_logger("social_media")
     config = get_config()
     company_name = state["company_name"]
     search_results = state.get("search_results", [])
 
-    if not search_results:
-        print("[Social] WARNING: No search results available!")
+    with logger.agent_run(company_name):
+        if not search_results:
+            logger.no_data()
+            return create_empty_result("social_media")
+
+        logger.analyzing(len(search_results))
+
+        # Run analysis
+        agent = SocialMediaAgent(config)
+        result = agent.analyze(
+            company_name=company_name,
+            search_results=search_results
+        )
+
+        cost = calculate_cost(500, 1500)
+
+        logger.info(f"Social Score: {result.social_score}")
+        logger.info(f"Presence: {result.overall_presence.value}")
+        logger.info(f"Top Platforms: {result.top_platforms}")
+        logger.complete(cost=cost)
+
         return {
             "agent_outputs": {
                 "social_media": {
-                    "analysis": "No data available",
-                    "social_score": 0,
-                    "cost": 0.0
+                    **result.to_dict(),
+                    "analysis": result.analysis,
+                    "cost": cost
                 }
-            }
+            },
+            "total_cost": cost
         }
-
-    # Run analysis
-    agent = SocialMediaAgent(config)
-    result = agent.analyze(
-        company_name=company_name,
-        search_results=search_results
-    )
-
-    cost = calculate_cost(500, 1500)
-
-    print(f"[Social] Social Score: {result.social_score}")
-    print(f"[Social] Presence: {result.overall_presence.value}")
-    print(f"[Social] Top Platforms: {result.top_platforms}")
-    print("=" * 70)
-
-    return {
-        "agent_outputs": {
-            "social_media": {
-                **result.to_dict(),
-                "analysis": result.analysis,
-                "cost": cost
-            }
-        },
-        "total_cost": cost
-    }
 
 
 # ============================================================================

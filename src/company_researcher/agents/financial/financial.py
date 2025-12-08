@@ -7,15 +7,14 @@ This agent specializes in:
 - Valuation or market capitalization
 - Profitability metrics
 - Financial trends and growth
+
+Refactored to use @agent_node decorator for reduced boilerplate.
 """
 
-import logging
 from typing import Any, Callable, Dict, List, Optional
 
-logger = logging.getLogger(__name__)
-
-from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
+from ..base import agent_node, AgentResult
+from ...config import ResearchConfig
 from ...state import OverallState
 
 
@@ -24,7 +23,7 @@ class FinancialAgent:
 
     def __init__(self, search_tool: Optional[Callable] = None, llm_client: Optional[Any] = None):
         self.search_tool = search_tool
-        self.llm_client = llm_client or get_anthropic_client()
+        self.llm_client = llm_client
 
     def analyze(self, company_name: str, search_results: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
         """
@@ -76,89 +75,58 @@ Output format:
 Extract the financial data now:"""
 
 
-def financial_agent_node(state: OverallState) -> Dict[str, Any]:
+@agent_node(
+    agent_name="financial",
+    max_tokens=1000,
+    temperature=0.0,
+    max_sources=15,
+    content_truncate_length=500
+)
+def financial_agent_node(
+    state: OverallState,
+    logger,
+    client,
+    config: ResearchConfig,
+    node_config,
+    formatted_results: str,
+    company_name: str
+) -> AgentResult:
     """
     Financial Agent Node: Extract financial metrics and data.
 
     This specialized agent focuses solely on financial information,
     providing deeper analysis of revenue, funding, and metrics.
 
+    Uses @agent_node decorator which handles:
+    - Logging (start/end with cost)
+    - Search result validation
+    - Search result formatting
+    - Cost calculation and token tracking
+    - Error handling
+
     Args:
         state: Current workflow state
+        logger: Agent logger instance
+        client: Anthropic client
+        config: Application config
+        node_config: Node-specific config
+        formatted_results: Pre-formatted search results
+        company_name: Company being analyzed
 
     Returns:
-        State update with financial analysis
+        LLM response (decorator wraps into AgentResult)
     """
-    logger.info("Financial agent starting - analyzing financial data")
-
-    config = get_config()
-    client = get_anthropic_client()
-
-    company_name = state["company_name"]
-    search_results = state.get("search_results", [])
-
-    if not search_results:
-        logger.warning("No search results to analyze")
-        return {
-            "agent_outputs": {
-                "financial": {
-                    "analysis": "No search results available",
-                    "data_extracted": False,
-                    "cost": 0.0
-                }
-            }
-        }
-
-    logger.info(f"Analyzing {len(search_results)} sources for financial data")
-
-    # Format search results for analysis
-    formatted_results = "\n\n".join([
-        f"Source {i+1}: {result.get('title', 'N/A')}\n"
-        f"URL: {result.get('url', 'N/A')}\n"
-        f"Content: {result.get('content', 'N/A')[:500]}..."
-        for i, result in enumerate(search_results[:15])
-    ])
-
-    # Create financial analysis prompt
+    # Create prompt with pre-formatted results
     prompt = FINANCIAL_ANALYSIS_PROMPT.format(
         company_name=company_name,
         search_results=formatted_results
     )
 
     # Call Claude for financial analysis
-    response = client.messages.create(
+    # Return the response - decorator handles cost calculation and result wrapping
+    return client.messages.create(
         model=config.llm_model,
-        max_tokens=800,
-        temperature=0.0,
+        max_tokens=node_config.max_tokens,
+        temperature=node_config.temperature,
         messages=[{"role": "user", "content": prompt}]
     )
-
-    financial_analysis = response.content[0].text
-    cost = calculate_cost(
-        response.usage.input_tokens,
-        response.usage.output_tokens
-    )
-
-    logger.info(f"Financial agent complete - cost: ${cost:.4f}")
-
-    # Track agent output
-    agent_output = {
-        "analysis": financial_analysis,
-        "data_extracted": True,
-        "cost": cost,
-        "tokens": {
-            "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
-        }
-    }
-
-    # Return only this agent's contribution
-    # Reducers will handle merging/accumulation automatically
-    return {
-        "agent_outputs": {"financial": agent_output},
-        "total_cost": cost,
-        "total_tokens": {
-            "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
-        }
-    }

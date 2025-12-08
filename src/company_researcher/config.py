@@ -244,6 +244,10 @@ class ResearchConfig(BaseSettings):
         default=2500,
         description="Max tokens for investment analyst (detailed reports)"
     )
+    investment_analyst_temperature: float = Field(
+        default=0.1,
+        description="Temperature for investment analysis (slightly creative)"
+    )
 
     # Market Agents
     market_max_tokens: int = Field(
@@ -288,19 +292,55 @@ class ResearchConfig(BaseSettings):
 
     # Research Agents
     deep_research_max_tokens: int = Field(
-        default=3000,
+        default=2000,
         description="Max tokens for deep research (comprehensive)"
+    )
+    deep_research_temperature: float = Field(
+        default=0.0,
+        description="Temperature for deep research (deterministic)"
+    )
+    deep_research_query_max_tokens: int = Field(
+        default=500,
+        description="Max tokens for follow-up query generation"
+    )
+    deep_research_query_temperature: float = Field(
+        default=0.3,
+        description="Temperature for query generation (creative)"
     )
 
     reasoning_max_tokens: int = Field(
         default=2000,
         description="Max tokens for reasoning agent"
     )
+    reasoning_temperature: float = Field(
+        default=0.1,
+        description="Temperature for reasoning (slightly creative)"
+    )
+    reasoning_hypothesis_max_tokens: int = Field(
+        default=800,
+        description="Max tokens for hypothesis testing"
+    )
+    reasoning_hypothesis_temperature: float = Field(
+        default=0.0,
+        description="Temperature for hypothesis testing (deterministic)"
+    )
+    reasoning_inference_max_tokens: int = Field(
+        default=1000,
+        description="Max tokens for strategic inference"
+    )
+    reasoning_inference_temperature: float = Field(
+        default=0.2,
+        description="Temperature for strategic inference (moderately creative)"
+    )
 
     # Quality Agents
     logic_critic_max_tokens: int = Field(
         default=800,
         description="Max tokens for logic critic evaluation"
+    )
+    logic_critic_temperature: float = Field(
+        default=0.0,
+        description="Temperature for logic critic (deterministic)"
     )
 
     # ESG Agent

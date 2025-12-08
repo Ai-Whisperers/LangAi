@@ -14,7 +14,7 @@ from typing import Any, Callable, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
 from ...prompts import (
     ANALYZE_RESULTS_PROMPT,
@@ -111,7 +111,7 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
         messages=[{"role": "user", "content": analysis_prompt}]
     )
 
-    notes = analysis_response.content[0].text
+    notes = safe_extract_text(analysis_response, agent_name="analyst")
     analysis_cost = calculate_cost(
         analysis_response.usage.input_tokens,
         analysis_response.usage.output_tokens
@@ -142,7 +142,7 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
         messages=[{"role": "user", "content": extraction_prompt}]
     )
 
-    extracted_data = extraction_response.content[0].text
+    extracted_data = safe_extract_text(extraction_response, agent_name="analyst")
     extraction_cost = calculate_cost(
         extraction_response.usage.input_tokens,
         extraction_response.usage.output_tokens

@@ -282,3 +282,735 @@ def format_sources_for_report(sources: list) -> str:
             f"{i}. [{source.get('title', 'N/A')}]({source.get('url', 'N/A')})"
         )
     return "\n".join(formatted)
+
+
+# ============================================================================
+# Agent Prompts - Financial
+# ============================================================================
+
+FINANCIAL_ANALYSIS_PROMPT = """You are a financial analyst reviewing search results about a company.
+
+Company: {company_name}
+
+Search Results:
+{search_results}
+
+Task: Extract ALL financial data and metrics from these search results.
+
+Focus on:
+1. **Revenue**: Annual revenue, quarterly revenue, revenue growth
+2. **Funding**: Total funding raised, valuation, recent rounds
+3. **Profitability**: Operating income, net income, profit margins
+4. **Market Value**: Market cap (if public), valuation (if private)
+5. **Financial Metrics**: R&D spending, cash flow, any other metrics
+
+Requirements:
+- Be specific with numbers and dates
+- Include sources for each data point
+- Note if data is missing or unavailable
+- Format as bullet points
+
+Output format:
+- Revenue: [specific figures with years]
+- Funding: [total raised, rounds, investors if mentioned]
+- Valuation/Market Cap: [amount and date]
+- Profitability: [operating income, net income, etc.]
+- Other Metrics: [any additional financial data]
+
+Extract the financial data now:"""
+
+
+ENHANCED_FINANCIAL_PROMPT = """You are an expert financial analyst with access to comprehensive financial data.
+
+Company: {company_name}
+
+**FINANCIAL DATA:**
+{financial_data}
+
+**SEARCH RESULTS:**
+{search_results}
+
+**TASK:**
+Provide a comprehensive financial analysis combining both financial data and search results.
+
+**STRUCTURE YOUR ANALYSIS:**
+
+### 1. Revenue Analysis
+- Historical revenue figures (cite specific years)
+- Year-over-year growth rates
+- Revenue breakdown by segment/region if available
+- Revenue growth trends and projections
+
+### 2. Profitability Analysis
+- Gross margin trends
+- Operating margin trends
+- Net profit margin
+- EBITDA if available
+- Comparison to industry averages
+
+### 3. Financial Health Indicators
+**Balance Sheet Strength:**
+- Current ratio (Current Assets / Current Liabilities)
+- Debt-to-equity ratio
+- Total debt levels
+- Cash position
+
+**Cash Flow Analysis:**
+- Operating cash flow trends
+- Free cash flow
+- Capital expenditure patterns
+- Dividend policy (if applicable)
+
+### 4. Valuation Assessment
+**For Public Companies:**
+- Current market cap
+- P/E ratio vs industry average
+- P/S ratio
+- EV/EBITDA if available
+
+**For Private Companies:**
+- Last known valuation
+- Funding rounds and valuations over time
+- Comparable company analysis
+
+### 5. Risk Assessment
+- Financial risks identified
+- Debt maturity concerns
+- Currency/market exposure
+- Operational risks with financial impact
+
+### 6. Financial Summary
+Provide 3-4 key financial takeaways:
+- Financial health rating (STRONG/MODERATE/WEAK)
+- Growth trajectory
+- Risk level
+- Investment considerations
+
+**REQUIREMENTS:**
+- Cite specific numbers with dates/sources
+- Note any data gaps or uncertainties
+- Be objective and balanced
+- Highlight both strengths and concerns
+
+Provide your comprehensive financial analysis:"""
+
+
+INVESTMENT_ANALYSIS_PROMPT = """You are an expert investment analyst performing due diligence on a company.
+
+Company: {company_name}
+
+**AVAILABLE RESEARCH DATA:**
+{research_data}
+
+**TASK:**
+Provide a comprehensive investment analysis suitable for institutional investors.
+
+**STRUCTURE YOUR ANALYSIS:**
+
+### 1. Investment Thesis
+Provide a clear, concise investment thesis (2-3 sentences) answering:
+- What does this company do well?
+- Why might it be a good/bad investment?
+- What is the primary value driver?
+
+### 2. Business Quality Assessment
+
+**Competitive Moat Analysis:**
+Rate moat strength: [WIDE/NARROW/NONE]
+- Brand value
+- Network effects
+- Cost advantages
+- Switching costs
+- Intangible assets (patents, licenses)
+
+**Management Quality:**
+- Track record
+- Capital allocation history
+- Insider ownership
+- Corporate governance
+
+**Business Model:**
+- Recurring revenue percentage
+- Customer concentration risk
+- Pricing power evidence
+
+### 3. Growth Assessment
+
+**Historical Growth:**
+- Revenue CAGR (3-5 years)
+- Earnings/profit growth
+- Market share gains
+
+**Future Growth Drivers:**
+- New products/markets
+- Geographic expansion
+- M&A strategy
+- Industry tailwinds
+
+**Growth Stage:** [EARLY/GROWTH/MATURE/DECLINING]
+
+### 4. Risk Analysis
+
+**Business Risks:**
+- Competition threats
+- Technology disruption
+- Regulatory risks
+- Customer concentration
+
+**Financial Risks:**
+- Leverage concerns
+- Cash flow sustainability
+- Capital intensity
+
+**Risk Level:** [LOW/MODERATE/HIGH/CRITICAL]
+
+### 5. Valuation Assessment
+
+**Current Valuation:**
+- Key multiples (P/E, P/S, EV/EBITDA)
+- Comparison to peers
+- Historical valuation range
+
+**Valuation Verdict:**
+- Appears [UNDERVALUED/FAIRLY VALUED/OVERVALUED]
+- Supporting rationale
+
+### 6. Investment Recommendation
+
+**Rating:** [STRONG BUY/BUY/HOLD/SELL/STRONG SELL]
+
+**Key Factors:**
+- Top 3 reasons supporting this rating
+- Key catalysts to watch
+- Main risks that could change thesis
+
+### 7. Monitoring Checklist
+List 3-5 specific metrics/events to monitor
+
+**REQUIREMENTS:**
+- Be balanced and objective
+- Support opinions with data
+- Acknowledge uncertainties
+- Provide actionable conclusions
+
+Provide your investment analysis:"""
+
+
+# ============================================================================
+# Agent Prompts - Market
+# ============================================================================
+
+MARKET_ANALYSIS_PROMPT = """You are a market analyst reviewing search results about a company.
+
+Company: {company_name}
+
+Search Results:
+{search_results}
+
+Task: Extract ALL market position and competitive information from these search results.
+
+Focus on:
+1. **Market Share**: Domestic market share, global market share, market position
+2. **Competitors**: Main competitors, their market shares, competitive dynamics
+3. **Positioning**: How the company positions itself, unique value proposition
+4. **Market Trends**: Industry trends, market growth, shifts in competition
+5. **Competitive Advantages**: What makes the company different or better
+
+Requirements:
+- Be specific with percentages and rankings
+- Name specific competitors
+- Include market context (growing/declining, etc.)
+- Format as bullet points
+
+Output format:
+- Market Share: [domestic %, global %, ranking]
+- Main Competitors: [list competitors with their positions]
+- Positioning: [how company positions itself]
+- Market Trends: [key trends affecting the company]
+- Competitive Advantages: [unique strengths]
+
+Extract the market data now:"""
+
+
+ENHANCED_MARKET_PROMPT = """You are an expert market analyst with deep expertise in industry analysis and market sizing.
+
+Company: {company_name}
+
+**SEARCH RESULTS:**
+{search_results}
+
+**TASK:**
+Provide comprehensive market analysis covering all critical strategic dimensions.
+
+**STRUCTURE YOUR ANALYSIS:**
+
+### 1. Market Sizing (TAM/SAM/SOM)
+**TAM (Total Addressable Market)**: Global market size for the entire industry
+**SAM (Serviceable Available Market)**: Portion of TAM the company's product/service addresses
+**SOM (Serviceable Obtainable Market)**: Realistic market share company can capture
+**Market Penetration**: Current market share percentage and growth runway
+
+### 2. Industry Trends
+**Growing Trends** [GROWING]: Trends with positive momentum
+**Declining Trends** [DECLINING]: Trends losing momentum
+**Emerging Opportunities** [EMERGING]: New market segments and technological shifts
+
+### 3. Regulatory Landscape
+**Current Regulations**: Existing laws and compliance requirements
+**Upcoming Changes**: Proposed regulations and expected timeline
+**Regional Variations**: Differences by geography
+
+### 4. Competitive Dynamics
+**Market Structure**: Number of competitors, concentration, competitive intensity
+**Key Players**: Top 3-5 competitors with market share estimates
+
+### 5. Customer Intelligence
+**Customer Segments**: Primary customer types and segment sizes
+**Buying Behavior**: Decision factors, purchase cycle, switching costs
+
+### 6. Market Summary
+- Overall market health rating
+- Company's market position strength
+- Key opportunities and main threats
+
+Provide your market analysis:"""
+
+
+COMPETITOR_SCOUT_PROMPT = """You are an expert competitive intelligence analyst specializing in deep competitor research.
+
+Company: {company_name}
+
+**SEARCH RESULTS:**
+{search_results}
+
+**TASK:**
+Provide comprehensive competitive intelligence analysis.
+
+**STRUCTURE YOUR ANALYSIS:**
+
+### 1. Competitive Landscape Overview
+- Industry/market definition
+- Total number of competitors
+- Competitive intensity level: [LOW/MODERATE/HIGH/INTENSE]
+
+### 2. Direct Competitors (Same Product/Market)
+For each major competitor:
+- Market position/share
+- Key strengths and weaknesses
+- Strategic focus
+- Threat level: [CRITICAL/HIGH/MEDIUM/LOW]
+
+### 3. Indirect Competitors (Substitute Solutions)
+List alternatives that solve the same customer problem differently
+
+### 4. Emerging Threats
+Identify potential future competitors
+
+### 5. Competitive Positioning Map
+Describe where {company_name} sits relative to competitors
+
+### 6. Competitive Advantages Assessment
+Rate applicable advantages:
+- Technology leadership
+- Cost leadership
+- Brand/reputation
+- Distribution/partnerships
+- Data/network effects
+
+### 7. Strategic Recommendations
+- Defensive moves needed
+- Offensive opportunities
+- Partnerships to consider
+
+Provide your competitive intelligence analysis:"""
+
+
+# ============================================================================
+# Agent Prompts - Product
+# ============================================================================
+
+PRODUCT_ANALYSIS_PROMPT = """You are a product analyst reviewing search results about a company.
+
+Company: {company_name}
+
+Search Results:
+{search_results}
+
+Task: Extract ALL product, service, and technology information from these search results.
+
+Focus on:
+1. **Products/Services**: Complete list of main products or services offered
+2. **Key Features**: Important features, capabilities, or differentiators
+3. **Technology**: Technology stack, innovations, patents, R&D focus
+4. **Recent Launches**: New products, updates, or announcements
+5. **Strategy**: Product strategy, target markets, future direction
+
+Requirements:
+- List all products/services specifically
+- Describe key features and capabilities
+- Include technology details when available
+- Note recent developments
+- Format as bullet points
+
+Output format:
+- Main Products/Services: [complete list with descriptions]
+- Key Features: [notable features or capabilities]
+- Technology: [tech stack, innovations, R&D]
+- Recent Launches: [new products or updates]
+- Product Strategy: [target markets, direction]
+
+Extract the product data now:"""
+
+
+# ============================================================================
+# Agent Prompts - Synthesis & Quality
+# ============================================================================
+
+SYNTHESIS_PROMPT = """You are a senior research analyst synthesizing insights from multiple specialized analysts.
+
+Company: {company_name}
+
+You have received analysis from three specialist teams:
+
+## Financial Analysis
+{financial_analysis}
+
+## Market Analysis
+{market_analysis}
+
+## Product Analysis
+{product_analysis}
+
+Task: Create a comprehensive, well-structured research report by synthesizing these specialized analyses.
+
+Generate the following sections:
+
+## Company Overview
+A 2-3 sentence summary combining insights from all analysts about what the company does and its significance.
+
+## Key Metrics
+Extract and list all financial metrics in bullet format
+
+## Main Products/Services
+List the company's products/services from the product analysis (bullet points)
+
+## Competitors
+List main competitors from market analysis
+
+## Key Insights
+List 3-4 most important insights combining perspectives from all three analyses
+
+Requirements:
+- Synthesize, don't just concatenate
+- Resolve any contradictions intelligently
+- Maintain factual accuracy
+- Keep formatting clean and consistent
+- If information is missing, note "Not available in research"
+
+Generate the synthesized report now:"""
+
+
+LOGIC_CRITIC_PROMPT = """You are a critical analyst reviewing research about {company_name}.
+
+## Research Summary
+{research_summary}
+
+## Facts Analyzed: {fact_count}
+## Contradictions Found: {contradiction_count}
+## Gaps Identified: {gap_count}
+
+## Quality Score: {quality_score}/100
+
+## Task
+Provide a critical assessment of this research including:
+
+1. **Verification Status**: What facts are well-supported vs questionable?
+2. **Contradiction Analysis**: For any contradictions, which version is likely correct and why?
+3. **Gap Assessment**: What critical information is missing?
+4. **Confidence Assessment**: How confident should we be in the overall research?
+5. **Recommendations**: What specific actions would improve this research?
+
+Be specific and actionable. Focus on the most important issues.
+
+Provide your analysis:"""
+
+
+# ============================================================================
+# Agent Prompts - Deep Research
+# ============================================================================
+
+DEEP_RESEARCH_PROMPT = """You are an expert research analyst conducting deep research on {company_name}.
+
+**RESEARCH DEPTH:** {depth}
+**ITERATION:** {iteration}/{max_iterations}
+
+**CURRENT SEARCH RESULTS:**
+{search_results}
+
+**FACTS ALREADY GATHERED:**
+{existing_facts}
+
+**IDENTIFIED GAPS:**
+{gaps}
+
+**TASK:**
+Perform comprehensive research analysis. Extract ALL verifiable facts and identify gaps.
+
+**STRUCTURE YOUR ANALYSIS:**
+
+### 1. Key Facts Extracted
+For each fact, provide:
+- **Fact:** [The factual statement]
+- **Category:** [financial/market/product/operational/strategic]
+- **Confidence:** [HIGH/MEDIUM/LOW]
+- **Source:** [Where this fact comes from]
+
+### 2. Data Cross-Validation
+Identify which facts are supported by multiple sources
+
+### 3. Research Gaps
+List information that is still missing or unclear
+
+### 4. Follow-up Queries
+Suggest specific queries to fill the gaps
+
+### 5. Confidence Assessment
+Rate overall data completeness by category
+
+### 6. Key Findings Summary
+Summarize the most important discoveries (3-5 bullet points)
+
+Begin your deep research analysis:"""
+
+
+DEEP_RESEARCH_QUERY_PROMPT = """Based on the research gaps identified for {company_name}:
+
+**GAPS:**
+{gaps}
+
+**ALREADY SEARCHED:**
+{previous_queries}
+
+Generate 5-7 specific, targeted search queries to fill these gaps.
+
+Format each query on its own line:
+1. [query] | Priority: [1-10] | Category: [financial/market/product/competitive]
+
+Focus on queries that will yield specific, verifiable data."""
+
+
+# ============================================================================
+# Agent Prompts - Reasoning
+# ============================================================================
+
+REASONING_PROMPT = """You are an expert strategic analyst applying structured reasoning to company research.
+
+**COMPANY:** {company_name}
+**REASONING TYPE:** {reasoning_type}
+
+**AVAILABLE RESEARCH DATA:**
+{research_data}
+
+**TASK:**
+Apply {reasoning_type} reasoning to analyze this company.
+
+### 1. Key Observations
+List the most important facts from the research
+
+### 2. Pattern Analysis
+Identify patterns, trends, relationships, and anomalies in the data
+
+### 3. {reasoning_type} Analysis
+Apply the specific reasoning framework to the data
+
+### 4. Inferences
+Based on the analysis, what can we infer? (with confidence levels)
+
+### 5. Conclusions
+Key takeaways from this reasoning exercise
+
+### 6. Limitations
+What are the limitations of this analysis?
+
+Provide your {reasoning_type} analysis:"""
+
+
+HYPOTHESIS_TESTING_PROMPT = """Test the following hypothesis against available evidence:
+
+**HYPOTHESIS:** {hypothesis}
+
+**EVIDENCE:**
+{evidence}
+
+### 1. Hypothesis Statement
+Clearly restate the hypothesis being tested
+
+### 2. Supporting Evidence
+List evidence that supports this hypothesis
+
+### 3. Contradicting Evidence
+List evidence that contradicts this hypothesis
+
+### 4. Evidence Quality Assessment
+Rate the quality of supporting vs contradicting evidence
+
+### 5. Verdict
+- **Result:** [SUPPORTED/PARTIALLY SUPPORTED/NOT SUPPORTED/INCONCLUSIVE]
+- **Confidence:** [HIGH/MEDIUM/LOW]
+- **Explanation:** Why this verdict
+
+### 6. Implications
+If this hypothesis is true/false, what does it mean?
+
+Provide your hypothesis test analysis:"""
+
+
+STRATEGIC_INFERENCE_PROMPT = """Based on the research data for {company_name}, perform strategic inference:
+
+**RESEARCH DATA:**
+{research_data}
+
+### 1. Strategic Position Assessment
+Current market position, competitive standing, key strengths and weaknesses
+
+### 2. Strategic Options
+What strategic paths are available? (with pros/cons)
+
+### 3. Threat Analysis
+Immediate, medium-term, and long-term threats
+
+### 4. Opportunity Analysis
+Immediate, medium-term, and long-term opportunities
+
+### 5. Strategic Recommendations
+Prioritized recommendations with rationale
+
+### 6. Key Success Factors
+What must go right for the company to succeed?
+
+Provide your strategic inference analysis:"""
+
+
+# ============================================================================
+# Agent Prompts - Specialized (Brand, Social, Sales)
+# ============================================================================
+
+BRAND_AUDIT_PROMPT = """You are an expert brand strategist conducting a comprehensive brand audit.
+
+Company: {company_name}
+
+**SEARCH RESULTS:**
+{search_results}
+
+**STRUCTURE YOUR ANALYSIS:**
+
+### 1. Brand Identity
+- Visual identity assessment
+- Brand voice and personality
+- Brand values (stated vs demonstrated)
+
+### 2. Brand Perception
+- Public sentiment (POSITIVE/NEUTRAL/NEGATIVE/MIXED)
+- Customer perception indicators
+- Industry perception and recognition
+
+### 3. Brand Positioning
+- Market position and differentiation
+- Competitive positioning
+- Unique value proposition clarity
+
+### 4. Brand Equity Assessment
+- Brand awareness level
+- Brand associations
+- Brand loyalty indicators
+
+### 5. Brand Strength Score
+Rate overall brand strength: [DOMINANT/STRONG/MODERATE/WEAK/EMERGING]
+- Brand Score: [0-100]
+- Trend: [IMPROVING/STABLE/DECLINING]
+
+### 6. Recommendations
+Top 3 brand improvement priorities
+
+Provide your brand audit analysis:"""
+
+
+SOCIAL_MEDIA_PROMPT = """You are an expert social media analyst evaluating a company's social presence.
+
+Company: {company_name}
+
+**SEARCH RESULTS:**
+{search_results}
+
+**STRUCTURE YOUR ANALYSIS:**
+
+### 1. Platform Presence Overview
+For each active platform (LinkedIn, Twitter/X, Instagram, YouTube, TikTok):
+- Follower count (if available)
+- Posting frequency
+- Engagement level: [HIGH/MODERATE/LOW]
+- Content focus
+
+### 2. Content Strategy Analysis
+- Content themes and variety
+- Content quality assessment
+- Strategy type: [THOUGHT_LEADERSHIP/PRODUCT_FOCUSED/COMMUNITY_BUILDING/SALES_DRIVEN/EDUCATIONAL]
+
+### 3. Engagement Analysis
+- Overall engagement rate estimate
+- Sentiment analysis of comments
+- Community interaction level
+
+### 4. Competitive Social Comparison
+- Relative following size vs competitors
+- Relative engagement
+- Content differentiation
+
+### 5. Social Media Score
+Overall social presence score: [0-100]
+
+### 6. Recommendations
+Top 3 social media improvement priorities
+
+Provide your social media analysis:"""
+
+
+SALES_INTELLIGENCE_PROMPT = """You are an expert sales intelligence analyst generating actionable B2B sales insights.
+
+Company: {company_name}
+
+**SEARCH RESULTS:**
+{search_results}
+
+**STRUCTURE YOUR ANALYSIS:**
+
+### 1. Company Snapshot
+- Industry/sector and company size
+- Business focus and key offerings
+
+### 2. Lead Qualification
+- **Lead Score:** [HOT/WARM/COOL/COLD]
+- Company fit, budget indicators, growth trajectory
+- **Buying Stage:** [AWARENESS/CONSIDERATION/DECISION/EVALUATION/PURCHASE]
+
+### 3. Decision Makers
+- Key roles to target
+- Organizational structure insights
+
+### 4. Pain Points & Needs
+- Identified pain points with evidence
+- Potential explicit and implicit needs
+
+### 5. Buying Triggers
+- Recent events (leadership changes, funding, initiatives)
+- Timing indicators
+
+### 6. Engagement Strategy
+- Best initial contact method
+- Key value propositions to lead with
+- Objections to anticipate
+
+### 7. Account Intelligence Score
+Overall account priority: [0-100]
+
+Provide your sales intelligence analysis:"""

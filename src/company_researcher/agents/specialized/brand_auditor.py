@@ -10,46 +10,28 @@ Brand analysis capabilities:
 - Reputation monitoring
 
 This agent analyzes company brand strength and market perception.
+
+Refactored to use BaseSpecialistAgent for:
+- Reduced code duplication
+- Consistent agent interface
+- Centralized LLM calling and cost tracking
 """
 
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
+from typing import Dict, Any, List
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import calculate_cost
 from ...state import OverallState
+from ...types import BrandStrength, BrandHealth, SentimentCategory  # Centralized enums
+from ..base import get_agent_logger, create_empty_result
+from ..base.specialist import BaseSpecialistAgent, ParsingMixin
 
 
 # ============================================================================
 # Data Models
 # ============================================================================
-
-class BrandStrength(str, Enum):
-    """Brand strength levels."""
-    DOMINANT = "dominant"      # Market-leading brand
-    STRONG = "strong"         # Well-recognized
-    MODERATE = "moderate"     # Moderate recognition
-    WEAK = "weak"            # Low recognition
-    EMERGING = "emerging"     # Building brand
-
-
-class BrandHealth(str, Enum):
-    """Brand health status."""
-    EXCELLENT = "excellent"    # Strong across all dimensions
-    GOOD = "good"             # Above average performance
-    FAIR = "fair"             # Average performance
-    POOR = "poor"             # Below average, needs attention
-    CRITICAL = "critical"     # Severe issues requiring action
-
-
-class SentimentCategory(str, Enum):
-    """Sentiment categories."""
-    POSITIVE = "positive"
-    NEUTRAL = "neutral"
-    NEGATIVE = "negative"
-    MIXED = "mixed"
+# Note: BrandStrength, BrandHealth, SentimentCategory imported from types.py
 
 
 @dataclass
@@ -212,9 +194,13 @@ Begin your brand audit:"""
 # Brand Auditor Agent
 # ============================================================================
 
-class BrandAuditorAgent:
+class BrandAuditorAgent(BaseSpecialistAgent[BrandAuditResult], ParsingMixin):
     """
     Brand Auditor Agent for comprehensive brand analysis.
+
+    Inherits from:
+    - BaseSpecialistAgent: Common agent functionality (LLM calls, formatting, cost tracking)
+    - ParsingMixin: Standardized extraction methods
 
     Analyzes:
     - Brand perception and awareness
@@ -225,132 +211,64 @@ class BrandAuditorAgent:
 
     Usage:
         agent = BrandAuditorAgent()
-        result = agent.audit(
+        result = agent.analyze(  # Note: use analyze() from base class
             company_name="Tesla",
             search_results=results
         )
     """
 
-    def __init__(self, config=None):
-        """Initialize agent."""
-        self._config = config or get_config()
-        self._client = get_anthropic_client()
+    # Class attributes for BaseSpecialistAgent
+    agent_name = "brand_auditor"
 
-    def audit(
-        self,
-        company_name: str,
-        search_results: List[Dict[str, Any]]
-    ) -> BrandAuditResult:
-        """
-        Perform brand audit.
-
-        Args:
-            company_name: Company to audit
-            search_results: Search results with brand data
-
-        Returns:
-            BrandAuditResult
-        """
-        # Format search results
-        formatted_results = self._format_search_results(search_results)
-
-        prompt = BRAND_AUDIT_PROMPT.format(
+    def _get_prompt(self, company_name: str, formatted_results: str) -> str:
+        """Build the brand audit prompt."""
+        return BRAND_AUDIT_PROMPT.format(
             company_name=company_name,
             search_results=formatted_results
         )
 
-        # Call LLM
-        response = self._client.messages.create(
-            model=self._config.llm_model,
-            max_tokens=2000,
-            temperature=0.1,
-            messages=[{"role": "user", "content": prompt}]
-        )
-
-        analysis = response.content[0].text
-        cost = calculate_cost(
-            response.usage.input_tokens,
-            response.usage.output_tokens
-        )
-
-        # Parse analysis into structured result
-        result = self._parse_audit_result(company_name, analysis)
-        result.analysis = analysis
-
-        return result
-
-    def _format_search_results(self, results: List[Dict[str, Any]]) -> str:
-        """Format search results for prompt."""
-        if not results:
-            return "No search results available"
-
-        formatted = []
-        for i, r in enumerate(results[:10], 1):
-            formatted.append(
-                f"Source {i}: {r.get('title', 'N/A')}\n"
-                f"Content: {r.get('content', '')[:400]}...\n"
-            )
-
-        return "\n".join(formatted)
-
-    def _parse_audit_result(
-        self,
-        company_name: str,
-        analysis: str
-    ) -> BrandAuditResult:
-        """Parse LLM analysis into structured result."""
+    def _parse_analysis(self, company_name: str, analysis: str) -> BrandAuditResult:
+        """Parse LLM analysis into structured result using ParsingMixin methods."""
         result = BrandAuditResult(company_name=company_name)
 
-        # Extract metrics from table
+        # Extract metrics from table using ParsingMixin
         result.metrics = self._extract_metrics(analysis)
 
-        # Extract attributes
+        # Extract attributes (custom logic for brand-specific attributes)
         result.attributes = self._extract_attributes(analysis)
 
-        # Extract sentiment
-        result.sentiment = self._extract_sentiment(analysis)
+        # Extract sentiment using ParsingMixin.extract_sentiment
+        sentiment_str = self.extract_sentiment(analysis)
+        result.sentiment = SentimentCategory(sentiment_str) if sentiment_str in ["positive", "negative", "neutral", "mixed"] else SentimentCategory.NEUTRAL
 
-        # Extract strengths and weaknesses
-        result.strengths = self._extract_list_section(analysis, "Strength")
-        result.weaknesses = self._extract_list_section(analysis, "Weakness")
+        # Extract lists using ParsingMixin.extract_list_items
+        result.strengths = self.extract_list_items(analysis, "Strength")
+        result.weaknesses = self.extract_list_items(analysis, "Weakness")
+        result.recommendations = self.extract_list_items(analysis, "Recommendation")
+        result.key_messages = self.extract_list_items(analysis, "Message")
 
-        # Extract recommendations
-        result.recommendations = self._extract_list_section(analysis, "Recommendation")
-
-        # Extract key messages
-        result.key_messages = self._extract_list_section(analysis, "Message")
-
-        # Extract overall score
-        result.brand_score = self._extract_score(analysis)
+        # Extract overall score using ParsingMixin.extract_score
+        result.brand_score = self.extract_score(analysis, "Brand Score")
         result.overall_strength = self._determine_strength(result.brand_score)
 
         return result
 
     def _extract_metrics(self, analysis: str) -> List[BrandMetric]:
-        """Extract brand metrics from analysis."""
-        metrics = []
+        """Extract brand metrics from analysis using ParsingMixin."""
         metric_names = ["Brand Awareness", "Brand Recall", "Brand Loyalty",
                        "Brand Trust", "Brand Relevance"]
 
-        for name in metric_names:
-            if name in analysis:
-                # Try to find score after the metric name
-                import re
-                pattern = rf"{name}.*?(\d{{1,3}})"
-                match = re.search(pattern, analysis)
-                if match:
-                    score = float(match.group(1))
-                    trend = "stable"
-                    if "↑" in analysis[match.start():match.end()+20]:
-                        trend = "improving"
-                    elif "↓" in analysis[match.start():match.end()+20]:
-                        trend = "declining"
+        # Use ParsingMixin.extract_metrics_table for standardized extraction
+        metrics_dict = self.extract_metrics_table(analysis, metric_names)
 
-                    metrics.append(BrandMetric(
-                        name=name,
-                        score=min(100, score),
-                        trend=trend
-                    ))
+        # Convert dict to BrandMetric objects
+        metrics = []
+        for name, data in metrics_dict.items():
+            metrics.append(BrandMetric(
+                name=name,
+                score=data["score"],
+                trend=data["trend"]
+            ))
 
         return metrics
 
@@ -377,58 +295,8 @@ class BrandAuditorAgent:
 
         return attributes[:5]
 
-    def _extract_sentiment(self, analysis: str) -> SentimentCategory:
-        """Extract overall sentiment."""
-        analysis_lower = analysis.lower()
-
-        if "positive" in analysis_lower and "sentiment" in analysis_lower:
-            return SentimentCategory.POSITIVE
-        elif "negative" in analysis_lower and "sentiment" in analysis_lower:
-            return SentimentCategory.NEGATIVE
-        elif "mixed" in analysis_lower:
-            return SentimentCategory.MIXED
-
-        return SentimentCategory.NEUTRAL
-
-    def _extract_list_section(self, analysis: str, section_keyword: str) -> List[str]:
-        """Extract items from a list section."""
-        items = []
-        lines = analysis.split("\n")
-
-        in_section = False
-        for line in lines:
-            if section_keyword.lower() in line.lower() and ("##" in line or "**" in line):
-                in_section = True
-                continue
-
-            if in_section:
-                if line.strip().startswith(("1.", "2.", "3.", "4.", "5.", "-", "•")):
-                    item = line.strip().lstrip("0123456789.-•* ").strip()
-                    if item and len(item) > 5:
-                        items.append(item[:150])
-                elif "##" in line or "**" in line:
-                    break
-
-        return items[:5]
-
-    def _extract_score(self, analysis: str) -> float:
-        """Extract overall brand score."""
-        import re
-
-        # Look for "Brand Score: XX" pattern
-        patterns = [
-            r"Brand Score[:\s]*(\d{1,3})",
-            r"Overall.*?(\d{1,3})\s*/\s*100",
-            r"(\d{1,3})\s*/\s*100"
-        ]
-
-        for pattern in patterns:
-            match = re.search(pattern, analysis, re.IGNORECASE)
-            if match:
-                score = float(match.group(1))
-                return min(100, score)
-
-        return 50.0  # Default
+    # NOTE: _extract_sentiment, _extract_list_section, _extract_score methods
+    # are now provided by ParsingMixin (extract_sentiment, extract_list_items, extract_score)
 
     def _determine_strength(self, score: float) -> BrandStrength:
         """Determine brand strength from score."""
@@ -442,6 +310,19 @@ class BrandAuditorAgent:
             return BrandStrength.EMERGING
         else:
             return BrandStrength.WEAK
+
+    # Backwards compatibility alias
+    def audit(
+        self,
+        company_name: str,
+        search_results: List[Dict[str, Any]]
+    ) -> BrandAuditResult:
+        """
+        Perform brand audit (alias for analyze()).
+
+        Deprecated: Use analyze() instead for consistency with other agents.
+        """
+        return self.analyze(company_name, search_results)
 
 
 # ============================================================================
@@ -458,51 +339,43 @@ def brand_auditor_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with brand audit results
     """
-    print("\n" + "=" * 70)
-    print("[AGENT: Brand Auditor] Brand perception analysis...")
-    print("=" * 70)
-
+    logger = get_agent_logger("brand_auditor")
     config = get_config()
     company_name = state["company_name"]
     search_results = state.get("search_results", [])
 
-    if not search_results:
-        print("[Brand] WARNING: No search results available!")
+    with logger.agent_run(company_name):
+        if not search_results:
+            logger.no_data()
+            return create_empty_result("brand")
+
+        logger.analyzing(len(search_results))
+
+        # Run brand audit using base class analyze() method
+        agent = BrandAuditorAgent(config)
+        result = agent.analyze(
+            company_name=company_name,
+            search_results=search_results
+        )
+
+        # Calculate cost
+        cost = calculate_cost(500, 1500)  # Estimated
+
+        logger.info(f"Brand Score: {result.brand_score}")
+        logger.info(f"Strength: {result.overall_strength.value}")
+        logger.info(f"Sentiment: {result.sentiment.value}")
+        logger.complete(cost=cost)
+
         return {
             "agent_outputs": {
                 "brand": {
-                    "analysis": "No data available for brand audit",
-                    "brand_score": 0,
-                    "cost": 0.0
+                    **result.to_dict(),
+                    "analysis": result.analysis,
+                    "cost": cost
                 }
-            }
+            },
+            "total_cost": cost
         }
-
-    # Run brand audit
-    agent = BrandAuditorAgent(config)
-    result = agent.audit(
-        company_name=company_name,
-        search_results=search_results
-    )
-
-    # Calculate cost
-    cost = calculate_cost(500, 1500)  # Estimated
-
-    print(f"[Brand] Brand Score: {result.brand_score}")
-    print(f"[Brand] Strength: {result.overall_strength.value}")
-    print(f"[Brand] Sentiment: {result.sentiment.value}")
-    print("=" * 70)
-
-    return {
-        "agent_outputs": {
-            "brand": {
-                **result.to_dict(),
-                "analysis": result.analysis,
-                "cost": cost
-            }
-        },
-        "total_cost": cost
-    }
 
 
 # ============================================================================

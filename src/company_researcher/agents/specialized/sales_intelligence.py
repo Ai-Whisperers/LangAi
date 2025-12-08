@@ -10,44 +10,28 @@ Sales-focused intelligence capabilities:
 - Account-based intelligence
 
 This agent generates actionable sales intelligence for B2B targeting.
+
+Refactored to use BaseSpecialistAgent for:
+- Reduced code duplication
+- Consistent agent interface
+- Centralized LLM calling and cost tracking
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import calculate_cost
 from ...state import OverallState
+from ...types import LeadScore, BuyingStage, CompanySize  # Centralized enums
+from ..base import get_agent_logger, create_empty_result
+from ..base.specialist import BaseSpecialistAgent, ParsingMixin
 
 
 # ============================================================================
 # Data Models
 # ============================================================================
-
-class LeadScore(str, Enum):
-    """Lead qualification scores."""
-    HOT = "hot"           # High priority, immediate opportunity
-    WARM = "warm"         # Good fit, moderate urgency
-    COLD = "cold"         # Potential fit, low urgency
-    NOT_QUALIFIED = "not_qualified"
-
-
-class BuyingStage(str, Enum):
-    """Buying journey stages."""
-    AWARENESS = "awareness"
-    CONSIDERATION = "consideration"
-    DECISION = "decision"
-    UNKNOWN = "unknown"
-
-
-class CompanySize(str, Enum):
-    """Company size categories."""
-    ENTERPRISE = "enterprise"      # 1000+ employees
-    MID_MARKET = "mid_market"      # 100-999 employees
-    SMB = "smb"                    # 10-99 employees
-    STARTUP = "startup"            # <10 employees
+# Note: LeadScore, BuyingStage, CompanySize imported from types.py
 
 
 @dataclass
@@ -246,9 +230,13 @@ Begin your sales intelligence analysis:"""
 # Sales Intelligence Agent
 # ============================================================================
 
-class SalesIntelligenceAgent:
+class SalesIntelligenceAgent(BaseSpecialistAgent[SalesIntelligenceResult], ParsingMixin):
     """
     Sales Intelligence Agent for B2B prospecting.
+
+    Inherits from:
+    - BaseSpecialistAgent: Common agent functionality (LLM calls, formatting, cost tracking)
+    - ParsingMixin: Standardized extraction methods
 
     Generates:
     - Lead qualification
@@ -259,70 +247,21 @@ class SalesIntelligenceAgent:
 
     Usage:
         agent = SalesIntelligenceAgent()
-        result = agent.analyze(
+        result = agent.analyze(  # Uses base class analyze() method
             company_name="Tesla",
             search_results=results
         )
     """
 
-    def __init__(self, config=None):
-        """Initialize agent."""
-        self._config = config or get_config()
-        self._client = get_anthropic_client()
+    # Class attributes for BaseSpecialistAgent
+    agent_name = "sales_intelligence"
 
-    def analyze(
-        self,
-        company_name: str,
-        search_results: List[Dict[str, Any]]
-    ) -> SalesIntelligenceResult:
-        """
-        Generate sales intelligence.
-
-        Args:
-            company_name: Target company
-            search_results: Research data
-
-        Returns:
-            SalesIntelligenceResult
-        """
-        formatted_results = self._format_search_results(search_results)
-
-        prompt = SALES_INTELLIGENCE_PROMPT.format(
+    def _get_prompt(self, company_name: str, formatted_results: str) -> str:
+        """Build the sales intelligence prompt."""
+        return SALES_INTELLIGENCE_PROMPT.format(
             company_name=company_name,
             search_results=formatted_results
         )
-
-        response = self._client.messages.create(
-            model=self._config.llm_model,
-            max_tokens=2000,
-            temperature=0.1,
-            messages=[{"role": "user", "content": prompt}]
-        )
-
-        analysis = response.content[0].text
-        cost = calculate_cost(
-            response.usage.input_tokens,
-            response.usage.output_tokens
-        )
-
-        result = self._parse_analysis(company_name, analysis)
-        result.analysis = analysis
-
-        return result
-
-    def _format_search_results(self, results: List[Dict[str, Any]]) -> str:
-        """Format search results."""
-        if not results:
-            return "No search results available"
-
-        formatted = []
-        for i, r in enumerate(results[:12], 1):
-            formatted.append(
-                f"Source {i}: {r.get('title', 'N/A')}\n"
-                f"Content: {r.get('content', '')[:400]}...\n"
-            )
-
-        return "\n".join(formatted)
 
     def _parse_analysis(
         self,
@@ -455,28 +394,15 @@ class SalesIntelligenceAgent:
         return signals[:5]
 
     def _extract_list(self, analysis: str, keyword: str) -> List[str]:
-        """Extract items containing keyword."""
-        items = []
-        lines = analysis.split("\n")
-
-        for line in lines:
-            if keyword.lower() in line.lower():
-                cleaned = line.strip().lstrip("0123456789.-•* ").strip()
-                if cleaned and len(cleaned) > 10:
-                    items.append(cleaned[:150])
-
-        return items[:5]
+        """Extract items containing keyword using ParsingMixin."""
+        # Delegate to ParsingMixin.extract_keyword_list
+        return self.extract_keyword_list(analysis, keyword, max_items=5)
 
     def _extract_approach(self, analysis: str) -> str:
-        """Extract recommended approach."""
-        if "Recommended" in analysis and "Approach" in analysis:
-            start = analysis.find("Recommended")
-            section = analysis[start:start+500]
-            lines = section.split("\n")
-            for line in lines[1:4]:
-                if line.strip() and len(line.strip()) > 20:
-                    return line.strip()[:200]
-        return "Consultative selling approach recommended"
+        """Extract recommended approach using ParsingMixin."""
+        # Use ParsingMixin.extract_section for standardized extraction
+        result = self.extract_section(analysis, "Recommended", max_length=500)
+        return result if result else "Consultative selling approach recommended"
 
 
 # ============================================================================
@@ -493,44 +419,37 @@ def sales_intelligence_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with sales intelligence
     """
-    print("\n" + "=" * 70)
-    print("[AGENT: Sales Intelligence] Generating sales insights...")
-    print("=" * 70)
-
+    logger = get_agent_logger("sales_intelligence")
     config = get_config()
     company_name = state["company_name"]
     search_results = state.get("search_results", [])
 
-    if not search_results:
+    with logger.agent_run(company_name):
+        if not search_results:
+            logger.no_data()
+            return create_empty_result("sales")
+
+        logger.analyzing(len(search_results))
+
+        agent = SalesIntelligenceAgent(config)
+        result = agent.analyze(company_name, search_results)
+        cost = calculate_cost(500, 1500)
+
+        logger.info(f"Lead Score: {result.lead_score.value}")
+        logger.info(f"Buying Stage: {result.buying_stage.value}")
+        logger.info(f"Decision Makers: {len(result.decision_makers)}")
+        logger.complete(cost=cost)
+
         return {
             "agent_outputs": {
                 "sales": {
-                    "analysis": "No data available",
-                    "lead_score": "cold",
-                    "cost": 0.0
+                    **result.to_dict(),
+                    "analysis": result.analysis,
+                    "cost": cost
                 }
-            }
+            },
+            "total_cost": cost
         }
-
-    agent = SalesIntelligenceAgent(config)
-    result = agent.analyze(company_name, search_results)
-    cost = calculate_cost(500, 1500)
-
-    print(f"[Sales] Lead Score: {result.lead_score.value}")
-    print(f"[Sales] Buying Stage: {result.buying_stage.value}")
-    print(f"[Sales] Decision Makers: {len(result.decision_makers)}")
-    print("=" * 70)
-
-    return {
-        "agent_outputs": {
-            "sales": {
-                **result.to_dict(),
-                "analysis": result.analysis,
-                "cost": cost
-            }
-        },
-        "total_cost": cost
-    }
 
 
 # ============================================================================
