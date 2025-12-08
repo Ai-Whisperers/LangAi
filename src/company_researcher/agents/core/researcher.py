@@ -10,12 +10,11 @@ This agent is responsible for:
 
 import json
 from typing import Dict, Any, List
-from anthropic import Anthropic
-from tavily import TavilyClient
 
-from ..config import get_config
-from ..state import OverallState
-from ..prompts import GENERATE_QUERIES_PROMPT
+from ...config import get_config
+from ...llm.client_factory import get_anthropic_client, get_tavily_client, calculate_cost
+from ...state import OverallState
+from ...prompts import GENERATE_QUERIES_PROMPT
 
 
 def researcher_agent_node(state: OverallState) -> Dict[str, Any]:
@@ -36,7 +35,7 @@ def researcher_agent_node(state: OverallState) -> Dict[str, Any]:
     print("=" * 60)
 
     config = get_config()
-    client = Anthropic(api_key=config.anthropic_api_key)
+    client = get_anthropic_client()
     company_name = state["company_name"]
 
     # Step 1: Generate search queries
@@ -88,7 +87,7 @@ Previous research had gaps. Focus queries on:
             f"{company_name} recent news developments"
         ]
 
-    query_cost = config.calculate_llm_cost(
+    query_cost = calculate_cost(
         response.usage.input_tokens,
         response.usage.output_tokens
     )
@@ -100,7 +99,7 @@ Previous research had gaps. Focus queries on:
     # Step 2: Execute searches
     print(f"\n[Researcher] Searching for sources...")
 
-    tavily_client = TavilyClient(api_key=config.tavily_api_key)
+    tavily_client = get_tavily_client()
     all_results = []
     sources = []
 

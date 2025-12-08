@@ -4,7 +4,7 @@ Base agent class for all research agents.
 
 from typing import Dict, Any
 from abc import ABC, abstractmethod
-from ..state import OverallState
+from ...state import OverallState
 
 
 class BaseAgent(ABC):

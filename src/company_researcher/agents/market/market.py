@@ -9,11 +9,31 @@ This agent specializes in:
 - Industry dynamics
 """
 
-from typing import Dict, Any
-from anthropic import Anthropic
+from typing import Dict, Any, Optional, Callable
 
-from ..config import get_config
-from ..state import OverallState
+from ...config import get_config
+from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...state import OverallState
+
+
+class MarketAgent:
+    """Market analysis agent for competitive landscape."""
+
+    def __init__(self, search_tool: Optional[Callable] = None, llm_client: Optional[Any] = None):
+        self.search_tool = search_tool
+        self.llm_client = llm_client or get_anthropic_client()
+
+    async def analyze(self, company_name: str, search_results: list = None) -> Dict[str, Any]:
+        """Analyze market position for a company."""
+        if search_results is None:
+            search_results = []
+        state = {"company_name": company_name, "search_results": search_results}
+        return market_agent_node(state)
+
+
+def create_market_agent(search_tool: Callable = None, llm_client: Any = None) -> MarketAgent:
+    """Factory function to create a MarketAgent."""
+    return MarketAgent(search_tool=search_tool, llm_client=llm_client)
 
 
 MARKET_ANALYSIS_PROMPT = """You are a market analyst reviewing search results about a company.
@@ -66,7 +86,7 @@ def market_agent_node(state: OverallState) -> Dict[str, Any]:
     print("=" * 60)
 
     config = get_config()
-    client = Anthropic(api_key=config.anthropic_api_key)
+    client = get_anthropic_client()
 
     company_name = state["company_name"]
     search_results = state.get("search_results", [])
@@ -108,7 +128,7 @@ def market_agent_node(state: OverallState) -> Dict[str, Any]:
     )
 
     market_analysis = response.content[0].text
-    cost = config.calculate_llm_cost(
+    cost = calculate_cost(
         response.usage.input_tokens,
         response.usage.output_tokens
     )

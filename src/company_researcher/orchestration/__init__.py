@@ -56,6 +56,20 @@ from .research_workflow import (
     ResearchDepth,
 )
 
+from .swarm_collaboration import (
+    SwarmOrchestrator,
+    SwarmConfig,
+    SwarmResult,
+    ConsensusStrategy,
+    ConflictResolution,
+    AgentRole,
+    AgentWrapper,
+    AgentResult,
+    ConsensusResult,
+    create_research_swarm,
+    create_analysis_swarm,
+)
+
 __all__ = [
     # Workflow Engine
     "NodeType",
@@ -77,4 +91,16 @@ __all__ = [
     "create_comprehensive_research_workflow",
     "execute_research",
     "ResearchDepth",
+    # Swarm Collaboration
+    "SwarmOrchestrator",
+    "SwarmConfig",
+    "SwarmResult",
+    "ConsensusStrategy",
+    "ConflictResolution",
+    "AgentRole",
+    "AgentWrapper",
+    "AgentResult",
+    "ConsensusResult",
+    "create_research_swarm",
+    "create_analysis_swarm",
 ]

@@ -9,17 +9,37 @@ Provides comprehensive market analysis including:
 - Customer intelligence
 """
 
-from typing import Dict, Any
-from anthropic import Anthropic
+from typing import Dict, Any, Optional, Callable
 
-from ..config import get_config
-from ..state import OverallState
-from ..tools.market_sizing_utils import (
+from ...config import get_config
+from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...state import OverallState
+from ...tools.market_sizing_utils import (
     MarketTrend,
     CompetitiveIntensity,
     classify_trend,
     assess_competitive_intensity
 )
+
+
+class EnhancedMarketAgent:
+    """Enhanced market analysis agent with TAM/SAM/SOM sizing."""
+
+    def __init__(self, search_tool: Optional[Callable] = None, llm_client: Optional[Any] = None):
+        self.search_tool = search_tool
+        self.llm_client = llm_client or get_anthropic_client()
+
+    async def analyze(self, company_name: str, search_results: list = None) -> Dict[str, Any]:
+        """Perform enhanced market analysis for a company."""
+        if search_results is None:
+            search_results = []
+        state = {"company_name": company_name, "search_results": search_results}
+        return enhanced_market_agent_node(state)
+
+
+def create_enhanced_market_agent(search_tool: Callable = None, llm_client: Any = None) -> EnhancedMarketAgent:
+    """Factory function to create an EnhancedMarketAgent."""
+    return EnhancedMarketAgent(search_tool=search_tool, llm_client=llm_client)
 
 
 # ==============================================================================
@@ -187,7 +207,7 @@ def enhanced_market_agent_node(state: OverallState) -> Dict[str, Any]:
     prompt = create_market_analysis_prompt(company_name, search_results)
 
     # Call LLM for analysis
-    client = Anthropic(api_key=config.anthropic_api_key)
+    client = get_anthropic_client()
     response = client.messages.create(
         model=config.llm_model,
         max_tokens=1200,  # Comprehensive analysis
@@ -196,7 +216,7 @@ def enhanced_market_agent_node(state: OverallState) -> Dict[str, Any]:
     )
 
     market_analysis = response.content[0].text
-    cost = config.calculate_llm_cost(
+    cost = calculate_cost(
         response.usage.input_tokens,
         response.usage.output_tokens
     )

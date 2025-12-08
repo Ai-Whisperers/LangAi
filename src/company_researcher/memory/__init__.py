@@ -65,6 +65,36 @@ from .dual_layer import (
     create_research_memory,
 )
 
+# Conversation memory
+from .conversation import (
+    ConversationMemory,
+    WindowedConversationMemory,
+    BufferedConversationMemory,
+    Message,
+    MessageRole,
+    ConversationSummary,
+    create_conversation_memory,
+)
+
+# Entity memory
+from .entity import (
+    EntityMemory,
+    Entity,
+    EntityType,
+    Relationship,
+    RelationType,
+    create_entity_memory,
+)
+
+# Working memory
+from .working import (
+    WorkingMemory,
+    WorkingMemoryItem,
+    ScratchpadMemory,
+    create_working_memory,
+    create_scratchpad,
+)
+
 __all__ = [
     # Hot layer
     "LRUCache",
@@ -89,4 +119,25 @@ __all__ = [
     "PromotionPolicy",
     "DualLayerStats",
     "create_research_memory",
+    # Conversation memory
+    "ConversationMemory",
+    "WindowedConversationMemory",
+    "BufferedConversationMemory",
+    "Message",
+    "MessageRole",
+    "ConversationSummary",
+    "create_conversation_memory",
+    # Entity memory
+    "EntityMemory",
+    "Entity",
+    "EntityType",
+    "Relationship",
+    "RelationType",
+    "create_entity_memory",
+    # Working memory
+    "WorkingMemory",
+    "WorkingMemoryItem",
+    "ScratchpadMemory",
+    "create_working_memory",
+    "create_scratchpad",
 ]

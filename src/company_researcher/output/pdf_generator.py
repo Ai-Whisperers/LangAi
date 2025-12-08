@@ -10,8 +10,12 @@ Professional PDF report generation:
 
 Supports multiple PDF libraries with fallback.
 """
+from __future__ import annotations
 
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from reportlab.platypus import Table
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum

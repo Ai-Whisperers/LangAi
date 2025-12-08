@@ -106,6 +106,34 @@ from .research.reasoning import (
     create_reasoning_agent,
 )
 
+# =============================================================================
+# ESG Agent
+# =============================================================================
+from .esg_agent import (
+    ESGAgent,
+    ESGAnalysis,
+    ESGScore,
+    ESGMetric,
+    ESGCategory,
+    ESGRating,
+    Controversy,
+    ControversySeverity,
+    esg_agent_node,
+    create_esg_agent,
+)
+
+# =============================================================================
+# Agent Mixins
+# =============================================================================
+from .mixins import (
+    SelfReflectionMixin,
+    SelfReflectionResult,
+    ReflectionScore,
+    ReflectionAspect,
+    ConfidenceLevel,
+    create_reflective_agent,
+)
+
 __all__ = [
     # Core
     "BaseAgent",
@@ -144,4 +172,22 @@ __all__ = [
     "ReasoningAgent",
     "reasoning_agent_node",
     "create_reasoning_agent",
+    # ESG
+    "ESGAgent",
+    "ESGAnalysis",
+    "ESGScore",
+    "ESGMetric",
+    "ESGCategory",
+    "ESGRating",
+    "Controversy",
+    "ControversySeverity",
+    "esg_agent_node",
+    "create_esg_agent",
+    # Mixins
+    "SelfReflectionMixin",
+    "SelfReflectionResult",
+    "ReflectionScore",
+    "ReflectionAspect",
+    "ConfidenceLevel",
+    "create_reflective_agent",
 ]

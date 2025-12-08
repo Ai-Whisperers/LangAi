@@ -16,10 +16,10 @@ from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from anthropic import Anthropic
 
-from ..config import get_config
-from ..state import OverallState
+from ...config import get_config
+from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...state import OverallState
 
 
 # ============================================================================
@@ -286,7 +286,7 @@ class InvestmentAnalystAgent:
     def __init__(self, config=None):
         """Initialize agent."""
         self._config = config or get_config()
-        self._client = Anthropic(api_key=self._config.anthropic_api_key)
+        self._client = get_anthropic_client()
 
     def analyze(
         self,
@@ -318,7 +318,7 @@ class InvestmentAnalystAgent:
         )
 
         analysis = response.content[0].text
-        cost = self._config.calculate_llm_cost(
+        cost = calculate_cost(
             response.usage.input_tokens,
             response.usage.output_tokens
         )
@@ -580,7 +580,7 @@ def investment_analyst_agent_node(state: OverallState) -> Dict[str, Any]:
 
     agent = InvestmentAnalystAgent(config)
     result = agent.analyze(company_name, agent_outputs)
-    cost = config.calculate_llm_cost(700, 2000)
+    cost = calculate_cost(700, 2000)
 
     print(f"[Investment] Rating: {result.investment_rating.value}")
     print(f"[Investment] Risk: {result.overall_risk.value}")

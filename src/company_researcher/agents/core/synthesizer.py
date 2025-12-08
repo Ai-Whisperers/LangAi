@@ -9,10 +9,10 @@ This agent is responsible for:
 """
 
 from typing import Dict, Any
-from anthropic import Anthropic
 
-from ..config import get_config
-from ..state import OverallState
+from ...config import get_config
+from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...state import OverallState
 
 
 SYNTHESIS_PROMPT = """You are a senior research analyst synthesizing insights from multiple specialized analysts.
@@ -87,7 +87,7 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
     print("=" * 60)
 
     config = get_config()
-    client = Anthropic(api_key=config.anthropic_api_key)
+    client = get_anthropic_client()
 
     company_name = state["company_name"]
     agent_outputs = state.get("agent_outputs", {})
@@ -119,7 +119,7 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
     )
 
     synthesized_overview = response.content[0].text
-    cost = config.calculate_llm_cost(
+    cost = calculate_cost(
         response.usage.input_tokens,
         response.usage.output_tokens
     )

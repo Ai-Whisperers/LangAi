@@ -4,6 +4,7 @@ Research Agents - Deep research and reasoning.
 Agents for comprehensive research:
 - DeepResearchAgent: Multi-iteration deep research
 - ReasoningAgent: Strategic reasoning and hypothesis testing
+- TrendAnalystAgent: Trend analysis and forecasting
 """
 
 from .deep_research import (
@@ -20,6 +21,16 @@ from .reasoning import (
     ReasoningType,
     Hypothesis,
 )
+from .trend_analyst import (
+    TrendAnalystAgent,
+    trend_analyst_agent_node,
+    create_trend_analyst,
+    TrendDirection,
+    TrendStrength,
+    Trend,
+    Forecast,
+    TrendAnalysis,
+)
 
 __all__ = [
     # Deep Research
@@ -34,4 +45,13 @@ __all__ = [
     "create_reasoning_agent",
     "ReasoningType",
     "Hypothesis",
+    # Trend Analysis
+    "TrendAnalystAgent",
+    "trend_analyst_agent_node",
+    "create_trend_analyst",
+    "TrendDirection",
+    "TrendStrength",
+    "Trend",
+    "Forecast",
+    "TrendAnalysis",
 ]

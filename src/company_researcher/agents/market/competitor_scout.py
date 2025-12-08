@@ -11,12 +11,13 @@ Provides comprehensive competitive intelligence including:
 - Customer sentiment comparison
 """
 
-from typing import Dict, Any, List, Optional
-from anthropic import Anthropic
+from typing import Dict, Any, List, Optional, Callable
+from dataclasses import dataclass, field
 
-from ..config import get_config
-from ..state import OverallState
-from ..tools.competitor_analysis_utils import (
+from ...config import get_config
+from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...state import OverallState
+from ...tools.competitor_analysis_utils import (
     CompetitorType,
     ThreatLevel,
     classify_competitor,
@@ -27,6 +28,47 @@ from ..tools.competitor_analysis_utils import (
     analyze_patent_portfolio,
     aggregate_review_sentiment
 )
+
+
+@dataclass
+class CompetitorProfile:
+    """Profile of a competitor company."""
+    name: str
+    market_share: Optional[float] = None
+    strengths: List[str] = field(default_factory=list)
+    weaknesses: List[str] = field(default_factory=list)
+    threat_level: str = "medium"
+    tech_stack: List[str] = field(default_factory=list)
+
+
+@dataclass
+class CompetitivePosition:
+    """Company's competitive position in the market."""
+    market_rank: Optional[int] = None
+    market_share: Optional[float] = None
+    competitive_advantages: List[str] = field(default_factory=list)
+    competitive_disadvantages: List[str] = field(default_factory=list)
+    key_differentiators: List[str] = field(default_factory=list)
+
+
+class CompetitorScoutAgent:
+    """Competitive intelligence agent for competitor analysis."""
+
+    def __init__(self, search_tool: Optional[Callable] = None, llm_client: Optional[Any] = None):
+        self.search_tool = search_tool
+        self.llm_client = llm_client or get_anthropic_client()
+
+    async def analyze(self, company_name: str, search_results: list = None) -> Dict[str, Any]:
+        """Perform competitive intelligence analysis for a company."""
+        if search_results is None:
+            search_results = []
+        state = {"company_name": company_name, "search_results": search_results}
+        return competitor_scout_agent_node(state)
+
+
+def create_competitor_scout(search_tool: Callable = None, llm_client: Any = None) -> CompetitorScoutAgent:
+    """Factory function to create a CompetitorScoutAgent."""
+    return CompetitorScoutAgent(search_tool=search_tool, llm_client=llm_client)
 
 
 # ==============================================================================
@@ -195,7 +237,7 @@ def competitor_scout_agent_node(state: OverallState) -> Dict[str, Any]:
     prompt = create_competitor_analysis_prompt(company_name, search_results)
 
     # Call LLM for analysis
-    client = Anthropic(api_key=config.anthropic_api_key)
+    client = get_anthropic_client()
     response = client.messages.create(
         model=config.llm_model,
         max_tokens=1500,  # Comprehensive competitor analysis
@@ -204,7 +246,7 @@ def competitor_scout_agent_node(state: OverallState) -> Dict[str, Any]:
     )
 
     competitor_analysis = response.content[0].text
-    cost = config.calculate_llm_cost(
+    cost = calculate_cost(
         response.usage.input_tokens,
         response.usage.output_tokens
     )

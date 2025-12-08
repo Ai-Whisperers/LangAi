@@ -67,6 +67,29 @@ from .config import (
     validate_config,
 )
 
+from .service_registry import (
+    ServiceRegistry,
+    ServiceInstance,
+    ServiceStatus,
+    ServiceClient,
+    LoadBalanceStrategy,
+    create_service_registry,
+)
+
+from .log_aggregation import (
+    LogAggregator,
+    LogEntry,
+    LogLevel,
+    LogShipper,
+    AsyncLogShipper,
+    FileShipper,
+    HTTPShipper,
+    ElasticsearchShipper,
+    StructuredFormatter,
+    create_log_aggregator,
+    setup_structured_logging,
+)
+
 __all__ = [
     # Circuit Breaker
     "CircuitBreaker",
@@ -94,4 +117,23 @@ __all__ = [
     "load_config",
     "get_config",
     "validate_config",
+    # Service Registry
+    "ServiceRegistry",
+    "ServiceInstance",
+    "ServiceStatus",
+    "ServiceClient",
+    "LoadBalanceStrategy",
+    "create_service_registry",
+    # Log Aggregation
+    "LogAggregator",
+    "LogEntry",
+    "LogLevel",
+    "LogShipper",
+    "AsyncLogShipper",
+    "FileShipper",
+    "HTTPShipper",
+    "ElasticsearchShipper",
+    "StructuredFormatter",
+    "create_log_aggregator",
+    "setup_structured_logging",
 ]

@@ -5,13 +5,15 @@ Advanced output format generation:
 - PDF reports with professional styling
 - Excel workbooks with multiple sheets
 - PowerPoint presentations
+- Comparison reports (multi-company)
 - Markdown export
 
 Usage:
     from src.company_researcher.output import (
         generate_pdf_report,
         export_to_excel,
-        generate_presentation
+        generate_presentation,
+        compare_companies
     )
 
     # Generate PDF report
@@ -32,6 +34,12 @@ Usage:
         research_data=data,
         company_name="Tesla",
         style="executive"
+    )
+
+    # Compare companies
+    report = await compare_companies(
+        {"Apple": apple_data, "Microsoft": msft_data},
+        output_format="markdown"
     )
 """
 
@@ -66,6 +74,18 @@ from .presentation_generator import (
     PPTX_AVAILABLE,
 )
 
+# Comparison Reports
+from .comparison_report import (
+    ComparisonReportGenerator,
+    ComparisonReport,
+    CompanyData,
+    MetricComparison,
+    ComparisonMetric,
+    ComparisonCategory,
+    compare_companies,
+    create_comparison_generator,
+)
+
 __all__ = [
     # PDF
     "PDFReportGenerator",
@@ -89,4 +109,13 @@ __all__ = [
     "SlideType",
     "generate_presentation",
     "PPTX_AVAILABLE",
+    # Comparison Reports
+    "ComparisonReportGenerator",
+    "ComparisonReport",
+    "CompanyData",
+    "MetricComparison",
+    "ComparisonMetric",
+    "ComparisonCategory",
+    "compare_companies",
+    "create_comparison_generator",
 ]

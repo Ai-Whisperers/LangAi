@@ -6,6 +6,7 @@ REST and WebSocket API for company research:
 - WebSocket for real-time updates
 - Authentication and rate limiting
 - Webhook integrations
+- Streaming results (SSE)
 
 Usage:
     from src.company_researcher.api import create_app, run_server
@@ -16,6 +17,17 @@ Usage:
     # Run server
     run_server(host="0.0.0.0", port=8000)
 """
+
+# Streaming (works without FastAPI)
+from .streaming import (
+    ProgressTracker,
+    StreamEvent,
+    EventType,
+    StreamingResearchContext,
+    stream_sse,
+    create_progress_tracker,
+    create_streaming_context,
+)
 
 # Check for FastAPI availability
 try:
@@ -45,6 +57,14 @@ if FASTAPI_AVAILABLE:
     )
 
     __all__ = [
+        # Streaming (always available)
+        "ProgressTracker",
+        "StreamEvent",
+        "EventType",
+        "StreamingResearchContext",
+        "stream_sse",
+        "create_progress_tracker",
+        "create_streaming_context",
         # App
         "create_app",
         "get_app",
@@ -65,7 +85,17 @@ if FASTAPI_AVAILABLE:
         "HealthResponse",
     ]
 else:
-    __all__ = ["FASTAPI_AVAILABLE"]
+    __all__ = [
+        # Streaming (always available)
+        "ProgressTracker",
+        "StreamEvent",
+        "EventType",
+        "StreamingResearchContext",
+        "stream_sse",
+        "create_progress_tracker",
+        "create_streaming_context",
+        "FASTAPI_AVAILABLE",
+    ]
 
     def create_app():
         raise ImportError("FastAPI not installed. Run: pip install fastapi uvicorn")

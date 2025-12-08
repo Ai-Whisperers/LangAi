@@ -1,11 +1,5 @@
 """
 Specialized Agents - Domain-specific research agents.
-
-Agents for specialized analysis:
-- BrandAuditorAgent: Brand perception analysis
-- SocialMediaAgent: Social presence analysis
-- SalesIntelligenceAgent: B2B prospecting
-- ProductAgent: Product analysis
 """
 
 from .brand_auditor import (
@@ -30,6 +24,17 @@ from .sales_intelligence import (
     BuyingSignal,
 )
 from .product import ProductAgent, product_agent_node, create_product_agent
+from .regulatory_compliance import (
+    RegulatoryComplianceAgent,
+    regulatory_compliance_agent_node,
+    create_regulatory_compliance_agent,
+    RegulatoryBody,
+    ComplianceStatus,
+    FilingType,
+    LegalMatterType,
+    RiskLevel,
+    ComplianceAnalysis,
+)
 
 __all__ = [
     # Brand Auditor
@@ -54,4 +59,14 @@ __all__ = [
     "ProductAgent",
     "product_agent_node",
     "create_product_agent",
+    # Regulatory Compliance
+    "RegulatoryComplianceAgent",
+    "regulatory_compliance_agent_node",
+    "create_regulatory_compliance_agent",
+    "RegulatoryBody",
+    "ComplianceStatus",
+    "FilingType",
+    "LegalMatterType",
+    "RiskLevel",
+    "ComplianceAnalysis",
 ]

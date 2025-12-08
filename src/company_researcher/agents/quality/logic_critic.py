@@ -12,24 +12,62 @@ This agent runs after all specialist agents and before report generation
 to ensure research quality and accuracy.
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Callable
 from datetime import datetime
-from anthropic import Anthropic
 
-from ..config import get_config
-from ..state import OverallState
-from ..quality.fact_extractor import (
+from ...config import get_config
+from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...state import OverallState
+from ...quality.fact_extractor import (
     FactExtractor,
     ExtractedFact,
     ExtractionResult,
     FactCategory
 )
-from ..quality.contradiction_detector import (
+from ...quality.contradiction_detector import (
     ContradictionDetector,
     ContradictionReport,
     ContradictionSeverity
 )
-from ..quality.models import QualityReport, ConfidenceLevel
+from ...quality.models import QualityReport, ConfidenceLevel
+from enum import Enum
+from dataclasses import dataclass
+
+
+class IssueSeverity(str, Enum):
+    """Severity levels for quality issues."""
+    CRITICAL = "critical"  # Major contradiction or error
+    HIGH = "high"         # Significant issue
+    MEDIUM = "medium"     # Moderate concern
+    LOW = "low"           # Minor issue
+    INFO = "info"         # Informational only
+
+
+@dataclass
+class QualityIssue:
+    """A quality issue found in research."""
+    issue_type: str
+    severity: IssueSeverity
+    description: str
+    location: str = ""
+    recommendation: str = ""
+
+
+class LogicCriticAgent:
+    """Logic critic agent for quality assurance and verification."""
+
+    def __init__(self, search_tool: Optional[Callable] = None, llm_client: Optional[Any] = None):
+        self.search_tool = search_tool
+        self.llm_client = llm_client or get_anthropic_client()
+
+    async def analyze(self, state: Dict[str, Any]) -> Dict[str, Any]:
+        """Perform logic critic analysis on research state."""
+        return logic_critic_agent_node(state)
+
+
+def create_logic_critic(search_tool: Callable = None, llm_client: Any = None) -> LogicCriticAgent:
+    """Factory function to create a LogicCriticAgent."""
+    return LogicCriticAgent(search_tool=search_tool, llm_client=llm_client)
 
 
 # ============================================================================
@@ -363,7 +401,7 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
         quality_score=quality_metrics['overall_score']
     )
 
-    client = Anthropic(api_key=config.anthropic_api_key)
+    client = get_anthropic_client()
     response = client.messages.create(
         model=config.llm_model,
         max_tokens=800,
@@ -372,7 +410,7 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
     )
 
     critic_analysis = response.content[0].text
-    cost = config.calculate_llm_cost(
+    cost = calculate_cost(
         response.usage.input_tokens,
         response.usage.output_tokens
     )

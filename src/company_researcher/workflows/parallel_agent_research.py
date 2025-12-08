@@ -1,20 +1,28 @@
 """
-Parallel Multi-Agent Research Workflow (Phase 4).
+Parallel Multi-Agent Research Workflow (Phase 4 + Phase 10).
 
-This workflow implements parallel specialized agents:
+This workflow implements parallel specialized agents with quality assurance:
 - Researcher Agent: Finds and gathers sources
 - Financial Agent: Extracts financial metrics (PARALLEL)
 - Market Agent: Analyzes competitive landscape (PARALLEL)
 - Product Agent: Catalogs products and technology (PARALLEL)
+- Competitor Scout: Competitive intelligence (PARALLEL) - Phase 9
 - Synthesizer Agent: Aggregates all specialist insights
+- Logic Critic Agent: Quality assurance and verification - Phase 10
 - Quality Check: Validates and triggers iterations
 
-Workflow: Researcher → [Financial, Market, Product] → Synthesizer → Quality → (iterate or finish)
+Workflow: Researcher → [Financial, Market, Product, Competitor] → Synthesizer → Logic Critic → Quality → (iterate or finish)
 
 Phase 4 Observability:
 - AgentOps session tracking for full workflow replay
 - LangSmith tracing for LangChain calls
 - Enhanced cost tracking per agent
+
+Phase 10 Quality Assurance:
+- Fact extraction and verification
+- Contradiction detection (rule-based + LLM)
+- Gap identification
+- Comprehensive quality scoring
 """
 
 from typing import Dict, Any
@@ -30,6 +38,7 @@ from ..agents import (
     product_agent_node,
     synthesizer_agent_node
 )
+from ..agents.quality.logic_critic import logic_critic_agent_node  # Phase 10
 from ..quality import check_research_quality
 from ..prompts import format_sources_for_report
 from ..observability import (
@@ -45,7 +54,10 @@ from ..observability import (
 
 def check_quality_node(state: OverallState) -> Dict[str, Any]:
     """
-    Node: Check research quality (Phase 2).
+    Node: Check research quality (Phase 2 + Phase 10).
+
+    Phase 10: Uses comprehensive quality score from Logic Critic if available,
+    otherwise falls back to simple quality check.
 
     Args:
         state: Current workflow state
@@ -55,39 +67,72 @@ def check_quality_node(state: OverallState) -> Dict[str, Any]:
     """
     print("\n[NODE] Checking research quality...")
 
-    # Check quality
-    quality_result = check_research_quality(
-        company_name=state["company_name"],
-        extracted_data=state.get("company_overview", ""),
-        sources=state.get("sources", [])
-    )
+    # Phase 10: Use quality score from Logic Critic if available
+    if "quality_score" in state and state.get("agent_outputs", {}).get("logic_critic"):
+        quality_score = state["quality_score"]
+        logic_critic_output = state["agent_outputs"]["logic_critic"]
 
-    quality_score = quality_result["quality_score"]
-    print(f"[QUALITY] Score: {quality_score:.1f}/100")
+        print(f"[QUALITY] Logic Critic Score: {quality_score:.1f}/100")
+        print(f"  - Facts Analyzed: {logic_critic_output.get('facts_analyzed', 0)}")
+        print(f"  - Contradictions: {logic_critic_output.get('contradictions', {}).get('total', 0)}")
+        print(f"  - Gaps: {logic_critic_output.get('gaps', {}).get('total', 0)}")
 
-    if quality_score < 85:
-        print("[QUALITY] Below threshold (85). Missing information:")
-        for item in quality_result["missing_information"][:3]:
-            print(f"  - {item}")
+        missing_info = []
+        if quality_score < 85:
+            print("[QUALITY] Below threshold (85). Issues identified:")
+            # Extract gap information as missing info
+            for gap in logic_critic_output.get('gaps', {}).get('items', [])[:3]:
+                missing_info.append(f"{gap['section']}: {gap['recommendation']}")
+                print(f"  - {gap['section']}: {gap['field']}")
 
-    # Record quality check to observability (Phase 4)
-    iteration_count = state.get("iteration_count", 0) + 1
-    record_quality_check(
-        quality_score=quality_score,
-        missing_info=quality_result["missing_information"],
-        iteration=iteration_count
-    )
+        # Record quality check to observability (Phase 4)
+        iteration_count = state.get("iteration_count", 0) + 1
+        record_quality_check(
+            quality_score=quality_score,
+            missing_info=missing_info,
+            iteration=iteration_count
+        )
 
-    return {
-        "quality_score": quality_score,
-        "missing_info": quality_result["missing_information"],
-        "iteration_count": iteration_count,
-        "total_cost": state.get("total_cost", 0.0) + quality_result["cost"],
-        "total_tokens": {
-            "input": state.get("total_tokens", {"input": 0, "output": 0})["input"] + quality_result["tokens"]["input"],
-            "output": state.get("total_tokens", {"input": 0, "output": 0})["output"] + quality_result["tokens"]["output"]
+        return {
+            "quality_score": quality_score,
+            "missing_info": missing_info,
+            "iteration_count": iteration_count
         }
-    }
+
+    else:
+        # Fallback: Original simple quality check
+        quality_result = check_research_quality(
+            company_name=state["company_name"],
+            extracted_data=state.get("company_overview", ""),
+            sources=state.get("sources", [])
+        )
+
+        quality_score = quality_result["quality_score"]
+        print(f"[QUALITY] Score: {quality_score:.1f}/100")
+
+        if quality_score < 85:
+            print("[QUALITY] Below threshold (85). Missing information:")
+            for item in quality_result["missing_information"][:3]:
+                print(f"  - {item}")
+
+        # Record quality check to observability (Phase 4)
+        iteration_count = state.get("iteration_count", 0) + 1
+        record_quality_check(
+            quality_score=quality_score,
+            missing_info=quality_result["missing_information"],
+            iteration=iteration_count
+        )
+
+        return {
+            "quality_score": quality_score,
+            "missing_info": quality_result["missing_information"],
+            "iteration_count": iteration_count,
+            "total_cost": state.get("total_cost", 0.0) + quality_result["cost"],
+            "total_tokens": {
+                "input": state.get("total_tokens", {"input": 0, "output": 0})["input"] + quality_result["tokens"]["input"],
+                "output": state.get("total_tokens", {"input": 0, "output": 0})["output"] + quality_result["tokens"]["output"]
+            }
+        }
 
 
 def save_report_node(state: OverallState) -> Dict[str, Any]:
@@ -114,12 +159,13 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
     product_metrics = agent_outputs.get("product", {})
     competitor_metrics = agent_outputs.get("competitor", {})  # Phase 9
     synthesizer_metrics = agent_outputs.get("synthesizer", {})
+    logic_critic_metrics = agent_outputs.get("logic_critic", {})  # Phase 10
 
     # Calculate duration
     duration = (datetime.now() - state.get("start_time", datetime.now())).total_seconds()
 
     # Build report
-    report_content = f"""# {company_name} - Research Report (Phase 4: Parallel Agents)
+    report_content = f"""# {company_name} - Research Report (Phase 10: Logic Critic QA)
 
 *Generated on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}*
 
@@ -137,6 +183,18 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
 
 *This report was automatically generated by the Company Researcher System*
 *Quality Score: {state.get('quality_score', 0):.1f}/100 | Iterations: {state.get('iteration_count', 0)} | Duration: {duration:.1f}s | Cost: ${state.get('total_cost', 0.0):.4f} | Sources: {len(state.get('sources', []))}*
+
+---
+
+## Phase 10: Quality Assurance Report
+
+### Logic Critic Agent
+- **Facts Analyzed**: {logic_critic_metrics.get('facts_analyzed', 0)}
+- **Quality Score**: {logic_critic_metrics.get('quality_metrics', {}).get('overall_score', 0):.1f}/100
+- **Contradictions Found**: {logic_critic_metrics.get('contradictions', {}).get('total', 0)} (Critical: {logic_critic_metrics.get('contradictions', {}).get('critical', 0)})
+- **Gaps Identified**: {logic_critic_metrics.get('gaps', {}).get('total', 0)} (High Severity: {logic_critic_metrics.get('gaps', {}).get('high_severity', 0)})
+- **Passed QA**: {'✅ Yes' if logic_critic_metrics.get('passed', False) else '❌ No'}
+- **Cost**: ${logic_critic_metrics.get('cost', 0.0):.4f}
 
 ---
 
@@ -226,15 +284,16 @@ def should_continue_research(state: OverallState) -> str:
 
 def create_parallel_agent_workflow() -> StateGraph:
     """
-    Create the parallel multi-agent research workflow (Phase 4 + Phase 9).
+    Create the parallel multi-agent research workflow (Phase 4 + Phase 9 + Phase 10).
 
     Workflow:
-        researcher → [financial, market, product, competitor] → synthesizer → check_quality → (iterate or finish)
+        researcher → [financial, market, product, competitor] → synthesizer → logic_critic → check_quality → (iterate or finish)
 
     LangGraph automatically executes financial, market, product, and competitor in parallel
     since they all depend on researcher and don't depend on each other.
 
     Phase 9: Added Competitor Scout agent for competitive intelligence.
+    Phase 10: Added Logic Critic agent for quality assurance (fact verification, contradiction detection, gap analysis).
 
     Returns:
         Compiled StateGraph workflow
@@ -249,6 +308,7 @@ def create_parallel_agent_workflow() -> StateGraph:
     workflow.add_node("product", product_agent_node)
     workflow.add_node("competitor", competitor_scout_agent_node)  # Phase 9
     workflow.add_node("synthesizer", synthesizer_agent_node)
+    workflow.add_node("logic_critic", logic_critic_agent_node)  # Phase 10
     workflow.add_node("check_quality", check_quality_node)
     workflow.add_node("save_report", save_report_node)
 
@@ -267,8 +327,9 @@ def create_parallel_agent_workflow() -> StateGraph:
     workflow.add_edge("product", "synthesizer")
     workflow.add_edge("competitor", "synthesizer")  # Phase 9
 
-    # Continue to quality check
-    workflow.add_edge("synthesizer", "check_quality")
+    # Quality assurance pipeline (Phase 10)
+    workflow.add_edge("synthesizer", "logic_critic")
+    workflow.add_edge("logic_critic", "check_quality")
 
     # Conditional edge from check_quality
     workflow.add_conditional_edges(

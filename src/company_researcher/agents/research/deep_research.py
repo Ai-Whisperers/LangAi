@@ -16,10 +16,10 @@ from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from anthropic import Anthropic
 
-from ..config import get_config
-from ..state import OverallState
+from ...config import get_config
+from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...state import OverallState
 
 
 # ============================================================================
@@ -41,6 +41,17 @@ class DataQuality(str, Enum):
     MEDIUM = "medium"         # Somewhat reliable
     LOW = "low"               # Uncertain
     UNVERIFIED = "unverified"  # Not validated
+
+
+@dataclass
+class ResearchIteration:
+    """A single iteration of deep research."""
+    iteration_number: int
+    queries_executed: int
+    facts_extracted: int
+    gaps_identified: List[str] = field(default_factory=list)
+    quality_score: float = 0.0
+    timestamp: datetime = field(default_factory=datetime.now)
 
 
 @dataclass
@@ -219,7 +230,7 @@ class DeepResearchAgent:
     def __init__(self, config=None):
         """Initialize agent."""
         self._config = config or get_config()
-        self._client = Anthropic(api_key=self._config.anthropic_api_key)
+        self._client = get_anthropic_client()
 
     def research(
         self,
@@ -326,7 +337,7 @@ class DeepResearchAgent:
             messages=[{"role": "user", "content": prompt}]
         )
 
-        cost = self._config.calculate_llm_cost(
+        cost = calculate_cost(
             response.usage.input_tokens,
             response.usage.output_tokens
         )

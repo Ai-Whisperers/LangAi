@@ -5,6 +5,7 @@ Agents for market intelligence:
 - MarketAgent: Basic market analysis
 - EnhancedMarketAgent: Advanced market analysis
 - CompetitorScoutAgent: Competitive intelligence
+- ComparativeAnalystAgent: Company benchmarking
 """
 
 from .market import MarketAgent, market_agent_node, create_market_agent
@@ -19,6 +20,15 @@ from .competitor_scout import (
     create_competitor_scout,
     CompetitorProfile,
     CompetitivePosition,
+)
+from .comparative_analyst import (
+    ComparativeAnalystAgent,
+    comparative_analyst_node,
+    create_comparative_analyst,
+    CompanyProfile,
+    MetricComparison,
+    SWOT,
+    ComparativeAnalysis,
 )
 
 __all__ = [
@@ -36,4 +46,12 @@ __all__ = [
     "create_competitor_scout",
     "CompetitorProfile",
     "CompetitivePosition",
+    # Comparative Analyst
+    "ComparativeAnalystAgent",
+    "comparative_analyst_node",
+    "create_comparative_analyst",
+    "CompanyProfile",
+    "MetricComparison",
+    "SWOT",
+    "ComparativeAnalysis",
 ]

@@ -9,11 +9,11 @@ This agent is responsible for:
 """
 
 from typing import Dict, Any
-from anthropic import Anthropic
 
-from ..config import get_config
-from ..state import OverallState
-from ..prompts import (
+from ...config import get_config
+from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...state import OverallState
+from ...prompts import (
     ANALYZE_RESULTS_PROMPT,
     EXTRACT_DATA_PROMPT,
     format_search_results_for_analysis,
@@ -39,7 +39,7 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
     print("=" * 60)
 
     config = get_config()
-    client = Anthropic(api_key=config.anthropic_api_key)
+    client = get_anthropic_client()
 
     company_name = state["company_name"]
     search_results = state.get("search_results", [])  # Full results with content
@@ -77,7 +77,7 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
     )
 
     notes = analysis_response.content[0].text
-    analysis_cost = config.calculate_llm_cost(
+    analysis_cost = calculate_cost(
         analysis_response.usage.input_tokens,
         analysis_response.usage.output_tokens
     )
@@ -108,7 +108,7 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
     )
 
     extracted_data = extraction_response.content[0].text
-    extraction_cost = config.calculate_llm_cost(
+    extraction_cost = calculate_cost(
         extraction_response.usage.input_tokens,
         extraction_response.usage.output_tokens
     )

@@ -360,7 +360,7 @@ def get_cors_config(
     }
 
 
-else:
+if not FASTAPI_AVAILABLE:
     # Stubs when FastAPI not available
     class RateLimitMiddleware:
         def __init__(self, *args, **kwargs):

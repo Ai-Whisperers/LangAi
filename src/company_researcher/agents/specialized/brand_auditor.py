@@ -16,10 +16,10 @@ from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from anthropic import Anthropic
 
-from ..config import get_config
-from ..state import OverallState
+from ...config import get_config
+from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...state import OverallState
 
 
 # ============================================================================
@@ -33,6 +33,15 @@ class BrandStrength(str, Enum):
     MODERATE = "moderate"     # Moderate recognition
     WEAK = "weak"            # Low recognition
     EMERGING = "emerging"     # Building brand
+
+
+class BrandHealth(str, Enum):
+    """Brand health status."""
+    EXCELLENT = "excellent"    # Strong across all dimensions
+    GOOD = "good"             # Above average performance
+    FAIR = "fair"             # Average performance
+    POOR = "poor"             # Below average, needs attention
+    CRITICAL = "critical"     # Severe issues requiring action
 
 
 class SentimentCategory(str, Enum):
@@ -225,7 +234,7 @@ class BrandAuditorAgent:
     def __init__(self, config=None):
         """Initialize agent."""
         self._config = config or get_config()
-        self._client = Anthropic(api_key=self._config.anthropic_api_key)
+        self._client = get_anthropic_client()
 
     def audit(
         self,
@@ -259,7 +268,7 @@ class BrandAuditorAgent:
         )
 
         analysis = response.content[0].text
-        cost = self._config.calculate_llm_cost(
+        cost = calculate_cost(
             response.usage.input_tokens,
             response.usage.output_tokens
         )
@@ -477,7 +486,7 @@ def brand_auditor_agent_node(state: OverallState) -> Dict[str, Any]:
     )
 
     # Calculate cost
-    cost = config.calculate_llm_cost(500, 1500)  # Estimated
+    cost = calculate_cost(500, 1500)  # Estimated
 
     print(f"[Brand] Brand Score: {result.brand_score}")
     print(f"[Brand] Strength: {result.overall_strength.value}")
