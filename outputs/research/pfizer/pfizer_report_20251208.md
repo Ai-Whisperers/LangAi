@@ -1,6 +1,6 @@
 # Pfizer Research Report
 
-**Generated:** 2025-12-08 01:25
+**Generated:** 2025-12-08 14:30
 
 ---
 
@@ -21,7 +21,7 @@ I can help you by:
 - Structuring the report
 - Ensuring academic rigor and objectivity
 - Formatting the report in Markdown
-- Citing sources appropriately
+- Identifying key insights and trends
 
 Would you like to provide the research sources or clarify what specific information you need?
 

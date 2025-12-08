@@ -1,0 +1,32 @@
+# Azul Brazilian Airlines
+company:
+  name: "Azul"
+  legal_name: "Azul S.A."
+  ticker: "AZUL"
+  exchange: "NYSE"
+  website: "https://www.voeazul.com.br"
+  industry: "Airlines / Aviation"
+  country: "Brazil"
+
+  details:
+    founded: 2008
+    headquarters: "Barueri, Sao Paulo, Brazil"
+    ceo: "John Rodgerson"
+    employees: "13,000+"
+    fleet_size: "180+"
+    notes: "Founded by JetBlue founder David Neeleman"
+
+research:
+  depth: "standard"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "Azul Airlines revenue 2024"
+    - "Azul Airlines passengers 2024"
+    - "Azul Airlines market share Brazil"
+    - "Azul Airlines domestic routes"
+    - "Azul vs GOL vs LATAM Brazil"
+    - "Azul Airlines Embraer fleet"

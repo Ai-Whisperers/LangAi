@@ -1,6 +1,6 @@
 # Walmart Research Report
 
-**Generated:** 2025-12-08 01:29
+**Generated:** 2025-12-08 14:48
 
 ---
 
@@ -12,17 +12,17 @@ To proceed, I would need:
 3. Any specific data points or insights from those sources
 
 If you'd like me to help you create a research report on Walmart, I recommend:
-- Providing specific research sources
-- Sharing the actual source documents
-- Indicating which specific aspects of Walmart you want to focus on
+- Providing specific sources
+- Sharing the research sources you want analyzed
+- Indicating what specific information you're looking for
 
 I can help you by:
 - Analyzing provided sources
-- Structuring the research report
+- Structuring a research report
+- Identifying key insights
 - Ensuring proper citation and formatting
-- Providing objective analysis
 
-Would you like to upload or share the research sources you'd like me to analyze?
+Would you like to provide the research sources now?
 
 ---
 

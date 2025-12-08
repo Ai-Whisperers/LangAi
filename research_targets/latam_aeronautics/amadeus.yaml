@@ -1,0 +1,38 @@
+# Amadeus IT - Travel Technology & Airline IT
+company:
+  name: "Amadeus IT"
+  legal_name: "Amadeus IT Group S.A."
+  ticker: "AMS"
+  exchange: "BME"
+  website: "https://amadeus.com"
+  industry: "Travel Technology / Airline IT"
+  country: "Spain"
+
+  details:
+    founded: 1987
+    headquarters: "Madrid, Spain"
+    ceo: "Luis Maroto"
+    employees: "18,000+"
+    notes: "Largest GDS provider, airline reservation and departure control systems"
+
+  services:
+    - Global Distribution System (GDS)
+    - Airline reservation systems
+    - Departure Control Systems (DCS)
+    - Airport check-in solutions
+    - Passenger Service Systems
+
+research:
+  depth: "standard"
+  focus_areas:
+    - financial
+    - market
+    - product
+
+  priority_queries:
+    - "Amadeus IT revenue 2024"
+    - "Amadeus airline IT market share"
+    - "Amadeus departure control systems"
+    - "Amadeus Latin America airlines"
+    - "Amadeus vs Sabre vs Travelport"
+    - "Amadeus airport IT solutions"

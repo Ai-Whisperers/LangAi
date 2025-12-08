@@ -1,0 +1,32 @@
+# GOL Linhas Aereas - Brazilian Low-Cost Carrier
+company:
+  name: "GOL"
+  legal_name: "Gol Linhas Aereas Inteligentes S.A."
+  ticker: "GOL"
+  exchange: "NYSE"
+  website: "https://www.voegol.com.br"
+  industry: "Airlines / Aviation"
+  country: "Brazil"
+
+  details:
+    founded: 2001
+    headquarters: "Sao Paulo, Brazil"
+    ceo: "Celso Ferrer"
+    employees: "14,000+"
+    fleet_size: "140+"
+    notes: "Largest domestic airline in Brazil by passengers"
+
+research:
+  depth: "standard"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "GOL Airlines revenue 2024"
+    - "GOL Airlines passengers 2024"
+    - "GOL Airlines market share Brazil"
+    - "GOL Airlines Chapter 11 restructuring"
+    - "GOL vs Azul competition Brazil"
+    - "GOL Airlines fleet Boeing 737"

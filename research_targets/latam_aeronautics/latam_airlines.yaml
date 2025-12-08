@@ -1,0 +1,33 @@
+# LATAM Airlines Group - Largest Airline in Latin America
+company:
+  name: "LATAM Airlines"
+  legal_name: "LATAM Airlines Group S.A."
+  ticker: "LTM"
+  exchange: "NYSE"
+  website: "https://www.latamairlines.com"
+  industry: "Airlines / Aviation"
+  country: "Chile"
+
+  details:
+    founded: 2012
+    headquarters: "Santiago, Chile"
+    ceo: "Roberto Alvo"
+    employees: "35,000+"
+    fleet_size: "300+"
+    notes: "Formed from merger of LAN Airlines and TAM Airlines"
+
+research:
+  depth: "standard"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+    - operations
+
+  priority_queries:
+    - "LATAM Airlines revenue 2024"
+    - "LATAM Airlines passengers 2024"
+    - "LATAM Airlines market share South America"
+    - "LATAM Airlines fleet expansion"
+    - "LATAM Airlines post-bankruptcy recovery"
+    - "LATAM vs Avianca competition"

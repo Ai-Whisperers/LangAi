@@ -20,6 +20,24 @@ research_targets/
     claro_paraguay.yaml             # Third player (~10-11%)
     copaco.yaml                     # State telecom
     vox_paraguay.yaml               # MVNO
+  latam_aeronautics/                # Latin America Aeronautics & Aviation
+    _market.yaml                    # Market-level configuration
+    # Airlines
+    latam_airlines.yaml             # Largest LATAM airline (NYSE: LTM)
+    avianca.yaml                    # Colombian flag carrier (NYSE: AVH)
+    aeromexico.yaml                 # Mexican flag carrier
+    gol.yaml                        # Brazilian low-cost (NYSE: GOL)
+    azul.yaml                       # Brazilian airline (NYSE: AZUL)
+    copa.yaml                       # Panama hub carrier (NYSE: CPA)
+    volaris.yaml                    # Mexican ULCC (NYSE: VLRS)
+    # Aircraft Manufacturing
+    embraer.yaml                    # Brazilian manufacturer (NYSE: ERJ)
+    # Ground Services & Check-in
+    sita.yaml                       # Aviation IT / Check-in systems
+    swissport.yaml                  # Ground handling
+    amadeus.yaml                    # Travel tech / DCS systems
+    menzies_aviation.yaml           # Ground handling
+    dnata.yaml                      # Ground handling / catering
 ```
 
 ## Usage

@@ -1,0 +1,32 @@
+# Volaris - Mexican Ultra Low-Cost Carrier
+company:
+  name: "Volaris"
+  legal_name: "Controladora Vuela Compania de Aviacion S.A.B. de C.V."
+  ticker: "VLRS"
+  exchange: "NYSE"
+  website: "https://www.volaris.com"
+  industry: "Airlines / Aviation"
+  country: "Mexico"
+
+  details:
+    founded: 2006
+    headquarters: "Mexico City, Mexico"
+    ceo: "Enrique Beltranena"
+    employees: "7,000+"
+    fleet_size: "120+"
+    notes: "Largest ultra-low-cost carrier in Mexico"
+
+research:
+  depth: "standard"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "Volaris revenue 2024"
+    - "Volaris passengers 2024"
+    - "Volaris market share Mexico"
+    - "Volaris ULCC model"
+    - "Volaris vs Aeromexico vs VivaAerobus"
+    - "Volaris US-Mexico routes"

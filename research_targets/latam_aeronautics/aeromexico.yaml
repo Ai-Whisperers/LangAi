@@ -1,0 +1,32 @@
+# Aeromexico - Mexican Flag Carrier
+company:
+  name: "Aeromexico"
+  legal_name: "Grupo Aeromexico S.A.B. de C.V."
+  ticker: "AEROMEX"
+  exchange: "BMV"
+  website: "https://www.aeromexico.com"
+  industry: "Airlines / Aviation"
+  country: "Mexico"
+
+  details:
+    founded: 1934
+    headquarters: "Mexico City, Mexico"
+    ceo: "Andres Conesa"
+    employees: "16,000+"
+    fleet_size: "130+"
+    notes: "SkyTeam member, largest Mexican airline"
+
+research:
+  depth: "standard"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "Aeromexico revenue 2024"
+    - "Aeromexico passengers 2024"
+    - "Aeromexico market share Mexico"
+    - "Aeromexico post-Chapter 11 recovery"
+    - "Aeromexico vs Volaris competition"
+    - "Aeromexico Delta partnership"
