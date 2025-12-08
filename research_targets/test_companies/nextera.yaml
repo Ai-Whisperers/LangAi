@@ -1,0 +1,30 @@
+# NextEra Energy - Renewable Energy Leader
+company:
+  name: "NextEra Energy"
+  legal_name: "NextEra Energy, Inc."
+  ticker: "NEE"
+  exchange: "NYSE"
+  website: "https://www.nexteraenergy.com"
+  industry: "Utilities / Renewable Energy"
+  country: "United States"
+
+  details:
+    founded: 1984
+    headquarters: "Juno Beach, Florida"
+    ceo: "John Ketchum"
+    employees: "16,800+"
+
+research:
+  depth: "quick"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "NextEra Energy revenue 2024"
+    - "NextEra renewable capacity"
+    - "NextEra solar wind installations"
+    - "NextEra vs Duke Energy"
+    - "NextEra FPL Florida"
+    - "NextEra earnings 2024"

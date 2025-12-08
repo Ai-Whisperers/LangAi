@@ -1,0 +1,27 @@
+{
+  "company_name": "COPACO",
+  "generated": "20251208_001249",
+  "profile": {
+    "name": "COPACO",
+    "legal_name": "Compania Paraguaya de Comunicaciones S.A.",
+    "industry": "Telecommunications",
+    "country": "Paraguay",
+    "region": "Latin America",
+    "parent_company": "",
+    "parent_ticker": "",
+    "founded": "1948",
+    "headquarters": "Asuncion, Paraguay",
+    "website": "https://www.copaco.com.py",
+    "services": [
+      "DSL",
+      "Limited fiber",
+      "International gateway services",
+      "International voice termination",
+      "Transit services",
+      "Network infrastructure leasing",
+      "Tower sharing",
+      "Last mile access"
+    ],
+    "competitors": []
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "query": "\"Coca-Cola\" revenue financials 2024",
+  "query_hash": "6c8914acbaeeef95",
+  "results": {
+    "query": "\"Coca-Cola\" revenue financials 2024",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.coca-colahellenic.com/en/media/news/financial_news/2025/2024-full-year-results",
+        "title": "2024 Full Year Results",
+        "content": "Coca-Cola HBC AG, a growth-focused Consumer Packaged Goods business and strategic bottling partner of The Coca-Cola Company, reports its financial results for the twelve months ended 31 December 2024. #### Focused execution of strategic priorities drives strong organic revenue growth of 13.8%**1** * **Organic volume** grew 2.8%, with all our strategic priority categories driving growth, Sparkling +1.5%, Energy +30.2% and Coffee +23.9% * **Developing**: Organic revenue up 12.7%, with strong revenue per case expansion and good volume progress; organic EBIT grew 39.6% * Continued close partnership with The Coca-Cola Company to drive growth in Sparkling, capitalising on key consumer moments, including the Olympic Games, Euro 2024, music festivals and other events tailored to local markets",
+        "score": 0.94225764,
+        "raw_content": null
+      },
+      {
+        "url": "https://finance.yahoo.com/news/coca-cola-full-2024-earnings-102154108.html",
+        "title": "Coca-Cola Full Year 2024 Earnings: Revenues Beat ...",
+        "content": "# Coca-Cola Full Year 2024 Earnings: Revenues Beat Expectations, EPS Lags. editorial-team@simplywallst.com (Simply Wall St). ## Coca-Cola (NYSE:KO) Full Year 2024 Results. * Revenue: US$47.1b (up 2.9% from FY 2023). * EPS: US$2.47 (down from US$2.48 in FY 2023). ### Coca-Cola Revenues Beat Expectations, EPS Falls Short. Revenue exceeded analyst estimates by 1.5%. Earnings per share (EPS) missed analyst estimates by 4.9%. Looking ahead, revenue is forecast to grow 3.4% p.a. on average during the next 3 years, compared to a 3.9% growth forecast for the Beverage industry in the US. *This article by Simply Wall St is general in nature. **We provide commentary based on historical data and analyst forecasts only using an unbiased methodology and our articles are not intended to be financial advice.** It does not constitute a recommendation to buy or sell any stock, and does not take account of your objectives, or your financial situation. Simply Wall St has no position in any stocks mentioned.*.",
+        "score": 0.9408388,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.macrotrends.net/stocks/charts/KO/cocacola/revenue",
+        "title": "CocaCola Revenue 2011-2025 | KO",
+        "content": "* CocaCola revenue for the quarter ending September 30, 2025 was **$12.455B**, a **5.07% increase** year-over-year. * CocaCola annual revenue for 2024 was **$47.061B**, a **2.86% increase** from 2023. * CocaCola annual revenue for 2023 was **$45.754B**, a **6.39% increase** from 2022. * CocaCola annual revenue for 2022 was **$43.004B**, a **11.25% increase** from 2021. | Monster Beverage (MNST) | United States | $73.267B | 38.85 | | Coca-Cola Consolidated (COKE) | United States | $13.924B | 21.24 | | National Beverage (FIZZ) | United States | $3.189B | 17.12 | | Westrock Coffee (WEST) | United States | $0.421B | 0.00 | | Coffee Holding (JVA) | United States | $0.021B | 11.62 |",
+        "score": 0.92700076,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.73,
+    "request_id": "999abb64-181e-437f-a598-f2162da1a89b"
+  },
+  "timestamp": "2025-12-08T01:20:48.002759",
+  "expires": "2025-12-15T01:20:48.002759",
+  "source_count": 3
+}

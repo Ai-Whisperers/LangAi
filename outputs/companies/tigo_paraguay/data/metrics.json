@@ -1,0 +1,39 @@
+{
+  "operational": {
+    "customers": 3600000,
+    "coverage_percent": 96.0,
+    "locations": 4000
+  },
+  "market": {
+    "market_ranking": 3
+  },
+  "leadership": {
+    "ceo": "Jose Perdomo",
+    "cfo": "Tigo Colombia"
+  },
+  "company_info": {
+    "founded_year": 1991
+  },
+  "telecom": {
+    "prepaid_percent": 70.0,
+    "postpaid_percent": 30.0,
+    "spectrum_mhz": 700
+  },
+  "data_freshness": {
+    "years_mentioned": [
+      2025,
+      2024,
+      2022,
+      2021,
+      2018
+    ],
+    "most_recent_year": 2025,
+    "oldest_year": 2015
+  },
+  "quality_score": 96.0,
+  "research_cost_usd": 0.059166,
+  "tokens_used": {
+    "input": 2857,
+    "output": 3373
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "query": "\"ExxonMobil\" products services offerings",
+  "query_hash": "37ed5753db8be25f",
+  "results": {
+    "query": "\"ExxonMobil\" products services offerings",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.chemicalindustryreview.com/exxonmobil-product-solutions",
+        "title": "ExxonMobil Product Solutions",
+        "content": "One of ExxonMobil Product Solutions’ standout offerings is its polymers, including Signature Polymers, which are crucial in improving performance across packaging, consumer products, and industrial applications. ExxonMobil Product Solutions provides robust materials that can withstand tough conditions for industrial applications. This dedication means that ExxonMobil Product Solutions continues to develop solutions that drive efficiency and sustainability, making real strides in reducing the ecological footprint of industries worldwide. ExxonMobil Product Solutions is constantly advancing, drawing on its extensive expertise in chemicals, materials, and energy to shape industries and advance sustainable innovation. Offering high-quality solutions across a wide range of industries, ExxonMobil Product Solutions empowers businesses and consumers to achieve greater efficiency, improved performance, and enhanced sustainability.",
+        "score": 0.8396422,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.exxonmobil.com/en/aviation",
+        "title": "ExxonMobil Aviation Fuels and Lubricants",
+        "content": "See how ExxonMobil provides fuels, lubricants and services offerings for commercial, military and general aviation customers worldwide.",
+        "score": 0.7539928,
+        "raw_content": null
+      },
+      {
+        "url": "https://corporate.exxonmobil.com/who-we-are/our-global-organization/business-divisions/chemical",
+        "title": "Chemical",
+        "content": "Explore ExxonMobil Chemical’s products, services and technology that drive innovation for progress around the world, based on specific industry applications, from healthcare to automotive, agriculture to industrial. Adhesives formulators can count on ExxonMobil Chemical for products, supply reliability and expertise to help improve their products, processes and cost efficiency. ExxonMobil Chemical supplies performance products that benefit end users and help brand owners create innovative solutions that stand out in the world. Learn how ExxonMobil Chemical's wide range of high-performance products can help support your industrial processes and applications. ExxonMobil Chemical supplies performance products that benefit end users and help brand owners create innovative solutions that stand out in the world. Learn how ExxonMobil Chemical's wide range of high-performance products can help support your industrial processes and applications.",
+        "score": 0.74004334,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.73,
+    "request_id": "e9131b3e-6d3e-47ea-9702-2dc14c1d5060"
+  },
+  "timestamp": "2025-12-08T01:21:49.165929",
+  "expires": "2025-12-15T01:21:49.165929",
+  "source_count": 3
+}

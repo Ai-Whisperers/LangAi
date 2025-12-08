@@ -1,0 +1,38 @@
+{
+  "query": "\"ExxonMobil\" news developments 2024",
+  "query_hash": "05bb30f52f86fbfc",
+  "results": {
+    "query": "\"ExxonMobil\" news developments 2024",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://corporate.exxonmobil.com/news/news-releases/2025/0131_exxonmobil-announces-2024-results",
+        "title": "ExxonMobil announces 2024 results",
+        "content": "Actual future results, including financial and operating performance; potential earnings, cash flow, or rate of return; total capital expenditures and mix, including allocations of capital to low carbon investments; realization and maintenance of structural cost reductions and efficiency gains, including the ability to offset inflationary pressure; plans to reduce future emissions and emissions intensity; ambitions to reach Scope 1 and Scope 2 net zero from operated assets by 2050, to reach Scope 1 and 2 net zero in heritage Upstream Permian Basin unconventional operated assets by 2030 and in Pioneer Permian assets by 2035, to eliminate routine flaring in-line with World Bank Zero Routine Flaring, to reach near-zero methane emissions from its operated assets and other methane initiatives, to meet ExxonMobil’s emission reduction goals and plans, divestment and start-up plans, and associated project plans as well as technology advances, including the timing and outcome of projects to capture and store CO2, produce hydrogen and ammonia, produce biofuels, produce lithium, create new advanced carbon materials, and use plastic waste as feedstock for advanced recycling; cash flow, dividends and shareholder returns, including the timing and amounts of share repurchases; future debt levels and credit ratings; business and project plans, timing, costs, capacities and returns; resource recoveries and production rates; and planned Pioneer and Denbury integrated benefits, could differ materially due to a number of factors.",
+        "score": 0.87681407,
+        "raw_content": null
+      },
+      {
+        "url": "https://corporate.exxonmobil.com/-/media/global/files/locations/united-states-operations/baton-rouge/exxonmobil-neighbor-news-for-4q-2024.pdf",
+        "title": "ExxonMobil Baton Rouge",
+        "content": "A publication for neighbors, employees and retirees in the Baton Rouge area July 1 – December 31, 2024 PO Box 241, Baton Rouge, LA 70821 • 225-977-8393 • batonrougepublicaffairs@exxonmobil.com • www.exxonmobilbr.com • • • • @ExxonMobilBRA In a packed room filled with parents, friends, and community members, each of our 38 high school interns presented their summer projects, sharing both technical skills and personal lessons learned from their experiences. ExxonMobil Welcomes Blue Wave Supplier Development Program ExxonMobil has launched an exciting new collaboration with the Baton Rouge Youth Coalition (BRYC) to provide comprehensive mentoring services for BRYC college students majoring in engineering.",
+        "score": 0.84858394,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.exxonmobilchemical.com/-/media/media-assets/media-library-assets/24/pe_newsletter_mar_24_en.pdf",
+        "title": "Polyethylene Perspectives from ExxonMobil. See what's new!",
+        "content": "Join ExxonMobil at NPE 2024 in Orlando, Florida! Discover our solutions for packaging, industrial, consumer products, agriculture, healthcare, and medical",
+        "score": 0.7265231,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.83,
+    "request_id": "aa8f3db5-7976-4c4f-88ea-7a84243fdd51"
+  },
+  "timestamp": "2025-12-08T01:21:51.719472",
+  "expires": "2025-12-15T01:21:51.719472",
+  "source_count": 3
+}

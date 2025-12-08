@@ -1,0 +1,38 @@
+{
+  "query": "\"AT&T\" news developments 2024",
+  "query_hash": "0355eb30fafdb768",
+  "results": {
+    "query": "\"AT&T\" news developments 2024",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://about.att.com/story/2025/4q-earnings-2024.html",
+        "title": "AT&T Finishes 2024 Strong with Solid 4Q Results - AT&T Newsroom",
+        "content": "#### Share. ## **Fourth-Quarter Consolidated Results**. ## **Fourth-Quarter Highlights**. ## **Full-Year Consolidated Results**. ## **Full-Year Highlights**. ## **2025 Outlook**. ## **Consolidated Financial Results**. ## **Full-Year Financial Results**. ## **Segment and Business Unit Results**. ### AT&T to Webcast CEO John Stankey at UBS Conference. ### AT&T to Release Fourth-Quarter 2025 Earnings on Jan. 28. ### AT&T Reports Strong Third-Quarter Financial Performance.",
+        "score": 0.9995005,
+        "raw_content": null
+      },
+      {
+        "url": "https://about.att.com/story/2024/analyst-and-investor-day-2024.html",
+        "title": "AT&T Outlines Plan for Sustainable Growth & Shareholder Returns",
+        "content": "Ahead of its 2024 Analyst & Investor Day presentation, AT&T Inc. (NYSE: T) unveiled a bold, multi-year strategic plan highlighted by continued",
+        "score": 0.99937856,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.prnewswire.com/news-releases/att-finishes-2024-strong-delivering-growth-in-5g-and-fiber-subscribers-service-revenues-cash-from-operations-and-free-cash-flow-302360681.html",
+        "title": "AT&T Finishes 2024 Strong, Delivering Growth in 5G and Fiber ...",
+        "content": "* **Equity in net income of affiliates** was $1.1 billion, primarily from the DIRECTV investment, versus $0.3 billion in the year-ago quarter, reflecting cash distributions received by AT&T in excess of AT&T's share of DIRECTV's earnings. Adjusted diluted EPS, adjusted operating income, EBITDA, adjusted EBITDA, free cash flow, net debt and net debt-to-adjusted EBITDA are non-GAAP financial measures frequently used by investors and credit rating agencies. Adjusted Operating Income, Adjusted Operating Income Margin, Adjusted EBITDA, Adjusted EBITDA margin, Adjusted EBITDA service margin and Adjusted diluted EPS are non-GAAP financial measures calculated by excluding from operating revenues, operating expenses, other income (expense) and income tax expense, certain significant items that are non-operational or non-recurring in nature, including dispositions and merger integration and transaction costs, actuarial gains and losses, significant abandonments and impairments, benefit-related gains and losses, employee separation and other material gains and losses.",
+        "score": 0.9971771,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.63,
+    "request_id": "43e0d95e-21bf-4994-8d34-aaae253e821c"
+  },
+  "timestamp": "2025-12-08T01:20:07.186955",
+  "expires": "2025-12-15T01:20:07.186955",
+  "source_count": 3
+}

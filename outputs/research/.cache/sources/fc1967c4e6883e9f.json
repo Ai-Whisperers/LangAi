@@ -1,0 +1,38 @@
+{
+  "query": "\"JPMorgan Chase\" products services offerings",
+  "query_hash": "fc1967c4e6883e9f",
+  "results": {
+    "query": "\"JPMorgan Chase\" products services offerings",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.jpmorgan.com/wealth-management/wealth-partners/services",
+        "title": "Services - J.P. Morgan",
+        "content": "Wherever you’re at on your journey, your Wealth Advisor is there to connect you to J.P. Morgan’s vast network of experienced specialists and personalized services. Explore more investment solutions from J.P Morgan, including online investing tools and a range of remote and community-based advisor services. To learn more about J.P. Morgan’s investment business, including our accounts, products and services, as well as our relationship with you, please review our J.P. Morgan Securities LLC Form CRS (PDF) and Guide to Investment Services and Brokerage Products. J.P. Morgan Wealth Management is a business of JPMorgan Chase & Co., which offers investment products and services through **J.P. Morgan Securities LLC** (JPMS), a registered broker-dealer and investment adviser, member FINRA, and SIPC.",
+        "score": 0.72184175,
+        "raw_content": null
+      },
+      {
+        "url": "https://investment.jpmorgan.com/content/dam/jpm/regulation-best-interests/Guide_to_Investment_Services_and_Brokerage_Products.pdf",
+        "title": "[PDF] Guide to Investment Services and Brokerage Products",
+        "content": "1 Guide to Investment Services and Brokerage Products INVESTMENT AND INSURANCE PRODUCTS ARE: • NOT FDIC INSURED • NOT INSURED BY ANY FEDERAL GOVERNMENT AGENCY • NOT A DEPOSIT OR OTHER OBLIGATION OF, OR GUARANTEED BY, JPMORGAN CHASE BANK, N.A. OR ANY OF ITS AFFILIATES • SUBJECT TO INVESTMENT RISKS, INCLUDING POSSIBLE LOSS OF THE PRINCIPAL AMOUNT INVESTED 2 INVESTING WITH J.P. MORGAN WEALTH MANAGEMENT We’re providing this Guide to Investment Services and Brokerage Products (the Guide) to help you learn more about: • The different ways you can invest with us • Our products and services, including those we offer from third-party providers • Compensation received by J.P. Morgan Securities LLC, JPMorgan Chase Bank, N.A. and their affiliates (collectively, J.P. Morgan), as well as the compensation that J.P. Morgan Private Client Advisors and Financial Advisors (collectively, advisors) reasonably expect to be paid from the products and services we offer We hope you find this Guide useful.",
+        "score": 0.7062922,
+        "raw_content": null
+      },
+      {
+        "url": "https://markets.jpmorgan.com/discover-more",
+        "title": "Discover More Products and Services - J.P. Morgan Markets",
+        "content": "Whether you're an Institutional or Non-Institutional Investor, you'll. find solutions designed to support your goals from execution to. ## J.P. Morgan supports the world's leading institutions and investors across 100+ countries. Whether you're a global asset manager or a Non-Institutional Investor, our tools and services help put you in control. ## Comprehensive Solutions for Institutional Investors. ### Payments. Providing world-class custody, accounting, administration, ETF servicing, middle office, foreign exchange, liquidity management, securities lending, collateral management, performance management and data solutions to help institutional investors grow and succeed – both now, and in the future. Helping hedge funds, asset managers, and institutional investors meet the demands of a rapidly evolving market. ## Discover More for Non-Institutional Investor. ### Private Bank Execute connects you to markets and J.P. Morgan insights, all backed by advanced trading technology. Gain clear visibility into market levels and execution history, so you know how, when, and where your trades are filled. ###### SOME PRODUCT AND SERVICES LIKE SI360 & PRIVATE BANK EXECUTE ARE AVAILABLE TO NON-INSTITUTIONAL CLIENTS.",
+        "score": 0.6739866,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.71,
+    "request_id": "61b85b1c-93f8-4dae-bea5-57c3a2f41913"
+  },
+  "timestamp": "2025-12-08T01:22:49.892434",
+  "expires": "2025-12-15T01:22:49.892434",
+  "source_count": 3
+}

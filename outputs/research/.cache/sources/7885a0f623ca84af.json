@@ -1,0 +1,38 @@
+{
+  "query": "\"Amazon\" news developments 2024",
+  "query_hash": "7885a0f623ca84af",
+  "results": {
+    "query": "\"Amazon\" news developments 2024",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://business.amazon.com/en/blog/big-announcements-amazon-business-reshape-2024",
+        "title": "Announcements & News from Reshape 2024",
+        "content": "Amazon Business Reshape Find out what we revealed at this year’s Amazon Business Reshape, including the latest innovations, partnerships, and news. Alongside our roster of technology innovations, we’re excited for three new partnerships with procurement leaders that will make Amazon Business more accessible and impactful for more organizations: * **Oracle NetSuite SuiteProcurement:** Amazon Business is one of the first integrated suppliers for NetSuite SuiteProcurement, a new indirect procurement solution that will help customers track and control every purchase, from request to payment. We’re proud of all of these announcements, as they highlight the ongoing evolution of procurement technology a gathering like Amazon Business Reshape helps to inspire. * About Amazon Business",
+        "score": 0.9994642,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.grocerydive.com/news/amazon-grocery-moves-2024/735444/",
+        "title": "Amazon's top grocery moves in 2024",
+        "content": "From digital updates to reigniting Amazon Fresh store openings, the e-tailer giant continued to push ahead with its grocery strategy.",
+        "score": 0.9986646,
+        "raw_content": null
+      },
+      {
+        "url": "https://s2.q4cdn.com/299287126/files/doc_financials/2025/ar/Amazon-2024-Annual-Report.pdf",
+        "title": "Amazon's 2024 annual report",
+        "content": "On November 18, 2024, Andrew Jassy, President and Chief Executive Officer, adopted a trading plan intended to satisfy Rule 10b5-1(c) to sell up to 80,400 shares of Amazon.com, Inc. common stock over a period ending on December 31, 2025, subject to certain conditions. 4.5 Officers’ Certificate of Amazon.com, Inc., dated as of December 20, 2017, containing Form of 5.200% Note due 2025 (incorporated by reference to the Company’s Current Report on Form 8-K, filed December 20, 2017). 10.5† Form of Restricted Stock Unit Agreement for Directors (incorporated by reference to the Company’s Annual Report on Form 10-K for the Year ended December 31, 2002). 10.8 Five-Year Revolving Credit Agreement, dated as of November 1, 2023, among Amazon.com, Inc., Citibank N.A., as administrative agent, and the lenders party thereto (incorporated by reference to the Company’s Current Report on Form 8-K, filed November 1, 2023). 97.1 Amazon.com, Inc. Clawback Policy (incorporated by reference to the Company's Annual Report on Form 10-K for the Year ended December 31, 2023).",
+        "score": 0.99762183,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.8,
+    "request_id": "ac77900b-d034-4737-9e97-2245a8091106"
+  },
+  "timestamp": "2025-12-08T01:18:43.548384",
+  "expires": "2025-12-15T01:18:43.548384",
+  "source_count": 3
+}

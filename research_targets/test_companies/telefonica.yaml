@@ -1,0 +1,30 @@
+# Telefonica S.A. - European/LatAm Telecom
+company:
+  name: "Telefonica"
+  legal_name: "Telefonica S.A."
+  ticker: "TEF"
+  exchange: "NYSE"
+  website: "https://www.telefonica.com"
+  industry: "Telecommunications"
+  country: "Spain"
+
+  details:
+    founded: 1924
+    headquarters: "Madrid, Spain"
+    ceo: "Jose Maria Alvarez-Pallete"
+    employees: "104,000+"
+
+research:
+  depth: "quick"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "Telefonica revenue 2024"
+    - "Telefonica Latin America performance"
+    - "Telefonica 5G rollout Spain"
+    - "Telefonica vs Vodafone Europe"
+    - "Telefonica O2 Germany merger"
+    - "Telefonica earnings 2024"

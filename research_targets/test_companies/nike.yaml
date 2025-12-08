@@ -1,0 +1,30 @@
+# Nike Inc. - Athletic Apparel Leader
+company:
+  name: "Nike"
+  legal_name: "Nike, Inc."
+  ticker: "NKE"
+  exchange: "NYSE"
+  website: "https://www.nike.com"
+  industry: "Consumer Goods / Apparel"
+  country: "United States"
+
+  details:
+    founded: 1964
+    headquarters: "Beaverton, Oregon"
+    ceo: "Elliott Hill"
+    employees: "83,700+"
+
+research:
+  depth: "quick"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "Nike revenue 2024"
+    - "Nike direct-to-consumer sales"
+    - "Nike vs Adidas market share"
+    - "Nike China sales"
+    - "Nike digital growth"
+    - "Nike earnings FY2024"

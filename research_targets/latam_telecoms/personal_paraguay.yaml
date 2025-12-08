@@ -1,0 +1,284 @@
+# =============================================================================
+# PERSONAL PARAGUAY - CHALLENGER
+# Paraguay's #2 telecommunications operator
+# =============================================================================
+
+company:
+  name: "Personal Paraguay"
+  legal_name: "Nucleo S.A."
+  brand: "Personal"
+  website: "https://www.personal.com.py"
+  industry: "Telecommunications"
+  country: "Paraguay"
+  region: "Latin America"
+
+  # ---------------------------------------------------------------------------
+  # CORPORATE STRUCTURE
+  # ---------------------------------------------------------------------------
+  parent:
+    company: "Telecom Argentina S.A."
+    ticker: "TEO"
+    exchange: "NYSE"
+    headquarters: "Buenos Aires, Argentina"
+    ownership_structure:
+      - shareholder: "Grupo Telecom (via Telecom Argentina)"
+        stake: "67.5%"
+      - shareholder: "ABC Comunicaciones"
+        stake: "32.5%"
+    sec_filings: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001482512"
+
+  # ---------------------------------------------------------------------------
+  # COMPANY DETAILS
+  # ---------------------------------------------------------------------------
+  details:
+    founded: "1998-06-24"
+    headquarters: "Maximo Lira 522 c/ Av. Espana, Asuncion, Paraguay"
+    employees: "1,500+"
+    ceo: null  # Research needed
+    brand_tagline: "Hace + con Personal"
+    brand_archetype: "Everyman"
+
+  # ---------------------------------------------------------------------------
+  # MARKET POSITION
+  # ---------------------------------------------------------------------------
+  market_position:
+    rank: 2
+    position: "Strong Challenger"
+    market_share:
+      mobile: "30%"
+      fixed_broadband: "25%"
+      pay_tv: "20%"
+    subscribers:
+      mobile: "2.4 million"
+      fixed_broadband: "300,000+"
+      pay_tv: "200,000+"
+      mobile_money: "Research needed"
+
+  # ---------------------------------------------------------------------------
+  # FINANCIAL METRICS (to research)
+  # ---------------------------------------------------------------------------
+  financials:
+    # Note: Subsidiary data in Telecom Argentina reports
+    revenue_estimate: "USD 250-300 million"
+    arpu_mobile: "USD 7-9/month"
+    ebitda_margin: "30-35%"
+
+    # Parent company context
+    parent_contribution: "~8% of Telecom Argentina revenue"
+
+  # ---------------------------------------------------------------------------
+  # PRODUCTS & SERVICES
+  # ---------------------------------------------------------------------------
+  services:
+    mobile:
+      technologies: ["2G GSM", "3G UMTS", "4G LTE"]
+      coverage_4g: "80%+ urban"
+      plans:
+        - type: "Prepaid"
+          share: "65%"
+        - type: "Postpaid"
+          share: "35%"
+
+    fixed:
+      broadband:
+        technologies: ["FTTH Fiber", "HFC Cable"]
+        max_speed: "500 Mbps"
+        differentiator: "Fastest fiber in Paraguay"
+      television:
+        name: "TuVes HD"
+        acquired: "May 2019"
+        features: ["HD channels", "DVR", "Multi-screen"]
+
+    digital_services:
+      streaming:
+        name: "Flow"
+        type: "OTT platform (from Argentina)"
+        content: "Movies, series, live TV"
+      mobile_money:
+        name: "Personal Pay"
+        status: "Growing"
+        services: ["Transfers", "Payments"]
+
+    enterprise:
+      name: "Personal Empresas"
+      services: ["Corporate plans", "M2M", "Cloud"]
+
+  # ---------------------------------------------------------------------------
+  # COMPETITIVE ANALYSIS
+  # ---------------------------------------------------------------------------
+  strengths:
+    - "Fastest fiber network in Paraguay"
+    - "Strong brand recognition"
+    - "Telecom Argentina backing and expertise"
+    - "Flow streaming platform integration"
+    - "Growing fixed broadband base"
+    - "Price-competitive positioning"
+
+  weaknesses:
+    - "Second place market position (vs Tigo)"
+    - "Smaller mobile money ecosystem"
+    - "Less extensive mobile coverage"
+    - "Parent company currency exposure (ARS)"
+
+  opportunities:
+    - "Fiber network expansion (underserved areas)"
+    - "Convergence strategy (triple-play bundles)"
+    - "Enterprise/B2B market growth"
+    - "5G deployment"
+    - "Cross-border synergies with Argentina"
+
+  threats:
+    - "Tigo's market dominance and brand strength"
+    - "Claro's aggressive pricing"
+    - "OTT competition"
+    - "Regulatory changes"
+    - "Argentina economic instability affecting parent"
+
+# =============================================================================
+# COMPETITORS
+# =============================================================================
+competitors:
+  direct:
+    - name: "Tigo Paraguay"
+      parent: "Millicom"
+      share: "42%"
+      strength: "Market leader, Tigo Money"
+
+    - name: "Claro Paraguay"
+      parent: "America Movil"
+      share: "11%"
+      strength: "Price leader, regional brand"
+
+  indirect:
+    - name: "Copaco"
+      type: "State telecom"
+      focus: "Fixed lines"
+
+    - name: "VOX"
+      type: "MVNO"
+      focus: "Budget segment"
+
+  emerging:
+    - name: "Starlink"
+      type: "Satellite"
+      threat_level: "Medium"
+
+# =============================================================================
+# RESEARCH CONFIGURATION
+# =============================================================================
+research:
+  depth: "comprehensive"
+
+  focus_areas:
+    - financial
+    - market
+    - competitor
+    - product
+    - brand
+    - sales
+
+  # ---------------------------------------------------------------------------
+  # PRIORITY RESEARCH QUERIES
+  # ---------------------------------------------------------------------------
+  priority_queries:
+    # Financial
+    - "Telecom Argentina Paraguay revenue 2024"
+    - "Nucleo SA financial results"
+    - "Personal Paraguay ARPU"
+
+    # Market
+    - "Personal Paraguay market share 2024"
+    - "Personal Paraguay subscriber count"
+    - "Paraguay telecom market analysis"
+
+    # Competitive
+    - "Personal vs Tigo Paraguay comparison"
+    - "Paraguay fiber internet market"
+
+    # Products
+    - "Personal Paraguay fiber plans"
+    - "TuVes HD Paraguay channels"
+    - "Personal Pay mobile money"
+
+    # News
+    - "Personal Paraguay news 2024"
+    - "Telecom Argentina Paraguay investment"
+
+  # ---------------------------------------------------------------------------
+  # DATA SOURCES
+  # ---------------------------------------------------------------------------
+  priority_sources:
+    investor_relations:
+      - url: "https://inversores.telecom.com.ar"
+        type: "Quarterly reports, presentations"
+      - url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001482512"
+        type: "SEC filings (20-F)"
+
+    company:
+      - url: "https://www.personal.com.py"
+        type: "Products, pricing"
+      - url: "https://www.personal.com.py/personas/internet-hogar"
+        type: "Fiber plans"
+
+    regulatory:
+      - url: "https://www.conatel.gov.py"
+        type: "Market data, licenses"
+
+  # ---------------------------------------------------------------------------
+  # KPIs TO EXTRACT
+  # ---------------------------------------------------------------------------
+  kpis_to_find:
+    financial:
+      - name: "Revenue"
+        unit: "USD million"
+        target_years: [2022, 2023, 2024]
+      - name: "ARPU"
+        unit: "USD/month"
+
+    operational:
+      - name: "Mobile subscribers"
+        unit: "millions"
+      - name: "Fixed broadband subscribers"
+        unit: "thousands"
+      - name: "Market share"
+        unit: "%"
+      - name: "Fiber coverage"
+        unit: "% of homes"
+
+  # ---------------------------------------------------------------------------
+  # DATA GAPS (known)
+  # ---------------------------------------------------------------------------
+  data_gaps:
+    - "Exact Paraguay revenue (subsidiary vs consolidated)"
+    - "Current subscriber count (last update: 2019)"
+    - "EBITDA and profitability"
+    - "Churn rate"
+    - "Fiber homes passed"
+    - "5G rollout timeline"
+
+# =============================================================================
+# NOTES
+# =============================================================================
+notes: |
+  RESEARCH PRIORITY: HIGH (Primary Competitor)
+
+  Key insights:
+  - Personal is the #2 mobile operator in Paraguay (~30% share)
+  - Part of Telecom Argentina (NYSE: TEO)
+  - Differentiates on fiber broadband speed
+  - Acquired TuVes HD (digital TV) in 2019
+
+  Financial data strategy:
+  - Telecom Argentina 20-F contains Paraguay segment
+  - Private company, limited standalone disclosure
+  - ABC Comunicaciones (32.5% owner) is local partner
+
+  Competitive positioning:
+  - Challenger to Tigo, focuses on value and fiber
+  - Weaker in mobile money vs Tigo Money
+  - Strong in fiber broadband
+
+  Watch for:
+  - Fiber network expansion announcements
+  - Argentina parent company financial health
+  - Convergence bundle pricing

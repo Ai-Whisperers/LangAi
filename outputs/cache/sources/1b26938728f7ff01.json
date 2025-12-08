@@ -1,0 +1,38 @@
+{
+  "query": "\"Tesla\" CEO executive team management 2024",
+  "query_hash": "1b26938728f7ff01",
+  "results": {
+    "query": "\"Tesla\" CEO executive team management 2024",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://digitaldefynd.com/IQ/who-makes-up-the-csuite-team-of-tesla-meet-the-tesla-executive-team/",
+        "title": "Tesla C-Suite Executive Leadership Team [2025] - DigitalDefynd",
+        "content": "# Tesla C-Suite Executive Leadership Team [2025]. The Tesla leadership team is lean by design yet highly impactful, encompassing executives who oversee everything from AI and engineering to global supply chains and factory scalability. ## Tesla C-Suite Executive Leadership Team [2025]. Musk oversees product development, engineering, and strategic direction across Tesla’s key verticals: electric vehicles, energy storage, solar, AI, and robotics. Vaibhav Taneja serves as Tesla’s CFO and Chief Accounting Officer, overseeing the company’s global financial operations, compliance, and reporting functions. A seasoned legal executive, Ehrhart plays a central role in navigating the complex legal landscape Tesla operates within—spanning global automotive regulation, autonomous vehicle laws, and SEC disclosures. JB Straubel co-founded Tesla and served as its longtime Chief Technology Officer (CTO), responsible for innovations in battery tech, drivetrain systems, and factory design. From Elon Musk’s relentless innovation engine to leaders like Vaibhav Taneja, Tom Zhu, and Ashok Elluswamy, each executive plays a pivotal role in Tesla’s evolution from a disruptive automaker to a multi-industry force shaping the future of energy, autonomy, and AI.",
+        "score": 0.7500592,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.businessinsider.com/tesla-org-chart-executives-elon-musk-2025-9",
+        "title": "Tesla Org Chart: Here Are the Executives at Elon Musk's ...",
+        "content": "* Elon Musk had 19 direct reports at Tesla as of August. * At least 10 of Musk's direct reports left Tesla over the past year. He has maintained nine of the same direct reports over the past three years, including design chief Franz von Holzhausen, who has been with the company since 2008; vice president of AI software Ashok Elluswamy; vice president of vehicle engineering Lars Moravy; and senior vice president of manufacturing in China, Tom Zhu. An internal Tesla pay sheet obtained by Business Insider in 2024 showed how turbulent Tesla's upper ranks have been. The company has swapped out at least three HR chiefs and several top legal officers since 2021, and about two-thirds of Musk's direct reports have left the company between December 2021 and now. Take a look at Musk's direct reports, as well as their titles, locations, and tenure at Tesla, below:. Musk does not have any direct reports in the human resources department following director Jenna Ferrua's departure in June, per the org chart.",
+        "score": 0.6932451,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.comparably.com/companies/tesla-motors/executive-team",
+        "title": "Tesla Executive Team",
+        "content": "The Tesla Executive Team is rated a \"B\" and led by CEO Elon Musk. Tesla employees rate their Executive Team in the Top 25% of similar size companies on",
+        "score": 0.6757865,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.82,
+    "request_id": "de34a87e-af66-4fbc-ad0f-a9c63f55f720"
+  },
+  "timestamp": "2025-12-08T00:54:45.831068",
+  "expires": "2025-12-15T00:54:45.831068",
+  "source_count": 3
+}

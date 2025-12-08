@@ -1,0 +1,38 @@
+{
+  "query": "\"ExxonMobil\" competitors analysis",
+  "query_hash": "c5d6be1609fb9820",
+  "results": {
+    "query": "\"ExxonMobil\" competitors analysis",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://founderpal.ai/competitors-examples/exxonmobil",
+        "title": "ExxonMobil Competitors in 2025 [Example]",
+        "content": "Understand the alternative solutions of ExxonMobil. Analyze the example or find yours in 10 seconds for FREE.",
+        "score": 0.99997044,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.studocu.com/en-gb/document/university-of-manchester/business-strategy/strategy-group-analysis/30972765",
+        "title": "Strategic Group Analysis of ExxonMobil & Competitors in ...",
+        "content": "ExxonMobil, on the other hand, has two competitive advantages over its competitors advantage that ExxonMobil exploits are oil refining in which it is heavily",
+        "score": 0.9999665,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.investopedia.com/articles/markets/090715/who-are-exxons-main-competitors.asp",
+        "title": "Who Are ExxonMobil's Main Competitors?",
+        "content": "ExxonMobil is the largest and most profitable oil and gas company in the U.S. with domestic and global rivals. · Chevron is the second-largest U.S. oil company.",
+        "score": 0.99995244,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.77,
+    "request_id": "165b2476-a813-440c-829f-17fe2165487b"
+  },
+  "timestamp": "2025-12-08T01:21:53.873485",
+  "expires": "2025-12-15T01:21:53.873485",
+  "source_count": 3
+}

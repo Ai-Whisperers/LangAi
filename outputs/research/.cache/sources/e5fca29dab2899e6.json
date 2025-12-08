@@ -1,0 +1,38 @@
+{
+  "query": "\"Coca-Cola\" news developments 2024",
+  "query_hash": "e5fca29dab2899e6",
+  "results": {
+    "query": "\"Coca-Cola\" news developments 2024",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.esgdive.com/news/coca-cola-new-packaging-sustainability-goals-2035/734618/",
+        "title": "Coca-Cola lowers ambition with new 2035 packaging ... - ESG Dive",
+        "content": "# Coca-Cola lowers ambition with new 2035 packaging and sustainability targets. The beverage company introduced two new targets centered on packaging design and collection after use, but did not set a specific emissions reduction goal for 2035. * The Coca-Cola Co. announced Monday new packaging and other sustainability goals to reach by 2035. * One new goal calls for using 35% to 40% recycled material in primary packaging (plastic, glass and aluminum), including increasing recycled plastic use to between 30% and 35% globally.The other new goal focuses on partnering to collect used packaging; the company aims to help ensure the collection of 70% to 75% of the equivalent number of bottles and cans introduced into the market annually. Coca-Cola’s new goals not only push out the target year across its goal areas, they also appear to narrow the company’s ambition. * Coca-Cola ‘on track’ for packaging recyclability goal, ‘behind plan’ on recycled content target   By Maria Rachal •  Aug. 23, 2024.",
+        "score": 0.85797083,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.ainvest.com/news/coca-cola-strategic-innovation-product-offerings-packaging-navigating-consumer-demand-shifts-sustainable-growth-2512/",
+        "title": "Coca-Cola's Strategic Innovation in Product Offerings and Packaging",
+        "content": "Coca-Cola's 2024 packaging innovations, including the Lift Up recyclable cardboard handle for multipacks and a shift to clear PET bottles",
+        "score": 0.8533396,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.coca-colacompany.com/media-center/coca-cola-reports-fourth-quarter-and-full-year-2024-results",
+        "title": "Coca-Cola Reports Fourth Quarter and Full Year 2024 Results",
+        "content": "For both the quarter and the full year, comparable operating margin (non-GAAP) expansion was primarily driven by strong organic revenue (non-GAAP) growth and the impact of refranchising bottling operations, partially offset by higher input costs, higher operating expenses and currency headwinds. Comparable currency neutral operating income (non-GAAP) grew 14% for the quarter, primarily driven by strong organic revenue (non-GAAP) growth, partially offset by higher input costs and marketing investments. Comparable currency neutral operating income (non-GAAP) grew 46% for the quarter, primarily driven by strong organic revenue (non-GAAP) growth and marketing efficiencies, partially offset by higher operating expenses. Comparable currency neutral operating income (non-GAAP) grew 26% for the quarter, primarily driven by strong organic revenue (non-GAAP) growth, partially offset by higher input costs and marketing investments.",
+        "score": 0.82082915,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.69,
+    "request_id": "ecc59e92-8950-4e2b-9108-c5002f2998fa"
+  },
+  "timestamp": "2025-12-08T01:21:11.664882",
+  "expires": "2025-12-15T01:21:11.664882",
+  "source_count": 3
+}

@@ -1,0 +1,38 @@
+{
+  "query": "\"Ford\" competitors analysis",
+  "query_hash": "3d2be1b4abec537d",
+  "results": {
+    "query": "\"Ford\" competitors analysis",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.sahmcapital.com/news/content/performance-comparison-ford-motor-and-competitors-in-automobiles-industry-2024-01-22",
+        "title": "Performance Comparison: Ford Motor And Competitors In ...",
+        "content": "Performance Comparison: Ford Motor And Competitors In Automobiles Industry. Ford Motor Company +0.84%. | Ford Motor Company  F | 13.25 | +0.84% |. In this article, we will perform an extensive industry comparison, evaluating **Ford Motor (NYSE:F)** in relation to its major competitors in the Automobiles industry. * The company has a lower Return on Equity (ROE) of **2.73%**, which is **0.51%** below the industry average. * The company has lower gross profit of **$3.8 Billion**, which indicates **0.01x** below the industry average. Considering the debt-to-equity ratio in industry comparisons allows for a concise evaluation of a company's financial health and risk profile, aiding in informed decision-making. When comparing Ford Motor with its top 4 peers based on the Debt-to-Equity ratio, the following insights can be observed:. The valuation analysis for Ford Motor in the Automobiles industry indicates that the company has low PE, PB, and PS ratios compared to its peers. Overall, Ford Motor's valuation analysis suggests a need for further examination and consideration of its financial performance within the industry.",
+        "score": 0.7817479,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.thefordlegacy.com/articles/ford-competitors-2023-analysis-classic-cars/",
+        "title": "A 2023 Ford Competition Analysis for Classic Car Enthusiasts and ...",
+        "content": "The latest Ford competition analysis highlights both strengths and weaknesses. One strength is Ford's strong brand loyalty. Many collectors",
+        "score": 0.776708,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.comparably.com/companies/ford-motor-company/competitors",
+        "title": "Ford Motor Company Competitors | Comparably",
+        "content": "55 Employees at Dodge rate Timothy Kuniskis a 72 out of 100, which ranks them 3rd out of Ford Motor Company's competitors. 232 Employees at Nissan rate Hiroto Saikawa a 69 out of 100, which ranks them 5th out of Ford Motor Company's competitors. 129 Employees at Fiat Chrysler Automobiles (FCA) rate Michael Manley a 63 out of 100, which ranks them 6th out of Ford Motor Company's competitors. 828 Customers rate Ford Motor Company's Net Promoter Score a 13, which ranks it 3rd against its competitors, below Dodge. 879 Employees rate Ford Motor Company's Overall Culture a 68/100, which ranks it 2nd against its competitors, below Dodge. 655 Employees rate Ford Motor Company's Employee Net Promoter Score a 8, which ranks it 3rd against its competitors, below Chevrolet. 67 Employees rate Ford Motor Company's Gender Score a 69/100, which ranks it 1st against its competitors. 116 Employees rate Ford Motor Company's Diversity Score a 71/100, which ranks it 4th against its competitors, below Fiat Chrysler Automobiles (FCA).",
+        "score": 0.69697046,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.75,
+    "request_id": "74b732f0-08e6-48c8-a9ac-f95578b667c1"
+  },
+  "timestamp": "2025-12-08T01:22:24.539702",
+  "expires": "2025-12-15T01:22:24.539702",
+  "source_count": 3
+}

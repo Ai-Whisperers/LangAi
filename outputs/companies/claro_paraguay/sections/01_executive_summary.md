@@ -1,0 +1,7 @@
+## Executive Summary
+
+AMX Paraguay S.A., operating under the Claro brand, is a major telecommunications provider in Paraguay and a subsidiary of América Móvil, S.A.B. de C.V., one of Latin America's largest telecommunications conglomerates. Founded in 2008, Claro Paraguay has established itself as a significant player in the Paraguayan mobile telecommunications market, competing directly with Tigo Paraguay and Personal Paraguay.
+
+The company operates a multi-generation network infrastructure, including 2G GSM, 3G UMTS (launched November 2007), and 4G LTE services across multiple frequency bands. With a customer base heavily weighted toward prepaid services (80% prepaid vs. 20% postpaid), Claro Paraguay reflects the typical market dynamics of developing telecommunications markets in Latin America. As of December 2024, the company has not yet launched commercial 5G services, though Paraguay's National Telecommunications Plan (PNT) 2021-2025 has laid the groundwork for future 5G deployment with the goal of covering half the population by 2025.
+
+Claro Paraguay's network infrastructure utilizes strategic frequency bands including 1900 MHz for GSM and UMTS, and Bands 28 (700 MHz APT) and Band 4 (1700/2100 MHz AWS 1) for LTE, providing robust mobile data coverage across the country. The company offers comprehensive mobile services including international roaming within the Claro network across Latin America.

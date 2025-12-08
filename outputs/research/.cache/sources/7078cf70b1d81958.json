@@ -1,0 +1,38 @@
+{
+  "query": "\"Coca-Cola\" market share industry position",
+  "query_hash": "7078cf70b1d81958",
+  "results": {
+    "query": "\"Coca-Cola\" market share industry position",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.investing.com/academy/statistics/coca-cola-statistics/",
+        "title": "Coca Cola (Coke) Facts and Statistics (2024) - Investing.com",
+        "content": "KO holds the largest market share in the global non-alcoholic beverage market, with over 40% of industry sales. Coca-Cola's brand is valued at",
+        "score": 0.82795376,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.statista.com/statistics/225388/us-market-share-of-the-coca-cola-company-since-2004/?srsltid=AfmBOop3vYiINRu07ka0iZqbC_dl1WFo0gpFh8IlLG9Uv1Um6TuhYgJa",
+        "title": "+ Coca-Cola Company's market share in the U.S. 2013-2024 - Statista",
+        "content": "In the U.S., the Coca Cola market share was almost 48 percent in 2024. The market share has increased in recent years.",
+        "score": 0.8124067,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.ibisworld.com/united-states/company/coca-cola-co/8740/",
+        "title": "Coca Cola Co - Company Profile Report | IBISWorld",
+        "content": "# Coca Cola Co - Company Profile In the US, the company has a notable market share in at least three industries: Syrup & Flavoring Production, Bottled Water Production, Juice Production and Bottled Water Production. To view all of Coca Cola Co's operating industries and competitors, see purchase options. Of the 4 core revenue-generating products and services in the Syrup & Flavoring Production industry, Coca Cola Co offers: Of the 4 core revenue-generating products and services in the Bottled Water Production industry, Coca Cola Co offers: Of the 5 core revenue-generating products and services in the Juice Production industry, Coca Cola Co offers: To view Coca Cola Co's full products and services, see purchase options.",
+        "score": 0.77405477,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.7,
+    "request_id": "0cd20e96-e8e0-48c6-ba96-87c26062af04"
+  },
+  "timestamp": "2025-12-08T01:21:00.318945",
+  "expires": "2025-12-15T01:21:00.318945",
+  "source_count": 3
+}

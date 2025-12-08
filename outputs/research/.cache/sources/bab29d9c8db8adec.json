@@ -1,0 +1,38 @@
+{
+  "query": "\"AT&T\" company overview",
+  "query_hash": "bab29d9c8db8adec",
+  "results": {
+    "query": "\"AT&T\" company overview",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.britannica.com/money/ATandT-Corporation",
+        "title": "AT&T Corporation | American Telecom Giant",
+        "content": "The company, long referred to as “Ma Bell,” swelled to great corporate heights as it built much of the United States’ local and long-distance telephone services, controlling a monopoly in the telecommunications industry for nearly a century. In 1984, the U.S. government won a decades-long battle to dismantle the monopoly, splitting 22 regional operating companies into seven regional phone companies that were nicknamed Baby Bells. In March of 2011, AT&T launched a $39 billion takeover of **T-Mobile** (TMUS) that would have once again created a near-monopoly, this time to become the largest cellular carrier in the U.S. At the time, broadband capacity was an issue, and an AT&T and T-Mobile merger, the companies said, would lead to better service with fewer dropped calls and a wider network. AT&T’s decision to focus on wireless and fiber departs from the Bell Labs–type technological innovation of its 20th-century peak, but brings the company back to its roots of clear, connected, and reliable communication.",
+        "score": 0.99939764,
+        "raw_content": null
+      },
+      {
+        "url": "https://vault.com/company-profiles/telecommunications/att",
+        "title": "AT&T | Company Profile - Vault",
+        "content": "The world's largest telecom company, AT&T is the product of centuries of merging and acquiring, starting with the telephone company that started it all, the Bell Telephone Company. AT&T is a conglomerate with many arms, not just the cell phone service. This means that there are hundreds of positions with very different roles available to AT&T candidates, from marketing to customer service to tech to logistics. ## Company Stats. WarnerMedia • Cricket Wireless • Bell Telephone Company. ## About the Company. The world's largest telecom company, AT&T is the product of centuries of merging and acquiring, starting with the telephone company that started it all, the Bell Telephone Company. AT&T is a conglomerate with many arms, not just the cell phone service; DirectTV, WarnerMedia, Cricket Wireless, and dozens of local telecom companies are part of the AT&T family. This means that there are hundreds of positions with very different roles available to AT&T candidates, from marketing to customer service to tech to logistics.",
+        "score": 0.99837697,
+        "raw_content": null
+      },
+      {
+        "url": "https://finance.yahoo.com/quote/T/profile/",
+        "title": "AT&T Inc. (T) Company Profile & Facts",
+        "content": "- Best Black Friday deals - Best money market accounts The Communications segment offers wireless voice and data communications services; and sells handsets, wireless data cards, wireless computing devices, carrying cases/protective covers, and wireless chargers through its own company-owned stores, agents, and third-party retail stores. It also provides AT&T Dedicated Internet, fiber ethernet and broadband, fixed wireless, and hosted and managed professional services; and copper-based voice and data, Virtual Private Networks (VPN), wholesale, outsourcing, and IP, as well as customer premises equipment for multinational corporations, small and mid-sized businesses, governmental, and wholesale customers. Corporate governance scores courtesy of Institutional Shareholder Services (ISS)  Scores indicate decile rank relative to index or region.",
+        "score": 0.99608517,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.88,
+    "request_id": "0cfc3b14-10c4-42ac-b26c-5288193aff40"
+  },
+  "timestamp": "2025-12-08T01:19:50.393446",
+  "expires": "2025-12-15T01:19:50.393446",
+  "source_count": 3
+}

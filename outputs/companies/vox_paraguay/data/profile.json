@@ -1,0 +1,30 @@
+{
+  "company_name": "VOX Paraguay",
+  "generated": "20251208_001953",
+  "profile": {
+    "name": "VOX Paraguay",
+    "legal_name": "VOX Comunicaciones S.A.",
+    "industry": "Telecommunications (MVNO)",
+    "country": "Paraguay",
+    "region": "Latin America",
+    "parent_company": "",
+    "parent_ticker": "",
+    "founded": "",
+    "headquarters": "Asuncion, Paraguay",
+    "website": "https://www.vox.com.py",
+    "services": [
+      "2G",
+      "3G",
+      "Voice + SMS",
+      "Data-focused",
+      "No contract required",
+      "Simple pricing",
+      "Easy top-up"
+    ],
+    "competitors": [
+      "Tigo Paraguay",
+      "Personal Paraguay",
+      "Claro Paraguay"
+    ]
+  }
+}

@@ -1,0 +1,1 @@
+# Personal Paraguay - Research Report

@@ -1,0 +1,7 @@
+## Executive Summary
+
+Tigo Paraguay, operating under the legal name Telefonica Celular del Paraguay S.A. (Telecel), is Paraguay's leading telecommunications provider with 3.6 million customers and 96% national territory coverage. Founded in 1991 and operating under the Millicom International Cellular S.A. umbrella, the company has established itself as a pioneer in introducing advanced telecommunications technologies to Paraguay, including being among the first to deploy 3G, 4G, and preparing for 5G networks.
+
+The company operates a diversified telecommunications portfolio spanning mobile services (with a 70% prepaid and 30% postpaid customer mix), fixed broadband, cable television (Tigo TV), and mobile financial services through its award-winning Tigo Money platform serving 2.2 million active clients. As Paraguay's market leader and recognized as a Great Place to Work award winner, Tigo Paraguay has positioned itself as an engine of digital inclusion, leveraging its extensive distribution network of over 4,000 outlets to serve both urban and rural populations.
+
+Tigo Paraguay continues to invest heavily in network infrastructure, with recent spectrum renewals in the 700 MHz band (February 2024) and ongoing preparations for 5G deployment, positioning the company for continued market leadership in Paraguay's evolving telecommunications landscape.

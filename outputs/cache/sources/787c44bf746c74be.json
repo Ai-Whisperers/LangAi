@@ -1,0 +1,38 @@
+{
+  "query": "\"Tesla\" company overview 2024",
+  "query_hash": "787c44bf746c74be",
+  "results": {
+    "query": "\"Tesla\" company overview 2024",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://finance.yahoo.com/quote/TSLA/profile/",
+        "title": "Tesla, Inc. (TSLA) Company Profile & Facts - Yahoo Finance",
+        "content": "Tesla, Inc. designs, develops, manufactures, leases, and sells electric vehicles, and energy generation and storage systems in the United States, China, and internationally. This segment also provides sedans and sport utility vehicles through direct and used vehicle sales, a network of Tesla Superchargers, and in-app upgrades; purchase financing and leasing services; services for electric vehicles through its company-owned service locations and Tesla mobile service technicians; and vehicle limited warranties and extended service plans. The Energy Generation and Storage segment engages in the design, manufacture, installation, sale, and leasing of solar energy generation and energy storage products, and related services to residential, commercial, and industrial customers and utilities through its website, stores, and galleries, as well as through a network of channel partners. Tesla, Inc.’s ISS Governance QualityScore as of December 1, 2025 is 10. Corporate governance scores courtesy of Institutional Shareholder Services (ISS)  Scores indicate decile rank relative to index or region.",
+        "score": 0.99918956,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.britannica.com/money/Tesla-Motors",
+        "title": "Tesla, Inc. | History, Cars, Elon Musk, & Headquarters - Britannica",
+        "content": "* Tesla under Musk: New models, battery technology, and solar energy * Tesla under Musk: New models, battery technology, and solar energy Tesla's emphasis on robotics and automation mirrors CEO Elon Musk's assertion that the company's future lies as much in AI as in vehicles. Tesla, Inc., headquartered in Austin, Texas, is an American manufacturer of electric automobiles, solar panels, and batteries for cars and home power storage. Although Tesla is best known for its electric vehicles, it also produces energy storage systems and technology products. Tesla Motors was formed to develop an electric sports car. In 2008, Tesla Motors released its first car, the completely electric Roadster.",
+        "score": 0.99021614,
+        "raw_content": null
+      },
+      {
+        "url": "https://medium.com/@nambos3rd/tesla-full-year-2024-analysis-a-review-of-actual-performance-my-financial-forecast-41ee70091b5a",
+        "title": "Tesla Full Year 2024 Analysis — A Review of Actual Performance ...",
+        "content": "Tesla had an 18.4% automotive gross profit margin (including regulatory credits) in 2024 and 23.3% in 2023 as automotive revenues declined by 6% to $77 billion from $82.4 billion year-on-year. The Tesla Energy segment’s revenues rose 67% to $10 billion in 2024 from $6 billion in 2023, while its gross profit margin rose slightly to 26.2% from 23.3%. Tesla Services and Other had a 5.8% gross profit margin in 2024, down from 6.2% in 2023. Tesla’s gross profit margins were 17.9% in 2024 and 18.2% in 2023 due to significant incentives offered by Tesla to sell more EVs and drive up demand. Tesla’s operating profit margin fell to 7.2% in 2024 from 9.2% in 2023. Tesla’s GAAP net income fell by 53% from approximately $15 billion in 2023 to $7 billion in 2024, with net profit margins of 15.5% and 7.3% respectively. Tesla’s 2023 net profit was impacted by a one-time non-cash $5.7 billion tax benefit. Tesla's energy business contributed 15% of gross profit in 2024 up from 6% in 2023.",
+        "score": 0.98951083,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.74,
+    "request_id": "0ad0805c-4c79-4482-8481-7cea12f590dc"
+  },
+  "timestamp": "2025-12-08T00:54:38.176885",
+  "expires": "2025-12-15T00:54:38.176885",
+  "source_count": 3
+}

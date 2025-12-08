@@ -1,0 +1,38 @@
+{
+  "query": "\"Tigo Paraguay\" spectrum license MHz frequency",
+  "query_hash": "76dffe8ca645c6b3",
+  "results": {
+    "query": "\"Tigo Paraguay\" spectrum license MHz frequency",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.millicom.com/media/3589/mic-20-f-without-exhibits.pdf",
+        "title": "MILLICOM INTERNATIONAL CELLULAR S.A.",
+        "content": "We hold licenses for 2x10 MHz of spectrum in the 900 MHz band ... During the year ended December 31, 2017, Tigo Paraguay completed the acquisition",
+        "score": 0.82994765,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.telecompaper.com/news/tigo-paraguay-in-talks-with-govt-on-5g-access-ceo--1550531",
+        "title": "Tigo Paraguay in talks with govt on 5G access - CEO",
+        "content": "Tigo Paraguay in talks with govt on 5G access - CEO. Tigo (Millicom) ... The executive's comments come after Conatel awarded 200 MHz of spectrum",
+        "score": 0.72465646,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.telecompaper.com/news/claro-and-nubicom-cleared-to-launch-5g-in-paraguay--1548606",
+        "title": "Claro and Nubicom cleared to launch 5G in Paraguay",
+        "content": "Each company was awarded the maximum 200 MHz of frequencies in the 3.5 GHz band and has been given six months to roll out the corresponding",
+        "score": 0.55883324,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.63,
+    "request_id": "41e44c1d-d9c7-4f56-b079-592882c55802"
+  },
+  "timestamp": "2025-12-08T00:37:58.152137",
+  "expires": "2025-12-15T00:37:58.152137",
+  "source_count": 3
+}

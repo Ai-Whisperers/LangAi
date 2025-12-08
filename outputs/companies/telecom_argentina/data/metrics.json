@@ -1,0 +1,39 @@
+{
+  "financial": {
+    "revenue_usd_billions": 2.2,
+    "ebitda_usd_millions": 500.0,
+    "growth_rate_percent": 12.0
+  },
+  "operational": {
+    "customers": 162000,
+    "employees": 18977
+  },
+  "leadership": {
+    "ceo": "Luis Rial Ubago"
+  },
+  "company_info": {
+    "founded_year": 1990
+  },
+  "data_freshness": {
+    "years_mentioned": [
+      2025,
+      2024,
+      2023
+    ],
+    "most_recent_year": 2025,
+    "oldest_year": 2023,
+    "quarters_mentioned": [
+      "Q1 2024",
+      "Q1 2024",
+      "Q1 2024",
+      "Q4 2023",
+      "Q1 2024"
+    ]
+  },
+  "quality_score": 100,
+  "research_cost_usd": 0.048747,
+  "tokens_used": {
+    "input": 1879,
+    "output": 2874
+  }
+}

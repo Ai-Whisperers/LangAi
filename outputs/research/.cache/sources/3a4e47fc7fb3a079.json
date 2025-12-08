@@ -1,0 +1,38 @@
+{
+  "query": "\"Nike\" market share industry position",
+  "query_hash": "3a4e47fc7fb3a079",
+  "results": {
+    "query": "\"Nike\" market share industry position",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.kavout.com/market-lens/nikes-future-evaluating-the-financial-health-and-market-position-of-the-sportswear-giant",
+        "title": "Nike's Future: Evaluating the Financial Health and Market ...",
+        "content": "As of Q1 2024, Nike's market share in the Consumer Discretionary Sector was 37.87%, an increase from 36.51% in the previous quarter. This",
+        "score": 0.80771893,
+        "raw_content": null
+      },
+      {
+        "url": "https://frontofficesports.com/nike-brand-struggles-but-dominant-market-share-still/",
+        "title": "Nike Has Lost Some Mojo. But Not Its Market Share",
+        "content": "* Nike’s global market share (for sneakers and apparel) dropped to 16.4% in 2024 from 17.1% in 2022. With all those problems, Nike’s global market share (for sneakers and apparel) has dropped less than one percentage point, from 17.1% in 2022 to 16.4% in 2024, according to Euromonitor data. “I don’t think Nike gives up the No. 1 spot, but it wouldn’t surprise me if they have a smaller share in the U.S.,” Powell says. “They already have a smaller share than they had five years ago.” The distance between Nike and its competitors is still vast enough for now that it can stand to lose a percentage point of market share. “Nike isn’t going anywhere, but when you compare Nike to how it was from around 2000 to 2010, that was a really innovative period for the brand,” says Mike D. “But I think it’s important for Nike as a brand to rediscover its identity in athletic gear—its core identity.”.",
+        "score": 0.79369855,
+        "raw_content": null
+      },
+      {
+        "url": "https://csimarket.com/stocks/competitionSEG2.php?code=NKE",
+        "title": "NKE's Market share relative to its competitors, as of Q3 2025",
+        "content": "NKE's Market share relative to its competitors, as of Q3 2025 ; Nike Inc, 24.13%, 24.32% ; Adidas, 13.95%, 13.80% ; Lululemon Athletica Inc, 5.67%",
+        "score": 0.78054583,
+        "raw_content": null
+      }
+    ],
+    "response_time": 1.04,
+    "request_id": "e13be770-ee4b-4d9c-a44a-7e26122da358"
+  },
+  "timestamp": "2025-12-08T01:24:55.498189",
+  "expires": "2025-12-15T01:24:55.498189",
+  "source_count": 3
+}

@@ -1,0 +1,38 @@
+{
+  "query": "\"Amazon\" revenue financials 2024",
+  "query_hash": "fec44fa1f48095cb",
+  "results": {
+    "query": "\"Amazon\" revenue financials 2024",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.statista.com/statistics/672747/amazons-consolidated-net-revenue-by-segment/?srsltid=AfmBOor5jxSvB5NNc_0frfDZVLMgicfrf5CeyUxazGkVIPT0Gi00Jt7K",
+        "title": "Amazon: global net revenue by product 2024",
+        "content": "In 2024, Amazon's net revenue from subscription services segment amounted to 44.37 billion US dollars. Subscription services include Amazon Prime.",
+        "score": 0.99995637,
+        "raw_content": null
+      },
+      {
+        "url": "https://companiesmarketcap.com/amazon/revenue/",
+        "title": "Amazon (AMZN) - Revenue",
+        "content": "* Revenue P/B ratio # Revenue for Amazon (AMZN) ## **Revenue in 2025 (TTM): $691.33 Billion USD** According to **Amazon**'s latest financial reports the company's current revenue (TTM ) is **$691.33 Billion USD**. In 2024 the company made a revenue of **$637.95 Billion USD** an increase over the revenue in the year 2023 that were of **$574.78 Billion USD**. The revenue is the total amount of income that a company generates by the sale of goods or services. ## Revenue history for Amazon from 1996 to 2025 ### Annual revenue | Year | Revenue | Change | | 2024 | $637.95 B | 10.99% | ### Revenue for similar companies or competitors | Company | Revenue | Revenue differencediff.",
+        "score": 0.9999435,
+        "raw_content": null
+      },
+      {
+        "url": "https://finance.yahoo.com/news/amazon-com-full-2024-earnings-113517187.html",
+        "title": "Amazon.com Full Year 2024 Earnings: EPS Beats ...",
+        "content": "Amazon.com (NASDAQ:AMZN) Full Year 2024 Results. Key Financial Results. Revenue: US$638.0b (up 11% from FY 2023). Net income: US$59.2b (up",
+        "score": 0.99986756,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.99,
+    "request_id": "05d0002c-c279-4355-87f7-dc150c63b987"
+  },
+  "timestamp": "2025-12-08T01:18:35.700870",
+  "expires": "2025-12-15T01:18:35.700870",
+  "source_count": 3
+}

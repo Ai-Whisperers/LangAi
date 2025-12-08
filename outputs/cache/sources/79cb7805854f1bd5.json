@@ -1,0 +1,38 @@
+{
+  "query": "\"Tigo Paraguay\" revenue EBITDA financial results 2024",
+  "query_hash": "79cb7805854f1bd5",
+  "results": {
+    "query": "\"Tigo Paraguay\" revenue EBITDA financial results 2024",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.sec.gov/Archives/edgar/data/912958/000095010324006466/dp210997_6k.htm",
+        "title": "millicom international cellular sa - SEC.gov",
+        "content": "On February 28, 2024, the local regulator in Paraguay, Conatel, granted the renewal of spectrum in the 700 Mhz band operated by Tigo Paraguay, for a total",
+        "score": 0.9976949,
+        "raw_content": null
+      },
+      {
+        "url": "https://ml-eu.globenewswire.com/Resource/Download/4b0ea23a-3f4f-497d-ba8b-010366f33d2a",
+        "title": "[PDF] Millicom - IAS34 - Q32024",
+        "content": "On February 28, 2024, the local regulator in Paraguay, Conatel, granted the renewal of spectrum in the 700 Mhz band operated by. Tigo Paraguay",
+        "score": 0.99632156,
+        "raw_content": null
+      },
+      {
+        "url": "https://ml-eu.globenewswire.com/Resource/Download/d66dddd7-fd7e-4940-a297-d4bf6767a4cd",
+        "title": "[PDF] Millicom - IAS34 - Q42024",
+        "content": "On February 28, 2024, the local regulator in Paraguay, Conatel, granted the renewal of spectrum in the 700 Mhz band operated by. Tigo Paraguay",
+        "score": 0.99608517,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.92,
+    "request_id": "34f9c877-3331-4873-95c8-604883dd7ef0"
+  },
+  "timestamp": "2025-12-08T00:37:44.268125",
+  "expires": "2025-12-15T00:37:44.268125",
+  "source_count": 3
+}

@@ -1,0 +1,30 @@
+# Amazon.com Inc. - E-Commerce & Cloud Giant
+company:
+  name: "Amazon"
+  legal_name: "Amazon.com, Inc."
+  ticker: "AMZN"
+  exchange: "NASDAQ"
+  website: "https://www.amazon.com"
+  industry: "E-Commerce / Cloud Computing"
+  country: "United States"
+
+  details:
+    founded: 1994
+    headquarters: "Seattle, Washington"
+    ceo: "Andy Jassy"
+    employees: "1,500,000+"
+
+research:
+  depth: "quick"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "Amazon revenue 2024"
+    - "Amazon AWS revenue 2024"
+    - "Amazon Prime subscribers"
+    - "Amazon vs Walmart e-commerce"
+    - "Amazon advertising revenue"
+    - "Amazon earnings Q4 2024"

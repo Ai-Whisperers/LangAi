@@ -1,0 +1,38 @@
+{
+  "query": "\"Apple\" news developments 2024",
+  "query_hash": "9274ba506fec61ec",
+  "results": {
+    "query": "\"Apple\" news developments 2024",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.bloomberg.com/news/newsletters/2023-12-17/apple-2024-plans-new-low-end-airpods-vision-pro-larger-iphone-16-oled-ipad-lq9jhed4",
+        "title": "Apple's 2024 Will Be About Moving Beyond the iPhone",
+        "content": "The iPhone will take a back seat to Apple's wearables business in 2024, with the Vision Pro, watch and AirPods getting more attention.",
+        "score": 0.78473216,
+        "raw_content": null
+      },
+      {
+        "url": "https://sixcolors.com/post/2025/02/apple-in-2024-the-complete-commentary/",
+        "title": "Apple in 2024: The complete commentary",
+        "content": "I’m thrilled that Apple continues to find new ways to tighten the integration between the Mac and the iPhone without turning the former into the latter. The new Mac Mini is a tremendous value, as is the Walmart-exclusive M1 MacBook Air. Every Mac sold by Apple now has a (long-overdue) baseline of 16 GB of RAM and 256 GB of storage. But I think Apple is doing an outstanding job with its Mac lineup, and I’m particularly envious of those who own the new Mac mini, which is small, powerful, and just exceedingly cute. At a time when Apple looked as if it was becoming obsessed with high-end experiments like Vision Pro, and AI, the redesigned mini is convincing many who have stuck with old Macs running High Sierra and Mojave to take the plunge and upgrade.",
+        "score": 0.77893573,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.apple.com/newsroom/2024/06/introducing-apple-intelligence-for-iphone-ipad-and-mac/",
+        "title": "Introducing Apple Intelligence for iPhone, iPad, and Mac",
+        "content": "![Image 2: A user opens the Writing Tools menu while working on an email, and is given the option to select Proofread or Rewrite.](https://www.apple.com/newsroom/images/2024/06/introducing-apple-intelligence-for-iphone-ipad-and-mac/article/Apple-WWDC24-Apple-Intelligence-Writing-Tools-240610_big.jpg.large.jpg). ![Image 13: In Messages on iPhone 15 Pro, an Image Playground-generated image shows the user’s mom stylized as a superhero.](https://www.apple.com/newsroom/images/2024/06/introducing-apple-intelligence-for-iphone-ipad-and-mac/article/Apple-WWDC24-Apple-Intelligence-Messages-Image-Playground-personalization-02-240610_inline.jpg.large.jpg). ![Image 16: In Messages, a user is presented with an array of Genmoji options to use as a Tapback.](https://www.apple.com/newsroom/images/2024/06/introducing-apple-intelligence-for-iphone-ipad-and-mac/article/Apple-WWDC24-Apple-Intelligence-Messages-inline-react-with-Genmoji-240610_inline.jpg.large.jpg). ![Image 17: In Messages, a user is presented with an array of Genmoji options to use as a Tapback.](https://www.apple.com/newsroom/images/2024/06/introducing-apple-intelligence-for-iphone-ipad-and-mac/article/Apple-WWDC24-Apple-Intelligence-Messages-react-with-Genmoji-240610_inline.jpg.large.jpg). ![Image 19: A user types to Siri on iPhone 15 Pro.](https://www.apple.com/newsroom/images/2024/06/introducing-apple-intelligence-for-iphone-ipad-and-mac/article/Apple-WWDC24-Apple-Intelligence-type-to-Siri-240610_inline.jpg.large.jpg). ![Image 20: On iPhone 15 Pro, Siri answers a user’s question about scheduling a text message.](https://www.apple.com/newsroom/images/2024/06/introducing-apple-intelligence-for-iphone-ipad-and-mac/article/Apple-WWDC24-Apple-Intelligence-Siri-product-knowledge-240610_inline.jpg.large.jpg). ![Image 21: Siri finds a friend’s book recommendations for an iPhone 15 Pro user.](https://www.apple.com/newsroom/images/2024/06/introducing-apple-intelligence-for-iphone-ipad-and-mac/article/Apple-WWDC24-Apple-Intelligence-Siri-content-search-240610_inline.jpg.large.jpg). ![Image 23: On iPhone 15 Pro, Siri replies to a user’s prompt with “Do you want me to use ChatGPT to do that?”](https://www.apple.com/newsroom/images/2024/06/introducing-apple-intelligence-for-iphone-ipad-and-mac/article/Apple-WWDC24-Apple-Intelligence-Siri-ChatGPT-request-240610_inline.jpg.large.jpg). ![Image 27: In Pages, a user’s Compose-generated bedtime story and accompanying image are shown.](https://www.apple.com/newsroom/images/2024/06/introducing-apple-intelligence-for-iphone-ipad-and-mac/article/Apple-WWDC24-Apple-Intelligence-ChatGPT-Writing-Tools-Compose-result-240610_big.jpg.large.jpg).",
+        "score": 0.74363416,
+        "raw_content": null
+      }
+    ],
+    "response_time": 1.18,
+    "request_id": "52a241e8-0836-4c84-afba-b75fecbdf8b6"
+  },
+  "timestamp": "2025-12-08T01:19:16.808926",
+  "expires": "2025-12-15T01:19:16.808926",
+  "source_count": 3
+}

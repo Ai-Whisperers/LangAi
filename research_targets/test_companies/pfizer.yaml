@@ -1,0 +1,30 @@
+# Pfizer Inc. - Global Pharmaceutical
+company:
+  name: "Pfizer"
+  legal_name: "Pfizer Inc."
+  ticker: "PFE"
+  exchange: "NYSE"
+  website: "https://www.pfizer.com"
+  industry: "Pharmaceuticals"
+  country: "United States"
+
+  details:
+    founded: 1849
+    headquarters: "New York, New York"
+    ceo: "Albert Bourla"
+    employees: "88,000+"
+
+research:
+  depth: "quick"
+  focus_areas:
+    - financial
+    - market
+    - product
+
+  priority_queries:
+    - "Pfizer revenue 2024"
+    - "Pfizer post-COVID portfolio"
+    - "Pfizer Seagen acquisition"
+    - "Pfizer oncology pipeline"
+    - "Pfizer vs Merck pharma"
+    - "Pfizer earnings 2024"

@@ -1,0 +1,31 @@
+{
+  "company_name": "Telecom Argentina",
+  "generated": "20251208_001703",
+  "profile": {
+    "name": "Telecom Argentina",
+    "legal_name": "Telecom Argentina S.A.",
+    "industry": "Telecommunications",
+    "country": "Argentina",
+    "region": "Latin America",
+    "parent_company": "",
+    "parent_ticker": "",
+    "founded": "1990",
+    "headquarters": "Buenos Aires, Argentina",
+    "website": "https://www.telecom.com.ar",
+    "services": [
+      "Voice and data (2G, 3G, 4G LTE)",
+      "5G (limited deployment in Argentina)",
+      "Prepaid and postpaid",
+      "Fiber broadband (FTTH)",
+      "HFC cable",
+      "DSL",
+      "Cable TV (CablevisiÃ³n)",
+      "Flow streaming platform",
+      "Sports content",
+      "B2B connectivity",
+      "Cloud services",
+      "Data centers"
+    ],
+    "competitors": []
+  }
+}

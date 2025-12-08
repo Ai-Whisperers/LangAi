@@ -1,0 +1,38 @@
+{
+  "query": "\"AT&T\" competitors analysis",
+  "query_hash": "4d7d019eff89c233",
+  "results": {
+    "query": "\"AT&T\" competitors analysis",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.mbaskool.com/five-forces-analysis/companies/18416-atat.html",
+        "title": "AT&T Porter Five Forces Analysis | MBA Skool",
+        "content": "AT&T has many competitors like Verizon, Xfinity, Spectrum, etc. AT&T has the highest annual revenue followed by Verizon, Xfinity and Spectrum. The company is",
+        "score": 0.81204927,
+        "raw_content": null
+      },
+      {
+        "url": "https://bstrategyhub.com/atampt-competitors-alternatives/",
+        "title": "Top 15 AT&T Competitors and Alternatives | Business Strategy Hub",
+        "content": "In 2021, Verizon was able to make **$95.3 billion** in revenue , and while the company has a roster of different services, it’s main revenue generator is its telecommunications solutions. In 2021, the company earned more than $14.7 billion in revenue [6], however, it’s worth mentioning that T-Mobile doesn’t offer a comprehensive range of services compared to both AT&T and Verizon, but is still amongst one of the biggest AT&T competitors. The organization was founded in 1995, in Germany and apart from telecommunications and mobile services, the company has several other subsidiaries across the globe. While the company’s primary revenue generator are its telecommunication services, they do offer several other services such as broadband solutions, digital media, and IT.",
+        "score": 0.77405477,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.globaldata.com/company-profile/att-inc/competitors/",
+        "title": "AT&T Inc Peers & Key Competitors - GlobalData",
+        "content": "# AT&T Inc - Company Profile Back to companies # AT&T Inc: Competitors Share * Segment Analysis * Competitors * Top 10 Telecom Operators in North America in 2021 by Mobile Subscriptions * Top 4 Telecom Operators in the US in 2021 by Mobile Subscriptions * Top 10 Telecom Operators in the World in 2021 by Revenue * Top 10 Telecom Services Providers in the World by Market Capitalization Discover information and data insights on AT&T Inc's key competitors and market peers. ## Competitor comparison Benchmark the company against the market with exclusive information on key competitors   Benchmark the company against the market with exclusive information on key competitors   Learn more Access more premium companies when you subscribe to Explorer",
+        "score": 0.77261686,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.85,
+    "request_id": "163632bc-bc66-4284-a588-91be53919103"
+  },
+  "timestamp": "2025-12-08T01:20:10.169005",
+  "expires": "2025-12-15T01:20:10.169005",
+  "source_count": 3
+}

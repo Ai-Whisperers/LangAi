@@ -1,0 +1,30 @@
+# JPMorgan Chase - Largest US Bank
+company:
+  name: "JPMorgan Chase"
+  legal_name: "JPMorgan Chase & Co."
+  ticker: "JPM"
+  exchange: "NYSE"
+  website: "https://www.jpmorganchase.com"
+  industry: "Financial Services"
+  country: "United States"
+
+  details:
+    founded: 2000
+    headquarters: "New York, New York"
+    ceo: "Jamie Dimon"
+    employees: "309,000+"
+
+research:
+  depth: "quick"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "JPMorgan revenue 2024"
+    - "JPMorgan net income 2024"
+    - "JPMorgan investment banking revenue"
+    - "JPMorgan vs Bank of America"
+    - "JPMorgan digital banking growth"
+    - "JPMorgan earnings Q4 2024"

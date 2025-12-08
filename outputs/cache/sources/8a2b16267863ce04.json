@@ -1,0 +1,38 @@
+{
+  "query": "\"Tesla\" founded history headquarters employees",
+  "query_hash": "8a2b16267863ce04",
+  "results": {
+    "query": "\"Tesla\" founded history headquarters employees",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://en.wikipedia.org/wiki/History_of_Tesla,_Inc.",
+        "title": "History of Tesla, Inc. - Wikipedia",
+        "content": "Jump to content ## Contents In January 2008, Tesla fired several key personnel who had been involved from the inception after a performance review by the new CEO. This reimbursement matched the trade-in values of competitive German luxury cars of that age. B. Straubel (board, co-founder) * Kathleen Wilson-Thompson (board) | | Former | * Deepak Ahuja (two-time CFO) * Drew Baglino (SVP of engineering) * Ze'ev Drori (CEO) * Martin Eberhard (co-founder, CEO) * Larry Ellison (board) * Steve Jurvetson (board) * Andrej Karpathy (AI) * Zach Kirkhorn (CFO) * Arnnon Geshuri (HR) * Jérôme Guillen (automotive) * Jim Keller \"Jim Keller (engineer)\") (Autopilot) * Chris Lattner (Autopilot) * Hiromichi Mizuno (board) * Marc Tarpenning (co-founder, CFO) * Jay Vijayan (CIO) | |",
+        "score": 0.68723184,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.thestreet.com/technology/history-of-tesla-15088992",
+        "title": "History of Tesla & its stock: Timeline, facts & milestones - TheStreet",
+        "content": "2003: Tesla Motors is founded by Martin Eberhard and Marc Tarpenning in San Carlos, California. They serve as its CEO and CFO, respectively.",
+        "score": 0.61363083,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.historyofinformation.com/detail.php?id=5048",
+        "title": "Elon Musk & Colleagues Found Tesla Motors - History of Information",
+        "content": "Jeremy Norman’s   HistoryofInformation.com Exploring the History of Information and Media through Timelines Image Source: www.autoweek.com # Elon Musk & Colleagues Found Tesla Motors Image Source: en.wikipedia.org In July 2003 by engineers Martin Eberhard and Marc Tarpenning founded Tesla Motors (later Tesla, Inc.), naming the company after inventor and electrical engineer Nikola Tesla. Musk, who became CEO, said in 2006 that \"the overarching purpose of Tesla Motors...is to help expedite the move from a mine-and-burn hydrocarbon economy towards a solar electric economy.\" He intended for the company to build a wide range of electric vehicles, including \"affordably priced family cars\", and also market solar panels to generate solar energy. ## Timeline Themes Technology / Engineering Last updated November 13th, 2025 Pacific Time   © 2004–2025 Jeremy M. Norman | ****",
+        "score": 0.45914948,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.75,
+    "request_id": "291a5d1e-1ed4-493f-9997-17147eae0205"
+  },
+  "timestamp": "2025-12-08T00:54:50.866061",
+  "expires": "2025-12-15T00:54:50.866061",
+  "source_count": 3
+}

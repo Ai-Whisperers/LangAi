@@ -1,0 +1,38 @@
+{
+  "query": "\"Tigo Paraguay\" 4G 5G coverage network",
+  "query_hash": "854fe7f2ec94b2ad",
+  "results": {
+    "query": "\"Tigo Paraguay\" 4G 5G coverage network",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://portal.powertec.com.au/industry-resources/companies/tigo-paraguay",
+        "title": "Tigo Paraguay | Powertec Information Portal",
+        "content": "The company has been at the forefront of introducing advanced telecommunications technologies in Paraguay, including 3G, 4G, and preparations for 5G networks. Tigo Paraguay began testing its 3G network in July 2007, with the infrastructure provided by the Chinese manufacturer Huawei. As of December 2024, Tigo had not announced any plans to shut down its 3G network, although the focus has shifted towards expanding 4G and preparing for 5G technologies. Tigo Paraguay launched its 4G LTE network in April 2016, using the AWS spectrum. In December 2015, Paraguay's National Telecommunications Council (CONATEL) approved Tigo's application for a 4G license, which included a payment of USD 45 million for three sub-band blocks. As of 2024, Tigo Paraguay had not yet launched commercial 5G services. In 2021, Tigo and Claro pledged a combined investment of USD 47 million in network upgrades as part of the renewal of their 4G licenses, which also included preparations for 5G deployment.",
+        "score": 0.8443195,
+        "raw_content": null
+      },
+      {
+        "url": "https://idbinvest.org/en/blog/development-impact/why-mobile-broadband-quality-so-important-development",
+        "title": "Why is mobile broadband quality so important for development ...",
+        "content": "In order to foster greater social and digital inclusion within countries and bridge the digital divide between Latin America and the Caribbean and more advanced economies, past investments in infrastructure need to be complemented with ongoing investments to swiftly expand 4G coverage and increase service quality to meet increasing mobile data demand. In Paraguay, for example, where mobile broadband penetration is low and average download speeds are among the slowest in the region (2Mbps), Tigo Paraguay is building a new 4G LTE network in the country’s urban centers of Asunción, Ciudad del Este, and San Lorenzo and expanding its 3G network throughout the country. *For a deeper dive into the dynamics of the mobile industry in the region, see the* ***Evolution of Mobile Telecommunications in Latin America and the Caribbean****, part of IDB Invest’s Development through the Private Sector Series, or  a brief summarizing this study **here**. That country is Paraguay, where IDB Invest has committed to mobilizing up to $1 billion to support strategic private-sector projects that drive sustainable development.",
+        "score": 0.6757865,
+        "raw_content": null
+      },
+      {
+        "url": "https://developingtelecoms.com/component/tags/tag/tigo-paraguay.html",
+        "title": "Telecom news portal for emerging markets ... - Developing Telecoms",
+        "content": "* + ## Sign-up to our weekly newsletter. ### Vodacom Group to increase stake in Safaricom for $2.1 billion. Vodacom Group to increase stake in Safaricom for $2.1 billion. ### Microsoft on connecting 117 million Africans and what comes next. Microsoft on connecting 117 million Africans and what comes next. # Latest News & Articles. ## Tigo Paraguay. * ### Argentina’s Nubicom plans 5G rollout in Paraguay. * ### ATIS Group agrees to buy Lati Paraguay from Millicom. * ### Can Paraguay’s state-owned service provider be saved? * ### Tigo Panama pledges US$100m for 4G, fibre expansion. * ### Claro and Tigo granted 4G licence renewal in Paraguay. * ### RNFO: 18,000km of fibre integrated throughout Paraguay. * ### Tigo Paraguay data centre marks Flexenclosure’s Lat Am debut. ### Developing Telecoms. Company registered in England, number 5724661. All content copyright © 2005-2025 Developing Telecoms Ltd. All rights reserved.",
+        "score": 0.5798055,
+        "raw_content": null
+      }
+    ],
+    "response_time": 1.08,
+    "request_id": "0972b263-0eca-42b7-aa89-93b53d9dddc9"
+  },
+  "timestamp": "2025-12-08T00:38:00.183754",
+  "expires": "2025-12-15T00:38:00.183754",
+  "source_count": 3
+}

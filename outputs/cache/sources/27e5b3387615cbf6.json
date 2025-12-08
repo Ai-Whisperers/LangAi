@@ -1,0 +1,38 @@
+{
+  "query": "Millicom Paraguay revenue 2024",
+  "query_hash": "27e5b3387615cbf6",
+  "results": {
+    "query": "Millicom Paraguay revenue 2024",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://ml-eu.globenewswire.com/Resource/Download/a4b21b2a-106c-4281-9ad0-d8907042ed1f",
+        "title": "[PDF] Millicom - Earnings Release - Q4 2024",
+        "content": "Paraguay service revenue of $136 million increased 4.7% year-on-year, driven by solid growth in Mobile and. B2B. EBITDA grew 37.6% to $66",
+        "score": 0.9719952,
+        "raw_content": null
+      },
+      {
+        "url": "https://seekingalpha.com/article/4762920-millicom-international-cellular-s-a-tigo-q4-2024-earnings-call-transcript",
+        "title": "Millicom International Cellular S.A. (TIGO) Q4 2024 Earnings Call ...",
+        "content": "Paraguay's service revenue was $136 million and the year-on-year growth accelerated to 4.7% in local currency driven primarily by solid",
+        "score": 0.9407083,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.bnamericas.com/en/news/millicom-to-sell-paraguay-towers-to-atis-group",
+        "title": "Millicom to sell Paraguay towers to Atis Group - BNamericas",
+        "content": "Millicom reported first-quarter revenue of US$1.37bn, a 7.6% decrease compared to the same period 2024. Operating profit was up 30.8% to US",
+        "score": 0.9307171,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.0,
+    "request_id": "39adb78c-0877-488f-92fc-a3c5a0a57568"
+  },
+  "timestamp": "2025-12-08T00:37:53.354808",
+  "expires": "2025-12-15T00:37:53.354808",
+  "source_count": 3
+}

@@ -1,0 +1,30 @@
+# The Coca-Cola Company - Beverage Giant
+company:
+  name: "Coca-Cola"
+  legal_name: "The Coca-Cola Company"
+  ticker: "KO"
+  exchange: "NYSE"
+  website: "https://www.coca-colacompany.com"
+  industry: "Beverages"
+  country: "United States"
+
+  details:
+    founded: 1892
+    headquarters: "Atlanta, Georgia"
+    ceo: "James Quincey"
+    employees: "82,500+"
+
+research:
+  depth: "quick"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "Coca-Cola revenue 2024"
+    - "Coca-Cola brand portfolio"
+    - "Coca-Cola vs PepsiCo market share"
+    - "Coca-Cola emerging markets growth"
+    - "Coca-Cola sugar-free products"
+    - "Coca-Cola earnings 2024"

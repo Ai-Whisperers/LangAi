@@ -1,0 +1,351 @@
+# =============================================================================
+# MILLICOM INTERNATIONAL - TIGO PARENT COMPANY
+# Emerging markets telecom leader (NASDAQ: TIGO)
+# =============================================================================
+
+company:
+  name: "Millicom International Cellular"
+  legal_name: "Millicom International Cellular S.A."
+  brand: "Tigo"
+  website: "https://www.millicom.com"
+  industry: "Telecommunications"
+  country: "Luxembourg"
+  region: "Latin America"
+  type: "Holding Company"
+
+  # ---------------------------------------------------------------------------
+  # STOCK INFORMATION
+  # ---------------------------------------------------------------------------
+  stock:
+    ticker: "TIGO"
+    exchanges:
+      - exchange: "NASDAQ"
+        ticker: "TIGO"
+        type: "Primary"
+      - exchange: "Nasdaq Stockholm"
+        ticker: "TIGO SDB"
+        type: "SDR"
+    market_cap: "USD 4 billion"
+    sec_filings: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001047122"
+    investor_relations: "https://investors.millicom.com"
+
+  # ---------------------------------------------------------------------------
+  # COMPANY DETAILS
+  # ---------------------------------------------------------------------------
+  details:
+    founded: 1990
+    headquarters_legal: "Luxembourg"
+    headquarters_operational: "Miami, Florida"
+    ceo: "Mauricio Ramos"
+    employees: "21,000+"
+
+  # ---------------------------------------------------------------------------
+  # SCALE & REACH
+  # ---------------------------------------------------------------------------
+  scale:
+    mobile_subscribers: "45+ million"
+    homes_passed: "12+ million"
+    countries: 9
+    focus: "Central America + South America"
+    key_markets:
+      - country: "Guatemala"
+        position: "Market leader"
+      - country: "Honduras"
+        position: "Market leader"
+      - country: "El Salvador"
+        position: "Market leader"
+      - country: "Paraguay"
+        position: "Market leader (42%)"
+      - country: "Bolivia"
+        position: "Market leader"
+      - country: "Colombia"
+        position: "Major player"
+
+  # ---------------------------------------------------------------------------
+  # FINANCIAL METRICS (2024)
+  # ---------------------------------------------------------------------------
+  financials:
+    revenue: "USD 5.8 billion"
+    service_revenue: "USD 5.4 billion"
+    ebitda: "USD 2.1 billion"
+    ebitda_margin: "39%"
+    capex: "USD 850 million"
+    capex_ratio: "15%"
+    equity_free_cash_flow: "USD 728 million"
+    net_debt: "USD 5 billion"
+    leverage_ratio: "2.4x"
+
+    # 2025 Guidance
+    guidance_2025:
+      equity_free_cash_flow: "USD 750 million"
+      shareholder_returns: "USD 500 million"
+
+    # Segment breakdown
+    segments:
+      guatemala:
+        revenue_share: "25%"
+        position: "Leader"
+      colombia:
+        revenue_share: "22%"
+        position: "Major"
+      paraguay:
+        revenue_share: "7%"
+        position: "Leader"
+      honduras:
+        revenue_share: "12%"
+        position: "Leader"
+      el_salvador:
+        revenue_share: "10%"
+        position: "Leader"
+      bolivia:
+        revenue_share: "10%"
+        position: "Leader"
+
+  # ---------------------------------------------------------------------------
+  # BRANDS & OPERATIONS
+  # ---------------------------------------------------------------------------
+  brands:
+    primary: "Tigo"
+    mobile_money: "Tigo Money"
+    business: "Tigo Business"
+    home: "Tigo Home"
+
+  market_presence:
+    central_america:
+      - country: "Guatemala"
+        brand: "Tigo"
+        position: "Market leader"
+        services: ["Mobile", "Cable", "Home", "B2B"]
+      - country: "Honduras"
+        brand: "Tigo"
+        position: "Market leader"
+      - country: "El Salvador"
+        brand: "Tigo"
+        position: "Market leader"
+      - country: "Nicaragua"
+        brand: "Tigo"
+        position: "Market leader"
+      - country: "Costa Rica"
+        brand: "Tigo"
+        position: "Third player"
+      - country: "Panama"
+        brand: "Tigo"
+        position: "Major player"
+
+    south_america:
+      - country: "Paraguay"
+        brand: "Tigo"
+        position: "Market leader (42%)"
+        subsidiary: "tigo_paraguay.yaml"
+      - country: "Bolivia"
+        brand: "Tigo"
+        position: "Market leader"
+      - country: "Colombia"
+        brand: "Tigo"
+        position: "Major player"
+        note: "JV with EPM"
+
+  # ---------------------------------------------------------------------------
+  # SERVICES
+  # ---------------------------------------------------------------------------
+  services:
+    mobile:
+      - "Voice and data (2G, 3G, 4G LTE)"
+      - "Prepaid and postpaid"
+      - "5G (limited markets)"
+    fixed:
+      - "Broadband (HFC, FTTH)"
+      - "Cable TV"
+    digital:
+      - "Tigo Money (mobile financial services)"
+      - "Streaming and content"
+    enterprise:
+      - "B2B connectivity"
+      - "Cloud services"
+      - "Data centers"
+
+  # ---------------------------------------------------------------------------
+  # KEY DIFFERENTIATOR: TIGO MONEY
+  # ---------------------------------------------------------------------------
+  tigo_money:
+    description: "Mobile financial services platform"
+    users: "10+ million across markets"
+    services:
+      - "P2P money transfers"
+      - "Bill payments"
+      - "Merchant payments"
+      - "Savings"
+      - "Microloans"
+    strategic_importance: "High - financial inclusion driver"
+    markets: ["Guatemala", "Paraguay", "Honduras", "El Salvador", "Bolivia"]
+
+  # ---------------------------------------------------------------------------
+  # STRATEGIC ANALYSIS
+  # ---------------------------------------------------------------------------
+  strengths:
+    - "Market leader in most operating countries"
+    - "Strong mobile money platform (Tigo Money)"
+    - "Focus on emerging market growth"
+    - "Integrated digital lifestyle provider"
+    - "Strong free cash flow generation"
+    - "Low leverage vs peers"
+
+  weaknesses:
+    - "Currency exposure (multiple LatAm currencies)"
+    - "Smaller scale vs America Movil"
+    - "Concentrated in smaller markets"
+    - "Limited 5G spectrum"
+
+  opportunities:
+    - "Mobile money expansion (underbanked populations)"
+    - "B2B digitalization"
+    - "Fiber network buildout"
+    - "5G deployment"
+    - "Financial services cross-sell"
+
+  threats:
+    - "America Movil (Claro) competition"
+    - "Currency devaluation"
+    - "Regulatory changes"
+    - "Economic instability"
+    - "OTT services"
+
+# =============================================================================
+# SUBSIDIARIES (Research Focus)
+# =============================================================================
+subsidiaries:
+  tigo_paraguay:
+    profile: "tigo_paraguay.yaml"
+    share: "42%"
+    priority: "High"
+    revenue_contribution: "7%"
+
+# =============================================================================
+# RESEARCH CONFIGURATION
+# =============================================================================
+research:
+  depth: "comprehensive"
+  type: "holding_company"
+
+  focus_areas:
+    - financial
+    - market
+    - investment
+    - competitor
+
+  # ---------------------------------------------------------------------------
+  # PRIORITY RESEARCH QUERIES
+  # ---------------------------------------------------------------------------
+  priority_queries:
+    # Financial
+    - "Millicom TIGO revenue 2024"
+    - "Millicom earnings Q4 2024"
+    - "TIGO free cash flow"
+    - "Millicom dividend 2025"
+    - "TIGO stock analysis"
+
+    # Market
+    - "Tigo market share Latin America"
+    - "Millicom subscribers"
+    - "Tigo Paraguay performance"
+
+    # Strategy
+    - "Millicom 5G strategy"
+    - "Tigo Money growth"
+    - "Millicom fiber investment"
+
+    # Competitive
+    - "Millicom vs America Movil"
+    - "Central America telecom market"
+
+  # ---------------------------------------------------------------------------
+  # DATA SOURCES
+  # ---------------------------------------------------------------------------
+  priority_sources:
+    sec_filings:
+      - url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001047122"
+        filings: ["20-F", "6-K"]
+    investor_relations:
+      - url: "https://investors.millicom.com"
+        content: ["Quarterly reports", "Presentations", "Press releases"]
+    financial:
+      - url: "https://finance.yahoo.com/quote/TIGO"
+      - url: "https://www.nasdaq.com/market-activity/stocks/tigo"
+
+  # ---------------------------------------------------------------------------
+  # KPIs TO EXTRACT
+  # ---------------------------------------------------------------------------
+  kpis_to_find:
+    financial:
+      - name: "Total Revenue"
+        unit: "USD billion"
+        frequency: "Quarterly"
+      - name: "Service Revenue"
+        unit: "USD billion"
+      - name: "EBITDA"
+        unit: "USD billion"
+      - name: "EBITDA Margin"
+        unit: "%"
+      - name: "Equity Free Cash Flow"
+        unit: "USD million"
+      - name: "Net Debt"
+        unit: "USD billion"
+
+    operational:
+      - name: "Mobile Subscribers"
+        unit: "millions"
+      - name: "Homes Passed"
+        unit: "millions"
+      - name: "Cable/Broadband RGUs"
+        unit: "millions"
+      - name: "Tigo Money Users"
+        unit: "millions"
+
+    by_country:
+      - name: "Paraguay Revenue"
+        unit: "USD million"
+      - name: "Paraguay Subscribers"
+        unit: "millions"
+      - name: "Paraguay EBITDA"
+        unit: "USD million"
+
+    valuation:
+      - name: "Market Cap"
+        unit: "USD billion"
+      - name: "EV/EBITDA"
+        unit: "x"
+      - name: "Dividend Yield"
+        unit: "%"
+
+# =============================================================================
+# NOTES
+# =============================================================================
+notes: |
+  RESEARCH PRIORITY: HIGH (Tigo Paraguay Parent)
+
+  Key insights:
+  - Millicom operates Tigo brand across Latin America
+  - Market leader in most countries (Central America, Paraguay, Bolivia)
+  - Tigo Money is key differentiator (10M+ users)
+  - Strong free cash flow ($728M in 2024)
+
+  Financial data strategy:
+  - 20-F annual report has country-level segment data
+  - Quarterly 6-K filings with operational KPIs
+  - Earnings calls discuss Paraguay specifically
+
+  Paraguay context:
+  - Tigo Paraguay is ~7% of Millicom revenue
+  - Market leader with 42% mobile share
+  - Tigo Money strong in Paraguay
+
+  Investment thesis:
+  - Emerging market telecom value play
+  - Mobile money optionality
+  - Strong cash flow, returning capital
+  - Concentrated but defensible positions
+
+  Recent developments:
+  - Sold African operations (2022)
+  - Focus on Latin America only
+  - Shareholder return program ($500M in 2025)

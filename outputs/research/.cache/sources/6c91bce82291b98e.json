@@ -1,0 +1,38 @@
+{
+  "query": "\"Apple\" products services offerings",
+  "query_hash": "6c91bce82291b98e",
+  "results": {
+    "query": "\"Apple\" products services offerings",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://appleinsider.com/inside/apple-services",
+        "title": "Apple Services | Apple One, AppleCare, iCloud",
+        "content": "# Apple Services. Services including Apple Music were among the hundreds of websites and apps that were down spanning the entire internet because of an Amazon Web Services problem. Apple as a services company. Apple One is a subscription bundle for Apple's services. iCloud is a data storage and syncing service for Apple users. ### Apple TV+. Apple TV+ is a streaming service for Apple original content. ### Apple Music. Users can listen to everything on Apple Music, anything purchased via iTunes, and all of their personal additions ripped from CD's or downloaded from apps like Soundcloud. ### Apple Arcade. ### Apple News. ## Apple Maps. ### Apple Card. Siri is Apple's smart assistant across all of its platforms. iMessage is a messaging service available across many Apple products. Apple has expanded the utility of iMessage to include apps and sticker packs. Users can share video to an Apple TV or audio to a speaker from their iPhone. ## Apple as a services company.",
+        "score": 0.6638657,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.techtarget.com/whatis/definition/Apple",
+        "title": "What is Apple? An products and history overview",
+        "content": "# Apple. ## What is Apple? (formerly Apple Computer Inc.) is an American computer and consumer electronics company famous for creating the iPhone, iPad and Macintosh computers. ## Apple product lines. Apple offers numerous products and services. **Mac computer****.** The Macintosh, or Mac, is Apple's line of personal computers. Apple Intelligence will be integrated into iOS 18 and supported on devices such as iPhone 15 Pro and newer; iPad Air models with M1 or newer chips; and Mac models with M1 or newer chips. Desperate to return to profitability and find a new operating system for its computers, Apple purchased Steve Jobs' new company, NeXT in early 1997. Apple also introduced video editing and CD/DVD mastering software, cementing Macintosh's role in digital media production. Apple has continued to release new products and expanded services in recent years. Apple has switched to using its own in-house designed CPUs, first in iPhone and now in its Macintosh line of computers.",
+        "score": 0.5942929,
+        "raw_content": null
+      },
+      {
+        "url": "https://support.apple.com/guide/deployment/professional-services-services/web",
+        "title": "Professional services offerings",
+        "content": "* Use declarative device management to manage Apple devices * Intro to device management payloads - Configure your new device management service + Configure your network for device management + Review device management payloads + Use device management to deploy software updates * Device management payloads for Device Enrollment * Device management command settings options list - Automated Certificate Management Environment (ACME) payload settings - Directory Service payload settings - Lights Out Management payload settings - Managed Login Items payload settings - Security payload settings - * VPN device management settings overview Professional Services can assist you in deploying and managing Apple technology by: * Deployment model best practices, app deployment strategies, Wi-Fi basics, device management best practices, and integration with Apple School Manager or Apple Business Manager",
+        "score": 0.53648347,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.75,
+    "request_id": "207a484b-9db0-4cf3-9af7-1ff1db31ee9b"
+  },
+  "timestamp": "2025-12-08T01:19:13.669303",
+  "expires": "2025-12-15T01:19:13.669303",
+  "source_count": 3
+}

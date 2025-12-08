@@ -1,0 +1,302 @@
+# =============================================================================
+# COPACO - PARAGUAY STATE TELECOMMUNICATIONS
+# Government-owned national telecom company
+# =============================================================================
+
+company:
+  name: "COPACO"
+  legal_name: "Compania Paraguaya de Comunicaciones S.A."
+  brand: "COPACO"
+  website: "https://www.copaco.com.py"
+  industry: "Telecommunications"
+  country: "Paraguay"
+  region: "Latin America"
+  type: "State-owned Enterprise"
+
+  # ---------------------------------------------------------------------------
+  # OWNERSHIP STRUCTURE
+  # ---------------------------------------------------------------------------
+  ownership:
+    type: "Government-owned"
+    owner: "Government of Paraguay"
+    stake: "100%"
+    status: "State enterprise"
+    privatization_history:
+      attempts: "Multiple failed"
+      last_attempt: "2002"
+      note: "Privatization attempts have been unsuccessful"
+
+  # ---------------------------------------------------------------------------
+  # COMPANY DETAILS
+  # ---------------------------------------------------------------------------
+  details:
+    founded: 1948
+    original_name: "ANTELCO (Administración Nacional de Telecomunicaciones)"
+    current_name_since: 2001
+    headquarters: "Asuncion, Paraguay"
+    employees: "3,000+"
+    ceo: null  # Research needed
+    note: "Former state monopoly, now competes with private operators"
+
+  # ---------------------------------------------------------------------------
+  # MARKET POSITION
+  # ---------------------------------------------------------------------------
+  market_position:
+    rank: 4
+    position: "Legacy Provider"
+    market_share:
+      fixed_line: "80%+"
+      mobile: "<1%"
+      broadband: "5-10%"
+    focus_segment: "Fixed-line telephony, rural areas"
+    role: "Universal service obligation"
+
+  subscribers:
+    fixed_lines: "300,000+"
+    mobile: "Minimal (legacy)"
+    broadband: "50,000+"
+    note: "Primarily fixed-line provider"
+
+  # ---------------------------------------------------------------------------
+  # FINANCIAL METRICS (Estimates)
+  # ---------------------------------------------------------------------------
+  financials:
+    revenue_estimate: "USD 80-120 million"
+    profitability: "Likely subsidized"
+    funding: "Government budget"
+    investment_needs: "High (infrastructure modernization)"
+
+    # Financial challenges
+    challenges:
+      - "Legacy cost structure"
+      - "Declining fixed-line revenue"
+      - "Investment backlog"
+      - "Government budget constraints"
+
+  # ---------------------------------------------------------------------------
+  # PRODUCTS & SERVICES
+  # ---------------------------------------------------------------------------
+  services:
+    fixed_line:
+      type: "PSTN"
+      coverage: "National (urban + rural)"
+      status: "Legacy declining"
+      importance: "Universal service provider"
+
+    broadband:
+      technologies: ["DSL", "Limited fiber"]
+      max_speed: "50 Mbps"
+      coverage: "Urban areas"
+      competitive_position: "Weak vs private operators"
+
+    mobile:
+      status: "Legacy/minimal"
+      note: "No significant mobile presence"
+
+    international:
+      - "International gateway services"
+      - "International voice termination"
+      - "Transit services"
+
+    wholesale:
+      - "Network infrastructure leasing"
+      - "Tower sharing"
+      - "Last mile access"
+
+  # ---------------------------------------------------------------------------
+  # INFRASTRUCTURE
+  # ---------------------------------------------------------------------------
+  infrastructure:
+    fixed_network:
+      type: "Copper + limited fiber"
+      coverage: "National"
+      condition: "Aging, needs modernization"
+
+    rural_coverage:
+      importance: "Critical for universal service"
+      challenge: "Uneconomic to serve"
+      government_role: "Mandated coverage"
+
+    international_gateway:
+      status: "Primary gateway operator"
+      submarine_cables: "Access via Argentina"
+
+  # ---------------------------------------------------------------------------
+  # STRATEGIC ANALYSIS
+  # ---------------------------------------------------------------------------
+  strengths:
+    - "Fixed-line market dominance (80%+)"
+    - "National infrastructure footprint"
+    - "Government contracts and backing"
+    - "Rural and underserved area coverage"
+    - "International gateway position"
+    - "Universal service mandate"
+
+  weaknesses:
+    - "Aging copper infrastructure"
+    - "No significant mobile presence"
+    - "Bureaucratic decision-making"
+    - "Limited investment capacity"
+    - "Legacy cost structure"
+    - "Technology lag vs competitors"
+    - "Declining fixed-line demand"
+
+  opportunities:
+    - "Fiber network modernization"
+    - "Wholesale services to competitors"
+    - "Rural connectivity programs"
+    - "Government digitalization contracts"
+    - "Tower and infrastructure sharing"
+
+  threats:
+    - "Mobile substitution of fixed lines"
+    - "Private operator fiber buildout"
+    - "Budget constraints"
+    - "Privatization risk"
+    - "Technology obsolescence"
+    - "Brain drain to private sector"
+
+# =============================================================================
+# COMPETITORS
+# =============================================================================
+competitors:
+  mobile_operators:
+    - name: "Tigo Paraguay"
+      relationship: "Competitor (minimal overlap)"
+      threat_level: "Low (different segments)"
+
+    - name: "Personal Paraguay"
+      relationship: "Competitor (fixed broadband)"
+      threat_level: "Medium"
+
+    - name: "Claro Paraguay"
+      relationship: "Competitor (minimal overlap)"
+      threat_level: "Low"
+
+  fixed_broadband:
+    - name: "Private ISPs"
+      type: "Local providers"
+      note: "Growing in urban areas"
+
+# =============================================================================
+# RESEARCH CONFIGURATION
+# =============================================================================
+research:
+  depth: "basic"
+  priority: "Low"
+  type: "state_enterprise"
+
+  focus_areas:
+    - market
+    - regulatory
+    - infrastructure
+
+  # ---------------------------------------------------------------------------
+  # PRIORITY RESEARCH QUERIES
+  # ---------------------------------------------------------------------------
+  priority_queries:
+    # Market
+    - "COPACO Paraguay subscribers"
+    - "COPACO Paraguay services"
+    - "Paraguay fixed line market"
+
+    # Regulatory
+    - "COPACO privatization"
+    - "Paraguay state telecom"
+    - "CONATEL Paraguay regulations"
+
+    # Infrastructure
+    - "COPACO infrastructure investment"
+    - "Paraguay rural connectivity"
+    - "COPACO fiber network"
+
+    # Financial
+    - "COPACO Paraguay budget"
+    - "Paraguay government telecom spending"
+
+  # ---------------------------------------------------------------------------
+  # DATA SOURCES
+  # ---------------------------------------------------------------------------
+  priority_sources:
+    company:
+      - url: "https://www.copaco.com.py"
+        type: "Official website"
+
+    regulatory:
+      - url: "https://www.conatel.gov.py"
+        type: "Telecom regulator"
+      - url: "https://www.hacienda.gov.py"
+        type: "Ministry of Finance (budget)"
+
+    government:
+      - url: "https://www.mitic.gov.py"
+        type: "Ministry of ICT"
+
+  # ---------------------------------------------------------------------------
+  # KPIs TO EXTRACT
+  # ---------------------------------------------------------------------------
+  kpis_to_find:
+    operational:
+      - name: "Fixed line subscribers"
+        unit: "thousands"
+      - name: "Broadband subscribers"
+        unit: "thousands"
+      - name: "Market share (fixed)"
+        unit: "%"
+
+    infrastructure:
+      - name: "Network coverage"
+        unit: "% of population"
+      - name: "Fiber deployment"
+        unit: "km"
+
+    financial:
+      - name: "Annual budget"
+        unit: "USD million"
+      - name: "Investment spending"
+        unit: "USD million"
+
+  # ---------------------------------------------------------------------------
+  # DATA GAPS (known)
+  # ---------------------------------------------------------------------------
+  data_gaps:
+    - "Accurate subscriber counts"
+    - "Financial statements"
+    - "Investment plans"
+    - "Modernization timeline"
+    - "Privatization status"
+
+# =============================================================================
+# NOTES
+# =============================================================================
+notes: |
+  RESEARCH PRIORITY: LOW (State Enterprise)
+
+  Key insights:
+  - COPACO is Paraguay's state-owned telecom (formerly ANTELCO)
+  - Dominates fixed-line market (80%+) but declining relevance
+  - No significant mobile presence
+  - Multiple privatization attempts have failed
+
+  Role in market:
+  - Universal service obligation (rural areas)
+  - International gateway operator
+  - Legacy fixed-line provider
+  - Not a direct competitor to mobile operators
+
+  Research relevance:
+  - Useful for understanding rural coverage gaps
+  - Potential infrastructure sharing partner
+  - Government policy indicator
+  - Wholesale/backbone services
+
+  Investment thesis:
+  - Not investable (state-owned)
+  - Potential privatization candidate (low probability)
+  - Infrastructure asset value
+
+  Watch for:
+  - Privatization announcements
+  - Fiber modernization plans
+  - Government broadband initiatives
+  - CONATEL regulatory changes

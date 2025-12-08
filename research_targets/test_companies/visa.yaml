@@ -1,0 +1,30 @@
+# Visa Inc. - Global Payments Leader
+company:
+  name: "Visa"
+  legal_name: "Visa Inc."
+  ticker: "V"
+  exchange: "NYSE"
+  website: "https://www.visa.com"
+  industry: "Financial Services"
+  country: "United States"
+
+  details:
+    founded: 1958
+    headquarters: "San Francisco, California"
+    ceo: "Ryan McInerney"
+    employees: "28,800+"
+
+research:
+  depth: "quick"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "Visa revenue 2024"
+    - "Visa payment volume 2024"
+    - "Visa vs Mastercard market share"
+    - "Visa cross-border transactions"
+    - "Visa digital payments growth"
+    - "Visa earnings FY2024"

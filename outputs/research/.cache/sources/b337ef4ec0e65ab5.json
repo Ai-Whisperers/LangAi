@@ -1,0 +1,38 @@
+{
+  "query": "\"NextEra Energy\" revenue financials 2024",
+  "query_hash": "b337ef4ec0e65ab5",
+  "results": {
+    "query": "\"NextEra Energy\" revenue financials 2024",
+    "follow_up_questions": null,
+    "answer": null,
+    "images": [],
+    "results": [
+      {
+        "url": "https://www.statista.com/statistics/197987/revenue-of-us-power-company-nextera-energy-since-2006/?srsltid=AfmBOop9Bi3VYNGZ0fi21ZmKPVWwo5bjEyieBiLwhU5-mKtJltz5juHe",
+        "title": "NextEra Energy's revenue FY 2006-2024",
+        "content": "NextEra Energy generated a revenue of over 24.75 billion U.S. dollars in 2024, a decrease from the previous year. NextEra is a Florida-based utility company",
+        "score": 0.9580107,
+        "raw_content": null
+      },
+      {
+        "url": "https://csimarket.com/stocks/single_growth_rates.php?code=NEE&rev",
+        "title": "Nextera Energy Inc Revenue Growth Rates (NEE) ...",
+        "content": "Nextera Energy Inc 's Revenue in the fiscal year 2024 $ 24,753.00 millions ; Nextera Energy Inc 's Revenue in the fiscal year 2023 $ 28,114.00",
+        "score": 0.9222657,
+        "raw_content": null
+      },
+      {
+        "url": "https://www.investor.nexteraenergy.com/~/media/Files/N/NEE-IR/investor-materials/shareholder-resources/2025/2024%20NEE%20Annual%20Report.pdf",
+        "title": "ANNUAL REPORT 2024",
+        "content": "Management's Discussion and Analysis of Financial Condition and Results of Operations MISO Midcontinent Independent System Operator MMBtu One million British thermal units mortgage mortgage and deed of trust dated as of January 1, 1944, from FPL to Deutsche Bank Trust Company Americas, as supplemented and amended MW megawatt(s) MWh megawatt-hour(s) NEE NextEra Energy, Inc. NEECH NextEra Energy Capital Holdings, Inc. NEER an operating segment comprised of NextEra Energy Resources and NEET NEET NextEra Energy Transmission, LLC NERC North American Electric Reliability Corporation net capacity net ownership interest in pipeline(s) capacity net generating capacity net ownership interest in plant(s) capacity net generation net ownership interest in plant(s) generation Note __ Note __ to consolidated financial statements NextEra Energy Resources NextEra Energy Resources, LLC NRC U.S. Nuclear Regulatory Commission NYISO New York Independent System Operator O&M expenses other operations and maintenance expenses in the consolidated statements of income OEB Ontario Energy Board OTC over-the-counter OTTI other than temporary impairment or other than temporarily impaired PJM PJM Interconnection, LLC Point Beach Point Beach Nuclear Power Plant PPA purchased power agreement(s) PTC production tax credit PUCT Public Utility Commission of Texas renewable energy tax credits production tax credits and investment tax credits collectively regulatory ROE return on common equity as determined for regulatory purposes RPS renewable portfolio standards RTO regional transmission organization Seabrook Seabrook Station SEC U.S. Securities and Exchange Commission storm protection plan storm protection plan cost recovery clause, as established by the FPSC XPLR XPLR Infrastructure, LP (formerly known as NextEra Energy Partners, LP) XPLR OpCo XPLR Infrastructure Operating Partners, LP (formerly known as NextEra Energy Operating Partners, LP) U.S. United States of America NEE, FPL, NEECH, NextEra Energy Resources and NEET each has subsidiaries and affiliates with names that may include NextEra Energy, FPL, NextEra Energy Resources, NextEra Energy Transmission, NextEra, FPL Group, FPL Energy, FPLE and similar references.",
+        "score": 0.8812988,
+        "raw_content": null
+      }
+    ],
+    "response_time": 0.86,
+    "request_id": "ccfae574-9cf3-4c2f-8364-c8c62191edb1"
+  },
+  "timestamp": "2025-12-08T01:24:09.234793",
+  "expires": "2025-12-15T01:24:09.234793",
+  "source_count": 3
+}

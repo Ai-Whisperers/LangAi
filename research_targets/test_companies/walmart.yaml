@@ -1,0 +1,30 @@
+# Walmart Inc. - Global Retail Leader
+company:
+  name: "Walmart"
+  legal_name: "Walmart Inc."
+  ticker: "WMT"
+  exchange: "NYSE"
+  website: "https://www.walmart.com"
+  industry: "Retail"
+  country: "United States"
+
+  details:
+    founded: 1962
+    headquarters: "Bentonville, Arkansas"
+    ceo: "Doug McMillon"
+    employees: "2,100,000+"
+
+research:
+  depth: "quick"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "Walmart revenue 2024"
+    - "Walmart e-commerce growth"
+    - "Walmart vs Amazon retail"
+    - "Walmart store count 2024"
+    - "Walmart grocery market share"
+    - "Walmart earnings FY2024"

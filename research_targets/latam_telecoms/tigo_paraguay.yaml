@@ -1,0 +1,301 @@
+# =============================================================================
+# TIGO PARAGUAY - MARKET LEADER
+# Paraguay's #1 telecommunications operator
+# =============================================================================
+
+company:
+  name: "Tigo Paraguay"
+  legal_name: "Telefonica Celular del Paraguay S.A. (Telecel)"
+  brand: "Tigo"
+  website: "https://www.tigo.com.py"
+  industry: "Telecommunications"
+  country: "Paraguay"
+  region: "Latin America"
+
+  # ---------------------------------------------------------------------------
+  # CORPORATE STRUCTURE
+  # ---------------------------------------------------------------------------
+  parent:
+    company: "Millicom International Cellular S.A."
+    ticker: "TIGO"
+    exchange: "NASDAQ"
+    headquarters: "Luxembourg"
+    ownership: "100%"
+    sec_filings: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001047122"
+
+  # ---------------------------------------------------------------------------
+  # COMPANY DETAILS
+  # ---------------------------------------------------------------------------
+  details:
+    founded: 1991
+    operational_since: 1995
+    headquarters: "Asuncion, Paraguay"
+    employees: "2,000+"
+    ceo: null  # Research needed
+    brand_tagline: "La red mas grande del Paraguay"
+
+  # ---------------------------------------------------------------------------
+  # MARKET POSITION
+  # ---------------------------------------------------------------------------
+  market_position:
+    rank: 1
+    position: "Market Leader"
+    market_share:
+      mobile: "42%"
+      fixed_broadband: "35%"
+      pay_tv: "40%"
+    subscribers:
+      mobile: "3.0 million"
+      fixed_broadband: "400,000+"
+      pay_tv: "300,000+"
+      mobile_money: "1.5 million+"
+
+  # ---------------------------------------------------------------------------
+  # FINANCIAL METRICS (to research)
+  # ---------------------------------------------------------------------------
+  financials:
+    # Note: Paraguay-specific data extracted from Millicom reports
+    revenue_estimate: "USD 350-400 million"
+    arpu_mobile: "USD 8-10/month"
+    ebitda_margin: "35-40%"
+    capex_annual: "USD 50-70 million"
+
+    # Parent company allocation
+    parent_contribution: "~7% of Millicom revenue"
+
+  # ---------------------------------------------------------------------------
+  # PRODUCTS & SERVICES
+  # ---------------------------------------------------------------------------
+  services:
+    mobile:
+      technologies: ["2G GSM", "3G UMTS", "4G LTE"]
+      coverage_4g: "85%+ urban"
+      plans:
+        - type: "Prepaid"
+          share: "70%"
+        - type: "Postpaid"
+          share: "30%"
+
+    fixed:
+      broadband:
+        technologies: ["HFC Cable", "FTTH Fiber"]
+        max_speed: "300 Mbps"
+      television:
+        name: "Tigo TV"
+        channels: "124 (53 HD)"
+        features: ["Sports", "Movies", "Series"]
+
+    digital_services:
+      mobile_money:
+        name: "Tigo Money"
+        users: "1.5 million+"
+        services: ["P2P transfers", "Bill payments", "Merchant payments"]
+        transaction_volume: "Research needed"
+      security:
+        name: "Tigo Security"
+        price: "Gs. 10,000/month"
+      streaming:
+        name: "Tigo Sports App"
+        content: "Local football, Copa Iconic"
+
+    enterprise:
+      name: "Tigo Business"
+      services: ["Connectivity", "Cloud", "Security", "IoT"]
+
+  # ---------------------------------------------------------------------------
+  # COMPETITIVE ANALYSIS
+  # ---------------------------------------------------------------------------
+  strengths:
+    - "Market leader position (42% share)"
+    - "Largest network infrastructure in Paraguay"
+    - "Strong mobile money ecosystem (Tigo Money)"
+    - "Convergent service portfolio (quad-play)"
+    - "Parent company financial backing (Millicom)"
+    - "30+ years of market presence"
+
+  weaknesses:
+    - "Higher price perception vs competitors"
+    - "Parent company currency exposure risks"
+    - "Limited 5G deployment timeline"
+    - "Rural coverage gaps"
+
+  opportunities:
+    - "5G rollout first-mover advantage"
+    - "Mobile money expansion (underbanked population)"
+    - "B2B/Enterprise digitalization"
+    - "Fiber network expansion"
+    - "IoT and smart city initiatives"
+
+  threats:
+    - "Aggressive competitor pricing (Personal, Claro)"
+    - "Regulatory changes"
+    - "OTT services eroding voice/SMS revenue"
+    - "Economic instability in Paraguay"
+    - "Starlink satellite internet entry"
+
+# =============================================================================
+# COMPETITORS
+# =============================================================================
+competitors:
+  direct:
+    - name: "Personal Paraguay"
+      parent: "Telecom Argentina"
+      share: "30%"
+      strength: "Fiber network, Argentina backing"
+
+    - name: "Claro Paraguay"
+      parent: "America Movil"
+      share: "11%"
+      strength: "Regional brand, aggressive pricing"
+
+  indirect:
+    - name: "Copaco"
+      type: "State telecom"
+      focus: "Fixed lines, rural"
+
+    - name: "VOX"
+      type: "MVNO"
+      focus: "Budget prepaid"
+
+  emerging:
+    - name: "Starlink"
+      type: "Satellite"
+      threat_level: "Medium"
+      impact: "Rural connectivity"
+
+# =============================================================================
+# RESEARCH CONFIGURATION
+# =============================================================================
+research:
+  # Research depth for this company
+  depth: "comprehensive"
+
+  # Agent focus areas
+  focus_areas:
+    - financial
+    - market
+    - competitor
+    - product
+    - news
+
+  # ---------------------------------------------------------------------------
+  # PRIORITY RESEARCH QUERIES
+  # ---------------------------------------------------------------------------
+  priority_queries:
+    # Financial
+    - "Millicom Paraguay revenue 2024"
+    - "Tigo Paraguay ARPU trends"
+    - "Millicom investor presentation Paraguay"
+
+    # Market
+    - "Tigo Paraguay market share 2024"
+    - "Paraguay telecommunications market report"
+    - "Tigo Paraguay subscriber growth"
+
+    # Competitive
+    - "Tigo vs Personal Paraguay comparison"
+    - "Paraguay mobile operator ranking"
+
+    # Products
+    - "Tigo Money Paraguay users 2024"
+    - "Tigo Paraguay 5G plans"
+    - "Tigo Paraguay fiber coverage"
+
+    # News
+    - "Tigo Paraguay latest news"
+    - "Millicom Paraguay investment"
+
+  # ---------------------------------------------------------------------------
+  # DATA SOURCES
+  # ---------------------------------------------------------------------------
+  priority_sources:
+    investor_relations:
+      - url: "https://investors.millicom.com"
+        type: "Quarterly reports, presentations"
+      - url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001047122"
+        type: "SEC filings (20-F, 6-K)"
+
+    company:
+      - url: "https://www.tigo.com.py"
+        type: "Products, pricing, coverage"
+      - url: "https://www.tigo.com.py/empresa"
+        type: "Corporate information"
+
+    regulatory:
+      - url: "https://www.conatel.gov.py"
+        type: "Market data, licenses"
+
+    research:
+      - url: "https://www.mordorintelligence.com/industry-reports/paraguay-telecom-market"
+        type: "Market research"
+      - url: "https://www.statista.com/outlook/co/telecommunications/paraguay"
+        type: "Statistics"
+
+  # ---------------------------------------------------------------------------
+  # KPIs TO EXTRACT
+  # ---------------------------------------------------------------------------
+  kpis_to_find:
+    financial:
+      - name: "Revenue"
+        unit: "USD million"
+        target_years: [2022, 2023, 2024]
+      - name: "EBITDA"
+        unit: "USD million"
+      - name: "ARPU"
+        unit: "USD/month"
+      - name: "CAPEX"
+        unit: "USD million"
+
+    operational:
+      - name: "Mobile subscribers"
+        unit: "millions"
+      - name: "Market share"
+        unit: "%"
+      - name: "4G coverage"
+        unit: "%"
+      - name: "Churn rate"
+        unit: "%"
+
+    digital:
+      - name: "Tigo Money users"
+        unit: "millions"
+      - name: "Tigo Money transactions"
+        unit: "millions/month"
+
+  # ---------------------------------------------------------------------------
+  # DATA GAPS (known)
+  # ---------------------------------------------------------------------------
+  data_gaps:
+    - "Paraguay-specific revenue (vs Millicom consolidated)"
+    - "Exact subscriber count by segment"
+    - "Churn rate"
+    - "Customer satisfaction scores"
+    - "5G rollout timeline"
+    - "Network CAPEX breakdown"
+
+# =============================================================================
+# NOTES
+# =============================================================================
+notes: |
+  RESEARCH PRIORITY: HIGH (Market Leader)
+
+  Key insights:
+  - Tigo is Paraguay's market leader with ~42% mobile market share
+  - Part of Millicom (NASDAQ: TIGO) - financial data in SEC filings
+  - Tigo Money is a major competitive advantage (1.5M+ users)
+  - Strong convergent offering (mobile + broadband + TV)
+
+  Financial data strategy:
+  - Millicom 20-F annual reports contain Paraguay segment data
+  - Quarterly 6-K filings have operational metrics
+  - Investor presentations often highlight Paraguay performance
+
+  Competitive positioning:
+  - Leader in mobile, strong in fixed broadband
+  - Main challenger is Personal Paraguay (#2)
+  - Claro is a distant third (~11% share)
+
+  Watch for:
+  - 5G license auctions
+  - Mobile money regulation changes
+  - Parent company (Millicom) strategic decisions
