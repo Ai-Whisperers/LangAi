@@ -6,30 +6,42 @@ This folder contains company profiles for batch research. Each YAML file defines
 
 ```
 research_targets/
-  README.md                    # This file
-  paraguay_telecom/            # Market segment folder
-    _market.yaml               # Market-level configuration
-    personal_paraguay.yaml     # Primary target company
-    tigo_paraguay.yaml         # Competitor
-    claro_paraguay.yaml        # Competitor
-    telecom_argentina.yaml     # Parent company
+  README.md                         # This file
+  latam_telecoms/                   # Latin America Telecommunications
+    _market.yaml                    # Market-level configuration
+    _gap_analysis.md                # Research gaps analysis
+    # Holding Companies
+    america_movil.yaml              # Claro parent (NYSE: AMX)
+    millicom.yaml                   # Tigo parent (NASDAQ: TIGO)
+    telecom_argentina.yaml          # Personal parent (NYSE: TEO)
+    # Paraguay Operators
+    tigo_paraguay.yaml              # Market leader (~42%)
+    personal_paraguay.yaml          # Second player (~30%)
+    claro_paraguay.yaml             # Third player (~10-11%)
+    copaco.yaml                     # State telecom
+    vox_paraguay.yaml               # MVNO
 ```
 
 ## Usage
 
 ### Research a single company:
 ```bash
-python main.py --profile research_targets/paraguay_telecom/personal_paraguay.yaml
+python run_research.py --profile research_targets/latam_telecoms/tigo_paraguay.yaml
 ```
 
-### Research all companies in a market segment:
+### Research all companies in a market:
 ```bash
-python main.py --batch research_targets/paraguay_telecom/
+python run_research.py --market research_targets/latam_telecoms/
 ```
 
-### Research with market context:
+### Research with comparison report:
 ```bash
-python main.py --market research_targets/paraguay_telecom/
+python run_research.py --market research_targets/latam_telecoms/ --compare
+```
+
+### Research with multiple output formats:
+```bash
+python run_research.py --market research_targets/latam_telecoms/ --formats md,json,pdf,excel
 ```
 
 ## Profile Format
@@ -37,20 +49,53 @@ python main.py --market research_targets/paraguay_telecom/
 Each company profile is a YAML file with the following structure:
 
 ```yaml
-name: "Company Name"
-website: "https://company.com"
-industry: "Industry Name"
-country: "Country"
-# Optional fields
-parent_company: "Parent Corp"
+company:
+  name: "Company Name"
+  legal_name: "Legal Entity Name"
+  website: "https://company.com"
+  industry: "Telecommunications"
+  country: "Country"
+  parent_company: "Parent Corp"
+  parent_ticker: "TICK"
+  market_position:
+    rank: 1
+    market_share: "42%"
+  services:
+    - "Mobile voice and data"
+    - "Fixed broadband"
+
 competitors:
-  - "Competitor 1"
-  - "Competitor 2"
-research_focus:
-  - market
-  - financial
-  - competitor
-  - brand
-  - sales
-notes: "Any special research notes"
+  direct:
+    - "Competitor 1"
+    - "Competitor 2"
+
+research:
+  focus_areas:
+    - market
+    - financial
+    - competitor
+  priority_queries:
+    - "Company market share 2024"
+    - "Company revenue"
+
+notes: |
+  Any special research notes or context.
+```
+
+## Output Structure
+
+Research outputs are organized in:
+
+```
+outputs/
+  reports/
+    markdown/     # Detailed .md reports
+    pdf/          # PDF reports (requires reportlab)
+    excel/        # Excel workbooks (requires openpyxl)
+    pptx/         # PowerPoint (requires python-pptx)
+  comparisons/    # Market comparison reports
+  data/
+    raw/          # Raw search results
+    processed/    # JSON data exports
+  logs/           # Execution logs
 ```
