@@ -3,9 +3,15 @@ Comprehensive Researcher Module.
 
 Main research orchestration class that coordinates:
 - Query generation
-- Web searches
+- Web searches (with DuckDuckGo fallback)
 - Analysis with Claude
 - Report generation
+
+Optimized with patterns from:
+- gpt-researcher: Plan-Execute architecture
+- tavily_company_researcher: 5-stage pipeline
+- ai-langgraph-multi-agent: Max 4 queries pattern
+- agentic_search_openai_langgraph: DuckDuckGo fallback
 """
 
 import os
@@ -17,7 +23,6 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 from anthropic import Anthropic
-from tavily import TavilyClient
 from dotenv import load_dotenv
 
 from .config import (
@@ -25,6 +30,13 @@ from .config import (
     MarketConfig,
     ResearchResult,
     ResearchDepth,
+)
+from .search_provider import (
+    OptimizedSearchClient,
+    SearchConfig,
+    SearchResult,
+    generate_optimized_queries,
+    create_search_client,
 )
 
 load_dotenv()
@@ -68,12 +80,9 @@ class ComprehensiveResearcher:
         self.cache_ttl_days = cache_ttl_days
         self.force_refresh = force_refresh
 
-        # Initialize clients
+        # Initialize Anthropic client
         self.anthropic_client = Anthropic(
             api_key=os.getenv("ANTHROPIC_API_KEY")
-        )
-        self.tavily_client = TavilyClient(
-            api_key=os.getenv("TAVILY_API_KEY")
         )
 
         # Initialize cache if enabled
@@ -88,6 +97,13 @@ class ComprehensiveResearcher:
                 )
             except ImportError:
                 print("[WARNING] Cache module not available, running without cache")
+
+        # Initialize optimized search client with DuckDuckGo fallback
+        search_config = SearchConfig()
+        self.search_client = create_search_client(
+            cache=self.cache,
+            config=search_config
+        )
 
     async def research_company(
         self,
@@ -226,95 +242,67 @@ class ComprehensiveResearcher:
         company_name: str,
         profile: Optional[CompanyProfile]
     ) -> List[str]:
-        """Generate search queries for a company."""
-        queries = []
+        """
+        Generate optimized search queries for a company.
 
-        # Base queries
-        queries.extend([
-            f'"{company_name}" company overview',
-            f'"{company_name}" revenue financials 2024',
-            f'"{company_name}" market share industry position',
-            f'"{company_name}" products services offerings',
-            f'"{company_name}" news developments 2024',
-            f'"{company_name}" competitors analysis'
-        ])
-
-        # Profile-based queries
-        if profile:
-            if profile.industry:
-                queries.append(f'"{company_name}" {profile.industry} market')
-
-            if profile.country:
-                queries.append(f'"{company_name}" {profile.country} operations')
-
-            if profile.parent_company:
-                queries.append(f'"{profile.parent_company}" investor presentation 2024')
-                queries.append(f'"{profile.parent_company}" {company_name} subsidiary')
-
-            if profile.competitors:
-                comp = profile.competitors[0] if profile.competitors else ""
-                queries.append(f'"{company_name}" vs "{comp}" comparison market share')
-
-        # Apply query limits based on depth
-        depth_limits = {
-            "quick": 6,
-            "standard": 9,
-            "comprehensive": 12
-        }
-        max_queries = depth_limits.get(self.depth, 12)
-        return queries[:max_queries]
+        Uses the optimized query generator that:
+        - Reduces query count by 33% (6 -> 4 base queries)
+        - Combines related topics into single queries
+        - Maximizes information per Tavily credit
+        """
+        return generate_optimized_queries(
+            company_name=company_name,
+            profile=profile,
+            depth=self.depth
+        )
 
     async def _execute_searches(self, queries: List[str]) -> Dict[str, Any]:
-        """Execute web searches for all queries."""
+        """
+        Execute web searches using the optimized search client.
+
+        Features:
+        - Automatic DuckDuckGo fallback when Tavily rate limited
+        - Domain filtering for quality sources
+        - Integrated caching
+        """
         all_sources = []
         all_content = []
-        cache_hits = 0
-        cache_misses = 0
 
         for query in queries:
-            # Check cache first
-            cached_results = None
-            if self.cache and not self.force_refresh:
-                cached_results = self.cache.get_search_results(query)
+            try:
+                # Use optimized search client (handles cache, fallback, etc.)
+                results = await self.search_client.search(
+                    query=query,
+                    use_cache=not self.force_refresh
+                )
 
-            if cached_results:
-                print(f"  [CACHE HIT] {query[:60]}...")
-                cache_hits += 1
-                results = cached_results
-            else:
-                print(f"  [SEARCH] {query}")
-                cache_misses += 1
-                try:
-                    results = await asyncio.to_thread(
-                        self.tavily_client.search,
-                        query=query,
-                        max_results=3
-                    )
+                # Process results (SearchResult objects)
+                for item in results:
+                    all_sources.append({
+                        "title": item.title,
+                        "url": item.url,
+                        "score": item.score,
+                        "query": query,
+                        "provider": item.provider
+                    })
+                    all_content.append({
+                        "title": item.title,
+                        "content": item.content,
+                    })
 
-                    if self.cache:
-                        self.cache.store_search_results(query, results)
+            except Exception as e:
+                print(f"  [ERROR] Search failed for '{query[:40]}...': {e}")
+                continue
 
-                except Exception as e:
-                    print(f"  [ERROR] Search failed: {e}")
-                    continue
-
-            # Process results
-            for item in results.get("results", []):
-                all_sources.append({
-                    "title": item.get("title", ""),
-                    "url": item.get("url", ""),
-                    "score": item.get("score", 0),
-                    "query": query
-                })
-                all_content.append({
-                    "title": item.get("title", ""),
-                    "content": item.get("content", ""),
-                })
-
-        if self.cache:
-            print(f"  [OK] Found {len(all_sources)} sources (cache: {cache_hits} hits, {cache_misses} API calls)\n")
-        else:
-            print(f"  [OK] Found {len(all_sources)} sources\n")
+        # Print search statistics
+        stats = self.search_client.get_stats()
+        print(f"  [OK] Found {len(all_sources)} sources")
+        print(f"       Tavily: {stats['tavily_successes']}/{stats['tavily_calls']} calls")
+        if stats['duckduckgo_fallbacks'] > 0:
+            print(f"       DuckDuckGo fallbacks: {stats['duckduckgo_fallbacks']}")
+        if stats['cache_hits'] > 0:
+            print(f"       Cache hits: {stats['cache_hits']}")
+        print()
 
         return {
             "sources": all_sources,

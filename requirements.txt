@@ -20,7 +20,8 @@ anthropic>=0.39.0           # Direct Anthropic SDK
 openai>=1.54.0              # Direct OpenAI SDK (optional)
 
 # Web Search
-tavily-python>=0.5.0        # Tavily search API
+tavily-python>=0.5.0        # Tavily search API (primary)
+duckduckgo-search>=6.3.0    # DuckDuckGo fallback (free, no API key)
 
 # Environment & Configuration
 python-dotenv>=1.0.0        # .env file support
