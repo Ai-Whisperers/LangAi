@@ -117,6 +117,102 @@ def mock_tavily_client(mocker):
 
 
 # ============================================================================
+# Quality Checker Fixtures (Phase 10)
+# ============================================================================
+
+@pytest.fixture
+def sample_extracted_facts():
+    """Provide sample extracted facts for testing."""
+    from company_researcher.quality.fact_extractor import ExtractedFact, FactCategory, ClaimType
+
+    return [
+        ExtractedFact(
+            content="The company reported revenue of $1.5 billion in 2023.",
+            category=FactCategory.FINANCIAL,
+            claim_type=ClaimType.NUMERICAL,
+            source_agent="financial",
+            confidence_hint=0.9
+        ),
+        ExtractedFact(
+            content="The company has 5,000 employees globally.",
+            category=FactCategory.COMPANY,
+            claim_type=ClaimType.NUMERICAL,
+            source_agent="researcher",
+            confidence_hint=0.8
+        ),
+        ExtractedFact(
+            content="Founded in 2010 in San Francisco.",
+            category=FactCategory.COMPANY,
+            claim_type=ClaimType.TEMPORAL,
+            source_agent="researcher",
+            confidence_hint=0.85
+        )
+    ]
+
+
+@pytest.fixture
+def sample_contradictory_facts():
+    """Provide sample facts with contradictions for testing."""
+    from company_researcher.quality.fact_extractor import ExtractedFact, FactCategory, ClaimType
+
+    return [
+        ExtractedFact(
+            content="The company reported revenue of $1.5 billion.",
+            category=FactCategory.FINANCIAL,
+            claim_type=ClaimType.NUMERICAL,
+            source_agent="financial",
+            confidence_hint=0.9
+        ),
+        ExtractedFact(
+            content="Company revenue was $2.1 billion last year.",
+            category=FactCategory.FINANCIAL,
+            claim_type=ClaimType.NUMERICAL,
+            source_agent="market",
+            confidence_hint=0.8
+        )
+    ]
+
+
+@pytest.fixture
+def sample_agent_outputs():
+    """Provide sample agent outputs for testing."""
+    return {
+        "researcher": {
+            "company_overview": "TestCorp is a technology company founded in 2010.",
+            "queries_generated": 3,
+            "sources_found": 5,
+            "cost": 0.001
+        },
+        "financial": {
+            "financial_analysis": "The company reported revenue of $1.5 billion with 25% profit margin.",
+            "data_extracted": True,
+            "cost": 0.002
+        },
+        "market": {
+            "market_analysis": "Operating in a $50 billion TAM market with 3% market share.",
+            "data_extracted": True,
+            "cost": 0.002
+        }
+    }
+
+
+@pytest.fixture
+def mock_quality_report():
+    """Provide mock quality report for testing."""
+    return {
+        "quality_score": 85.0,
+        "facts_analyzed": 25,
+        "contradictions": 1,
+        "gaps": 3,
+        "passed": True,
+        "recommendations": [
+            "Add more financial details",
+            "Include product information"
+        ]
+    }
+
+
+# ============================================================================
 # Test Categories Markers
 # ============================================================================
 
@@ -127,3 +223,5 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "slow: Slow tests")
     config.addinivalue_line("markers", "requires_api: Tests requiring external API")
     config.addinivalue_line("markers", "requires_llm: Tests requiring LLM access")
+    config.addinivalue_line("markers", "quality: Tests for quality assurance components")
+    config.addinivalue_line("markers", "workflow: Tests for workflow execution")

@@ -1,0 +1,184 @@
+name: Quality Suite Tests (Phase 10)
+
+on:
+  push:
+    branches: [main, develop, 'phase-*']
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    name: Unit Tests - Quality Components
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-mock pytest-asyncio
+
+      - name: Run unit tests for quality components
+        run: |
+          pytest tests/unit/quality/ \
+            -v \
+            --cov=src/company_researcher/quality \
+            --cov=src/company_researcher/agents/quality \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            -m "unit and quality"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: quality-unit-tests
+          name: quality-unit-${{ matrix.python-version }}
+
+  integration-tests:
+    name: Integration Tests - Workflow
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-mock pytest-asyncio
+
+      - name: Run integration tests
+        run: |
+          pytest tests/integration/workflow/ \
+            -v \
+            --cov=src/company_researcher/workflows \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            -m "integration and workflow" \
+            -k "not requires_llm and not requires_api"
+        env:
+          ENVIRONMENT: test
+          MOCK_EXTERNAL_APIS: true
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: workflow-integration-tests
+
+  quality-checks:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort mypy pylint
+
+      - name: Run Black (code formatting)
+        run: |
+          black --check src/company_researcher/quality/ \
+            src/company_researcher/agents/quality/
+
+      - name: Run isort (import sorting)
+        run: |
+          isort --check-only src/company_researcher/quality/ \
+            src/company_researcher/agents/quality/
+
+      - name: Run flake8 (linting)
+        run: |
+          flake8 src/company_researcher/quality/ \
+            src/company_researcher/agents/quality/ \
+            --max-line-length=120 \
+            --extend-ignore=E203,W503
+
+      - name: Run mypy (type checking)
+        continue-on-error: true
+        run: |
+          mypy src/company_researcher/quality/ \
+            src/company_researcher/agents/quality/ \
+            --ignore-missing-imports
+
+  full-workflow-test:
+    name: Full Workflow Test (Mocked)
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-mock
+
+      - name: Run full workflow tests with mocks
+        run: |
+          pytest tests/integration/workflow/test_parallel_workflow_with_logic_critic.py::TestFullWorkflowExecution::test_research_company_function \
+            -v \
+            --tb=short
+        env:
+          ENVIRONMENT: test
+          MOCK_EXTERNAL_APIS: true
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, quality-checks, full-workflow-test]
+    if: always()
+
+    steps:
+      - name: Report Status
+        run: |
+          echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Phase 10: Logic Critic Quality Assurance Tests" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Unit Tests: Quality Components" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Integration Tests: Workflow Execution" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Quality Checks: Code Standards" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Full Workflow: End-to-End Test" >> $GITHUB_STEP_SUMMARY

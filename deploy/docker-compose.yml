@@ -1,0 +1,148 @@
+# Company Researcher - Docker Compose Configuration
+# Supports development, staging, and production environments
+
+version: '3.8'
+
+services:
+  # Main application
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: company-researcher-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
+      - LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2:-true}
+      - LANGCHAIN_PROJECT=${LANGCHAIN_PROJECT:-company-researcher}
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8001
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - app-data:/app/data
+      - app-logs:/app/logs
+      - app-cache:/app/cache
+    depends_on:
+      - redis
+      - chromadb
+    networks:
+      - researcher-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Redis for caching and message queue
+  redis:
+    image: redis:7-alpine
+    container_name: company-researcher-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    networks:
+      - researcher-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ChromaDB for vector storage
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: company-researcher-chromadb
+    restart: unless-stopped
+    ports:
+      - "${CHROMADB_PORT:-8001}:8000"
+    volumes:
+      - chromadb-data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    networks:
+      - researcher-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Celery worker for background tasks
+  worker:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: company-researcher-worker
+    restart: unless-stopped
+    command: celery -A src.company_researcher.production.tasks worker --loglevel=info
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8001
+    volumes:
+      - app-data:/app/data
+      - app-logs:/app/logs
+    depends_on:
+      - redis
+      - chromadb
+    networks:
+      - researcher-network
+
+  # Celery beat for scheduled tasks
+  scheduler:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: company-researcher-scheduler
+    restart: unless-stopped
+    command: celery -A src.company_researcher.production.tasks beat --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+      - worker
+    networks:
+      - researcher-network
+
+  # Flower for Celery monitoring (optional)
+  flower:
+    image: mher/flower:latest
+    container_name: company-researcher-flower
+    restart: unless-stopped
+    ports:
+      - "${FLOWER_PORT:-5555}:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - FLOWER_BASIC_AUTH=${FLOWER_AUTH:-admin:admin}
+    depends_on:
+      - redis
+      - worker
+    networks:
+      - researcher-network
+    profiles:
+      - monitoring
+
+networks:
+  researcher-network:
+    driver: bridge
+
+volumes:
+  app-data:
+  app-logs:
+  app-cache:
+  redis-data:
+  chromadb-data:
