@@ -8,12 +8,17 @@ Alert management system:
 - Alert history
 """
 
-from typing import Dict, Any, List, Optional, Callable
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from enum import Enum
-import threading
 import logging
+import threading
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
+
+
+def _utcnow() -> datetime:
+    """Get current UTC time (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 
 # ============================================================================
@@ -82,7 +87,7 @@ class Alert:
     message: str = ""
     value: float = 0.0
     threshold: float = 0.0
-    triggered_at: datetime = field(default_factory=datetime.now)
+    triggered_at: datetime = field(default_factory=_utcnow)
     acknowledged_at: Optional[datetime] = None
     resolved_at: Optional[datetime] = None
     acknowledged_by: Optional[str] = None
@@ -149,6 +154,9 @@ class AlertManager:
 
         # Track metric values for duration checking
         self._metric_values: Dict[str, List[tuple]] = {}
+
+        # Max history size to prevent memory leaks
+        self._max_history_size = 10000
 
         # Notification handlers
         self._notification_handlers: List[Callable[[Alert], None]] = []
@@ -264,7 +272,7 @@ class AlertManager:
         """
         with self._lock:
             # Store value
-            now = datetime.now()
+            now = _utcnow()
             if metric not in self._metric_values:
                 self._metric_values[metric] = []
             self._metric_values[metric].append((now, value))
@@ -314,7 +322,7 @@ class AlertManager:
         metadata: Optional[Dict[str, Any]]
     ):
         """Trigger alert if cooldown allows."""
-        now = datetime.now()
+        now = _utcnow()
 
         # Check cooldown
         last_time = self._last_alert_time.get(rule.rule_id)
@@ -374,7 +382,7 @@ class AlertManager:
             alert = self._alerts.get(alert_id)
             if alert and alert.status == AlertStatus.ACTIVE:
                 alert.status = AlertStatus.ACKNOWLEDGED
-                alert.acknowledged_at = datetime.now()
+                alert.acknowledged_at = _utcnow()
                 alert.acknowledged_by = by
                 self._logger.info(f"Alert acknowledged: {alert_id} by {by}")
 
@@ -384,11 +392,15 @@ class AlertManager:
             alert = self._alerts.get(alert_id)
             if alert and alert.status in [AlertStatus.ACTIVE, AlertStatus.ACKNOWLEDGED]:
                 alert.status = AlertStatus.RESOLVED
-                alert.resolved_at = datetime.now()
+                alert.resolved_at = _utcnow()
 
                 # Move to history
                 self._alert_history.append(alert)
                 del self._alerts[alert_id]
+
+                # Prune history to prevent memory leaks
+                if len(self._alert_history) > self._max_history_size:
+                    self._alert_history = self._alert_history[-self._max_history_size // 2:]
 
                 msg = "auto-resolved" if auto else "resolved"
                 self._logger.info(f"Alert {msg}: {alert_id}")

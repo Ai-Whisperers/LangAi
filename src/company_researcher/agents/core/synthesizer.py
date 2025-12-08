@@ -8,11 +8,43 @@ This agent is responsible for:
 - Formatting structured data for final report
 """
 
-from typing import Dict, Any
+import logging
+from typing import Any, Dict, Optional
+
+logger = logging.getLogger(__name__)
 
 from ...config import get_config
 from ...llm.client_factory import get_anthropic_client, calculate_cost
 from ...state import OverallState
+
+
+class SynthesizerAgent:
+    """Synthesizer agent for combining specialist analyses."""
+
+    def __init__(self, llm_client: Optional[Any] = None):
+        self.llm_client = llm_client or get_anthropic_client()
+
+    def synthesize(
+        self,
+        company_name: str,
+        agent_outputs: Dict[str, Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Synthesize insights from multiple specialist agents.
+
+        Note: This method is sync because the underlying node function is sync.
+        The LangGraph workflow does not use async operations.
+        """
+        state = {
+            "company_name": company_name,
+            "agent_outputs": agent_outputs or {}
+        }
+        return synthesizer_agent_node(state)
+
+
+def create_synthesizer_agent(llm_client: Any = None) -> SynthesizerAgent:
+    """Factory function to create a SynthesizerAgent."""
+    return SynthesizerAgent(llm_client=llm_client)
 
 
 SYNTHESIS_PROMPT = """You are a senior research analyst synthesizing insights from multiple specialized analysts.
@@ -82,9 +114,7 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with synthesized overview
     """
-    print("\n" + "=" * 60)
-    print("[AGENT: Synthesizer] Aggregating specialist insights...")
-    print("=" * 60)
+    logger.info("Synthesizer agent starting - aggregating specialist insights")
 
     config = get_config()
     client = get_anthropic_client()
@@ -97,10 +127,7 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
     market = agent_outputs.get("market", {}).get("analysis", "No market analysis available")
     product = agent_outputs.get("product", {}).get("analysis", "No product analysis available")
 
-    print("[Synthesizer] Combining insights from specialists...")
-    print(f"  - Financial: {len(financial)} chars")
-    print(f"  - Market: {len(market)} chars")
-    print(f"  - Product: {len(product)} chars")
+    logger.debug(f"Combining insights - Financial: {len(financial)} chars, Market: {len(market)} chars, Product: {len(product)} chars")
 
     # Create synthesis prompt
     prompt = SYNTHESIS_PROMPT.format(
@@ -113,8 +140,8 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
     # Call Claude for synthesis
     response = client.messages.create(
         model=config.llm_model,
-        max_tokens=1500,
-        temperature=0.1,
+        max_tokens=config.synthesizer_max_tokens,
+        temperature=config.synthesizer_temperature,
         messages=[{"role": "user", "content": prompt}]
     )
 
@@ -124,9 +151,7 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
         response.usage.output_tokens
     )
 
-    print("[Synthesizer] Synthesis complete")
-    print(f"[Synthesizer] Agent complete - ${cost:.4f}")
-    print("=" * 60)
+    logger.info(f"Synthesizer agent complete - cost: ${cost:.4f}")
 
     # Track agent output
     agent_output = {

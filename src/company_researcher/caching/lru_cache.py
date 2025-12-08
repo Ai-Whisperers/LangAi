@@ -6,12 +6,20 @@ Thread-safe LRU cache with configurable size limits.
 
 import hashlib
 import json
+import logging
 import threading
 import time
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Generic, Optional, TypeVar
+
+logger = logging.getLogger(__name__)
+
+
+def _utcnow() -> datetime:
+    """Get current UTC time (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 K = TypeVar('K')
 V = TypeVar('V')
@@ -78,7 +86,7 @@ class LRUCache(Generic[K, V]):
             if key in self._cache:
                 self._hits += 1
                 item = self._cache[key]
-                item.last_accessed = datetime.utcnow()
+                item.last_accessed = _utcnow()
                 item.access_count += 1
                 # Move to end (most recently used)
                 self._cache.move_to_end(key)
@@ -108,7 +116,7 @@ class LRUCache(Generic[K, V]):
             self._evict_if_needed(size_bytes)
 
             # Add new item
-            now = datetime.utcnow()
+            now = _utcnow()
             item = CacheItem(
                 value=value,
                 created_at=now,
@@ -175,16 +183,17 @@ class LRUCache(Generic[K, V]):
             if self._config.on_evict:
                 try:
                     self._config.on_evict(key, item.value)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning(f"LRU cache eviction callback error for key {key}: {e}")
 
     def _estimate_size(self, value: Any) -> int:
         """Estimate memory size of value in bytes."""
         try:
             # Try JSON serialization for size estimate
             return len(json.dumps(value, default=str).encode('utf-8'))
-        except Exception:
+        except Exception as e:
             # Fallback to string representation
+            logger.debug(f"JSON size estimation failed, using string fallback: {e}")
             return len(str(value).encode('utf-8'))
 
     def get_stats(self) -> Dict[str, Any]:

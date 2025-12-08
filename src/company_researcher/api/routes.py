@@ -8,6 +8,7 @@ REST API endpoints for company research:
 - Health checks
 """
 
+import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 import time
@@ -44,6 +45,9 @@ from .models import (
     TaskStatusEnum,
     ResearchDepthEnum,
 )
+from .task_storage import get_task_storage, TaskStorage
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
@@ -52,9 +56,10 @@ from .models import (
 
 router = APIRouter(prefix="/api/v1", tags=["research"])
 
-# In-memory task storage (replace with database in production)
-_tasks: Dict[str, Dict[str, Any]] = {}
-_batches: Dict[str, Dict[str, Any]] = {}
+
+def _get_storage() -> TaskStorage:
+    """Get the task storage instance."""
+    return get_task_storage()
 
 
 # ============================================================================
@@ -77,10 +82,11 @@ if FASTAPI_AVAILABLE:
 
         Returns task ID to track progress.
         """
+        storage = _get_storage()
         task_id = f"task_{int(time.time() * 1000)}"
 
-        # Store task
-        _tasks[task_id] = {
+        # Create task data
+        task_data = {
             "task_id": task_id,
             "company_name": request.company_name,
             "depth": request.depth.value,
@@ -101,6 +107,9 @@ if FASTAPI_AVAILABLE:
             "result": None,
             "error": None
         }
+
+        # Store task persistently
+        await storage.save_task(task_id, task_data)
 
         # Start background task
         background_tasks.add_task(
@@ -136,7 +145,8 @@ if FASTAPI_AVAILABLE:
         task_id: str = Path(..., description="Task ID")
     ) -> Dict[str, Any]:
         """Get status of a research task."""
-        task = _tasks.get(task_id)
+        storage = _get_storage()
+        task = await storage.get_task(task_id)
 
         if not task:
             raise HTTPException(
@@ -156,7 +166,8 @@ if FASTAPI_AVAILABLE:
         task_id: str = Path(..., description="Task ID")
     ) -> Dict[str, Any]:
         """Get results of a completed research task."""
-        task = _tasks.get(task_id)
+        storage = _get_storage()
+        task = await storage.get_task(task_id)
 
         if not task:
             raise HTTPException(
@@ -188,7 +199,8 @@ if FASTAPI_AVAILABLE:
         task_id: str = Path(..., description="Task ID")
     ) -> Dict[str, str]:
         """Cancel a research task."""
-        task = _tasks.get(task_id)
+        storage = _get_storage()
+        task = await storage.get_task(task_id)
 
         if not task:
             raise HTTPException(
@@ -202,8 +214,10 @@ if FASTAPI_AVAILABLE:
                 detail=f"Cannot cancel task with status: {task['status']}"
             )
 
-        task["status"] = TaskStatusEnum.CANCELLED.value
-        task["cancelled_at"] = datetime.now()
+        await storage.update_task(task_id, {
+            "status": TaskStatusEnum.CANCELLED.value,
+            "cancelled_at": datetime.now()
+        })
 
         return {"message": f"Task {task_id} cancelled"}
 
@@ -223,6 +237,7 @@ if FASTAPI_AVAILABLE:
         background_tasks: BackgroundTasks
     ) -> BatchResponse:
         """Start batch research for multiple companies."""
+        storage = _get_storage()
         batch_id = f"batch_{int(time.time() * 1000)}"
         task_ids = []
 
@@ -231,7 +246,7 @@ if FASTAPI_AVAILABLE:
             task_id = f"task_{int(time.time() * 1000)}_{len(task_ids)}"
             task_ids.append(task_id)
 
-            _tasks[task_id] = {
+            task_data = {
                 "task_id": task_id,
                 "company_name": company,
                 "batch_id": batch_id,
@@ -241,9 +256,10 @@ if FASTAPI_AVAILABLE:
                 "result": None,
                 "error": None
             }
+            await storage.save_task(task_id, task_data)
 
         # Store batch
-        _batches[batch_id] = {
+        batch_data = {
             "batch_id": batch_id,
             "companies": request.companies,
             "task_ids": task_ids,
@@ -252,6 +268,7 @@ if FASTAPI_AVAILABLE:
             "completed": 0,
             "failed": 0
         }
+        await storage.save_batch(batch_id, batch_data)
 
         # Start background processing
         background_tasks.add_task(
@@ -279,7 +296,8 @@ if FASTAPI_AVAILABLE:
         batch_id: str = Path(..., description="Batch ID")
     ) -> Dict[str, Any]:
         """Get status of a batch research job."""
-        batch = _batches.get(batch_id)
+        storage = _get_storage()
+        batch = await storage.get_batch(batch_id)
 
         if not batch:
             raise HTTPException(
@@ -288,10 +306,18 @@ if FASTAPI_AVAILABLE:
             )
 
         # Calculate progress
-        tasks = [_tasks.get(tid) for tid in batch["task_ids"]]
-        completed = sum(1 for t in tasks if t and t["status"] == TaskStatusEnum.COMPLETED.value)
-        failed = sum(1 for t in tasks if t and t["status"] == TaskStatusEnum.FAILED.value)
-        running = sum(1 for t in tasks if t and t["status"] == TaskStatusEnum.RUNNING.value)
+        completed = 0
+        failed = 0
+        running = 0
+        for tid in batch["task_ids"]:
+            task = await storage.get_task(tid)
+            if task:
+                if task["status"] == TaskStatusEnum.COMPLETED.value:
+                    completed += 1
+                elif task["status"] == TaskStatusEnum.FAILED.value:
+                    failed += 1
+                elif task["status"] == TaskStatusEnum.RUNNING.value:
+                    running += 1
 
         return {
             **batch,
@@ -318,23 +344,16 @@ if FASTAPI_AVAILABLE:
         offset: int = Query(0, ge=0, description="Offset for pagination")
     ) -> Dict[str, Any]:
         """List research tasks."""
-        tasks = list(_tasks.values())
+        storage = _get_storage()
+        tasks = await storage.list_tasks(
+            status=status,
+            company=company,
+            limit=limit,
+            offset=offset
+        )
 
-        # Filter by status
-        if status:
-            tasks = [t for t in tasks if t["status"] == status]
-
-        # Filter by company
-        if company:
-            company_lower = company.lower()
-            tasks = [t for t in tasks if company_lower in t["company_name"].lower()]
-
-        # Sort by created_at descending
-        tasks.sort(key=lambda t: t["created_at"], reverse=True)
-
-        # Paginate
-        total = len(tasks)
-        tasks = tasks[offset:offset + limit]
+        # Get total count for pagination
+        total = await storage.count_tasks(status=status)
 
         return {
             "tasks": tasks,
@@ -356,14 +375,17 @@ if FASTAPI_AVAILABLE:
     )
     async def health_check() -> HealthResponse:
         """Check API health."""
+        storage = _get_storage()
+        total_tasks = await storage.count_tasks()
+
         return HealthResponse(
             status="healthy",
             version="1.0.0",
             timestamp=datetime.now(),
             services={
                 "api": "running",
-                "tasks": f"{len(_tasks)} active",
-                "batches": f"{len(_batches)} active"
+                "storage": type(storage).__name__,
+                "tasks": f"{total_tasks} total"
             }
         )
 
@@ -375,17 +397,21 @@ if FASTAPI_AVAILABLE:
     )
     async def get_stats() -> Dict[str, Any]:
         """Get API statistics."""
-        completed = sum(1 for t in _tasks.values() if t["status"] == TaskStatusEnum.COMPLETED.value)
-        failed = sum(1 for t in _tasks.values() if t["status"] == TaskStatusEnum.FAILED.value)
-        running = sum(1 for t in _tasks.values() if t["status"] == TaskStatusEnum.RUNNING.value)
+        storage = _get_storage()
+
+        total = await storage.count_tasks()
+        completed = await storage.count_tasks(status=TaskStatusEnum.COMPLETED.value)
+        failed = await storage.count_tasks(status=TaskStatusEnum.FAILED.value)
+        running = await storage.count_tasks(status=TaskStatusEnum.RUNNING.value)
+        pending = await storage.count_tasks(status=TaskStatusEnum.PENDING.value)
 
         return {
-            "total_tasks": len(_tasks),
+            "total_tasks": total,
             "completed": completed,
             "failed": failed,
             "running": running,
-            "pending": len(_tasks) - completed - failed - running,
-            "batches": len(_batches),
+            "pending": pending,
+            "storage_backend": type(storage).__name__,
             "timestamp": datetime.now().isoformat()
         }
 
@@ -396,12 +422,16 @@ if FASTAPI_AVAILABLE:
 
 async def _execute_research(task_id: str, request: ResearchRequest):
     """Execute research in background."""
-    task = _tasks.get(task_id)
+    storage = _get_storage()
+    task = await storage.get_task(task_id)
     if not task:
         return
 
-    task["status"] = TaskStatusEnum.RUNNING.value
-    task["started_at"] = datetime.now()
+    # Update to running
+    await storage.update_task(task_id, {
+        "status": TaskStatusEnum.RUNNING.value,
+        "started_at": datetime.now()
+    })
 
     try:
         # Import and execute workflow
@@ -418,35 +448,47 @@ async def _execute_research(task_id: str, request: ResearchRequest):
             depth=depth_map.get(request.depth.value, ResearchDepth.STANDARD)
         )
 
-        task["status"] = TaskStatusEnum.COMPLETED.value
-        task["completed_at"] = datetime.now()
-        task["result"] = {
-            "agent_outputs": result.data.get("agent_outputs", {}),
-            "synthesis": result.data.get("synthesis"),
-            "total_cost": result.total_cost,
-            "duration_seconds": result.duration_seconds
-        }
+        # Update to completed
+        await storage.update_task(task_id, {
+            "status": TaskStatusEnum.COMPLETED.value,
+            "completed_at": datetime.now(),
+            "result": {
+                "agent_outputs": result.data.get("agent_outputs", {}),
+                "synthesis": result.data.get("synthesis"),
+                "total_cost": result.total_cost,
+                "duration_seconds": result.duration_seconds
+            }
+        })
 
         # Send webhook if configured
         if request.webhook_url:
-            await _send_webhook(request.webhook_url, task)
+            updated_task = await storage.get_task(task_id)
+            if updated_task:
+                await _send_webhook(request.webhook_url, updated_task)
 
     except Exception as e:
-        task["status"] = TaskStatusEnum.FAILED.value
-        task["error"] = str(e)
-        task["failed_at"] = datetime.now()
+        logger.error(f"Research task {task_id} failed: {e}")
+        await storage.update_task(task_id, {
+            "status": TaskStatusEnum.FAILED.value,
+            "error": str(e),
+            "failed_at": datetime.now()
+        })
 
 
 async def _execute_batch(batch_id: str, request: BatchRequest):
     """Execute batch research in background."""
-    batch = _batches.get(batch_id)
+    storage = _get_storage()
+    batch = await storage.get_batch(batch_id)
     if not batch:
         return
 
-    batch["status"] = TaskStatusEnum.RUNNING.value
+    await storage.update_batch(batch_id, {"status": TaskStatusEnum.RUNNING.value})
+
+    completed_count = 0
+    failed_count = 0
 
     for task_id in batch["task_ids"]:
-        task = _tasks.get(task_id)
+        task = await storage.get_task(task_id)
         if task:
             # Create individual request
             individual_request = ResearchRequest(
@@ -455,25 +497,55 @@ async def _execute_batch(batch_id: str, request: BatchRequest):
             )
             await _execute_research(task_id, individual_request)
 
-            # Update batch counts
-            if task["status"] == TaskStatusEnum.COMPLETED.value:
-                batch["completed"] += 1
-            elif task["status"] == TaskStatusEnum.FAILED.value:
-                batch["failed"] += 1
+            # Check updated status
+            updated_task = await storage.get_task(task_id)
+            if updated_task:
+                if updated_task["status"] == TaskStatusEnum.COMPLETED.value:
+                    completed_count += 1
+                elif updated_task["status"] == TaskStatusEnum.FAILED.value:
+                    failed_count += 1
 
-    batch["status"] = TaskStatusEnum.COMPLETED.value
-    batch["completed_at"] = datetime.now()
+    await storage.update_batch(batch_id, {
+        "status": TaskStatusEnum.COMPLETED.value,
+        "completed_at": datetime.now(),
+        "completed": completed_count,
+        "failed": failed_count
+    })
 
 
 async def _send_webhook(url: str, payload: Dict[str, Any]):
-    """Send webhook notification."""
+    """
+    Send webhook notification with SSL verification.
+
+    Args:
+        url: Webhook URL (must be HTTPS in production)
+        payload: Data to send
+    """
+    import os
+
+    # Validate URL scheme
+    if not url.startswith(("http://", "https://")):
+        logger.warning(f"Invalid webhook URL scheme: {url}")
+        return
+
+    # Require HTTPS in production
+    is_production = os.getenv("ENVIRONMENT", "development") == "production"
+    if is_production and not url.startswith("https://"):
+        logger.warning(f"Webhook URL must use HTTPS in production: {url}")
+        return
+
     try:
         import httpx
-        async with httpx.AsyncClient() as client:
-            await client.post(
+
+        # Always verify SSL certificates (default behavior)
+        async with httpx.AsyncClient(verify=True) as client:
+            response = await client.post(
                 url,
                 json=payload,
-                timeout=10.0
+                timeout=10.0,
+                headers={"Content-Type": "application/json"}
             )
+            if response.status_code >= 400:
+                logger.warning(f"Webhook returned {response.status_code}: {url}")
     except Exception as e:
-        print(f"Webhook failed: {e}")
+        logger.error(f"Webhook failed for {url}: {e}")

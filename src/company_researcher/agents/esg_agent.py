@@ -2,8 +2,14 @@
 ESG Agent - Environmental, Social, and Governance analysis.
 
 DEPRECATED: This module re-exports from the modular esg package.
-Import directly from company_researcher.agents.esg instead:
+This file will be removed in a future version.
 
+Update your imports:
+
+    # Old import (deprecated)
+    from company_researcher.agents.esg_agent import ESGAgent
+
+    # New import (recommended)
     from company_researcher.agents.esg import (
         ESGAgent,
         ESGAnalysis,
@@ -12,6 +18,15 @@ Import directly from company_researcher.agents.esg instead:
         create_esg_agent
     )
 """
+
+import warnings
+
+warnings.warn(
+    "company_researcher.agents.esg_agent is deprecated. "
+    "Use company_researcher.agents.esg instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 # Re-export all public API from the esg package for backward compatibility
 from .esg import (

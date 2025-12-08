@@ -86,6 +86,14 @@ from .comparison_report import (
     create_comparison_generator,
 )
 
+# Report Pipeline (unified generation)
+from .pipeline import (
+    ReportPipeline,
+    GeneratedReport,
+    get_report_pipeline,
+    reset_report_pipeline,
+)
+
 __all__ = [
     # PDF
     "PDFReportGenerator",
@@ -118,4 +126,9 @@ __all__ = [
     "ComparisonCategory",
     "compare_companies",
     "create_comparison_generator",
+    # Report Pipeline
+    "ReportPipeline",
+    "GeneratedReport",
+    "get_report_pipeline",
+    "reset_report_pipeline",
 ]

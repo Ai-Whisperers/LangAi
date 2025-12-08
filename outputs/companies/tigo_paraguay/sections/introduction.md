@@ -1,1 +1,0 @@
-# Tigo Paraguay - Research Report

@@ -1,7 +1,0 @@
-## Executive Summary
-
-Personal Paraguay, operating under the legal entity Núcleo S.A., is one of Paraguay's leading telecommunications providers and a subsidiary of Telecom Argentina S.A. Founded on June 24, 1998, the company has evolved from a mobile-focused operator into a comprehensive multi-service telecommunications provider, offering mobile telephony, fiber optic internet, IPTV, satellite television (DTH), and mobile financial services through its subsidiary companies Personal Envíos SA and TUVES SA.
-
-The company operates in a competitive three-player market alongside Tigo Paraguay and Claro Paraguay, serving customers through both prepaid (65%) and postpaid (35%) models. Personal Paraguay has demonstrated technological progression, launching 3G services in 2008 and becoming an early 4G adopter with commercial LTE launch on February 8, 2013. While the company experienced financial stress between 2021-2022 with elevated default probability, recent indicators show improvement in credit risk profile with tightening credit spreads, suggesting stabilization and recovery in its financial position.
-
-As of December 2024, Personal Paraguay has not yet launched commercial 5G services but is positioned to participate in Paraguay's planned 5G spectrum auctions, with national objectives to cover half the population by 2025. The company's diversification into financial services and entertainment platforms demonstrates strategic adaptation to evolving market demands beyond traditional telecommunications.

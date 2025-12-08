@@ -8,7 +8,10 @@ This agent is responsible for:
 - Formatting insights for report generation
 """
 
-from typing import Dict, Any
+import logging
+from typing import Any, Callable, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 from ...config import get_config
 from ...llm.client_factory import get_anthropic_client, calculate_cost
@@ -19,6 +22,40 @@ from ...prompts import (
     format_search_results_for_analysis,
     format_sources_for_extraction
 )
+
+
+class AnalystAgent:
+    """Analyst agent for extracting structured insights from sources."""
+
+    def __init__(
+        self,
+        llm_client: Optional[Any] = None
+    ):
+        self.llm_client = llm_client or get_anthropic_client()
+
+    def analyze(
+        self,
+        company_name: str,
+        search_results: List[Dict[str, Any]] = None,
+        sources: List[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Analyze search results and extract structured insights.
+
+        Note: This method is sync because the underlying node function is sync.
+        The LangGraph workflow does not use async operations.
+        """
+        state = {
+            "company_name": company_name,
+            "search_results": search_results or [],
+            "sources": sources or []
+        }
+        return analyst_agent_node(state)
+
+
+def create_analyst_agent(llm_client: Any = None) -> AnalystAgent:
+    """Factory function to create an AnalystAgent."""
+    return AnalystAgent(llm_client=llm_client)
 
 
 def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
@@ -34,9 +71,7 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with analysis, extracted data, and agent metrics
     """
-    print("\n" + "=" * 60)
-    print("[AGENT: Analyst] Analyzing sources...")
-    print("=" * 60)
+    logger.info("Analyst agent starting - analyzing sources")
 
     config = get_config()
     client = get_anthropic_client()
@@ -46,7 +81,7 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
     sources = state.get("sources", [])  # Metadata for tracking
 
     if not search_results:
-        print("[Analyst] WARNING: No search results to analyze!")
+        logger.warning("No search results to analyze")
         return {
             "notes": ["No search results available for analysis."],
             "company_overview": "Not available in research",
@@ -59,7 +94,7 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
             }
         }
 
-    print(f"[Analyst] Analyzing {len(search_results)} search results...")
+    logger.info(f"Analyzing {len(search_results)} search results")
 
     # Step 1: Analyze search results to create notes (using full content)
     formatted_results = format_search_results_for_analysis(search_results)
@@ -82,10 +117,10 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
         analysis_response.usage.output_tokens
     )
 
-    print("[Analyst] Analysis complete")
+    logger.debug("Analysis complete")
 
     # Step 2: Extract structured data from notes
-    print("[Analyst] Extracting structured data...")
+    logger.debug("Extracting structured data")
 
     # Combine with previous notes if iterating
     previous_notes = state.get("notes", [])
@@ -113,7 +148,7 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
         extraction_response.usage.output_tokens
     )
 
-    print("[Analyst] Data extraction complete")
+    logger.debug("Data extraction complete")
 
     # Calculate total cost
     total_cost = analysis_cost + extraction_cost
@@ -130,8 +165,7 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
         }
     }
 
-    print(f"[Analyst] Agent complete - ${total_cost:.4f}")
-    print("=" * 60)
+    logger.info(f"Analyst agent complete - cost: ${total_cost:.4f}")
 
     # Return only this agent's contribution
     # Reducers will handle merging/accumulation automatically

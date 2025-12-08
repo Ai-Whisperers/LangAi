@@ -9,11 +9,19 @@ Provides:
 """
 
 import asyncio
+import logging
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Set
+
+logger = logging.getLogger(__name__)
+
+
+def _utcnow() -> datetime:
+    """Get current UTC time (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 from .stream_wrapper import (
     BaseStreamWrapper,
@@ -85,7 +93,7 @@ class StreamSession:
     session_id: str
     config: StreamConfig
     status: StreamStatus = StreamStatus.PENDING
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utcnow)
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
 
@@ -117,32 +125,32 @@ class StreamSession:
         for callback in self._on_chunk_callbacks:
             try:
                 callback(chunk)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Session chunk callback error: {e}")
 
     def complete(self, metrics: Optional[StreamMetrics] = None) -> None:
         """Mark session as complete."""
         self.status = StreamStatus.COMPLETED
-        self.completed_at = datetime.utcnow()
+        self.completed_at = _utcnow()
         self.metrics = metrics
 
         for callback in self._on_complete_callbacks:
             try:
                 callback(self)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Session completion callback error: {e}")
 
     def fail(self, error: str) -> None:
         """Mark session as failed."""
         self.status = StreamStatus.ERROR
-        self.completed_at = datetime.utcnow()
+        self.completed_at = _utcnow()
         self.errors.append(error)
 
         for callback in self._on_error_callbacks:
             try:
                 callback(error)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Session error callback error: {e}")
 
     def on_chunk(self, callback: Callable[[StreamChunk], None]) -> "StreamSession":
         """Register chunk callback."""
@@ -306,15 +314,15 @@ class StreamManager:
 
         # Start session
         session.status = StreamStatus.STREAMING
-        session.started_at = datetime.utcnow()
+        session.started_at = _utcnow()
         self._active_streams.add(session_id)
 
         # Fire start callbacks
         for callback in self._global_callbacks["on_session_start"]:
             try:
                 callback(session)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Session start callback error: {e}")
 
         # Send stream start event
         if self._event_streamer:
@@ -332,8 +340,8 @@ class StreamManager:
                 for callback in self._global_callbacks["on_chunk"]:
                     try:
                         callback(chunk, session)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.warning(f"Global chunk callback error: {e}")
 
                 # Send chunk event
                 if self._event_streamer:
@@ -351,8 +359,8 @@ class StreamManager:
             for callback in self._global_callbacks["on_session_end"]:
                 try:
                     callback(session)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Session end callback error: {e}")
 
             # Send stream end event
             if self._event_streamer:
@@ -371,8 +379,8 @@ class StreamManager:
             for callback in self._global_callbacks["on_error"]:
                 try:
                     callback(e, session)
-                except Exception:
-                    pass
+                except Exception as cb_error:
+                    logger.warning(f"Global error callback error: {cb_error}")
 
             # Send error event
             if self._event_streamer:
@@ -415,7 +423,7 @@ class StreamManager:
 
         # Start session
         session.status = StreamStatus.STREAMING
-        session.started_at = datetime.utcnow()
+        session.started_at = _utcnow()
         self._active_streams.add(session_id)
 
         # Send tool call event
@@ -473,7 +481,7 @@ class StreamManager:
         session = self.get_session(session_id)
         if session and session.status == StreamStatus.STREAMING:
             session.status = StreamStatus.CANCELLED
-            session.completed_at = datetime.utcnow()
+            session.completed_at = _utcnow()
             self._active_streams.discard(session_id)
             return True
         return False
@@ -531,7 +539,7 @@ class StreamManager:
 
     def cleanup_old_sessions(self, max_age_seconds: float = 3600) -> int:
         """Remove sessions older than max_age_seconds."""
-        now = datetime.utcnow()
+        now = _utcnow()
         removed = 0
 
         for session_id in list(self._sessions.keys()):

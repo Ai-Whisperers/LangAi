@@ -1,1 +1,0 @@
-# Telecom Argentina - Research Report

@@ -71,6 +71,14 @@ from .query_dedup import (
     normalize_company_name,
 )
 
+from .vector_store import (
+    ResearchVectorStore,
+    SearchResult,
+    get_vector_store,
+    reset_vector_store,
+    CHROMADB_AVAILABLE,
+)
+
 __all__ = [
     # Cache Manager
     "CacheManager",
@@ -117,4 +125,10 @@ __all__ = [
     "CompanyNameNormalizer",
     "create_deduplicator",
     "normalize_company_name",
+    # Vector Store
+    "ResearchVectorStore",
+    "SearchResult",
+    "get_vector_store",
+    "reset_vector_store",
+    "CHROMADB_AVAILABLE",
 ]

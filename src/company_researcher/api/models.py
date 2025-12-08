@@ -10,9 +10,14 @@ Pydantic models for API validation:
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 from enum import Enum
+import re
+
+import ipaddress
+import socket
+from urllib.parse import urlparse
 
 try:
-    from pydantic import BaseModel, Field
+    from pydantic import BaseModel, Field, field_validator
     PYDANTIC_AVAILABLE = True
 except ImportError:
     PYDANTIC_AVAILABLE = False
@@ -47,6 +52,121 @@ class TaskStatusEnum(str, Enum):
 # ============================================================================
 
 if PYDANTIC_AVAILABLE:
+    # Pattern for valid company names (alphanumeric, spaces, common punctuation)
+    COMPANY_NAME_PATTERN = re.compile(r'^[\w\s\.\,\&\-\(\)\'\"]+$', re.UNICODE)
+    # Pattern for valid URLs
+    URL_PATTERN = re.compile(
+        r'^https?://'  # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain
+        r'localhost|'  # localhost
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # or IP
+        r'(?::\d+)?'  # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE
+    )
+
+    # Error message constants
+    ERR_INVALID_URL_FORMAT = 'Invalid webhook URL format. Must be a valid HTTP/HTTPS URL.'
+    ERR_HTTPS_REQUIRED = 'Webhook URL must use HTTPS for security (localhost exceptions allowed)'
+    ERR_SSRF_BLOCKED = 'Webhook URL points to internal/private network (SSRF protection)'
+    HTTPS_PREFIX = 'https://'
+
+    # SSRF Protection: Private/internal IP ranges to block
+    BLOCKED_IP_NETWORKS = [
+        ipaddress.ip_network('10.0.0.0/8'),       # Private Class A
+        ipaddress.ip_network('172.16.0.0/12'),    # Private Class B
+        ipaddress.ip_network('192.168.0.0/16'),   # Private Class C
+        ipaddress.ip_network('127.0.0.0/8'),      # Loopback
+        ipaddress.ip_network('169.254.0.0/16'),   # Link-local (AWS metadata)
+        ipaddress.ip_network('0.0.0.0/8'),        # Current network
+        ipaddress.ip_network('100.64.0.0/10'),    # Carrier-grade NAT
+        ipaddress.ip_network('192.0.0.0/24'),     # IETF Protocol Assignments
+        ipaddress.ip_network('192.0.2.0/24'),     # TEST-NET-1
+        ipaddress.ip_network('198.51.100.0/24'),  # TEST-NET-2
+        ipaddress.ip_network('203.0.113.0/24'),   # TEST-NET-3
+        ipaddress.ip_network('224.0.0.0/4'),      # Multicast
+        ipaddress.ip_network('240.0.0.0/4'),      # Reserved
+    ]
+
+    # Blocked hostnames (case-insensitive)
+    BLOCKED_HOSTNAMES = frozenset([
+        'metadata.google.internal',
+        'metadata.google',
+        'metadata',
+        'instance-data',
+    ])
+
+    def _is_internal_ip(ip_str: str) -> bool:
+        """Check if an IP address is in a blocked internal range."""
+        try:
+            ip = ipaddress.ip_address(ip_str)
+            return any(ip in network for network in BLOCKED_IP_NETWORKS)
+        except ValueError:
+            return False
+
+    def _is_ssrf_target(url: str) -> bool:
+        """
+        Check if URL points to internal/private network (SSRF protection).
+
+        Returns True if the URL should be blocked.
+        """
+        try:
+            parsed = urlparse(url)
+            hostname = parsed.hostname
+
+            if not hostname:
+                return True  # Block URLs without hostname
+
+            # Check blocked hostnames
+            if hostname.lower() in BLOCKED_HOSTNAMES:
+                return True
+
+            # Check if hostname is an IP address
+            try:
+                if _is_internal_ip(hostname):
+                    return True
+            except ValueError:
+                pass  # Not an IP address, continue
+
+            # Resolve hostname and check resolved IPs
+            # Note: This adds latency but is necessary for complete SSRF protection
+            try:
+                resolved_ips = socket.getaddrinfo(hostname, None, socket.AF_UNSPEC)
+                for family, _, _, _, sockaddr in resolved_ips:
+                    ip = sockaddr[0]
+                    if _is_internal_ip(ip):
+                        return True
+            except socket.gaierror:
+                pass  # DNS resolution failed, allow for now (will fail at request time)
+
+            return False
+        except Exception:
+            return True  # Block on any parsing error
+
+    def _validate_webhook_url(url: Optional[str]) -> Optional[str]:
+        """Shared webhook URL validation logic with SSRF protection."""
+        if url is None:
+            return url
+        url = url.strip()
+        if not url:
+            return None
+        if not URL_PATTERN.match(url):
+            raise ValueError(ERR_INVALID_URL_FORMAT)
+
+        # SSRF Protection: Block internal networks
+        # Allow localhost only in development (for testing)
+        parsed = urlparse(url)
+        hostname = parsed.hostname or ''
+        is_localhost = hostname in ('localhost', '127.0.0.1', '::1')
+
+        if not is_localhost and _is_ssrf_target(url):
+            raise ValueError(ERR_SSRF_BLOCKED)
+
+        # Require HTTPS for non-localhost URLs
+        if not url.startswith(HTTPS_PREFIX) and not is_localhost:
+            raise ValueError(ERR_HTTPS_REQUIRED)
+
+        return url
+
     class ResearchRequest(BaseModel):
         """Request to start company research."""
         company_name: str = Field(..., min_length=1, max_length=200, description="Company name to research")
@@ -61,6 +181,34 @@ if PYDANTIC_AVAILABLE:
         include_investment: bool = Field(default=False, description="Include investment analysis")
         webhook_url: Optional[str] = Field(default=None, description="Webhook URL for completion notification")
         metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+
+        @field_validator('company_name')
+        @classmethod
+        def validate_company_name(cls, v: str) -> str:
+            """Validate and sanitize company name."""
+            # Strip whitespace
+            v = v.strip()
+            if not v:
+                raise ValueError('Company name cannot be empty')
+            # Check for valid characters
+            if not COMPANY_NAME_PATTERN.match(v):
+                raise ValueError(
+                    'Company name contains invalid characters. '
+                    'Only alphanumeric, spaces, and common punctuation allowed.'
+                )
+            # Prevent potential injection patterns
+            suspicious_patterns = ['<script', 'javascript:', 'data:', '{{', '{%', '${{']
+            v_lower = v.lower()
+            for pattern in suspicious_patterns:
+                if pattern in v_lower:
+                    raise ValueError('Company name contains suspicious content')
+            return v
+
+        @field_validator('webhook_url')
+        @classmethod
+        def validate_webhook_url(cls, v: Optional[str]) -> Optional[str]:
+            """Validate webhook URL format."""
+            return _validate_webhook_url(v)
 
         class Config:
             json_schema_extra = {
@@ -77,11 +225,41 @@ if PYDANTIC_AVAILABLE:
 
     class BatchRequest(BaseModel):
         """Request for batch research."""
-        companies: List[str] = Field(..., min_items=1, max_items=100, description="List of company names")
+        companies: List[str] = Field(..., min_length=1, max_length=100, description="List of company names")
         depth: ResearchDepthEnum = Field(default=ResearchDepthEnum.STANDARD)
         priority: int = Field(default=3, ge=1, le=5, description="Priority (1=highest)")
         webhook_url: Optional[str] = None
         metadata: Dict[str, Any] = Field(default_factory=dict)
+
+        @field_validator('companies')
+        @classmethod
+        def validate_companies(cls, v: List[str]) -> List[str]:
+            """Validate list of company names."""
+            if not v:
+                raise ValueError('Companies list cannot be empty')
+            validated = []
+            for i, company in enumerate(v):
+                company = company.strip()
+                if not company:
+                    raise ValueError(f'Company at index {i} cannot be empty')
+                if len(company) > 200:
+                    raise ValueError(f'Company name at index {i} exceeds 200 characters')
+                if not COMPANY_NAME_PATTERN.match(company):
+                    raise ValueError(
+                        f'Company name at index {i} contains invalid characters. '
+                        'Only alphanumeric, spaces, and common punctuation allowed.'
+                    )
+                # Check for duplicates
+                if company.lower() in [c.lower() for c in validated]:
+                    raise ValueError(f'Duplicate company name: {company}')
+                validated.append(company)
+            return validated
+
+        @field_validator('webhook_url')
+        @classmethod
+        def validate_webhook_url(cls, v: Optional[str]) -> Optional[str]:
+            """Validate webhook URL format."""
+            return _validate_webhook_url(v)
 
         class Config:
             json_schema_extra = {
@@ -99,6 +277,32 @@ if PYDANTIC_AVAILABLE:
         events: List[str] = Field(default=["completed", "failed"], description="Events to notify")
         secret: Optional[str] = Field(default=None, description="Webhook signing secret")
         retry_count: int = Field(default=3, ge=0, le=10)
+
+        @field_validator('url')
+        @classmethod
+        def validate_url(cls, v: str) -> str:
+            """Validate webhook URL."""
+            v = v.strip()
+            if not v:
+                raise ValueError('Webhook URL cannot be empty')
+            # Use shared validation (returns None for empty, but we already checked)
+            result = _validate_webhook_url(v)
+            if result is None:
+                raise ValueError('Webhook URL cannot be empty')
+            return result
+
+        @field_validator('events')
+        @classmethod
+        def validate_events(cls, v: List[str]) -> List[str]:
+            """Validate webhook events."""
+            valid_events = {'completed', 'failed', 'started', 'progress', 'cancelled'}
+            for event in v:
+                if event not in valid_events:
+                    raise ValueError(
+                        f'Invalid event: {event}. '
+                        f'Valid events: {", ".join(sorted(valid_events))}'
+                    )
+            return v
 
 
 # ============================================================================

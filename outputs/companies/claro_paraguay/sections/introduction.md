@@ -1,1 +1,0 @@
-# Claro Paraguay - Research Report

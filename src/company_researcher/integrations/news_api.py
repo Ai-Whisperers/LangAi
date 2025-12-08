@@ -12,13 +12,21 @@ Provides:
 import asyncio
 import hashlib
 import json
+import logging
 import os
 import re
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 from urllib.parse import quote_plus
+
+logger = logging.getLogger(__name__)
+
+
+def _utcnow() -> datetime:
+    """Get current UTC time (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 
 class NewsSentiment(str, Enum):
@@ -60,7 +68,7 @@ class NewsArticle:
     @property
     def age_hours(self) -> float:
         """Get article age in hours."""
-        return (datetime.utcnow() - self.published_at).total_seconds() / 3600
+        return (_utcnow() - self.published_at).total_seconds() / 3600
 
     @property
     def is_recent(self) -> bool:
@@ -91,7 +99,7 @@ class NewsSearchResult:
     query: str
     total_results: int
     articles: List[NewsArticle]
-    searched_at: datetime = field(default_factory=datetime.utcnow)
+    searched_at: datetime = field(default_factory=_utcnow)
     sentiment_summary: Dict[str, int] = field(default_factory=dict)
 
     def get_positive_articles(self) -> List[NewsArticle]:
@@ -263,7 +271,7 @@ class NewsAPIClient:
         Returns:
             NewsSearchResult object
         """
-        from_date = datetime.utcnow() - timedelta(days=days_back)
+        from_date = _utcnow() - timedelta(days=days_back)
         return await self.search(
             query=company_name,
             from_date=from_date,
@@ -357,7 +365,7 @@ class NewsAPIClient:
         try:
             published_at = datetime.fromisoformat(published_str.replace("Z", "+00:00"))
         except Exception:
-            published_at = datetime.utcnow()
+            published_at = _utcnow()
 
         # Analyze sentiment if enabled
         text = f"{data.get('title', '')} {data.get('description', '')}"
@@ -420,10 +428,12 @@ class NewsMonitor:
     def __init__(
         self,
         client: NewsAPIClient,
-        check_interval: float = 300  # 5 minutes
+        check_interval: float = 300,  # 5 minutes
+        max_seen_articles_per_company: int = 10000  # Prevent memory leaks
     ):
         self.client = client
         self.check_interval = check_interval
+        self._max_seen_articles = max_seen_articles_per_company
         self._companies: Dict[str, Dict[str, Any]] = {}
         self._seen_articles: Dict[str, set] = {}
         self._alert_callbacks: List[Callable] = []
@@ -474,8 +484,8 @@ class NewsMonitor:
         for company_name, config in self._companies.items():
             try:
                 await self._check_company(company_name, config)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"News monitor check failed for {company_name}: {e}")
 
     async def _check_company(self, company_name: str, config: Dict) -> None:
         """Check single company for news."""
@@ -488,6 +498,12 @@ class NewsMonitor:
                 continue
 
             self._seen_articles[company_name].add(article_id)
+
+            # Prune seen articles to prevent memory leaks
+            if len(self._seen_articles[company_name]) > self._max_seen_articles:
+                # Keep only half when limit exceeded (FIFO approximation for sets)
+                seen_list = list(self._seen_articles[company_name])
+                self._seen_articles[company_name] = set(seen_list[len(seen_list) // 2:])
 
             # Check for alerts
             should_alert = False
@@ -521,7 +537,7 @@ class NewsMonitor:
             "company": company_name,
             "article": article.to_dict(),
             "reason": reason,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": _utcnow().isoformat()
         }
 
         for callback in self._alert_callbacks:
@@ -530,8 +546,8 @@ class NewsMonitor:
                     await callback(alert_data)
                 else:
                     callback(alert_data)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"News alert callback failed: {e}")
 
     def _get_article_id(self, article: NewsArticle) -> str:
         """Generate unique article ID."""

@@ -10,8 +10,13 @@ Provides:
 
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional, TypeVar
+
+
+def _utcnow() -> datetime:
+    """Get current UTC time (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 T = TypeVar('T')
 
@@ -301,7 +306,7 @@ class ScratchpadMemory:
             "action": "write",
             "slot": slot,
             "value_type": type(value).__name__,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": _utcnow().isoformat()
         })
 
         # Enforce max slots

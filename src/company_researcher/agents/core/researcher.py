@@ -9,12 +9,48 @@ This agent is responsible for:
 """
 
 import json
-from typing import Dict, Any, List
+import logging
+from typing import Any, Callable, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 from ...config import get_config
 from ...llm.client_factory import get_anthropic_client, get_tavily_client, calculate_cost
 from ...state import OverallState
 from ...prompts import GENERATE_QUERIES_PROMPT
+
+
+class ResearcherAgent:
+    """Researcher agent for finding and gathering quality sources."""
+
+    def __init__(
+        self,
+        search_tool: Optional[Callable] = None,
+        llm_client: Optional[Any] = None
+    ):
+        self.search_tool = search_tool
+        self.llm_client = llm_client or get_anthropic_client()
+
+    def research(self, company_name: str, missing_info: List[str] = None) -> Dict[str, Any]:
+        """
+        Research a company by generating queries and gathering sources.
+
+        Note: This method is sync because the underlying node function is sync.
+        The LangGraph workflow does not use async operations.
+        """
+        state = {
+            "company_name": company_name,
+            "missing_info": missing_info or []
+        }
+        return researcher_agent_node(state)
+
+
+def create_researcher_agent(
+    search_tool: Callable = None,
+    llm_client: Any = None
+) -> ResearcherAgent:
+    """Factory function to create a ResearcherAgent."""
+    return ResearcherAgent(search_tool=search_tool, llm_client=llm_client)
 
 
 def researcher_agent_node(state: OverallState) -> Dict[str, Any]:
@@ -30,16 +66,14 @@ def researcher_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with sources and agent metrics
     """
-    print("\n" + "=" * 60)
-    print("[AGENT: Researcher] Gathering sources...")
-    print("=" * 60)
+    logger.info("Researcher agent starting - gathering sources")
 
     config = get_config()
     client = get_anthropic_client()
     company_name = state["company_name"]
 
     # Step 1: Generate search queries
-    print("[Researcher] Generating targeted queries...")
+    logger.debug("Generating targeted queries")
 
     # Check if we're iterating with missing info
     missing_info = state.get("missing_info", [])
@@ -63,8 +97,8 @@ Previous research had gaps. Focus queries on:
 
     response = client.messages.create(
         model=config.llm_model,
-        max_tokens=500,
-        temperature=0.7,
+        max_tokens=config.researcher_max_tokens,
+        temperature=config.researcher_temperature,
         messages=[{"role": "user", "content": prompt}]
     )
 
@@ -92,19 +126,19 @@ Previous research had gaps. Focus queries on:
         response.usage.output_tokens
     )
 
-    print(f"[Researcher] Generated {len(queries)} queries")
+    logger.info(f"Generated {len(queries)} queries")
     for i, query in enumerate(queries, 1):
-        print(f"  {i}. {query}")
+        logger.debug(f"  Query {i}: {query}")
 
     # Step 2: Execute searches
-    print(f"\n[Researcher] Searching for sources...")
+    logger.debug("Searching for sources")
 
     tavily_client = get_tavily_client()
     all_results = []
     sources = []
 
     for query in queries:
-        print(f"  [SEARCH] {query}")
+        logger.debug(f"Executing search: {query}")
         search_response = tavily_client.search(
             query=query,
             max_results=3
@@ -122,7 +156,7 @@ Previous research had gaps. Focus queries on:
     # Calculate Tavily cost (approximate)
     search_cost = len(queries) * 0.001
 
-    print(f"[Researcher] Found {len(all_results)} total results")
+    logger.info(f"Found {len(all_results)} total results")
 
     # Calculate total cost
     total_cost = query_cost + search_cost
@@ -139,8 +173,7 @@ Previous research had gaps. Focus queries on:
         }
     }
 
-    print(f"[Researcher] Agent complete - ${total_cost:.4f}")
-    print("=" * 60)
+    logger.info(f"Researcher agent complete - cost: ${total_cost:.4f}")
 
     # Return only this agent's contribution
     # Reducers will handle merging/accumulation automatically

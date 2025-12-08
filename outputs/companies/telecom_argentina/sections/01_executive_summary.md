@@ -1,7 +1,0 @@
-## Executive Summary
-
-Telecom Argentina S.A. is a leading telecommunications provider in Argentina, founded in 1990, offering comprehensive mobile, fixed-line, internet, and television services. The company operates under the "Personal" brand for mobile services and has established itself as a major player in the Argentine telecommunications market with approximately 18,977 employees. In February 2025, the company made a transformative acquisition of Telefónica's Argentine operations (TMA) for $1.24 billion, significantly expanding its national footprint and market position.
-
-Despite operating in Argentina's challenging macroeconomic environment characterized by high inflation and currency volatility, Telecom Argentina has demonstrated operational resilience. The company achieved a 29.7% EBITDA margin in H1 2024 and has shown strong revenue growth in nominal terms through effective pricing strategies. The TMA acquisition has been particularly impactful, with the acquired operations generating over $2.2 billion in revenues and more than $500 million in EBITDA in the first nine months of 2025, representing a substantial improvement from $265 million in fiscal year 2024.
-
-The company has successfully navigated Argentina's economic turbulence by implementing strategic price adjustments and maintaining robust cash flow generation, positioning itself for continued growth in the Argentine telecommunications sector while expanding its service offerings across mobile (2G, 3G, 4G LTE, and limited 5G), fiber broadband (FTTH), and HFC cable infrastructure.

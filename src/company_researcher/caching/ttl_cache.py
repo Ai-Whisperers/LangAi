@@ -9,11 +9,14 @@ Supports:
 """
 
 import asyncio
+import logging
 import threading
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, Generic, Optional, TypeVar
+
+logger = logging.getLogger(__name__)
 
 K = TypeVar('K')
 V = TypeVar('V')
@@ -220,8 +223,8 @@ class TTLCache(Generic[K, V]):
         if self._config.on_expire:
             try:
                 self._config.on_expire(key, item.value)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"TTL cache expiration callback error for key {key}: {e}")
 
     def _evict_expired(self) -> int:
         """Remove all expired items."""
@@ -281,8 +284,8 @@ class TTLCache(Generic[K, V]):
                 self.cleanup()
             except asyncio.CancelledError:
                 break
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"TTL cache cleanup error: {e}")
 
     def get_stats(self) -> Dict[str, Any]:
         """Get cache statistics."""

@@ -2,6 +2,7 @@
 Agents Module - Multi-agent research system.
 
 Organized by category:
+- base/: Base infrastructure (types, logging, node utilities)
 - core/: Base classes and essential agents
 - financial/: Financial analysis agents
 - market/: Market and competitive analysis agents
@@ -11,6 +12,12 @@ Organized by category:
 
 Usage:
     from company_researcher.agents import (
+        # Base Infrastructure
+        AgentResult,
+        AgentOutput,
+        AgentLogger,
+        agent_node,
+        BaseAgentNode,
         # Core
         ResearcherAgent,
         AnalystAgent,
@@ -36,12 +43,51 @@ Usage:
 """
 
 # =============================================================================
+# Base Agent Infrastructure
+# =============================================================================
+from .base import (
+    # Types
+    AgentStatus,
+    TokenUsage,
+    AgentOutput,
+    AgentResult,
+    SearchResult,
+    AgentConfig,
+    AgentContext,
+    create_empty_result,
+    create_agent_result,
+    merge_agent_results,
+    # Logging
+    AgentLogger,
+    AgentLogContext,
+    get_agent_logger,
+    configure_agent_logging,
+    # Node
+    BaseAgentNode,
+    NodeConfig,
+    agent_node,
+    format_search_results,
+)
+
+# =============================================================================
 # Core Agents
 # =============================================================================
 from .core.base import BaseAgent
-from .core.researcher import researcher_agent_node
-from .core.analyst import analyst_agent_node
-from .core.synthesizer import synthesizer_agent_node
+from .core.researcher import (
+    ResearcherAgent,
+    researcher_agent_node,
+    create_researcher_agent,
+)
+from .core.analyst import (
+    AnalystAgent,
+    analyst_agent_node,
+    create_analyst_agent,
+)
+from .core.synthesizer import (
+    SynthesizerAgent,
+    synthesizer_agent_node,
+    create_synthesizer_agent,
+)
 
 # =============================================================================
 # Financial Agents
@@ -107,9 +153,9 @@ from .research.reasoning import (
 )
 
 # =============================================================================
-# ESG Agent
+# ESG Agent (imported directly from esg package, not deprecated esg_agent.py)
 # =============================================================================
-from .esg_agent import (
+from .esg import (
     ESGAgent,
     ESGAnalysis,
     ESGScore,
@@ -135,11 +181,38 @@ from .mixins import (
 )
 
 __all__ = [
+    # Base Infrastructure - Types
+    "AgentStatus",
+    "TokenUsage",
+    "AgentOutput",
+    "AgentResult",
+    "SearchResult",
+    "AgentConfig",
+    "AgentContext",
+    "create_empty_result",
+    "create_agent_result",
+    "merge_agent_results",
+    # Base Infrastructure - Logging
+    "AgentLogger",
+    "AgentLogContext",
+    "get_agent_logger",
+    "configure_agent_logging",
+    # Base Infrastructure - Node
+    "BaseAgentNode",
+    "NodeConfig",
+    "agent_node",
+    "format_search_results",
     # Core
     "BaseAgent",
+    "ResearcherAgent",
     "researcher_agent_node",
+    "create_researcher_agent",
+    "AnalystAgent",
     "analyst_agent_node",
+    "create_analyst_agent",
+    "SynthesizerAgent",
     "synthesizer_agent_node",
+    "create_synthesizer_agent",
     # Financial
     "financial_agent_node",
     "enhanced_financial_agent_node",

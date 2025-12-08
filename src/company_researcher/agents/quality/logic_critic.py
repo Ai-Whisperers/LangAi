@@ -12,8 +12,11 @@ This agent runs after all specialist agents and before report generation
 to ensure research quality and accuracy.
 """
 
-from typing import Dict, Any, List, Optional, Callable
+import logging
 from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 from ...config import get_config
 from ...llm.client_factory import get_anthropic_client, calculate_cost
@@ -325,9 +328,7 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with quality assessment
     """
-    print("\n" + "=" * 70)
-    print("[AGENT: Logic Critic] Quality assurance analysis...")
-    print("=" * 70)
+    logger.info("Logic Critic agent starting - quality assurance analysis")
 
     config = get_config()
     company_name = state["company_name"]
@@ -336,7 +337,7 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
     start_time = datetime.now()
 
     # Step 1: Extract facts from all agent outputs
-    print("[Logic Critic] Step 1: Extracting facts...")
+    logger.debug("Step 1: Extracting facts")
     extractor = FactExtractor()
     all_facts: List[ExtractedFact] = []
 
@@ -344,43 +345,41 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
         if isinstance(output, dict) and output:
             result = extractor.extract_from_agent_output(output, agent_name)
             all_facts.extend(result.facts)
-            print(f"  - {agent_name}: {result.total_facts} facts extracted")
+            logger.debug(f"  {agent_name}: {result.total_facts} facts extracted")
 
-    print(f"[Logic Critic] Total facts: {len(all_facts)}")
+    logger.info(f"Total facts extracted: {len(all_facts)}")
 
     # Step 2: Detect contradictions
-    print("[Logic Critic] Step 2: Detecting contradictions...")
+    logger.debug("Step 2: Detecting contradictions")
     detector = ContradictionDetector(use_llm=True)
     contradiction_report = detector.detect(all_facts)
 
     if contradiction_report.total_count > 0:
-        print(f"[Logic Critic] Found {contradiction_report.total_count} contradictions")
-        print(f"  - Critical: {contradiction_report.critical_count}")
-        print(f"  - High: {contradiction_report.high_count}")
+        logger.info(f"Found {contradiction_report.total_count} contradictions (Critical: {contradiction_report.critical_count}, High: {contradiction_report.high_count})")
     else:
-        print("[Logic Critic] No contradictions detected")
+        logger.debug("No contradictions detected")
 
     # Step 3: Identify gaps
-    print("[Logic Critic] Step 3: Identifying gaps...")
+    logger.debug("Step 3: Identifying gaps")
     gaps = identify_gaps(all_facts, agent_outputs)
     high_gaps = [g for g in gaps if g.severity == "high"]
 
     if gaps:
-        print(f"[Logic Critic] Found {len(gaps)} gaps ({len(high_gaps)} high severity)")
+        logger.info(f"Found {len(gaps)} gaps ({len(high_gaps)} high severity)")
     else:
-        print("[Logic Critic] No significant gaps")
+        logger.debug("No significant gaps")
 
     # Step 4: Calculate quality score
-    print("[Logic Critic] Step 4: Calculating quality score...")
+    logger.debug("Step 4: Calculating quality score")
     quality_metrics = calculate_comprehensive_quality(
         all_facts,
         contradiction_report,
         gaps
     )
-    print(f"[Logic Critic] Quality Score: {quality_metrics['overall_score']}/100")
+    logger.info(f"Quality Score: {quality_metrics['overall_score']}/100")
 
     # Step 5: Generate LLM recommendations
-    print("[Logic Critic] Step 5: Generating recommendations...")
+    logger.debug("Step 5: Generating recommendations")
 
     # Build research summary
     research_parts = []
@@ -417,8 +416,7 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
 
     duration = (datetime.now() - start_time).total_seconds()
 
-    print(f"[Logic Critic] Analysis complete - ${cost:.4f}")
-    print("=" * 70)
+    logger.info(f"Logic Critic agent complete - cost: ${cost:.4f}")
 
     # Build comprehensive output
     agent_output = {
@@ -497,7 +495,7 @@ def quick_logic_critic_node(state: OverallState) -> Dict[str, Any]:
 
     Only performs rule-based analysis.
     """
-    print("\n[AGENT: Logic Critic (Quick)] Running rule-based analysis...")
+    logger.info("Logic Critic (Quick) - running rule-based analysis")
 
     agent_outputs = state.get("agent_outputs", {})
 
@@ -521,7 +519,7 @@ def quick_logic_critic_node(state: OverallState) -> Dict[str, Any]:
         all_facts, contradiction_report, gaps
     )
 
-    print(f"[Logic Critic (Quick)] Score: {quality_metrics['overall_score']}/100")
+    logger.info(f"Logic Critic (Quick) Score: {quality_metrics['overall_score']}/100")
 
     return {
         "agent_outputs": {

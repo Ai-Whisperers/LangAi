@@ -9,9 +9,11 @@ Main application setup and configuration:
 - Server startup
 """
 
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Set
 from datetime import datetime
 import logging
+import os
+import re
 
 try:
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -21,6 +23,51 @@ try:
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
+
+# Security: Default allowed origins (can be overridden via environment)
+DEFAULT_CORS_ORIGINS: Set[str] = {
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
+}
+
+# Security: Origin validation pattern
+ORIGIN_PATTERN = re.compile(r'^https?://[a-zA-Z0-9][-a-zA-Z0-9.]*[a-zA-Z0-9](:\d+)?$')
+
+
+def _get_allowed_origins(cors_origins: Optional[List[str]] = None) -> List[str]:
+    """
+    Get validated list of allowed CORS origins.
+
+    Security: Never returns wildcard when credentials are enabled.
+    """
+    # Check environment variable first
+    env_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
+    if env_origins:
+        origins = [o.strip() for o in env_origins.split(",") if o.strip()]
+    elif cors_origins:
+        origins = cors_origins
+    else:
+        origins = list(DEFAULT_CORS_ORIGINS)
+
+    # Validate and filter origins
+    validated = []
+    for origin in origins:
+        # Reject wildcard - security risk with credentials
+        if origin == "*":
+            logging.warning(
+                "CORS wildcard origin rejected for security. "
+                "Specify explicit origins or set CORS_ALLOWED_ORIGINS env var."
+            )
+            continue
+        # Validate origin format
+        if ORIGIN_PATTERN.match(origin):
+            validated.append(origin)
+        else:
+            logging.warning(f"Invalid CORS origin rejected: {origin}")
+
+    return validated if validated else list(DEFAULT_CORS_ORIGINS)
 
 
 # ============================================================================
@@ -129,15 +176,17 @@ Include your API key in the `X-API-Key` header.
         openapi_url="/openapi.json"
     )
 
-    # Configure CORS
+    # Configure CORS (with security validation)
     if enable_cors:
+        validated_origins = _get_allowed_origins(cors_origins)
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=cors_origins or ["*"],
+            allow_origins=validated_origins,
             allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
+            allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+            allow_headers=["Authorization", "Content-Type", "X-API-Key", "X-Request-ID"],
         )
+        logging.info(f"CORS enabled for origins: {validated_origins}")
 
     # Add rate limiting
     if enable_rate_limiting:

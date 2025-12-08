@@ -8,13 +8,19 @@ Provides:
 - Load balancing
 """
 
+import asyncio
 import random
 import threading
 import time
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
+
+
+def _utcnow() -> datetime:
+    """Get current UTC time (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 
 class ServiceStatus(str, Enum):
@@ -44,8 +50,8 @@ class ServiceInstance:
     status: ServiceStatus = ServiceStatus.UNKNOWN
     metadata: Dict[str, Any] = field(default_factory=dict)
     weight: float = 1.0
-    registered_at: datetime = field(default_factory=datetime.utcnow)
-    last_heartbeat: datetime = field(default_factory=datetime.utcnow)
+    registered_at: datetime = field(default_factory=_utcnow)
+    last_heartbeat: datetime = field(default_factory=_utcnow)
     connections: int = 0
 
     @property
@@ -63,7 +69,7 @@ class ServiceInstance:
         """Check if instance is healthy based on heartbeat."""
         if self.status != ServiceStatus.UP:
             return False
-        age = (datetime.utcnow() - self.last_heartbeat).total_seconds()
+        age = (_utcnow() - self.last_heartbeat).total_seconds()
         return age < timeout_seconds
 
     def to_dict(self) -> Dict[str, Any]:
@@ -223,7 +229,7 @@ class ServiceRegistry:
         """Send heartbeat for an instance."""
         with self._lock:
             if instance_id in self._instances:
-                self._instances[instance_id].last_heartbeat = datetime.utcnow()
+                self._instances[instance_id].last_heartbeat = _utcnow()
                 return True
             return False
 
@@ -402,12 +408,18 @@ class ServiceClient:
 
         url = f"{instance.url}{path}"
 
-        try:
-            instance.connections += 1
-
+        def _blocking_request():
+            """Blocking HTTP request to run in executor."""
             request = urllib.request.Request(url, method=method)
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
                 return json.loads(response.read())
+
+        try:
+            instance.connections += 1
+
+            # Run blocking I/O in thread pool to avoid blocking event loop
+            loop = asyncio.get_event_loop()
+            return await loop.run_in_executor(None, _blocking_request)
 
         finally:
             instance.connections -= 1

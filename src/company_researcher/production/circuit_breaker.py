@@ -297,8 +297,8 @@ class CircuitBreaker:
         for callback in self._on_state_change:
             try:
                 callback(self.name, old_state, new_state)
-            except Exception:
-                pass
+            except Exception as e:
+                self._logger.warning(f"Circuit state change callback error: {e}")
 
     def reset(self):
         """Manually reset the circuit to closed state."""

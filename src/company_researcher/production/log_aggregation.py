@@ -14,10 +14,12 @@ import queue
 import threading
 import time
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
+
+_logger = logging.getLogger(__name__)
 
 
 class LogLevel(str, Enum):
@@ -77,7 +79,7 @@ class LogEntry:
                 extra[key] = value
 
         return cls(
-            timestamp=datetime.fromtimestamp(record.created),
+            timestamp=datetime.fromtimestamp(record.created, tz=timezone.utc),
             level=level_map.get(record.levelno, LogLevel.INFO),
             message=record.getMessage(),
             logger_name=record.name,
@@ -283,8 +285,10 @@ class _MemoryHandler(logging.Handler):
         try:
             entry = LogEntry.from_record(record, self.aggregator.service_name)
             self.aggregator._handle_entry(entry)
-        except Exception:
-            pass  # Don't let logging errors propagate
+        except Exception as e:
+            # Log to stderr to avoid recursion but still capture the error
+            import sys
+            print(f"LogAggregator emit error: {e}", file=sys.stderr)
 
 
 class LogShipper:
@@ -407,9 +411,9 @@ class HTTPShipper(AsyncLogShipper):
 
         try:
             with urllib.request.urlopen(request, timeout=30) as response:
-                pass  # Log success if needed
-        except Exception:
-            pass  # Handle error silently
+                pass  # Request successful
+        except Exception as e:
+            _logger.warning(f"HTTP log shipper error: {e}")
 
 
 class ElasticsearchShipper(AsyncLogShipper):
@@ -448,9 +452,9 @@ class ElasticsearchShipper(AsyncLogShipper):
 
         try:
             with urllib.request.urlopen(request, timeout=30) as response:
-                pass
-        except Exception:
-            pass
+                pass  # Bulk request successful
+        except Exception as e:
+            _logger.warning(f"Elasticsearch log shipper error: {e}")
 
 
 # Convenience functions

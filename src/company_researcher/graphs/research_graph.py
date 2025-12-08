@@ -8,10 +8,17 @@ Visualizes the complete company research process:
 4. Generate markdown report
 """
 
-import os
-from typing import TypedDict, Annotated, List, Dict
+import json
+import logging
+import re
+from typing import TypedDict, Annotated, List, Dict, Any
 from langgraph.graph import StateGraph, START, END
 import operator
+
+from ..llm.client_factory import get_anthropic_client, get_tavily_client, calculate_cost
+from ..config import get_config
+
+logger = logging.getLogger(__name__)
 
 
 class ResearchState(TypedDict):
@@ -45,14 +52,12 @@ def node_generate_queries(state: ResearchState) -> dict:
     to find comprehensive information about the company.
     """
     company = state.get("company_name", "Unknown Company")
+    config = get_config()
 
-    # In Studio, you'll see this step execute
-    print(f"📝 Generating queries for: {company}")
+    logger.info(f"Generating queries for: {company}")
 
     try:
-        from anthropic import Anthropic
-
-        client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        client = get_anthropic_client()
 
         prompt = f"""Generate 5 specific search queries to research {company}.
 
@@ -63,30 +68,48 @@ The queries should find:
 4. Competitors and market position
 5. Recent news and developments
 
-Return ONLY a Python list of strings:
+Return ONLY a JSON array of strings:
 ["query 1", "query 2", "query 3", "query 4", "query 5"]"""
 
         response = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model=config.llm_model,
             max_tokens=512,
             messages=[{"role": "user", "content": prompt}]
         )
 
-        # Parse queries
-        import ast
+        # Parse queries using safe JSON parsing (not ast.literal_eval)
         queries_text = response.content[0].text.strip()
-        queries = ast.literal_eval(queries_text)
 
-        print(f"✅ Generated {len(queries)} queries")
+        # Extract JSON array from response
+        json_match = re.search(r'\[.*\]', queries_text, re.DOTALL)
+        if json_match:
+            queries = json.loads(json_match.group())
+        else:
+            # Fallback if JSON extraction fails
+            raise ValueError("Could not extract JSON array from response")
+
+        logger.info(f"Generated {len(queries)} queries")
+
+        cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
 
         return {
             "queries": queries,
             "total_tokens": response.usage.input_tokens + response.usage.output_tokens,
-            "total_cost": (response.usage.input_tokens * 0.000003) + (response.usage.output_tokens * 0.000015)
+            "total_cost": cost
         }
 
+    except json.JSONDecodeError as e:
+        logger.warning(f"JSON parsing error for queries: {e}")
+        return {
+            "queries": [
+                f"{company} company overview",
+                f"{company} revenue financials",
+                f"{company} products services"
+            ],
+            "error": f"JSON parsing error: {str(e)}"
+        }
     except Exception as e:
-        print(f"❌ Error generating queries: {e}")
+        logger.error(f"Error generating queries: {e}", exc_info=True)
         return {
             "queries": [
                 f"{company} company overview",
@@ -104,20 +127,20 @@ def node_search_web(state: ResearchState) -> dict:
     Executes all generated queries in parallel and collects results.
     """
     queries = state.get("queries", [])
-    print(f"🔍 Searching web with {len(queries)} queries...")
+    config = get_config()
+
+    logger.info(f"Searching web with {len(queries)} queries...")
 
     try:
-        from tavily import TavilyClient
-
-        client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+        client = get_tavily_client()
 
         all_results = []
         for query in queries:
-            print(f"  Searching: {query[:50]}...")
+            logger.debug(f"Searching: {query[:50]}...")
 
             response = client.search(
                 query=query,
-                max_results=3
+                max_results=config.search_results_per_query
             )
 
             for result in response.get('results', []):
@@ -129,14 +152,14 @@ def node_search_web(state: ResearchState) -> dict:
                     'score': result.get('score', 0)
                 })
 
-        print(f"✅ Found {len(all_results)} search results")
+        logger.info(f"Found {len(all_results)} search results")
 
         return {
             "search_results": all_results
         }
 
     except Exception as e:
-        print(f"❌ Error searching web: {e}")
+        logger.error(f"Error searching web: {e}", exc_info=True)
         return {
             "search_results": [],
             "error": str(e)
@@ -151,17 +174,16 @@ def node_extract_data(state: ResearchState) -> dict:
     """
     results = state.get("search_results", [])
     company = state.get("company_name", "Unknown")
+    config = get_config()
 
-    print(f"📊 Extracting data from {len(results)} results...")
+    logger.info(f"Extracting data from {len(results)} results...")
 
     try:
-        from anthropic import Anthropic
-
-        client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        client = get_anthropic_client()
 
         # Combine top results
         combined_content = "\n\n".join([
-            f"Source: {r['title']}\nURL: {r['url']}\n{r['content'][:500]}"
+            f"Source: {r.get('title', 'N/A')}\nURL: {r.get('url', 'N/A')}\n{r.get('content', '')[:500]}"
             for r in results[:10]
         ])
 
@@ -187,15 +209,12 @@ Return JSON with this structure:
 Return ONLY valid JSON."""
 
         response = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model=config.llm_model,
             max_tokens=2048,
             messages=[{"role": "user", "content": prompt}]
         )
 
-        # Parse JSON
-        import json
-        import re
-
+        # Parse JSON safely
         response_text = response.content[0].text.strip()
         json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
 
@@ -204,34 +223,40 @@ Return ONLY valid JSON."""
         else:
             extracted = {"error": "Could not parse JSON"}
 
-        print(f"✅ Extracted data for: {extracted.get('name', company)}")
+        logger.info(f"Extracted data for: {extracted.get('name', company)}")
+
+        cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
 
         return {
             "extracted_data": extracted,
             "total_tokens": state.get("total_tokens", 0) + response.usage.input_tokens + response.usage.output_tokens,
-            "total_cost": state.get("total_cost", 0) + (response.usage.input_tokens * 0.000003) + (response.usage.output_tokens * 0.000015)
+            "total_cost": state.get("total_cost", 0) + cost
         }
 
+    except json.JSONDecodeError as e:
+        logger.warning(f"JSON parsing error for extracted data: {e}")
+        return {
+            "extracted_data": {"error": f"JSON parsing error: {str(e)}"},
+            "error": str(e)
+        }
     except Exception as e:
-        print(f"❌ Error extracting data: {e}")
+        logger.error(f"Error extracting data: {e}", exc_info=True)
         return {
             "extracted_data": {"error": str(e)},
             "error": str(e)
         }
 
 
-def node_generate_report(state: ResearchState) -> dict:
-    """
-    Node 4: Generate markdown report
+def _format_list_section(items: List[Any], empty_message: str) -> str:
+    """Format a list of items as markdown bullet points."""
+    if not items:
+        return f"{empty_message}\n"
+    return "".join(f"- {item}\n" for item in items)
 
-    Creates a formatted markdown report from extracted data.
-    """
-    data = state.get("extracted_data", {})
-    sources = state.get("search_results", [])
 
-    print(f"📄 Generating report...")
-
-    report = f"""# {data.get('name', state.get('company_name', 'Unknown Company'))}
+def _format_overview_section(data: Dict[str, Any], company_name: str) -> str:
+    """Format the company overview section."""
+    return f"""# {data.get('name', company_name)}
 
 ## Company Overview
 
@@ -254,53 +279,62 @@ def node_generate_report(state: ResearchState) -> dict:
 
 """
 
-    products = data.get('products', [])
-    if products:
-        for product in products:
-            report += f"- {product}\n"
-    else:
-        report += "No products listed.\n"
 
-    report += "\n---\n\n## Competitors\n\n"
-
-    competitors = data.get('competitors', [])
-    if competitors:
-        for comp in competitors:
-            report += f"- {comp}\n"
-    else:
-        report += "No competitors listed.\n"
-
-    report += "\n---\n\n## Key Facts\n\n"
-
-    facts = data.get('key_facts', [])
-    if facts:
-        for fact in facts:
-            report += f"- {fact}\n"
-    else:
-        report += "No key facts extracted.\n"
-
-    report += "\n---\n\n## Sources\n\n"
+def _format_sources_section(sources: List[Dict[str, Any]], sources_per_domain: int = 3) -> str:
+    """Format the sources section, grouped by domain."""
+    from urllib.parse import urlparse
 
     # Group sources by domain
-    from urllib.parse import urlparse
-    source_domains = {}
+    source_domains: Dict[str, List[Dict]] = {}
     for source in sources:
+        url = source.get('url', '')
+        if not url:
+            continue
         try:
-            domain = urlparse(source['url']).netloc
+            domain = urlparse(url).netloc
             if domain not in source_domains:
                 source_domains[domain] = []
             source_domains[domain].append(source)
-        except:
-            pass
+        except (ValueError, KeyError) as e:
+            logger.debug(f"Could not parse URL from source: {e}")
 
+    # Format sources by domain
+    section = ""
     for domain, domain_sources in source_domains.items():
-        report += f"\n### {domain}\n\n"
-        for source in domain_sources[:3]:
-            report += f"- [{source['title']}]({source['url']})\n"
+        section += f"\n### {domain}\n\n"
+        for source in domain_sources[:sources_per_domain]:
+            title = source.get('title', 'Untitled')
+            url = source.get('url', '#')
+            section += f"- [{title}]({url})\n"
 
-    report += f"\n---\n\nTotal Sources: {len(sources)}\n"
+    section += f"\n---\n\nTotal Sources: {len(sources)}\n"
+    return section
 
-    print(f"✅ Report generated ({len(report)} characters)")
+
+def node_generate_report(state: ResearchState) -> dict:
+    """
+    Node 4: Generate markdown report
+
+    Creates a formatted markdown report from extracted data.
+    """
+    config = get_config()
+    data = state.get("extracted_data", {})
+    sources = state.get("search_results", [])
+    company_name = state.get('company_name', 'Unknown Company')
+
+    logger.info("Generating report...")
+
+    # Build report from sections
+    report = _format_overview_section(data, company_name)
+    report += _format_list_section(data.get('products', []), "No products listed.")
+    report += "\n---\n\n## Competitors\n\n"
+    report += _format_list_section(data.get('competitors', []), "No competitors listed.")
+    report += "\n---\n\n## Key Facts\n\n"
+    report += _format_list_section(data.get('key_facts', []), "No key facts extracted.")
+    report += "\n---\n\n## Sources\n\n"
+    report += _format_sources_section(sources, config.report_sources_per_domain)
+
+    logger.info(f"Report generated ({len(report)} characters)")
 
     return {
         "report": report

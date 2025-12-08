@@ -15,10 +15,13 @@ Usage:
 """
 
 import json
+import logging
 import re
 from typing import Any, Dict, List, Optional, Union, TypeVar, Callable
 from dataclasses import dataclass
 
+
+logger = logging.getLogger(__name__)
 
 T = TypeVar('T')
 
@@ -105,24 +108,24 @@ class ResponseParser:
         # Try direct parsing first
         try:
             return json.loads(text.strip())
-        except json.JSONDecodeError:
-            pass
+        except json.JSONDecodeError as e:
+            logger.debug(f"Direct JSON parsing failed: {e}")
 
         # Try extracting from code block
         json_str = cls.extract_json_block(text)
         if json_str:
             try:
                 return json.loads(json_str)
-            except json.JSONDecodeError:
-                pass
+            except json.JSONDecodeError as e:
+                logger.debug(f"Code block JSON parsing failed: {e}")
 
         # Try fixing common issues
         fixed = cls._fix_json_issues(text)
         if fixed:
             try:
                 return json.loads(fixed)
-            except json.JSONDecodeError:
-                pass
+            except json.JSONDecodeError as e:
+                logger.debug(f"Fixed JSON parsing failed: {e}")
 
         if strict:
             raise ValueError(f"Failed to parse JSON from response: {text[:200]}...")
@@ -198,7 +201,11 @@ class ResponseParser:
                     # Try type coercion
                     try:
                         data[key] = expected_type(data[key])
-                    except (ValueError, TypeError):
+                    except (ValueError, TypeError) as e:
+                        logger.debug(
+                            f"Schema coercion failed for key '{key}' "
+                            f"(expected {expected_type.__name__}): {e}"
+                        )
                         if default and key in default:
                             data[key] = default[key]
 
@@ -233,8 +240,8 @@ class ResponseParser:
             data = cls.parse_json(text)
             if isinstance(data, list):
                 return [str(item) for item in data if not filter_empty or item]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"JSON array extraction failed, falling back to text parsing: {e}")
 
         # Remove markdown code blocks
         text = cls.JSON_BLOCK_PATTERN.sub('', text)
@@ -351,8 +358,8 @@ class ResponseParser:
             if match:
                 try:
                     return float(match.group(1).replace(',', ''))
-                except (ValueError, IndexError):
-                    pass
+                except (ValueError, IndexError) as e:
+                    logger.debug(f"Custom pattern number extraction failed: {e}")
 
         # Try common patterns
         patterns = [
@@ -370,7 +377,8 @@ class ResponseParser:
                 try:
                     value = float(match.group(1).replace(',', ''))
                     return value * mult
-                except ValueError:
+                except ValueError as e:
+                    logger.debug(f"Number extraction with pattern '{pat}' failed: {e}")
                     continue
 
         return default

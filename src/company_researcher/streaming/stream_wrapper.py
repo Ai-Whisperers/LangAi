@@ -8,15 +8,23 @@ Provides consistent streaming interface across different sources:
 """
 
 import asyncio
+import logging
 import time
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, AsyncIterator, Callable, Dict, Iterator, List, Optional, TypeVar, Generic
 
+logger = logging.getLogger(__name__)
+
 T = TypeVar('T')
+
+
+def _utcnow() -> datetime:
+    """Get current UTC time (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 
 class StreamStatus(str, Enum):
@@ -34,7 +42,7 @@ class StreamChunk:
     id: str
     content: str
     index: int
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=_utcnow)
     metadata: Dict[str, Any] = field(default_factory=dict)
     is_final: bool = False
 
@@ -101,7 +109,7 @@ class BaseStreamWrapper(ABC, Generic[T]):
         self.status = StreamStatus.PENDING
         self._metrics = StreamMetrics(
             stream_id=self.stream_id,
-            start_time=datetime.utcnow()
+            start_time=_utcnow()
         )
         self._chunks: List[StreamChunk] = []
         self._callbacks: List[Callable[[StreamChunk], None]] = []
@@ -150,7 +158,7 @@ class BaseStreamWrapper(ABC, Generic[T]):
                 if not self._first_token_received and chunk.content:
                     self._first_token_received = True
                     self._metrics.time_to_first_token = (
-                        datetime.utcnow() - self._metrics.start_time
+                        _utcnow() - self._metrics.start_time
                     ).total_seconds()
 
                 # Accumulate content
@@ -166,8 +174,8 @@ class BaseStreamWrapper(ABC, Generic[T]):
                 for callback in self._callbacks:
                     try:
                         callback(chunk)
-                    except Exception:
-                        pass  # Don't let callback errors stop stream
+                    except Exception as e:
+                        logger.warning(f"Stream chunk callback error: {e}")
 
                 yield chunk
 
@@ -177,27 +185,27 @@ class BaseStreamWrapper(ABC, Generic[T]):
 
             # Complete stream
             self.status = StreamStatus.COMPLETED
-            self._metrics.end_time = datetime.utcnow()
+            self._metrics.end_time = _utcnow()
             self._metrics.calculate_final_metrics()
 
             # Fire completion callbacks
             for callback in self._complete_callbacks:
                 try:
                     callback(self._metrics)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Stream completion callback error: {e}")
 
         except Exception as e:
             self.status = StreamStatus.ERROR
             self._metrics.errors.append(str(e))
-            self._metrics.end_time = datetime.utcnow()
+            self._metrics.end_time = _utcnow()
 
             # Fire error callbacks
             for callback in self._error_callbacks:
                 try:
                     callback(e)
-                except Exception:
-                    pass
+                except Exception as cb_error:
+                    logger.warning(f"Stream error callback failed: {cb_error}")
 
             raise
 
@@ -216,7 +224,7 @@ class BaseStreamWrapper(ABC, Generic[T]):
     def cancel(self) -> None:
         """Cancel the stream."""
         self.status = StreamStatus.CANCELLED
-        self._metrics.end_time = datetime.utcnow()
+        self._metrics.end_time = _utcnow()
         self._metrics.calculate_final_metrics()
 
 

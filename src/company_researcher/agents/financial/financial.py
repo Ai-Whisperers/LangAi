@@ -9,10 +9,13 @@ This agent specializes in:
 - Financial trends and growth
 """
 
-from typing import Dict, Any, Optional, Callable
+import logging
+from typing import Any, Callable, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost
+from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
 
 
@@ -23,15 +26,20 @@ class FinancialAgent:
         self.search_tool = search_tool
         self.llm_client = llm_client or get_anthropic_client()
 
-    async def analyze(self, company_name: str, search_results: list = None) -> Dict[str, Any]:
-        """Analyze financial data for a company."""
+    def analyze(self, company_name: str, search_results: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+        """
+        Analyze financial data for a company.
+
+        Note: This method is sync because the underlying node function is sync.
+        The LangGraph workflow does not use async operations.
+        """
         if search_results is None:
             search_results = []
         state = {"company_name": company_name, "search_results": search_results}
         return financial_agent_node(state)
 
 
-def create_financial_agent(search_tool: Callable = None, llm_client: Any = None) -> FinancialAgent:
+def create_financial_agent(search_tool: Optional[Callable] = None, llm_client: Optional[Any] = None) -> FinancialAgent:
     """Factory function to create a FinancialAgent."""
     return FinancialAgent(search_tool=search_tool, llm_client=llm_client)
 
@@ -81,9 +89,7 @@ def financial_agent_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with financial analysis
     """
-    print("\n" + "=" * 60)
-    print("[AGENT: Financial] Analyzing financial data...")
-    print("=" * 60)
+    logger.info("Financial agent starting - analyzing financial data")
 
     config = get_config()
     client = get_anthropic_client()
@@ -92,7 +98,7 @@ def financial_agent_node(state: OverallState) -> Dict[str, Any]:
     search_results = state.get("search_results", [])
 
     if not search_results:
-        print("[Financial] WARNING: No search results to analyze!")
+        logger.warning("No search results to analyze")
         return {
             "agent_outputs": {
                 "financial": {
@@ -103,7 +109,7 @@ def financial_agent_node(state: OverallState) -> Dict[str, Any]:
             }
         }
 
-    print(f"[Financial] Analyzing {len(search_results)} sources for financial data...")
+    logger.info(f"Analyzing {len(search_results)} sources for financial data")
 
     # Format search results for analysis
     formatted_results = "\n\n".join([
@@ -133,9 +139,7 @@ def financial_agent_node(state: OverallState) -> Dict[str, Any]:
         response.usage.output_tokens
     )
 
-    print("[Financial] Analysis complete")
-    print(f"[Financial] Agent complete - ${cost:.4f}")
-    print("=" * 60)
+    logger.info(f"Financial agent complete - cost: ${cost:.4f}")
 
     # Track agent output
     agent_output = {

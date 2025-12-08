@@ -378,3 +378,91 @@ def sanitize_sql(value: str) -> str:
 def escape_special_chars(value: str) -> str:
     """Escape special characters."""
     return html.escape(value)
+
+
+def validate_safe_path(user_path: str, base_directory: str) -> Optional[str]:
+    """
+    Validate that a user-provided path is safe and within the base directory.
+
+    This is the recommended way to handle user-provided file paths to prevent
+    path traversal attacks.
+
+    Args:
+        user_path: User-provided path (potentially unsafe)
+        base_directory: Base directory that paths must be within
+
+    Returns:
+        Resolved absolute path if safe, None if path is unsafe
+
+    Example:
+        safe_path = validate_safe_path(user_input, "/app/uploads")
+        if safe_path is None:
+            raise ValueError("Invalid path")
+        # Use safe_path for file operations
+    """
+    import os
+    from pathlib import Path
+
+    try:
+        # Resolve the base directory to absolute path
+        base = Path(base_directory).resolve()
+
+        # Sanitize the user path first
+        sanitizer = InputSanitizer()
+        sanitized = sanitizer.sanitize_path(user_path)
+
+        # Combine base with user path and resolve
+        combined = (base / sanitized).resolve()
+
+        # Security check: ensure the resolved path is within base directory
+        # This prevents traversal attacks even with symlinks
+        if not str(combined).startswith(str(base)):
+            return None
+
+        # Additional check: ensure path doesn't contain suspicious patterns
+        if sanitizer.is_path_traversal(user_path):
+            return None
+
+        return str(combined)
+
+    except (ValueError, OSError):
+        return None
+
+
+def sanitize_filename(filename: str) -> str:
+    """
+    Sanitize a filename to be safe for filesystem use.
+
+    Args:
+        filename: Original filename
+
+    Returns:
+        Safe filename with dangerous characters removed
+    """
+    # Remove path components (only keep filename)
+    filename = filename.replace('\\', '/').split('/')[-1]
+
+    # Remove null bytes
+    filename = filename.replace('\x00', '')
+
+    # Remove or replace dangerous characters
+    dangerous_chars = '<>:"/\\|?*'
+    for char in dangerous_chars:
+        filename = filename.replace(char, '_')
+
+    # Remove control characters
+    filename = ''.join(c for c in filename if ord(c) >= 32)
+
+    # Limit length
+    if len(filename) > 255:
+        name, ext = filename.rsplit('.', 1) if '.' in filename else (filename, '')
+        if ext:
+            filename = name[:250] + '.' + ext[:4]
+        else:
+            filename = filename[:255]
+
+    # Prevent empty filename
+    if not filename or filename.strip() == '':
+        filename = 'unnamed_file'
+
+    return filename

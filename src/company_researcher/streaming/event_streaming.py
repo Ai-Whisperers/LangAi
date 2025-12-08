@@ -9,12 +9,20 @@ Provides real-time streaming to clients via:
 
 import asyncio
 import json
+import logging
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Set
+
+logger = logging.getLogger(__name__)
+
+
+def _utcnow() -> datetime:
+    """Get current UTC time (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 from .stream_wrapper import StreamChunk
 
@@ -63,7 +71,7 @@ class StreamEvent:
     event_type: EventType
     data: Any
     event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=_utcnow)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     # Optional fields for specific event types
@@ -239,8 +247,8 @@ class WebSocketStreamer(EventStreamer):
                 ws = self._connections[client_id]
                 if hasattr(ws, 'close'):
                     await ws.close()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Error closing WebSocket for client {client_id}: {e}")
 
             del self._connections[client_id]
             self._subscribers.discard(client_id)
@@ -261,7 +269,8 @@ class WebSocketStreamer(EventStreamer):
                     elif hasattr(ws, 'send'):
                         await ws.send(event.to_json())
                     return True
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"Error sending WebSocket event to {client_id}: {e}")
                     return False
         else:
             # Broadcast to all
@@ -453,7 +462,8 @@ class SocketIOStreamer(EventStreamer):
                     namespace=self._namespace
                 )
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Error sending Socket.IO event: {e}")
             return False
 
     async def send_to_room(self, event: StreamEvent, room: str) -> bool:
@@ -471,7 +481,8 @@ class SocketIOStreamer(EventStreamer):
                 namespace=self._namespace
             )
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Error sending Socket.IO event to room {room}: {e}")
             return False
 
     def join_room(self, client_id: str, room: str) -> None:

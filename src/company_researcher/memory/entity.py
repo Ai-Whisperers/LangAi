@@ -9,9 +9,14 @@ Provides:
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
+
+
+def _utcnow() -> datetime:
+    """Get current UTC time (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 
 class EntityType(str, Enum):
@@ -72,8 +77,8 @@ class Entity:
     entity_type: EntityType
     attributes: Dict[str, Any] = field(default_factory=dict)
     aliases: List[str] = field(default_factory=list)
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utcnow)
+    updated_at: datetime = field(default_factory=_utcnow)
     source: Optional[str] = None
     confidence: float = 1.0
 
@@ -111,7 +116,7 @@ class Relationship:
     attributes: Dict[str, Any] = field(default_factory=dict)
     confidence: float = 1.0
     source_doc: Optional[str] = None
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -182,7 +187,7 @@ class EntityMemory:
         if existing:
             # Update existing
             existing.attributes.update(attributes or {})
-            existing.updated_at = datetime.utcnow()
+            existing.updated_at = _utcnow()
             if aliases:
                 existing.aliases.extend([a for a in aliases if a not in existing.aliases])
             return existing
@@ -473,7 +478,7 @@ class EntityMemory:
         e1.aliases.extend([a for a in e2.aliases if a not in e1.aliases])
         if e2.name not in e1.aliases and e2.name != e1.name:
             e1.aliases.append(e2.name)
-        e1.updated_at = datetime.utcnow()
+        e1.updated_at = _utcnow()
 
         # Update relationships
         for rel in self._relationships:

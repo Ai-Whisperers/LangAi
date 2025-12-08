@@ -9,9 +9,14 @@ Provides:
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
+
+
+def _utcnow() -> datetime:
+    """Get current UTC time (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 
 class MessageRole(str, Enum):
@@ -28,7 +33,7 @@ class Message:
     """A message in a conversation."""
     role: MessageRole
     content: str
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=_utcnow)
     name: Optional[str] = None  # For function/tool messages
     metadata: Dict[str, Any] = field(default_factory=dict)
     token_count: int = 0
@@ -65,7 +70,7 @@ class ConversationSummary:
     content: str
     messages_summarized: int
     tokens_saved: int
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utcnow)
 
 
 class ConversationMemory:

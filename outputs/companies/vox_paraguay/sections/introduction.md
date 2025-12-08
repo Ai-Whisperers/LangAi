@@ -1,1 +1,0 @@
-# VOX Paraguay - Research Report

@@ -10,6 +10,8 @@ Custom middleware for:
 
 from typing import Dict, Any, Optional, Callable, List
 from datetime import datetime, timedelta
+import asyncio
+import threading
 import time
 import hashlib
 import hmac
@@ -31,13 +33,31 @@ except ImportError:
     class Response:
         pass
 
+# Common path constants
+PATH_HEALTH = "/health"
+PATH_DOCS = "/docs"
+PATH_OPENAPI = "/openapi.json"
+PATH_REDOC = "/redoc"
+
+# Default excluded paths for various middleware
+DEFAULT_EXCLUDED_PATHS = [PATH_HEALTH, PATH_DOCS, PATH_OPENAPI]
+DEFAULT_AUTH_EXCLUDED_PATHS = [PATH_HEALTH, PATH_DOCS, PATH_OPENAPI, PATH_REDOC]
+
+# Error message for missing FastAPI
+ERR_FASTAPI_REQUIRED = "FastAPI required"
+
 
 # ============================================================================
 # Rate Limiting
 # ============================================================================
 
 class RateLimiter:
-    """In-memory rate limiter using sliding window."""
+    """
+    In-memory rate limiter using sliding window.
+
+    Thread-safe implementation using threading.RLock for synchronous access
+    and optional asyncio.Lock for async contexts.
+    """
 
     def __init__(
         self,
@@ -53,13 +73,38 @@ class RateLimiter:
         self._minute_windows: Dict[str, List[float]] = defaultdict(list)
         self._hour_windows: Dict[str, List[float]] = defaultdict(list)
 
+        # Thread safety locks
+        self._sync_lock = threading.RLock()
+        self._async_lock: Optional[asyncio.Lock] = None
+
+    def _get_async_lock(self) -> asyncio.Lock:
+        """Get or create async lock (must be created in event loop context)."""
+        if self._async_lock is None:
+            self._async_lock = asyncio.Lock()
+        return self._async_lock
+
     def is_allowed(self, client_id: str) -> tuple[bool, Dict[str, Any]]:
         """
-        Check if request is allowed.
+        Check if request is allowed (synchronous, thread-safe).
 
         Returns:
             Tuple of (allowed, info_dict)
         """
+        with self._sync_lock:
+            return self._check_rate_limit(client_id)
+
+    async def is_allowed_async(self, client_id: str) -> tuple[bool, Dict[str, Any]]:
+        """
+        Check if request is allowed (async, non-blocking).
+
+        Returns:
+            Tuple of (allowed, info_dict)
+        """
+        async with self._get_async_lock():
+            return self._check_rate_limit(client_id)
+
+    def _check_rate_limit(self, client_id: str) -> tuple[bool, Dict[str, Any]]:
+        """Internal rate limit check (must be called with lock held)."""
         now = time.time()
         minute_ago = now - 60
         hour_ago = now - 3600
@@ -122,7 +167,7 @@ if FASTAPI_AVAILABLE:
                 requests_per_minute=requests_per_minute,
                 requests_per_hour=requests_per_hour
             )
-            self._exclude_paths = exclude_paths or ["/health", "/docs", "/openapi.json"]
+            self._exclude_paths = exclude_paths or DEFAULT_EXCLUDED_PATHS
 
         async def dispatch(self, request: Request, call_next: Callable) -> Response:
             # Skip excluded paths
@@ -132,8 +177,8 @@ if FASTAPI_AVAILABLE:
             # Get client identifier
             client_id = self._get_client_id(request)
 
-            # Check rate limit
-            allowed, info = self._limiter.is_allowed(client_id)
+            # Check rate limit (use async version to avoid blocking event loop)
+            allowed, info = await self._limiter.is_allowed_async(client_id)
 
             if not allowed:
                 return JSONResponse(
@@ -192,9 +237,7 @@ if FASTAPI_AVAILABLE:
             super().__init__(app)
             self._api_keys = api_keys or {}
             self._require_auth = require_auth
-            self._exclude_paths = exclude_paths or [
-                "/health", "/docs", "/openapi.json", "/redoc"
-            ]
+            self._exclude_paths = exclude_paths or DEFAULT_AUTH_EXCLUDED_PATHS
 
         async def dispatch(self, request: Request, call_next: Callable) -> Response:
             # Skip excluded paths
@@ -259,7 +302,7 @@ if FASTAPI_AVAILABLE:
             super().__init__(app)
             self._logger = logger or logging.getLogger("api.requests")
             self._log_body = log_body
-            self._exclude_paths = exclude_paths or ["/health"]
+            self._exclude_paths = exclude_paths or [PATH_HEALTH]
 
         async def dispatch(self, request: Request, call_next: Callable) -> Response:
             # Skip excluded paths
@@ -305,6 +348,163 @@ if FASTAPI_AVAILABLE:
             """Generate unique request ID."""
             import uuid
             return str(uuid.uuid4())[:8]
+
+
+# ============================================================================
+# Request Size Limits
+# ============================================================================
+
+if FASTAPI_AVAILABLE:
+    class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
+        """
+        Middleware to limit request body size.
+
+        Prevents denial-of-service attacks via large request bodies.
+        """
+
+        # Default limits
+        DEFAULT_MAX_BODY_SIZE = 10 * 1024 * 1024  # 10 MB
+        DEFAULT_MAX_JSON_SIZE = 1 * 1024 * 1024   # 1 MB
+
+        def __init__(
+            self,
+            app,
+            max_body_size: int = None,
+            max_json_size: int = None,
+            exclude_paths: Optional[List[str]] = None
+        ):
+            """
+            Initialize request size limit middleware.
+
+            Args:
+                app: FastAPI app
+                max_body_size: Maximum body size in bytes (default 10MB)
+                max_json_size: Maximum JSON body size in bytes (default 1MB)
+                exclude_paths: Paths to exclude from size checks
+            """
+            super().__init__(app)
+            self._max_body_size = max_body_size or self.DEFAULT_MAX_BODY_SIZE
+            self._max_json_size = max_json_size or self.DEFAULT_MAX_JSON_SIZE
+            self._exclude_paths = exclude_paths or DEFAULT_EXCLUDED_PATHS
+            self._logger = logging.getLogger("api.sizelimit")
+
+        async def dispatch(self, request: Request, call_next: Callable) -> Response:
+            # Skip excluded paths
+            if request.url.path in self._exclude_paths:
+                return await call_next(request)
+
+            # Skip requests without body
+            if request.method in ["GET", "HEAD", "OPTIONS"]:
+                return await call_next(request)
+
+            # Check Content-Length header
+            content_length = request.headers.get("Content-Length")
+            if content_length:
+                try:
+                    size = int(content_length)
+
+                    # Check against appropriate limit based on content type
+                    content_type = request.headers.get("Content-Type", "")
+                    if "application/json" in content_type:
+                        max_size = self._max_json_size
+                        size_type = "JSON"
+                    else:
+                        max_size = self._max_body_size
+                        size_type = "Request body"
+
+                    if size > max_size:
+                        self._logger.warning(
+                            f"Request too large: {size} bytes exceeds {max_size} limit "
+                            f"from {request.client.host if request.client else 'unknown'}"
+                        )
+                        return JSONResponse(
+                            status_code=413,
+                            content={
+                                "error": "Request entity too large",
+                                "detail": f"{size_type} size ({size} bytes) exceeds limit ({max_size} bytes)",
+                                "max_size": max_size
+                            }
+                        )
+                except ValueError:
+                    pass
+
+            return await call_next(request)
+
+
+# ============================================================================
+# CSRF Protection
+# ============================================================================
+
+    class CSRFProtectionMiddleware(BaseHTTPMiddleware):
+        """
+        CSRF protection middleware using origin validation.
+
+        For JSON APIs, validates Origin/Referer headers against allowed origins.
+        This is appropriate for APIs that use cookies or authentication.
+        """
+
+        def __init__(
+            self,
+            app,
+            allowed_origins: Optional[List[str]] = None,
+            exclude_paths: Optional[List[str]] = None,
+            safe_methods: Optional[List[str]] = None
+        ):
+            super().__init__(app)
+            self._allowed_origins = set(allowed_origins or [
+                "http://localhost:3000",
+                "http://localhost:8000",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:8000",
+            ])
+            self._exclude_paths = exclude_paths or DEFAULT_AUTH_EXCLUDED_PATHS
+            # Safe methods don't require CSRF validation
+            self._safe_methods = safe_methods or ["GET", "HEAD", "OPTIONS"]
+
+        async def dispatch(self, request: Request, call_next: Callable) -> Response:
+            # Skip excluded paths
+            if request.url.path in self._exclude_paths:
+                return await call_next(request)
+
+            # Skip safe methods
+            if request.method in self._safe_methods:
+                return await call_next(request)
+
+            # Validate origin for state-changing requests
+            origin = request.headers.get("Origin")
+            referer = request.headers.get("Referer")
+
+            if not self._validate_origin(origin, referer):
+                return JSONResponse(
+                    status_code=403,
+                    content={
+                        "error": "CSRF validation failed",
+                        "detail": "Invalid or missing Origin header"
+                    }
+                )
+
+            return await call_next(request)
+
+        def _validate_origin(self, origin: Optional[str], referer: Optional[str]) -> bool:
+            """Validate origin or referer header."""
+            # Check Origin header first
+            if origin:
+                return origin in self._allowed_origins
+
+            # Fall back to Referer if no Origin
+            if referer:
+                # Extract origin from referer URL
+                from urllib.parse import urlparse
+                parsed = urlparse(referer)
+                referer_origin = f"{parsed.scheme}://{parsed.netloc}"
+                return referer_origin in self._allowed_origins
+
+            # If neither present, deny for state-changing requests
+            return False
+
+        def add_allowed_origin(self, origin: str):
+            """Add an allowed origin."""
+            self._allowed_origins.add(origin)
 
 
 # ============================================================================
@@ -364,12 +564,16 @@ if not FASTAPI_AVAILABLE:
     # Stubs when FastAPI not available
     class RateLimitMiddleware:
         def __init__(self, *args, **kwargs):
-            raise ImportError("FastAPI required")
+            raise ImportError(ERR_FASTAPI_REQUIRED)
 
     class APIKeyMiddleware:
         def __init__(self, *args, **kwargs):
-            raise ImportError("FastAPI required")
+            raise ImportError(ERR_FASTAPI_REQUIRED)
 
     class RequestLoggingMiddleware:
         def __init__(self, *args, **kwargs):
-            raise ImportError("FastAPI required")
+            raise ImportError(ERR_FASTAPI_REQUIRED)
+
+    class CSRFProtectionMiddleware:
+        def __init__(self, *args, **kwargs):
+            raise ImportError(ERR_FASTAPI_REQUIRED)

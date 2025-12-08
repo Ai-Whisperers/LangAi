@@ -13,10 +13,18 @@ import functools
 import hashlib
 import inspect
 import json
+import logging
 import time
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Generic, Optional, TypeVar, Union
+
+logger = logging.getLogger(__name__)
+
+
+def _utcnow() -> datetime:
+    """Get current UTC time (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 from .lru_cache import LRUCache, LRUCacheConfig
 from .ttl_cache import TTLCache, TTLCacheConfig
@@ -36,7 +44,7 @@ class CachedResult(Generic[T]):
 
     def is_stale(self, max_age: float) -> bool:
         """Check if result is older than max_age seconds."""
-        age = (datetime.utcnow() - self.cached_at).total_seconds()
+        age = (_utcnow() - self.cached_at).total_seconds()
         return age > max_age
 
 
@@ -96,7 +104,7 @@ class ResultCache(Generic[T]):
             meta = self._metadata.get(key, {})
             return CachedResult(
                 value=value,
-                cached_at=meta.get("cached_at", datetime.utcnow()),
+                cached_at=meta.get("cached_at", _utcnow()),
                 cache_key=key,
                 hit=True,
                 compute_time=meta.get("compute_time"),
@@ -126,7 +134,7 @@ class ResultCache(Generic[T]):
             self._cache.put(key, value)
 
         self._metadata[key] = {
-            "cached_at": datetime.utcnow(),
+            "cached_at": _utcnow(),
             "compute_time": compute_time
         }
 

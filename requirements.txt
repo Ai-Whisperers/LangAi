@@ -1,100 +1,104 @@
 # Company Researcher System - Python Dependencies
 # Phase 0: MVP Requirements
+#
+# SECURITY NOTE: Dependencies are pinned to exact versions for reproducibility
+# and security. Run `pip list --outdated` periodically to check for updates.
+# Update versions carefully after testing.
 
 # =============================================================================
-# CORE DEPENDENCIES (Phase 0)
+# CORE DEPENDENCIES (Phase 0) - PINNED VERSIONS
 # =============================================================================
 
 # LangGraph - Agent orchestration framework
-langgraph>=0.2.45
+langgraph==0.2.45
 
 # LangChain - LLM abstractions and utilities
-langchain>=0.3.7
-langchain-core>=0.3.15
-langchain-community>=0.3.5
+langchain==0.3.7
+langchain-core==0.3.15
+langchain-community==0.3.5
 
 # LLM Providers
-langchain-anthropic>=0.3.0  # Claude 3.5 Sonnet (primary)
-langchain-openai>=0.3.0     # GPT-4o-mini (optional, for cost optimization)
-anthropic>=0.39.0           # Direct Anthropic SDK
-openai>=1.54.0              # Direct OpenAI SDK (optional)
+langchain-anthropic==0.3.0  # Claude 3.5 Sonnet (primary)
+langchain-openai==0.3.0     # GPT-4o-mini (optional, for cost optimization)
+anthropic==0.39.0           # Direct Anthropic SDK
+openai==1.54.0              # Direct OpenAI SDK (optional)
 
 # Web Search
-tavily-python>=0.5.0        # Tavily search API (primary)
-duckduckgo-search>=6.3.0    # DuckDuckGo fallback (free, no API key)
+tavily-python==0.5.0        # Tavily search API (primary)
+duckduckgo-search==6.3.0    # DuckDuckGo fallback (free, no API key)
 
 # Environment & Configuration
-python-dotenv>=1.0.0        # .env file support
-pydantic>=2.9.0             # Data validation
-pydantic-settings>=2.6.0    # Settings management
+python-dotenv==1.0.0        # .env file support
+pydantic==2.9.0             # Data validation
+pydantic-settings==2.6.0    # Settings management
 
 # Async Support
-aiohttp>=3.10.0             # Async HTTP client
-asyncio>=3.4.3              # Async I/O
+aiohttp==3.10.0             # Async HTTP client
+asyncio==3.4.3              # Async I/O
 
 # =============================================================================
-# WEB SCRAPING (Phase 1+)
+# WEB SCRAPING (Phase 1+) - PINNED VERSIONS
 # =============================================================================
 
 # Web scraping and content extraction
-playwright>=1.48.0          # Anti-bot browser automation
-beautifulsoup4>=4.12.0      # HTML parsing
-lxml>=5.3.0                 # Fast HTML/XML processing
-requests>=2.32.0            # HTTP client
-httpx>=0.27.0               # Modern HTTP client
+playwright==1.48.0          # Anti-bot browser automation
+beautifulsoup4==4.12.0      # HTML parsing
+lxml==5.3.0                 # Fast HTML/XML processing
+requests==2.32.0            # HTTP client
+httpx==0.27.0               # Modern HTTP client
 
 # =============================================================================
-# DATABASE & STORAGE (Phase 2+)
+# DATABASE & STORAGE (Phase 2+) - PINNED VERSIONS
 # =============================================================================
 
 # PostgreSQL
-psycopg2-binary>=2.9.9      # PostgreSQL adapter
-sqlalchemy>=2.0.35          # ORM
-alembic>=1.13.0             # Database migrations
+psycopg2-binary==2.9.9      # PostgreSQL adapter
+sqlalchemy==2.0.35          # ORM
+alembic==1.13.0             # Database migrations
 
 # Vector Database
-qdrant-client>=1.11.0       # Qdrant vector DB
+qdrant-client==1.11.0       # Qdrant vector DB
 
 # Caching
-redis>=5.2.0                # Redis client
-hiredis>=3.0.0              # Fast Redis parser
+redis==5.2.0                # Redis client
+hiredis==3.0.0              # Fast Redis parser
 
 # =============================================================================
-# API & WEB FRAMEWORK (Phase 3+)
+# API & WEB FRAMEWORK (Phase 3+) - PINNED VERSIONS
 # =============================================================================
 
 # FastAPI
-fastapi>=0.115.0            # Web framework
-uvicorn[standard]>=0.32.0   # ASGI server
-python-multipart>=0.0.17    # File upload support
-websockets>=13.1            # WebSocket support
+fastapi==0.115.0            # Web framework
+uvicorn[standard]==0.32.0   # ASGI server
+python-multipart==0.0.17    # File upload support
+websockets==13.1            # WebSocket support
 
 # Authentication & Security
-python-jose[cryptography]>=3.3.0  # JWT tokens
-passlib[bcrypt]>=1.7.4      # Password hashing
+python-jose[cryptography]==3.3.0  # JWT tokens
+passlib[bcrypt]==1.7.4      # Password hashing
 
 # =============================================================================
-# DATA PROCESSING
+# DATA PROCESSING - PINNED VERSIONS
 # =============================================================================
 
 # Data manipulation
-pandas>=2.2.0               # DataFrames (optional, for financial data)
-numpy>=1.26.0               # Numerical computing
+pandas==2.2.0               # DataFrames (optional, for financial data)
+numpy==1.26.0               # Numerical computing
 
 # PDF & Document Processing
-pypdf2>=3.0.0               # PDF reading
-pdfplumber>=0.11.0          # Advanced PDF extraction
+pypdf2==3.0.0               # PDF reading
+pdfplumber==0.11.0          # Advanced PDF extraction
 
 # =============================================================================
-# LOGGING & MONITORING (Phase 3+)
+# LOGGING & MONITORING (Phase 3+) - PINNED VERSIONS
 # =============================================================================
 
 # Structured logging
-structlog>=24.4.0           # Structured logging
+structlog==24.4.0           # Structured logging
 
 # Observability
-agentops>=0.3.0             # Agent observability (highly recommended!)
-langsmith>=0.1.0            # LangChain debugging & tracing (FULLY INTEGRATED)
+agentops==0.3.0             # Agent observability (highly recommended!)
+langsmith==0.1.0            # LangChain debugging & tracing (FULLY INTEGRATED)
 
 # =============================================================================
 # LANGFLOW - Visual Workflow Builder
@@ -103,25 +107,25 @@ langsmith>=0.1.0            # LangChain debugging & tracing (FULLY INTEGRATED)
 # LangFlow for visual workflow design
 # Install with: pip install langflow
 # Or full: pip install langflow[all]
-langflow>=1.0.0             # Visual workflow builder (optional but recommended)
+langflow==1.0.0             # Visual workflow builder (optional but recommended)
 
 # Error tracking
-sentry-sdk[fastapi]>=2.16.0 # Error monitoring (optional)
+sentry-sdk[fastapi]==2.16.0 # Error monitoring (optional)
 
 # Metrics
-prometheus-client>=0.21.0   # Metrics export (optional)
+prometheus-client==0.21.0   # Metrics export (optional)
 
 # =============================================================================
-# CLI & UTILITIES
+# CLI & UTILITIES - PINNED VERSIONS
 # =============================================================================
 
 # CLI
-typer>=0.12.0               # CLI framework
-rich>=13.9.0                # Terminal formatting
-click>=8.1.0                # CLI utilities
+typer==0.12.0               # CLI framework
+rich==13.9.0                # Terminal formatting
+click==8.1.0                # CLI utilities
 
 # Progress bars
-tqdm>=4.66.0                # Progress bars
+tqdm==4.66.0                # Progress bars
 
 # =============================================================================
 # DEVELOPMENT TOOLS

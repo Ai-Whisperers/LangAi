@@ -9,10 +9,18 @@ Handles:
 """
 
 import asyncio
+import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, AsyncIterator, Callable, Dict, Iterator, List, Optional, TypeVar
 import uuid
+
+logger = logging.getLogger(__name__)
+
+
+def _utcnow() -> datetime:
+    """Get current UTC time (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 from .stream_wrapper import StreamChunk, StreamMetrics
 
@@ -29,7 +37,7 @@ class ChunkBuffer:
     flush_interval: float = 0.1  # seconds
 
     _chunks: List[StreamChunk] = field(default_factory=list)
-    _last_flush: datetime = field(default_factory=datetime.utcnow)
+    _last_flush: datetime = field(default_factory=_utcnow)
     _total_flushed: int = 0
 
     def add(self, chunk: StreamChunk) -> Optional[List[StreamChunk]]:
@@ -45,7 +53,7 @@ class ChunkBuffer:
         should_flush = (
             len(self._chunks) >= self.max_size or
             chunk.is_final or
-            (datetime.utcnow() - self._last_flush).total_seconds() >= self.flush_interval
+            (_utcnow() - self._last_flush).total_seconds() >= self.flush_interval
         )
 
         if should_flush:
@@ -56,7 +64,7 @@ class ChunkBuffer:
         """Flush and return all buffered chunks."""
         chunks = self._chunks.copy()
         self._chunks = []
-        self._last_flush = datetime.utcnow()
+        self._last_flush = _utcnow()
         self._total_flushed += len(chunks)
         return chunks
 
@@ -96,7 +104,7 @@ class ChunkAggregator:
 
     def add_chunk(self, chunk: StreamChunk) -> None:
         """Add a chunk to the aggregation."""
-        now = datetime.utcnow()
+        now = _utcnow()
 
         if self._start_time is None:
             self._start_time = now
@@ -238,8 +246,8 @@ class ChunkProcessor:
             for callback in self._on_chunk_callbacks:
                 try:
                     callback(processed)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Chunk callback error: {e}")
 
             # Buffer management
             batch = self._buffer.add(processed)
@@ -247,8 +255,8 @@ class ChunkProcessor:
                 for callback in self._on_batch_callbacks:
                     try:
                         callback(batch)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.warning(f"Batch callback error: {e}")
 
             yield processed
 
@@ -258,8 +266,8 @@ class ChunkProcessor:
             for callback in self._on_batch_callbacks:
                 try:
                     callback(remaining)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Final batch callback error: {e}")
 
     def get_aggregator(self) -> ChunkAggregator:
         """Get the chunk aggregator."""

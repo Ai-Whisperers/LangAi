@@ -9,11 +9,14 @@ Provides:
 """
 
 import functools
+import logging
 import threading
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 
 class RateLimitExceeded(Exception):
@@ -51,6 +54,7 @@ class RateLimitState:
     tokens: float = 0
     last_refill: float = field(default_factory=time.time)
     blocked_until: Optional[float] = None
+    last_activity: float = field(default_factory=time.time)  # For TTL cleanup
 
 
 class RateLimiter:
@@ -82,7 +86,9 @@ class RateLimiter:
         config: RateLimitConfig = None,
         requests_per_minute: int = None,
         requests_per_hour: int = None,
-        burst_size: int = None
+        burst_size: int = None,
+        state_ttl_seconds: int = 3600,  # 1 hour default TTL
+        cleanup_interval_seconds: int = 300  # 5 minutes
     ):
         self.config = config or RateLimitConfig()
 
@@ -99,6 +105,11 @@ class RateLimiter:
         # Calculate refill rate (tokens per second)
         self._refill_rate = self.config.requests_per_minute / 60.0
 
+        # TTL-based cleanup settings
+        self._state_ttl = state_ttl_seconds
+        self._cleanup_interval = cleanup_interval_seconds
+        self._last_cleanup = time.time()
+
     def check(self, key: str, cost: int = 1) -> Tuple[bool, Dict[str, Any]]:
         """
         Check if request is allowed.
@@ -113,15 +124,22 @@ class RateLimiter:
         Raises:
             RateLimitExceeded if rate limit exceeded
         """
+        # Trigger cleanup if needed
+        self._maybe_cleanup_stale_states()
+
         with self._lock:
             state = self._get_or_create_state(key)
             now = time.time()
 
+            # Update last activity
+            state.last_activity = now
+
             # Check if blocked
             if state.blocked_until and now < state.blocked_until:
                 retry_after = state.blocked_until - now
+                # Security: Don't expose the key in error message
                 raise RateLimitExceeded(
-                    f"Rate limit exceeded for {key}",
+                    "Rate limit exceeded. Please try again later.",
                     retry_after=retry_after,
                     limit=self.config.requests_per_minute,
                     remaining=0
@@ -138,8 +156,9 @@ class RateLimiter:
                 # Block the key
                 state.blocked_until = now + self.config.block_duration_seconds
                 retry_after = self.config.block_duration_seconds
+                # Security: Don't expose the key in error message
                 raise RateLimitExceeded(
-                    f"Rate limit exceeded for {key}",
+                    "Rate limit exceeded. Please try again later.",
                     retry_after=retry_after,
                     limit=self.config.requests_per_minute,
                     remaining=0
@@ -203,7 +222,7 @@ class RateLimiter:
         return {
             "limit": self.config.requests_per_minute,
             "remaining": max(0, int(state.tokens)),
-            "reset_at": datetime.utcnow() + timedelta(seconds=60),
+            "reset_at": datetime.now(timezone.utc) + timedelta(seconds=60),
             "window_requests": len(state.requests)
         }
 
@@ -242,6 +261,68 @@ class RateLimiter:
             if state and state.blocked_until:
                 return time.time() < state.blocked_until
             return False
+
+    def _maybe_cleanup_stale_states(self) -> None:
+        """
+        Clean up stale rate limit states if cleanup interval has passed.
+
+        This prevents unbounded memory growth from inactive keys.
+        """
+        now = time.time()
+
+        # Only cleanup periodically
+        if now - self._last_cleanup < self._cleanup_interval:
+            return
+
+        with self._lock:
+            # Double-check inside lock
+            if now - self._last_cleanup < self._cleanup_interval:
+                return
+
+            # Find stale states (no activity within TTL)
+            stale_keys = [
+                key for key, state in self._states.items()
+                if now - state.last_activity > self._state_ttl
+                and (state.blocked_until is None or state.blocked_until < now)
+            ]
+
+            for key in stale_keys:
+                del self._states[key]
+
+            if stale_keys:
+                logger.debug(f"Cleaned up {len(stale_keys)} stale rate limit states")
+
+            self._last_cleanup = now
+
+    def get_state_count(self) -> int:
+        """Get count of currently tracked rate limit states."""
+        with self._lock:
+            return len(self._states)
+
+    def force_cleanup(self) -> int:
+        """
+        Force cleanup of stale rate limit states.
+
+        Returns:
+            Number of states cleaned up
+        """
+        now = time.time()
+        cleaned = 0
+
+        with self._lock:
+            stale_keys = [
+                key for key, state in self._states.items()
+                if now - state.last_activity > self._state_ttl
+                and (state.blocked_until is None or state.blocked_until < now)
+            ]
+
+            for key in stale_keys:
+                del self._states[key]
+                cleaned += 1
+
+            self._last_cleanup = now
+
+        return cleaned
 
     def limit(
         self,
@@ -314,15 +395,25 @@ class SlidingWindowRateLimiter:
     def __init__(
         self,
         limit: int,
-        window_seconds: int = 60
+        window_seconds: int = 60,
+        state_ttl_seconds: int = 3600,
+        cleanup_interval_seconds: int = 300
     ):
         self.limit = limit
         self.window_seconds = window_seconds
         self._logs: Dict[str, List[float]] = {}
+        self._last_activity: Dict[str, float] = {}
         self._lock = threading.RLock()
+
+        # TTL cleanup settings
+        self._state_ttl = state_ttl_seconds
+        self._cleanup_interval = cleanup_interval_seconds
+        self._last_cleanup = time.time()
 
     def check(self, key: str) -> bool:
         """Check if request is allowed."""
+        self._maybe_cleanup()
+
         with self._lock:
             now = time.time()
             window_start = now - self.window_seconds
@@ -330,6 +421,9 @@ class SlidingWindowRateLimiter:
             # Get or create log
             if key not in self._logs:
                 self._logs[key] = []
+
+            # Update last activity
+            self._last_activity[key] = now
 
             # Clean old entries
             self._logs[key] = [t for t in self._logs[key] if t > window_start]
@@ -354,6 +448,31 @@ class SlidingWindowRateLimiter:
             recent = len([t for t in self._logs[key] if t > window_start])
             return max(0, self.limit - recent)
 
+    def _maybe_cleanup(self) -> None:
+        """Clean up stale entries if cleanup interval has passed."""
+        now = time.time()
+
+        if now - self._last_cleanup < self._cleanup_interval:
+            return
+
+        with self._lock:
+            if now - self._last_cleanup < self._cleanup_interval:
+                return
+
+            stale_keys = [
+                key for key, last in self._last_activity.items()
+                if now - last > self._state_ttl
+            ]
+
+            for key in stale_keys:
+                self._logs.pop(key, None)
+                self._last_activity.pop(key, None)
+
+            if stale_keys:
+                logger.debug(f"SlidingWindowRateLimiter cleaned up {len(stale_keys)} stale entries")
+
+            self._last_cleanup = now
+
 
 class FixedWindowRateLimiter:
     """
@@ -365,12 +484,19 @@ class FixedWindowRateLimiter:
     def __init__(
         self,
         limit: int,
-        window_seconds: int = 60
+        window_seconds: int = 60,
+        state_ttl_windows: int = 60,  # Number of windows to keep state
+        cleanup_interval_seconds: int = 300
     ):
         self.limit = limit
         self.window_seconds = window_seconds
         self._windows: Dict[str, Tuple[int, int]] = {}  # key -> (window_id, count)
         self._lock = threading.RLock()
+
+        # TTL cleanup settings
+        self._state_ttl_windows = state_ttl_windows
+        self._cleanup_interval = cleanup_interval_seconds
+        self._last_cleanup = time.time()
 
     def _get_window_id(self) -> int:
         """Get current window ID."""
@@ -378,6 +504,8 @@ class FixedWindowRateLimiter:
 
     def check(self, key: str) -> bool:
         """Check if request is allowed."""
+        self._maybe_cleanup()
+
         with self._lock:
             window_id = self._get_window_id()
 
@@ -398,6 +526,33 @@ class FixedWindowRateLimiter:
             # Increment
             self._windows[key] = (window_id, count + 1)
             return True
+
+    def _maybe_cleanup(self) -> None:
+        """Clean up stale entries if cleanup interval has passed."""
+        now = time.time()
+
+        if now - self._last_cleanup < self._cleanup_interval:
+            return
+
+        with self._lock:
+            if now - self._last_cleanup < self._cleanup_interval:
+                return
+
+            current_window_id = self._get_window_id()
+            stale_threshold = current_window_id - self._state_ttl_windows
+
+            stale_keys = [
+                key for key, (window_id, _) in self._windows.items()
+                if window_id < stale_threshold
+            ]
+
+            for key in stale_keys:
+                del self._windows[key]
+
+            if stale_keys:
+                logger.debug(f"FixedWindowRateLimiter cleaned up {len(stale_keys)} stale entries")
+
+            self._last_cleanup = now
 
 
 # Convenience functions

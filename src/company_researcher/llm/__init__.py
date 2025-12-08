@@ -26,12 +26,15 @@ Usage:
 # Client Factory (centralized client management)
 from .client_factory import (
     LLMClientFactory,
+    LLMResponseError,
     get_factory,
     get_anthropic_client,
     get_tavily_client,
     create_message,
     calculate_cost,
     reset_clients,
+    safe_extract_text,
+    safe_extract_json,
 )
 
 # Response Parser (centralized parsing utilities)
@@ -77,15 +80,83 @@ from .model_router import (
     create_router_for_extraction,
 )
 
+# Prompt Caching (25% cost reduction)
+from .prompt_cache import (
+    PromptCache,
+    get_prompt_cache,
+    create_cached_analysis_request,
+)
+
+# Streaming (real-time responses)
+from .streaming import (
+    StreamingClient,
+    StreamingResult,
+    StreamingStats,
+    get_streaming_client,
+    StreamingProgressPrinter,
+    stream_research_analysis,
+)
+
+# Cost Tracking (detailed metrics)
+from .cost_tracker import (
+    CostTracker,
+    APICall,
+    CostSummary,
+    get_cost_tracker,
+)
+
+# Batch Processing (50% cost reduction)
+from .batch_processor import (
+    BatchProcessor,
+    BatchRequest,
+    BatchResult,
+    BatchStatus,
+    get_batch_processor,
+)
+
+# Vision (image analysis)
+from .vision import (
+    VisionAnalyzer,
+    ImageAnalysisResult,
+    get_vision_analyzer,
+)
+
+# Tool Use (structured extraction)
+from .tool_use import (
+    StructuredExtractor,
+    ExtractionResult,
+    get_structured_extractor,
+    FINANCIAL_EXTRACTION_TOOLS,
+)
+
+# Response Validation (safe API response handling)
+from .response_validation import (
+    ValidationError,
+    ValidatedAnthropicResponse,
+    ValidatedTavilyResponse,
+    ValidatedTavilyResult,
+    validate_anthropic_response,
+    validate_tavily_response,
+    extract_anthropic_content,
+    extract_tavily_results,
+    safe_get,
+    validate_required_fields,
+    validate_json_response,
+    enforce_response_limits,
+)
+
 __all__ = [
     # Client Factory (PRIMARY - use these for new code)
     "LLMClientFactory",
+    "LLMResponseError",
     "get_factory",
     "get_anthropic_client",
     "get_tavily_client",
     "create_message",
     "calculate_cost",
     "reset_clients",
+    "safe_extract_text",
+    "safe_extract_json",
     # Response Parser
     "ResponseParser",
     "ParseResult",
@@ -117,4 +188,48 @@ __all__ = [
     "get_model_for_task",
     "create_router_for_research",
     "create_router_for_extraction",
+    # Prompt Caching
+    "PromptCache",
+    "get_prompt_cache",
+    "create_cached_analysis_request",
+    # Streaming
+    "StreamingClient",
+    "StreamingResult",
+    "StreamingStats",
+    "get_streaming_client",
+    "StreamingProgressPrinter",
+    "stream_research_analysis",
+    # Cost Tracking
+    "CostTracker",
+    "APICall",
+    "CostSummary",
+    "get_cost_tracker",
+    # Batch Processing
+    "BatchProcessor",
+    "BatchRequest",
+    "BatchResult",
+    "BatchStatus",
+    "get_batch_processor",
+    # Vision
+    "VisionAnalyzer",
+    "ImageAnalysisResult",
+    "get_vision_analyzer",
+    # Tool Use
+    "StructuredExtractor",
+    "ExtractionResult",
+    "get_structured_extractor",
+    "FINANCIAL_EXTRACTION_TOOLS",
+    # Response Validation
+    "ValidationError",
+    "ValidatedAnthropicResponse",
+    "ValidatedTavilyResponse",
+    "ValidatedTavilyResult",
+    "validate_anthropic_response",
+    "validate_tavily_response",
+    "extract_anthropic_content",
+    "extract_tavily_results",
+    "safe_get",
+    "validate_required_fields",
+    "validate_json_response",
+    "enforce_response_limits",
 ]

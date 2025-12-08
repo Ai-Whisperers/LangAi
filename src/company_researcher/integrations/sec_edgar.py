@@ -16,7 +16,7 @@ import asyncio
 import logging
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 import re
 
@@ -313,7 +313,7 @@ class SECEdgarClient:
             filings.append(Filing(
                 accession_number=accession_numbers[i],
                 filing_type=form,
-                filing_date=datetime.strptime(filing_dates[i], "%Y-%m-%d") if i < len(filing_dates) else datetime.now(),
+                filing_date=datetime.strptime(filing_dates[i], "%Y-%m-%d").replace(tzinfo=timezone.utc) if i < len(filing_dates) else datetime.now(timezone.utc),
                 primary_document=primary_docs[i] if i < len(primary_docs) else "",
                 primary_document_url=f"{self.BASE_URL}/Archives/edgar/data/{cik}/{accession_numbers[i].replace('-', '')}/{primary_docs[i]}" if i < len(primary_docs) else "",
             ))

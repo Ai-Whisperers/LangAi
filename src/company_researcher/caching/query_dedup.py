@@ -12,9 +12,14 @@ import asyncio
 import hashlib
 import re
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+
+
+def _utcnow() -> datetime:
+    """Get current UTC time (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 
 class DeduplicationStrategy(str, Enum):
@@ -182,7 +187,7 @@ class QueryDeduplicator:
         pending_query = PendingQuery(
             query=normalized,
             future=future,
-            started_at=datetime.utcnow()
+            started_at=_utcnow()
         )
 
         async with self._pending_lock:
@@ -205,7 +210,7 @@ class QueryDeduplicator:
         if query.hash not in self._cache:
             return None
         result, timestamp = self._cache[query.hash]
-        if datetime.utcnow() - timestamp > timedelta(seconds=self.cache_ttl_seconds):
+        if _utcnow() - timestamp > timedelta(seconds=self.cache_ttl_seconds):
             del self._cache[query.hash]
             return None
         return result
@@ -215,7 +220,7 @@ class QueryDeduplicator:
         if len(self._cache) >= self.max_cache_size:
             oldest_key = min(self._cache, key=lambda k: self._cache[k][1])
             del self._cache[oldest_key]
-        self._cache[query.hash] = (result, datetime.utcnow())
+        self._cache[query.hash] = (result, _utcnow())
         self._recent_queries.append(query)
         if len(self._recent_queries) > self.max_cache_size:
             self._recent_queries.pop(0)

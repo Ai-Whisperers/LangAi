@@ -70,6 +70,30 @@ from .swarm_collaboration import (
     create_analysis_swarm,
 )
 
+# Conditional Router (intelligent workflow routing)
+from .conditional_router import (
+    CompanyType,
+    ResearchDepth as ConditionalResearchDepth,
+    RoutingDecision as ConditionalRoutingDecision,
+    classify_company_type,
+    determine_research_depth,
+    make_routing_decision,
+    SimpleRouter,
+    LANGGRAPH_AVAILABLE,
+)
+
+# LangGraph conditional workflows (if available)
+try:
+    from .conditional_router import (
+        create_conditional_research_graph,
+        create_iterative_research_graph,
+        create_company_type_router,
+        create_quality_checker,
+    )
+except ImportError:
+    # LangGraph not available
+    pass
+
 __all__ = [
     # Workflow Engine
     "NodeType",
@@ -103,4 +127,17 @@ __all__ = [
     "ConsensusResult",
     "create_research_swarm",
     "create_analysis_swarm",
+    # Conditional Router
+    "CompanyType",
+    "ConditionalResearchDepth",
+    "ConditionalRoutingDecision",
+    "classify_company_type",
+    "determine_research_depth",
+    "make_routing_decision",
+    "SimpleRouter",
+    "LANGGRAPH_AVAILABLE",
+    "create_conditional_research_graph",
+    "create_iterative_research_graph",
+    "create_company_type_router",
+    "create_quality_checker",
 ]
