@@ -1,0 +1,24 @@
+{
+  "company": "ExxonMobil",
+  "generated_at": "2025-12-08T23:58:39.644609",
+  "profile": {
+    "legal_name": "Exxon Mobil Corporation",
+    "ticker": "XOM",
+    "exchange": "NYSE",
+    "industry": "Oil & Gas",
+    "country": "United States"
+  },
+  "research": {
+    "quality_score": 90.0,
+    "depth": "comprehensive",
+    "iteration_count": 1,
+    "sources_count": 37
+  },
+  "financial_data_available": true,
+  "extracted_metrics": {
+    "market_cap_text": "$496.84B",
+    "revenue_text": "$326.24B",
+    "employees": 62000,
+    "employees_text": "62,000"
+  }
+}

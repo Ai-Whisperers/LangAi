@@ -1,0 +1,18 @@
+{
+  "company": "Tigo Paraguay",
+  "generated_at": "2025-12-09T01:27:58.910429",
+  "profile": {
+    "legal_name": "Telefonica Celular del Paraguay S.A. (Telecel)",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Telecommunications",
+    "country": "Paraguay"
+  },
+  "research": {
+    "quality_score": 67.0,
+    "depth": "comprehensive",
+    "iteration_count": 1,
+    "sources_count": 0
+  },
+  "financial_data_available": false
+}

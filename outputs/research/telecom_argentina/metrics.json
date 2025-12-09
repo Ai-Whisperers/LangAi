@@ -1,0 +1,22 @@
+{
+  "company": "Telecom Argentina",
+  "generated_at": "2025-12-09T01:19:22.230589",
+  "profile": {
+    "legal_name": "Telecom Argentina S.A.",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Telecommunications",
+    "country": "Argentina"
+  },
+  "research": {
+    "quality_score": 67.0,
+    "depth": "comprehensive",
+    "iteration_count": 1,
+    "sources_count": 0
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "employees": 25000,
+    "employees_text": "25,000"
+  }
+}

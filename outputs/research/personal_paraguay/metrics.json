@@ -1,0 +1,22 @@
+{
+  "company": "Personal Paraguay",
+  "generated_at": "2025-12-09T01:08:20.467863",
+  "profile": {
+    "legal_name": "Nucleo S.A.",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Telecommunications",
+    "country": "Paraguay"
+  },
+  "research": {
+    "quality_score": 67.0,
+    "depth": "comprehensive",
+    "iteration_count": 1,
+    "sources_count": 0
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "employees": 500,
+    "employees_text": "500"
+  }
+}

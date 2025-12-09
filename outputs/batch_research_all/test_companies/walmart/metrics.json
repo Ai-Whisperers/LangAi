@@ -1,0 +1,22 @@
+{
+  "company": "Walmart",
+  "generated_at": "2025-12-09T00:24:15.929512",
+  "profile": {
+    "legal_name": "Walmart Inc.",
+    "ticker": "WMT",
+    "exchange": "NYSE",
+    "industry": "Retail",
+    "country": "United States"
+  },
+  "research": {
+    "quality_score": 90.0,
+    "depth": "comprehensive",
+    "iteration_count": 1,
+    "sources_count": 38
+  },
+  "financial_data_available": true,
+  "extracted_metrics": {
+    "market_cap_text": "$917.75B",
+    "revenue_text": "$703.06B"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "company": "Millicom International Cellular",
+  "generated_at": "2025-12-09T00:59:41.304450",
+  "profile": {
+    "legal_name": "Millicom International Cellular S.A.",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Telecommunications",
+    "country": "Luxembourg"
+  },
+  "research": {
+    "quality_score": 70.0,
+    "depth": "comprehensive",
+    "iteration_count": 1,
+    "sources_count": 0
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "employees": 21000,
+    "employees_text": "21,000"
+  }
+}

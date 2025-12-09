@@ -1,0 +1,22 @@
+{
+  "company": "Toyota",
+  "generated_at": "2025-12-09T00:15:24.123193",
+  "profile": {
+    "legal_name": "Toyota Motor Corporation",
+    "ticker": "TM",
+    "exchange": "NYSE",
+    "industry": "Automotive",
+    "country": "Japan"
+  },
+  "research": {
+    "quality_score": 90.0,
+    "depth": "comprehensive",
+    "iteration_count": 1,
+    "sources_count": 37
+  },
+  "financial_data_available": true,
+  "extracted_metrics": {
+    "market_cap_text": "$256.18B",
+    "revenue_text": "$49.39T"
+  }
+}

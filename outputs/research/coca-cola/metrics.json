@@ -1,0 +1,21 @@
+{
+  "company": "Coca-Cola",
+  "generated_at": "2025-12-08T23:57:13.400404",
+  "profile": {
+    "legal_name": "The Coca-Cola Company",
+    "ticker": "KO",
+    "exchange": "NYSE",
+    "industry": "Beverages",
+    "country": "United States"
+  },
+  "research": {
+    "quality_score": 90.0,
+    "depth": "comprehensive",
+    "iteration_count": 1,
+    "sources_count": 36
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "market_cap_text": "$298.58B"
+  }
+}

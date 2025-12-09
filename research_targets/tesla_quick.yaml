@@ -1,0 +1,16 @@
+name: Tesla
+legal_name: Tesla, Inc.
+ticker: TSLA
+exchange: NASDAQ
+industry: Electric Vehicles
+country: United States
+website: https://www.tesla.com
+services:
+  - Electric vehicles
+  - Energy storage
+  - Solar panels
+competitors:
+  - BYD
+  - Rivian
+  - Ford
+  - GM

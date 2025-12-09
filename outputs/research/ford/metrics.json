@@ -1,0 +1,22 @@
+{
+  "company": "Ford",
+  "generated_at": "2025-12-08T23:59:44.319118",
+  "profile": {
+    "legal_name": "Ford Motor Company",
+    "ticker": "F",
+    "exchange": "NYSE",
+    "industry": "Automotive",
+    "country": "United States"
+  },
+  "research": {
+    "quality_score": 90.0,
+    "depth": "comprehensive",
+    "iteration_count": 1,
+    "sources_count": 37
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "employees": 177000,
+    "employees_text": "177,000"
+  }
+}

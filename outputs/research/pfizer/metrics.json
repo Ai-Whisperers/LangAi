@@ -1,0 +1,22 @@
+{
+  "company": "Pfizer",
+  "generated_at": "2025-12-09T00:10:47.889855",
+  "profile": {
+    "legal_name": "Pfizer Inc.",
+    "ticker": "PFE",
+    "exchange": "NYSE",
+    "industry": "Pharmaceuticals",
+    "country": "United States"
+  },
+  "research": {
+    "quality_score": 90.0,
+    "depth": "comprehensive",
+    "iteration_count": 1,
+    "sources_count": 40
+  },
+  "financial_data_available": true,
+  "extracted_metrics": {
+    "market_cap_text": "$148.00B",
+    "revenue_text": "$17.8B"
+  }
+}

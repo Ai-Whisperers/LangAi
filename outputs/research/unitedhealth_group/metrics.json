@@ -1,0 +1,24 @@
+{
+  "company": "UnitedHealth Group",
+  "generated_at": "2025-12-09T00:17:07.363061",
+  "profile": {
+    "legal_name": "UnitedHealth Group Incorporated",
+    "ticker": "UNH",
+    "exchange": "NYSE",
+    "industry": "Healthcare",
+    "country": "United States"
+  },
+  "research": {
+    "quality_score": 90.0,
+    "depth": "comprehensive",
+    "iteration_count": 1,
+    "sources_count": 39
+  },
+  "financial_data_available": true,
+  "extracted_metrics": {
+    "market_cap_text": "$299.75B",
+    "revenue_text": "$400.3B",
+    "employees": 400000,
+    "employees_text": "400,000"
+  }
+}

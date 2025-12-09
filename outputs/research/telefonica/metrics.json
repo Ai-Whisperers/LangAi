@@ -1,0 +1,22 @@
+{
+  "company": "Telefonica",
+  "generated_at": "2025-12-09T00:13:52.155885",
+  "profile": {
+    "legal_name": "Telefonica S.A.",
+    "ticker": "TEF",
+    "exchange": "NYSE",
+    "industry": "Telecommunications",
+    "country": "Spain"
+  },
+  "research": {
+    "quality_score": 90.0,
+    "depth": "comprehensive",
+    "iteration_count": 1,
+    "sources_count": 38
+  },
+  "financial_data_available": true,
+  "extracted_metrics": {
+    "market_cap_text": "$23.69B",
+    "revenue_text": "$2B"
+  }
+}
