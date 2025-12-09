@@ -1,0 +1,48 @@
+# UAV LATAM - Agricultural Drones and AI
+company:
+  name: "UAV LATAM"
+  legal_name: "UAV LATAM"
+  ticker: null  # Private
+  exchange: null
+  website: "https://uavlatam.com"
+  industry: "Agricultural Drones / AI Technology"
+  country: "Regional (LATAM operations including Paraguay)"
+
+  details:
+    founded: null  # To research
+    headquarters: "LATAM Regional"
+    ceo: null  # To research
+    employees: null
+    notes: |
+      - Drones and AI solutions for agriculture
+      - Precision agriculture specialist
+      - Multi-stage crop production support
+      - Paraguay is key agricultural market
+      - 8.5M hectares of soy cultivation in Paraguay
+      - DISRUPTIVE: AI + Drones for LATAM agriculture
+
+  ai_opportunity:
+    tier: 1
+    budget_capacity: "Medium-High"
+    use_cases:
+      - "AI crop analysis and monitoring"
+      - "Precision spraying optimization"
+      - "Yield prediction models"
+      - "Autonomous drone fleet management"
+      - "Agricultural AI courses for operators"
+    decision_makers:
+      - "UAV LATAM CEO"
+      - "Paraguay Operations Lead"
+
+research:
+  depth: "comprehensive"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "UAV LATAM drones agriculture"
+    - "UAV LATAM Paraguay operations"
+    - "Agricultural drones LATAM AI"
+    - "Precision agriculture drones Paraguay"

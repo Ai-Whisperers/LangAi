@@ -1,0 +1,57 @@
+# Centro Médico Bautista - Largest Private Hospital in Paraguay
+company:
+  name: "Centro Médico Bautista"
+  legal_name: "Centro Médico Bautista"
+  ticker: null  # Private
+  exchange: null
+  website: "https://www.cmb.org.py"
+  industry: "Healthcare / Hospital"
+  country: "Paraguay"
+
+  details:
+    founded: null  # To research
+    headquarters: "Asuncion, Paraguay"
+    ceo: null  # To research
+    employees: null
+    patients_annual: "100,000+"
+    specialties: "50+"
+    classification: "Level 3 - High Complexity (Highest in Paraguay)"
+    notes: |
+      - LARGEST private hospital in Paraguay
+      - Over 100,000 patients annually
+      - 50+ medical specialties
+      - Level 3 High Complexity (highest MSPBS classification)
+      - Leading medical technology in country
+      - Doctors trained in Argentina, Chile, USA, Spain
+      - MAJOR OPPORTUNITY: Healthcare AI implementation
+
+  ai_opportunity:
+    tier: 1
+    budget_capacity: "High"
+    use_cases:
+      - "Medical imaging AI (radiology, pathology)"
+      - "Patient flow optimization"
+      - "Clinical decision support systems"
+      - "Predictive diagnostics"
+      - "Hospital resource management AI"
+      - "Electronic health records AI"
+      - "Telemedicine platforms"
+    decision_makers:
+      - "Hospital Director"
+      - "Chief Medical Officer"
+      - "IT/Technology Director"
+
+research:
+  depth: "comprehensive"
+  focus_areas:
+    - financial
+    - market
+    - digital_transformation
+    - competitor
+
+  priority_queries:
+    - "Centro Medico Bautista Paraguay technology"
+    - "Hospital Bautista Paraguay digital transformation"
+    - "Centro Medico Bautista innovation"
+    - "Paraguay healthcare technology leaders"
+    - "CMB Paraguay telemedicine"

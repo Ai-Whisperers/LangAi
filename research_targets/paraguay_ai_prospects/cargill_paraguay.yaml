@@ -1,0 +1,53 @@
+# Cargill Paraguay - Largest Agribusiness Exporter
+company:
+  name: "Cargill Paraguay"
+  legal_name: "Cargill Agropecuaria S.A.C.I."
+  ticker: null  # Subsidiary of Cargill Inc (Private)
+  exchange: null
+  website: "https://www.cargill.com.py"
+  industry: "Agribusiness / Commodities"
+  country: "Paraguay"
+
+  details:
+    founded: 1978
+    headquarters: "Asuncion, Paraguay"
+    ceo: null  # To research
+    employees: "1,500+"
+    revenue_estimate: "$1.2B+ (soy exports alone)"
+    notes: |
+      - Largest soy exporter in Paraguay (14% market share)
+      - Part of Cargill Inc (US) - $165B revenue global
+      - Owns Port Union (private port near Asuncion)
+      - Full supply chain: silos, vessels, ports
+      - 40% of Paraguay soy exports by Cargill + ADM combined
+      - HIGH AI POTENTIAL: Precision agriculture, logistics, trading
+
+  ai_opportunity:
+    tier: 1
+    budget_capacity: "Very High (Global Corp)"
+    use_cases:
+      - "Precision agriculture AI (crop monitoring, yield prediction)"
+      - "Supply chain optimization"
+      - "Commodity trading AI"
+      - "Logistics and port operations optimization"
+      - "Weather and market prediction"
+      - "Supplier and farmer engagement AI"
+    decision_makers:
+      - "Paraguay Country Manager"
+      - "Regional LATAM Technology Lead"
+
+research:
+  depth: "comprehensive"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+    - digital_transformation
+
+  priority_queries:
+    - "Cargill Paraguay technology innovation 2024"
+    - "Cargill precision agriculture Paraguay"
+    - "Cargill Paraguay digital transformation"
+    - "Cargill Paraguay soy exports technology"
+    - "Cargill Port Union Paraguay operations"
+    - "Cargill LATAM agtech investment"

@@ -1,0 +1,46 @@
+# Chemtec S.A.E. - Chemical Solutions Company
+company:
+  name: "Chemtec Paraguay"
+  legal_name: "Chemtec S.A.E."
+  ticker: null  # Private
+  exchange: null
+  website: "https://www.chemtec.com.py"
+  industry: "Chemicals / Industrial Solutions"
+  country: "Paraguay"
+
+  details:
+    founded: null  # To research
+    headquarters: "Paraguay"
+    ceo: null  # To research
+    employees: null
+    notes: |
+      - Paraguayan chemical solutions company
+      - Industrial chemicals and solutions provider
+      - Serves agricultural and industrial sectors
+      - Growing market with Paraguay's industrial development
+      - OPPORTUNITY: Chemical process AI, quality control
+
+  ai_opportunity:
+    tier: 2
+    budget_capacity: "Medium"
+    use_cases:
+      - "Chemical process optimization"
+      - "Quality control AI"
+      - "Inventory and supply chain AI"
+      - "Safety monitoring systems"
+      - "Customer recommendation systems"
+    decision_makers:
+      - "Chemtec CEO"
+      - "Operations Director"
+      - "Technical Director"
+
+research:
+  depth: "standard"
+  focus_areas:
+    - financial
+    - market
+
+  priority_queries:
+    - "Chemtec SAE Paraguay"
+    - "Chemtec Paraguay chemicals"
+    - "Paraguay chemical companies"

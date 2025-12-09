@@ -1,0 +1,54 @@
+# Claro Paraguay - 5G Pioneer
+company:
+  name: "Claro Paraguay"
+  legal_name: "AMX Paraguay S.A."
+  ticker: "AMX"  # America Movil (NYSE)
+  exchange: "NYSE (parent)"
+  website: "https://www.claro.com.py"
+  industry: "Telecommunications"
+  country: "Paraguay"
+
+  details:
+    founded: 2008
+    headquarters: "Asuncion, Paraguay"
+    ceo: null  # To research
+    employees: "2,000+"
+    market_share: "~25%"
+    notes: |
+      - Part of America Movil (Carlos Slim) - largest LATAM telecom
+      - WON 5G spectrum auction (3.5-3.7 GHz band)
+      - Nokia network equipment (non-Chinese)
+      - $7.7B regional capex 2024-2029 for fiber and 5G
+      - AI-enabled capacity planning in progress
+      - Targeting 60% population 5G coverage by 2028
+      - Testing satellite-to-cell services for remote agribusiness
+
+  ai_opportunity:
+    tier: 1
+    budget_capacity: "Very High"
+    use_cases:
+      - "AI-enabled network capacity planning (already in progress)"
+      - "5G network optimization with AI"
+      - "Satellite-to-cell AI for agribusiness"
+      - "Customer experience AI"
+      - "Predictive maintenance"
+      - "Enterprise IoT and edge AI services"
+    decision_makers:
+      - "America Movil regional leadership"
+      - "Paraguay Country Director (to research)"
+
+research:
+  depth: "comprehensive"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+    - digital_transformation
+
+  priority_queries:
+    - "Claro Paraguay 5G launch 2025 2026"
+    - "Claro Paraguay AI technology investment"
+    - "America Movil Paraguay strategy"
+    - "Claro Paraguay satellite cell agribusiness"
+    - "Claro Paraguay enterprise IoT"
+    - "Claro Paraguay Nokia network"

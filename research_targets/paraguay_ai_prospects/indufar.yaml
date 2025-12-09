@@ -1,0 +1,50 @@
+# INDUFAR - Leading Paraguayan Pharmaceutical Manufacturer
+company:
+  name: "INDUFAR"
+  legal_name: "INDUFAR C.I.S.A."
+  ticker: null  # Private
+  exchange: null
+  website: null  # To research
+  industry: "Pharmaceutical Manufacturing"
+  country: "Paraguay"
+
+  details:
+    founded: null  # To research
+    headquarters: "Paraguay"
+    ceo: null  # To research
+    employees: null
+    notes: |
+      - Major Paraguayan pharmaceutical manufacturer
+      - Part of Paraguay's $550M pharmaceutical market
+      - Local production capability
+      - Competes with generic imports from Argentina, Brazil
+      - Paraguay market growing for healthcare products
+      - OPPORTUNITY: Manufacturing AI, quality control
+
+  ai_opportunity:
+    tier: 2
+    budget_capacity: "Medium-High"
+    use_cases:
+      - "Quality control AI automation"
+      - "Manufacturing process optimization"
+      - "Predictive maintenance"
+      - "Supply chain AI"
+      - "Regulatory compliance automation"
+      - "Drug interaction analysis"
+    decision_makers:
+      - "INDUFAR CEO"
+      - "Operations Director"
+      - "Quality Control Manager"
+
+research:
+  depth: "standard"
+  focus_areas:
+    - financial
+    - market
+    - digital_transformation
+
+  priority_queries:
+    - "INDUFAR Paraguay pharmaceutical"
+    - "INDUFAR CISA technology innovation"
+    - "Paraguay pharmaceutical manufacturing"
+    - "INDUFAR productos farmaceuticos"

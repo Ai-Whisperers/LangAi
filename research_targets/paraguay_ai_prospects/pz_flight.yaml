@@ -1,0 +1,50 @@
+# PZ Flight - Leading Aviation Academy in Paraguay
+company:
+  name: "PZ Flight"
+  legal_name: "PZ Flight S.A."
+  ticker: null  # Private
+  exchange: null
+  website: "https://www.pzflight.com.py"
+  industry: "Aviation / Flight Training"
+  country: "Paraguay"
+
+  details:
+    founded: null  # To research
+    headquarters: "Asuncion, Paraguay"
+    ceo: null  # To research
+    employees: null
+    certifications:
+      - "DINAC CIAC 012 Authorized"
+    notes: |
+      - Leading aeronautical studies center in Paraguay
+      - DINAC authorized flight training academy
+      - Offers commercial pilot licensing programs
+      - Growing aviation market in Paraguay
+      - 50 ICAO airports + 432 private airstrips in country
+      - POTENTIAL: AI flight simulators, training optimization
+
+  ai_opportunity:
+    tier: 2
+    budget_capacity: "Medium"
+    use_cases:
+      - "AI-powered flight simulators"
+      - "Student performance analytics"
+      - "Training curriculum optimization"
+      - "Scheduling and resource AI"
+      - "Safety monitoring systems"
+    decision_makers:
+      - "PZ Flight CEO/Director"
+      - "Chief Flight Instructor"
+
+research:
+  depth: "standard"
+  focus_areas:
+    - financial
+    - market
+    - digital_transformation
+
+  priority_queries:
+    - "PZ Flight Paraguay academy"
+    - "PZ Flight pilot training technology"
+    - "Paraguay aviation training market"
+    - "DINAC flight schools Paraguay"

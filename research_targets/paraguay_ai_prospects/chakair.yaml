@@ -1,0 +1,48 @@
+# Chakair - Military-Founded Aviation School
+company:
+  name: "Chakair"
+  legal_name: "Chakair"
+  ticker: null  # Private
+  exchange: null
+  website: null  # To research
+  industry: "Aviation / Flight Training"
+  country: "Paraguay"
+
+  details:
+    founded: null  # To research
+    headquarters: "Paraguay"
+    ceo: null  # Former military general
+    employees: null
+    training_cost: "$5,500 USD (full course)"
+    notes: |
+      - Founded by former military general
+      - Employs retired military personnel
+      - DINAC registered, follows ICAO regulations
+      - Recently opened new training center with South Korea support
+      - Offers pilot courses and aviation mechanics training
+      - "Pilot for a Day" program available
+      - 10 theoretical subjects + 40 practical hours
+      - Uses Cessna 150 aircraft
+
+  ai_opportunity:
+    tier: 3
+    budget_capacity: "Low-Medium"
+    use_cases:
+      - "AI-enhanced flight simulators"
+      - "Student progress tracking"
+      - "Maintenance prediction systems"
+      - "Safety analytics"
+    decision_makers:
+      - "Chakair Director/Founder"
+      - "Chief Flight Instructor"
+
+research:
+  depth: "standard"
+  focus_areas:
+    - market
+    - digital_transformation
+
+  priority_queries:
+    - "Chakair Paraguay flight school"
+    - "Chakair aviation training"
+    - "Paraguay pilot training schools"

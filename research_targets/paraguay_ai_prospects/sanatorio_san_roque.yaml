@@ -1,0 +1,49 @@
+# Sanatorio San Roque - Historic Leading Hospital Group
+company:
+  name: "Sanatorio San Roque"
+  legal_name: "Grupo San Roque"
+  ticker: null  # Private
+  exchange: null
+  website: null  # To research
+  industry: "Healthcare / Hospital"
+  country: "Paraguay"
+
+  details:
+    founded: 1944
+    headquarters: "Asuncion, Paraguay"
+    ceo: null  # To research
+    employees: null
+    notes: |
+      - Founded 1944 - 80 years of history
+      - Part of San Roque Group
+      - One of most important hospitals in Paraguay
+      - Known for advanced medical technology
+      - Comfortable facilities for comprehensive care
+      - Strong reputation for quality healthcare
+      - ESTABLISHED: Long track record, stable finances
+
+  ai_opportunity:
+    tier: 2
+    budget_capacity: "Medium-High"
+    use_cases:
+      - "Medical imaging AI"
+      - "Patient management systems"
+      - "Appointment scheduling AI"
+      - "Diagnostic support tools"
+      - "Hospital operations optimization"
+    decision_makers:
+      - "Grupo San Roque Director"
+      - "Hospital Administrator"
+      - "Medical Director"
+
+research:
+  depth: "standard"
+  focus_areas:
+    - financial
+    - market
+    - digital_transformation
+
+  priority_queries:
+    - "Sanatorio San Roque Paraguay"
+    - "Grupo San Roque healthcare technology"
+    - "San Roque hospital Paraguay innovation"

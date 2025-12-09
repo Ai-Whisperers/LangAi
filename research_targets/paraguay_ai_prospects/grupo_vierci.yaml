@@ -1,0 +1,52 @@
+# Grupo Vierci - Paraguay's Largest Conglomerate
+company:
+  name: "Grupo Vierci"
+  legal_name: "AJ Vierci Group"
+  ticker: null  # Private
+  exchange: null
+  website: "https://www.grupovierci.com"
+  industry: "Conglomerate (Media, Retail, Beverages, Food)"
+  country: "Paraguay"
+
+  details:
+    founded: 1950
+    headquarters: "Asuncion, Paraguay"
+    ceo: "Antonio Vierci"
+    employees: "7,100+"
+    revenue_estimate: "$500M+"
+    notes: |
+      - Largest multimedia group in Paraguay (Telefuturo, NPy, La Tele, Ultima Hora, Extra)
+      - Supermarket chains (largest in Paraguay)
+      - BDP joint venture with Luksic (Pepsi, Heineken, Red Bull, Lay's, Doritos)
+      - Burger King franchise (Paraguay, Uruguay, Brazil)
+      - 32,000 retail points of sale through BDP
+      - High AI potential: retail analytics, media automation, supply chain optimization
+
+  ai_opportunity:
+    tier: 1
+    budget_capacity: "Very High"
+    use_cases:
+      - "Retail demand forecasting and inventory AI"
+      - "Media content recommendation and automation"
+      - "Customer analytics across 32K touchpoints"
+      - "Supply chain and logistics optimization"
+      - "Marketing automation and personalization"
+    decision_makers:
+      - "Antonio Vierci (Owner/Chairman)"
+      - "CTO/Digital Director (to research)"
+
+research:
+  depth: "comprehensive"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+    - digital_transformation
+
+  priority_queries:
+    - "Grupo Vierci revenue 2024 Paraguay"
+    - "AJ Vierci digital transformation technology"
+    - "Grupo Vierci supermarket retail technology"
+    - "Telefuturo NPy media technology innovation"
+    - "BDP Pepsi Paraguay distribution technology"
+    - "Antonio Vierci innovation investment"

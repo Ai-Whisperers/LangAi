@@ -1,0 +1,54 @@
+# Tigo Paraguay - Market Leader Telecom
+company:
+  name: "Tigo Paraguay"
+  legal_name: "Telefonica Celular del Paraguay S.A. (Telecel)"
+  ticker: "TIGO"  # Millicom (NASDAQ)
+  exchange: "NASDAQ (parent)"
+  website: "https://www.tigo.com.py"
+  industry: "Telecommunications"
+  country: "Paraguay"
+
+  details:
+    founded: 1991
+    headquarters: "Asuncion, Paraguay"
+    ceo: null  # To research
+    employees: "3,000+"
+    market_share: "55%"
+    notes: |
+      - Market leader with 55% telecom market share
+      - Part of Millicom International Cellular (NASDAQ: TIGO)
+      - 37% EBITDA margins
+      - Exclusive sports content partnerships
+      - SD-WAN and cloud gateway services for enterprise
+      - Did NOT bid on 5G spectrum (Chinese equipment issue)
+      - Strong B2B enterprise segment
+
+  ai_opportunity:
+    tier: 1
+    budget_capacity: "Very High"
+    use_cases:
+      - "AI-powered network optimization"
+      - "Customer churn prediction"
+      - "Chatbots and customer service automation"
+      - "Predictive maintenance for infrastructure"
+      - "Enterprise AI solutions for B2B clients"
+      - "Fraud detection in mobile money/billing"
+    decision_makers:
+      - "Millicom LATAM leadership"
+      - "Paraguay Country Manager (to research)"
+
+research:
+  depth: "comprehensive"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+    - digital_transformation
+
+  priority_queries:
+    - "Tigo Paraguay revenue 2024"
+    - "Tigo Paraguay digital transformation AI"
+    - "Millicom Paraguay technology investment"
+    - "Tigo Paraguay enterprise services SD-WAN"
+    - "Tigo Paraguay 5G strategy"
+    - "Tigo Paraguay customer service technology"

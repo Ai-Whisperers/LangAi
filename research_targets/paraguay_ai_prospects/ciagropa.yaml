@@ -1,0 +1,55 @@
+# CIAGROPA - National Agrochemical Industry Leader
+company:
+  name: "CIAGROPA"
+  legal_name: "CIAGROPA"
+  ticker: null  # Private
+  exchange: null
+  website: "https://ciagropa.com"
+  industry: "Agrochemicals / Agricultural Technology"
+  country: "Paraguay"
+
+  details:
+    founded: null  # To research
+    headquarters: "Paraguay"
+    ceo: null  # To research
+    employees: null
+    notes: |
+      - NATIONAL agrochemical industry - Paraguayan company
+      - Local labor, local production
+      - Develops effective, reliable, safe, environmentally-friendly products
+      - Product lines: Herbicides, Insecticides, Fungicides, Seed treatments
+      - Also serves livestock operations
+      - Paraguay is $550M agrochemical market
+      - Duty-free imports for technical grade materials
+      - STRATEGIC: Local company in key agricultural market
+
+  ai_opportunity:
+    tier: 1
+    budget_capacity: "Medium-High"
+    use_cases:
+      - "AI-driven product formulation R&D"
+      - "Precision application recommendations"
+      - "Agricultural AI advisory services"
+      - "Quality control automation"
+      - "Supply chain optimization"
+      - "Crop disease prediction models"
+      - "Customer application training AI"
+    decision_makers:
+      - "CIAGROPA CEO/Director"
+      - "R&D Director"
+      - "Commercial Director"
+
+research:
+  depth: "comprehensive"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+    - digital_transformation
+
+  priority_queries:
+    - "CIAGROPA Paraguay agrochemicals"
+    - "CIAGROPA productos agroquimicos"
+    - "CIAGROPA innovation technology"
+    - "Paraguay agrochemical companies"
+    - "CIAGROPA herbicides fungicides"
