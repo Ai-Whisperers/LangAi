@@ -11,8 +11,9 @@ company:
   details:
     founded: 2008
     headquarters: "Asuncion, Paraguay"
-    ceo: null  # To research
-    employees: "2,000+"
+    ceo: null  # Regional leadership
+    employees: "507"
+    revenue: "$150M (2024)"
     market_share: "~25%"
     notes: |
       - Part of America Movil (Carlos Slim) - largest LATAM telecom

@@ -1,0 +1,51 @@
+# Mango App - Leading FinTech Startup
+company:
+  name: "Mango App"
+  legal_name: "Mango App Paraguay"
+  ticker: null  # Startup
+  exchange: null
+  website: "https://mangoapp.com.py"
+  industry: "FinTech / Digital Banking"
+  country: "Paraguay"
+
+  details:
+    founded: null  # Recent startup
+    headquarters: "Asuncion, Paraguay"
+    ceo: null  # To research
+    employees: null
+    funding_status: "Funded"
+    notes: |
+      - Leading FinTech startup in Paraguay
+      - Simplifies banking and financial transactions
+      - Features: QR code payments, bill splitting, smartphone withdrawals
+      - Secure, accessible financial services
+      - No additional costs or commissions
+      - Part of Paraguay's growing fintech ecosystem (#87 globally)
+      - DISRUPTIVE: Democratizing financial services
+
+  ai_opportunity:
+    tier: 2
+    budget_capacity: "Medium (Startup)"
+    use_cases:
+      - "AI fraud detection"
+      - "Customer behavior analytics"
+      - "Risk scoring models"
+      - "Chatbot customer service"
+      - "Personalized financial recommendations"
+      - "Transaction anomaly detection"
+    decision_makers:
+      - "Mango App CEO/Founder"
+      - "CTO"
+
+research:
+  depth: "standard"
+  focus_areas:
+    - financial
+    - market
+    - competitor
+
+  priority_queries:
+    - "Mango App Paraguay fintech"
+    - "Mango App Paraguay funding investment"
+    - "Paraguay digital banking startups"
+    - "Mango App QR payments Paraguay"

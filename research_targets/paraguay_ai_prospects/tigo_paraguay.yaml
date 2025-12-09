@@ -11,17 +11,20 @@ company:
   details:
     founded: 1991
     headquarters: "Asuncion, Paraguay"
-    ceo: null  # To research
+    ceo: "Roberto Laratro Bosch (since May 2024)"
+    parent_ceo: "Marcelo Benitez (Millicom CEO, first Paraguayan to lead)"
     employees: "3,000+"
     market_share: "55%"
     notes: |
       - Market leader with 55% telecom market share
       - Part of Millicom International Cellular (NASDAQ: TIGO)
+      - Marcelo Benitez (Paraguayan) became Millicom CEO June 2024
       - 37% EBITDA margins
       - Exclusive sports content partnerships
       - SD-WAN and cloud gateway services for enterprise
-      - Did NOT bid on 5G spectrum (Chinese equipment issue)
+      - 5G spectrum bidding planned for 2025 (CONATEL working group)
       - Strong B2B enterprise segment
+      - Digital transformation leader in LATAM
 
   ai_opportunity:
     tier: 1
@@ -34,8 +37,8 @@ company:
       - "Enterprise AI solutions for B2B clients"
       - "Fraud detection in mobile money/billing"
     decision_makers:
-      - "Millicom LATAM leadership"
-      - "Paraguay Country Manager (to research)"
+      - "Roberto Laratro Bosch (CEO Tigo Paraguay)"
+      - "Marcelo Benitez (CEO Millicom)"
 
 research:
   depth: "comprehensive"

@@ -9,17 +9,25 @@ company:
   country: "Paraguay"
 
   details:
-    founded: null  # To research
-    headquarters: "Paraguay"
-    ceo: null  # To research
-    employees: null
+    founded: 1973
+    headquarters: "Fernando de la Mora, Central, Paraguay"
+    ceo: null  # Not publicly disclosed
+    employees: "900+"
+    commercial_force: "230+ sales staff"
+    certifications:
+      - "ISO 9001:2015"
+      - "GMP (Good Manufacturing Practices)"
+    experience: "50+ years in pharmaceutical industry"
     notes: |
-      - Major Paraguayan pharmaceutical manufacturer
+      - LEADING company in Paraguayan pharmaceutical industry
+      - 50+ years of experience since 1973
+      - 900+ specialized employees
+      - 230+ commercial force staff
+      - Products: injectables, tablets, suspensions, syrups, drops, ointments
+      - ISO 9001:2015 and GMP certified
+      - Continuous technology investment
       - Part of Paraguay's $550M pharmaceutical market
-      - Local production capability
-      - Competes with generic imports from Argentina, Brazil
-      - Paraguay market growing for healthcare products
-      - OPPORTUNITY: Manufacturing AI, quality control
+      - OPPORTUNITY: Manufacturing AI, quality control automation
 
   ai_opportunity:
     tier: 2

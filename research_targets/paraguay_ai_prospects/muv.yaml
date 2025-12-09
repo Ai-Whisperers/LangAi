@@ -1,0 +1,48 @@
+# MUV - Ride-Sharing Platform
+company:
+  name: "MUV"
+  legal_name: "MUV Paraguay"
+  ticker: null  # Startup
+  exchange: null
+  website: "https://muv.com.py"
+  industry: "Mobility / Ride-Sharing"
+  country: "Paraguay"
+
+  details:
+    founded: null  # Recent startup
+    headquarters: "Asuncion, Paraguay"
+    ceo: null  # To research
+    employees: null
+    notes: |
+      - Paraguay's ride-sharing platform
+      - Focus on safety, efficiency, affordability
+      - Reliable ride booking platform
+      - Transforming ride-sharing economy in Paraguay
+      - Local alternative to Uber
+      - Growing mobility market in Asuncion
+
+  ai_opportunity:
+    tier: 3
+    budget_capacity: "Low-Medium (Startup)"
+    use_cases:
+      - "Dynamic pricing optimization"
+      - "Route optimization AI"
+      - "Demand prediction"
+      - "Driver-rider matching algorithms"
+      - "Safety monitoring AI"
+      - "Customer satisfaction prediction"
+    decision_makers:
+      - "MUV CEO/Founder"
+      - "Operations Director"
+
+research:
+  depth: "standard"
+  focus_areas:
+    - market
+    - competitor
+
+  priority_queries:
+    - "MUV Paraguay ride sharing"
+    - "MUV Paraguay taxi app"
+    - "Paraguay mobility startups"
+    - "Asuncion ride sharing market"

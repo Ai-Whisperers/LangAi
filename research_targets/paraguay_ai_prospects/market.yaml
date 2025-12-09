@@ -59,27 +59,44 @@ market:
     tech_infrastructure:
       - "X8 Cloud Paraguay ($500M AI data center)"
 
+    fintech_startups:
+      - "Mango App (Digital banking, QR payments)"
+      - "eCLUB (First contactless Mastercard in Paraguay, $1M funded)"
+      - "MUV (Ride-sharing platform)"
+      - "Monchis (Delivery app, 70K+ customers)"
+
   notes: |
     SECTORS (NO BANKS - per client preference):
 
-    TIER 1 - HIGH VALUE:
-    - Centro Medico Bautista (Largest hospital, 100K+ patients/year)
+    TIER 1 - HIGH VALUE (23 companies total):
+    - Grupo Vierci (18,300 employees, Bloomberg Top 500 LATAM 2024)
+    - Centro Medico Bautista (100K+ patients/year, 7 decades)
+    - Tigo Paraguay (CEO: Roberto Laratro Bosch, 55% market share)
     - CIAGROPA (National agrochemical leader)
     - UAV LATAM (Drones + AI for agriculture)
     - X8 Cloud (Strategic AI infrastructure partner)
+    - INDUFAR (900+ employees, 50 years, ISO certified)
 
     TIER 2 - STRONG PROSPECTS:
-    - Grupo Vierci (Media/Retail conglomerate)
-    - Tigo/Claro (Telecom giants)
-    - Cargill/ADM/Bunge (Global agribusiness)
-    - INDUFAR/QUIMFA (Pharmaceutical)
-    - Sanatorio San Roque (Healthcare)
-    - PZ Flight (Aviation training)
+    - Claro Paraguay (507 employees, $150M revenue, 5G pioneer)
+    - Cargill/ADM/Bunge (Global agribusiness, GPS traceability)
+    - Sanatorio San Roque (Est. 1944, healthcare)
+    - PZ Flight (Leading aviation academy)
+    - Mango App (FinTech leader)
+    - eCLUB ($1M funded, first contactless Mastercard)
+    - Monchis (70K+ customers, delivery)
 
     TIER 3 - EMERGING:
     - Chakair (Flight training)
     - Chemtec (Chemicals)
     - Agro Quimica (Agrochemicals)
+    - MUV (Ride-sharing)
+    - QUIMFA (Pharmaceutical)
+
+    KEY LEADERSHIP (Researched 2024):
+    - Tigo Paraguay CEO: Roberto Laratro Bosch (May 2024)
+    - Millicom CEO: Marcelo Benitez (First Paraguayan, June 2024)
+    - Grupo Vierci CEO: Antonio J. Vierci Mendoza
 
     KEY MARKET INSIGHTS:
     - Paraguay: $550M pharmaceutical market
@@ -87,5 +104,7 @@ market:
     - Paraguay: 8.5M hectares soy cultivation (drone opportunity)
     - Paraguay: 99.9% renewable energy (Itaipu) attracts AI data centers
     - Paraguay: 50 ICAO airports + 432 private airstrips
-    - Paraguay: Growing private healthcare sector
+    - Paraguay: Startup ecosystem valued at $300M+ (2024)
+    - Paraguay: FinTech ecosystem ranked #87 globally
+    - Paraguay: 5G spectrum bidding planned 2025 (CONATEL)
     - BB+ credit rating (Fitch/S&P) - stable investment climate
