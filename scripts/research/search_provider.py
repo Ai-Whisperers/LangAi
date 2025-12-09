@@ -1048,6 +1048,36 @@ class OptimizedSearchClient:
         # Log available providers
         self._log_available_providers()
 
+    def _log_available_providers(self) -> None:
+        """Log which search providers are available and configured."""
+        providers = []
+
+        # Check DuckDuckGo (always available, no API key needed)
+        providers.append("DuckDuckGo (FREE)")
+
+        # Check Serper
+        if self.serper.is_available():
+            providers.append("Serper (FREE tier)")
+
+        # Check Brave
+        if self.brave.is_available():
+            providers.append("Brave (FREE tier)")
+
+        # Check Google
+        if self.google.is_available():
+            providers.append("Google (FREE tier)")
+
+        # Check Bing
+        if self.bing.is_available():
+            providers.append("Bing (FREE tier)")
+
+        # Check Tavily (paid)
+        if not self.tavily.is_rate_limited():
+            providers.append("Tavily (PAID)")
+
+        print(f"[SEARCH] Available providers: {', '.join(providers)}")
+        print(f"[SEARCH] Active strategy: {self.config.search_strategy}")
+
     async def search(
         self,
         query: str,
