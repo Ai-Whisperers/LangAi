@@ -1,0 +1,426 @@
+# =============================================================================
+# RESEARCH CONFIGURATION - OPTIMIZED FOR 100+ SOURCES
+# =============================================================================
+#
+# This configuration is optimized for comprehensive research with 100+ sources.
+# Modify values based on your needs (speed vs. thoroughness vs. cost).
+#
+# QUICK REFERENCE - Source Count Formula:
+#   Sources = (base_queries × multiplier) × results_per_query
+#
+#   Current: (8 × 3.0) × 10 = 240 theoretical max
+#   After deduplication & failures: ~100-150 unique sources
+#
+# =============================================================================
+
+# =============================================================================
+# OUTPUT SETTINGS
+# =============================================================================
+# Controls where reports are saved and in what formats.
+#
+# Folder structure created:
+#   outputs/research/
+#   ├── {company_name}/           # One folder per company
+#   │   ├── 00_full_report.md     # Complete report
+#   │   ├── 01_executive_summary.md
+#   │   ├── 02_company_overview.md
+#   │   ├── 03_financials.md
+#   │   ├── 04_market_position.md
+#   │   ├── 05_competitive_analysis.md
+#   │   ├── 06_strategy.md
+#   │   ├── 07_sources.md         # All sources with snippets
+#   │   ├── README.md             # Index/navigation
+#   │   ├── metrics.json          # Machine-readable metrics
+#   │   └── financial_data.json   # Yahoo Finance data (if available)
+#   └── comparisons/              # Market comparison reports
+
+output:
+  # Base directory for ALL research output (unified across all runs)
+  base_dir: "outputs/research"
+
+  # Output formats to generate
+  # OPTIONS:
+  #   - md     : Markdown files (always recommended, fast)
+  #   - pdf    : PDF report (requires reportlab library)
+  #   - excel  : Excel spreadsheet (requires openpyxl library)
+  formats:
+    - md
+    # - pdf    # Uncomment to enable PDF generation
+    # - excel  # Uncomment to enable Excel generation
+
+  # Generate comparison report when researching multiple companies
+  generate_comparison: true
+
+
+# =============================================================================
+# RESEARCH DEPTH
+# =============================================================================
+# Controls how many base queries are generated.
+#
+# OPTIONS:
+#   quick         : 4 base queries  → 12 queries in free_first → ~60-80 sources
+#   standard      : 6 base queries  → 18 queries in free_first → ~90-120 sources
+#   comprehensive : 8 base queries  → 24 queries in free_first → ~120-180 sources
+#
+# RECOMMENDATION: Use "comprehensive" for 100+ sources guarantee
+
+depth: comprehensive
+
+
+# =============================================================================
+# SEARCH STRATEGY (Most Important for Source Count!)
+# =============================================================================
+# This section directly controls how many sources you get.
+
+search:
+  # STRATEGY OPTIONS:
+  #
+  # ┌───────────────┬──────────┬─────────┬──────────────────────────────────────────────────┐
+  # │ Strategy      │ Cost     │ Sources │ Description                                      │
+  # ├───────────────┼──────────┼─────────┼──────────────────────────────────────────────────┤
+  # │ free_first    │ FREE+$   │ 100+    │ CASCADE: DDG→Serper→Brave→Google→Bing→Tavily     │
+  # │ maximum_free  │ FREE+$   │ 100+    │ Same as free_first (alias)                       │
+  # │ free_only     │ FREE     │ 80-150  │ CASCADE: DDG→Serper→Brave→Google→Bing (NO Tavily)│
+  # │ auto          │ $$       │ 30-60   │ Tavily first, fallback to free                   │
+  # │ tavily_only   │ $$$      │ 20-40   │ Only Tavily (highest quality)                    │
+  # └───────────────┴──────────┴─────────┴──────────────────────────────────────────────────┘
+  #
+  # PROVIDER CASCADE ORDER (for free_first/free_only/maximum_free):
+  #   1. DuckDuckGo - FREE, no API key (but heavily rate limited)
+  #   2. Serper     - 2,500 free queries (Google results, FAST) [RECOMMENDED]
+  #   3. Brave      - 2,000 free/month (independent index)
+  #   4. Google     - 100 free/day (requires setup)
+  #   5. Bing       - 1,000 free/month (requires Azure)
+  #   6. Tavily     - PAID ONLY (used only when ALL free fail, if free_first)
+  #
+  # RECOMMENDATION for 100+ sources: "free_first" with SERPER_API_KEY configured
+  # Get free Serper key: https://serper.dev (2,500 free queries)
+  strategy: free_first
+
+  # MINIMUM FREE SOURCES TARGET
+  # The system will generate enough queries to try to reach this target.
+  # Higher = more queries = more sources = longer research time
+  #
+  # OPTIONS:
+  #   50   : Quick research (~2-3 min)
+  #   100  : Standard research (~4-5 min) [RECOMMENDED]
+  #   150  : Thorough research (~6-8 min)
+  #   200  : Very thorough (~10+ min)
+  min_free_sources: 150
+
+  # RESULTS PER QUERY (DuckDuckGo)
+  # How many results to fetch per search query.
+  #
+  # OPTIONS:
+  #   5  : Fast but fewer sources per query
+  #   10 : Balanced [RECOMMENDED]
+  #   15 : More sources but slower, may hit rate limits
+  #   20 : Maximum, high risk of rate limiting
+  #
+  # NOTE: DuckDuckGo may return fewer results than requested
+  free_max_results_per_query: 10
+
+  # QUERY MULTIPLIER
+  # Multiplies the base query count for free_first/free_only strategies.
+  #
+  # Formula: total_queries = base_queries × multiplier
+  #
+  # OPTIONS:
+  #   2.0 : 8×2 = 16 queries → ~80 sources
+  #   3.0 : 8×3 = 24 queries → ~120 sources [RECOMMENDED]
+  #   4.0 : 8×4 = 32 queries → ~160 sources (slower, may hit limits)
+  #   5.0 : 8×5 = 40 queries → ~200 sources (slowest)
+  free_query_multiplier: 3.0
+
+  # TAVILY REFINEMENT (for free_first strategy only)
+  # After collecting free sources, use Tavily for high-quality refinement.
+  #
+  # true  : Adds 3-5 high-quality sources from Tavily (costs ~$0.02)
+  # false : Skip Tavily, use only free sources
+  #
+  # RECOMMENDATION: true for best quality, false for completely free
+  tavily_refinement: true
+
+  # MAX TAVILY REFINEMENT QUERIES
+  # Number of Tavily queries for refinement (only if tavily_refinement: true)
+  #
+  # OPTIONS:
+  #   3 : Minimal refinement (~$0.01)
+  #   5 : Standard refinement (~$0.02) [RECOMMENDED]
+  #   10: Thorough refinement (~$0.04)
+  max_tavily_refinement_queries: 5
+
+
+# =============================================================================
+# CACHING & PREVIOUS RESEARCH REUSE
+# =============================================================================
+# Saves time and tokens by reusing previous research data.
+
+cache:
+  # Enable search result caching (reduces duplicate API calls)
+  enabled: true
+
+  # Cache time-to-live in days
+  # How long cached search results are considered valid
+  #
+  # OPTIONS:
+  #   1  : Very fresh data only
+  #   7  : Weekly refresh [RECOMMENDED]
+  #   14 : Bi-weekly refresh
+  #   30 : Monthly refresh
+  ttl_days: 7
+
+  # Force refresh (bypass all caches)
+  # Set to true to ignore cache and fetch fresh data
+  force_refresh: false
+
+  # PREVIOUS RESEARCH REUSE
+  # Reuse sources from previous research runs for the same company.
+  # This saves significant time on re-research.
+  #
+  # true  : Merge previous sources with new ones [RECOMMENDED]
+  # false : Always start fresh
+  reuse_previous_research: true
+
+  # Verify previous research content is still valid
+  # Checks if previous sources are still accessible
+  verify_previous_content: true
+
+  # Maximum age for previous research (in days)
+  # Research older than this is considered stale and will be refreshed
+  #
+  # OPTIONS:
+  #   7  : Weekly refresh
+  #   14 : Bi-weekly refresh
+  #   30 : Monthly refresh [RECOMMENDED]
+  #   60 : Bi-monthly refresh
+  max_previous_age_days: 30
+
+
+# =============================================================================
+# GAP-FILLING (Iterative Quality Improvement)
+# =============================================================================
+# After initial research, the system detects missing information and
+# runs additional targeted searches to fill gaps.
+
+gap_filling:
+  # Enable iterative gap-filling
+  # true  : Run additional searches to fill data gaps [RECOMMENDED]
+  # false : Skip gap-filling, use initial results only
+  enabled: true
+
+  # Maximum gap-filling iterations
+  # Each iteration runs 4 additional targeted queries
+  #
+  # OPTIONS:
+  #   1 : Quick, minimal gap-filling
+  #   2 : Standard gap-filling
+  #   3 : Thorough gap-filling [RECOMMENDED]
+  #   5 : Very thorough (may add significant time)
+  max_iterations: 3
+
+  # Minimum quality score to accept (0-100)
+  # Research stops when this score is reached
+  #
+  # Quality Score Breakdown:
+  #   - Base: 30 points
+  #   - Sources (15+ = 15 pts, 10+ = 12 pts, 5+ = 8 pts)
+  #   - Section completeness (up to 30 pts)
+  #   - Financial data presence (up to 15 pts)
+  #   - Content depth (up to 10 pts)
+  #
+  # OPTIONS:
+  #   70  : Acceptable quality (some gaps ok)
+  #   80  : Good quality
+  #   85  : High quality [RECOMMENDED]
+  #   90  : Very high quality (may require many iterations)
+  min_quality_score: 85.0
+
+  # Maximum high-priority gaps to tolerate
+  # High-priority gaps: market_cap, stock_price, revenue_segments, pe_ratio
+  #
+  # OPTIONS:
+  #   1 : Very strict (may require many iterations)
+  #   2 : Strict
+  #   3 : Balanced [RECOMMENDED]
+  #   5 : Lenient (faster completion)
+  max_gaps_allowed: 2
+
+
+# =============================================================================
+# DOMAIN FILTERING
+# =============================================================================
+# Control which websites are used as sources.
+# Include = prioritize these domains
+# Exclude = never use these domains
+
+domains:
+  # High-quality source domains to PRIORITIZE
+  # Sources from these domains are considered more authoritative
+  include:
+    # Official & Regulatory
+    - sec.gov              # SEC filings (10-K, 10-Q, 8-K)
+    - investor.com         # Investor relations
+
+    # Premium Financial News
+    - reuters.com
+    - bloomberg.com
+    - wsj.com              # Wall Street Journal
+    - ft.com               # Financial Times
+    - barrons.com
+
+    # Financial Data
+    - marketwatch.com
+    - finance.yahoo.com
+    - investing.com
+    - seekingalpha.com
+    - morningstar.com
+    - zacks.com
+
+    # Business Intelligence
+    - crunchbase.com
+    - pitchbook.com
+    - cbinsights.com
+    - owler.com
+
+    # Professional Networks
+    - linkedin.com
+    - glassdoor.com
+
+    # Research & Consulting
+    - mckinsey.com
+    - bcg.com
+    - bain.com
+    - deloitte.com
+    - pwc.com
+    - ey.com
+    - kpmg.com
+    - hbr.org              # Harvard Business Review
+    - forrester.com
+    - gartner.com
+    - idc.com
+    - statista.com
+
+    # Tech News (for tech companies)
+    - techcrunch.com
+    - theverge.com
+    - wired.com
+    - arstechnica.com
+    - zdnet.com
+    - venturebeat.com
+
+    # Business News
+    - cnbc.com
+    - bbc.com/news/business
+    - theguardian.com/business
+    - businessinsider.com
+    - fortune.com
+    - forbes.com
+    - inc.com
+    - entrepreneur.com
+
+  # Low-quality domains to EXCLUDE
+  # These will never be used as sources
+  exclude:
+    # User-generated content (unreliable)
+    - wikipedia.org        # Can be edited by anyone
+    - reddit.com
+    - quora.com
+    - answers.com
+
+    # Social media (not research-grade)
+    - facebook.com
+    - twitter.com
+    - x.com
+    - instagram.com
+    - tiktok.com
+    - pinterest.com
+    - tumblr.com
+
+    # Blog platforms (variable quality)
+    - medium.com
+    - wordpress.com
+    - blogger.com
+    - substack.com
+
+    # Content farms
+    - buzzfeed.com
+    - huffpost.com
+
+    # Job sites (not company research)
+    - indeed.com
+    - monster.com
+    - ziprecruiter.com
+
+
+# =============================================================================
+# RATE LIMITING
+# =============================================================================
+# Prevents getting blocked by search providers.
+# Lower delays = faster but higher risk of rate limiting.
+
+rate_limiting:
+  # Maximum retries per failed query
+  # OPTIONS: 1-5 (higher = more resilient but slower on failures)
+  max_retries: 3
+
+  # Base delay between queries (seconds)
+  # OPTIONS:
+  #   0.5 : Fast, may hit rate limits
+  #   1.0 : Balanced [RECOMMENDED]
+  #   2.0 : Safe, slower
+  base_delay_seconds: 1.0
+
+  # DuckDuckGo-specific delay (seconds)
+  # DuckDuckGo is more aggressive with rate limiting
+  # OPTIONS:
+  #   1.0 : Fast, may get blocked
+  #   2.0 : Safe [RECOMMENDED]
+  #   3.0 : Very safe, slow
+  duckduckgo_delay_seconds: 2.0
+
+
+# =============================================================================
+# CONFIGURATION PRESETS
+# =============================================================================
+# Copy one of these preset blocks to quickly configure for your use case.
+#
+# PRESET: MAXIMUM SOURCES (150+)
+# ─────────────────────────────
+# depth: comprehensive
+# search:
+#   strategy: free_only
+#   min_free_sources: 150
+#   free_max_results_per_query: 15
+#   free_query_multiplier: 4.0
+#   tavily_refinement: false
+# gap_filling:
+#   enabled: true
+#   max_iterations: 4
+#   min_quality_score: 80.0
+#
+# PRESET: FAST RESEARCH (~50 sources, 2 min)
+# ──────────────────────────────────────────
+# depth: quick
+# search:
+#   strategy: free_first
+#   min_free_sources: 50
+#   free_max_results_per_query: 8
+#   free_query_multiplier: 2.0
+#   tavily_refinement: false
+# gap_filling:
+#   enabled: false
+#
+# PRESET: HIGHEST QUALITY (Paid)
+# ──────────────────────────────
+# depth: comprehensive
+# search:
+#   strategy: auto
+#   tavily_refinement: true
+#   max_tavily_refinement_queries: 10
+# gap_filling:
+#   enabled: true
+#   max_iterations: 5
+#   min_quality_score: 90.0
+#
+# =============================================================================

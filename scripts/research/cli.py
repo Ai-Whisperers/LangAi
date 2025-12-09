@@ -2,6 +2,7 @@
 Research CLI Module.
 
 Command-line interface for the comprehensive research runner.
+Settings are loaded from research_config.yaml - edit that file to change defaults.
 """
 
 import argparse
@@ -9,19 +10,23 @@ import asyncio
 import sys
 import yaml
 from pathlib import Path
-from typing import Optional
 
 from .config import CompanyProfile
+from .config_loader import load_config, get_config
 
 
 def create_argument_parser() -> argparse.ArgumentParser:
     """Create the argument parser for the research CLI."""
     parser = argparse.ArgumentParser(
-        description="Comprehensive Company Research Runner",
+        description="Comprehensive Company Research Runner (settings from research_config.yaml)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
+Settings:
+  All settings are loaded from scripts/research/research_config.yaml
+  Edit that file to change defaults (search strategy, output folder, etc.)
+
 Examples:
-  # Research single company
+  # Research single company (uses config file settings)
   python run_research.py --company "Tesla"
 
   # Research from YAML profile
@@ -30,16 +35,19 @@ Examples:
   # Research all companies in a market folder
   python run_research.py --market research_targets/paraguay_telecom/
 
-  # Research with specific output formats
-  python run_research.py --market research_targets/telecom/ --formats md,pdf,excel
+  # Override depth for this run only
+  python run_research.py --company "Apple" --depth quick
 
-  # Generate comparison report
-  python run_research.py --market research_targets/telecom/ --compare
+  # Force refresh (ignore cache and previous research)
+  python run_research.py --company "Microsoft" --force-refresh
+
+  # Use Tavily-first strategy for this run
+  python run_research.py --company "Google" --tavily-first
 """
     )
 
-    # Input options (mutually exclusive group)
-    input_group = parser.add_argument_group("Input Options")
+    # Input options
+    input_group = parser.add_argument_group("Input Options (required)")
     input_group.add_argument(
         "--company", "-c",
         type=str,
@@ -56,68 +64,46 @@ Examples:
         help="Path to market folder with YAML files"
     )
 
-    # Output options
-    output_group = parser.add_argument_group("Output Options")
-    output_group.add_argument(
-        "--output", "-o",
-        type=str,
-        default="outputs/research",
-        help="Output directory for reports (default: outputs/research)"
-    )
-    output_group.add_argument(
-        "--formats", "-f",
-        type=str,
-        default="md",
-        help="Output formats (comma-separated): md,pdf,excel (default: md)"
-    )
-
-    # Research options
-    research_group = parser.add_argument_group("Research Options")
-    research_group.add_argument(
+    # Override options (optional - uses config file by default)
+    override_group = parser.add_argument_group("Override Options (optional - config file is default)")
+    override_group.add_argument(
         "--depth", "-d",
         type=str,
         choices=["quick", "standard", "comprehensive"],
-        default="comprehensive",
-        help="Research depth (default: comprehensive)"
+        help="Override research depth (default from config)"
     )
-    research_group.add_argument(
+    override_group.add_argument(
+        "--force-refresh",
+        action="store_true",
+        help="Force refresh (ignore cache and previous research)"
+    )
+    override_group.add_argument(
+        "--tavily-first",
+        action="store_true",
+        help="Use Tavily-first strategy (original behavior)"
+    )
+    override_group.add_argument(
+        "--no-gap-fill",
+        action="store_true",
+        help="Disable iterative gap-filling"
+    )
+    override_group.add_argument(
         "--compare",
         action="store_true",
         help="Generate comparison report for market research"
     )
-    research_group.add_argument(
-        "--no-compare",
-        action="store_true",
-        help="Skip comparison report for market research"
-    )
 
-    # Cache options
-    cache_group = parser.add_argument_group("Cache Options")
-    cache_group.add_argument(
-        "--no-cache",
+    # Utility options
+    util_group = parser.add_argument_group("Utility Options")
+    util_group.add_argument(
+        "--show-config",
         action="store_true",
-        help="Disable search result caching"
+        help="Show current configuration and exit"
     )
-    cache_group.add_argument(
-        "--cache-ttl",
-        type=int,
-        default=7,
-        help="Cache TTL in days (default: 7)"
-    )
-    cache_group.add_argument(
-        "--force-refresh",
+    util_group.add_argument(
+        "--show-previous",
         action="store_true",
-        help="Force refresh of cached data"
-    )
-    cache_group.add_argument(
-        "--cache-stats",
-        action="store_true",
-        help="Show cache statistics and exit"
-    )
-    cache_group.add_argument(
-        "--clear-cache",
-        action="store_true",
-        help="Clear the research cache and exit"
+        help="Show previous research status and exit"
     )
 
     return parser
@@ -127,6 +113,8 @@ async def run_research_cli(args: argparse.Namespace) -> int:
     """
     Run research based on CLI arguments.
 
+    Settings are loaded from research_config.yaml with optional CLI overrides.
+
     Args:
         args: Parsed command-line arguments
 
@@ -135,56 +123,69 @@ async def run_research_cli(args: argparse.Namespace) -> int:
     """
     # Import here to avoid circular imports
     from .researcher import ComprehensiveResearcher
+    from .research_memory import create_research_memory
 
-    # Handle cache operations
-    if args.cache_stats or args.clear_cache:
-        try:
-            from src.company_researcher.cache import create_cache
-            cache = create_cache(
-                cache_dir=Path(args.output) / ".cache",
-                ttl_days=args.cache_ttl,
-                enabled=True
-            )
+    # Load config file
+    cfg = get_config()
 
-            if args.cache_stats:
-                stats = cache.get_stats()
-                print("\n[CACHE STATISTICS]")
-                print(f"  Total entries: {stats.get('total_entries', 0)}")
-                print(f"  Cache size: {stats.get('size_mb', 0):.2f} MB")
-                print(f"  Hit rate: {stats.get('hit_rate', 0):.1%}")
-                return 0
+    # Handle utility options
+    if args.show_config:
+        print("\n[CONFIGURATION] Current settings from research_config.yaml:")
+        print("=" * 60)
+        print(f"  Output directory: {cfg.output.base_dir}")
+        print(f"  Output formats: {cfg.output.formats}")
+        print(f"  Research depth: {cfg.depth}")
+        print(f"  Search strategy: {cfg.search.strategy}")
+        print(f"  Min free sources: {cfg.search.min_free_sources}")
+        print(f"  Tavily refinement: {cfg.search.tavily_refinement}")
+        print(f"  Gap-filling enabled: {cfg.gap_filling.enabled}")
+        print(f"  Max iterations: {cfg.gap_filling.max_iterations}")
+        print(f"  Min quality score: {cfg.gap_filling.min_quality_score}")
+        print(f"  Cache enabled: {cfg.cache.enabled}")
+        print(f"  Reuse previous research: {cfg.cache.reuse_previous_research}")
+        print(f"  Max previous age (days): {cfg.cache.max_previous_age_days}")
+        print("=" * 60)
+        return 0
 
-            if args.clear_cache:
-                removed = cache.clear_all()
-                print(f"[CACHE] Cleared {removed} cached entries")
-                if not (args.company or args.profile or args.market):
-                    return 0
-
-        except ImportError:
-            print("[WARNING] Cache module not available")
-            if args.cache_stats or args.clear_cache:
-                return 1
+    if args.show_previous:
+        memory = create_research_memory(
+            output_base=cfg.output.base_dir,
+            max_age_days=cfg.cache.max_previous_age_days,
+        )
+        memory.print_status()
+        return 0
 
     # Require input option
     if not (args.company or args.profile or args.market):
         print("[ERROR] One of --company, --profile, or --market is required")
-        print("       Use --cache-stats or --clear-cache for cache-only operations")
+        print("       Use --show-config to see current settings")
+        print("       Use --show-previous to see previous research status")
         return 1
 
-    # Parse formats
-    formats = [f.strip() for f in args.formats.split(",")]
+    # Apply CLI overrides to config
+    search_strategy = cfg.search.strategy
+    if args.tavily_first:
+        search_strategy = "auto"  # Original Tavily-first behavior
 
-    # Determine cache settings
-    use_cache = not args.no_cache
+    fill_gaps = cfg.gap_filling.enabled
+    if args.no_gap_fill:
+        fill_gaps = False
 
-    # Create researcher
+    force_refresh = cfg.cache.force_refresh or args.force_refresh
+
+    # Show config info
+    print(f"\n[CONFIG] Settings from research_config.yaml:")
+    print(f"         Output: {cfg.output.base_dir}")
+    print(f"         Strategy: {search_strategy.upper()}")
+    print(f"         Min sources: {cfg.search.min_free_sources}")
+    print(f"         Reuse previous: {cfg.cache.reuse_previous_research}")
+
+    # Create researcher (uses config file automatically)
     researcher = ComprehensiveResearcher(
-        output_base=args.output,
-        formats=formats,
-        depth=args.depth,
-        use_cache=use_cache,
-        cache_ttl_days=args.cache_ttl,
-        force_refresh=args.force_refresh
+        depth=args.depth,  # CLI override if provided
+        force_refresh=force_refresh,
+        fill_gaps=fill_gaps,
+        search_strategy=search_strategy,
     )
 
     # Execute based on input type
@@ -209,7 +210,7 @@ async def run_research_cli(args: argparse.Namespace) -> int:
         return 0 if result.success else 1
 
     elif args.market:
-        generate_comparison = args.compare or not args.no_compare
+        generate_comparison = args.compare or cfg.output.generate_comparison
         results = await researcher.research_market(
             args.market,
             generate_comparison=generate_comparison

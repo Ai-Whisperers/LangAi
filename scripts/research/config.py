@@ -22,6 +22,8 @@ class CompanyProfile:
     """Company research profile from YAML."""
     name: str
     legal_name: str = ""
+    ticker: str = ""
+    exchange: str = ""
     website: str = ""
     industry: str = ""
     country: str = ""
@@ -30,11 +32,14 @@ class CompanyProfile:
     parent_ticker: str = ""
     founded: str = ""
     headquarters: str = ""
+    ceo: str = ""
+    employees: str = ""
     market_position: Dict[str, Any] = field(default_factory=dict)
     services: List[str] = field(default_factory=list)
     competitors: List[str] = field(default_factory=list)
     research_focus: List[str] = field(default_factory=list)
     priority_queries: List[str] = field(default_factory=list)
+    details: Dict[str, Any] = field(default_factory=dict)
     notes: str = ""
 
     @classmethod
@@ -91,22 +96,36 @@ class CompanyProfile:
                 elif isinstance(comp, dict):
                     competitors.append(comp.get("name", ""))
 
+        # Extract details (nested company info like CEO, headquarters, employees)
+        details = company.get("details", {})
+
+        # Extract values from details if present, otherwise from top-level
+        ceo = details.get("ceo", "") if details else ""
+        employees = details.get("employees", "") if details else ""
+        hq = details.get("headquarters", company.get("headquarters", "")) if details else company.get("headquarters", "")
+        founded_val = details.get("founded", company.get("founded", "")) if details else company.get("founded", "")
+
         return cls(
             name=company.get("name", ""),
             legal_name=company.get("legal_name", ""),
+            ticker=company.get("ticker", ""),
+            exchange=company.get("exchange", ""),
             website=company.get("website", ""),
             industry=company.get("industry", ""),
             country=company.get("country", ""),
             region=company.get("region", ""),
             parent_company=company.get("parent_company", ""),
             parent_ticker=company.get("parent_ticker", ""),
-            founded=str(company.get("founded", "")),
-            headquarters=company.get("headquarters", ""),
+            founded=str(founded_val),
+            headquarters=hq,
+            ceo=ceo,
+            employees=str(employees),
             market_position=company.get("market_position", {}),
             services=services,
             competitors=competitors,
             research_focus=research.get("focus_areas", []),
             priority_queries=research.get("priority_queries", []),
+            details=details,
             notes=company.get("notes", "")
         )
 
