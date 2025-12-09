@@ -5,6 +5,10 @@ Agents for comprehensive research:
 - DeepResearchAgent: Multi-iteration deep research
 - ReasoningAgent: Strategic reasoning and hypothesis testing
 - TrendAnalystAgent: Trend analysis and forecasting
+- EnhancedResearcherAgent: Advanced scraping with Firecrawl/ScrapeGraph
+- MetricsValidator: Data quality validation
+- DataThresholdChecker: Search results quality checking
+- QualityEnforcer: Report generation blocking
 """
 
 from .deep_research import (
@@ -31,6 +35,74 @@ from .trend_analyst import (
     Forecast,
     TrendAnalysis,
 )
+from .enhanced_researcher import (
+    EnhancedResearcherAgent,
+    enhanced_researcher_node,
+    create_enhanced_researcher_agent,
+)
+from .metrics_validator import (
+    MetricsValidator,
+    ValidationResult,
+    DataCategory,
+    CompanyType,
+    create_metrics_validator,
+)
+from .data_threshold import (
+    DataThresholdChecker,
+    ThresholdResult,
+    RetryStrategy,
+    create_threshold_checker,
+)
+from .quality_enforcer import (
+    QualityEnforcer,
+    QualityGateResult,
+    ReportStatus,
+    BlockReason,
+    create_quality_enforcer,
+)
+from .multilingual_search import (
+    MultilingualSearchGenerator,
+    MultilingualQuery,
+    Language,
+    Region,
+    create_multilingual_generator,
+)
+from .competitive_matrix import (
+    CompetitiveMatrixGenerator,
+    CompetitiveMatrix,
+    CompetitorProfile,
+    MatrixDimension,
+    CompetitivePosition,
+    create_competitive_matrix,
+)
+from .risk_quantifier import (
+    RiskQuantifier,
+    RiskAssessment,
+    Risk,
+    RiskCategory,
+    RiskLevel,
+    RiskProbability,
+    create_risk_quantifier,
+)
+from .investment_thesis import (
+    InvestmentThesisGenerator,
+    InvestmentThesis,
+    InvestmentRecommendation,
+    InvestmentHorizon,
+    InvestorProfile,
+    BullCase,
+    BearCase,
+    ValuationMetrics,
+    create_thesis_generator,
+)
+from .news_sentiment import (
+    NewsSentimentAnalyzer,
+    NewsSentimentProfile,
+    NewsArticle,
+    SentimentLevel,
+    NewsCategory,
+    create_sentiment_analyzer,
+)
 
 __all__ = [
     # Deep Research
@@ -54,4 +126,63 @@ __all__ = [
     "Trend",
     "Forecast",
     "TrendAnalysis",
+    # Enhanced Researcher (Firecrawl/ScrapeGraph)
+    "EnhancedResearcherAgent",
+    "enhanced_researcher_node",
+    "create_enhanced_researcher_agent",
+    # Metrics Validation
+    "MetricsValidator",
+    "ValidationResult",
+    "DataCategory",
+    "CompanyType",
+    "create_metrics_validator",
+    # Data Threshold
+    "DataThresholdChecker",
+    "ThresholdResult",
+    "RetryStrategy",
+    "create_threshold_checker",
+    # Quality Enforcer
+    "QualityEnforcer",
+    "QualityGateResult",
+    "ReportStatus",
+    "BlockReason",
+    "create_quality_enforcer",
+    # Multilingual Search
+    "MultilingualSearchGenerator",
+    "MultilingualQuery",
+    "Language",
+    "Region",
+    "create_multilingual_generator",
+    # Competitive Matrix
+    "CompetitiveMatrixGenerator",
+    "CompetitiveMatrix",
+    "CompetitorProfile",
+    "MatrixDimension",
+    "CompetitivePosition",
+    "create_competitive_matrix",
+    # Risk Quantifier
+    "RiskQuantifier",
+    "RiskAssessment",
+    "Risk",
+    "RiskCategory",
+    "RiskLevel",
+    "RiskProbability",
+    "create_risk_quantifier",
+    # Investment Thesis
+    "InvestmentThesisGenerator",
+    "InvestmentThesis",
+    "InvestmentRecommendation",
+    "InvestmentHorizon",
+    "InvestorProfile",
+    "BullCase",
+    "BearCase",
+    "ValuationMetrics",
+    "create_thesis_generator",
+    # News Sentiment
+    "NewsSentimentAnalyzer",
+    "NewsSentimentProfile",
+    "NewsArticle",
+    "SentimentLevel",
+    "NewsCategory",
+    "create_sentiment_analyzer",
 ]
