@@ -18,7 +18,7 @@ from datetime import datetime
 from enum import Enum
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
+from ...llm.smart_client import smart_completion
 from ...state import OverallState
 from ..base import get_agent_logger, create_empty_result
 
@@ -229,9 +229,8 @@ class DeepResearchAgent:
     """
 
     def __init__(self, config=None):
-        """Initialize agent."""
+        """Initialize agent (cost-optimized)."""
         self._config = config or get_config()
-        self._client = get_anthropic_client()
 
     def research(
         self,
@@ -330,25 +329,20 @@ class DeepResearchAgent:
             gaps=gaps
         )
 
-        # Call LLM
-        response = self._client.messages.create(
-            model=self._config.llm_model,
+        # Use smart_completion - routes to DeepSeek V3 for analysis
+        result = smart_completion(
+            prompt=prompt,
+            task_type="analysis",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=self._config.deep_research_max_tokens,
-            temperature=self._config.deep_research_temperature,
-            messages=[{"role": "user", "content": prompt}]
-        )
-
-        cost = calculate_cost(
-            response.usage.input_tokens,
-            response.usage.output_tokens
+            temperature=self._config.deep_research_temperature
         )
 
         return {
-            "analysis": safe_extract_text(response, agent_name="deep_research"),
-            "cost": cost,
+            "analysis": result.content,
+            "cost": result.cost,
             "tokens": {
-                "input": response.usage.input_tokens,
-                "output": response.usage.output_tokens
+                "input": result.input_tokens,
+                "output": result.output_tokens
             }
         }
 
@@ -414,16 +408,17 @@ class DeepResearchAgent:
             previous_queries=prev or "None"
         )
 
-        response = self._client.messages.create(
-            model=self._config.llm_model,
+        # Use smart_completion - routes to DeepSeek V3 for extraction
+        result = smart_completion(
+            prompt=prompt,
+            task_type="extraction",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=self._config.deep_research_query_max_tokens,
-            temperature=self._config.deep_research_query_temperature,
-            messages=[{"role": "user", "content": prompt}]
+            temperature=self._config.deep_research_query_temperature
         )
 
         # Parse queries from response
         queries = []
-        response_text = safe_extract_text(response, default="", agent_name="deep_research")
+        response_text = result.content
         for line in response_text.split("\n"):
             if "|" in line and "Priority" in line:
                 parts = line.split("|")

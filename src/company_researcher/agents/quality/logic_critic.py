@@ -21,12 +21,8 @@ logger = logging.getLogger(__name__)
 from ...config import get_config
 from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
-from ...quality.fact_extractor import (
-    FactExtractor,
-    ExtractedFact,
-    ExtractionResult,
-    FactCategory
-)
+# AI models for extraction
+from ...ai.extraction import ExtractedFact, FactCategory, FactType
 from ...quality.contradiction_detector import (
     ContradictionDetector,
     ContradictionReport,
@@ -139,6 +135,81 @@ class ResearchGap:
         }
 
 
+# ============================================================================
+# Simple Fact Extractor (uses AI models, no LLM calls)
+# ============================================================================
+
+def extract_facts_from_agent_output(output: Dict[str, Any], agent_name: str) -> List[ExtractedFact]:
+    """
+    Extract facts from agent output using AI models.
+
+    This is a simple extraction that converts agent output fields to ExtractedFact models.
+    No LLM calls - just structured field extraction.
+    """
+    facts = []
+
+    # Map agent names to fact categories
+    agent_category_map = {
+        "company_overview": FactCategory.COMPANY_INFO,
+        "financial": FactCategory.FINANCIAL,
+        "market": FactCategory.MARKET,
+        "product": FactCategory.PRODUCT,
+        "competitor": FactCategory.MARKET,
+        "leadership": FactCategory.LEADERSHIP,
+    }
+
+    category = agent_category_map.get(agent_name, FactCategory.NEWS)
+
+    def extract_value(data: Any, path: str = "") -> List[tuple]:
+        """Recursively extract key-value pairs from nested data."""
+        results = []
+        if isinstance(data, dict):
+            for key, value in data.items():
+                new_path = f"{path}.{key}" if path else key
+                if isinstance(value, (str, int, float, bool)) and value:
+                    results.append((new_path, str(value)))
+                else:
+                    results.extend(extract_value(value, new_path))
+        elif isinstance(data, list):
+            for i, item in enumerate(data[:10]):  # Limit list items
+                if isinstance(item, (str, int, float)):
+                    results.append((f"{path}[{i}]", str(item)))
+                elif isinstance(item, dict):
+                    results.extend(extract_value(item, f"{path}[{i}]"))
+        return results
+
+    # Extract all values from output
+    extracted = extract_value(output)
+
+    for field_path, value in extracted:
+        if len(value) > 10:  # Filter out very short values
+            # Determine fact type from field name
+            fact_type = FactType.OTHER
+            field_lower = field_path.lower()
+            if "revenue" in field_lower:
+                fact_type = FactType.REVENUE
+            elif "profit" in field_lower or "income" in field_lower:
+                fact_type = FactType.PROFIT
+            elif "employee" in field_lower:
+                fact_type = FactType.EMPLOYEE_COUNT
+            elif "headquarters" in field_lower or "location" in field_lower:
+                fact_type = FactType.HEADQUARTERS
+            elif "ceo" in field_lower or "founder" in field_lower:
+                fact_type = FactType.CEO
+            elif "market" in field_lower:
+                fact_type = FactType.MARKET_POSITION
+
+            facts.append(ExtractedFact(
+                category=category,
+                fact_type=fact_type,
+                value=value,
+                source_text=value[:500],  # Truncate long values
+                confidence=0.7,  # Default confidence for extracted facts
+            ))
+
+    return facts
+
+
 def identify_gaps(
     facts: List[ExtractedFact],
     agent_outputs: Dict[str, Any]
@@ -179,7 +250,7 @@ def identify_gaps(
         # Check specific fields
         for field in section_info["fields"]:
             field_covered = any(
-                field in fact.content.lower()
+                field in fact.source_text.lower()
                 for fact in section_facts
             )
             if not field_covered:
@@ -249,7 +320,7 @@ def calculate_comprehensive_quality(
     gap_score = max(0, min(100, gap_score))
 
     # Confidence score
-    high_confidence = sum(1 for f in facts if f.confidence_hint > 0.7)
+    high_confidence = sum(1 for f in facts if f.confidence > 0.7)
     if total_facts > 0:
         confidence_score = (high_confidence / total_facts) * 100
     else:
@@ -338,14 +409,13 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
 
     # Step 1: Extract facts from all agent outputs
     logger.debug("Step 1: Extracting facts")
-    extractor = FactExtractor()
     all_facts: List[ExtractedFact] = []
 
     for agent_name, output in agent_outputs.items():
         if isinstance(output, dict) and output:
-            result = extractor.extract_from_agent_output(output, agent_name)
-            all_facts.extend(result.facts)
-            logger.debug(f"  {agent_name}: {result.total_facts} facts extracted")
+            facts = extract_facts_from_agent_output(output, agent_name)
+            all_facts.extend(facts)
+            logger.debug(f"  {agent_name}: {len(facts)} facts extracted")
 
     logger.info(f"Total facts extracted: {len(all_facts)}")
 
@@ -499,13 +569,12 @@ def quick_logic_critic_node(state: OverallState) -> Dict[str, Any]:
 
     agent_outputs = state.get("agent_outputs", {})
 
-    # Extract facts
-    extractor = FactExtractor()
+    # Extract facts using AI models
     all_facts = []
     for agent_name, output in agent_outputs.items():
         if isinstance(output, dict):
-            result = extractor.extract_from_agent_output(output, agent_name)
-            all_facts.extend(result.facts)
+            facts = extract_facts_from_agent_output(output, agent_name)
+            all_facts.extend(facts)
 
     # Detect contradictions (no LLM)
     detector = ContradictionDetector(use_llm=False)

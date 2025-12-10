@@ -497,3 +497,59 @@ class QueryConfig:
             queries = [f"{q} {self.year}" for q in queries]
 
         return queries
+
+
+# ==============================================================================
+# AI-Powered Query Generation
+# ==============================================================================
+
+def generate_research_queries(
+    company_name: str,
+    context: Optional[Dict[str, Any]] = None,
+    num_queries: int = 10
+) -> List[str]:
+    """
+    Generate research queries using AI or legacy templates.
+
+    Args:
+        company_name: Company to research
+        context: Optional context dict with known information
+        num_queries: Number of queries to generate
+
+    Returns:
+        List of query strings
+    """
+    from company_researcher.ai.config import get_ai_config
+
+    config = get_ai_config()
+
+    if config.query_generation.enabled:
+        try:
+            from company_researcher.ai.query import get_query_generator, CompanyContext
+
+            # Build context
+            ctx = CompanyContext(
+                company_name=company_name,
+                known_industry=context.get("industry") if context else None,
+                known_region=context.get("region") if context else None,
+                known_country=context.get("country") if context else None,
+                is_public=context.get("is_public") if context else None,
+                stock_ticker=context.get("ticker") if context else None,
+            )
+
+            generator = get_query_generator()
+            result = generator.generate_queries(ctx, num_queries=num_queries)
+
+            return result.to_query_list()
+
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"AI query generation failed, using legacy: {e}")
+
+            if not config.query_generation.fallback_to_legacy:
+                raise
+            # Fall through to legacy
+
+    # Legacy template-based generation
+    return get_fallback_queries(company_name, count=num_queries)

@@ -1,33 +1,43 @@
 """
 Research CLI Module.
 
-Command-line interface for the comprehensive research runner.
-Settings are loaded from research_config.yaml - edit that file to change defaults.
+Thin CLI wrapper that uses src.company_researcher as the engine.
+All research logic is in src/company_researcher - this is just the CLI interface.
+
+Settings are loaded from research_config.yaml.
 """
 
 import argparse
 import asyncio
+import json
+import os
 import sys
 import yaml
+from datetime import datetime
 from pathlib import Path
+from typing import Dict, Any, List, Optional
 
-from .config import CompanyProfile
-from .config_loader import load_config, get_config
+# Import the main engine from src
+from src.company_researcher import (
+    execute_research,
+    ResearchDepth,
+)
+from src.company_researcher.graphs import research_graph
+from src.company_researcher.config import get_config as get_src_config
 
 
 def create_argument_parser() -> argparse.ArgumentParser:
     """Create the argument parser for the research CLI."""
     parser = argparse.ArgumentParser(
-        description="Comprehensive Company Research Runner (settings from research_config.yaml)",
+        description="Company Research CLI (powered by src.company_researcher)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Settings:
-  All settings are loaded from scripts/research/research_config.yaml
-  Edit that file to change defaults (search strategy, output folder, etc.)
-
 Examples:
-  # Research single company (uses config file settings)
+  # Research single company
   python run_research.py --company "Tesla"
+
+  # Research with specific depth
+  python run_research.py --company "Apple" --depth comprehensive
 
   # Research from YAML profile
   python run_research.py --profile research_targets/company.yaml
@@ -35,23 +45,20 @@ Examples:
   # Research all companies in a market folder
   python run_research.py --market research_targets/paraguay_telecom/
 
-  # Override depth for this run only
-  python run_research.py --company "Apple" --depth quick
+  # Use LangGraph workflow directly
+  python run_research.py --company "Google" --use-graph
 
-  # Force refresh (ignore cache and previous research)
-  python run_research.py --company "Microsoft" --force-refresh
-
-  # Use Tavily-first strategy for this run
-  python run_research.py --company "Google" --tavily-first
+  # Show current configuration
+  python run_research.py --show-config
 """
     )
 
     # Input options
-    input_group = parser.add_argument_group("Input Options (required)")
+    input_group = parser.add_argument_group("Input Options")
     input_group.add_argument(
         "--company", "-c",
         type=str,
-        help="Company name to research (or path to YAML file)"
+        help="Company name to research"
     )
     input_group.add_argument(
         "--profile", "-p",
@@ -64,30 +71,27 @@ Examples:
         help="Path to market folder with YAML files"
     )
 
-    # Override options (optional - uses config file by default)
-    override_group = parser.add_argument_group("Override Options (optional - config file is default)")
-    override_group.add_argument(
+    # Research options
+    research_group = parser.add_argument_group("Research Options")
+    research_group.add_argument(
         "--depth", "-d",
         type=str,
         choices=["quick", "standard", "comprehensive"],
-        help="Override research depth (default from config)"
+        default="standard",
+        help="Research depth level (default: standard)"
     )
-    override_group.add_argument(
-        "--force-refresh",
+    research_group.add_argument(
+        "--use-graph",
         action="store_true",
-        help="Force refresh (ignore cache and previous research)"
+        help="Use LangGraph workflow instead of orchestration engine"
     )
-    override_group.add_argument(
-        "--tavily-first",
-        action="store_true",
-        help="Use Tavily-first strategy (original behavior)"
+    research_group.add_argument(
+        "--output", "-o",
+        type=str,
+        default="outputs/research",
+        help="Output directory for reports"
     )
-    override_group.add_argument(
-        "--no-gap-fill",
-        action="store_true",
-        help="Disable iterative gap-filling"
-    )
-    override_group.add_argument(
+    research_group.add_argument(
         "--compare",
         action="store_true",
         help="Generate comparison report for market research"
@@ -101,137 +105,298 @@ Examples:
         help="Show current configuration and exit"
     )
     util_group.add_argument(
-        "--show-previous",
+        "--dry-run",
         action="store_true",
-        help="Show previous research status and exit"
+        help="Preview what would happen without executing"
+    )
+    util_group.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Enable verbose output"
     )
 
     return parser
 
 
-async def run_research_cli(args: argparse.Namespace) -> int:
+def get_depth_enum(depth_str: str) -> ResearchDepth:
+    """Convert string depth to ResearchDepth enum."""
+    mapping = {
+        "quick": ResearchDepth.QUICK,
+        "standard": ResearchDepth.STANDARD,
+        "comprehensive": ResearchDepth.COMPREHENSIVE,
+    }
+    return mapping.get(depth_str, ResearchDepth.STANDARD)
+
+
+def save_report(
+    company_name: str,
+    result: Dict[str, Any],
+    output_dir: str
+) -> Path:
+    """Save research report to file."""
+    # Create output directory
+    safe_name = company_name.lower().replace(" ", "_").replace("/", "_")
+    company_dir = Path(output_dir) / safe_name
+    company_dir.mkdir(parents=True, exist_ok=True)
+
+    # Save full report
+    report_content = result.get("report", "")
+    if report_content:
+        report_path = company_dir / "00_full_report.md"
+        report_path.write_text(report_content, encoding="utf-8")
+        print(f"  Report saved: {report_path}")
+
+    # Save metrics
+    metrics = {
+        "company_name": company_name,
+        "timestamp": datetime.now().isoformat(),
+        "total_cost": result.get("total_cost", 0),
+        "total_tokens": result.get("total_tokens", 0),
+        "queries_count": len(result.get("queries", [])),
+        "sources_count": len(result.get("search_results", [])),
+    }
+    metrics_path = company_dir / "metrics.json"
+    metrics_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
+
+    # Save extracted data
+    extracted = result.get("extracted_data", {})
+    if extracted:
+        data_path = company_dir / "extracted_data.json"
+        data_path.write_text(json.dumps(extracted, indent=2), encoding="utf-8")
+
+    return company_dir
+
+
+def run_graph_research(company_name: str, verbose: bool = False) -> Dict[str, Any]:
     """
-    Run research based on CLI arguments.
+    Run research using LangGraph workflow.
 
-    Settings are loaded from research_config.yaml with optional CLI overrides.
-
-    Args:
-        args: Parsed command-line arguments
-
-    Returns:
-        Exit code (0 for success, 1 for failure)
+    This uses src.company_researcher.graphs.research_graph directly.
     """
-    # Import here to avoid circular imports
-    from .researcher import ComprehensiveResearcher
-    from .research_memory import create_research_memory
+    print(f"\n{'='*60}")
+    print(f"  LangGraph Research: {company_name}")
+    print(f"{'='*60}\n")
 
-    # Load config file
-    cfg = get_config()
+    # Initialize state
+    initial_state = {
+        "company_name": company_name,
+        "queries": [],
+        "search_results": [],
+        "extracted_data": {},
+        "report": "",
+        "total_cost": 0.0,
+        "total_tokens": 0,
+        "error": None
+    }
+
+    # Run the graph
+    result = research_graph.invoke(initial_state)
+
+    if verbose:
+        print(f"\nQueries generated: {len(result.get('queries', []))}")
+        print(f"Search results: {len(result.get('search_results', []))}")
+        print(f"Total cost: ${result.get('total_cost', 0):.4f}")
+        print(f"Total tokens: {result.get('total_tokens', 0)}")
+
+    return result
+
+
+def run_orchestration_research(
+    company_name: str,
+    depth: ResearchDepth,
+    verbose: bool = False
+) -> Dict[str, Any]:
+    """
+    Run research using orchestration engine.
+
+    This uses src.company_researcher.orchestration.execute_research.
+    """
+    print(f"\n{'='*60}")
+    print(f"  Orchestration Research: {company_name}")
+    print(f"  Depth: {depth.value}")
+    print(f"{'='*60}\n")
+
+    # Execute research
+    result = execute_research(
+        company_name=company_name,
+        depth=depth
+    )
+
+    # Convert WorkflowState to dict
+    return {
+        "company_name": company_name,
+        "status": result.status.value,
+        "duration_seconds": result.duration_seconds,
+        "total_cost": result.total_cost,
+        "completed_nodes": list(result.completed_nodes),
+        "data": result.data,
+        "report": result.data.get("synthesis", {}).get("summary", ""),
+    }
+
+
+def load_company_profile(profile_path: str) -> Dict[str, Any]:
+    """Load company profile from YAML file."""
+    with open(profile_path) as f:
+        return yaml.safe_load(f)
+
+
+def get_market_companies(market_path: str) -> List[Dict[str, Any]]:
+    """Get all company profiles from a market directory."""
+    market_dir = Path(market_path)
+    companies = []
+
+    for yaml_file in market_dir.glob("*.yaml"):
+        if yaml_file.name.startswith("_"):  # Skip meta files
+            continue
+        try:
+            with open(yaml_file) as f:
+                data = yaml.safe_load(f)
+                if data and "name" in data:
+                    companies.append(data)
+        except Exception as e:
+            print(f"Warning: Could not load {yaml_file}: {e}")
+
+    return companies
+
+
+async def run_cli(args: argparse.Namespace) -> int:
+    """Run the CLI with parsed arguments."""
 
     # Handle utility options
     if args.show_config:
-        print("\n[CONFIGURATION] Current settings from research_config.yaml:")
-        print("=" * 60)
-        print(f"  Output directory: {cfg.output.base_dir}")
-        print(f"  Output formats: {cfg.output.formats}")
-        print(f"  Research depth: {cfg.depth}")
-        print(f"  Search strategy: {cfg.search.strategy}")
-        print(f"  Min free sources: {cfg.search.min_free_sources}")
-        print(f"  Tavily refinement: {cfg.search.tavily_refinement}")
-        print(f"  Gap-filling enabled: {cfg.gap_filling.enabled}")
-        print(f"  Max iterations: {cfg.gap_filling.max_iterations}")
-        print(f"  Min quality score: {cfg.gap_filling.min_quality_score}")
-        print(f"  Cache enabled: {cfg.cache.enabled}")
-        print(f"  Reuse previous research: {cfg.cache.reuse_previous_research}")
-        print(f"  Max previous age (days): {cfg.cache.max_previous_age_days}")
-        print("=" * 60)
-        return 0
-
-    if args.show_previous:
-        memory = create_research_memory(
-            output_base=cfg.output.base_dir,
-            max_age_days=cfg.cache.max_previous_age_days,
-        )
-        memory.print_status()
+        try:
+            config = get_src_config()
+            print("\n[CONFIGURATION] src.company_researcher config:")
+            print("=" * 60)
+            print(f"  LLM Model: {getattr(config, 'llm_model', 'default')}")
+            print(f"  Max tokens: {getattr(config, 'max_tokens', 4096)}")
+            print(f"  Results per query: {getattr(config, 'search_results_per_query', 5)}")
+            print(f"  Anthropic API: {'configured' if config.anthropic_api_key else 'not set'}")
+            print(f"  Tavily API: {'configured' if config.tavily_api_key else 'not set'}")
+            print("=" * 60)
+        except Exception as e:
+            print(f"[WARNING] Could not load src config: {e}")
         return 0
 
     # Require input option
     if not (args.company or args.profile or args.market):
         print("[ERROR] One of --company, --profile, or --market is required")
-        print("       Use --show-config to see current settings")
-        print("       Use --show-previous to see previous research status")
+        print("       Use --help for usage information")
         return 1
 
-    # Apply CLI overrides to config
-    search_strategy = cfg.search.strategy
-    if args.tavily_first:
-        search_strategy = "auto"  # Original Tavily-first behavior
+    # Determine research method
+    use_graph = args.use_graph
+    depth = get_depth_enum(args.depth)
+    output_dir = args.output
+    verbose = args.verbose
 
-    fill_gaps = cfg.gap_filling.enabled
-    if args.no_gap_fill:
-        fill_gaps = False
-
-    force_refresh = cfg.cache.force_refresh or args.force_refresh
-
-    # Show config info
-    print(f"\n[CONFIG] Settings from research_config.yaml:")
-    print(f"         Output: {cfg.output.base_dir}")
-    print(f"         Strategy: {search_strategy.upper()}")
-    print(f"         Min sources: {cfg.search.min_free_sources}")
-    print(f"         Reuse previous: {cfg.cache.reuse_previous_research}")
-
-    # Create researcher (uses config file automatically)
-    researcher = ComprehensiveResearcher(
-        depth=args.depth,  # CLI override if provided
-        force_refresh=force_refresh,
-        fill_gaps=fill_gaps,
-        search_strategy=search_strategy,
-    )
-
-    # Execute based on input type
-    import os
-
+    # Handle single company
     if args.company:
-        # Single company - check if it's a YAML file path or plain name
-        if args.company.endswith(('.yaml', '.yml')) and os.path.exists(args.company):
-            with open(args.company) as f:
-                data = yaml.safe_load(f)
-            profile = CompanyProfile.from_yaml(data)
-            result = await researcher.research_company(profile.name, profile)
-        else:
-            result = await researcher.research_company(args.company)
-        return 0 if result.success else 1
+        company_name = args.company
 
+        if args.dry_run:
+            print(f"[DRY-RUN] Would research: {company_name}")
+            print(f"          Depth: {args.depth}")
+            print(f"          Method: {'LangGraph' if use_graph else 'Orchestration'}")
+            print(f"          Output: {output_dir}")
+            return 0
+
+        try:
+            if use_graph:
+                result = run_graph_research(company_name, verbose)
+            else:
+                result = run_orchestration_research(company_name, depth, verbose)
+
+            # Save report
+            report_dir = save_report(company_name, result, output_dir)
+            print(f"\n✅ Research complete: {report_dir}")
+            return 0
+
+        except Exception as e:
+            print(f"\n❌ Research failed: {e}")
+            if verbose:
+                import traceback
+                traceback.print_exc()
+            return 1
+
+    # Handle profile
     elif args.profile:
-        with open(args.profile) as f:
-            data = yaml.safe_load(f)
-        profile = CompanyProfile.from_yaml(data)
-        result = await researcher.research_company(profile.name, profile)
-        return 0 if result.success else 1
+        profile = load_company_profile(args.profile)
+        company_name = profile.get("name", "Unknown")
 
+        if args.dry_run:
+            print(f"[DRY-RUN] Would research from profile: {args.profile}")
+            print(f"          Company: {company_name}")
+            return 0
+
+        try:
+            if use_graph:
+                result = run_graph_research(company_name, verbose)
+            else:
+                result = run_orchestration_research(company_name, depth, verbose)
+
+            report_dir = save_report(company_name, result, output_dir)
+            print(f"\n✅ Research complete: {report_dir}")
+            return 0
+
+        except Exception as e:
+            print(f"\n❌ Research failed: {e}")
+            return 1
+
+    # Handle market
     elif args.market:
-        generate_comparison = args.compare or cfg.output.generate_comparison
-        results = await researcher.research_market(
-            args.market,
-            generate_comparison=generate_comparison
-        )
-        successful = sum(1 for r in results if r.success)
+        companies = get_market_companies(args.market)
+
+        if not companies:
+            print(f"[ERROR] No company profiles found in {args.market}")
+            return 1
+
+        if args.dry_run:
+            print(f"[DRY-RUN] Would research {len(companies)} companies:")
+            for c in companies:
+                print(f"          - {c.get('name', 'Unknown')}")
+            return 0
+
+        print(f"\n📊 Market Research: {len(companies)} companies")
+        print("=" * 60)
+
+        results = []
+        for company in companies:
+            company_name = company.get("name", "Unknown")
+            print(f"\n→ Researching: {company_name}")
+
+            try:
+                if use_graph:
+                    result = run_graph_research(company_name, verbose)
+                else:
+                    result = run_orchestration_research(company_name, depth, verbose)
+
+                save_report(company_name, result, output_dir)
+                results.append({"company": company_name, "success": True})
+
+            except Exception as e:
+                print(f"  ❌ Failed: {e}")
+                results.append({"company": company_name, "success": False, "error": str(e)})
+
+        # Summary
+        successful = sum(1 for r in results if r["success"])
+        print(f"\n{'='*60}")
+        print(f"  Market Research Complete")
+        print(f"  Success: {successful}/{len(results)}")
+        print(f"{'='*60}")
+
         return 0 if successful == len(results) else 1
 
     return 1
 
 
-async def main() -> int:
-    """Main entry point for the research CLI."""
+def main():
+    """Main entry point."""
     parser = create_argument_parser()
     args = parser.parse_args()
-    return await run_research_cli(args)
 
-
-def run():
-    """Synchronous entry point."""
     try:
-        exit_code = asyncio.run(main())
+        exit_code = asyncio.run(run_cli(args))
         sys.exit(exit_code)
     except KeyboardInterrupt:
         print("\n[CANCELLED] Research cancelled by user")
@@ -244,4 +409,4 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    main()

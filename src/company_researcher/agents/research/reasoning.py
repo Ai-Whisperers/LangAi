@@ -18,7 +18,7 @@ from datetime import datetime
 from enum import Enum
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
+from ...llm.smart_client import smart_completion
 from ...state import OverallState
 from ..base import get_agent_logger, create_empty_result
 
@@ -257,9 +257,8 @@ class ReasoningAgent:
     """
 
     def __init__(self, config=None):
-        """Initialize agent."""
+        """Initialize agent (cost-optimized)."""
         self._config = config or get_config()
-        self._client = get_anthropic_client()
 
     def reason(
         self,
@@ -337,21 +336,17 @@ class ReasoningAgent:
             research_data=formatted_data
         )
 
-        response = self._client.messages.create(
-            model=self._config.llm_model,
+        # Use smart_completion - routes to DeepSeek V3 for analysis
+        result = smart_completion(
+            prompt=prompt,
+            task_type="analysis",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=self._config.reasoning_max_tokens,
-            temperature=self._config.reasoning_temperature,
-            messages=[{"role": "user", "content": prompt}]
-        )
-
-        cost = calculate_cost(
-            response.usage.input_tokens,
-            response.usage.output_tokens
+            temperature=self._config.reasoning_temperature
         )
 
         return {
-            "analysis": safe_extract_text(response, agent_name="reasoning"),
-            "cost": cost
+            "analysis": result.content,
+            "cost": result.cost
         }
 
     def _test_hypothesis(
@@ -365,21 +360,17 @@ class ReasoningAgent:
             evidence=evidence
         )
 
-        response = self._client.messages.create(
-            model=self._config.llm_model,
+        # Use smart_completion - routes to DeepSeek V3 for analysis
+        result = smart_completion(
+            prompt=prompt,
+            task_type="analysis",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=self._config.reasoning_hypothesis_max_tokens,
-            temperature=self._config.reasoning_hypothesis_temperature,
-            messages=[{"role": "user", "content": prompt}]
-        )
-
-        cost = calculate_cost(
-            response.usage.input_tokens,
-            response.usage.output_tokens
+            temperature=self._config.reasoning_hypothesis_temperature
         )
 
         return {
-            "analysis": safe_extract_text(response, agent_name="reasoning"),
-            "cost": cost
+            "analysis": result.content,
+            "cost": result.cost
         }
 
     def _strategic_inference(
@@ -395,21 +386,17 @@ class ReasoningAgent:
             data=formatted_data[:3000]  # Limit data
         )
 
-        response = self._client.messages.create(
-            model=self._config.llm_model,
+        # Use smart_completion - routes to DeepSeek V3 for analysis
+        result = smart_completion(
+            prompt=prompt,
+            task_type="analysis",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=self._config.reasoning_inference_max_tokens,
-            temperature=self._config.reasoning_inference_temperature,
-            messages=[{"role": "user", "content": prompt}]
-        )
-
-        cost = calculate_cost(
-            response.usage.input_tokens,
-            response.usage.output_tokens
+            temperature=self._config.reasoning_inference_temperature
         )
 
         return {
-            "analysis": safe_extract_text(response, agent_name="reasoning"),
-            "cost": cost
+            "analysis": result.content,
+            "cost": result.cost
         }
 
     def _format_research_data(self, data: Dict[str, Any]) -> str:

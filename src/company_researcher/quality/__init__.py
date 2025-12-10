@@ -54,6 +54,14 @@ from .cross_source_validator import (
     validate_research_data,
 )
 
+from .enhanced_contradiction_detector import (
+    EnhancedContradictionDetector,
+    ContradictionType,
+    ExtractedClaim,
+    Contradiction as EnhancedContradiction,
+    ContradictionReport as EnhancedContradictionReport,
+)
+
 # ============================================================================
 # Tracking Module
 # ============================================================================
@@ -102,15 +110,15 @@ from .confidence_scorer import (
 # Extraction Module
 # ============================================================================
 
-from .fact_extractor import (
-    FactExtractor,
+# AI-powered extraction (replaces legacy fact_extractor)
+from ..ai.extraction import (
+    AIDataExtractor as FactExtractor,  # Alias for backward compatibility
     ExtractedFact,
     ExtractionResult,
     FactCategory,
-    ClaimType,
-    extract_facts,
-    extract_from_all_agents
+    FactType as ClaimType,  # Alias for backward compatibility
 )
+# Note: extract_facts and extract_from_all_agents removed - use AIDataExtractor directly
 
 from .source_attribution import (
     SourceTracker as AttributionTracker,
@@ -152,6 +160,11 @@ __all__ = [
     "ConflictType",
     "ValidationResult",
     "validate_research_data",
+    "EnhancedContradictionDetector",
+    "ContradictionType",
+    "ExtractedClaim",
+    "EnhancedContradiction",
+    "EnhancedContradictionReport",
 
     # Tracking
     "SourceTracker",
@@ -183,14 +196,12 @@ __all__ = [
     "score_facts",
     "create_confidence_scorer",
 
-    # Extraction
+    # Extraction (AI-powered)
     "FactExtractor",
     "ExtractedFact",
     "ExtractionResult",
     "FactCategory",
     "ClaimType",
-    "extract_facts",
-    "extract_from_all_agents",
     "AttributionTracker",
     "SourceDocument",
     "Evidence",

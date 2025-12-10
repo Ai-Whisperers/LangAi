@@ -307,7 +307,7 @@ class BatchProcessor:
         self,
         companies: List[str],
         prompt_template: str,
-        model: str = "claude-sonnet-4-20250514",
+        model: str = "claude-sonnet-4-5-20250929",
         max_tokens: int = 1000,
         system_prompt: Optional[str] = None,
         wait: bool = True,
@@ -354,7 +354,7 @@ class BatchProcessor:
         self,
         companies: List[str],
         search_results_map: Dict[str, str],
-        model: str = "claude-sonnet-4-20250514",
+        model: str = "claude-sonnet-4-5-20250929",
         max_tokens: int = 1200
     ) -> Dict[str, BatchResult]:
         """

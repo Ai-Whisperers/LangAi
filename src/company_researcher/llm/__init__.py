@@ -114,6 +114,50 @@ from .batch_processor import (
     get_batch_processor,
 )
 
+# Web Search ($10/1K searches)
+from .web_search import (
+    ClaudeWebSearch,
+    WebSearchResult,
+    get_claude_web_search,
+)
+
+# DeepSeek (Ultra-low cost: $0.14/1M tokens)
+from .deepseek_client import (
+    DeepSeekClient,
+    DeepSeekResponse,
+    get_deepseek_client,
+    DEEPSEEK_PRICING,
+)
+
+# Smart Client (Automatic model routing for cost optimization)
+from .smart_client import (
+    SmartLLMClient,
+    CompletionResult,
+    get_smart_client,
+    smart_completion,
+    extract_data,
+    analyze_text,
+    generate_report,
+    print_llm_stats,
+)
+
+# Gemini (Search grounding + 2M context)
+from .gemini_client import (
+    GeminiClient,
+    GeminiResponse,
+    GeminiSource,
+    get_gemini_client,
+    GEMINI_PRICING,
+)
+
+# Groq (Ultra-fast: 1,300 tok/sec)
+from .groq_client import (
+    GroqClient,
+    GroqResponse,
+    get_groq_client,
+    GROQ_PRICING,
+)
+
 # Vision (image analysis)
 from .vision import (
     VisionAnalyzer,
@@ -210,6 +254,35 @@ __all__ = [
     "BatchResult",
     "BatchStatus",
     "get_batch_processor",
+    # Web Search
+    "ClaudeWebSearch",
+    "WebSearchResult",
+    "get_claude_web_search",
+    # DeepSeek
+    "DeepSeekClient",
+    "DeepSeekResponse",
+    "get_deepseek_client",
+    "DEEPSEEK_PRICING",
+    # Smart Client (Cost-optimized routing)
+    "SmartLLMClient",
+    "CompletionResult",
+    "get_smart_client",
+    "smart_completion",
+    "extract_data",
+    "analyze_text",
+    "generate_report",
+    "print_llm_stats",
+    # Gemini
+    "GeminiClient",
+    "GeminiResponse",
+    "GeminiSource",
+    "get_gemini_client",
+    "GEMINI_PRICING",
+    # Groq
+    "GroqClient",
+    "GroqResponse",
+    "get_groq_client",
+    "GROQ_PRICING",
     # Vision
     "VisionAnalyzer",
     "ImageAnalysisResult",

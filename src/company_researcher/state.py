@@ -99,6 +99,23 @@ class OverallState(TypedDict):
     iteration_count: int  # Number of research iterations
     missing_info: Optional[List[str]]  # Missing information to research
 
+    # Company Classification (First node)
+    company_classification: Optional[Dict[str, Any]]  # Full classification result
+    is_public_company: Optional[bool]  # True if publicly traded
+    stock_ticker: Optional[str]  # Stock ticker symbol
+    available_data_sources: Optional[List[str]]  # Available data sources
+
+    # SEC Data (US public companies)
+    sec_data: Optional[Dict[str, Any]]  # SEC EDGAR data
+
+    # Enhanced Analysis (Phase 2+)
+    competitive_matrix: Optional[Dict[str, Any]]  # Competitive analysis data
+    risk_profile: Optional[Dict[str, Any]]  # Risk assessment data
+    investment_thesis: Optional[Dict[str, Any]]  # Investment thesis data
+    news_sentiment: Optional[Dict[str, Any]]  # News sentiment analysis
+    detected_region: Optional[str]  # Detected geographic region
+    detected_language: Optional[str]  # Primary language for searches
+
     # Agent Coordination (Phase 3+)
     # Using merge_dicts allows concurrent updates from parallel agents (Phase 4)
     agent_outputs: Annotated[Optional[Dict[str, Any]], merge_dicts]  # Track agent contributions
@@ -160,6 +177,19 @@ def create_initial_state(company_name: str) -> OverallState:
         "quality_score": None,
         "iteration_count": 0,
         "missing_info": None,
+        # Company Classification
+        "company_classification": None,
+        "is_public_company": None,
+        "stock_ticker": None,
+        "available_data_sources": None,
+        "sec_data": None,
+        # Enhanced Analysis
+        "competitive_matrix": None,
+        "risk_profile": None,
+        "investment_thesis": None,
+        "news_sentiment": None,
+        "detected_region": None,
+        "detected_language": None,
         "agent_outputs": {},
         "start_time": datetime.now(),
         "total_cost": 0.0,

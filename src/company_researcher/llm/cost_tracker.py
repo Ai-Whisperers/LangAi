@@ -109,24 +109,71 @@ class CostTracker:
 
     # Pricing per 1M tokens (as of late 2024)
     PRICING = {
+        # Latest models (December 2024) - Most cost-effective
+        "claude-opus-4-5-20250929": {
+            "input": 5.0,
+            "output": 25.0,
+            "cached_input": 0.50,
+            "cache_write": 6.25,
+            "batch_input": 2.5,
+            "batch_output": 12.5
+        },
+        "claude-sonnet-4-5-20250929": {
+            "input": 3.0,
+            "output": 15.0,
+            "cached_input": 0.30,
+            "cache_write": 3.75,
+            "batch_input": 1.5,
+            "batch_output": 7.5
+        },
+        "claude-haiku-4-5-20250929": {
+            "input": 1.0,
+            "output": 5.0,
+            "cached_input": 0.10,
+            "cache_write": 1.25,
+            "batch_input": 0.5,
+            "batch_output": 2.5
+        },
+        # Legacy 4.x models
+        "claude-opus-4-1-20250514": {
+            "input": 15.0,
+            "output": 75.0,
+            "cached_input": 1.50,
+            "cache_write": 18.75,
+            "batch_input": 7.5,
+            "batch_output": 37.5
+        },
         "claude-sonnet-4-20250514": {
             "input": 3.0,
             "output": 15.0,
-            "cached_input": 0.30,  # 90% discount
-            "batch_input": 1.5,   # 50% discount
-            "batch_output": 7.5   # 50% discount
+            "cached_input": 0.30,
+            "cache_write": 3.75,
+            "batch_input": 1.5,
+            "batch_output": 7.5
         },
+        # Legacy 3.5 models
         "claude-3-5-sonnet-20241022": {
             "input": 3.0,
             "output": 15.0,
             "cached_input": 0.30,
+            "cache_write": 3.75,
             "batch_input": 1.5,
             "batch_output": 7.5
         },
+        "claude-3-5-haiku-20241022": {
+            "input": 0.80,
+            "output": 4.0,
+            "cached_input": 0.08,
+            "cache_write": 1.0,
+            "batch_input": 0.40,
+            "batch_output": 2.0
+        },
+        # Legacy 3.0 models
         "claude-3-haiku-20240307": {
             "input": 0.25,
             "output": 1.25,
             "cached_input": 0.03,
+            "cache_write": 0.30,
             "batch_input": 0.125,
             "batch_output": 0.625
         },
@@ -134,8 +181,13 @@ class CostTracker:
             "input": 15.0,
             "output": 75.0,
             "cached_input": 1.50,
+            "cache_write": 18.75,
             "batch_input": 7.5,
             "batch_output": 37.5
+        },
+        # Web search tool pricing (per search, not per token)
+        "web_search": {
+            "per_search": 0.01  # $10 per 1,000 searches = $0.01 each
         }
     }
 

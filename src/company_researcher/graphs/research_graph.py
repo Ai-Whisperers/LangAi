@@ -15,7 +15,8 @@ from typing import TypedDict, Annotated, List, Dict, Any
 from langgraph.graph import StateGraph, START, END
 import operator
 
-from ..llm.client_factory import get_anthropic_client, get_tavily_client, calculate_cost, safe_extract_text
+from ..llm.client_factory import get_tavily_client
+from ..llm.smart_client import smart_completion
 from ..config import get_config
 
 logger = logging.getLogger(__name__)
@@ -46,19 +47,16 @@ class ResearchState(TypedDict):
 
 def node_generate_queries(state: ResearchState) -> dict:
     """
-    Node 1: Generate search queries using Claude
+    Node 1: Generate search queries (cost-optimized)
 
-    Takes company name and generates 5 targeted search queries
-    to find comprehensive information about the company.
+    Takes company name and generates 5 targeted search queries.
+    Uses smart_completion to route to cheapest model (DeepSeek V3 $0.14/1M).
     """
     company = state.get("company_name", "Unknown Company")
-    config = get_config()
 
     logger.info(f"Generating queries for: {company}")
 
     try:
-        client = get_anthropic_client()
-
         prompt = f"""Generate 5 specific search queries to research {company}.
 
 The queries should find:
@@ -71,14 +69,16 @@ The queries should find:
 Return ONLY a JSON array of strings:
 ["query 1", "query 2", "query 3", "query 4", "query 5"]"""
 
-        response = client.messages.create(
-            model=config.llm_model,
+        # Use smart_completion - routes to DeepSeek V3 for extraction
+        result = smart_completion(
+            prompt=prompt,
+            task_type="extraction",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=512,
-            messages=[{"role": "user", "content": prompt}]
+            temperature=0.0
         )
 
-        # Parse queries using safe JSON parsing (not ast.literal_eval)
-        queries_text = safe_extract_text(response, agent_name="generate_queries").strip()
+        # Parse queries using safe JSON parsing
+        queries_text = result.content.strip()
 
         # Extract JSON array from response
         json_match = re.search(r'\[.*\]', queries_text, re.DOTALL)
@@ -90,12 +90,10 @@ Return ONLY a JSON array of strings:
 
         logger.info(f"Generated {len(queries)} queries")
 
-        cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
-
         return {
             "queries": queries,
-            "total_tokens": response.usage.input_tokens + response.usage.output_tokens,
-            "total_cost": cost
+            "total_tokens": result.input_tokens + result.output_tokens,
+            "total_cost": result.cost
         }
 
     except json.JSONDecodeError as e:
@@ -168,19 +166,17 @@ def node_search_web(state: ResearchState) -> dict:
 
 def node_extract_data(state: ResearchState) -> dict:
     """
-    Node 3: Extract structured company data
+    Node 3: Extract structured company data (cost-optimized)
 
-    Uses Claude to extract structured information from search results.
+    Uses smart_completion to extract structured information from search results.
+    Routes to DeepSeek V3 ($0.14/1M) for extraction tasks.
     """
     results = state.get("search_results", [])
     company = state.get("company_name", "Unknown")
-    config = get_config()
 
     logger.info(f"Extracting data from {len(results)} results...")
 
     try:
-        client = get_anthropic_client()
-
         # Combine top results
         combined_content = "\n\n".join([
             f"Source: {r.get('title', 'N/A')}\nURL: {r.get('url', 'N/A')}\n{r.get('content', '')[:500]}"
@@ -208,14 +204,16 @@ Return JSON with this structure:
 
 Return ONLY valid JSON."""
 
-        response = client.messages.create(
-            model=config.llm_model,
+        # Use smart_completion - routes to DeepSeek V3 for extraction
+        result = smart_completion(
+            prompt=prompt,
+            task_type="extraction",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=2048,
-            messages=[{"role": "user", "content": prompt}]
+            temperature=0.0
         )
 
         # Parse JSON safely
-        response_text = safe_extract_text(response, agent_name="extract_data").strip()
+        response_text = result.content.strip()
         json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
 
         if json_match:
@@ -225,12 +223,10 @@ Return ONLY valid JSON."""
 
         logger.info(f"Extracted data for: {extracted.get('name', company)}")
 
-        cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
-
         return {
             "extracted_data": extracted,
-            "total_tokens": state.get("total_tokens", 0) + response.usage.input_tokens + response.usage.output_tokens,
-            "total_cost": state.get("total_cost", 0) + cost
+            "total_tokens": state.get("total_tokens", 0) + result.input_tokens + result.output_tokens,
+            "total_cost": state.get("total_cost", 0) + result.cost
         }
 
     except json.JSONDecodeError as e:

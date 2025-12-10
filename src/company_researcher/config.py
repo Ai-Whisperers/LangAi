@@ -54,16 +54,100 @@ class ResearchConfig(BaseSettings):
     )
 
     # ========================================================================
-    # Financial Data APIs (Phase 7)
+    # Financial Data APIs
     # ========================================================================
 
     alpha_vantage_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("ALPHA_VANTAGE_API_KEY"),
-        description="Alpha Vantage API key for stock data and fundamentals"
+        description="Alpha Vantage API key (25 req/day free)"
+    )
+
+    fmp_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("FMP_API_KEY"),
+        description="Financial Modeling Prep API key (250 req/day free)"
+    )
+
+    finnhub_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("FINNHUB_API_KEY"),
+        description="Finnhub API key (60 req/min free)"
+    )
+
+    polygon_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("POLYGON_API_KEY"),
+        description="Polygon.io API key (5 req/min free)"
     )
 
     # ========================================================================
-    # Observability & Monitoring (Phase 4)
+    # News APIs
+    # ========================================================================
+
+    newsapi_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("NEWSAPI_KEY"),
+        description="NewsAPI key (100 req/day free for dev)"
+    )
+
+    gnews_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("GNEWS_API_KEY"),
+        description="GNews API key (100 req/day free)"
+    )
+
+    mediastack_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("MEDIASTACK_API_KEY"),
+        description="Mediastack API key (500 req/month free)"
+    )
+
+    # ========================================================================
+    # Company Data APIs
+    # ========================================================================
+
+    hunter_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("HUNTER_API_KEY"),
+        description="Hunter.io API key (25 searches/month free)"
+    )
+
+    # Note: Domainsdb.info is FREE - no API key needed
+
+    # ========================================================================
+    # Geocoding APIs
+    # ========================================================================
+
+    opencage_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("OPENCAGE_API_KEY"),
+        description="OpenCage Geocoding API key (2,500 req/day free)"
+    )
+
+    # Note: Nominatim (OpenStreetMap) is FREE - no API key needed
+
+    # ========================================================================
+    # ML & AI APIs
+    # ========================================================================
+
+    huggingface_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("HUGGINGFACE_API_KEY"),
+        description="Hugging Face API key (free tier with rate limits)"
+    )
+
+    # ========================================================================
+    # Social & Community APIs
+    # ========================================================================
+
+    reddit_client_id: Optional[str] = Field(
+        default_factory=lambda: os.getenv("REDDIT_CLIENT_ID"),
+        description="Reddit API client ID (100 req/min free with OAuth)"
+    )
+
+    reddit_client_secret: Optional[str] = Field(
+        default_factory=lambda: os.getenv("REDDIT_CLIENT_SECRET"),
+        description="Reddit API client secret"
+    )
+
+    github_token: Optional[str] = Field(
+        default_factory=lambda: os.getenv("GITHUB_TOKEN"),
+        description="GitHub API token (5,000 req/hour free)"
+    )
+
+    # ========================================================================
+    # Observability & Monitoring
     # ========================================================================
 
     agentops_api_key: Optional[str] = Field(
@@ -361,6 +445,35 @@ class ResearchConfig(BaseSettings):
     content_truncate_length: int = Field(
         default=500,
         description="Length to truncate content snippets"
+    )
+
+    # ========================================================================
+    # Domain Exploration / Crawling
+    # ========================================================================
+
+    enable_domain_exploration: bool = Field(
+        default=True,
+        description="Enable automatic domain exploration when company website is found"
+    )
+
+    domain_exploration_max_pages: int = Field(
+        default=8,
+        description="Maximum pages to fetch per domain during exploration"
+    )
+
+    domain_exploration_timeout: float = Field(
+        default=10.0,
+        description="HTTP timeout for domain exploration requests"
+    )
+
+    domain_exploration_max_content: int = Field(
+        default=50000,
+        description="Maximum content length to extract per page"
+    )
+
+    domain_exploration_priority_categories: List[str] = Field(
+        default=["leadership", "products", "investors", "news"],
+        description="Priority page categories to explore"
     )
 
     # ========================================================================

@@ -176,6 +176,47 @@ class ModelRegistry:
         latency_ms=200
     )
 
+    # DeepSeek Models (ULTRA LOW COST)
+    DEEPSEEK_V3 = ModelConfig(
+        model_id="deepseek-chat",
+        provider="deepseek",
+        tier=ModelTier.ECONOMY,
+        cost_per_1k_input=0.00014,  # $0.14/1M
+        cost_per_1k_output=0.00027,  # $0.27/1M
+        max_tokens=8000,
+        context_window=128000,
+        strengths=[TaskType.EXTRACTION, TaskType.SUMMARIZATION, TaskType.CLASSIFICATION, TaskType.SIMPLE],
+        latency_ms=800,
+        supports_tools=True
+    )
+
+    DEEPSEEK_R1 = ModelConfig(
+        model_id="deepseek-reasoner",
+        provider="deepseek",
+        tier=ModelTier.STANDARD,
+        cost_per_1k_input=0.00055,  # $0.55/1M
+        cost_per_1k_output=0.00219,  # $2.19/1M
+        max_tokens=8000,
+        context_window=128000,
+        strengths=[TaskType.REASONING, TaskType.REFLECTION, TaskType.SYNTHESIS],
+        latency_ms=2000,
+        supports_tools=True
+    )
+
+    # Groq (FAST + CHEAP)
+    GROQ_LLAMA70B = ModelConfig(
+        model_id="llama-3.3-70b-versatile",
+        provider="groq",
+        tier=ModelTier.FAST,
+        cost_per_1k_input=0.00059,  # $0.59/1M
+        cost_per_1k_output=0.00079,  # $0.79/1M
+        max_tokens=32768,
+        context_window=128000,
+        strengths=[TaskType.EXTRACTION, TaskType.SUMMARIZATION, TaskType.SEARCH_QUERY, TaskType.SIMPLE],
+        latency_ms=200,  # Very fast
+        supports_tools=True
+    )
+
     @classmethod
     def get_all_models(cls) -> List[ModelConfig]:
         """Get all registered models."""
@@ -187,6 +228,9 @@ class ModelRegistry:
             cls.GPT4O,
             cls.GPT4O_MINI,
             cls.GPT35_TURBO,
+            cls.DEEPSEEK_V3,
+            cls.DEEPSEEK_R1,
+            cls.GROQ_LLAMA70B,
         ]
 
     @classmethod

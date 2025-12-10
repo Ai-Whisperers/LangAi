@@ -7,15 +7,31 @@ This agent specializes in:
 - Competitive advantages
 - Market trends
 - Industry dynamics
+- Competitive matrix generation
 
 Refactored to use @agent_node decorator for reduced boilerplate.
 """
 
+import logging
 from typing import Any, Callable, Dict, List, Optional
 
 from ..base import agent_node, AgentResult
 from ...config import ResearchConfig
 from ...state import OverallState
+
+logger = logging.getLogger(__name__)
+
+# Import competitive matrix with fallback
+try:
+    from ..research.competitive_matrix import (
+        CompetitiveMatrixGenerator,
+        create_competitive_matrix,
+        MatrixDimension,
+    )
+    COMPETITIVE_MATRIX_AVAILABLE = True
+except ImportError:
+    COMPETITIVE_MATRIX_AVAILABLE = False
+    logger.warning("Competitive matrix not available")
 
 
 class MarketAgent:
@@ -61,18 +77,56 @@ Focus on:
 
 Requirements:
 - Be specific with percentages and rankings
-- Name specific competitors
+- Name specific competitors with their market shares if available
 - Include market context (growing/declining, etc.)
 - Format as bullet points
 
 Output format:
+## Market Position
 - Market Share: [domestic %, global %, ranking]
-- Main Competitors: [list competitors with their positions]
-- Positioning: [how company positions itself]
-- Market Trends: [key trends affecting the company]
-- Competitive Advantages: [unique strengths]
+- Market Size: [total addressable market if available]
+- Position: [leader/challenger/follower/niche player]
+
+## Competitive Landscape
+- Main Competitors: [list top 3-5 competitors]
+  - [Competitor 1]: [market share %, strengths]
+  - [Competitor 2]: [market share %, strengths]
+  - [Competitor 3]: [market share %, strengths]
+- Competitive Intensity: [high/medium/low]
+- Barriers to Entry: [key barriers]
+
+## Strategic Positioning
+- Value Proposition: [how company positions itself]
+- Target Segments: [key customer segments]
+- Differentiation: [what makes them unique]
+
+## Market Trends
+- Growth Rate: [market growth rate %]
+- Key Trends: [list 3-5 trends]
+- Disruption Risks: [emerging threats]
+
+## Competitive Advantages
+- Core Strengths: [list main advantages]
+- Weaknesses: [areas where competitors may be stronger]
 
 Extract the market data now:"""
+
+
+COMPETITIVE_MATRIX_PROMPT = """Based on the market analysis above, create a competitive comparison matrix.
+
+For each competitor identified, estimate scores (1-10) for:
+- Market Share: Current market position
+- Product Range: Breadth of offerings
+- Technology: Technical capabilities
+- Brand Strength: Brand recognition and trust
+- Geographic Reach: International presence
+- Innovation: R&D and new product development
+
+Format as:
+| Competitor | Market Share | Product Range | Technology | Brand | Reach | Innovation |
+|------------|--------------|---------------|------------|-------|-------|------------|
+| [Company]  | [1-10]       | [1-10]        | [1-10]     | [1-10]| [1-10]| [1-10]     |
+"""
 
 
 @agent_node(

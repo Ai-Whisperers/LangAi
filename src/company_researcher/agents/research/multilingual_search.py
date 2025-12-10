@@ -3,9 +3,10 @@ Multilingual Search Generator - Generates search queries in multiple languages.
 
 This module provides:
 - Language detection for company names
-- Query generation in English, Spanish, Portuguese
-- Parent company lookup for subsidiaries
+- Query generation in 9 languages (English, Spanish, Portuguese, French, German, Italian, Chinese, Japanese, Korean)
+- Parent company lookup for subsidiaries (130+ mappings)
 - Region-specific search strategies
+- Regional data sources for market-specific research (Latin America, Europe, Asia)
 """
 
 import logging
@@ -22,6 +23,12 @@ class Language(Enum):
     ENGLISH = "en"
     SPANISH = "es"
     PORTUGUESE = "pt"
+    FRENCH = "fr"
+    GERMAN = "de"
+    ITALIAN = "it"
+    CHINESE = "zh"
+    JAPANESE = "ja"
+    KOREAN = "ko"
 
 
 class Region(Enum):
@@ -41,6 +48,17 @@ class MultilingualQuery:
     language: Language
     topic: str
     priority: int = 1
+
+
+@dataclass
+class RegionalSource:
+    """A regional data source for market-specific research."""
+    name: str
+    url: str
+    language: Language
+    country: str
+    data_types: List[str]  # e.g., ["financial", "news", "regulatory"]
+    search_template: Optional[str] = None  # e.g., "site:{url} {query}"
 
 
 # Parent company mappings for common subsidiaries
@@ -366,6 +384,36 @@ QUERY_TEMPLATES = {
             "{company} história fundação",
             "{company} quem somos",
         ],
+        Language.FRENCH: [
+            "{company} entreprise présentation",
+            "{company} histoire fondation",
+            "{company} profil corporate",
+        ],
+        Language.GERMAN: [
+            "{company} Unternehmen Übersicht",
+            "{company} Geschichte Gründung",
+            "{company} Firmenprofil",
+        ],
+        Language.ITALIAN: [
+            "{company} azienda panoramica",
+            "{company} storia fondazione",
+            "{company} profilo aziendale",
+        ],
+        Language.CHINESE: [
+            "{company} 公司概况",
+            "{company} 历史 成立",
+            "{company} 企业简介",
+        ],
+        Language.JAPANESE: [
+            "{company} 会社概要",
+            "{company} 歴史 設立",
+            "{company} 企業プロフィール",
+        ],
+        Language.KOREAN: [
+            "{company} 회사 개요",
+            "{company} 역사 설립",
+            "{company} 기업 프로필",
+        ],
     },
     "financial": {
         Language.ENGLISH: [
@@ -383,6 +431,36 @@ QUERY_TEMPLATES = {
             "{company} resultados financeiros",
             "{company} relatório anual",
         ],
+        Language.FRENCH: [
+            "{company} chiffre d'affaires 2024",
+            "{company} résultats financiers",
+            "{company} rapport annuel",
+        ],
+        Language.GERMAN: [
+            "{company} Umsatz 2024",
+            "{company} Finanzergebnisse",
+            "{company} Geschäftsbericht",
+        ],
+        Language.ITALIAN: [
+            "{company} fatturato 2024",
+            "{company} risultati finanziari",
+            "{company} bilancio annuale",
+        ],
+        Language.CHINESE: [
+            "{company} 营收 2024",
+            "{company} 财务业绩",
+            "{company} 年报",
+        ],
+        Language.JAPANESE: [
+            "{company} 売上高 2024",
+            "{company} 業績",
+            "{company} 年次報告書",
+        ],
+        Language.KOREAN: [
+            "{company} 매출 2024",
+            "{company} 재무 실적",
+            "{company} 연례 보고서",
+        ],
     },
     "products": {
         Language.ENGLISH: [
@@ -396,6 +474,30 @@ QUERY_TEMPLATES = {
         Language.PORTUGUESE: [
             "{company} produtos serviços",
             "{company} áreas de negócio",
+        ],
+        Language.FRENCH: [
+            "{company} produits services",
+            "{company} lignes d'activité",
+        ],
+        Language.GERMAN: [
+            "{company} Produkte Dienstleistungen",
+            "{company} Geschäftsfelder",
+        ],
+        Language.ITALIAN: [
+            "{company} prodotti servizi",
+            "{company} linee di business",
+        ],
+        Language.CHINESE: [
+            "{company} 产品服务",
+            "{company} 业务线",
+        ],
+        Language.JAPANESE: [
+            "{company} 製品サービス",
+            "{company} 事業部門",
+        ],
+        Language.KOREAN: [
+            "{company} 제품 서비스",
+            "{company} 사업 부문",
         ],
     },
     "competitors": {
@@ -411,6 +513,30 @@ QUERY_TEMPLATES = {
             "{company} concorrentes mercado",
             "{company} participação mercado",
         ],
+        Language.FRENCH: [
+            "{company} concurrents marché",
+            "{company} part de marché",
+        ],
+        Language.GERMAN: [
+            "{company} Wettbewerber Marktanteil",
+            "{company} Konkurrenten Vergleich",
+        ],
+        Language.ITALIAN: [
+            "{company} concorrenti mercato",
+            "{company} quota di mercato",
+        ],
+        Language.CHINESE: [
+            "{company} 竞争对手",
+            "{company} 市场份额",
+        ],
+        Language.JAPANESE: [
+            "{company} 競合他社",
+            "{company} 市場シェア",
+        ],
+        Language.KOREAN: [
+            "{company} 경쟁사",
+            "{company} 시장 점유율",
+        ],
     },
     "news": {
         Language.ENGLISH: [
@@ -424,6 +550,30 @@ QUERY_TEMPLATES = {
         Language.PORTUGUESE: [
             "{company} notícias 2024",
             "{company} últimas novidades",
+        ],
+        Language.FRENCH: [
+            "{company} actualités 2024",
+            "{company} communiqués récents",
+        ],
+        Language.GERMAN: [
+            "{company} Nachrichten 2024",
+            "{company} aktuelle Entwicklungen",
+        ],
+        Language.ITALIAN: [
+            "{company} notizie 2024",
+            "{company} comunicati recenti",
+        ],
+        Language.CHINESE: [
+            "{company} 新闻 2024",
+            "{company} 最新动态",
+        ],
+        Language.JAPANESE: [
+            "{company} ニュース 2024",
+            "{company} 最新情報",
+        ],
+        Language.KOREAN: [
+            "{company} 뉴스 2024",
+            "{company} 최신 소식",
         ],
     },
     "leadership": {
@@ -439,7 +589,163 @@ QUERY_TEMPLATES = {
             "{company} CEO diretoria",
             "{company} equipe executiva",
         ],
+        Language.FRENCH: [
+            "{company} PDG directeur général",
+            "{company} équipe de direction",
+        ],
+        Language.GERMAN: [
+            "{company} CEO Vorstandsvorsitzender",
+            "{company} Führungsteam Management",
+        ],
+        Language.ITALIAN: [
+            "{company} CEO amministratore delegato",
+            "{company} team dirigenziale",
+        ],
+        Language.CHINESE: [
+            "{company} CEO 首席执行官",
+            "{company} 管理团队",
+        ],
+        Language.JAPANESE: [
+            "{company} CEO 社長",
+            "{company} 経営陣",
+        ],
+        Language.KOREAN: [
+            "{company} CEO 대표이사",
+            "{company} 경영진",
+        ],
     },
+}
+
+
+# Regional data sources for market-specific research
+REGIONAL_SOURCES = {
+    # Latin America
+    "mexico": [
+        RegionalSource("BMV", "bmv.com.mx", Language.SPANISH, "Mexico",
+                      ["financial", "stock"], "site:bmv.com.mx {query}"),
+        RegionalSource("Expansion MX", "expansion.mx", Language.SPANISH, "Mexico",
+                      ["news", "financial"]),
+        RegionalSource("El Economista MX", "eleconomista.com.mx", Language.SPANISH, "Mexico",
+                      ["news", "financial"]),
+        RegionalSource("CNBV", "cnbv.gob.mx", Language.SPANISH, "Mexico",
+                      ["regulatory"]),
+    ],
+    "brazil": [
+        RegionalSource("B3", "b3.com.br", Language.PORTUGUESE, "Brazil",
+                      ["financial", "stock"], "site:b3.com.br {query}"),
+        RegionalSource("Valor Econômico", "valor.globo.com", Language.PORTUGUESE, "Brazil",
+                      ["news", "financial"]),
+        RegionalSource("InfoMoney", "infomoney.com.br", Language.PORTUGUESE, "Brazil",
+                      ["financial", "stock"]),
+        RegionalSource("Exame", "exame.com", Language.PORTUGUESE, "Brazil",
+                      ["news", "business"]),
+        RegionalSource("CVM", "cvm.gov.br", Language.PORTUGUESE, "Brazil",
+                      ["regulatory"]),
+    ],
+    "argentina": [
+        RegionalSource("BYMA", "byma.com.ar", Language.SPANISH, "Argentina",
+                      ["financial", "stock"]),
+        RegionalSource("Ámbito", "ambito.com", Language.SPANISH, "Argentina",
+                      ["news", "financial"]),
+        RegionalSource("El Cronista", "cronista.com", Language.SPANISH, "Argentina",
+                      ["news", "financial"]),
+    ],
+    "chile": [
+        RegionalSource("Bolsa de Santiago", "bolsadesantiago.com", Language.SPANISH, "Chile",
+                      ["financial", "stock"]),
+        RegionalSource("Diario Financiero", "df.cl", Language.SPANISH, "Chile",
+                      ["news", "financial"]),
+        RegionalSource("CMF Chile", "cmfchile.cl", Language.SPANISH, "Chile",
+                      ["regulatory"]),
+    ],
+    "colombia": [
+        RegionalSource("BVC", "bvc.com.co", Language.SPANISH, "Colombia",
+                      ["financial", "stock"]),
+        RegionalSource("Portafolio", "portafolio.co", Language.SPANISH, "Colombia",
+                      ["news", "financial"]),
+    ],
+    "peru": [
+        RegionalSource("BVL", "bvl.com.pe", Language.SPANISH, "Peru",
+                      ["financial", "stock"]),
+        RegionalSource("Gestión", "gestion.pe", Language.SPANISH, "Peru",
+                      ["news", "financial"]),
+    ],
+    "paraguay": [
+        RegionalSource("BVPASA", "bvpasa.com.py", Language.SPANISH, "Paraguay",
+                      ["financial", "stock"]),
+        RegionalSource("5 Días", "5dias.com.py", Language.SPANISH, "Paraguay",
+                      ["news", "business"]),
+        RegionalSource("La Nación PY", "lanacion.com.py", Language.SPANISH, "Paraguay",
+                      ["news"]),
+        RegionalSource("CONATEL", "conatel.gov.py", Language.SPANISH, "Paraguay",
+                      ["regulatory", "telecom"]),
+    ],
+    # Europe
+    "spain": [
+        RegionalSource("BME", "bolsasymercados.es", Language.SPANISH, "Spain",
+                      ["financial", "stock"]),
+        RegionalSource("Expansión ES", "expansion.com", Language.SPANISH, "Spain",
+                      ["news", "financial"]),
+        RegionalSource("Cinco Días", "cincodias.elpais.com", Language.SPANISH, "Spain",
+                      ["news", "financial"]),
+        RegionalSource("CNMV", "cnmv.es", Language.SPANISH, "Spain",
+                      ["regulatory"]),
+    ],
+    "germany": [
+        RegionalSource("Deutsche Börse", "deutsche-boerse.com", Language.GERMAN, "Germany",
+                      ["financial", "stock"]),
+        RegionalSource("Handelsblatt", "handelsblatt.com", Language.GERMAN, "Germany",
+                      ["news", "financial"]),
+        RegionalSource("Manager Magazin", "manager-magazin.de", Language.GERMAN, "Germany",
+                      ["news", "business"]),
+        RegionalSource("BaFin", "bafin.de", Language.GERMAN, "Germany",
+                      ["regulatory"]),
+    ],
+    "france": [
+        RegionalSource("Euronext Paris", "euronext.com", Language.FRENCH, "France",
+                      ["financial", "stock"]),
+        RegionalSource("Les Echos", "lesechos.fr", Language.FRENCH, "France",
+                      ["news", "financial"]),
+        RegionalSource("Le Figaro Économie", "lefigaro.fr", Language.FRENCH, "France",
+                      ["news", "financial"]),
+        RegionalSource("AMF", "amf-france.org", Language.FRENCH, "France",
+                      ["regulatory"]),
+    ],
+    "italy": [
+        RegionalSource("Borsa Italiana", "borsaitaliana.it", Language.ITALIAN, "Italy",
+                      ["financial", "stock"]),
+        RegionalSource("Il Sole 24 Ore", "ilsole24ore.com", Language.ITALIAN, "Italy",
+                      ["news", "financial"]),
+        RegionalSource("CONSOB", "consob.it", Language.ITALIAN, "Italy",
+                      ["regulatory"]),
+    ],
+    # Asia
+    "china": [
+        RegionalSource("SSE", "sse.com.cn", Language.CHINESE, "China",
+                      ["financial", "stock"]),
+        RegionalSource("SZSE", "szse.cn", Language.CHINESE, "China",
+                      ["financial", "stock"]),
+        RegionalSource("Caixin", "caixin.com", Language.CHINESE, "China",
+                      ["news", "financial"]),
+        RegionalSource("CSRC", "csrc.gov.cn", Language.CHINESE, "China",
+                      ["regulatory"]),
+    ],
+    "japan": [
+        RegionalSource("TSE", "jpx.co.jp", Language.JAPANESE, "Japan",
+                      ["financial", "stock"]),
+        RegionalSource("Nikkei", "nikkei.com", Language.JAPANESE, "Japan",
+                      ["news", "financial"]),
+        RegionalSource("FSA Japan", "fsa.go.jp", Language.JAPANESE, "Japan",
+                      ["regulatory"]),
+    ],
+    "south_korea": [
+        RegionalSource("KRX", "krx.co.kr", Language.KOREAN, "South Korea",
+                      ["financial", "stock"]),
+        RegionalSource("Maeil Business", "mk.co.kr", Language.KOREAN, "South Korea",
+                      ["news", "financial"]),
+        RegionalSource("FSC Korea", "fsc.go.kr", Language.KOREAN, "South Korea",
+                      ["regulatory"]),
+    ],
 }
 
 

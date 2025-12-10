@@ -16,24 +16,36 @@ Company: {company_name}
 
 Generate {num_queries} specific, targeted search queries that will help research this company thoroughly.
 
+IMPORTANT INSTRUCTIONS:
+1. If this appears to be a LATAM company (Brazilian, Mexican, etc.), include queries in BOTH English AND the local language
+2. For Brazilian companies: include Portuguese queries ("receita", "lucro", "empresa")
+3. For Spanish-speaking countries: include Spanish queries ("ingresos", "empleados", "empresa")
+4. Include the stock ticker if you know it (e.g., GGBR4, AMX, COPEL)
+5. If this might be a subsidiary, search for the parent company too
+
 Your queries should cover:
 1. Company overview and background
-2. Financial performance and metrics
+2. Financial performance and metrics (annual report, earnings)
 3. Products and services
 4. Market position and competitors
 5. Recent news and developments
+6. Leadership team and executives
 
 Requirements:
 - Each query should be specific and focused
 - Queries should complement each other (no redundancy)
 - Use exact company name in queries
 - Keep queries concise (3-10 words each)
+- For non-US companies, mix English and local language queries
 
 Output format:
 Return ONLY a JSON array of query strings, nothing else.
 
-Example output:
-["Tesla company overview history", "Tesla revenue 2024 financial performance", "Tesla Model Y Model 3 sales", "Tesla vs General Motors market share", "Tesla Cybertruck latest news"]
+Example output for a Brazilian company:
+["Gerdau empresa overview", "Gerdau receita 2024", "Gerdau GGBR4 stock price", "Gerdau revenue annual report", "Gerdau competitors ArcelorMittal"]
+
+Example output for a Mexican company:
+["América Móvil empresa historia", "América Móvil ingresos 2024", "AMX stock telcel Claro", "América Móvil competitors", "América Móvil Carlos Slim"]
 
 Now generate {num_queries} queries for {company_name}:"""
 
@@ -42,36 +54,92 @@ Now generate {num_queries} queries for {company_name}:"""
 # Analysis and Summarization
 # ============================================================================
 
-ANALYZE_RESULTS_PROMPT = """You are a research analyst reviewing web search results about a company.
+ANALYZE_RESULTS_PROMPT = """You are an expert research analyst reviewing web search results about a company.
 
 Company: {company_name}
 
 Search Results:
 {search_results}
 
-Task: Analyze these search results and extract key information.
+Task: Perform THOROUGH analysis of these search results. Extract EVERY piece of useful information.
 
-Please create concise notes covering:
-1. Key facts about the company (founding, leadership, size)
-2. Financial metrics (revenue, funding, profitability)
-3. Main products or services
-4. Market position and competitors
-5. Recent developments or news
+CRITICAL INSTRUCTIONS:
+1. Process content in ANY language (English, Spanish, Portuguese, etc.)
+2. Translate key findings to English while preserving original terms for accuracy
+3. Extract ALL numerical data: revenue, employees, funding, market share, etc.
+4. Note the SOURCE and YEAR for each data point when available
+5. For LATAM companies, pay special attention to:
+   - "receita" / "ingresos" / "faturamento" = revenue
+   - "lucro" / "beneficio" = profit
+   - "funcionários" / "empleados" = employees
+   - Stock tickers on B3, BMV, BVL, etc.
+
+Create comprehensive notes covering:
+
+## 1. Company Identity
+- Official company name and any DBA/trade names
+- Legal structure (S.A., Ltda, Inc, etc.)
+- Parent company (if subsidiary)
+- Country and headquarters location
+- Year founded
+- Stock ticker and exchange (if public)
+
+## 2. Financial Data (EXTRACT ALL NUMBERS FOUND)
+- Annual revenue (specify year, currency)
+- Net income/profit
+- EBITDA
+- Market capitalization
+- Total funding raised
+- Latest funding round details
+- Debt levels
+- Any other financial metrics mentioned
+
+## 3. Operational Data
+- Employee count
+- Number of locations/offices
+- Countries of operation
+- Production capacity
+- Customer count (if B2B)
+
+## 4. Products & Services
+- List all products/services mentioned
+- Key product lines
+- Technology/platform details
+- Patents or IP mentioned
+
+## 5. Market Position
+- Market share percentages
+- Industry ranking
+- Key competitors mentioned
+- Competitive advantages
+
+## 6. Recent Developments (last 2 years)
+- News and announcements
+- Leadership changes
+- Acquisitions or partnerships
+- Strategic initiatives
+- Challenges or controversies
+
+## 7. Data Confidence Assessment
+- List which data points are well-sourced
+- Note any conflicting information
+- Identify gaps in the research
 
 Requirements:
+- Be exhaustive - extract EVERY data point
+- Cite the source for significant facts
+- Note the language of original source
+- Flag any conflicting information
 - Be factual and objective
-- Only include information found in the search results
-- If a piece of information is unclear or missing, note that
-- Keep notes concise but comprehensive
 
-Format your notes as clear bullet points."""
+Format your analysis as detailed bullet points with section headers."""
 
 
 # ============================================================================
 # Structured Data Extraction
 # ============================================================================
 
-EXTRACT_DATA_PROMPT = """You are a data extraction specialist analyzing research notes about a company.
+EXTRACT_DATA_PROMPT = """You are an expert data extraction specialist analyzing research notes about a company.
 
 Company: {company_name}
 
@@ -81,38 +149,76 @@ Research Notes:
 Search Sources:
 {sources}
 
-Task: Extract structured information into the following categories.
+Task: Extract ALL available structured information. Be thorough and extract every data point you can find.
 
-Please provide:
+CRITICAL INSTRUCTIONS:
+1. Extract data in ANY language found (Spanish, Portuguese, English)
+2. Convert currencies to USD where possible (1 BRL ≈ 0.20 USD, 1 MXN ≈ 0.06 USD)
+3. For LATAM companies: look for "receita", "ingresos", "faturamento" (revenue), "lucro" (profit)
+4. Include BOTH local currency AND USD equivalent when available
+5. If the company is a subsidiary, mention the parent company
+6. Extract ANY numerical data points mentioned (backlog, projects, employees, etc.)
 
 ## Company Overview
-A 2-3 sentence summary of the company, its purpose, and what it does.
+A 2-3 sentence summary of the company, its purpose, industry, and what it does.
+Include: Country of origin, parent company (if subsidiary), key business areas.
 
 ## Key Metrics
-Extract any available metrics as key-value pairs:
-- Revenue: [amount and year]
-- Employees: [number]
+Extract ALL available metrics. Be specific with years and sources:
+
+**Financial Metrics:**
+- Revenue: [amount in local currency AND USD, specify year]
+- Net Income/Profit: [amount, year]
+- EBITDA: [if available]
+- Market Cap: [amount, date] (for public companies)
+- Valuation: [amount, date] (for private companies)
+- Funding: [total raised, last round]
+
+**Operational Metrics:**
+- Employees: [number, year if specified]
 - Founded: [year]
-- Valuation: [amount if private] or Market Cap: [amount if public]
-- Funding: [total raised if applicable]
-- Any other relevant metrics
+- Headquarters: [city, country]
+- Operating Countries: [list if available]
+
+**Business Metrics:**
+- Backlog/Order Book: [amount if available]
+- Market Share: [percentage if mentioned]
+- Number of Projects/Clients: [if available]
+- Assets Under Management: [if applicable]
 
 ## Main Products/Services
-List the company's primary products or services (bullet points)
+List ALL products and services mentioned (bullet points):
+- Be specific with product names and categories
+- Include business divisions/segments
+- Note any flagship or key products
 
 ## Competitors
-List 3-5 main competitors if mentioned
+List ALL competitors mentioned:
+- Direct competitors in same market
+- Regional competitors
+- Global competitors (if applicable)
 
 ## Key Insights
-List 2-3 most important or interesting facts about the company
+List 3-5 most important insights:
+- Recent developments and news
+- Strategic initiatives
+- Growth trends
+- Challenges or risks mentioned
+- Industry position
+
+## Data Quality Notes
+- Confidence level: [HIGH/MEDIUM/LOW]
+- Data gaps identified: [list any missing critical information]
+- Data freshness: [most recent data year found]
 
 Requirements:
-- Only include information explicitly stated in the notes
-- If a section has no information, write "Not available in research"
-- Be precise with numbers and dates
-- Format as clean markdown
+- Extract EVERY data point found, even partial information
+- NEVER say "Not available" if ANY related information exists
+- For missing sections, provide what partial data you have, then note gaps
+- Include source references where possible
+- Format as clean markdown with clear sections
 
-Extract the structured data now:"""
+Extract ALL available data now:"""
 
 
 # ============================================================================

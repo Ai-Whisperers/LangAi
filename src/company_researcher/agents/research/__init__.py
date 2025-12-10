@@ -40,9 +40,10 @@ from .enhanced_researcher import (
     enhanced_researcher_node,
     create_enhanced_researcher_agent,
 )
-from .metrics_validator import (
+# Re-export from consolidated research/ version (agents/research/ version deleted)
+from ...research.metrics_validator import (
     MetricsValidator,
-    ValidationResult,
+    ValidationReport as ValidationResult,  # Alias for backward compatibility
     DataCategory,
     CompanyType,
     create_metrics_validator,
@@ -95,13 +96,13 @@ from .investment_thesis import (
     ValuationMetrics,
     create_thesis_generator,
 )
-from .news_sentiment import (
-    NewsSentimentAnalyzer,
-    NewsSentimentProfile,
-    NewsArticle,
+# AI-powered sentiment analysis (replaces legacy news_sentiment)
+from ...ai.sentiment import (
+    AISentimentAnalyzer as NewsSentimentAnalyzer,  # Alias for backward compatibility
+    SentimentAnalysisResult as NewsSentimentProfile,  # Alias for backward compatibility
     SentimentLevel,
     NewsCategory,
-    create_sentiment_analyzer,
+    get_sentiment_analyzer as create_sentiment_analyzer,  # Alias for backward compatibility
 )
 
 __all__ = [
@@ -178,10 +179,9 @@ __all__ = [
     "BearCase",
     "ValuationMetrics",
     "create_thesis_generator",
-    # News Sentiment
+    # News Sentiment (AI-powered)
     "NewsSentimentAnalyzer",
     "NewsSentimentProfile",
-    "NewsArticle",
     "SentimentLevel",
     "NewsCategory",
     "create_sentiment_analyzer",

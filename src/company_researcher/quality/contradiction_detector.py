@@ -20,7 +20,8 @@ from anthropic import Anthropic
 from ..config import get_config
 from ..llm.client_factory import safe_extract_text
 from ..types import ContradictionSeverity, ResolutionStrategy  # Centralized enums
-from .fact_extractor import ExtractedFact, FactCategory
+# AI models for extraction
+from ..ai.extraction import ExtractedFact, FactCategory
 
 
 # ============================================================================
@@ -174,7 +175,7 @@ def extract_topics(facts: List[ExtractedFact]) -> Dict[str, List[ExtractedFact]]
     topics = {}
 
     for fact in facts:
-        fact_lower = fact.content.lower()
+        fact_lower = fact.source_text.lower()
 
         # Check each topic
         for topic, keywords in TOPIC_KEYWORDS.items():
@@ -279,14 +280,13 @@ class ContradictionDetector:
         Returns:
             ContradictionReport
         """
-        from .fact_extractor import FactExtractor
+        # Use the extraction function from logic_critic
+        from ..agents.quality.logic_critic import extract_facts_from_agent_output
 
-        extractor = FactExtractor()
         all_facts = []
-
         for agent_name, output in agent_outputs.items():
-            result = extractor.extract_from_agent_output(output, agent_name)
-            all_facts.extend(result.facts)
+            facts = extract_facts_from_agent_output(output, agent_name)
+            all_facts.extend(facts)
 
         return self.detect(all_facts)
 
@@ -305,7 +305,7 @@ class ContradictionDetector:
         # Extract numerical values from facts
         numerical_facts = []
         for fact in facts:
-            numbers = self._extract_numbers(fact.content)
+            numbers = self._extract_numbers(fact.source_text)
             if numbers:
                 numerical_facts.append((fact, numbers))
 
@@ -313,21 +313,24 @@ class ContradictionDetector:
         for i, (fact_a, nums_a) in enumerate(numerical_facts):
             for j, (fact_b, nums_b) in enumerate(numerical_facts[i+1:], i+1):
                 # Check if facts are about similar things
-                if self._facts_are_comparable(fact_a.content, fact_b.content):
+                if self._facts_are_comparable(fact_a.source_text, fact_b.source_text):
                     # Check for numerical disagreement
                     disagreement = self._check_numerical_disagreement(nums_a, nums_b)
                     if disagreement:
                         self._contradiction_count += 1
+                        # Get source URL or use "unknown" for agent tracking
+                        source_a = fact_a.source_url or "unknown"
+                        source_b = fact_b.source_url or "unknown"
                         contradictions.append(Contradiction(
                             id=f"NUM-{self._contradiction_count}",
                             topic=topic,
                             severity=self._assess_numerical_severity(
                                 disagreement['diff_pct']
                             ),
-                            fact_a=fact_a.content,
-                            fact_b=fact_b.content,
-                            agent_a=fact_a.source_agent,
-                            agent_b=fact_b.source_agent,
+                            fact_a=fact_a.source_text,
+                            fact_b=fact_b.source_text,
+                            agent_a=source_a,
+                            agent_b=source_b,
                             explanation=f"Numerical disagreement: {disagreement['value_a']} vs {disagreement['value_b']} ({disagreement['diff_pct']:.1f}% difference)",
                             resolution_strategy=self._suggest_numerical_resolution(fact_a, fact_b),
                             resolution_suggestion=f"Consider using the value from the more authoritative source"
@@ -347,7 +350,7 @@ class ContradictionDetector:
 
         # Prepare facts for analysis
         facts_text = "\n".join([
-            f"[{i+1}] ({fact.source_agent}): {fact.content}"
+            f"[{i+1}] ({fact.source_url or 'unknown'}): {fact.source_text}"
             for i, fact in enumerate(facts)
         ])
 
@@ -491,8 +494,8 @@ SEVERITY: [level]
         # Check for official source indicators
         official_keywords = ['official', 'SEC', '10-K', '10-Q', 'annual report', 'investor relations']
 
-        a_is_official = any(kw in fact_a.content.lower() for kw in official_keywords)
-        b_is_official = any(kw in fact_b.content.lower() for kw in official_keywords)
+        a_is_official = any(kw in fact_a.source_text.lower() for kw in official_keywords)
+        b_is_official = any(kw in fact_b.source_text.lower() for kw in official_keywords)
 
         if a_is_official and not b_is_official:
             return ResolutionStrategy.USE_OFFICIAL
@@ -538,10 +541,10 @@ SEVERITY: [level]
                     id="",  # Will be set by caller
                     topic="",  # Will be set by caller
                     severity=severity,
-                    fact_a=fact_a.content,
-                    fact_b=fact_b.content,
-                    agent_a=fact_a.source_agent,
-                    agent_b=fact_b.source_agent,
+                    fact_a=fact_a.source_text,
+                    fact_b=fact_b.source_text,
+                    agent_a=fact_a.source_url or "unknown",
+                    agent_b=fact_b.source_url or "unknown",
                     explanation=explanation,
                     resolution_strategy=ResolutionStrategy.INVESTIGATE
                 )

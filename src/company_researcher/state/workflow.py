@@ -99,6 +99,16 @@ class OverallState(TypedDict):
     iteration_count: int  # Number of research iterations
     missing_info: Optional[List[str]]  # Missing information to research
 
+    # Company Classification (First node)
+    company_classification: Optional[Dict[str, Any]]  # Full classification result
+    is_public_company: Optional[bool]  # True if publicly traded
+    stock_ticker: Optional[str]  # Stock ticker symbol
+    available_data_sources: Optional[List[str]]  # Available data sources
+    sec_data: Optional[Dict[str, Any]]  # SEC EDGAR data
+
+    # Scraped Content (Website scraping node)
+    scraped_content: Optional[Dict[str, Any]]  # Content scraped from websites
+
     # Enhanced Analysis (Phase 2+)
     competitive_matrix: Optional[Dict[str, Any]]  # Competitive analysis data
     risk_profile: Optional[Dict[str, Any]]  # Risk assessment data
@@ -168,6 +178,14 @@ def create_initial_state(company_name: str) -> OverallState:
         "quality_score": None,
         "iteration_count": 0,
         "missing_info": None,
+        # Company Classification
+        "company_classification": None,
+        "is_public_company": None,
+        "stock_ticker": None,
+        "available_data_sources": None,
+        "sec_data": None,
+        "scraped_content": None,
+        # Enhanced Analysis
         "competitive_matrix": None,
         "risk_profile": None,
         "investment_thesis": None,

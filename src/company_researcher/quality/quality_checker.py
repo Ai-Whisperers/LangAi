@@ -1,15 +1,14 @@
 """
-Quality checker for research output.
+Quality checker for research output (cost-optimized).
 
 This module evaluates the quality of research and identifies gaps.
+Uses smart routing to select cheapest appropriate model for classification.
 """
 
 import json
 import logging
 from typing import Dict, Any, List
 
-from ..config import get_config
-from ..llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ..prompts import QUALITY_CHECK_PROMPT, format_sources_for_extraction
 
 logger = logging.getLogger(__name__)
@@ -21,7 +20,11 @@ def check_research_quality(
     sources: List[Dict[str, str]]
 ) -> Dict[str, Any]:
     """
-    Check the quality of research output.
+    Check the quality of research output (cost-optimized).
+
+    Uses smart_completion to route to cheapest model for classification tasks:
+    - DeepSeek V3 ($0.14/1M) - primary choice
+    - Falls back to GPT-4o-mini if needed
 
     Args:
         company_name: Name of the company
@@ -35,8 +38,8 @@ def check_research_quality(
             - strengths: List of research strengths
             - recommended_queries: List of search queries to fill gaps
     """
-    config = get_config()
-    client = get_anthropic_client()
+    # Import smart_completion for cost-optimized routing
+    from ..llm.smart_client import smart_completion
 
     # Format sources
     formatted_sources = format_sources_for_extraction(sources)
@@ -48,17 +51,16 @@ def check_research_quality(
         sources=formatted_sources
     )
 
-    # Call Claude for quality assessment
-    response = client.messages.create(
-        model=config.llm_model,
+    # Use smart_completion - routes to DeepSeek V3 for classification tasks
+    result = smart_completion(
+        prompt=prompt,
+        task_type="classification",  # Routes to DeepSeek V3 ($0.14/1M)
         max_tokens=1500,
-        temperature=0.0,
-        messages=[{"role": "user", "content": prompt}]
+        temperature=0.0
     )
 
-    # Parse response safely
-    content = safe_extract_text(response, agent_name="quality_checker")
-    cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
+    content = result.content
+    cost = result.cost
 
     try:
         # Extract JSON from response
@@ -81,20 +83,20 @@ def check_research_quality(
             quality_data = json.loads(content)
 
         # Validate structure
-        result = {
+        quality_result = {
             "quality_score": float(quality_data.get("quality_score", 0)),
             "missing_information": quality_data.get("missing_information", []),
             "strengths": quality_data.get("strengths", []),
             "recommended_queries": quality_data.get("recommended_queries", []),
             "cost": cost,
             "tokens": {
-                "input": response.usage.input_tokens,
-                "output": response.usage.output_tokens
+                "input": result.input_tokens,
+                "output": result.output_tokens
             }
         }
 
-        logger.debug(f"Quality check complete - score: {result['quality_score']}")
-        return result
+        logger.debug(f"Quality check complete - score: {quality_result['quality_score']}, model: {result.model}")
+        return quality_result
 
     except json.JSONDecodeError as e:
         # Fallback: return low quality score if parsing fails
@@ -109,7 +111,7 @@ def check_research_quality(
             "recommended_queries": [],
             "cost": cost,
             "tokens": {
-                "input": response.usage.input_tokens,
-                "output": response.usage.output_tokens
+                "input": result.input_tokens,
+                "output": result.output_tokens
             }
         }

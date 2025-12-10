@@ -6,10 +6,11 @@ This agent is responsible for:
 - Extracting structured data (overview, metrics, products, competitors)
 - Generating comprehensive notes
 - Formatting insights for report generation
+- VALIDATING data quality before report generation
 """
 
 import logging
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,23 @@ from ...prompts import (
     format_search_results_for_analysis,
     format_sources_for_extraction
 )
+
+# Import quality validation modules
+try:
+    from ..research.metrics_validator import (
+        MetricsValidator,
+        create_metrics_validator,
+        CompanyType,
+    )
+    from ..research.quality_enforcer import (
+        QualityEnforcer,
+        create_quality_enforcer,
+        ReportStatus,
+    )
+    QUALITY_MODULES_AVAILABLE = True
+except ImportError:
+    QUALITY_MODULES_AVAILABLE = False
+    logger.warning("Quality validation modules not available")
 
 
 class AnalystAgent:
@@ -64,6 +82,7 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
 
     This agent receives sources from the Researcher agent and
     performs deep analysis to extract all required information.
+    NOW INCLUDES QUALITY VALIDATION.
 
     Args:
         state: Current workflow state
@@ -85,10 +104,16 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
         return {
             "notes": ["No search results available for analysis."],
             "company_overview": "Not available in research",
+            "data_quality": {
+                "score": 0,
+                "passes_threshold": False,
+                "issues": ["No search results provided"]
+            },
             "agent_outputs": {
                 "analyst": {
                     "sources_analyzed": 0,
                     "data_extracted": False,
+                    "quality_score": 0,
                     "cost": 0.0
                 }
             }
@@ -150,14 +175,95 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
 
     logger.debug("Data extraction complete")
 
+    # Step 3: QUALITY VALIDATION (NEW)
+    quality_result = None
+    quality_score = 0
+    quality_warnings = []
+    can_generate_report = True
+    retry_recommended = False
+    recommended_queries = []
+
+    if QUALITY_MODULES_AVAILABLE:
+        logger.info("Running quality validation on extracted data")
+
+        # Initialize validators
+        metrics_validator = create_metrics_validator(
+            min_score=30.0,
+            critical_threshold=0.4
+        )
+        quality_enforcer = create_quality_enforcer(
+            min_score=30.0,
+            block_on_empty=True,
+            strict=False
+        )
+
+        # Validate metrics in extracted data
+        validation_result = metrics_validator.validate_metrics(
+            content=extracted_data,
+            company_name=company_name
+        )
+
+        quality_score = validation_result.score
+        quality_warnings = validation_result.warnings
+        retry_recommended = validation_result.retry_recommended
+        recommended_queries = validation_result.recommended_queries
+
+        # Check quality gate for report generation
+        quality_gate = quality_enforcer.check_quality(
+            report_content=extracted_data,
+            company_name=company_name,
+            validation_score=validation_result.score
+        )
+
+        can_generate_report = quality_gate.can_generate
+
+        quality_result = {
+            "score": quality_score,
+            "passes_threshold": validation_result.is_valid,
+            "can_generate_report": can_generate_report,
+            "metrics_found": list(validation_result.metrics_found.keys()),
+            "metrics_missing": validation_result.metrics_missing,
+            "critical_missing": validation_result.critical_missing,
+            "warnings": quality_warnings,
+            "retry_recommended": retry_recommended,
+            "recommended_queries": recommended_queries,
+            "company_type": validation_result.company_type.value,
+            "quality_gate_status": quality_gate.status.value,
+        }
+
+        logger.info(
+            f"Quality validation: score={quality_score:.1f}, "
+            f"can_generate={can_generate_report}, "
+            f"metrics_found={len(validation_result.metrics_found)}, "
+            f"missing={len(validation_result.metrics_missing)}"
+        )
+
+        # Add quality warnings to notes if significant issues
+        if quality_warnings:
+            quality_note = "\n\n**Data Quality Warnings:**\n" + "\n".join(f"- {w}" for w in quality_warnings[:3])
+            notes += quality_note
+
+    else:
+        # Basic quality check without modules
+        quality_result = {
+            "score": 50.0,  # Default score
+            "passes_threshold": True,
+            "can_generate_report": True,
+            "warnings": [],
+            "note": "Quality modules not available - using defaults"
+        }
+
     # Calculate total cost
     total_cost = analysis_cost + extraction_cost
 
-    # Track agent output
+    # Track agent output with quality metrics
     agent_output = {
         "sources_analyzed": len(sources),
         "notes_length": len(notes),
         "data_extracted": True,
+        "quality_score": quality_score,
+        "can_generate_report": can_generate_report,
+        "retry_recommended": retry_recommended,
         "cost": total_cost,
         "tokens": {
             "input": analysis_response.usage.input_tokens + extraction_response.usage.input_tokens,
@@ -165,13 +271,13 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
         }
     }
 
-    logger.info(f"Analyst agent complete - cost: ${total_cost:.4f}")
+    logger.info(f"Analyst agent complete - cost: ${total_cost:.4f}, quality: {quality_score:.1f}")
 
-    # Return only this agent's contribution
-    # Reducers will handle merging/accumulation automatically
+    # Return with quality data
     return {
         "notes": [notes],
         "company_overview": extracted_data,
+        "data_quality": quality_result,
         "agent_outputs": {"analyst": agent_output},
         "total_cost": total_cost,
         "total_tokens": {

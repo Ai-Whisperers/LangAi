@@ -1,46 +1,16 @@
 """
-Research Scripts Module.
+Research CLI Package.
 
-Provides the comprehensive company research runner with:
-- Batch processing from YAML input files
-- Multiple analysis agents
-- Multiple output formats (Markdown, PDF, Excel)
-- Market comparison reports
+Thin CLI wrapper that uses src.company_researcher as the complete research engine.
+This package only provides the command-line interface.
 
 Usage:
-    from scripts.research import (
-        ComprehensiveResearcher,
-        CompanyProfile,
-        MarketConfig,
-        run_research_cli
-    )
+    python -m scripts.research.cli --company "Tesla"
+    python -m scripts.research.cli --help
+
+All research logic, agents, workflows, and tools are in src/company_researcher.
 """
 
-from .config import (
-    CompanyProfile,
-    MarketConfig,
-    ResearchResult,
-    ResearchDepth,
-)
+from .cli import main, create_argument_parser
 
-from .researcher import ComprehensiveResearcher
-
-from .cli import (
-    create_argument_parser,
-    run_research_cli,
-    main,
-)
-
-__all__ = [
-    # Configuration
-    "CompanyProfile",
-    "MarketConfig",
-    "ResearchResult",
-    "ResearchDepth",
-    # Core
-    "ComprehensiveResearcher",
-    # CLI
-    "create_argument_parser",
-    "run_research_cli",
-    "main",
-]
+__all__ = ["main", "create_argument_parser"]
