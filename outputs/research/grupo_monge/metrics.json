@@ -1,0 +1,24 @@
+{
+  "company": "Grupo Monge",
+  "generated_at": "2025-12-09T15:59:37.862071",
+  "profile": {
+    "legal_name": "Grupo Monge",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Costa Rica"
+  },
+  "research": {
+    "quality_score": 70.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 154
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "market_cap_text": "$71.62B",
+    "revenue_text": "$70.8M",
+    "employees": 51,
+    "employees_text": "051"
+  }
+}

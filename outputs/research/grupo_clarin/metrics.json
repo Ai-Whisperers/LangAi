@@ -1,0 +1,22 @@
+{
+  "company": "Grupo Clarin",
+  "generated_at": "2025-12-09T15:47:35.193331",
+  "profile": {
+    "legal_name": "Grupo Clarin",
+    "ticker": "GCLA (BYMA)",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Argentina"
+  },
+  "research": {
+    "quality_score": 73.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 160
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "revenue_text": "$353.85B",
+    "pe_ratio": 5.89
+  }
+}

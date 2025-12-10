@@ -1,0 +1,281 @@
+# LATAM Conglomerates - Peru
+# Research compiled December 2024
+
+country: Peru
+region: South America / LATAM
+total_conglomerates: 5
+
+conglomerates:
+
+  - name: "Grupo Breca (Grupo Brescia)"
+    founded: 1889
+    headquarters: "Lima, Peru"
+    controlling_family: "Brescia Cafferata Family"
+    key_figures:
+      - name: "Ana Maria Brescia Cafferata"
+        role: "Shareholder"
+        note: "Forbes billionaire"
+      - name: "Mario Brescia Cafferata"
+        role: "Former Leader"
+        status: "Deceased (2020)"
+    founders: "Fortunato Brescia & Maria Catalina Cafferata"
+    employees: "70,000+"
+    sectors:
+      - "Mining"
+      - "Finance"
+      - "Real Estate"
+      - "Healthcare"
+      - "Agriculture"
+      - "Fishing"
+      - "Hotels"
+    subsidiaries:
+      mining:
+        - name: "Minsur"
+          sector: "Tin/Gold Mining"
+          note: "One of world's largest tin producers"
+        - name: "Marcobre"
+          sector: "Copper Mining"
+      finance:
+        - name: "BBVA Peru (stake)"
+          sector: "Banking"
+        - name: "Rimac Seguros"
+          sector: "Insurance"
+          note: "Largest insurer in Peru"
+        - name: "AFP Integra"
+          sector: "Pension Funds"
+      real_estate:
+        - name: "Urbanova"
+          sector: "Real Estate Development"
+        - name: "Breca Real Estate"
+          sector: "Commercial Real Estate"
+      healthcare:
+        - name: "Clinica Internacional"
+          sector: "Healthcare"
+        - name: "Clinica Belen"
+          sector: "Healthcare"
+      agriculture:
+        - name: "Agroindustrial Laredo"
+          sector: "Sugar Production"
+      fishing:
+        - name: "TASA"
+          sector: "Fishing/Fishmeal"
+          note: "Largest fishmeal producer in Peru"
+      hotels:
+        - name: "Westin Lima (ownership)"
+          sector: "Hospitality"
+        - name: "Libertador Hotels"
+          sector: "Hotel Chain"
+      other:
+        - name: "Melón (Chile)"
+          sector: "Cement"
+        - name: "Intursa"
+          sector: "Tourism"
+    notes: |
+      Oldest and largest conglomerate in Peru.
+      Founded by Italian immigrants.
+      "Breca" combines Brescia + Cafferata.
+      Over 130 years of operations.
+
+  - name: "Grupo Romero"
+    founded: 1899
+    headquarters: "Lima, Peru"
+    controlling_family: "Romero Family"
+    key_figures:
+      - name: "Dionisio Romero Paoletti"
+        role: "Chairman"
+    revenues: "$9B+ (group total)"
+    employees: "33,000+"
+    presence: "20+ countries"
+    sectors:
+      - "Consumer Goods"
+      - "Banking"
+      - "Insurance"
+      - "Energy"
+      - "Agriculture"
+      - "Fishing"
+      - "Logistics"
+      - "Infrastructure"
+    subsidiaries:
+      consumer_goods:
+        - name: "Alicorp"
+          sector: "Consumer Products"
+          note: "Largest consumer goods company in Peru"
+          brands:
+            - "Bolivar (detergent)"
+            - "Primor (oil)"
+            - "Blanca Flor (flour)"
+            - "Don Vittorio (pasta)"
+            - "Sayón (cookies)"
+        - name: "Fino"
+          sector: "Food Products"
+      banking:
+        - name: "Credicorp"
+          sector: "Financial Holding"
+          subsidiaries:
+            - "Banco de Credito del Peru (BCP)"
+            - "Prima AFP"
+            - "Pacifico Seguros"
+            - "Mibanco"
+        - name: "BCP - Banco de Credito del Peru"
+          sector: "Banking"
+          note: "Largest bank in Peru"
+        - name: "AFP Prima"
+          sector: "Pension Funds"
+      insurance:
+        - name: "Pacifico Seguros"
+          sector: "Insurance"
+      energy:
+        - name: "Cana Brava"
+          sector: "Ethanol Production"
+        - name: "Primax"
+          sector: "Fuel Distribution"
+          note: "Major fuel retailer in Peru, Ecuador, Colombia"
+      agriculture:
+        - name: "Grupo Palmas"
+          sector: "Palm Oil/Agriculture"
+        - name: "R Trading"
+          sector: "Agricultural Trading"
+      fishing:
+        - name: "Pesquera Centinela"
+          sector: "Fishing"
+      logistics:
+        - name: "Ransa"
+          sector: "Logistics/Warehousing"
+          note: "Largest logistics company in Peru"
+      infrastructure:
+        - name: "InfraCorp"
+          sector: "Infrastructure Investment"
+    notes: |
+      Started by Calixto Romero in Catacaos.
+      125+ year history.
+      Two platforms: Industrial and Financial.
+      Credicorp is NYSE-listed holding.
+
+  - name: "Intercorp"
+    founded: 1994
+    headquarters: "Lima, Peru"
+    controlling_family: "Rodriguez-Pastor Family"
+    key_figures:
+      - name: "Carlos Rodriguez-Pastor Persivale"
+        role: "Chairman"
+        net_worth: "$3.3B (richest Peruvian)"
+    holding_companies:
+      - "Intercorp Financial Services (IFS)"
+      - "Intercorp Retail"
+    sectors:
+      - "Banking"
+      - "Retail"
+      - "Real Estate"
+      - "Education"
+      - "Pharmacies"
+      - "Insurance"
+    subsidiaries:
+      banking:
+        - name: "Interbank"
+          sector: "Banking"
+          note: "4th largest bank in Peru"
+        - name: "Interseguro"
+          sector: "Insurance"
+        - name: "Inteligo"
+          sector: "Wealth Management"
+      retail:
+        - name: "Supermercados Peruanos"
+          sector: "Supermarkets"
+          brands:
+            - "Plaza Vea"
+            - "Vivanda"
+            - "Mass"
+        - name: "Promart"
+          sector: "Home Improvement"
+        - name: "Oechsle"
+          sector: "Department Stores"
+      pharmacies:
+        - name: "InRetail Pharma (Inkafarma)"
+          sector: "Pharmacy Chains"
+          brands:
+            - "Inkafarma"
+            - "Mifarma"
+          note: "Largest pharmacy chain in Peru"
+      real_estate:
+        - name: "InRetail Real Estate"
+          sector: "Shopping Centers"
+          brand: "Real Plaza"
+      education:
+        - name: "Innova Schools"
+          sector: "K-12 Education"
+          note: "Low-cost private schools"
+        - name: "Universidad Tecnologica del Peru (UTP)"
+          sector: "Higher Education"
+        - name: "IDAT"
+          sector: "Technical Education"
+      cinema:
+        - name: "Cineplanet"
+          sector: "Cinema Exhibition"
+      hotels:
+        - name: "Casa Andina"
+          sector: "Hotel Chain"
+    notes: |
+      Fastest-growing conglomerate in Peru.
+      Rodriguez-Pastor rebuilt family business after father's death.
+      "Intercorp" model focuses on serving middle class.
+      Over 50,000 employees.
+
+  - name: "Grupo Graña y Montero"
+    founded: 1933
+    headquarters: "Lima, Peru"
+    controlling_family: "Graña Family (historically)"
+    current_status: "Restructured after Odebrecht scandal"
+    stock_symbol: "GRAM (Lima)"
+    sectors:
+      - "Construction"
+      - "Engineering"
+      - "Infrastructure"
+      - "Real Estate"
+    subsidiaries:
+      construction:
+        - name: "GyM (Graña y Montero)"
+          sector: "Civil Construction"
+          status: "Core business"
+        - name: "GMD"
+          sector: "IT Services"
+          status: "Sold"
+      infrastructure:
+        - name: "Stracon"
+          sector: "Mining Services"
+        - name: "CAM"
+          sector: "Engineering"
+      real_estate:
+        - name: "Viva GyM"
+          sector: "Real Estate Development"
+    notes: |
+      Was Peru's largest construction company.
+      Involved in Odebrecht/Lava Jato scandal.
+      Significantly restructured post-scandal.
+      Founded by Carlos Graña.
+
+  - name: "Grupo Hochschild"
+    founded: 1911
+    headquarters: "Lima, Peru / London, UK"
+    controlling_family: "Hochschild Family"
+    key_figures:
+      - name: "Eduardo Hochschild"
+        role: "Chairman"
+    sectors:
+      - "Mining"
+      - "Energy"
+    subsidiaries:
+      mining:
+        - name: "Hochschild Mining PLC"
+          sector: "Precious Metals Mining"
+          stock: "LSE: HOC"
+          note: "Gold and silver producer"
+          operations: "Peru, Argentina, Brazil, Chile"
+      energy:
+        - name: "Aclara Resources"
+          sector: "Rare Earths"
+          stock: "TSX: ARA"
+    notes: |
+      German-Jewish immigrant family.
+      Listed on London Stock Exchange.
+      Focus on precious metals mining.
+      International mining operations.

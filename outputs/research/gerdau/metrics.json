@@ -1,0 +1,18 @@
+{
+  "company": "Gerdau",
+  "generated_at": "2025-12-09T14:56:00.501944",
+  "profile": {
+    "legal_name": "Gerdau",
+    "ticker": "GGB (NYSE)",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Brazil"
+  },
+  "research": {
+    "quality_score": 67.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 166
+  },
+  "financial_data_available": false
+}

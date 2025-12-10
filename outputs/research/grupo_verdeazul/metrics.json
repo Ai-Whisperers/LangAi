@@ -1,0 +1,24 @@
+{
+  "company": "Grupo Verdeazul",
+  "generated_at": "2025-12-09T16:08:58.093786",
+  "profile": {
+    "legal_name": "Grupo Verdeazul",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Panama"
+  },
+  "research": {
+    "quality_score": 70.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 129
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "market_cap_text": "$0.15B",
+    "revenue_text": "$34.1M",
+    "employees": 100,
+    "employees_text": "100"
+  }
+}

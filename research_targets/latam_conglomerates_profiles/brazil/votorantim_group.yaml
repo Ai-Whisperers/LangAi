@@ -1,0 +1,56 @@
+company:
+  name: Votorantim Group
+  legal_name: Votorantim S.A.
+  ticker: ''
+  website: ''
+  industry: Conglomerate / Diversified Holdings
+  country: Brazil
+  region: South America / LATAM
+  founded: '1918'
+  headquarters: Sao Paulo, Brazil
+  sectors:
+  - Cement/Building Materials
+  - Finance
+  - Aluminum
+  - Mining
+  - Energy
+  - Steel
+  - Orange Juice
+  details:
+    ceo: ''
+    employees: ''
+    controlling_family: Ermirio de Moraes Family
+    market_cap: ''
+    assets_under_management: $71B+
+    revenues: ''
+  services:
+  - Votorantim Cimentos (VC) (Cement/Concrete)
+  - Banco Votorantim (Banking)
+  - BV Financeira (Consumer Finance)
+  - CBA (Companhia Brasileira de Aluminio) (Aluminum Production)
+  - Nexa Resources (Zinc Mining)
+  - Votorantim Energia (Power Generation)
+  - Acerbrag (Long Steel)
+  - Citrosuco (Orange Juice)
+  notes: 'One of largest private industrial groups in Brazil.
+
+    Founded by Antonio Pereira Inacio, Portuguese immigrant.
+
+    Operates in 16 countries.'
+research:
+  focus_areas:
+  - Market position in Cement/Building Materials, Finance, Aluminum
+  - Financial performance and revenue breakdown
+  - Competitive landscape and market share
+  - Strategic initiatives and expansion plans
+  - Corporate governance and family ownership structure
+  - M&A activity and recent acquisitions
+  - ESG initiatives and sustainability
+  priority_queries:
+  - Votorantim Group revenue 2024
+  - Votorantim Group market cap
+  - Votorantim Group subsidiaries portfolio
+  - Votorantim Group financial results
+  - Votorantim Group expansion strategy
+  - Votorantim Group competitive position Brazil
+competitors: []

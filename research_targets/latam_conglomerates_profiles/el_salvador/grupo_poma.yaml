@@ -1,0 +1,52 @@
+company:
+  name: Grupo Poma
+  legal_name: Grupo Poma
+  ticker: ''
+  website: ''
+  industry: Conglomerate / Diversified Holdings
+  country: El Salvador
+  region: Central America / LATAM
+  founded: '1917'
+  headquarters: San Salvador, El Salvador
+  sectors:
+  - Automotive
+  - Hotels
+  - Real Estate
+  - Retail
+  details:
+    ceo: Ricardo Poma
+    employees: ''
+    controlling_family: Poma Family
+    market_cap: ''
+    assets_under_management: ''
+    revenues: ''
+  services:
+  - Excel Automotriz (Vehicle Distribution)
+  - Grupo Real Hotels & Resorts (Hospitality)
+  - Grupo Roble (Real Estate Development)
+  - AGRISAL (Diversified Holdings)
+  - Poma Partnership with Grupo Carso (Joint Ventures)
+  notes: 'One of most influential families in Central America.
+
+    Excel Automotriz is largest auto distributor in region.
+
+    Strong hospitality presence.
+
+    Partnership with Carlos Slim''s Grupo Carso.'
+research:
+  focus_areas:
+  - Market position in Automotive, Hotels, Real Estate
+  - Financial performance and revenue breakdown
+  - Competitive landscape and market share
+  - Strategic initiatives and expansion plans
+  - Corporate governance and family ownership structure
+  - M&A activity and recent acquisitions
+  - ESG initiatives and sustainability
+  priority_queries:
+  - Grupo Poma revenue 2024
+  - Grupo Poma market cap
+  - Grupo Poma subsidiaries portfolio
+  - Grupo Poma financial results
+  - Grupo Poma expansion strategy
+  - Grupo Poma competitive position El Salvador
+competitors: []

@@ -1,0 +1,310 @@
+# LATAM Conglomerates - Chile
+# Research compiled December 2024
+
+country: Chile
+region: South America / LATAM
+total_conglomerates: 7
+
+conglomerates:
+
+  - name: "Grupo Luksic (Quinenco)"
+    founded: 1957
+    headquarters: "Santiago, Chile"
+    controlling_family: "Luksic Family"
+    holding_company: "Quinenco S.A."
+    key_figures:
+      - name: "Andronico Luksic Craig"
+        role: "Chairman"
+      - name: "Jean-Paul Luksic"
+        role: "Board Member"
+    assets_under_management: "$71B+"
+    family_ownership: "81%"
+    sectors:
+      - "Mining"
+      - "Banking"
+      - "Beverages"
+      - "Energy"
+      - "Shipping"
+      - "Manufacturing"
+    subsidiaries:
+      mining:
+        - name: "Antofagasta PLC"
+          sector: "Copper Mining"
+          note: "Listed on London Stock Exchange"
+          ownership: "~65%"
+      banking:
+        - name: "Banco de Chile"
+          sector: "Banking"
+          note: "One of Chile's largest banks"
+      beverages:
+        - name: "Compania Cervecerias Unidas (CCU)"
+          sector: "Beer/Beverages"
+          note: "JV with Heineken"
+          products: "Cristal, Escudo, wines"
+      energy:
+        - name: "Enex"
+          sector: "Fuel Distribution"
+          note: "Shell licensee in Chile"
+      shipping:
+        - name: "Compania Sud Americana de Vapores (CSAV)"
+          sector: "Container Shipping"
+          note: "Merged with Hapag-Lloyd"
+        - name: "Hapag-Lloyd"
+          sector: "Global Shipping"
+          ownership: "~30%"
+        - name: "SM SAAM"
+          sector: "Port Services"
+      manufacturing:
+        - name: "Nexans"
+          sector: "Cables/Wiring"
+          note: "French company, significant stake"
+      tourism:
+        - name: "Croatia Tourism Investments"
+          sector: "Hotels (Croatia)"
+    notes: |
+      Started with copper mining in Antofagasta.
+      Founded by Andronico Luksic Abaroa.
+      One of richest families in Latin America.
+      Strong presence in Croatian tourism.
+
+  - name: "Cencosud"
+    founded: 1963
+    headquarters: "Santiago, Chile"
+    controlling_family: "Paulmann Family"
+    key_figures:
+      - name: "Horst Paulmann"
+        role: "Founder/Chairman"
+    stock_symbol: "CENCOSUD (Santiago)"
+    sectors:
+      - "Retail"
+      - "Supermarkets"
+      - "Department Stores"
+      - "Shopping Centers"
+      - "Financial Services"
+    presence: "Chile, Argentina, Brazil, Peru, Colombia, USA, China"
+    subsidiaries:
+      supermarkets:
+        - name: "Jumbo"
+          sector: "Hypermarkets"
+          countries: "Chile, Argentina, Colombia"
+        - name: "Santa Isabel"
+          sector: "Supermarkets"
+          countries: "Chile"
+        - name: "Wong/Metro"
+          sector: "Supermarkets"
+          countries: "Peru"
+        - name: "GBarbosa"
+          sector: "Supermarkets"
+          countries: "Brazil"
+        - name: "Prezunic"
+          sector: "Supermarkets"
+          countries: "Brazil"
+      department_stores:
+        - name: "Paris"
+          sector: "Department Stores"
+          countries: "Chile, Peru"
+        - name: "Johnson"
+          sector: "Specialty Retail"
+      home_improvement:
+        - name: "Easy"
+          sector: "Home Improvement"
+          countries: "Chile, Argentina, Colombia"
+      shopping_centers:
+        - name: "Cencosud Shopping"
+          sector: "Mall Operations"
+      financial:
+        - name: "Cencosud Scotiabank"
+          sector: "Retail Banking"
+          note: "JV with Scotiabank"
+    notes: |
+      Largest retail company in Chile.
+      Third largest listed retailer in Latin America.
+      German-born founder Horst Paulmann.
+
+  - name: "Falabella"
+    founded: 1889
+    headquarters: "Santiago, Chile"
+    controlling_family: "Solari and Del Rio Families"
+    stock_symbol: "FALABELLA (Santiago)"
+    sectors:
+      - "Retail"
+      - "Department Stores"
+      - "Home Improvement"
+      - "Banking"
+      - "Shopping Centers"
+    presence: "Chile, Peru, Colombia, Argentina, Brazil, Mexico"
+    subsidiaries:
+      department_stores:
+        - name: "Falabella Retail"
+          sector: "Department Stores"
+          countries: "Chile, Peru, Colombia, Argentina"
+      home_improvement:
+        - name: "Sodimac"
+          sector: "Home Improvement"
+          countries: "Chile, Peru, Colombia, Argentina, Brazil, Mexico"
+          note: "Largest home improvement chain in LATAM"
+      supermarkets:
+        - name: "Tottus"
+          sector: "Hypermarkets"
+          countries: "Chile, Peru"
+      shopping_centers:
+        - name: "Mallplaza"
+          sector: "Mall Development/Operations"
+          note: "Listed separately"
+      financial:
+        - name: "Banco Falabella"
+          sector: "Retail Banking"
+          countries: "Chile, Peru, Colombia"
+        - name: "CMR Falabella"
+          sector: "Credit Cards"
+      marketplace:
+        - name: "Falabella.com"
+          sector: "E-commerce"
+          note: "One of largest e-commerce in LATAM"
+    notes: |
+      Second largest retail company in Chile.
+      Started as tailor shop by Italian immigrant Salvatore Falabella.
+      Sodimac is flagship home improvement operation.
+
+  - name: "CMPC (Empresas CMPC)"
+    founded: 1920
+    headquarters: "Santiago, Chile"
+    controlling_family: "Matte Family"
+    full_name: "Compania Manufacturera de Papeles y Cartones"
+    stock_symbol: "CMPC (Santiago)"
+    sectors:
+      - "Pulp"
+      - "Paper"
+      - "Tissue"
+      - "Packaging"
+      - "Forestry"
+    subsidiaries:
+      pulp:
+        - name: "CMPC Celulosa"
+          sector: "Pulp Production"
+          note: "Major global pulp producer"
+      paper:
+        - name: "CMPC Papeles"
+          sector: "Paper Products"
+      tissue:
+        - name: "CMPC Tissue (Softys)"
+          sector: "Tissue Products"
+          brands: "Elite, Confort, Noble, Higienol"
+          presence: "Latin America"
+      packaging:
+        - name: "CMPC Packaging"
+          sector: "Corrugated Boxes/Packaging"
+      forestry:
+        - name: "Forestal Mininco"
+          sector: "Forest Plantations"
+    notes: |
+      Major pulp and paper producer.
+      Matte family also controls Colbun (energy).
+      Softys tissue brand has strong LATAM presence.
+
+  - name: "Grupo Angelini (AntarChile)"
+    founded: 1948
+    headquarters: "Santiago, Chile"
+    controlling_family: "Angelini Family"
+    holding_company: "AntarChile S.A."
+    key_figures:
+      - name: "Roberto Angelini"
+        role: "Chairman"
+    sectors:
+      - "Energy"
+      - "Fishing"
+      - "Forestry"
+      - "Shipping"
+    subsidiaries:
+      energy:
+        - name: "Copec"
+          sector: "Fuel Distribution"
+          note: "Chile's largest fuel distributor"
+        - name: "Abastible"
+          sector: "LPG Distribution"
+      fishing:
+        - name: "Corpesca"
+          sector: "Fishing/Fishmeal"
+        - name: "Orizon"
+          sector: "Fishing"
+      forestry:
+        - name: "Arauco (Celulosa Arauco)"
+          sector: "Pulp/Wood Products"
+          note: "One of world's largest forestry companies"
+      shipping:
+        - name: "Empresas Navieras"
+          sector: "Maritime Transport"
+      insurance:
+        - name: "Cruz del Sur"
+          sector: "Insurance"
+    notes: |
+      Founded by Italian immigrant Anacleto Angelini.
+      Copec is flagship fuel distribution business.
+      Arauco is major global pulp producer.
+
+  - name: "Grupo Matte"
+    founded: Early 1900s
+    headquarters: "Santiago, Chile"
+    controlling_family: "Matte Family"
+    key_figures:
+      - name: "Eliodoro Matte"
+        role: "Patriarch"
+      - name: "Bernardo Matte"
+        role: "Board Member"
+    sectors:
+      - "Pulp & Paper"
+      - "Energy"
+      - "Banking"
+      - "Telecommunications"
+    subsidiaries:
+      pulp_paper:
+        - name: "CMPC"
+          sector: "Pulp/Paper/Tissue"
+          note: "See CMPC entry"
+      energy:
+        - name: "Colbun"
+          sector: "Power Generation"
+          note: "One of Chile's largest power companies"
+      banking:
+        - name: "Bice"
+          sector: "Banking/Insurance"
+      telecommunications:
+        - name: "Entel Chile"
+          sector: "Telecom"
+          note: "Partial stake"
+    notes: |
+      One of Chile's most influential business families.
+      Controls both CMPC and Colbun independently.
+      Multiple generations in business.
+
+  - name: "Grupo Saieh"
+    founded: 1980s
+    headquarters: "Santiago, Chile"
+    controlling_family: "Saieh Family"
+    key_figures:
+      - name: "Alvaro Saieh"
+        role: "Chairman"
+    status: "Reduced holdings significantly"
+    sectors:
+      - "Media"
+      - "Retail"
+      - "Banking"
+    subsidiaries:
+      media:
+        - name: "Copesa"
+          sector: "Media/Publishing"
+          note: "La Tercera newspaper"
+          status: "Sold 2019"
+      retail:
+        - name: "SMU"
+          sector: "Supermarkets"
+          brands: "Unimarc, Alvi"
+          status: "Divested"
+      banking:
+        - name: "CorpBanca"
+          sector: "Banking"
+          status: "Merged with Itau Chile"
+    notes: |
+      Once major business group.
+      Significantly reduced holdings after financial difficulties.
+      CorpBanca merged with Itau.

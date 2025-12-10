@@ -1,0 +1,23 @@
+{
+  "company": "Grupo Pellas",
+  "generated_at": "2025-12-09T16:06:38.399899",
+  "profile": {
+    "legal_name": "Grupo Pellas",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Nicaragua"
+  },
+  "research": {
+    "quality_score": 70.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 152
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "revenue_text": "$70.8M",
+    "employees": 359,
+    "employees_text": "359"
+  }
+}

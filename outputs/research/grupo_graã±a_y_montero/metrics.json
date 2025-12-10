@@ -1,0 +1,22 @@
+{
+  "company": "Grupo Gra\u00c3\u00b1a y Montero",
+  "generated_at": "2025-12-09T15:54:12.709898",
+  "profile": {
+    "legal_name": "Grupo Gra\u00c3\u00b1a y Montero",
+    "ticker": "GRAM (Lima)",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Peru"
+  },
+  "research": {
+    "quality_score": 76.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 74
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "market_cap_text": "$6.63M",
+    "pe_ratio": 3.8
+  }
+}

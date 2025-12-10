@@ -1,0 +1,18 @@
+{
+  "company": "Grupo Siman",
+  "generated_at": "2025-12-09T16:02:00.804930",
+  "profile": {
+    "legal_name": "Grupo Siman",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "El Salvador"
+  },
+  "research": {
+    "quality_score": 66.66666666666666,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 107
+  },
+  "financial_data_available": false
+}

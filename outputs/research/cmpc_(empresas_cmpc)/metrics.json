@@ -1,0 +1,18 @@
+{
+  "company": "CMPC (Empresas CMPC)",
+  "generated_at": "2025-12-09T15:24:15.621468",
+  "profile": {
+    "legal_name": "CMPC (Empresas CMPC)",
+    "ticker": "CMPC (Santiago)",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Chile"
+  },
+  "research": {
+    "quality_score": 62.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 116
+  },
+  "financial_data_available": false
+}

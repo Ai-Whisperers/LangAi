@@ -1,0 +1,273 @@
+# LATAM Conglomerates - Colombia
+# Research compiled December 2024
+
+country: Colombia
+region: South America / LATAM
+total_conglomerates: 5
+
+conglomerates:
+
+  - name: "Grupo Empresarial Antioqueno (GEA)"
+    also_known_as: "Sindicato Antioqueno"
+    founded: 1978
+    headquarters: "Medellin, Antioquia, Colombia"
+    structure: "Cross-shareholding alliance (not formal holding)"
+    controlling_families: "Multiple Antioqueno families"
+    key_figures:
+      - name: "Various family groups"
+        note: "Decentralized leadership"
+    revenues: "~5.5% of Colombia's GDP (2007)"
+    sectors:
+      - "Banking"
+      - "Insurance"
+      - "Cement/Infrastructure"
+      - "Food Processing"
+    core_holdings:
+      bancolombia_group:
+        - name: "Bancolombia"
+          sector: "Banking"
+          note: "Largest private bank in Colombia"
+          forbes_rank: "608 globally"
+      grupo_argos:
+        - name: "Grupo Argos"
+          sector: "Cement/Infrastructure/Energy"
+          forbes_rank: "1594 globally"
+          subsidiaries:
+            - name: "Cementos Argos"
+              sector: "Cement"
+              note: "Largest cement producer in Colombia"
+            - name: "Celsia"
+              sector: "Power Generation"
+            - name: "Odinsa"
+              sector: "Infrastructure Concessions"
+      grupo_sura:
+        - name: "Grupo Sura (Suramericana)"
+          sector: "Insurance/Financial Services"
+          subsidiaries:
+            - name: "Suramericana de Seguros"
+              sector: "Insurance"
+            - name: "SURA Asset Management"
+              sector: "Pension Funds"
+              presence: "Chile, Mexico, Peru, Uruguay"
+            - name: "Seguros SURA"
+              sector: "Insurance - Regional"
+      grupo_nutresa:
+        - name: "Grupo Nutresa"
+          sector: "Processed Food"
+          status: "Acquired by Gilinski group (2024)"
+          subsidiaries:
+            - name: "Nacional de Chocolates"
+              sector: "Chocolate/Confectionery"
+            - name: "Noel"
+              sector: "Cookies/Crackers"
+            - name: "Colcafe"
+              sector: "Coffee"
+            - name: "Zenú"
+              sector: "Processed Meats"
+    historical_members:
+      - name: "Coltabaco"
+        sector: "Tobacco"
+        status: "Sold to Philip Morris"
+      - name: "Fabricato"
+        sector: "Textiles"
+      - name: "Cine Colombia"
+        sector: "Cinema Exhibition"
+      - name: "Cadenalco"
+        sector: "Retail"
+        status: "Merged into Exito"
+      - name: "Simesa"
+        sector: "Steel"
+    notes: |
+      GEA formed in 1978 as defense against hostile takeovers by
+      Ardila Lulle, Santo Domingo, and Gran Colombiano groups.
+      12 founding businessmen created cross-shareholding structure.
+      Gilinski family broke the "enroque" (cross-holdings) in 2024.
+      Not a formal company but alliance of companies.
+
+  - name: "Grupo Aval"
+    founded: 1998
+    headquarters: "Bogota, Colombia"
+    controlling_family: "Sarmiento Angulo Family"
+    key_figures:
+      - name: "Luis Carlos Sarmiento Angulo"
+        role: "Founder/Chairman"
+        net_worth: "~$10B (richest Colombian)"
+    stock_symbol: "AVAL (BVC)"
+    sectors:
+      - "Banking"
+      - "Infrastructure"
+      - "Energy"
+      - "Real Estate"
+      - "Hotels"
+    subsidiaries:
+      banking:
+        - name: "Banco de Bogota"
+          sector: "Banking"
+          note: "Oldest bank in Colombia (1870)"
+        - name: "Banco de Occidente"
+          sector: "Banking"
+        - name: "Banco Popular"
+          sector: "Banking"
+        - name: "Banco AV Villas"
+          sector: "Banking"
+        - name: "BAC Credomatic"
+          sector: "Banking"
+          note: "Central American operations"
+        - name: "Porvenir"
+          sector: "Pension Funds"
+      infrastructure:
+        - name: "Corficolombiana"
+          sector: "Infrastructure Investment"
+        - name: "Promigas"
+          sector: "Natural Gas"
+          ownership: "Significant stake"
+      real_estate:
+        - name: "Construcciones Planificadas"
+          sector: "Real Estate Development"
+      hotels:
+        - name: "Hoteles Estelar"
+          sector: "Hospitality"
+    notes: |
+      Luis Carlos Sarmiento is richest person in Colombia.
+      Started in construction, moved to banking.
+      Grupo Aval is largest financial conglomerate in Colombia.
+      Strong Central American presence through BAC.
+
+  - name: "Organizacion Ardila Lulle"
+    founded: 1950s
+    headquarters: "Bogota/Cali, Colombia"
+    controlling_family: "Ardila Lulle Family"
+    key_figures:
+      - name: "Carlos Ardila Lulle"
+        role: "Founder"
+        status: "Deceased (2021)"
+    sectors:
+      - "Beverages"
+      - "Sugar/Agroindustry"
+      - "Media"
+      - "Telecommunications"
+      - "Insurance"
+      - "Textiles"
+    subsidiaries:
+      beverages:
+        - name: "Postobon"
+          sector: "Soft Drinks"
+          note: "Largest Colombian soft drink company"
+          brands: "Postobon, Colombiana, Hit, Pepsi (license)"
+      sugar_agro:
+        - name: "Incauca"
+          sector: "Sugar Production"
+        - name: "Ingenio Providencia"
+          sector: "Sugar Production"
+        - name: "Bioenergy"
+          sector: "Ethanol/Biofuels"
+      media:
+        - name: "RCN Television"
+          sector: "Television Broadcasting"
+        - name: "RCN Radio"
+          sector: "Radio Broadcasting"
+        - name: "NTN24"
+          sector: "News Channel"
+      telecommunications:
+        - name: "Claro Colombia"
+          sector: "Mobile/Telecom"
+          note: "Partnership with America Movil"
+      insurance:
+        - name: "Colseguros"
+          sector: "Insurance"
+          status: "Sold to Allianz"
+      textiles:
+        - name: "Coltejer"
+          sector: "Textiles"
+          status: "Acquired in 1980s"
+      sports:
+        - name: "Atletico Nacional"
+          sector: "Football Club"
+    notes: |
+      Started with soda bottling in 1950s.
+      Carlos Ardila Lulle was one of Colombia's most powerful businessmen.
+      Major rivalry with Santo Domingo group over beverage market.
+      Family continues operations after founder's death.
+
+  - name: "Grupo Santo Domingo (Valorem)"
+    founded: 1930s
+    headquarters: "Bogota, Colombia"
+    current_holding: "Valorem S.A."
+    controlling_family: "Santo Domingo Family"
+    key_figures:
+      - name: "Julio Mario Santo Domingo"
+        role: "Founder"
+        status: "Deceased (2011)"
+      - name: "Alejandro Santo Domingo"
+        role: "Current Leader"
+    sectors:
+      - "Media"
+      - "Beverages (historical)"
+      - "Aviation"
+      - "Real Estate"
+      - "Technology"
+    subsidiaries:
+      media:
+        - name: "Caracol Television"
+          sector: "Television Broadcasting"
+        - name: "Caracol Radio"
+          sector: "Radio Broadcasting"
+        - name: "El Espectador"
+          sector: "Newspaper"
+      aviation:
+        - name: "Avianca"
+          sector: "Airlines"
+          note: "Merged with TACA, now part of Abra Group"
+      beverages_historical:
+        - name: "Bavaria"
+          sector: "Beer"
+          status: "Sold to SABMiller (2005)"
+          note: "Was Colombia's largest beer company"
+      real_estate:
+        - name: "Valorem Real Estate"
+          sector: "Real Estate Development"
+      technology:
+        - name: "Kiwi.com"
+          sector: "Travel Tech"
+          note: "Investment"
+    notes: |
+      Julio Mario Santo Domingo was once richest Colombian.
+      Bavaria sale to SABMiller was landmark LATAM deal.
+      Family now focused on media and investments.
+      Alejandro Santo Domingo based in New York.
+
+  - name: "Grupo Gilinski"
+    founded: 1990s
+    headquarters: "Cali, Colombia"
+    controlling_family: "Gilinski Family"
+    key_figures:
+      - name: "Jaime Gilinski"
+        role: "Patriarch"
+      - name: "Gabriel Gilinski"
+        role: "Key Executive"
+    partners: "Abu Dhabi Royal Group"
+    sectors:
+      - "Banking"
+      - "Food Processing"
+      - "Insurance"
+      - "Real Estate"
+    subsidiaries:
+      banking:
+        - name: "Banco GNB Sudameris"
+          sector: "Banking"
+          presence: "Colombia, Peru, Paraguay"
+      recent_acquisitions:
+        - name: "Grupo Nutresa stake"
+          sector: "Food Processing"
+          note: "Major hostile acquisition 2022-2024"
+        - name: "Grupo Sura stake"
+          sector: "Financial Services"
+          note: "Breaking GEA cross-holdings"
+      real_estate:
+        - name: "Metrocuadrado (stake)"
+          sector: "Real Estate Tech"
+    notes: |
+      Disruptive force in Colombian business.
+      Partnership with UAE investors (Abu Dhabi Royal Group).
+      Successfully broke GEA's defensive structure.
+      Hostile takeover of Nutresa was historic move.

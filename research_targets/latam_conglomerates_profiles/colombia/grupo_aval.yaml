@@ -1,0 +1,58 @@
+company:
+  name: Grupo Aval
+  legal_name: Grupo Aval
+  ticker: AVAL (BVC)
+  website: ''
+  industry: Conglomerate / Diversified Holdings
+  country: Colombia
+  region: South America / LATAM
+  founded: '1998'
+  headquarters: Bogota, Colombia
+  sectors:
+  - Banking
+  - Infrastructure
+  - Energy
+  - Real Estate
+  - Hotels
+  details:
+    ceo: Luis Carlos Sarmiento Angulo
+    employees: ''
+    controlling_family: Sarmiento Angulo Family
+    market_cap: ''
+    assets_under_management: ''
+    revenues: ''
+  services:
+  - Banco de Bogota (Banking)
+  - Banco de Occidente (Banking)
+  - Banco Popular (Banking)
+  - Banco AV Villas (Banking)
+  - BAC Credomatic (Banking)
+  - Porvenir (Pension Funds)
+  - Corficolombiana (Infrastructure Investment)
+  - Promigas (Natural Gas)
+  - Construcciones Planificadas (Real Estate Development)
+  - Hoteles Estelar (Hospitality)
+  notes: 'Luis Carlos Sarmiento is richest person in Colombia.
+
+    Started in construction, moved to banking.
+
+    Grupo Aval is largest financial conglomerate in Colombia.
+
+    Strong Central American presence through BAC.'
+research:
+  focus_areas:
+  - Market position in Banking, Infrastructure, Energy
+  - Financial performance and revenue breakdown
+  - Competitive landscape and market share
+  - Strategic initiatives and expansion plans
+  - Corporate governance and family ownership structure
+  - M&A activity and recent acquisitions
+  - ESG initiatives and sustainability
+  priority_queries:
+  - Grupo Aval revenue 2024
+  - Grupo Aval market cap
+  - Grupo Aval subsidiaries portfolio
+  - Grupo Aval financial results
+  - Grupo Aval expansion strategy
+  - Grupo Aval competitive position Colombia
+competitors: []

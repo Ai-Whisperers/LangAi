@@ -1,0 +1,22 @@
+{
+  "company": "Intercorp",
+  "generated_at": "2025-12-09T15:56:20.079763",
+  "profile": {
+    "legal_name": "Intercorp",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Peru"
+  },
+  "research": {
+    "quality_score": 70.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 171
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "market_cap_text": "$4.45B",
+    "revenue_text": "$4.49B"
+  }
+}

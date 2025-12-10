@@ -1,0 +1,22 @@
+{
+  "company": "Falabella",
+  "generated_at": "2025-12-09T15:28:13.436846",
+  "profile": {
+    "legal_name": "Falabella",
+    "ticker": "FALABELLA (Santiago)",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Chile"
+  },
+  "research": {
+    "quality_score": 67.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 149
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "market_cap_text": "$16.65B",
+    "revenue_text": "$9.43T"
+  }
+}

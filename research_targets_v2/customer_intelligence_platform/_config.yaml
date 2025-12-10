@@ -1,0 +1,283 @@
+# Customer Intelligence Platform - Master Configuration
+# Business Development & Sales Targeting
+
+platform:
+  name: "Customer Intelligence Platform"
+  version: "1.0"
+  last_updated: "2024-12"
+
+  modules:
+    extractor:
+      name: "Social Media Comment Extractor"
+      capabilities:
+        - "Multi-platform extraction (Facebook, Instagram, Twitter, LinkedIn)"
+        - "Company profile comments"
+        - "Competitor profile extraction"
+        - "Historical data retrieval"
+        - "Real-time monitoring"
+
+    analyzer:
+      name: "Comment Analyzer"
+      data_points: 36
+      capabilities:
+        - "NPS categorization"
+        - "Emotion detection (7 dimensions)"
+        - "Pain point extraction (3 levels)"
+        - "Churn risk scoring"
+        - "Competitive intelligence"
+        - "Root cause analysis"
+        - "Multi-language support"
+
+      output_fields:
+        basic:
+          - "ID"
+          - "NPS_Category"
+          - "Score"
+          - "Comment"
+          - "comment_length"
+          - "word_count"
+
+        emotions:
+          - "Satisfaction"
+          - "Frustration"
+          - "Anger"
+          - "Trust"
+          - "Disappointment"
+          - "Confusion"
+          - "Anticipation"
+
+        scoring:
+          - "Sentiment_Score"
+          - "Churn_Risk"
+          - "Urgency"
+
+        pain_points:
+          pp1: ["Keyword", "Category", "Severity", "Principal", "Impact", "Drivers"]
+          pp2: ["Keyword", "Category", "Severity", "Principal", "Impact", "Drivers"]
+          pp3: ["Keyword", "Category", "Severity", "Principal", "Impact", "Drivers"]
+
+        business_intel:
+          - "Follow_Up_Required"
+          - "Suggested_Department"
+          - "Customer_Intent"
+          - "Root_Cause"
+          - "Main_Themes"
+          - "Products_Mentioned"
+          - "Features_Mentioned"
+          - "Competitors_Mentioned"
+
+        quality:
+          - "Sentiment_Confidence"
+          - "Ambiguity_Score"
+          - "Human_Review_Required"
+          - "Uncertainty_Reasons"
+
+        meta:
+          - "Priority_Level"
+          - "Language"
+          - "Analysis_Date"
+
+# =============================================================================
+# IDEAL CUSTOMER PROFILE
+# =============================================================================
+
+ideal_customer_profile:
+  must_have:
+    - "Active social media presence"
+    - "Customer-facing business"
+    - "Competitive market (benefits from intel)"
+    - "Budget for analytics/insights"
+
+  nice_to_have:
+    - "Multiple brands/products"
+    - "Regional/national footprint"
+    - "Digital transformation initiatives"
+    - "Customer experience focus"
+    - "Marketing/insights team"
+
+  disqualifiers:
+    - "No social media presence"
+    - "B2B only with no public engagement"
+    - "Very small/local operation"
+    - "No budget for external services"
+
+# =============================================================================
+# TARGET VERTICALS
+# =============================================================================
+
+target_verticals:
+  tier_1_priority:
+    telecommunications:
+      priority: P1
+      path: "verticals/telecommunications/"
+      rationale:
+        - "Highest comment volume"
+        - "Intense competition"
+        - "Churn-sensitive business"
+        - "Large marketing budgets"
+        - "Customer experience is key differentiator"
+      pain_points_we_solve:
+        - "Understanding customer complaints at scale"
+        - "Competitive positioning insights"
+        - "Churn prediction and prevention"
+        - "Service quality monitoring"
+
+    financial_services:
+      priority: P1
+      path: "verticals/financial_services/"
+      rationale:
+        - "Trust-dependent business"
+        - "Regulatory pressure on customer treatment"
+        - "High lifetime value customers"
+        - "Digital transformation pressure"
+      pain_points_we_solve:
+        - "Customer trust monitoring"
+        - "Complaint pattern detection"
+        - "Competitive service comparison"
+        - "Branch/channel feedback"
+
+    retail:
+      priority: P1
+      path: "verticals/retail/"
+      rationale:
+        - "High transaction volume"
+        - "Multiple customer touchpoints"
+        - "Brand reputation critical"
+        - "E-commerce growth"
+      pain_points_we_solve:
+        - "Product feedback aggregation"
+        - "Store/location performance"
+        - "Competitor pricing/service comparison"
+        - "Customer experience optimization"
+
+  tier_2_high:
+    healthcare:
+      priority: P2
+      path: "verticals/healthcare/"
+      rationale:
+        - "Patient experience increasingly important"
+        - "Reputation drives referrals"
+        - "Quality metrics pressure"
+
+    conglomerates:
+      priority: P2
+      path: "verticals/conglomerates/"
+      rationale:
+        - "Multiple brands to monitor"
+        - "Cross-business intelligence"
+        - "Large budgets"
+        - "Strategic decision making"
+
+    hospitality:
+      priority: P2
+      path: "verticals/hospitality/"
+      rationale:
+        - "Review-dependent business"
+        - "Reputation management critical"
+        - "High competition"
+
+  tier_3_growth:
+    automotive:
+      priority: P3
+      path: "verticals/automotive/"
+
+    education:
+      priority: P3
+      path: "verticals/education/"
+
+    utilities:
+      priority: P3
+      path: "verticals/utilities/"
+
+# =============================================================================
+# GEOGRAPHIC FOCUS
+# =============================================================================
+
+geographic_focus:
+  primary_market:
+    paraguay:
+      priority: P1
+      path: "regions/paraguay/"
+      rationale: "Home market, established relationships"
+      target_companies: 50+
+
+  expansion_markets:
+    argentina:
+      priority: P2
+      path: "regions/argentina/"
+      rationale: "Large market, shared language"
+
+    brazil:
+      priority: P2
+      path: "regions/brazil/"
+      rationale: "Largest LATAM market"
+      language_note: "Portuguese support needed"
+
+    chile:
+      priority: P2
+      path: "regions/chile/"
+      rationale: "Advanced market, high digital adoption"
+
+    central_america:
+      priority: P3
+      path: "regions/central_america/"
+      rationale: "Regional expansion opportunity"
+
+# =============================================================================
+# SALES METRICS & GOALS
+# =============================================================================
+
+sales_targets:
+  pipeline:
+    prospects_needed: 200
+    qualified_leads_target: 50
+    proposals_target: 20
+    closed_deals_target: 10
+
+  by_vertical:
+    telecommunications: 3
+    financial_services: 3
+    retail: 2
+    healthcare: 1
+    other: 1
+
+# =============================================================================
+# PRICING TIERS (Reference)
+# =============================================================================
+
+pricing_reference:
+  packages:
+    starter:
+      name: "Starter"
+      includes:
+        - "1 company extraction"
+        - "Up to 5,000 comments/month"
+        - "Basic analysis report"
+      price_range_usd: "$500-1,000/month"
+
+    professional:
+      name: "Professional"
+      includes:
+        - "Company + 3 competitors"
+        - "Up to 25,000 comments/month"
+        - "Full analysis + competitive report"
+        - "Monthly insights call"
+      price_range_usd: "$2,000-4,000/month"
+
+    enterprise:
+      name: "Enterprise"
+      includes:
+        - "Unlimited companies"
+        - "Unlimited comments"
+        - "Real-time dashboard"
+        - "Custom analysis"
+        - "Dedicated support"
+      price_range_usd: "$5,000-15,000/month"
+
+    custom:
+      name: "Custom/One-Time"
+      includes:
+        - "Industry benchmark studies"
+        - "Competitive deep dives"
+        - "Internal data analysis"
+      price_range_usd: "Project-based"

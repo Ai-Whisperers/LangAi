@@ -1,0 +1,21 @@
+{
+  "company": "Grupo Poma",
+  "generated_at": "2025-12-09T16:01:14.551463",
+  "profile": {
+    "legal_name": "Grupo Poma",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "El Salvador"
+  },
+  "research": {
+    "quality_score": 73.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 145
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "market_cap_text": "$920.93B"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "company": "Grupo Breca (Grupo Brescia)",
+  "generated_at": "2025-12-09T15:52:06.402223",
+  "profile": {
+    "legal_name": "Grupo Breca (Grupo Brescia)",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Peru"
+  },
+  "research": {
+    "quality_score": 70.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 53
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "market_cap_text": "$60.85M"
+  }
+}

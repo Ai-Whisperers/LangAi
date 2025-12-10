@@ -1,0 +1,18 @@
+{
+  "company": "Itausa",
+  "generated_at": "2025-12-09T14:59:15.962871",
+  "profile": {
+    "legal_name": "Itausa",
+    "ticker": "ITSA4 (B3)",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Brazil"
+  },
+  "research": {
+    "quality_score": 67.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 157
+  },
+  "financial_data_available": false
+}

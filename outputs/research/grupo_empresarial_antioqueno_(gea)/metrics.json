@@ -1,0 +1,23 @@
+{
+  "company": "Grupo Empresarial Antioqueno (GEA)",
+  "generated_at": "2025-12-09T15:40:07.319987",
+  "profile": {
+    "legal_name": "Grupo Empresarial Antioqueno (GEA)",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Colombia"
+  },
+  "research": {
+    "quality_score": 73.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 98
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "market_cap_text": "$10.99B",
+    "revenue_text": "$5.83B",
+    "pe_ratio": 22.74
+  }
+}

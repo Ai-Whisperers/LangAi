@@ -1,0 +1,21 @@
+{
+  "company": "Grupo Cuestamoras",
+  "generated_at": "2025-12-09T15:58:58.266960",
+  "profile": {
+    "legal_name": "Grupo Cuestamoras",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Costa Rica"
+  },
+  "research": {
+    "quality_score": 70.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 130
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "revenue_text": "$3B"
+  }
+}

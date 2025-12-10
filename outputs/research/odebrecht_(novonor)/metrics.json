@@ -1,0 +1,18 @@
+{
+  "company": "Odebrecht (Novonor)",
+  "generated_at": "2025-12-09T15:03:12.574954",
+  "profile": {
+    "legal_name": "Odebrecht (Novonor)",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Brazil"
+  },
+  "research": {
+    "quality_score": 67.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 97
+  },
+  "financial_data_available": false
+}

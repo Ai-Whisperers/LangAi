@@ -1,0 +1,21 @@
+{
+  "company": "Grupo Los Grobo",
+  "generated_at": "2025-12-09T15:48:09.598683",
+  "profile": {
+    "legal_name": "Grupo Los Grobo",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Argentina"
+  },
+  "research": {
+    "quality_score": 70.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 153
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "revenue_text": "$318M"
+  }
+}

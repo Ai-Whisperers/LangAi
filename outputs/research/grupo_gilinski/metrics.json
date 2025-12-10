@@ -1,0 +1,22 @@
+{
+  "company": "Grupo Gilinski",
+  "generated_at": "2025-12-09T15:40:46.837389",
+  "profile": {
+    "legal_name": "Grupo Gilinski",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Colombia"
+  },
+  "research": {
+    "quality_score": 75.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 145
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "market_cap_text": "$0B",
+    "revenue_text": "$18.59T"
+  }
+}

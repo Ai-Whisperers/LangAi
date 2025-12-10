@@ -1,0 +1,22 @@
+{
+  "company": "Grupo Macri",
+  "generated_at": "2025-12-09T15:48:48.403987",
+  "profile": {
+    "legal_name": "Grupo Macri",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Argentina"
+  },
+  "research": {
+    "quality_score": 66.66666666666666,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 131
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "market_cap_text": "$16.78B",
+    "revenue_text": "$4.58T"
+  }
+}

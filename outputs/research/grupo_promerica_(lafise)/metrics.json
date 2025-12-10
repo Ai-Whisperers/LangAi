@@ -1,0 +1,21 @@
+{
+  "company": "Grupo Promerica (LAFISE)",
+  "generated_at": "2025-12-09T16:07:36.120826",
+  "profile": {
+    "legal_name": "Grupo Promerica (LAFISE)",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Nicaragua"
+  },
+  "research": {
+    "quality_score": 73.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 58
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "market_cap_text": "$8.20B"
+  }
+}

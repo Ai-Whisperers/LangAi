@@ -1,0 +1,489 @@
+# Financial Services Vertical - Customer Intelligence Platform Targets
+# TIER 1 PRIORITY - Trust-Dependent Businesses
+
+vertical:
+  name: "Financial Services"
+  code: "FINSERV"
+  priority: P1_critical
+
+  market_characteristics:
+    comment_volume: "High"
+    trust_sensitivity: "Very High"
+    regulatory_pressure: "High"
+    cx_maturity: "Medium-High"
+    digital_transformation: "Active"
+
+  why_finserv_needs_us:
+    pain_points:
+      - "Trust is everything - one viral complaint can damage brand"
+      - "Regulatory requirements for customer feedback tracking"
+      - "Understanding why customers switch banks"
+      - "Branch vs digital channel experience gaps"
+      - "FinTech competition disrupting traditional players"
+      - "Credit/loan complaint patterns"
+
+    our_value_proposition:
+      - "Monitor brand trust in real-time"
+      - "Identify complaint patterns before they escalate"
+      - "Compare service quality vs FinTech disruptors"
+      - "Track sentiment by branch/region"
+      - "Detect fraud/scam complaints"
+      - "Regulatory compliance evidence"
+
+  typical_use_cases:
+    - "Branch experience monitoring"
+    - "Mobile app/digital banking feedback"
+    - "Credit card complaint analysis"
+    - "Loan process sentiment"
+    - "Customer service quality tracking"
+    - "FinTech competitor comparison"
+    - "ATM/infrastructure complaints"
+
+# =============================================================================
+# PARAGUAY FINSERV TARGETS
+# =============================================================================
+
+paraguay:
+  market_overview:
+    banks: 17
+    cooperatives: 30+
+    fintech_growing: true
+    banking_penetration: "50%"
+
+  targets:
+    # MAJOR BANKS
+    banco_continental:
+      company_name: "Banco Continental"
+      priority: P1
+      type: "Commercial Bank"
+      ownership: "Private (local)"
+      market_position: "Top 3"
+
+      social_presence:
+        facebook:
+          page: "BancoContinentalPY"
+          followers: "300K+"
+          comment_volume: "Medium-High"
+        instagram:
+          handle: "@bancocontinentalpy"
+
+      extraction_targets:
+        - "Facebook main page"
+        - "Customer service posts"
+        - "Product announcements"
+        - "Instagram engagement"
+
+      potential_insights:
+        - "Branch experience by location"
+        - "Mobile banking app feedback"
+        - "Credit card complaints"
+        - "Wait time frustrations"
+        - "Competitor mentions"
+
+      sales_approach:
+        hook: "We found 47% of negative comments mention wait times - here's where and when"
+        entry_package: "Professional"
+
+      qualification:
+        budget_likely: "Yes"
+        cx_focus: "High"
+        digital_maturity: "Medium-High"
+        priority_score: 88
+
+    banco_itau_py:
+      company_name: "Banco Itau Paraguay"
+      parent: "Itau Unibanco (Brazil)"
+      priority: P1
+      type: "Commercial Bank"
+      market_position: "Top 5"
+
+      social_presence:
+        facebook:
+          followers: "200K+"
+        instagram:
+          followers: "50K+"
+
+      sales_approach:
+        hook: "Itau Brazil uses advanced analytics - let's bring that to Paraguay"
+
+      qualification:
+        budget_likely: "Yes - multinational"
+        cx_focus: "High (Itau standards)"
+        priority_score: 90
+
+    banco_regional:
+      company_name: "Banco Regional"
+      priority: P1
+      type: "Commercial Bank"
+      specialty: "Agribusiness focus"
+
+      social_presence:
+        facebook:
+          followers: "150K+"
+
+      qualification:
+        priority_score: 82
+
+    banco_familiar:
+      company_name: "Banco Familiar"
+      priority: P2
+      type: "Consumer Bank"
+      specialty: "Mass market"
+
+      social_presence:
+        facebook:
+          followers: "400K+"
+          comment_volume: "High"
+
+      notes: "High social engagement, consumer focus"
+      qualification:
+        priority_score: 80
+
+    vision_banco:
+      company_name: "Vision Banco"
+      priority: P2
+      type: "Commercial Bank"
+
+      qualification:
+        priority_score: 75
+
+    banco_gnb:
+      company_name: "Banco GNB Paraguay"
+      parent: "Grupo Gilinski (Colombia)"
+      priority: P2
+      type: "Commercial Bank"
+
+      qualification:
+        budget_likely: "Yes - international group"
+        priority_score: 78
+
+    sudameris_bank:
+      company_name: "Sudameris Bank"
+      priority: P2
+      type: "Commercial Bank"
+
+      qualification:
+        priority_score: 72
+
+    # COOPERATIVES
+    cooperativa_universitaria:
+      company_name: "Cooperativa Universitaria"
+      priority: P2
+      type: "Cooperative"
+      members: "100,000+"
+
+      social_presence:
+        facebook:
+          followers: "100K+"
+          comment_volume: "Medium"
+
+      notes: "Large member base, younger demographic"
+      qualification:
+        priority_score: 70
+
+    cooperativa_san_cristobal:
+      company_name: "Cooperativa San Cristobal"
+      priority: P2
+      type: "Cooperative"
+      members: "80,000+"
+
+      qualification:
+        priority_score: 68
+
+    # FINTECH
+    tigo_money:
+      company_name: "Tigo Money"
+      parent: "Millicom (Tigo)"
+      priority: P1
+      type: "Mobile Money"
+      users: "2M+"
+
+      social_presence:
+        facebook:
+          page: "TigoMoneyParaguay"
+          followers: "High (Tigo ecosystem)"
+
+      potential_insights:
+        - "P2P transfer experience"
+        - "Bill payment issues"
+        - "Agent network feedback"
+        - "App usability"
+
+      sales_approach:
+        hook: "FinTech users are vocal - we can tell you exactly what they want next"
+
+      qualification:
+        budget_likely: "Yes - Millicom"
+        cx_focus: "Very High"
+        priority_score: 92
+
+    personal_credit:
+      company_name: "Personal Credit"
+      parent: "Telecom Personal"
+      priority: P2
+      type: "Consumer Finance"
+
+      qualification:
+        priority_score: 75
+
+# =============================================================================
+# BRAZIL FINSERV TARGETS
+# =============================================================================
+
+brazil:
+  market_overview:
+    banks: 100+
+    fintech_explosion: true
+    market_size: "Largest in LATAM"
+
+  targets:
+    nubank:
+      company_name: "Nubank"
+      priority: P1
+      type: "Digital Bank/FinTech"
+      customers: "90M+"
+      market_cap: "$45B"
+
+      social_presence:
+        facebook:
+          followers: "10M+"
+        instagram:
+          followers: "5M+"
+        twitter:
+          followers: "2M+"
+
+      notes: "MASSIVE social presence - showcase potential"
+      sales_approach:
+        hook: "90M customers = massive feedback volume. We can help you process it all."
+
+      qualification:
+        budget_likely: "Yes - well funded"
+        cx_focus: "Extremely High"
+        digital_maturity: "Extremely High"
+        priority_score: 98
+
+    itau_unibanco:
+      company_name: "Itau Unibanco"
+      priority: P1
+      type: "Traditional Bank"
+      market_position: "#1 in Brazil"
+
+      social_presence:
+        facebook:
+          followers: "8M+"
+
+      qualification:
+        budget_likely: "Yes"
+        priority_score: 92
+
+    bradesco:
+      company_name: "Bradesco"
+      priority: P1
+      type: "Traditional Bank"
+      market_position: "#2 in Brazil"
+
+      qualification:
+        priority_score: 90
+
+    banco_do_brasil:
+      company_name: "Banco do Brasil"
+      priority: P2
+      type: "Traditional Bank"
+      ownership: "State-controlled"
+
+      qualification:
+        priority_score: 75
+
+    inter:
+      company_name: "Banco Inter"
+      priority: P1
+      type: "Digital Bank"
+      customers: "30M+"
+
+      qualification:
+        cx_focus: "Very High"
+        priority_score: 88
+
+    c6_bank:
+      company_name: "C6 Bank"
+      priority: P2
+      type: "Digital Bank"
+      investor: "JP Morgan"
+
+      qualification:
+        priority_score: 85
+
+    picpay:
+      company_name: "PicPay"
+      priority: P1
+      type: "Digital Payments"
+      users: "65M+"
+
+      qualification:
+        priority_score: 88
+
+    mercado_pago_br:
+      company_name: "Mercado Pago"
+      parent: "MercadoLibre"
+      priority: P1
+      type: "Digital Payments"
+
+      qualification:
+        priority_score: 90
+
+# =============================================================================
+# ARGENTINA FINSERV TARGETS
+# =============================================================================
+
+argentina:
+  targets:
+    uala:
+      company_name: "Uala"
+      priority: P1
+      type: "FinTech/Neobank"
+      users: "5M+"
+      valuation: "$2.5B"
+
+      qualification:
+        priority_score: 88
+
+    mercado_pago_ar:
+      company_name: "Mercado Pago Argentina"
+      parent: "MercadoLibre"
+      priority: P1
+      type: "Digital Payments"
+
+      qualification:
+        priority_score: 90
+
+    banco_galicia:
+      company_name: "Banco Galicia"
+      priority: P1
+      type: "Traditional Bank"
+      market_position: "Top 3"
+
+      qualification:
+        priority_score: 85
+
+    banco_santander_ar:
+      company_name: "Santander Argentina"
+      parent: "Santander"
+      priority: P2
+      type: "Traditional Bank"
+
+      qualification:
+        priority_score: 82
+
+    brubank:
+      company_name: "Brubank"
+      priority: P2
+      type: "Digital Bank"
+
+      qualification:
+        priority_score: 78
+
+# =============================================================================
+# CHILE FINSERV TARGETS
+# =============================================================================
+
+chile:
+  targets:
+    banco_de_chile:
+      company_name: "Banco de Chile"
+      priority: P1
+      type: "Traditional Bank"
+      market_position: "Top 2"
+
+      qualification:
+        priority_score: 85
+
+    banco_santander_cl:
+      company_name: "Santander Chile"
+      priority: P1
+      type: "Traditional Bank"
+
+      qualification:
+        priority_score: 85
+
+    bci:
+      company_name: "BCI"
+      priority: P1
+      type: "Traditional Bank"
+      market_position: "Top 3"
+
+      qualification:
+        priority_score: 82
+
+    tenpo:
+      company_name: "Tenpo"
+      priority: P2
+      type: "FinTech"
+
+      qualification:
+        priority_score: 75
+
+# =============================================================================
+# SALES PLAYBOOK FOR FINSERV
+# =============================================================================
+
+sales_playbook:
+  opening_hooks:
+    - "In banking, trust is everything. We can show you exactly what's building or breaking customer trust."
+    - "Your customers mention [FINTECH_COMPETITOR] in 15% of complaints - here's what they wish you had"
+    - "We found 5 branches with significantly worse sentiment - here's the root cause"
+    - "Credit card complaints spike on the 15th of each month - here's why"
+
+  discovery_questions:
+    - "How do you currently track customer sentiment across social media?"
+    - "How do you compare your customer experience to FinTech competitors?"
+    - "Do you have visibility into branch-level sentiment?"
+    - "How quickly can you identify emerging complaint patterns?"
+    - "What's your process for regulatory reporting on customer feedback?"
+
+  value_propositions:
+    trust_monitoring:
+      message: "Track brand trust in real-time"
+      metric: "Trust sentiment score updated daily"
+
+    competitive_positioning:
+      message: "Understand why customers choose FinTech over you"
+      metric: "Competitor comparison across 36 dimensions"
+
+    branch_performance:
+      message: "Identify underperforming branches before they hurt your brand"
+      metric: "Branch-level sentiment tracking"
+
+    regulatory_compliance:
+      message: "Document your customer feedback process"
+      metric: "Automated categorization for regulators"
+
+  objection_handling:
+    "we_have_nps":
+      response: "NPS tells you the score, not the WHY. We tell you exactly what's driving detractors and how to fix it."
+
+    "sensitive_data":
+      response: "We only analyze public social media comments. No private data access needed. Full compliance."
+
+# =============================================================================
+# PROSPECT PRIORITIZATION
+# =============================================================================
+
+prioritization_matrix:
+  tier_1:
+    score_range: "85-100"
+    companies:
+      - "Nubank"
+      - "Tigo Money"
+      - "Mercado Pago"
+      - "Itau"
+      - "Banco Continental PY"
+    action: "Immediate outreach with custom sample"
+
+  tier_2:
+    score_range: "70-84"
+    companies:
+      - "Banco Familiar"
+      - "Uala"
+      - "Banco Inter"
+      - "Banco Galicia"
+    action: "Include in campaign sequence"

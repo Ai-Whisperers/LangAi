@@ -1,0 +1,22 @@
+{
+  "company": "Grupo Aval",
+  "generated_at": "2025-12-09T15:39:25.443768",
+  "profile": {
+    "legal_name": "Grupo Aval",
+    "ticker": "AVAL (BVC)",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Colombia"
+  },
+  "research": {
+    "quality_score": 73.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 171
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "market_cap_text": "$18287.64B",
+    "revenue_text": "$11.74T"
+  }
+}

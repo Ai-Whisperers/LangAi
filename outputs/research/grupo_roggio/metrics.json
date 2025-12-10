@@ -1,0 +1,22 @@
+{
+  "company": "Grupo Roggio",
+  "generated_at": "2025-12-09T15:49:26.978956",
+  "profile": {
+    "legal_name": "Grupo Roggio",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Argentina"
+  },
+  "research": {
+    "quality_score": 71.66666666666666,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 136
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "revenue_text": "$45T",
+    "pe_ratio": 9.12
+  }
+}

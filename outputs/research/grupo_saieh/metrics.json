@@ -1,0 +1,21 @@
+{
+  "company": "Grupo Saieh",
+  "generated_at": "2025-12-09T15:36:26.749439",
+  "profile": {
+    "legal_name": "Grupo Saieh",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Chile"
+  },
+  "research": {
+    "quality_score": 67.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 93
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "revenue_text": "$3B"
+  }
+}

@@ -1,0 +1,48 @@
+company:
+  name: Itausa
+  legal_name: Itausa
+  ticker: ITSA4 (B3)
+  website: ''
+  industry: Conglomerate / Diversified Holdings
+  country: Brazil
+  region: South America / LATAM
+  founded: '1966'
+  headquarters: Sao Paulo, Brazil
+  sectors:
+  - Banking/Financial Services
+  - Infrastructure
+  - Real Estate
+  details:
+    ceo: ''
+    employees: ''
+    controlling_family: Setubal and Villela Families
+    market_cap: ''
+    assets_under_management: ''
+    revenues: ''
+  services:
+  - Itau Unibanco (Banking)
+  - Alpargatas (Footwear (Havaianas))
+  - Dexco (formerly Duratex) (Wood Panels/Tiles)
+  - Copa Energia (LPG Distribution)
+  - CCR (Toll Roads/Infrastructure)
+  - Aegea (Water/Sanitation)
+  notes: 'Holding company for Setubal-Villela business empire.
+
+    Primary vehicle for Itau Unibanco control.'
+research:
+  focus_areas:
+  - Market position in Banking/Financial Services, Infrastructure, Real Estate
+  - Financial performance and revenue breakdown
+  - Competitive landscape and market share
+  - Strategic initiatives and expansion plans
+  - Corporate governance and family ownership structure
+  - M&A activity and recent acquisitions
+  - ESG initiatives and sustainability
+  priority_queries:
+  - Itausa revenue 2024
+  - Itausa market cap
+  - Itausa subsidiaries portfolio
+  - Itausa financial results
+  - Itausa expansion strategy
+  - Itausa competitive position Brazil
+competitors: []

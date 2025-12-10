@@ -1,0 +1,18 @@
+{
+  "company": "Grupo Matte",
+  "generated_at": "2025-12-09T15:34:41.140582",
+  "profile": {
+    "legal_name": "Grupo Matte",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Chile"
+  },
+  "research": {
+    "quality_score": 67.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 122
+  },
+  "financial_data_available": false
+}

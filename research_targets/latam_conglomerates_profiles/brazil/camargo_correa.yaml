@@ -1,0 +1,49 @@
+company:
+  name: Camargo Correa
+  legal_name: Camargo Correa
+  ticker: ''
+  website: ''
+  industry: Conglomerate / Diversified Holdings
+  country: Brazil
+  region: South America / LATAM
+  founded: '1939'
+  headquarters: Sao Paulo, Brazil
+  sectors:
+  - Construction
+  - Cement
+  - Footwear
+  - Energy
+  details:
+    ceo: ''
+    employees: ''
+    controlling_family: Camargo Family
+    market_cap: ''
+    assets_under_management: ''
+    revenues: ''
+  services:
+  - Camargo Correa Infra (Infrastructure Construction)
+  - InterCement (Cement)
+  - Alpargatas (Footwear)
+  - CPFL Energia (Power Distribution)
+  notes: 'Historical big infrastructure builder.
+
+    Involved in Lava Jato corruption scandal.
+
+    Significantly divested holdings post-scandal.'
+research:
+  focus_areas:
+  - Market position in Construction, Cement, Footwear
+  - Financial performance and revenue breakdown
+  - Competitive landscape and market share
+  - Strategic initiatives and expansion plans
+  - Corporate governance and family ownership structure
+  - M&A activity and recent acquisitions
+  - ESG initiatives and sustainability
+  priority_queries:
+  - Camargo Correa revenue 2024
+  - Camargo Correa market cap
+  - Camargo Correa subsidiaries portfolio
+  - Camargo Correa financial results
+  - Camargo Correa expansion strategy
+  - Camargo Correa competitive position Brazil
+competitors: []

@@ -1,0 +1,21 @@
+{
+  "company": "Grupo Romero",
+  "generated_at": "2025-12-09T15:55:37.321809",
+  "profile": {
+    "legal_name": "Grupo Romero",
+    "ticker": "",
+    "exchange": "",
+    "industry": "Conglomerate / Diversified Holdings",
+    "country": "Peru"
+  },
+  "research": {
+    "quality_score": 70.0,
+    "depth": "quick",
+    "iteration_count": 1,
+    "sources_count": 167
+  },
+  "financial_data_available": false,
+  "extracted_metrics": {
+    "pe_ratio": 2025.0
+  }
+}

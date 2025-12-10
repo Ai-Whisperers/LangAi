@@ -1,181 +1,224 @@
-# Documentation
+# Company Researcher Documentation
 
-Welcome to the Company Researcher documentation.
-
----
-
-## 📚 Company Researcher Documentation
-
-**Current System**: Phase 4 - Parallel Multi-Agent System
-
-### Getting Started
-
-- **[Installation Guide](../INSTALLATION.md)** - Setup and configuration
-- **[Quick Start Guide](../QUICK_START.md)** - Your first research in 5 minutes
-- **[Company Researcher Docs](company-researcher/README.md)** - Complete documentation index
+Comprehensive documentation for the AI-powered multi-agent company research system.
 
 ---
 
-## 📁 Documentation Structure
+## Quick Navigation
+
+| I want to... | Go to... |
+|--------------|----------|
+| Get started quickly | [Quick Start](01-overview/QUICKSTART.md) |
+| Install the system | [Installation Guide](01-overview/INSTALLATION.md) |
+| Understand how it works | [Architecture](02-architecture/README.md) |
+| Learn about agents | [Agent Documentation](03-agents/README.md) |
+| Configure the system | [Configuration Guide](06-configuration/README.md) |
+| Run research | [Scripts & CLI](09-scripts/README.md) |
+| Write tests | [Testing Guide](10-testing/README.md) |
+| See future plans | [Roadmap](roadmap/) |
+
+---
+
+## Documentation Structure
 
 ```
 docs/
-├── company-researcher/          # Main documentation (Phase 4 system)
-│   ├── README.md               # Documentation index
-│   ├── USER_GUIDE.md           # How to use (Phase 2)
-│   ├── ARCHITECTURE.md         # System design (Phase 2)
-│   ├── IMPLEMENTATION.md       # Code guide (Phase 2)
-│   ├── AGENT_DEVELOPMENT.md    # Create agents (Phase 2)
-│   ├── API_REFERENCE.md        # API docs (Phase 2)
-│   ├── PHASE_EVOLUTION.md      # History (Phase 3)
-│   ├── TROUBLESHOOTING.md      # Solutions (Phase 3)
-│   └── FAQ.md                  # Questions (Phase 3)
+├── 01-overview/                    # Getting started
+│   ├── README.md                   # Project overview
+│   ├── INSTALLATION.md             # Setup guide
+│   └── QUICKSTART.md               # 5-minute start
 │
-├── planning/                   # Project planning
-│   ├── MASTER_20_PHASE_PLAN.md        # Complete roadmap
-│   ├── MASTER_PLAN_EXECUTIVE_SUMMARY.md
-│   ├── DOCUMENTATION_PHASES_PLAN.md
-│   └── external-ideas/                # 159 feature catalog
-│       └── README.md
+├── 02-architecture/                # System design
+│   ├── README.md                   # Architecture overview
+│   ├── SYSTEM_DESIGN.md            # Detailed design
+│   └── diagrams/                   # Visual diagrams
 │
-├── archive/                    # Legacy documentation
-│   ├── README.md              # Important: Different project!
-│   ├── fastapi-architecture.md
-│   ├── fastapi-integration.md
-│   ├── fastapi-getting-started.md
-│   └── vector-databases.md
+├── 03-agents/                      # AI agents
+│   ├── README.md                   # Agent overview
+│   ├── AGENT_CONTRACTS.md          # Input/output specifications
+│   ├── AGENT_DEVELOPMENT_GUIDE.md  # Creating agents
+│   ├── core/                       # Core agents
+│   ├── specialists/                # Specialist agents
+│   └── quality/                    # Quality agents
 │
-└── README.md                   # This file
+├── 04-workflows/                   # LangGraph workflows
+│   ├── README.md                   # Workflow documentation
+│   ├── WORKFLOW_LOGIC.md           # Decision logic & state transitions
+│   └── LANGGRAPH_STUDIO_GUIDE.md   # Visual debugging
+│
+├── 05-integrations/                # External APIs
+│   ├── README.md                   # Integration overview
+│   ├── INTEGRATION_PATTERNS.md     # Fallback & selection logic
+│   ├── search/                     # Search providers
+│   └── financial/                  # Financial data
+│
+├── 06-configuration/               # Configuration
+│   ├── README.md                   # Config options
+│   ├── THRESHOLD_RATIONALE.md      # Why thresholds are set
+│   ├── PROMPT_ENGINEERING.md       # Prompt design decisions
+│   └── llm-setup.md                # LLM configuration
+│
+├── 07-state-management/            # State flow
+├── 08-quality-system/              # Quality scoring
+│   ├── README.md                   # Quality overview
+│   └── QUALITY_LOGIC.md            # Scoring algorithms & detection
+├── 09-scripts/                     # CLI tools
+├── 10-testing/                     # Testing guide
+│
+├── roadmap/                        # Future development
+│   ├── TECHNOLOGY_IMPROVEMENT_PLAN.md
+│   ├── API_IMPLEMENTATION_PLAN.md
+│   ├── IMPROVEMENT_ROADMAP.md
+│   └── CODEBASE_IMPROVEMENT_ROADMAP.md
+│
+└── README.md                       # This index
 ```
 
 ---
 
-## 🎯 Quick Navigation
+## System Overview
 
-### I want to...
+**Company Researcher** is an AI-powered multi-agent system that automatically generates comprehensive company research reports.
 
-**Get started quickly**:
-- [Install the system](../INSTALLATION.md)
-- [Run first research](../QUICK_START.md)
+### Key Features
 
-**Learn how to use it**:
-- [User Guide](company-researcher/USER_GUIDE.md) *(Phase 2)*
-- [Troubleshooting](company-researcher/TROUBLESHOOTING.md) *(Phase 3)*
-- [FAQ](company-researcher/FAQ.md) *(Phase 3)*
+- **Multi-Agent Architecture**: 5+ specialized agents analyze different business aspects
+- **Parallel Execution**: Agents run concurrently for faster research
+- **Quality Assurance**: Automatic fact verification and contradiction detection
+- **Iterative Improvement**: Automatically improves until 85%+ quality score
+- **Cost Tracking**: Real-time token and cost monitoring (~$0.08/report)
 
-**Understand how it works**:
-- [Architecture](company-researcher/ARCHITECTURE.md) *(Phase 2)*
-- [Implementation](company-researcher/IMPLEMENTATION.md) *(Phase 2)*
-- [Phase Evolution](company-researcher/PHASE_EVOLUTION.md) *(Phase 3)*
+### Technology Stack
 
-**Develop and extend**:
-- [Agent Development](company-researcher/AGENT_DEVELOPMENT.md) *(Phase 2)*
-- [API Reference](company-researcher/API_REFERENCE.md) *(Phase 2)*
-- [Code Examples](company-researcher/EXAMPLES.md) *(Phase 6)*
+| Component | Technology |
+|-----------|------------|
+| Agent Orchestration | LangGraph |
+| LLM Framework | LangChain |
+| Primary LLM | Claude (Anthropic) |
+| Web Search | Tavily + DuckDuckGo |
+| Financial Data | yfinance, Alpha Vantage, FMP |
+| Observability | AgentOps, LangSmith |
 
-**Plan and roadmap**:
-- [Master 20-Phase Plan](planning/MASTER_20_PHASE_PLAN.md)
-- [External Ideas Catalog](planning/external-ideas/README.md) (159 features)
-- [Executive Summary](planning/MASTER_PLAN_EXECUTIVE_SUMMARY.md)
+### Current Status
 
----
+**Phase**: Phase 4 Complete - Parallel Multi-Agent System
 
-## 📊 Current System (Phase 4)
-
-**Status**: Phase 4 Complete - Parallel Multi-Agent System
-
-**Features**:
-- 5 specialized agents (Researcher, Financial, Market, Product, Synthesizer)
-- Parallel execution with fan-out/fan-in pattern
-- Quality-driven iteration (target: 85%+)
-- Custom state reducers for concurrent updates
-
-**Results**:
-- 67% success rate (2/3 companies ≥85% quality)
-- Average cost: $0.08 per research
-- Time: 2-5 minutes per research
-
-**See detailed results**: [Phase 4 Validation Report](../outputs/logs/PHASE4_VALIDATION_SUMMARY.md)
+| Metric | Target | Current |
+|--------|--------|---------|
+| Quality Score | 85%+ | 84.7% avg |
+| Cost per Report | ~$0.05 | ~$0.08 |
+| Time per Report | <5 min | 2-5 min |
 
 ---
 
-## 🚀 What's Next
+## Quick Example
 
-### Phase 2 Documentation (In Progress)
+```bash
+# Install
+pip install -r requirements.txt
+cp env.example .env
+# Edit .env with API keys
 
-Creating technical documentation:
-- [ ] Architecture deep dive
-- [ ] Implementation guide
-- [ ] Agent development tutorial
-- [ ] API reference
+# Run research
+python run_research.py "Microsoft"
+```
 
-### Future Phases (Planned)
+**Output:**
 
-See [Master 20-Phase Plan](planning/MASTER_20_PHASE_PLAN.md):
-- **Phases 4-6**: Observability & quality systems
-- **Phases 7-10**: 4 critical specialist agents
-- **Phases 11-12**: Memory & caching
-- **Phases 13-19**: Advanced features
-- **Phase 20**: Production deployment
-
----
-
-## ⚠️ Important Note: Archive
-
-The **[archive/](archive/)** directory contains documentation from a **different project** (FastAPI/RAG system).
-
-**Do not confuse with current system**:
-- Current: LangGraph multi-agent system (Company Researcher)
-- Archive: FastAPI/Vector DB system (different project)
-
-See [archive/README.md](archive/README.md) for details.
+```
+outputs/research/microsoft/
+├── 00_full_report.md
+├── 01_executive_summary.md
+├── 02_company_overview.md
+├── 03_financials.md
+├── 04_market_position.md
+├── 05_competitive_analysis.md
+├── 06_strategy.md
+├── 07_sources.md
+└── metrics.json
+```
 
 ---
 
-## 📖 External Resources
+## Documentation by Topic
 
-**LangGraph**:
-- [Official Docs](https://python.langchain.com/docs/langgraph)
-- [Multi-Agent Examples](https://github.com/langchain-ai/langgraph/tree/main/examples)
+### Getting Started
 
-**Claude**:
-- [Anthropic Docs](https://docs.anthropic.com/)
-- [Claude API](https://console.anthropic.com/)
+| Document | Description |
+|----------|-------------|
+| [Project Overview](01-overview/README.md) | What is Company Researcher? |
+| [Installation](01-overview/INSTALLATION.md) | Setup and prerequisites |
+| [Quick Start](01-overview/QUICKSTART.md) | First research in 5 minutes |
 
-**Tavily**:
-- [Tavily Docs](https://docs.tavily.com/)
-- [Search API](https://tavily.com/)
+### Architecture & Design
+
+| Document | Description |
+|----------|-------------|
+| [Architecture Overview](02-architecture/README.md) | System architecture |
+| [System Design](02-architecture/SYSTEM_DESIGN.md) | Detailed design docs |
+| [Diagrams](02-architecture/diagrams/README.md) | Visual diagrams |
+| [State Management](07-state-management/README.md) | State flow and reducers |
+
+### Agents
+
+| Document | Description |
+|----------|-------------|
+| [Agent Overview](03-agents/README.md) | All agents summary |
+| [Agent Contracts](03-agents/AGENT_CONTRACTS.md) | Input/output specifications |
+| [Agent Development](03-agents/AGENT_DEVELOPMENT_GUIDE.md) | Creating new agents |
+| [Core Agents](03-agents/core/README.md) | Researcher, Analyst, Synthesizer |
+| [Specialist Agents](03-agents/specialists/README.md) | Financial, Market, Product |
+| [Quality Agents](03-agents/quality/README.md) | Logic Critic, Quality Checker |
+
+### Workflows
+
+| Document | Description |
+|----------|-------------|
+| [Workflow Documentation](04-workflows/README.md) | LangGraph workflows |
+| [Workflow Logic](04-workflows/WORKFLOW_LOGIC.md) | Decision logic, state transitions |
+| [LangGraph Studio](04-workflows/LANGGRAPH_STUDIO_GUIDE.md) | Visual debugging |
+
+### Integrations
+
+| Document | Description |
+|----------|-------------|
+| [Integration Overview](05-integrations/README.md) | All integrations |
+| [Integration Patterns](05-integrations/INTEGRATION_PATTERNS.md) | Fallback & selection logic |
+| [Search Providers](05-integrations/search/README.md) | Tavily, DuckDuckGo |
+| [Financial APIs](05-integrations/financial/README.md) | yfinance, Alpha Vantage |
+
+### Configuration & Operations
+
+| Document | Description |
+|----------|-------------|
+| [Configuration Guide](06-configuration/README.md) | All configuration options |
+| [Threshold Rationale](06-configuration/THRESHOLD_RATIONALE.md) | Why thresholds are set |
+| [Prompt Engineering](06-configuration/PROMPT_ENGINEERING.md) | Prompt design decisions |
+| [LLM Setup](06-configuration/llm-setup.md) | LLM configuration |
+| [Scripts & CLI](09-scripts/README.md) | Command-line tools |
+| [Quality System](08-quality-system/README.md) | Quality scoring |
+| [Quality Logic](08-quality-system/QUALITY_LOGIC.md) | Scoring algorithms |
+| [Testing Guide](10-testing/README.md) | Test suites |
+
+### Future Development
+
+| Document | Description |
+|----------|-------------|
+| [Technology Improvements](roadmap/TECHNOLOGY_IMPROVEMENT_PLAN.md) | Tech stack optimization |
+| [API Implementation](roadmap/API_IMPLEMENTATION_PLAN.md) | REST API roadmap |
+| [Improvement Ideas](roadmap/IMPROVEMENT_ROADMAP.md) | 50 enhancement ideas |
+| [Technical Debt](roadmap/CODEBASE_IMPROVEMENT_ROADMAP.md) | Codebase improvements |
 
 ---
 
-## 🤝 Contributing
+## Getting Help
 
-Documentation contributions welcome!
-
-**Guidelines**:
-- Clear, concise language
-- Include examples
-- Test all code snippets
-- Follow markdown conventions
-- Update related docs
-
-See future CONTRIBUTING.md (Phase 20) for full guidelines.
+1. Check [Quick Start](01-overview/QUICKSTART.md)
+2. Review [Configuration](06-configuration/README.md)
+3. See [Testing Guide](10-testing/README.md) for troubleshooting
 
 ---
 
-## 📞 Getting Help
+**Last Updated**: December 2024
 
-**Documentation Issues**:
-- Check [Troubleshooting](company-researcher/TROUBLESHOOTING.md)
-- Review [FAQ](company-researcher/FAQ.md)
-- See [Company Researcher Index](company-researcher/README.md)
-
-**System Issues**:
-- Check validation logs: [outputs/logs/](../outputs/logs/)
-- Review Phase 4 results: [PHASE4_VALIDATION_SUMMARY.md](../outputs/logs/PHASE4_VALIDATION_SUMMARY.md)
-
----
-
-**Start here**: [Company Researcher Documentation Index](company-researcher/README.md)
-
-**Last Updated**: December 5, 2025 (Phase 1 Complete)
+**Current Version**: Phase 4 - Parallel Multi-Agent System

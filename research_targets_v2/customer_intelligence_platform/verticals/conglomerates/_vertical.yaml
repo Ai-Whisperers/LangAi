@@ -1,0 +1,398 @@
+# Conglomerates Vertical - Customer Intelligence Platform Targets
+# TIER 2 PRIORITY - Multi-Brand Intelligence
+
+vertical:
+  name: "Conglomerates & Business Groups"
+  code: "CONGLOM"
+  priority: P2_high
+
+  market_characteristics:
+    comment_volume: "Very High (aggregated)"
+    multi_brand_complexity: "High"
+    budget_availability: "High"
+    decision_making: "Centralized or decentralized"
+
+  why_conglomerates_need_us:
+    pain_points:
+      - "Multiple brands to monitor separately"
+      - "Lack of unified view across holdings"
+      - "Cross-brand competitive insights"
+      - "Resource duplication in monitoring"
+      - "Need group-level strategic insights"
+
+    our_value_proposition:
+      - "Unified dashboard across all brands"
+      - "Cross-brand sentiment comparison"
+      - "Identify best practices across holdings"
+      - "Group-level competitive intelligence"
+      - "Efficient multi-brand monitoring"
+      - "Strategic insights for leadership"
+
+  typical_use_cases:
+    - "Multi-brand reputation dashboard"
+    - "Cross-sector sentiment comparison"
+    - "Group-wide competitive analysis"
+    - "Brand portfolio health monitoring"
+    - "Cross-business customer insights"
+    - "Executive-level reporting"
+
+# =============================================================================
+# PARAGUAY CONGLOMERATE TARGETS
+# =============================================================================
+
+paraguay:
+  targets:
+    grupo_vierci:
+      company_name: "Grupo Vierci"
+      priority: P1
+      type: "Conglomerate"
+      controlling_family: "Vierci"
+      estimated_revenue: "$1.5B+"
+
+      holdings_to_monitor:
+        media:
+          - company: "ABC Color"
+            social_followers: "2M+"
+            comment_volume: "Very High"
+          - company: "ABC TV"
+            social_followers: "500K+"
+          - company: "ABC Digital"
+            traffic: "5M+ monthly"
+
+        retail:
+          - company: "Superseis"
+            social_followers: "500K+"
+            comment_volume: "High"
+          - company: "Shopping del Sol"
+            social_followers: "400K+"
+          - company: "Mariscal Lopez Shopping"
+            social_followers: "200K+"
+
+        total_social_reach: "4M+ followers across brands"
+
+      potential_insights:
+        - "Unified view of Vierci brand health"
+        - "Cross-brand customer overlap"
+        - "Which brand drives group perception"
+        - "Media brand trust vs retail experience"
+        - "Competitive positioning by sector"
+
+      sales_approach:
+        hook: "Grupo Vierci has 4M+ followers across brands. We can give you ONE dashboard to see sentiment across ABC, Superseis, and your malls."
+        value: "Enterprise intelligence across your entire portfolio"
+        entry_package: "Enterprise (all brands)"
+        pricing_potential: "$10,000+/month"
+
+      decision_makers:
+        - "Group CEO/Chairman"
+        - "Chief Strategy Officer"
+        - "Group Marketing Director"
+        - "Individual brand CMOs"
+
+      qualification:
+        budget_likely: "Yes - largest group"
+        cx_focus: "Medium-High"
+        digital_maturity: "Medium-High"
+        priority_score: 95
+
+    grupo_cartes:
+      company_name: "Grupo Cartes"
+      priority: P2
+      type: "Conglomerate"
+      controlling_family: "Cartes"
+      notes: "Former president's group - US sanctions on family members"
+
+      holdings_to_monitor:
+        tobacco:
+          - company: "Tabesa"
+            social_presence: "Limited"
+        media:
+          - company: "Ultima Hora"
+            social_followers: "500K+"
+          - company: "Telefuturo"
+            social_followers: "300K+"
+        retail:
+          - company: "Farmacenter"
+            social_followers: "200K+"
+
+      caution: "Sanctions environment - careful due diligence needed"
+
+      qualification:
+        budget_likely: "Yes"
+        risk_factors: "Sanctions, reputation"
+        priority_score: 70
+
+    # MENNONITE COOPERATIVES (Conglomerate-like)
+    grupo_chortitzer:
+      company_name: "Cooperativa Chortitzer"
+      priority: P2
+      type: "Cooperative Conglomerate"
+      estimated_revenue: "$700M+"
+
+      holdings_to_monitor:
+        dairy:
+          - company: "Lacteos Trebol"
+            social_followers: "100K+"
+            market_share: "50%+ dairy"
+        agriculture:
+          - company: "Grain operations"
+        retail:
+          - company: "Cooperative stores"
+
+      potential_insights:
+        - "Trebol brand sentiment"
+        - "Agricultural service feedback"
+        - "Cooperative member satisfaction"
+
+      qualification:
+        budget_likely: "Maybe - cooperative structure"
+        cx_focus: "Medium"
+        priority_score: 72
+
+    grupo_neuland:
+      company_name: "Cooperativa Neuland"
+      priority: P2
+      type: "Cooperative"
+
+      holdings_to_monitor:
+        meat:
+          - company: "Frigorifico Neuland"
+            exports: ["Chile", "Russia", "Israel"]
+
+      qualification:
+        priority_score: 68
+
+# =============================================================================
+# BRAZIL CONGLOMERATE TARGETS
+# =============================================================================
+
+brazil:
+  targets:
+    itausa:
+      company_name: "Itausa"
+      priority: P1
+      type: "Holding Company"
+      ticker: "ITSA4"
+
+      holdings_to_monitor:
+        banking:
+          - company: "Itau Unibanco"
+            social_followers: "8M+"
+        consumer:
+          - company: "Alpargatas (Havaianas)"
+            social_followers: "10M+"
+          - company: "Dexco"
+
+      sales_approach:
+        hook: "Itausa brands have 20M+ social followers combined. One dashboard to monitor them all."
+
+      qualification:
+        priority_score: 92
+
+    cosan:
+      company_name: "Cosan"
+      priority: P1
+      type: "Conglomerate"
+
+      holdings_to_monitor:
+        energy:
+          - company: "Raizen (Shell JV)"
+          - company: "Compass Gas"
+        logistics:
+          - company: "Rumo Logistica"
+
+      qualification:
+        priority_score: 85
+
+    votorantim:
+      company_name: "Votorantim"
+      priority: P1
+      type: "Conglomerate"
+
+      holdings_to_monitor:
+        - "Votorantim Cimentos"
+        - "CBA (aluminum)"
+        - "Votorantim Energia"
+
+      qualification:
+        priority_score: 82
+
+    jf_investimentos:
+      company_name: "J&F Investimentos"
+      priority: P2
+      type: "Conglomerate"
+      notes: "JBS parent - compliance issues history"
+
+      holdings_to_monitor:
+        - "JBS"
+        - "Eldorado Brasil"
+
+      qualification:
+        priority_score: 75
+
+# =============================================================================
+# MEXICO CONGLOMERATE TARGETS
+# =============================================================================
+
+mexico:
+  targets:
+    grupo_carso:
+      company_name: "Grupo Carso"
+      controlling_figure: "Carlos Slim"
+      priority: P1
+      type: "Conglomerate"
+
+      holdings_to_monitor:
+        telecom:
+          - company: "America Movil / Claro"
+            social_followers: "50M+ across LATAM"
+        retail:
+          - company: "Sanborns"
+          - company: "Sears Mexico"
+        industrial:
+          - company: "Carso Infraestructura"
+
+      sales_approach:
+        hook: "The Slim empire has 50M+ social followers. We can track sentiment across all of them."
+
+      qualification:
+        priority_score: 95
+
+    femsa:
+      company_name: "FEMSA"
+      priority: P1
+      type: "Conglomerate"
+
+      holdings_to_monitor:
+        retail:
+          - company: "OXXO"
+            stores: "20,000+"
+            social_followers: "5M+"
+        beverages:
+          - company: "Coca-Cola FEMSA"
+            social_followers: "High"
+
+      qualification:
+        priority_score: 92
+
+    grupo_bimbo:
+      company_name: "Grupo Bimbo"
+      priority: P1
+      type: "Food Conglomerate"
+
+      holdings_to_monitor:
+        - "Bimbo"
+        - "Marinela"
+        - "Tia Rosa"
+        - "Sara Lee"
+
+      qualification:
+        priority_score: 88
+
+# =============================================================================
+# CHILE CONGLOMERATE TARGETS
+# =============================================================================
+
+chile:
+  targets:
+    grupo_luksic:
+      company_name: "Grupo Luksic (Quinenco)"
+      priority: P1
+      type: "Conglomerate"
+
+      holdings_to_monitor:
+        banking:
+          - company: "Banco de Chile"
+        beverages:
+          - company: "CCU"
+        ports:
+          - company: "SAAM"
+
+      qualification:
+        priority_score: 88
+
+    cencosud:
+      company_name: "Cencosud"
+      priority: P1
+      type: "Retail Conglomerate"
+
+      holdings_to_monitor:
+        supermarkets:
+          - company: "Jumbo"
+          - company: "Santa Isabel"
+        retail:
+          - company: "Paris"
+          - company: "Easy"
+
+      qualification:
+        priority_score: 88
+
+    falabella:
+      company_name: "Falabella"
+      priority: P1
+      type: "Retail Conglomerate"
+
+      holdings_to_monitor:
+        - "Falabella stores"
+        - "Sodimac"
+        - "Tottus"
+        - "Banco Falabella"
+
+      qualification:
+        priority_score: 90
+
+# =============================================================================
+# SALES PLAYBOOK FOR CONGLOMERATES
+# =============================================================================
+
+sales_playbook:
+  opening_hooks:
+    - "Your group has [X]M followers across all brands. Imagine ONE dashboard showing sentiment for all of them."
+    - "We can tell you which of your brands is dragging down group reputation - and which is lifting it."
+    - "Cross-brand insights: Customers who complain about Brand A also mention Brand B 30% of the time."
+    - "Your competitors are monitoring you across all brands. Shouldn't you have the same visibility?"
+
+  value_propositions:
+    unified_intelligence:
+      message: "One dashboard for all your brands"
+      metric: "Unified sentiment across portfolio"
+
+    cross_brand_insights:
+      message: "Understand how brands affect each other"
+      metric: "Brand correlation analysis"
+
+    efficiency:
+      message: "Stop duplicating monitoring efforts"
+      metric: "Single platform vs multiple tools"
+
+    strategic_value:
+      message: "Board-level insights on brand health"
+      metric: "Executive dashboards and reports"
+
+  pricing_approach:
+    entry: "Start with flagship brand"
+    expansion: "Add brands over time"
+    enterprise: "Full portfolio monitoring"
+    typical_deal: "$5,000-20,000/month"
+
+# =============================================================================
+# PROSPECT PRIORITIZATION
+# =============================================================================
+
+prioritization_matrix:
+  tier_1:
+    companies:
+      - "Grupo Vierci"
+      - "Grupo Carso"
+      - "FEMSA"
+      - "Itausa"
+      - "Falabella"
+    action: "CEO/Strategy-level outreach"
+
+  tier_2:
+    companies:
+      - "Cencosud"
+      - "Grupo Luksic"
+      - "Votorantim"
+      - "Grupo Bimbo"
+    action: "Marketing/CX leader outreach"
