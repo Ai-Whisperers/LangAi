@@ -1,18 +1,20 @@
 {
-  "company": "Tigo Paraguay",
-  "generated_at": "2025-12-09T01:27:58.910429",
-  "profile": {
-    "legal_name": "Telefonica Celular del Paraguay S.A. (Telecel)",
-    "ticker": "",
-    "exchange": "",
-    "industry": "Telecommunications",
-    "country": "Paraguay"
-  },
-  "research": {
-    "quality_score": 67.0,
-    "depth": "comprehensive",
-    "iteration_count": 1,
-    "sources_count": 0
-  },
-  "financial_data_available": false
+  "company_name": "Tigo Paraguay",
+  "quality_score": 40,
+  "sources_count": 0,
+  "used_fallback": true,
+  "fallback_sections": [
+    "overview",
+    "financial",
+    "market",
+    "competitive",
+    "brand",
+    "esg",
+    "risk",
+    "investment",
+    "executive_summary"
+  ],
+  "duration_seconds": 258.956642,
+  "timestamp": "20251210_142442",
+  "warning": "Report generated using AI knowledge only - verify with official sources"
 }

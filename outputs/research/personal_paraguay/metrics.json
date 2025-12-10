@@ -1,22 +1,20 @@
 {
-  "company": "Personal Paraguay",
-  "generated_at": "2025-12-09T01:08:20.467863",
-  "profile": {
-    "legal_name": "Nucleo S.A.",
-    "ticker": "",
-    "exchange": "",
-    "industry": "Telecommunications",
-    "country": "Paraguay"
-  },
-  "research": {
-    "quality_score": 67.0,
-    "depth": "comprehensive",
-    "iteration_count": 1,
-    "sources_count": 0
-  },
-  "financial_data_available": false,
-  "extracted_metrics": {
-    "employees": 500,
-    "employees_text": "500"
-  }
+  "company_name": "Personal Paraguay",
+  "quality_score": 40,
+  "sources_count": 0,
+  "used_fallback": true,
+  "fallback_sections": [
+    "overview",
+    "financial",
+    "market",
+    "competitive",
+    "brand",
+    "esg",
+    "risk",
+    "investment",
+    "executive_summary"
+  ],
+  "duration_seconds": 238.320343,
+  "timestamp": "20251210_142841",
+  "warning": "Report generated using AI knowledge only - verify with official sources"
 }
