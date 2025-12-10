@@ -111,7 +111,18 @@
       "Bash(nul)",
       "Bash(PYTHONPATH=\".:$PYTHONPATH\" timeout 180 ./venv/Scripts/python:*)",
       "Bash(xargs -I {} bash -c \"echo ''''=== {} ==='''' && head -20 {}\")",
-      "Bash(cut:*)"
+      "Bash(cut:*)",
+      "Bash(src/company_researcher/state/workflow.py )",
+      "Bash(src/company_researcher/agents/research/__init__.py )",
+      "Bash(src/company_researcher/agents/research/competitive_matrix.py )",
+      "Bash(src/company_researcher/agents/research/risk_quantifier.py )",
+      "Bash(src/company_researcher/agents/research/investment_thesis.py )",
+      "Bash(src/company_researcher/agents/research/multilingual_search.py )",
+      "Bash(src/company_researcher/agents/research/news_sentiment.py )",
+      "Bash(tests/test_enhanced_workflow_integration.py )",
+      "Bash(tests/test_competitive_matrix.py )",
+      "Bash(tests/test_risk_quantifier.py )",
+      "Bash(tests/test_investment_thesis.py)"
     ],
     "deny": [
       "Read(.env)",

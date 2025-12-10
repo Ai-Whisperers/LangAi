@@ -7,6 +7,8 @@
 # We WANT to track research outputs for reproducibility and sharing
 # Use `git add -f outputs/` if needed
 
+venv-langflow/*
+
 # Don't ignore outputs folder - it contains valuable research data
 !outputs/
 !outputs/**
