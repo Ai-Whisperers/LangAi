@@ -1,0 +1,153 @@
+# Paraguay - Telecommunications Sector
+# Mobile, Fixed, Internet - Primary Research Focus
+
+sector:
+  name: "Telecommunications"
+  code: "TEL"
+  country: "paraguay"
+  priority: P1_critical
+
+  description: |
+    Paraguay's telecom market with 3 main mobile operators (Tigo, Personal, Claro)
+    and state telecom (Copaco). High smartphone penetration, growing 4G/LTE.
+    Significant AI/automation potential in customer service and network ops.
+
+  market_metrics:
+    mobile_subscribers: "8.5M"
+    mobile_penetration: "115%"
+    broadband_subscribers: "600K+"
+    smartphone_penetration: "70%"
+    4g_coverage: "85%"
+
+  ai_potential:
+    areas:
+      - "Customer service chatbots"
+      - "Network optimization"
+      - "Predictive maintenance"
+      - "Fraud detection"
+      - "Churn prediction"
+      - "Personalized offers"
+
+companies:
+  # Mobile Network Operators
+  tigo_paraguay:
+    file: "tigo_paraguay.yaml"
+    priority: P1
+    type: "mno"
+    parent: "Millicom International"
+    brand: "Tigo"
+    market_share: "45%"
+    subscribers: "3.8M"
+    services:
+      - "Mobile (4G LTE)"
+      - "Fixed broadband"
+      - "Pay TV"
+      - "B2B solutions"
+      - "Mobile money (Tigo Money)"
+    ai_opportunities:
+      - "AI customer service"
+      - "Network AI optimization"
+      - "Predictive analytics"
+
+  personal_paraguay:
+    file: "personal_paraguay.yaml"
+    priority: P1
+    type: "mno"
+    parent: "Telecom Argentina (Grupo Clarin)"
+    brand: "Personal"
+    market_share: "35%"
+    subscribers: "2.9M"
+    services:
+      - "Mobile (4G LTE)"
+      - "Fixed services"
+      - "Digital services"
+    ai_opportunities:
+      - "Customer experience AI"
+      - "Marketing automation"
+      - "Network management"
+
+  claro_paraguay:
+    file: "claro_paraguay.yaml"
+    priority: P2
+    type: "mno"
+    parent: "America Movil (Mexico)"
+    brand: "Claro"
+    market_share: "18%"
+    subscribers: "1.5M"
+    services:
+      - "Mobile"
+      - "Broadband"
+    ai_opportunities:
+      - "Regional platform leverage"
+      - "AI-powered marketing"
+
+  copaco:
+    file: "copaco.yaml"
+    priority: P2
+    type: "state_telecom"
+    ownership: "State-owned (ANDE)"
+    brand: "Copaco/VOX"
+    services:
+      - "Fixed line"
+      - "Broadband"
+      - "Wholesale"
+    notes: "Potential privatization candidate"
+
+  vox_paraguay:
+    file: "vox_paraguay.yaml"
+    priority: P3
+    type: "state_mobile"
+    parent: "Copaco"
+    brand: "VOX"
+    market_share: "2%"
+    notes: "State mobile operator, limited scale"
+
+  # ISPs & Alternative Providers
+  tigo_business:
+    file: "tigo_business.yaml"
+    priority: P2
+    type: "enterprise_telecom"
+    parent: "Tigo"
+    focus: "B2B connectivity, cloud services"
+
+  personal_empresas:
+    file: "personal_empresas.yaml"
+    priority: P3
+    type: "enterprise_telecom"
+    parent: "Personal"
+
+research_focus:
+  themes:
+    - "AI/ML adoption readiness"
+    - "Digital transformation"
+    - "5G roadmap"
+    - "Financial services (mobile money)"
+    - "Enterprise digitization"
+    - "Network investment"
+
+  key_metrics:
+    - "ARPU (prepaid/postpaid)"
+    - "Churn rate"
+    - "Postpaid mix"
+    - "Data usage/subscriber"
+    - "4G adoption"
+    - "NPS score"
+    - "Digital channel usage"
+
+  data_sources:
+    - "CONATEL (regulator)"
+    - "Company reports"
+    - "Millicom investor relations"
+    - "Telecom Argentina reports"
+    - "America Movil reports"
+
+competitive_dynamics:
+  leader: "Tigo (45% share)"
+  challenger: "Personal (35% share)"
+  follower: "Claro (18% share)"
+  state: "Copaco/VOX (2% share)"
+  trends:
+    - "Continued Tigo dominance"
+    - "Personal aggressive expansion"
+    - "Data-centric competition"
+    - "Mobile money growth"

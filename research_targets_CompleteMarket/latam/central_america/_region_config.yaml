@@ -1,0 +1,241 @@
+# Central America Region Configuration
+# 7 Countries, Cross-Border Business Groups
+
+region:
+  name: "Central America"
+  code: "CENTRAL_AM"
+  parent_region: "latam"
+  priority: "P2_high"
+
+  countries:
+    - name: "Guatemala"
+      code: "GT"
+      population: "18M"
+      gdp_usd: "$90B"
+      priority: P2
+
+    - name: "Costa Rica"
+      code: "CR"
+      population: "5M"
+      gdp_usd: "$70B"
+      priority: P2
+
+    - name: "Panama"
+      code: "PA"
+      population: "4.5M"
+      gdp_usd: "$75B"
+      priority: P2
+      notes: "Financial hub"
+
+    - name: "Honduras"
+      code: "HN"
+      population: "10M"
+      gdp_usd: "$30B"
+      priority: P3
+
+    - name: "El Salvador"
+      code: "SV"
+      population: "6.5M"
+      gdp_usd: "$32B"
+      priority: P2
+      notes: "Bitcoin adoption"
+
+    - name: "Nicaragua"
+      code: "NI"
+      population: "7M"
+      gdp_usd: "$15B"
+      priority: P3
+
+    - name: "Belize"
+      code: "BZ"
+      population: "0.4M"
+      gdp_usd: "$3B"
+      priority: P4
+
+  total_gdp_usd: "$315B"
+  total_population: "51M"
+
+# Major Cross-Border Business Groups
+business_groups:
+  # Guatemala-based
+  corporacion_multi_inversiones:
+    alias: "CMI"
+    controlling_family: "Bosch Gutierrez"
+    headquarters: "Guatemala"
+    key_holdings:
+      - name: "CMI Alimentos"
+        brands: ["Pollo Campero", "Don Cristobal"]
+      - name: "CMI Energia"
+        sector: "Power Generation"
+      - name: "CMI Capital"
+        sector: "Financial Services"
+    countries: ["Guatemala", "El Salvador", "Honduras", "Nicaragua", "USA"]
+    priority: P1
+
+  corporacion_castillo_hermanos:
+    controlling_family: "Castillo"
+    headquarters: "Guatemala"
+    key_holdings:
+      - name: "Cerveceria Centro Americana"
+        brands: ["Gallo", "Victoria"]
+      - name: "CBC (beverages)"
+      - name: "Industrial holdings"
+    priority: P2
+
+  # El Salvador-based
+  grupo_poma:
+    controlling_family: "Poma"
+    headquarters: "El Salvador"
+    key_holdings:
+      - name: "Real Hotels & Resorts"
+      - name: "Excel Automotriz"
+      - name: "Grupo Roble (real estate)"
+      - name: "PDF (finance)"
+    countries: ["El Salvador", "Guatemala", "Honduras", "Costa Rica", "Colombia"]
+    priority: P1
+
+  grupo_calleja:
+    controlling_family: "Calleja"
+    headquarters: "El Salvador"
+    key_holdings:
+      - name: "Super Selectos"
+        sector: "Supermarkets"
+      - name: "Calleja retail"
+    priority: P2
+
+  grupo_siman:
+    controlling_family: "Siman"
+    headquarters: "El Salvador"
+    key_holdings:
+      - name: "Almacenes Siman"
+        sector: "Department Stores"
+    countries: ["El Salvador", "Guatemala", "Nicaragua"]
+    priority: P2
+
+  # Honduras-based
+  grupo_terra:
+    controlling_family: "Facusse"
+    headquarters: "Honduras"
+    key_holdings:
+      - name: "Terra Energia"
+      - name: "Terra Financial"
+      - name: "Real estate"
+    priority: P2
+
+  grupo_ficohsa:
+    controlling_family: "Atala"
+    headquarters: "Honduras"
+    key_holdings:
+      - name: "Banco Ficohsa"
+      - name: "Seguros Ficohsa"
+    countries: ["Honduras", "Guatemala", "Panama"]
+    priority: P2
+
+  # Nicaragua-based
+  grupo_pellas:
+    controlling_family: "Pellas"
+    headquarters: "Nicaragua"
+    key_holdings:
+      - name: "Flor de Cana (rum)"
+      - name: "BAC Credomatic"
+        sector: "Banking"
+      - name: "Ingenio San Antonio"
+        sector: "Sugar"
+    countries: ["Nicaragua", "Guatemala", "Costa Rica", "Panama", "Honduras", "El Salvador"]
+    priority: P1
+
+  # Costa Rica-based
+  grupo_cuestamoras:
+    controlling_family: "Cuesta Moras"
+    headquarters: "Costa Rica"
+    key_holdings:
+      - name: "Auto Mercado"
+        sector: "Supermarkets"
+      - name: "Multiplaza"
+        sector: "Shopping Malls"
+    priority: P2
+
+  grupo_monge:
+    controlling_family: "Monge"
+    headquarters: "Costa Rica"
+    key_holdings:
+      - name: "Tiendas Monge"
+        sector: "Electronics/Appliances Retail"
+      - name: "Gollo"
+    countries: ["Costa Rica", "Nicaragua", "Honduras", "El Salvador", "Guatemala"]
+    priority: P2
+
+  # Panama-based
+  grupo_motta:
+    controlling_family: "Motta"
+    headquarters: "Panama"
+    key_holdings:
+      - name: "Copa Airlines"
+      - name: "Motta Internacional"
+      - name: "Banking interests"
+    priority: P1
+
+  grupo_verdeazul:
+    headquarters: "Panama"
+    key_holdings:
+      - name: "Super 99"
+        sector: "Supermarkets"
+    priority: P3
+
+  # Regional Banks
+  grupo_promerica:
+    alias: "LAFISE"
+    headquarters: "Nicaragua/Costa Rica"
+    key_holdings:
+      - name: "Banco Promerica"
+      - name: "Bancentro"
+    countries: ["All Central America", "Dominican Republic"]
+    priority: P2
+
+  bac_credomatic:
+    parent: "Grupo Aval (Colombia)"
+    type: "Regional Banking"
+    countries: ["All Central America"]
+    priority: P2
+
+# Sectors Across Region
+sectors:
+  financial_services:
+    priority: P1
+    key_players: ["BAC Credomatic", "Ficohsa", "Promerica", "Banco Industrial"]
+
+  retail_consumer:
+    priority: P1
+    key_players: ["Walmart CAMI", "Super Selectos", "Siman", "PriceSmart"]
+
+  food_beverage:
+    priority: P1
+    key_players: ["CMI Alimentos", "Cerveceria Centro Americana", "Pollo Campero"]
+
+  energy:
+    priority: P2
+    key_players: ["CMI Energia", "Terra", "AES Central America"]
+
+  telecommunications:
+    priority: P2
+    key_players: ["Millicom (Tigo)", "America Movil (Claro)", "Telefonica"]
+
+  transportation:
+    priority: P2
+    key_players: ["Copa Airlines", "Airlines/Ports"]
+
+# Research Focus
+research_focus:
+  themes:
+    - "Cross-border business groups"
+    - "Regional integration"
+    - "Remittance economy"
+    - "Financial inclusion"
+    - "Tourism development"
+    - "Nearshoring opportunity"
+
+  challenges:
+    - "Political instability"
+    - "Security concerns"
+    - "Infrastructure gaps"
+    - "Small market scale"

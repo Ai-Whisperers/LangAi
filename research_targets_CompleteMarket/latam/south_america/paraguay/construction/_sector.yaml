@@ -1,0 +1,465 @@
+# Paraguay - Construction & Real Estate Sector
+# Booming Sector Driven by Economic Growth
+
+sector:
+  name: "Construction & Real Estate"
+  code: "CON"
+  country: "paraguay"
+  priority: P2_high
+
+  description: |
+    Paraguay's construction sector is booming, driven by economic growth,
+    urbanization, and foreign investment. Asuncion is experiencing a building
+    boom with residential towers, shopping centers, and office buildings.
+    Infrastructure projects are also significant.
+
+  market_metrics:
+    construction_gdp_share: "8%"
+    annual_growth: "6-8%"
+    cement_consumption_tons: "1.5M+"
+    formal_housing_deficit: "400,000 units"
+    mortgage_penetration_gdp: "3%"
+    real_estate_investment_usd: "$500M+"
+
+  strategic_importance:
+    drivers:
+      - "Economic growth"
+      - "Urban migration"
+      - "Foreign investment"
+      - "Infrastructure needs"
+      - "Housing deficit"
+    challenges:
+      - "Land titling issues"
+      - "Informal construction (30%+)"
+      - "Limited mortgage access"
+      - "Skilled labor shortage"
+    opportunities:
+      - "Residential towers"
+      - "Commercial development"
+      - "Industrial parks"
+      - "Infrastructure PPPs"
+      - "Affordable housing"
+
+  ai_potential:
+    areas:
+      - "Project management optimization"
+      - "BIM and design automation"
+      - "Cost estimation AI"
+      - "Site safety monitoring"
+      - "Real estate valuation"
+      - "Market analytics"
+
+# =============================================================================
+# COMPANIES
+# =============================================================================
+
+companies:
+  # MAJOR CONSTRUCTION COMPANIES
+
+  rieder_hnos:
+    file: "rieder.yaml"
+    priority: P1
+    type: "construction_conglomerate"
+    description: "Largest construction group"
+    established: "1930s"
+    divisions:
+      - "Construction (roads, buildings)"
+      - "Building materials (cement, steel)"
+      - "Real estate development"
+    projects:
+      - "Major highways"
+      - "Infrastructure"
+      - "Commercial buildings"
+    employees: 3000+
+
+  tecnoedil:
+    file: "tecnoedil.yaml"
+    priority: P1
+    type: "construction"
+    description: "Major civil engineering"
+    specialties:
+      - "Infrastructure"
+      - "Industrial construction"
+      - "Commercial"
+    notable_projects:
+      - "Highways"
+      - "Bridges"
+      - "Industrial facilities"
+
+  cde_construcciones:
+    file: "cde_const.yaml"
+    priority: P2
+    type: "construction"
+    description: "Construction company"
+    focus: "Civil works"
+
+  constructora_py:
+    file: "constructora_py.yaml"
+    priority: P2
+    type: "construction"
+    description: "General contractor"
+    services:
+      - "Residential"
+      - "Commercial"
+      - "Industrial"
+
+  consorcio_de_ingenieria:
+    file: "consorcio_ing.yaml"
+    priority: P2
+    type: "construction"
+    description: "Engineering consortium"
+    focus: "Major infrastructure"
+
+  # REAL ESTATE DEVELOPERS
+
+  grupo_vierci_real_estate:
+    file: "vierci_re.yaml"
+    priority: P1
+    type: "real_estate_developer"
+    parent: "Grupo Vierci"
+    projects:
+      - "Shopping del Sol"
+      - "Mariscal Lopez Shopping"
+      - "Office towers"
+      - "Residential projects"
+    description: "Premier developer"
+
+  espacios_urbanos:
+    file: "espacios_urbanos.yaml"
+    priority: P2
+    type: "real_estate_developer"
+    description: "Urban development"
+    focus:
+      - "Residential towers"
+      - "Mixed-use projects"
+    location: "Asuncion prime areas"
+
+  edifica_paraguay:
+    file: "edifica.yaml"
+    priority: P2
+    type: "real_estate_developer"
+    description: "Residential development"
+    products:
+      - "Apartments"
+      - "Gated communities"
+
+  desarrolladora_del_este:
+    file: "desarrolladora_este.yaml"
+    priority: P2
+    type: "real_estate_developer"
+    location: "Ciudad del Este"
+    focus: "Commercial and residential"
+
+  inmobiliaria_guarani:
+    file: "inmob_guarani.yaml"
+    priority: P2
+    type: "real_estate_developer"
+    description: "Mixed development"
+
+  grupo_parana_desarrollos:
+    file: "parana_desarrollos.yaml"
+    priority: P3
+    type: "real_estate_developer"
+    focus: "Premium residential"
+
+  # BUILDING MATERIALS
+
+  inc_cemento:
+    file: "inc_cemento.yaml"
+    priority: P1
+    type: "cement_manufacturer"
+    full_name: "Industria Nacional del Cemento"
+    ownership: "State-owned"
+    capacity_tons: "600,000"
+    products:
+      - "Portland cement"
+      - "Specialty cements"
+    market_share: "40%"
+
+  yguazu_cementos:
+    file: "yguazu_cem.yaml"
+    priority: P1
+    type: "cement_manufacturer"
+    ownership: "Private"
+    capacity_tons: "500,000+"
+    market_share: "35%"
+    products:
+      - "Cement"
+      - "Ready-mix concrete"
+
+  cementos_itaugua:
+    file: "itaugua_cem.yaml"
+    priority: P2
+    type: "cement_manufacturer"
+    description: "Regional producer"
+
+  arcelik_paraguay:
+    file: "arcelik_py.yaml"
+    priority: P2
+    type: "steel_distributor"
+    products:
+      - "Steel bars"
+      - "Structural steel"
+      - "Wire products"
+
+  aceros_del_paraguay:
+    file: "aceros_py.yaml"
+    priority: P2
+    type: "steel_manufacturer"
+    products: "Construction steel"
+
+  acepar:
+    file: "acepar.yaml"
+    priority: P2
+    type: "steel_manufacturer"
+    full_name: "Aceros del Paraguay"
+    products:
+      - "Reinforcing bars"
+      - "Wire rod"
+    capacity_tons: "200,000"
+
+  ceramica_paraguaya:
+    file: "ceramica_py.yaml"
+    priority: P2
+    type: "building_materials"
+    products:
+      - "Tiles"
+      - "Bricks"
+      - "Ceramic products"
+
+  bloquera_guarani:
+    file: "bloquera.yaml"
+    priority: P3
+    type: "building_materials"
+    products:
+      - "Concrete blocks"
+      - "Pavers"
+
+  maderas_del_paraguay:
+    file: "maderas_py.yaml"
+    priority: P3
+    type: "building_materials"
+    products: "Construction wood"
+
+  # HOME IMPROVEMENT RETAIL
+
+  tupi:
+    file: "tupi.yaml"
+    priority: P1
+    type: "home_improvement"
+    description: "Leading home improvement chain"
+    stores: 10+
+    products:
+      - "Building materials"
+      - "Hardware"
+      - "Tools"
+      - "Home & garden"
+
+  biggie:
+    file: "biggie.yaml"
+    priority: P2
+    type: "home_improvement"
+    description: "Construction materials"
+    stores: 8+
+
+  ferreteria_oviedo:
+    file: "ferreteria_oviedo.yaml"
+    priority: P3
+    type: "home_improvement"
+    description: "Hardware chain"
+
+  # REAL ESTATE SERVICES
+
+  remax_paraguay:
+    file: "remax_py.yaml"
+    priority: P2
+    type: "real_estate_broker"
+    parent: "RE/MAX"
+    offices: 15+
+    services:
+      - "Residential sales"
+      - "Commercial"
+      - "Rentals"
+
+  coldwell_banker_py:
+    file: "coldwell_py.yaml"
+    priority: P2
+    type: "real_estate_broker"
+    parent: "Coldwell Banker"
+    focus: "Premium properties"
+
+  century21_paraguay:
+    file: "century21_py.yaml"
+    priority: P3
+    type: "real_estate_broker"
+    parent: "Century 21"
+
+  infocasas_paraguay:
+    file: "infocasas_py.yaml"
+    priority: P2
+    type: "real_estate_portal"
+    description: "Online real estate platform"
+    parent: "InfoCasas (Uruguay)"
+    listings: 50000+
+
+  clasipar_inmuebles:
+    file: "clasipar.yaml"
+    priority: P3
+    type: "real_estate_portal"
+    description: "Classifieds with real estate"
+
+  # ARCHITECTURE & ENGINEERING
+
+  estudio_gabinete:
+    file: "gabinete.yaml"
+    priority: P2
+    type: "architecture_firm"
+    description: "Leading architecture firm"
+    projects:
+      - "Commercial buildings"
+      - "Residential towers"
+      - "Master planning"
+
+  arq_estudio:
+    file: "arq_estudio.yaml"
+    priority: P3
+    type: "architecture_firm"
+    description: "Architecture and design"
+
+  consultora_de_ingenieria:
+    file: "consultora_ing.yaml"
+    priority: P3
+    type: "engineering_consulting"
+    services:
+      - "Structural engineering"
+      - "Project management"
+      - "Supervision"
+
+  # INFRASTRUCTURE PPP
+
+  autopistas_del_paraguay:
+    file: "autopistas_py.yaml"
+    priority: P2
+    type: "infrastructure"
+    description: "Toll road operator"
+    project: "Major highway PPP"
+
+  rutas_del_este:
+    file: "rutas_este.yaml"
+    priority: P2
+    type: "infrastructure"
+    description: "Road concession"
+    route: "Asuncion-Ciudad del Este"
+
+  # INDUSTRIAL PARKS
+
+  parque_industrial_itaugua:
+    file: "pi_itaugua.yaml"
+    priority: P3
+    type: "industrial_park"
+    location: "Itaugua"
+    area_hectares: 50+
+
+  zona_franca_ciudad_este:
+    file: "zf_cde.yaml"
+    priority: P2
+    type: "free_zone"
+    location: "Ciudad del Este"
+    description: "Free trade zone"
+
+  # SHOPPING CENTER DEVELOPMENT
+
+  shopping_del_sol:
+    file: "shopping_sol.yaml"
+    priority: P1
+    type: "shopping_center"
+    owner: "Grupo Vierci"
+    location: "Asuncion"
+    size_sqm: 80000+
+    stores: 200+
+    status: "Premier mall"
+
+  mariscal_lopez_shopping:
+    file: "mariscal_shopping.yaml"
+    priority: P1
+    type: "shopping_center"
+    owner: "Grupo Vierci"
+    location: "Asuncion"
+    size_sqm: 60000+
+
+  shopping_multiplaza:
+    file: "multiplaza.yaml"
+    priority: P2
+    type: "shopping_center"
+    location: "Asuncion"
+    status: "Under development"
+
+  paseo_la_galeria:
+    file: "paseo_galeria.yaml"
+    priority: P2
+    type: "shopping_center"
+    location: "Asuncion"
+
+  shopping_paris:
+    file: "shopping_paris.yaml"
+    priority: P2
+    type: "shopping_center"
+    location: "Ciudad del Este"
+    focus: "Border trade"
+
+# =============================================================================
+# MARKET STRUCTURE
+# =============================================================================
+
+market_structure:
+  construction_segments:
+    residential: "50%"
+    commercial: "25%"
+    infrastructure: "20%"
+    industrial: "5%"
+
+  real_estate_market:
+    prime_areas: ["Vila Morra", "Carmelitas", "Las Mercedes", "Santisima Trinidad"]
+    price_sqm_premium_usd: "$2,000-3,500"
+    price_sqm_middle_usd: "$800-1,500"
+    rental_yields: "6-8%"
+
+  building_materials:
+    cement_producers: 3
+    steel_producers: 2
+    import_dependency: "High for specialized materials"
+
+# =============================================================================
+# RESEARCH FOCUS
+# =============================================================================
+
+research_focus:
+  themes:
+    - "Construction sector growth"
+    - "Real estate development"
+    - "Infrastructure PPPs"
+    - "Building materials market"
+    - "Housing deficit solutions"
+    - "Commercial development"
+
+  key_metrics:
+    - "Construction permits"
+    - "Cement consumption"
+    - "Steel consumption"
+    - "Real estate prices"
+    - "Rental yields"
+    - "Infrastructure investment"
+
+ai_opportunities:
+  construction:
+    - "BIM automation"
+    - "Cost estimation"
+    - "Project scheduling"
+    - "Safety monitoring"
+    - "Quality control"
+  real_estate:
+    - "Property valuation"
+    - "Market analytics"
+    - "Lead scoring"
+    - "Virtual tours"
+    - "Investment analysis"

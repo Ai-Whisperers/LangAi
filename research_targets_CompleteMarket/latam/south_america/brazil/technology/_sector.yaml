@@ -1,0 +1,156 @@
+# Brazil - Technology Sector
+# Software, Hardware, IT Services, AI/ML
+
+sector:
+  name: "Technology"
+  code: "TEC"
+  country: "brazil"
+  priority: P1_critical
+
+  description: |
+    Brazil's largest tech market in LATAM with strong e-commerce,
+    fintech, and enterprise software sectors. Growing AI/ML ecosystem.
+
+  market_metrics:
+    it_market_usd: "$50B+"
+    ecommerce_usd: "$35B+"
+    tech_unicorns: 20+
+    startup_ecosystem_rank: "#1 LATAM"
+
+companies:
+  # E-commerce & Marketplaces
+  mercadolibre_brazil:
+    file: "mercadolibre_br.yaml"
+    priority: P1
+    type: "ecommerce_fintech"
+    notes: "Argentine HQ, major Brazil operations"
+
+  magazine_luiza:
+    file: "magazine_luiza.yaml"
+    priority: P2
+    ticker: "MGLU3.SA"
+    type: "retail_tech"
+
+  americanas:
+    file: "americanas.yaml"
+    priority: P3
+    ticker: "AMER3.SA"
+    type: "retail_tech"
+    notes: "Post-accounting scandal"
+
+  # Software & SaaS
+  totvs:
+    file: "totvs.yaml"
+    priority: P1
+    ticker: "TOTS3.SA"
+    type: "enterprise_software"
+    focus: "ERP, HR tech"
+
+  linx:
+    file: "linx.yaml"
+    priority: P2
+    type: "retail_software"
+    status: "Acquired by Stone"
+
+  zenvia:
+    file: "zenvia.yaml"
+    priority: P3
+    ticker: "ZENV (NASDAQ)"
+    type: "communications_platform"
+
+  # IT Services
+  stefanini:
+    file: "stefanini.yaml"
+    priority: P2
+    type: "it_services"
+    employees: "30,000+"
+
+  ci_t:
+    file: "ci_t.yaml"
+    priority: P2
+    ticker: "CINT (NYSE)"
+    type: "it_services"
+
+  # AI & Data
+  datalabors:
+    file: "datalabors.yaml"
+    priority: P3
+    type: "ai_ml"
+
+  neuralmind:
+    file: "neuralmind.yaml"
+    priority: P3
+    type: "nlp_ai"
+
+  # Hardware & Semiconductors
+  intelbras:
+    file: "intelbras.yaml"
+    priority: P2
+    ticker: "INTB3.SA"
+    type: "electronics"
+
+  positivo:
+    file: "positivo.yaml"
+    priority: P3
+    ticker: "POSI3.SA"
+    type: "computers"
+
+  # Startups & Unicorns
+  ifood:
+    file: "ifood.yaml"
+    priority: P2
+    type: "food_delivery"
+    status: "Unicorn"
+    valuation_usd: "5B+"
+
+  loggi:
+    file: "loggi.yaml"
+    priority: P3
+    type: "logistics_tech"
+    status: "Unicorn"
+
+  loft:
+    file: "loft.yaml"
+    priority: P3
+    type: "proptech"
+    status: "Unicorn"
+
+  quinto_andar:
+    file: "quinto_andar.yaml"
+    priority: P3
+    type: "proptech"
+    status: "Unicorn"
+
+  gympass_wellhub:
+    file: "gympass.yaml"
+    priority: P3
+    type: "hr_tech"
+    status: "Unicorn"
+
+  cloudwalk:
+    file: "cloudwalk.yaml"
+    priority: P3
+    type: "payments_ai"
+    status: "Unicorn"
+
+  wildlife_studios:
+    file: "wildlife.yaml"
+    priority: P3
+    type: "gaming"
+    status: "Unicorn"
+
+research_focus:
+  themes:
+    - "AI/ML adoption"
+    - "Cloud migration"
+    - "E-commerce growth"
+    - "Digital payments"
+    - "B2B SaaS"
+    - "Tech talent market"
+
+  key_metrics:
+    - "GMV growth"
+    - "ARR (Annual Recurring Revenue)"
+    - "Take rate"
+    - "Customer lifetime value"
+    - "R&D investment"

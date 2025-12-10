@@ -1,0 +1,165 @@
+# Argentina Country Configuration
+# Major LATAM Economy with Unique Dynamics
+
+country:
+  name: "Argentina"
+  code: "AR"
+  region: "latam/south_america"
+  priority: "P2_high"
+
+  metrics:
+    population: "46M"
+    gdp_usd: "$640B"
+    currency: "ARS"
+    stock_exchange: "BYMA (Buenos Aires)"
+    adr_market: "Significant US ADRs"
+
+  economy:
+    description: |
+      Third largest LATAM economy, known for economic volatility,
+      strong agriculture, and diversified industrial base.
+    key_sectors:
+      - "Agriculture/Agribusiness"
+      - "Financial Services"
+      - "Energy (Vaca Muerta)"
+      - "Technology"
+      - "Manufacturing"
+      - "Mining"
+
+# Major Business Groups
+business_groups:
+  techint:
+    controlling_family: "Rocca"
+    main_holdings:
+      - "Ternium"
+      - "Tenaris"
+      - "Techint Engineering"
+    market_cap_usd: "$30B+"
+    priority: P1
+
+  perez_companc:
+    controlling_family: "Perez Companc"
+    main_holdings:
+      - "Molinos Rio de la Plata"
+      - "Molinos Agro"
+    priority: P2
+
+  grupo_arcor:
+    controlling_family: "Pagani"
+    main_holdings:
+      - "Arcor (confectionery)"
+      - "La Serenisima stake"
+      - "Bagley"
+    priority: P2
+
+  grupo_clarin:
+    controlling_family: "Noble/Magnetto"
+    main_holdings:
+      - "Clarin Media"
+      - "Telecom Argentina"
+      - "Cablevisión"
+    priority: P2
+
+  grupo_macro:
+    controlling_family: "Brito"
+    main_holdings:
+      - "Banco Macro"
+    priority: P2
+
+  roggio:
+    controlling_family: "Roggio"
+    main_holdings:
+      - "Clisa (concessions)"
+      - "Metrovias"
+    priority: P3
+
+  eurnekian:
+    controlling_family: "Eurnekian"
+    main_holdings:
+      - "Corporación América Airports"
+      - "AA2000"
+    priority: P2
+
+# Sectors
+sectors:
+  conglomerates:
+    path: "conglomerates/"
+    companies: 10
+    priority: P1
+
+  financial_services:
+    path: "financial_services/"
+    companies: 12
+    priority: P1
+
+  energy:
+    path: "energy/"
+    companies: 10
+    priority: P1
+    notes: "Vaca Muerta opportunity"
+
+  agriculture:
+    path: "agriculture/"
+    companies: 10
+    priority: P1
+
+  technology:
+    path: "technology/"
+    companies: 8
+    priority: P1
+    notes: "MercadoLibre, Globant"
+
+  telecommunications:
+    path: "telecommunications/"
+    companies: 5
+    priority: P2
+
+  mining:
+    path: "mining/"
+    companies: 6
+    priority: P2
+    notes: "Lithium triangle"
+
+  industrials:
+    path: "industrials/"
+    companies: 8
+    priority: P2
+
+# Top Companies
+top_companies:
+  - name: "MercadoLibre"
+    ticker: "MELI"
+    sector: "technology"
+    market_cap_usd: "$80B+"
+    notes: "LATAM e-commerce leader"
+
+  - name: "Globant"
+    ticker: "GLOB"
+    sector: "technology"
+    market_cap_usd: "$10B+"
+
+  - name: "Ternium"
+    ticker: "TX"
+    sector: "steel"
+    market_cap_usd: "$8B+"
+
+  - name: "YPF"
+    ticker: "YPF"
+    sector: "energy"
+    notes: "Vaca Muerta"
+
+  - name: "Banco Galicia"
+    ticker: "GGAL"
+    sector: "banking"
+
+  - name: "Pampa Energia"
+    ticker: "PAM"
+    sector: "energy"
+
+  - name: "IRSA"
+    ticker: "IRS"
+    sector: "real_estate"
+
+  - name: "Telecom Argentina"
+    ticker: "TEO"
+    sector: "telecommunications"

@@ -1,0 +1,162 @@
+# Brazil - Financial Services Sector
+# Banks, Insurers, and FinTech
+
+sector:
+  name: "Financial Services"
+  code: "FIN"
+  country: "brazil"
+  priority: P1_critical
+
+  description: |
+    Brazil has Latin America's largest financial sector with major banks,
+    insurers, and a thriving FinTech ecosystem. Dominated by large private
+    and state-owned banks with growing digital disruption.
+
+  market_metrics:
+    total_assets_usd: "$4T+"
+    banking_concentration: "Top 5 = 80% market"
+    fintech_unicorns: 15+
+
+# Companies
+companies:
+  # Major Banks
+  itau_unibanco:
+    file: "itau_unibanco.yaml"
+    priority: P1
+    ticker: "ITUB4.SA"
+    type: "universal_bank"
+    market_cap_usd: "55B"
+    assets_usd: "500B+"
+
+  banco_bradesco:
+    file: "bradesco.yaml"
+    priority: P1
+    ticker: "BBDC4.SA"
+    type: "universal_bank"
+    market_cap_usd: "35B"
+
+  banco_do_brasil:
+    file: "banco_do_brasil.yaml"
+    priority: P1
+    ticker: "BBAS3.SA"
+    type: "state_bank"
+    market_cap_usd: "30B"
+
+  santander_brasil:
+    file: "santander_brasil.yaml"
+    priority: P2
+    ticker: "SANB11.SA"
+    type: "foreign_subsidiary"
+    parent: "Santander (Spain)"
+
+  banco_btg_pactual:
+    file: "btg_pactual.yaml"
+    priority: P2
+    ticker: "BPAC11.SA"
+    type: "investment_bank"
+
+  banco_safra:
+    file: "banco_safra.yaml"
+    priority: P2
+    type: "private_bank"
+    ownership: "Safra Family"
+
+  # FinTech & Digital Banks
+  nubank:
+    file: "nubank.yaml"
+    priority: P1
+    ticker: "NU (NYSE)"
+    type: "neobank"
+    market_cap_usd: "45B"
+    customers: "90M+"
+
+  inter_banco:
+    file: "inter.yaml"
+    priority: P2
+    ticker: "INBR32.SA"
+    type: "digital_bank"
+    customers: "30M+"
+
+  c6_bank:
+    file: "c6_bank.yaml"
+    priority: P2
+    type: "digital_bank"
+    investor: "JP Morgan"
+
+  picpay:
+    file: "picpay.yaml"
+    priority: P2
+    type: "payments_fintech"
+    users: "65M+"
+
+  stone:
+    file: "stone.yaml"
+    priority: P2
+    ticker: "STNE (NASDAQ)"
+    type: "payments"
+
+  pagseguro:
+    file: "pagseguro.yaml"
+    priority: P2
+    ticker: "PAGS (NYSE)"
+    type: "payments"
+
+  creditas:
+    file: "creditas.yaml"
+    priority: P3
+    type: "lending_fintech"
+    status: "unicorn"
+
+  ebanx:
+    file: "ebanx.yaml"
+    priority: P3
+    type: "cross_border_payments"
+    status: "unicorn"
+
+  # Insurance
+  bb_seguridade:
+    file: "bb_seguridade.yaml"
+    priority: P2
+    ticker: "BBSE3.SA"
+    type: "insurance"
+
+  porto_seguro:
+    file: "porto_seguro.yaml"
+    priority: P2
+    ticker: "PSSA3.SA"
+    type: "insurance"
+
+  sulamerica:
+    file: "sulamerica.yaml"
+    priority: P3
+    type: "health_insurance"
+
+  # Asset Management & Capital Markets
+  xp_inc:
+    file: "xp_inc.yaml"
+    priority: P2
+    ticker: "XP (NASDAQ)"
+    type: "brokerage_asset_mgmt"
+
+  b3_exchange:
+    file: "b3.yaml"
+    priority: P2
+    ticker: "B3SA3.SA"
+    type: "exchange"
+
+research_focus:
+  themes:
+    - "Digital banking disruption"
+    - "PIX payment system impact"
+    - "Open banking implementation"
+    - "Credit expansion"
+    - "Interest rate sensitivity"
+    - "FinTech regulation"
+
+  key_metrics:
+    - "NIM (Net Interest Margin)"
+    - "ROE"
+    - "NPL ratios"
+    - "Cost-to-income"
+    - "Digital adoption rate"
+    - "Customer acquisition cost"

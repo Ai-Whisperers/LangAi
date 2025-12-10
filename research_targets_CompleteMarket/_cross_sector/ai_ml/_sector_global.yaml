@@ -1,0 +1,284 @@
+# Global AI/ML Sector
+# Cross-Regional View - Emerging Priority
+
+sector:
+  name: "AI & Machine Learning"
+  code: "TEC_AIM"
+  priority: P1_critical
+
+  description: |
+    Artificial Intelligence and Machine Learning companies, focusing on
+    LATAM adoption potential and companies with AI capabilities.
+
+# AI Adoption Opportunity in LATAM
+latam_ai_opportunity:
+  market_potential:
+    ai_market_size_2025_usd: "$30B+"
+    growth_rate: "25%+ CAGR"
+    key_adoption_sectors:
+      - "Financial Services (fraud, credit scoring)"
+      - "Telecommunications (customer service, network)"
+      - "Retail (personalization, inventory)"
+      - "Healthcare (diagnostics, drug discovery)"
+      - "Agriculture (precision farming)"
+      - "Manufacturing (quality control, predictive maintenance)"
+
+  readiness_by_country:
+    brazil:
+      readiness: "High"
+      ai_startups: 100+
+      key_initiatives: ["AI strategy", "Research centers", "Tech hubs"]
+      priority: P1
+
+    mexico:
+      readiness: "High"
+      ai_startups: 80+
+      key_initiatives: ["Nearshoring AI services", "Tech talent"]
+      priority: P1
+
+    chile:
+      readiness: "Medium-High"
+      ai_startups: 30+
+      key_initiatives: ["National AI policy"]
+      priority: P2
+
+    colombia:
+      readiness: "Medium"
+      ai_startups: 40+
+      priority: P2
+
+    argentina:
+      readiness: "High (talent)"
+      ai_startups: 50+
+      notes: "Strong AI research, Globant"
+      priority: P2
+
+    paraguay:
+      readiness: "Emerging"
+      ai_startups: 5+
+      opportunity_sectors:
+        - "Telecommunications"
+        - "Agribusiness"
+        - "Financial Services"
+        - "Healthcare"
+      priority: P1
+      notes: "High potential, early stage"
+
+# LATAM AI Companies & Initiatives
+latam_ai_players:
+  ai_native_companies:
+    - name: "Globant"
+      ticker: "GLOB"
+      country: "Argentina"
+      type: "IT services with AI focus"
+      ai_capabilities: ["AI Studio", "ML engineering", "Data science"]
+      market_cap_usd: "10B+"
+      priority: P1
+
+    - name: "CI&T"
+      ticker: "CINT"
+      country: "Brazil"
+      type: "Digital transformation, AI"
+      priority: P2
+
+    - name: "Stefanini"
+      country: "Brazil"
+      type: "IT services with AI"
+      priority: P2
+
+    - name: "Sinch"
+      ticker: "SINCH"
+      country: "Sweden (LATAM ops)"
+      type: "Communications AI"
+      priority: P3
+
+  ai_platforms_latam:
+    - name: "Gupshup"
+      country: "India (LATAM expansion)"
+      type: "Conversational AI"
+      priority: P3
+
+    - name: "Yellow.ai"
+      country: "India (LATAM expansion)"
+      type: "Enterprise AI"
+      priority: P3
+
+  enterprise_ai_adopters:
+    telecommunications:
+      companies:
+        - name: "America Movil"
+          ai_use_cases: ["Customer service bots", "Network optimization", "Fraud detection"]
+          maturity: "Advanced"
+          priority: P1
+
+        - name: "Telefonica"
+          ai_use_cases: ["Aura virtual assistant", "Network AI", "B2B AI services"]
+          maturity: "Advanced"
+          priority: P1
+
+        - name: "Millicom/Tigo"
+          ai_use_cases: ["Customer analytics", "Network optimization"]
+          maturity: "Developing"
+          priority: P1
+
+    financial_services:
+      companies:
+        - name: "Nubank"
+          ai_use_cases: ["Credit scoring", "Fraud detection", "Customer service"]
+          maturity: "Advanced"
+          priority: P1
+
+        - name: "Itau Unibanco"
+          ai_use_cases: ["Risk management", "Customer analytics", "Process automation"]
+          maturity: "Advanced"
+          priority: P2
+
+        - name: "BBVA Mexico"
+          ai_use_cases: ["Personalization", "Risk", "Operations"]
+          maturity: "Advanced"
+          priority: P2
+
+    retail_ecommerce:
+      companies:
+        - name: "MercadoLibre"
+          ai_use_cases: ["Search/recommendation", "Fraud", "Logistics", "Credit"]
+          maturity: "Advanced"
+          priority: P1
+
+        - name: "Magazine Luiza"
+          ai_use_cases: ["Personalization", "Inventory", "Customer service"]
+          maturity: "Developing"
+          priority: P2
+
+    agribusiness:
+      companies:
+        - name: "Cargill"
+          ai_use_cases: ["Supply chain", "Quality prediction", "Yield forecasting"]
+          maturity: "Developing"
+          priority: P2
+
+        - name: "Bunge"
+          ai_use_cases: ["Trading analytics", "Logistics optimization"]
+          maturity: "Developing"
+          priority: P2
+
+# Global AI Leaders (Reference)
+global_ai_leaders:
+  foundation_models:
+    - name: "OpenAI"
+      products: ["GPT-4", "ChatGPT", "DALL-E"]
+      priority: P3
+
+    - name: "Anthropic"
+      products: ["Claude"]
+      priority: P3
+
+    - name: "Google DeepMind"
+      products: ["Gemini", "AlphaFold"]
+      priority: P4
+
+    - name: "Meta AI"
+      products: ["Llama", "AI research"]
+      priority: P4
+
+  enterprise_ai:
+    - name: "Microsoft"
+      products: ["Azure AI", "Copilot", "OpenAI partnership"]
+      priority: P3
+
+    - name: "Google Cloud"
+      products: ["Vertex AI", "AI Platform"]
+      priority: P3
+
+    - name: "Amazon AWS"
+      products: ["SageMaker", "Bedrock"]
+      priority: P3
+
+    - name: "Salesforce"
+      products: ["Einstein AI"]
+      priority: P4
+
+    - name: "ServiceNow"
+      products: ["Now Intelligence"]
+      priority: P4
+
+  ai_infrastructure:
+    - name: "Nvidia"
+      ticker: "NVDA"
+      products: ["GPUs", "CUDA", "AI platforms"]
+      priority: P3
+
+    - name: "AMD"
+      ticker: "AMD"
+      products: ["AI accelerators"]
+      priority: P4
+
+    - name: "Databricks"
+      products: ["Lakehouse AI", "MLOps"]
+      priority: P3
+
+# Paraguay AI Prospects (Special Focus)
+paraguay_ai_focus:
+  priority: P1_critical
+  description: "High-potential market for AI adoption assessment"
+
+  target_sectors:
+    telecommunications:
+      companies: ["Tigo Paraguay", "Personal Paraguay", "Claro Paraguay"]
+      opportunities:
+        - "AI-powered customer service"
+        - "Network optimization"
+        - "Churn prediction"
+        - "Fraud detection"
+        - "Personalized marketing"
+
+    agribusiness:
+      companies: ["Cargill PY", "ADM PY", "Bunge PY", "Local coops"]
+      opportunities:
+        - "Precision agriculture"
+        - "Yield prediction"
+        - "Supply chain optimization"
+        - "Weather risk management"
+        - "Quality control"
+
+    financial_services:
+      companies: ["Major banks", "FinTech startups"]
+      opportunities:
+        - "Credit scoring"
+        - "Fraud detection"
+        - "KYC automation"
+        - "Customer service bots"
+
+    healthcare:
+      companies: ["Major hospitals", "Pharma distributors"]
+      opportunities:
+        - "Diagnostic AI"
+        - "Patient management"
+        - "Drug discovery support"
+
+# Research Focus
+research_focus:
+  themes:
+    - "AI adoption maturity"
+    - "Use case prioritization"
+    - "ROI measurement"
+    - "Talent availability"
+    - "Infrastructure readiness"
+    - "Regulatory considerations"
+
+  key_metrics:
+    - "AI investment ($)"
+    - "AI use cases deployed"
+    - "Automation rate"
+    - "AI talent headcount"
+    - "ROI on AI projects"
+    - "Customer satisfaction impact"
+
+  assessment_framework:
+    dimensions:
+      - "Data readiness"
+      - "Technology infrastructure"
+      - "Talent and skills"
+      - "Leadership commitment"
+      - "Use case maturity"
+      - "ROI tracking"

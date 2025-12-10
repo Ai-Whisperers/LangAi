@@ -1,0 +1,240 @@
+# Europe Region Configuration
+# Focus on Companies with LATAM Operations
+
+region:
+  name: "Europe"
+  code: "EU"
+  priority: "P4_low"
+
+  description: |
+    European companies relevant for LATAM research - primarily those
+    with significant LATAM operations or headquarters.
+
+  sub_regions:
+    western_europe:
+      countries: ["UK", "France", "Germany", "Netherlands", "Belgium", "Switzerland"]
+      priority: P4
+
+    southern_europe:
+      countries: ["Spain", "Portugal", "Italy"]
+      priority: P3
+      notes: "Historical LATAM connections"
+
+    northern_europe:
+      countries: ["Sweden", "Norway", "Denmark", "Finland"]
+      priority: P4
+
+# Spain - Key LATAM Gateway
+spain:
+  priority: P3_medium
+  rationale: "Major LATAM investors"
+
+  companies:
+    telecommunications:
+      - name: "Telefonica"
+        ticker: "TEF"
+        latam_operations: ["Brazil (Vivo)", "Chile", "Mexico", "Argentina", "Colombia", "Peru"]
+        priority: P2
+
+    financial_services:
+      - name: "Banco Santander"
+        ticker: "SAN"
+        latam_operations: ["Brazil", "Mexico", "Chile", "Argentina"]
+        priority: P2
+
+      - name: "BBVA"
+        ticker: "BBVA"
+        latam_operations: ["Mexico (major)", "Argentina", "Colombia", "Peru"]
+        priority: P2
+
+      - name: "CaixaBank"
+        ticker: "CABK"
+        latam_exposure: "Limited"
+        priority: P4
+
+      - name: "Mapfre"
+        ticker: "MAP"
+        latam_operations: ["Brazil", "Mexico", "LATAM insurance"]
+        priority: P3
+
+    energy:
+      - name: "Iberdrola"
+        ticker: "IBE"
+        latam_operations: ["Mexico", "Brazil"]
+        priority: P3
+
+      - name: "Repsol"
+        ticker: "REP"
+        latam_operations: ["Oil/Gas operations"]
+        priority: P3
+
+      - name: "Naturgy"
+        ticker: "NTGY"
+        latam_operations: ["Argentina", "Chile", "Mexico"]
+        priority: P4
+
+    infrastructure:
+      - name: "Ferrovial"
+        ticker: "FER"
+        latam_operations: ["Chile", "Colombia"]
+        priority: P4
+
+      - name: "Acciona"
+        ticker: "ANA"
+        latam_operations: ["Energy, water projects"]
+        priority: P4
+
+    retail:
+      - name: "Inditex"
+        ticker: "ITX"
+        latam_operations: ["Zara stores across LATAM"]
+        priority: P4
+
+# Italy
+italy:
+  priority: P4_low
+  companies:
+    telecommunications:
+      - name: "TIM (Telecom Italia)"
+        ticker: "TIT"
+        latam_operations: ["TIM Brasil"]
+        priority: P3
+
+    energy:
+      - name: "Enel"
+        ticker: "ENEL"
+        latam_operations: ["Chile", "Brazil", "Argentina", "Peru", "Colombia"]
+        priority: P3
+
+    industrials:
+      - name: "Leonardo"
+        ticker: "LDO"
+        latam_operations: ["Defense, aerospace"]
+        priority: P4
+
+# France
+france:
+  priority: P4_low
+  companies:
+    energy:
+      - name: "TotalEnergies"
+        ticker: "TTE"
+        latam_operations: ["Brazil oil", "Argentina", "Various"]
+        priority: P4
+
+      - name: "Engie"
+        ticker: "ENGI"
+        latam_operations: ["Brazil (major)", "Chile", "Peru"]
+        priority: P3
+
+    retail:
+      - name: "Carrefour"
+        ticker: "CA"
+        latam_operations: ["Brazil (major)", "Argentina"]
+        priority: P3
+
+      - name: "Casino Group"
+        ticker: "CO"
+        latam_operations: ["GPA Brazil", "Exito Colombia"]
+        priority: P3
+
+    consumer:
+      - name: "L'Oreal"
+        ticker: "OR"
+        latam_operations: ["Major LATAM presence"]
+        priority: P4
+
+      - name: "Danone"
+        ticker: "BN"
+        latam_operations: ["Mexico, Brazil, Argentina"]
+        priority: P4
+
+# UK
+uk:
+  priority: P4_low
+  companies:
+    mining:
+      - name: "Anglo American"
+        ticker: "AAL.L"
+        latam_operations: ["Chile (copper)", "Brazil", "Peru"]
+        priority: P3
+
+      - name: "Glencore"
+        ticker: "GLEN.L"
+        latam_operations: ["Multiple mining operations"]
+        priority: P3
+
+      - name: "Rio Tinto"
+        ticker: "RIO"
+        latam_operations: ["Limited"]
+        priority: P4
+
+      - name: "Antofagasta"
+        ticker: "ANTO.L"
+        latam_operations: ["Chile (100% Chile-focused)"]
+        priority: P3
+        notes: "Luksic family controlled"
+
+    financial_services:
+      - name: "HSBC"
+        ticker: "HSBA"
+        latam_operations: ["Mexico (major)"]
+        priority: P3
+
+    consumer:
+      - name: "AB InBev"
+        ticker: "ABI.BR"
+        latam_operations: ["Brazil (Ambev)", "Mexico, Argentina, Colombia"]
+        priority: P3
+        notes: "HQ Belgium, UK listed"
+
+      - name: "Diageo"
+        ticker: "DGE.L"
+        latam_operations: ["Spirits across LATAM"]
+        priority: P4
+
+# Netherlands
+netherlands:
+  priority: P4_low
+  companies:
+    consumer:
+      - name: "Heineken"
+        ticker: "HEIA.AS"
+        latam_operations: ["Mexico (major)", "Brazil"]
+        priority: P3
+
+      - name: "Ahold Delhaize"
+        ticker: "AD.AS"
+        latam_operations: ["Limited"]
+        priority: P5
+
+    commodities:
+      - name: "Bunge"
+        ticker: "BG"
+        latam_operations: ["Brazil, Argentina (major agribusiness)"]
+        priority: P3
+
+# Sweden
+sweden:
+  priority: P4_low
+  companies:
+    telecommunications:
+      - name: "Millicom"
+        ticker: "TIGO"
+        latam_operations: ["Central America", "Colombia", "Paraguay", "Bolivia"]
+        priority: P2
+        notes: "Pure LATAM telecom play"
+
+      - name: "Ericsson"
+        ticker: "ERIC"
+        latam_operations: ["Network equipment supplier"]
+        priority: P4
+
+# Research Focus
+research_focus:
+  purpose: "European multinationals with LATAM exposure"
+  themes:
+    - "Cross-border operations"
+    - "Colonial/historical ties (Spain, Portugal)"
+    - "Infrastructure investment"
+    - "Consumer market penetration"

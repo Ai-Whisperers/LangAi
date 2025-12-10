@@ -1,0 +1,447 @@
+# Paraguay - Education Sector
+# Private Education and EdTech Opportunities
+
+sector:
+  name: "Education"
+  code: "EDU"
+  country: "paraguay"
+  priority: P3_medium
+
+  description: |
+    Paraguay's education sector includes public and private institutions
+    at all levels. Private education is growing, especially universities
+    and K-12 bilingual schools. EdTech is an emerging opportunity.
+    Technical education needs expansion.
+
+  market_metrics:
+    education_spending_gdp: "4%"
+    private_school_share: "25%"
+    university_enrollment: "400,000+"
+    universities_count: 55+
+    private_universities: 47
+    public_universities: 8
+    literacy_rate: "94%"
+
+  strategic_importance:
+    challenges:
+      - "Quality gaps"
+      - "Rural access"
+      - "Technical skills shortage"
+      - "Brain drain"
+      - "Digital infrastructure"
+    opportunities:
+      - "EdTech adoption"
+      - "Technical education"
+      - "Language training"
+      - "Corporate training"
+      - "Online learning"
+
+  ai_potential:
+    areas:
+      - "Personalized learning"
+      - "Automated grading"
+      - "Student performance prediction"
+      - "Content recommendation"
+      - "Administrative automation"
+      - "Language learning AI"
+
+# =============================================================================
+# COMPANIES
+# =============================================================================
+
+companies:
+  # MAJOR UNIVERSITIES
+
+  universidad_nacional_asuncion:
+    file: "una.yaml"
+    priority: P1
+    type: "public_university"
+    full_name: "Universidad Nacional de Asuncion"
+    acronym: "UNA"
+    founded: 1889
+    students: 60000+
+    faculties: 12
+    description: "Largest and oldest university"
+    campuses: "Asuncion, San Lorenzo"
+    status: "Public/autonomous"
+
+  universidad_catolica:
+    file: "uc.yaml"
+    priority: P1
+    type: "private_university"
+    full_name: "Universidad Catolica Nuestra Senora de la Asuncion"
+    acronym: "UC"
+    founded: 1960
+    students: 25000+
+    campuses: 8
+    description: "Leading private university"
+    owner: "Catholic Church"
+    reputation: "High quality"
+
+  universidad_americana:
+    file: "ua.yaml"
+    priority: P2
+    type: "private_university"
+    full_name: "Universidad Americana"
+    founded: 1994
+    students: 15000+
+    programs: ["Business", "Law", "Engineering", "Health"]
+    description: "Growing private university"
+
+  universidad_del_pacifico:
+    file: "up.yaml"
+    priority: P2
+    type: "private_university"
+    full_name: "Universidad del Pacifico"
+    focus: "Business and management"
+    students: 8000+
+    programs: ["MBA", "Business", "Marketing"]
+
+  universidad_columbia:
+    file: "columbia.yaml"
+    priority: P2
+    type: "private_university"
+    full_name: "Universidad Columbia del Paraguay"
+    students: 10000+
+    programs: ["Various undergraduate", "Graduate"]
+
+  universidad_autonoma_asuncion:
+    file: "uaa.yaml"
+    priority: P2
+    type: "private_university"
+    full_name: "Universidad Autonoma de Asuncion"
+    students: 8000+
+
+  universidad_del_norte:
+    file: "uninorte.yaml"
+    priority: P2
+    type: "private_university"
+    full_name: "Universidad del Norte"
+    focus: "Health sciences"
+    programs: ["Medicine", "Nursing", "Dentistry"]
+
+  universidad_tecnologica_intercontinental:
+    file: "utic.yaml"
+    priority: P3
+    type: "private_university"
+    acronym: "UTIC"
+    focus: "Technology, distance learning"
+
+  politecnico:
+    file: "politecnico.yaml"
+    priority: P2
+    type: "technical_university"
+    full_name: "Universidad Politecnica y Artistica del Paraguay"
+    focus: "Engineering, technology"
+
+  # BUSINESS SCHOOLS
+
+  incae_paraguay:
+    file: "incae_py.yaml"
+    priority: P2
+    type: "business_school"
+    parent: "INCAE Business School"
+    programs:
+      - "Executive education"
+      - "MBA partnerships"
+    description: "Regional MBA programs"
+
+  ide_business_school:
+    file: "ide.yaml"
+    priority: P3
+    type: "business_school"
+    programs: "Executive education"
+
+  # K-12 PRIVATE SCHOOLS
+
+  american_school_asuncion:
+    file: "asa.yaml"
+    priority: P1
+    type: "private_school_k12"
+    full_name: "American School of Asuncion"
+    curriculum: "US curriculum"
+    language: "English"
+    accreditation: "US accreditation"
+    students: 1200+
+    tuition_usd: "$15,000+"
+    description: "Premier international school"
+
+  colegio_goethe:
+    file: "goethe.yaml"
+    priority: P2
+    type: "private_school_k12"
+    full_name: "Colegio Goethe"
+    curriculum: "German"
+    language: "German/Spanish"
+    students: 800+
+
+  colegio_internacional:
+    file: "colegio_int.yaml"
+    priority: P2
+    type: "private_school_k12"
+    curriculum: "Bilingual"
+    language: "English/Spanish"
+
+  colegio_san_jose:
+    file: "san_jose.yaml"
+    priority: P2
+    type: "private_school_k12"
+    description: "Traditional Catholic school"
+    level: "K-12"
+
+  colegio_cristo_rey:
+    file: "cristo_rey.yaml"
+    priority: P2
+    type: "private_school_k12"
+    description: "Catholic school"
+
+  colegio_santa_clara:
+    file: "santa_clara_school.yaml"
+    priority: P2
+    type: "private_school_k12"
+    description: "Girls' school"
+
+  colegio_del_sol:
+    file: "colegio_sol.yaml"
+    priority: P3
+    type: "private_school_k12"
+    curriculum: "Bilingual"
+
+  colegio_panamericano:
+    file: "panamericano.yaml"
+    priority: P3
+    type: "private_school_k12"
+    curriculum: "US curriculum"
+
+  # TECHNICAL & VOCATIONAL
+
+  snpp:
+    file: "snpp.yaml"
+    priority: P2
+    type: "technical_training"
+    full_name: "Sistema Nacional de Promocion Profesional"
+    ownership: "Government"
+    focus:
+      - "Vocational training"
+      - "Skills certification"
+      - "Worker training"
+    students: 50000+
+
+  senai_paraguay:
+    file: "senai_py.yaml"
+    priority: P2
+    type: "technical_training"
+    parent: "SENAI (Brazil partnership)"
+    focus: "Industrial training"
+
+  ipa:
+    file: "ipa.yaml"
+    priority: P3
+    type: "technical_training"
+    full_name: "Instituto Paraguayo de Artes"
+    focus: "Arts and design"
+
+  # LANGUAGE SCHOOLS
+
+  ccpa:
+    file: "ccpa.yaml"
+    priority: P2
+    type: "language_school"
+    full_name: "Centro Cultural Paraguayo Americano"
+    language: "English"
+    students: 10000+
+    programs:
+      - "General English"
+      - "TOEFL preparation"
+      - "Corporate English"
+
+  alianza_francesa:
+    file: "alianza_francesa.yaml"
+    priority: P2
+    type: "language_school"
+    language: "French"
+    programs: "French language and culture"
+
+  instituto_goethe:
+    file: "goethe_inst.yaml"
+    priority: P3
+    type: "language_school"
+    language: "German"
+
+  berlitz_paraguay:
+    file: "berlitz_py.yaml"
+    priority: P3
+    type: "language_school"
+    parent: "Berlitz"
+    languages: ["English", "Spanish", "Others"]
+
+  # EDTECH & ONLINE LEARNING
+
+  tuclase_py:
+    file: "tuclase.yaml"
+    priority: P2
+    type: "edtech"
+    description: "Online tutoring platform"
+    services:
+      - "Virtual tutoring"
+      - "Homework help"
+      - "Test prep"
+    status: "Growing"
+
+  educacion_digital_py:
+    file: "ed_digital.yaml"
+    priority: P3
+    type: "edtech"
+    description: "E-learning platform"
+    services:
+      - "Online courses"
+      - "Corporate training"
+
+  platzi_py:
+    file: "platzi_py.yaml"
+    priority: P3
+    type: "edtech"
+    parent: "Platzi (Colombia)"
+    focus: "Technology skills"
+    courses: ["Programming", "Design", "Marketing"]
+
+  coursera_py:
+    file: "coursera_py.yaml"
+    priority: P3
+    type: "edtech"
+    parent: "Coursera"
+    description: "International MOOC platform"
+
+  udemy_py:
+    file: "udemy_py.yaml"
+    priority: P3
+    type: "edtech"
+    parent: "Udemy"
+    description: "Online course marketplace"
+
+  # CORPORATE TRAINING
+
+  business_training_py:
+    file: "business_training.yaml"
+    priority: P3
+    type: "corporate_training"
+    services:
+      - "Leadership development"
+      - "Sales training"
+      - "Management skills"
+
+  capacitacion_empresarial:
+    file: "cap_empresarial.yaml"
+    priority: P3
+    type: "corporate_training"
+    services: "Corporate workshops"
+
+  # SPECIALIZED EDUCATION
+
+  escuela_musica_asuncion:
+    file: "musica_asu.yaml"
+    priority: P4
+    type: "specialized"
+    focus: "Music education"
+
+  academia_artes:
+    file: "academia_artes.yaml"
+    priority: P4
+    type: "specialized"
+    focus: "Visual arts"
+
+  escuela_gastronomia:
+    file: "gastronomia.yaml"
+    priority: P4
+    type: "specialized"
+    focus: "Culinary arts"
+
+  # GOVERNMENT EDUCATION BODIES
+
+  mec:
+    file: "mec.yaml"
+    priority: P2
+    type: "government"
+    full_name: "Ministerio de Educacion y Ciencias"
+    role: "National education authority"
+    responsibilities:
+      - "Policy"
+      - "Curriculum"
+      - "Teacher training"
+      - "Public schools"
+
+  becal:
+    file: "becal.yaml"
+    priority: P2
+    type: "government"
+    full_name: "Becas Carlos Antonio Lopez"
+    description: "National scholarship program"
+    focus:
+      - "Graduate studies abroad"
+      - "Research funding"
+      - "Academic exchange"
+
+  cnaes:
+    file: "cnaes.yaml"
+    priority: P3
+    type: "government"
+    full_name: "Consejo Nacional de Educacion Superior"
+    role: "Higher education accreditation"
+
+# =============================================================================
+# MARKET STRUCTURE
+# =============================================================================
+
+market_structure:
+  higher_education:
+    public_enrollment: "35%"
+    private_enrollment: "65%"
+    quality_challenge: "Variable across institutions"
+    top_fields: ["Business", "Law", "Medicine", "Engineering"]
+
+  k12_education:
+    public: "75%"
+    private: "25%"
+    quality_gap: "Significant between public/private"
+
+  edtech_adoption:
+    status: "Early stage"
+    growth_rate: "Accelerating post-COVID"
+    barriers: ["Internet access", "Device availability"]
+
+# =============================================================================
+# RESEARCH FOCUS
+# =============================================================================
+
+research_focus:
+  themes:
+    - "Private education growth"
+    - "EdTech adoption"
+    - "Technical education needs"
+    - "Language learning"
+    - "Corporate training"
+    - "Quality improvement"
+
+  key_metrics:
+    - "Enrollment rates"
+    - "Private school revenue"
+    - "EdTech adoption"
+    - "Graduate employment"
+    - "Skills gap analysis"
+
+ai_opportunities:
+  teaching:
+    - "Adaptive learning platforms"
+    - "Intelligent tutoring"
+    - "Content personalization"
+    - "Language learning AI"
+  administration:
+    - "Student performance prediction"
+    - "Enrollment optimization"
+    - "Resource allocation"
+    - "Scheduling automation"
+  assessment:
+    - "Automated grading"
+    - "Plagiarism detection"
+    - "Skills assessment"
+    - "Feedback generation"

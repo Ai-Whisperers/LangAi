@@ -1,0 +1,164 @@
+# Chile Country Configuration
+# Most Developed LATAM Economy
+
+country:
+  name: "Chile"
+  code: "CL"
+  region: "latam/south_america"
+  priority: "P1_critical"
+
+  metrics:
+    population: "19.5M"
+    gdp_usd: "$340B"
+    gdp_growth: "2.0%"
+    currency: "CLP"
+    stock_exchange: "Bolsa de Santiago"
+    regulator: "CMF"
+
+  economy:
+    description: |
+      Most developed LATAM economy with strong institutions,
+      major copper producer, sophisticated financial sector.
+    key_sectors:
+      - "Mining (Copper)"
+      - "Financial Services"
+      - "Retail"
+      - "Forestry/Paper"
+      - "Energy"
+      - "Salmon/Agriculture"
+
+# Major Business Groups
+business_groups:
+  grupo_luksic:
+    controlling_family: "Luksic"
+    holding: "Quinenco"
+    ticker: "QUINENC.SN"
+    market_cap_usd: "$8B+"
+    key_holdings:
+      - "Banco de Chile"
+      - "CCU (beverages)"
+      - "CSAV"
+      - "Enex"
+      - "Tech Pack"
+    priority: P1
+
+  grupo_angelini:
+    controlling_family: "Angelini"
+    holding: "Antarchile"
+    ticker: "ANTARCHILE.SN"
+    key_holdings:
+      - "Copec (energy)"
+      - "Celulosa Arauco (forestry)"
+      - "Colbun (energy)"
+    priority: P1
+
+  grupo_matte:
+    controlling_family: "Matte"
+    holding: "Inversiones CMPC"
+    key_holdings:
+      - "CMPC (pulp/paper)"
+      - "Colbun stake"
+      - "Bice"
+    priority: P1
+
+  grupo_saieh:
+    controlling_family: "Saieh"
+    holding: "Corp Group"
+    key_holdings:
+      - "CorpBanca (merged into Itau)"
+      - "Media (La Tercera)"
+      - "Retail (SMU)"
+    notes: "Restructured after banking issues"
+    priority: P2
+
+  grupo_solari:
+    controlling_family: "Solari"
+    key_holdings:
+      - "Falabella"
+    priority: P1
+
+  grupo_paulmann:
+    controlling_family: "Paulmann"
+    key_holdings:
+      - "Cencosud"
+    priority: P1
+
+# Sectors
+sectors:
+  conglomerates:
+    path: "conglomerates/"
+    companies: 10
+    priority: P1
+
+  mining:
+    path: "mining/"
+    companies: 12
+    priority: P1
+
+  financial_services:
+    path: "financial_services/"
+    companies: 10
+    priority: P1
+
+  retail:
+    path: "retail/"
+    companies: 8
+    priority: P1
+
+  energy:
+    path: "energy/"
+    companies: 10
+    priority: P2
+
+  forestry_paper:
+    path: "forestry_paper/"
+    companies: 5
+    priority: P2
+
+  telecommunications:
+    path: "telecommunications/"
+    companies: 5
+    priority: P2
+
+  transportation:
+    path: "transportation/"
+    companies: 6
+    priority: P3
+
+# Top Companies
+top_companies:
+  - name: "SQM"
+    ticker: "SQM"
+    sector: "mining"
+    market_cap_usd: "$15B"
+    notes: "Lithium leader"
+
+  - name: "Banco de Chile"
+    ticker: "BCH"
+    sector: "banking"
+    market_cap_usd: "$12B"
+
+  - name: "Cencosud"
+    ticker: "CENCOSUD.SN"
+    sector: "retail"
+    market_cap_usd: "$8B"
+
+  - name: "Falabella"
+    ticker: "FALABELLA.SN"
+    sector: "retail"
+    market_cap_usd: "$7B"
+
+  - name: "Copec"
+    ticker: "COPEC.SN"
+    sector: "energy"
+    market_cap_usd: "$12B"
+
+  - name: "CMPC"
+    ticker: "CMPC.SN"
+    sector: "forestry"
+    market_cap_usd: "$8B"
+
+  - name: "Enel Chile"
+    ticker: "ENELCHILE.SN"
+    sector: "utilities"
+    market_cap_usd: "$5B"

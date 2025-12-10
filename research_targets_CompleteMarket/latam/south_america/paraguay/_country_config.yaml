@@ -1,0 +1,523 @@
+# Paraguay Country Configuration
+# COMPREHENSIVE RESEARCH TARGET - Special Focus Market
+
+country:
+  name: "Paraguay"
+  code: "PY"
+  region: "latam/south_america"
+  priority: "P1_critical"
+
+  # Key Facts
+  metrics:
+    population: "7.4M"
+    gdp_usd: "$42B"
+    gdp_growth: "4.5%"
+    gdp_per_capita: "$5,700"
+    currency: "PYG (Guarani)"
+    exchange_rate: "~7,300 PYG/USD"
+    inflation: "4.5%"
+    unemployment: "6.5%"
+    stock_exchange: "BVPASA (Bolsa de Valores y Productos de Asuncion)"
+    business_languages: ["Spanish", "Guarani"]
+    time_zone: "UTC-4"
+    capital: "Asuncion"
+
+  # Economic Profile
+  economy:
+    description: |
+      Paraguay is a landlocked South American economy with strong agriculture,
+      massive hydroelectric capacity, growing services sector, and significant
+      potential for digital transformation and AI adoption.
+
+    gdp_composition:
+      agriculture: "10%"
+      industry: "32%"
+      services: "58%"
+
+    key_exports:
+      - "Soybeans & derivatives (40%)"
+      - "Beef (15%)"
+      - "Electricity (12%)"
+      - "Corn & grains (8%)"
+      - "Vegetable oils (5%)"
+
+    key_imports:
+      - "Machinery & equipment"
+      - "Vehicles"
+      - "Chemicals"
+      - "Fuels"
+      - "Electronics"
+
+    trade_partners:
+      exports: ["Brazil", "Argentina", "Chile", "Russia", "EU"]
+      imports: ["China", "Brazil", "Argentina", "USA", "Japan"]
+
+  # Competitive Advantages
+  competitive_advantages:
+    - "Lowest electricity costs in region (Itaipu/Yacyreta)"
+    - "Strategic location (MERCOSUR access)"
+    - "Young workforce"
+    - "Low corporate tax rates"
+    - "Political stability"
+    - "Growing middle class"
+    - "Abundant water resources"
+    - "Fertile agricultural land"
+
+  # Challenges
+  challenges:
+    - "Landlocked geography"
+    - "Infrastructure gaps"
+    - "Informal economy (40%+)"
+    - "Brain drain"
+    - "Limited capital markets"
+    - "Corruption concerns"
+    - "Technology adoption lag"
+
+# =============================================================================
+# SECTOR BREAKDOWN - 18 Key Sectors
+# =============================================================================
+
+sectors:
+  # TIER 1 - STRATEGIC PRIORITY (P1)
+
+  energy_hydroelectric:
+    path: "energy/"
+    priority: P1_critical
+    companies: 15+
+    gdp_contribution: "12%"
+    description: "World's largest hydroelectric producer per capita"
+    key_assets:
+      - "Itaipu Dam (shared with Brazil)"
+      - "Yacyreta Dam (shared with Argentina)"
+    research_focus:
+      - "Energy surplus monetization"
+      - "Green hydrogen potential"
+      - "Crypto mining attraction"
+      - "Industrial energy users"
+
+  agriculture_agribusiness:
+    path: "agriculture/"
+    priority: P1_critical
+    companies: 40+
+    gdp_contribution: "25%"
+    description: "Economic backbone - soy, beef, grains"
+    subsectors:
+      - "Grain production & trading"
+      - "Livestock & meat processing"
+      - "Dairy"
+      - "Agricultural inputs"
+      - "AgTech & precision agriculture"
+
+  telecommunications:
+    path: "telecommunications/"
+    priority: P1_critical
+    companies: 10+
+    gdp_contribution: "4%"
+    description: "Primary research focus - AI adoption potential"
+    market_leaders: ["Tigo", "Personal", "Claro"]
+
+  financial_services:
+    path: "financial_services/"
+    priority: P1_critical
+    companies: 25+
+    gdp_contribution: "8%"
+    description: "Growing banking sector with FinTech opportunity"
+    subsectors:
+      - "Commercial banking"
+      - "Microfinance"
+      - "Insurance"
+      - "Mobile money"
+      - "FinTech startups"
+
+  conglomerates_holdings:
+    path: "conglomerates/"
+    priority: P1_critical
+    companies: 12+
+    description: "Major business groups controlling multiple sectors"
+    key_groups:
+      - "Grupo Vierci"
+      - "Grupo Cartes"
+      - "Grupo Zuccolillo"
+      - "Grupo Vazquez"
+
+  # TIER 2 - HIGH PRIORITY (P2)
+
+  retail_commerce:
+    path: "retail/"
+    priority: P2_high
+    companies: 20+
+    gdp_contribution: "15%"
+    description: "Growing consumer market with e-commerce potential"
+    subsectors:
+      - "Supermarkets & hypermarkets"
+      - "Department stores"
+      - "Specialty retail"
+      - "E-commerce"
+      - "Shopping malls"
+
+  transportation_logistics:
+    path: "transportation/"
+    priority: P2_high
+    companies: 18+
+    gdp_contribution: "6%"
+    description: "Critical for landlocked country - river, road, air"
+    subsectors:
+      - "River transport (Paraguay-Parana waterway)"
+      - "Road freight"
+      - "Aviation"
+      - "Port operations"
+      - "Logistics & warehousing"
+
+  healthcare_pharma:
+    path: "healthcare/"
+    priority: P2_high
+    companies: 25+
+    gdp_contribution: "7%"
+    description: "Growing healthcare sector with AI diagnostic potential"
+    subsectors:
+      - "Hospitals & clinics"
+      - "Pharmaceutical manufacturing"
+      - "Pharmaceutical distribution"
+      - "Medical devices"
+      - "Health insurance"
+
+  construction_real_estate:
+    path: "construction/"
+    priority: P2_high
+    companies: 20+
+    gdp_contribution: "8%"
+    description: "Booming construction sector"
+    subsectors:
+      - "Residential construction"
+      - "Commercial development"
+      - "Infrastructure"
+      - "Building materials"
+      - "Real estate services"
+
+  food_beverage:
+    path: "food_beverage/"
+    priority: P2_high
+    companies: 25+
+    gdp_contribution: "6%"
+    description: "Food processing and beverage manufacturing"
+    subsectors:
+      - "Meat processing"
+      - "Dairy processing"
+      - "Beverages (beer, soft drinks)"
+      - "Packaged foods"
+      - "Food distribution"
+
+  # TIER 3 - MEDIUM PRIORITY (P3)
+
+  technology_services:
+    path: "technology/"
+    priority: P3_medium
+    companies: 15+
+    gdp_contribution: "3%"
+    description: "Emerging tech sector with AI potential"
+    subsectors:
+      - "IT services"
+      - "Software development"
+      - "Cloud services"
+      - "Startups & innovation"
+      - "BPO/Call centers"
+
+  media_entertainment:
+    path: "media/"
+    priority: P3_medium
+    companies: 12+
+    gdp_contribution: "2%"
+    description: "Traditional and digital media"
+    subsectors:
+      - "Television"
+      - "Radio"
+      - "Print media"
+      - "Digital media"
+      - "Advertising"
+
+  education:
+    path: "education/"
+    priority: P3_medium
+    companies: 15+
+    gdp_contribution: "4%"
+    description: "Private education and training"
+    subsectors:
+      - "Universities"
+      - "K-12 private schools"
+      - "Technical training"
+      - "Language schools"
+      - "EdTech"
+
+  automotive_dealers:
+    path: "automotive/"
+    priority: P3_medium
+    companies: 12+
+    gdp_contribution: "3%"
+    description: "Vehicle distribution and services"
+    subsectors:
+      - "New car dealerships"
+      - "Used car market"
+      - "Auto parts"
+      - "Vehicle services"
+
+  manufacturing_industrial:
+    path: "manufacturing/"
+    priority: P3_medium
+    companies: 20+
+    gdp_contribution: "10%"
+    description: "Light manufacturing and maquila operations"
+    subsectors:
+      - "Textiles & apparel"
+      - "Plastics"
+      - "Metal products"
+      - "Maquila assembly"
+      - "Packaging"
+
+  chemicals_agrochemicals:
+    path: "chemicals/"
+    priority: P3_medium
+    companies: 15+
+    gdp_contribution: "2%"
+    description: "Agricultural chemicals and industrial chemicals"
+    subsectors:
+      - "Fertilizers"
+      - "Pesticides"
+      - "Industrial chemicals"
+      - "Cleaning products"
+
+  # TIER 4 - EMERGING/MONITOR (P4)
+
+  tourism_hospitality:
+    path: "tourism/"
+    priority: P4_low
+    companies: 10+
+    gdp_contribution: "2%"
+    description: "Emerging tourism sector"
+    subsectors:
+      - "Hotels"
+      - "Eco-tourism"
+      - "Business travel"
+      - "Restaurants"
+
+  mining_extraction:
+    path: "mining/"
+    priority: P4_low
+    companies: 5+
+    gdp_contribution: "1%"
+    description: "Limited but growing mineral extraction"
+    subsectors:
+      - "Sand & aggregates"
+      - "Limestone"
+      - "Exploration"
+
+# =============================================================================
+# MAJOR BUSINESS GROUPS (Grupos Economicos)
+# =============================================================================
+
+business_groups:
+  grupo_vierci:
+    controlling_family: "Vierci"
+    priority: P1
+    estimated_revenue_usd: "$1B+"
+    employees: "8,000+"
+    description: "Largest local conglomerate"
+    holdings:
+      media:
+        - "ABC Color (newspaper)"
+        - "ABC TV"
+        - "ABC Digital"
+      retail:
+        - "Shopping del Sol"
+        - "Mariscal Lopez Shopping"
+        - "Various retail"
+      real_estate:
+        - "Major developments"
+      automotive:
+        - "Auto dealerships"
+      agriculture:
+        - "Agribusiness interests"
+
+  grupo_cartes:
+    controlling_family: "Cartes"
+    priority: P1
+    description: "Former president's business group"
+    holdings:
+      tobacco:
+        - "Tabacalera del Este (Tabesa)"
+      agriculture:
+        - "Farming operations"
+        - "Cattle ranching"
+      media:
+        - "Various media interests"
+      finance:
+        - "Financial services"
+
+  grupo_zuccolillo:
+    controlling_family: "Zuccolillo"
+    priority: P2
+    holdings:
+      media:
+        - "ABC Color (historical)"
+      services:
+        - "Various business services"
+      real_estate:
+        - "Property development"
+
+  grupo_vazquez:
+    controlling_family: "Vazquez"
+    priority: P2
+    holdings:
+      energy:
+        - "Fuel distribution"
+      retail:
+        - "Convenience stores"
+      real_estate:
+        - "Commercial properties"
+
+  grupo_centurion:
+    controlling_family: "Centurion"
+    priority: P2
+    holdings:
+      automotive:
+        - "Major car dealerships"
+      services:
+        - "Various services"
+
+  grupo_rio:
+    controlling_family: "Various"
+    priority: P2
+    holdings:
+      agribusiness:
+        - "Major soy operations"
+      logistics:
+        - "River transport"
+
+# =============================================================================
+# RESEARCH PRIORITIES & THEMES
+# =============================================================================
+
+research_priorities:
+  immediate_focus:
+    description: "Next 30 days"
+    targets:
+      - "Tigo Paraguay (telecom)"
+      - "Personal Paraguay (telecom)"
+      - "Grupo Vierci (conglomerate)"
+      - "Major banks (financial)"
+      - "Cargill Paraguay (agriculture)"
+
+  short_term:
+    description: "Next 90 days"
+    targets:
+      - "All telecom operators"
+      - "Top 10 banks"
+      - "Major agribusiness companies"
+      - "Healthcare leaders"
+      - "Retail chains"
+
+  medium_term:
+    description: "Next 6 months"
+    targets:
+      - "All major sectors"
+      - "Infrastructure companies"
+      - "Tech startups"
+      - "FinTech ecosystem"
+
+research_themes:
+  digital_transformation:
+    priority: P1
+    description: "AI/ML adoption across sectors"
+    target_sectors:
+      - "Telecommunications"
+      - "Financial services"
+      - "Healthcare"
+      - "Agriculture"
+      - "Retail"
+
+  energy_opportunity:
+    priority: P1
+    description: "Leveraging cheap electricity"
+    opportunities:
+      - "Green hydrogen production"
+      - "Crypto mining operations"
+      - "Energy-intensive industries"
+      - "Data centers"
+
+  agricultural_modernization:
+    priority: P1
+    description: "Precision agriculture and agtech"
+    opportunities:
+      - "Satellite/drone monitoring"
+      - "Yield prediction"
+      - "Supply chain optimization"
+      - "Traceability systems"
+
+  financial_inclusion:
+    priority: P1
+    description: "Banking the unbanked"
+    opportunities:
+      - "Mobile money expansion"
+      - "Digital lending"
+      - "Microfinance tech"
+      - "Insurance penetration"
+
+  infrastructure_development:
+    priority: P2
+    description: "Logistics and connectivity"
+    opportunities:
+      - "Road improvements"
+      - "Port modernization"
+      - "Digital infrastructure"
+      - "Urban development"
+
+# =============================================================================
+# DATA SOURCES & RESEARCH METHODOLOGY
+# =============================================================================
+
+data_sources:
+  official:
+    - name: "Banco Central del Paraguay (BCP)"
+      url: "https://www.bcp.gov.py"
+      data: "Economic statistics, financial sector data"
+
+    - name: "Ministerio de Hacienda"
+      url: "https://www.hacienda.gov.py"
+      data: "Fiscal data, economic reports"
+
+    - name: "SENACSA"
+      url: "https://www.senacsa.gov.py"
+      data: "Agricultural/livestock data"
+
+    - name: "CONATEL"
+      url: "https://www.conatel.gov.py"
+      data: "Telecommunications statistics"
+
+    - name: "ANDE"
+      url: "https://www.ande.gov.py"
+      data: "Energy/electricity data"
+
+  industry:
+    - name: "CAPECO (Construction Chamber)"
+    - name: "UIP (Industrial Union)"
+    - name: "ARP (Rural Association)"
+    - name: "Camara de Comercio"
+    - name: "ASOBAN (Banking Association)"
+
+  media:
+    - name: "ABC Color"
+      url: "https://www.abc.com.py"
+    - name: "Ultima Hora"
+      url: "https://www.ultimahora.com"
+    - name: "La Nacion"
+      url: "https://www.lanacion.com.py"
+    - name: "5 Dias"
+      url: "https://www.5dias.com.py"
+
+# Total Company Count
+total_targets:
+  count: 250+
+  by_priority:
+    P1: 40
+    P2: 80
+    P3: 90
+    P4: 40

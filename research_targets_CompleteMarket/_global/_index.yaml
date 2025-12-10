@@ -1,0 +1,245 @@
+# Research Targets Index
+# Master reference for all research targets
+
+version: "2.0"
+last_updated: "2024-12"
+total_companies: "500+"
+
+# Regional Summary
+regions:
+  latam:
+    path: "latam/"
+    priority: P1
+    countries: 20
+    companies: 360+
+    config: "latam/_region_config.yaml"
+
+    sub_regions:
+      south_america:
+        path: "latam/south_america/"
+        countries:
+          brazil:
+            path: "latam/south_america/brazil/"
+            priority: P1
+            companies: 80+
+            sectors: 12
+
+          argentina:
+            path: "latam/south_america/argentina/"
+            priority: P2
+            companies: 40+
+            sectors: 8
+
+          chile:
+            path: "latam/south_america/chile/"
+            priority: P2
+            companies: 35+
+            sectors: 8
+
+          colombia:
+            path: "latam/south_america/colombia/"
+            priority: P2
+            companies: 30+
+            sectors: 7
+
+          peru:
+            path: "latam/south_america/peru/"
+            priority: P2
+            companies: 25+
+            sectors: 7
+
+          paraguay:
+            path: "latam/south_america/paraguay/"
+            priority: P1
+            companies: 50+
+            sectors: 9
+            notes: "Special focus - AI potential"
+
+          uruguay:
+            path: "latam/south_america/uruguay/"
+            priority: P3
+            companies: 10+
+
+          ecuador:
+            path: "latam/south_america/ecuador/"
+            priority: P3
+            companies: 10+
+
+          bolivia:
+            path: "latam/south_america/bolivia/"
+            priority: P3
+            companies: 8+
+
+          venezuela:
+            path: "latam/south_america/venezuela/"
+            priority: P4
+            companies: 5+
+            notes: "Limited due to market conditions"
+
+      central_america:
+        path: "latam/central_america/"
+        priority: P2
+        companies: 50+
+        config: "latam/central_america/_region_config.yaml"
+        countries: ["Guatemala", "Costa Rica", "Panama", "Honduras", "El Salvador", "Nicaragua", "Belize"]
+
+      caribbean:
+        path: "latam/caribbean/"
+        priority: P3
+        companies: 15+
+        countries: ["Dominican Republic", "Puerto Rico", "Jamaica", "Trinidad & Tobago"]
+
+      mexico:
+        path: "latam/mexico/"
+        priority: P1
+        companies: 60+
+        sectors: 10
+
+  north_america:
+    path: "north_america/"
+    priority: P3
+    countries: 2
+    companies: 100+
+    config: "north_america/_region_config.yaml"
+    purpose: "Benchmarking reference"
+
+  europe:
+    path: "europe/"
+    priority: P4
+    countries: 15
+    companies: 80+
+    config: "europe/_region_config.yaml"
+    purpose: "LATAM-exposed multinationals"
+
+  asia_pacific:
+    path: "asia_pacific/"
+    priority: P4
+    countries: 12
+    companies: 70+
+    config: "asia_pacific/_region_config.yaml"
+    purpose: "LATAM trade/investment connections"
+
+# Cross-Sector Summary
+cross_sector:
+  path: "_cross_sector/"
+
+  sectors:
+    telecommunications:
+      path: "_cross_sector/telecommunications/"
+      priority: P1
+      companies: 50+
+      config: "_cross_sector/telecommunications/_sector_global.yaml"
+
+    fintech:
+      path: "_cross_sector/fintech/"
+      priority: P1
+      companies: 60+
+      config: "_cross_sector/fintech/_sector_global.yaml"
+
+    ai_ml:
+      path: "_cross_sector/ai_ml/"
+      priority: P1
+      companies: 40+
+      config: "_cross_sector/ai_ml/_sector_global.yaml"
+
+    aviation:
+      path: "_cross_sector/aviation/"
+      priority: P2
+      companies: 30+
+
+    renewable_energy:
+      path: "_cross_sector/renewable_energy/"
+      priority: P2
+      companies: 25+
+
+# Quick Access - Top Priority Targets
+priority_targets:
+  P1_critical:
+    description: "Immediate research focus"
+    companies:
+      # Paraguay Special Focus
+      - company: "Tigo Paraguay"
+        path: "latam/south_america/paraguay/telecommunications/tigo_paraguay.yaml"
+        sector: "Telecommunications"
+
+      - company: "Personal Paraguay"
+        path: "latam/south_america/paraguay/telecommunications/personal_paraguay.yaml"
+        sector: "Telecommunications"
+
+      # Major LATAM Conglomerates
+      - company: "Grupo Carso"
+        path: "latam/mexico/conglomerates/grupo_carso.yaml"
+        sector: "Conglomerates"
+
+      - company: "Itausa"
+        path: "latam/south_america/brazil/conglomerates/itausa.yaml"
+        sector: "Conglomerates"
+
+      - company: "FEMSA"
+        path: "latam/mexico/conglomerates/femsa.yaml"
+        sector: "Conglomerates"
+
+      - company: "Grupo Luksic"
+        path: "latam/south_america/chile/conglomerates/grupo_luksic.yaml"
+        sector: "Conglomerates"
+
+      # Major Telecoms
+      - company: "America Movil"
+        path: "latam/mexico/telecommunications/america_movil.yaml"
+        sector: "Telecommunications"
+
+      - company: "Millicom"
+        path: "_cross_sector/telecommunications/millicom.yaml"
+        sector: "Telecommunications"
+
+      # FinTech Leaders
+      - company: "Nubank"
+        path: "latam/south_america/brazil/financial_services/nubank.yaml"
+        sector: "FinTech"
+
+      - company: "MercadoLibre"
+        path: "latam/south_america/argentina/technology/mercadolibre.yaml"
+        sector: "Technology/FinTech"
+
+# Statistics Summary
+statistics:
+  total_companies: 540
+  total_sectors: 13
+  total_countries: 60+
+  total_regions: 5
+
+  by_priority:
+    P1_critical: 50
+    P2_high: 120
+    P3_medium: 180
+    P4_low: 140
+    P5_monitor: 50
+
+  by_sector:
+    conglomerates: 80
+    financial_services: 90
+    telecommunications: 50
+    technology: 60
+    energy: 50
+    consumer_retail: 50
+    mining_materials: 40
+    healthcare: 30
+    agriculture: 35
+    industrials: 35
+    transportation: 25
+    real_estate: 20
+    media: 15
+
+# File Naming Conventions
+conventions:
+  country_config: "_country_config.yaml"
+  region_config: "_region_config.yaml"
+  sector_config: "_sector.yaml"
+  company_profile: "{company_name}.yaml"
+  market_config: "_market_config.yaml"
+
+# Template Locations
+templates:
+  company_profile: "_global/_research_templates/company_profile.yaml"
+  sector_overview: "_global/_research_templates/sector_overview.yaml"
+  region_config: "_global/_research_templates/region_config.yaml"

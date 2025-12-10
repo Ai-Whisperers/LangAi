@@ -1,0 +1,494 @@
+# Paraguay - Healthcare & Pharmaceutical Sector
+# Growing Sector with AI Diagnostic Potential
+
+sector:
+  name: "Healthcare & Pharmaceuticals"
+  code: "HEA"
+  country: "paraguay"
+  priority: P2_high
+
+  description: |
+    Paraguay's healthcare sector is a mix of public and private providers.
+    Private healthcare is growing rapidly with modern facilities. The pharmaceutical
+    market is dominated by imports with some local manufacturing.
+    AI diagnostic potential is significant.
+
+  market_metrics:
+    healthcare_spending_gdp: "7%"
+    private_share: "45%"
+    hospital_beds_per_1000: 1.3
+    physicians_per_1000: 1.4
+    pharma_market_usd: "$600M+"
+    insurance_penetration: "15%"
+
+  strategic_importance:
+    challenges:
+      - "Unequal access (urban vs rural)"
+      - "Infrastructure gaps"
+      - "Brain drain (medical professionals)"
+      - "Import dependency for medicines"
+    opportunities:
+      - "Private healthcare expansion"
+      - "Telemedicine growth"
+      - "AI diagnostics"
+      - "Medical tourism (dental, cosmetic)"
+      - "Health insurance penetration"
+
+  ai_potential:
+    areas:
+      - "Diagnostic imaging AI"
+      - "Patient management systems"
+      - "Telemedicine platforms"
+      - "Drug interaction checking"
+      - "Predictive health analytics"
+      - "Claims processing automation"
+
+# =============================================================================
+# COMPANIES
+# =============================================================================
+
+companies:
+  # HOSPITAL GROUPS & CLINICS
+
+  sanatorio_migone:
+    file: "migone.yaml"
+    priority: P1
+    type: "hospital"
+    description: "Premier private hospital"
+    ownership: "Private - Migone family"
+    location: "Asuncion"
+    services:
+      - "Full service hospital"
+      - "Emergency care"
+      - "Surgery"
+      - "Diagnostics"
+    beds: 200+
+    reputation: "Top-tier"
+
+  hospital_bautista:
+    file: "bautista.yaml"
+    priority: P1
+    type: "hospital"
+    ownership: "Baptist Association"
+    location: "Asuncion"
+    services:
+      - "General hospital"
+      - "Maternity"
+      - "Pediatrics"
+    beds: 180+
+    reputation: "High quality"
+
+  hospital_italiano:
+    file: "italiano.yaml"
+    priority: P2
+    type: "hospital"
+    ownership: "Italian community"
+    location: "Asuncion"
+    beds: 150+
+
+  sanatorio_santa_clara:
+    file: "santa_clara.yaml"
+    priority: P2
+    type: "hospital"
+    description: "Major private hospital"
+    location: "Asuncion"
+    specialties:
+      - "Cardiology"
+      - "Oncology"
+
+  hospital_de_clinicas:
+    file: "clinicas.yaml"
+    priority: P2
+    type: "hospital"
+    ownership: "Universidad Nacional de Asuncion"
+    status: "Public/teaching hospital"
+    description: "Main teaching hospital"
+    beds: 600+
+
+  hospital_central_ips:
+    file: "ips_central.yaml"
+    priority: P2
+    type: "hospital"
+    ownership: "IPS (Social Security)"
+    description: "Main social security hospital"
+    beds: 500+
+
+  # HOSPITAL NETWORKS
+
+  grupo_most:
+    file: "grupo_most.yaml"
+    priority: P2
+    type: "hospital_group"
+    description: "Multi-specialty group"
+    facilities:
+      - "MOST Asuncion"
+      - "MOST Fernando de la Mora"
+    services:
+      - "Diagnostics"
+      - "Outpatient"
+      - "Labs"
+
+  diagnosur:
+    file: "diagnosur.yaml"
+    priority: P2
+    type: "diagnostic_center"
+    description: "Leading diagnostic imaging"
+    services:
+      - "MRI"
+      - "CT scan"
+      - "Ultrasound"
+      - "X-ray"
+    locations: "Multiple in Asuncion"
+
+  meyer_lab:
+    file: "meyer.yaml"
+    priority: P2
+    type: "clinical_lab"
+    description: "Major clinical laboratory"
+    tests: "Full range"
+    locations: "National network"
+
+  # PUBLIC HEALTH SYSTEM
+
+  ministerio_de_salud:
+    file: "mspbs.yaml"
+    priority: P2
+    type: "government"
+    full_name: "Ministerio de Salud Publica y Bienestar Social"
+    role: "National health authority"
+    manages:
+      - "Public hospitals"
+      - "Health programs"
+      - "Drug regulation"
+
+  ips:
+    file: "ips.yaml"
+    priority: P1
+    type: "social_security"
+    full_name: "Instituto de Prevision Social"
+    description: "Social security health system"
+    coverage: "Formal workers"
+    facilities: 100+
+    beneficiaries: "2M+"
+    services:
+      - "Hospital care"
+      - "Primary care"
+      - "Pharmacy"
+      - "Pensions"
+
+  # PHARMACEUTICAL COMPANIES
+
+  botica_magistral:
+    file: "botica_magistral.yaml"
+    priority: P2
+    type: "pharma_manufacturer"
+    description: "Local pharmaceutical company"
+    products:
+      - "Generic medicines"
+      - "OTC products"
+    manufacturing: "Local"
+
+  laboratorio_catedral:
+    file: "catedral.yaml"
+    priority: P2
+    type: "pharma_manufacturer"
+    description: "Local pharma lab"
+    products:
+      - "Generics"
+      - "Health products"
+
+  laboratorio_lasca:
+    file: "lasca.yaml"
+    priority: P2
+    type: "pharma_manufacturer"
+    description: "Established local lab"
+    founded: "1970s"
+
+  laboratorio_indufar:
+    file: "indufar.yaml"
+    priority: P3
+    type: "pharma_manufacturer"
+    description: "Industrial pharma"
+
+  laboratorio_eriochem:
+    file: "eriochem.yaml"
+    priority: P3
+    type: "pharma_manufacturer"
+    parent: "Eriochem (Argentina)"
+    description: "Regional presence"
+
+  # PHARMACEUTICAL DISTRIBUTORS
+
+  droguerias_paraguayas:
+    file: "droguerias_py.yaml"
+    priority: P2
+    type: "pharma_distribution"
+    description: "Major pharma distributor"
+    coverage: "National"
+
+  dallas:
+    file: "dallas.yaml"
+    priority: P2
+    type: "pharma_distribution"
+    description: "Large distributor"
+    products:
+      - "Pharmaceuticals"
+      - "Health products"
+
+  drogueria_asuncion:
+    file: "drogueria_asu.yaml"
+    priority: P3
+    type: "pharma_distribution"
+    description: "Established distributor"
+
+  # PHARMACY CHAINS
+
+  farmacenter:
+    file: "farmacenter.yaml"
+    priority: P1
+    type: "pharmacy_chain"
+    description: "Leading pharmacy chain"
+    stores: 80+
+    parent: "Grupo Cartes"
+    services:
+      - "Prescription drugs"
+      - "OTC products"
+      - "Health products"
+      - "Convenience items"
+
+  punto_farma:
+    file: "punto_farma.yaml"
+    priority: P2
+    type: "pharmacy_chain"
+    description: "Major pharmacy network"
+    stores: 60+
+    services:
+      - "Full pharmacy"
+      - "Delivery"
+
+  farmacia_catedral:
+    file: "farmacia_catedral.yaml"
+    priority: P2
+    type: "pharmacy_chain"
+    stores: 40+
+    description: "Traditional chain"
+
+  farmacia_la_botica:
+    file: "la_botica.yaml"
+    priority: P3
+    type: "pharmacy_chain"
+    stores: 25+
+
+  # MULTINATIONAL PHARMA
+
+  bayer_paraguay:
+    file: "bayer_py.yaml"
+    priority: P2
+    type: "multinational_pharma"
+    parent: "Bayer AG"
+    products:
+      - "Pharmaceuticals"
+      - "Consumer health"
+      - "Animal health"
+
+  pfizer_paraguay:
+    file: "pfizer_py.yaml"
+    priority: P2
+    type: "multinational_pharma"
+    parent: "Pfizer"
+    products: "Prescription drugs"
+
+  roche_paraguay:
+    file: "roche_py.yaml"
+    priority: P2
+    type: "multinational_pharma"
+    parent: "Roche"
+    products: "Oncology, diagnostics"
+
+  sanofi_paraguay:
+    file: "sanofi_py.yaml"
+    priority: P3
+    type: "multinational_pharma"
+    parent: "Sanofi"
+
+  novartis_paraguay:
+    file: "novartis_py.yaml"
+    priority: P3
+    type: "multinational_pharma"
+    parent: "Novartis"
+
+  gsk_paraguay:
+    file: "gsk_py.yaml"
+    priority: P3
+    type: "multinational_pharma"
+    parent: "GSK"
+    products: "Vaccines, consumer health"
+
+  # HEALTH INSURANCE
+
+  medico_sa:
+    file: "medico_sa.yaml"
+    priority: P2
+    type: "health_insurance"
+    description: "Private health insurance"
+    products:
+      - "Individual plans"
+      - "Corporate plans"
+    network: "Major hospitals"
+
+  asismed:
+    file: "asismed.yaml"
+    priority: P2
+    type: "health_insurance"
+    description: "Pre-paid medicine"
+    services:
+      - "Health plans"
+      - "Emergency services"
+
+  salud_para_todos:
+    file: "salud_todos.yaml"
+    priority: P3
+    type: "health_insurance"
+    description: "Popular health plans"
+
+  cruz_blanca:
+    file: "cruz_blanca.yaml"
+    priority: P3
+    type: "health_insurance"
+    description: "Health services"
+
+  # MEDICAL DEVICES & EQUIPMENT
+
+  equipmed:
+    file: "equipmed.yaml"
+    priority: P3
+    type: "medical_equipment"
+    description: "Medical equipment distributor"
+    products:
+      - "Hospital equipment"
+      - "Diagnostic devices"
+      - "Consumables"
+
+  meditech_paraguay:
+    file: "meditech_py.yaml"
+    priority: P3
+    type: "medical_equipment"
+    products: "Medical technology"
+
+  # SPECIALIZED CLINICS
+
+  clinica_oftalmologica:
+    file: "oftalmologica.yaml"
+    priority: P3
+    type: "specialty_clinic"
+    specialty: "Ophthalmology"
+    services:
+      - "Eye surgery"
+      - "LASIK"
+      - "Cataracts"
+
+  centro_cardiologico:
+    file: "centro_cardio.yaml"
+    priority: P3
+    type: "specialty_clinic"
+    specialty: "Cardiology"
+    services:
+      - "Cardiac surgery"
+      - "Interventional cardiology"
+
+  centro_oncologico:
+    file: "oncologico.yaml"
+    priority: P3
+    type: "specialty_clinic"
+    specialty: "Oncology"
+    services:
+      - "Cancer treatment"
+      - "Chemotherapy"
+      - "Radiation"
+
+  clinica_dental_asuncion:
+    file: "dental_asu.yaml"
+    priority: P3
+    type: "dental_clinic"
+    description: "Modern dental center"
+    services:
+      - "General dentistry"
+      - "Implants"
+      - "Cosmetic dentistry"
+
+  # TELEMEDICINE & DIGITAL HEALTH
+
+  tumedico_py:
+    file: "tumedico.yaml"
+    priority: P2
+    type: "telemedicine"
+    description: "Telemedicine platform"
+    services:
+      - "Virtual consultations"
+      - "Prescription delivery"
+    status: "Growing"
+
+  medicall_py:
+    file: "medicall.yaml"
+    priority: P3
+    type: "telemedicine"
+    description: "Digital health service"
+
+# =============================================================================
+# MARKET STRUCTURE
+# =============================================================================
+
+market_structure:
+  hospital_segment:
+    public: "60% of capacity"
+    private: "40% of capacity"
+    trend: "Private growing faster"
+
+  pharma_market:
+    imports: "85%"
+    local_production: "15%"
+    generics_share: "Growing"
+    main_importers: ["Brazil", "Argentina", "India", "USA", "Europe"]
+
+  insurance:
+    ips_coverage: "25% of population"
+    private_insurance: "10%"
+    out_of_pocket: "65%"
+
+# =============================================================================
+# RESEARCH FOCUS
+# =============================================================================
+
+research_focus:
+  themes:
+    - "Private healthcare expansion"
+    - "Telemedicine adoption"
+    - "AI diagnostic implementation"
+    - "Health insurance growth"
+    - "Pharmaceutical distribution"
+    - "Medical tourism potential"
+
+  key_metrics:
+    - "Hospital bed occupancy"
+    - "Patient volumes"
+    - "Revenue per bed"
+    - "Insurance penetration"
+    - "Pharma market growth"
+    - "Digital health adoption"
+
+ai_opportunities:
+  clinical:
+    - "Diagnostic imaging AI"
+    - "Clinical decision support"
+    - "Drug interaction checking"
+    - "Patient risk scoring"
+  operational:
+    - "Patient flow optimization"
+    - "Resource scheduling"
+    - "Claims processing"
+    - "Inventory management"
+  patient_facing:
+    - "Symptom checkers"
+    - "Virtual triage"
+    - "Appointment scheduling"
+    - "Medication reminders"

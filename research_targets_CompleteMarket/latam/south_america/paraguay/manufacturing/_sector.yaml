@@ -1,0 +1,518 @@
+# Paraguay - Manufacturing & Industrial Sector
+# Light Manufacturing & Maquila Operations
+
+sector:
+  name: "Manufacturing & Industrial"
+  code: "IND"
+  country: "paraguay"
+  priority: P3_medium
+
+  description: |
+    Paraguay's manufacturing sector is dominated by food processing, textiles,
+    and maquila (assembly) operations. The maquila regime attracts foreign
+    investment with tax benefits. Cheap electricity is a major advantage.
+    Growing industrial diversification.
+
+  market_metrics:
+    manufacturing_gdp_share: "10%"
+    maquila_companies: 200+
+    maquila_exports_usd: "$500M+"
+    industrial_employment: "200,000+"
+    main_exports:
+      - "Textiles & apparel"
+      - "Auto parts"
+      - "Plastics"
+      - "Leather goods"
+
+  strategic_importance:
+    advantages:
+      - "Lowest electricity costs in region"
+      - "Maquila tax incentives"
+      - "MERCOSUR access"
+      - "Competitive labor costs"
+      - "Strategic location"
+    challenges:
+      - "Small domestic market"
+      - "Infrastructure gaps"
+      - "Skilled labor shortage"
+      - "Technology gap"
+    opportunities:
+      - "Export manufacturing"
+      - "Green industries (cheap clean energy)"
+      - "Auto parts expansion"
+      - "Textile nearshoring"
+      - "Data centers"
+
+  ai_potential:
+    areas:
+      - "Quality control automation"
+      - "Predictive maintenance"
+      - "Production optimization"
+      - "Supply chain management"
+      - "Energy optimization"
+
+# =============================================================================
+# COMPANIES
+# =============================================================================
+
+companies:
+  # MAQUILA OPERATIONS
+
+  fujikura_automotive:
+    file: "fujikura.yaml"
+    priority: P1
+    type: "maquila_auto"
+    parent: "Fujikura (Japan)"
+    products: "Automotive wiring harnesses"
+    employees: 8000+
+    exports: "Brazil, Argentina"
+    location: "Area Metropolitana"
+
+  yazaki_paraguay:
+    file: "yazaki_py.yaml"
+    priority: P1
+    type: "maquila_auto"
+    parent: "Yazaki (Japan)"
+    products: "Automotive wiring"
+    employees: 6000+
+    exports: "Regional auto industry"
+
+  leoni_paraguay:
+    file: "leoni_py.yaml"
+    priority: P1
+    type: "maquila_auto"
+    parent: "Leoni (Germany)"
+    products: "Wiring systems"
+    employees: 3000+
+
+  aptiv_paraguay:
+    file: "aptiv_py.yaml"
+    priority: P2
+    type: "maquila_auto"
+    parent: "Aptiv (Ireland)"
+    products: "Electrical systems"
+    employees: 2000+
+
+  sumitomo_paraguay:
+    file: "sumitomo_py.yaml"
+    priority: P2
+    type: "maquila_auto"
+    parent: "Sumitomo (Japan)"
+    products: "Wiring harnesses"
+
+  lear_paraguay:
+    file: "lear_py.yaml"
+    priority: P2
+    type: "maquila_auto"
+    parent: "Lear Corporation (USA)"
+    products: "Seating, electrical"
+
+  # TEXTILE & APPAREL
+
+  manufactura_pilar:
+    file: "mfg_pilar.yaml"
+    priority: P1
+    type: "textile"
+    description: "Major textile manufacturer"
+    products:
+      - "Cotton textiles"
+      - "Apparel"
+    employees: 2000+
+    exports: "Brazil, Argentina, USA"
+    location: "Pilar"
+
+  confecciones_del_paraguay:
+    file: "confecciones_py.yaml"
+    priority: P2
+    type: "apparel"
+    products: "Garment manufacturing"
+    exports: "Regional markets"
+
+  textiles_guarani:
+    file: "textiles_guarani.yaml"
+    priority: P2
+    type: "textile"
+    products:
+      - "Fabrics"
+      - "Home textiles"
+
+  hering_paraguay:
+    file: "hering_py.yaml"
+    priority: P2
+    type: "apparel"
+    parent: "Hering (Brazil)"
+    products: "T-shirts, basics"
+    status: "Maquila operation"
+
+  sport_fashion:
+    file: "sport_fashion.yaml"
+    priority: P3
+    type: "apparel"
+    products: "Sportswear manufacturing"
+
+  # LEATHER & FOOTWEAR
+
+  curtiembre_cacique:
+    file: "cacique.yaml"
+    priority: P2
+    type: "leather"
+    description: "Major tannery"
+    products:
+      - "Leather hides"
+      - "Leather goods"
+    exports: "International markets"
+
+  calzados_py:
+    file: "calzados_py.yaml"
+    priority: P3
+    type: "footwear"
+    products: "Shoe manufacturing"
+
+  # PLASTICS & PACKAGING
+
+  plasticos_del_paraguay:
+    file: "plasticos_py.yaml"
+    priority: P2
+    type: "plastics"
+    products:
+      - "Plastic containers"
+      - "Industrial plastics"
+      - "Packaging"
+    markets: "Domestic and export"
+
+  envases_paraguayos:
+    file: "envases_py.yaml"
+    priority: P2
+    type: "packaging"
+    products:
+      - "Flexible packaging"
+      - "Food packaging"
+      - "Industrial packaging"
+
+  flexopack_py:
+    file: "flexopack_py.yaml"
+    priority: P2
+    type: "packaging"
+    products: "Flexible packaging"
+    clients: "Food industry"
+
+  tecnopack_py:
+    file: "tecnopack_py.yaml"
+    priority: P3
+    type: "packaging"
+    products: "Technical packaging"
+
+  pet_del_paraguay:
+    file: "pet_py.yaml"
+    priority: P3
+    type: "plastics"
+    products: "PET bottles and preforms"
+
+  # METAL PRODUCTS
+
+  metalurgica_paraguaya:
+    file: "metalurgica_py.yaml"
+    priority: P2
+    type: "metal_manufacturing"
+    products:
+      - "Metal structures"
+      - "Industrial equipment"
+      - "Agricultural machinery"
+
+  herreria_industrial:
+    file: "herreria_ind.yaml"
+    priority: P3
+    type: "metal_fabrication"
+    products: "Metal fabrication"
+
+  fundicion_guarani:
+    file: "fundicion_guarani.yaml"
+    priority: P3
+    type: "foundry"
+    products: "Metal castings"
+
+  # CHEMICALS & AGROCHEMICALS
+
+  chemtec_paraguay:
+    file: "chemtec_py.yaml"
+    priority: P2
+    type: "chemicals"
+    products:
+      - "Industrial chemicals"
+      - "Cleaning products"
+
+  quimica_del_este:
+    file: "quimica_este.yaml"
+    priority: P2
+    type: "chemicals"
+    products:
+      - "Agrochemicals"
+      - "Industrial chemicals"
+
+  agroquimicos_py:
+    file: "agroquimicos_py.yaml"
+    priority: P2
+    type: "agrochemicals"
+    products:
+      - "Fertilizers"
+      - "Pesticides"
+      - "Herbicides"
+
+  nevado_detergentes:
+    file: "nevado.yaml"
+    priority: P3
+    type: "chemicals"
+    products: "Cleaning products, detergents"
+    market: "Consumer and industrial"
+
+  # FOOD PROCESSING (Non-meat)
+
+  azucarera_paraguaya:
+    file: "azucarera_py.yaml"
+    priority: P2
+    type: "food_processing"
+    products:
+      - "Sugar"
+      - "Ethanol"
+    raw_material: "Sugarcane"
+    mills: 3+
+
+  fideos_florencia:
+    file: "florencia.yaml"
+    priority: P2
+    type: "food_processing"
+    products:
+      - "Pasta"
+      - "Flour products"
+    brand: "Leading pasta brand"
+
+  alimentos_guarani:
+    file: "alimentos_guarani.yaml"
+    priority: P2
+    type: "food_processing"
+    products:
+      - "Processed foods"
+      - "Snacks"
+
+  yerba_mate_selecta:
+    file: "selecta.yaml"
+    priority: P2
+    type: "food_processing"
+    products: "Yerba mate"
+    brand: "Selecta"
+    market_share: "30%+"
+
+  yerba_mate_campesino:
+    file: "campesino.yaml"
+    priority: P2
+    type: "food_processing"
+    products: "Yerba mate"
+    brand: "Campesino"
+    export_markets: ["Argentina", "Uruguay", "Chile"]
+
+  yerba_pajarito:
+    file: "pajarito.yaml"
+    priority: P2
+    type: "food_processing"
+    products: "Yerba mate"
+    brand: "Pajarito"
+    status: "Traditional brand"
+
+  # BEVERAGES
+
+  cerveceria_paraguaya:
+    file: "cerveceria_py.yaml"
+    priority: P1
+    type: "beverage"
+    parent: "ABInBev"
+    products:
+      - "Brahma"
+      - "Pilsen"
+      - "Other beers"
+    market_share: "90%+"
+    employees: 1500+
+
+  pepsi_paraguay:
+    file: "pepsi_py.yaml"
+    priority: P2
+    type: "beverage"
+    parent: "PepsiCo"
+    products:
+      - "Pepsi"
+      - "7Up"
+      - "Gatorade"
+
+  coca_cola_paresa:
+    file: "paresa.yaml"
+    priority: P1
+    type: "beverage"
+    franchise: "Coca-Cola bottler"
+    products:
+      - "Coca-Cola brands"
+      - "Juices"
+      - "Water"
+    market_share: "High"
+
+  agua_mineral_seltz:
+    file: "seltz.yaml"
+    priority: P3
+    type: "beverage"
+    products: "Mineral water, soft drinks"
+
+  # TOBACCO
+
+  tabacalera_del_este:
+    file: "tabesa.yaml"
+    priority: P1
+    type: "tobacco"
+    parent: "Grupo Cartes"
+    brand: "Tabesa"
+    products:
+      - "Cigarettes"
+      - "Tobacco products"
+    market_position: "Dominant local"
+    employees: 2000+
+    controversy: "Linked to former president"
+
+  british_american_tobacco_py:
+    file: "bat_py.yaml"
+    priority: P2
+    type: "tobacco"
+    parent: "BAT"
+    products: "International cigarette brands"
+
+  # PAPER & PRINTING
+
+  imprenta_mercurio:
+    file: "mercurio.yaml"
+    priority: P3
+    type: "printing"
+    products:
+      - "Commercial printing"
+      - "Packaging"
+
+  papelera_del_plata:
+    file: "papelera_plata.yaml"
+    priority: P3
+    type: "paper"
+    products:
+      - "Paper products"
+      - "Cardboard"
+
+  # WOOD & FURNITURE
+
+  muebles_paraguay:
+    file: "muebles_py.yaml"
+    priority: P3
+    type: "furniture"
+    products: "Wood furniture"
+    materials: "Local hardwoods"
+
+  industrial_maderera:
+    file: "ind_maderera.yaml"
+    priority: P3
+    type: "wood_products"
+    products:
+      - "Lumber"
+      - "Plywood"
+      - "Wood products"
+
+  # ELECTRONICS ASSEMBLY
+
+  electronica_del_este:
+    file: "electronica_este.yaml"
+    priority: P2
+    type: "electronics_assembly"
+    location: "Ciudad del Este"
+    products:
+      - "Consumer electronics"
+      - "Audio equipment"
+    status: "Maquila operations"
+
+# =============================================================================
+# MAQUILA REGIME
+# =============================================================================
+
+maquila_regime:
+  description: |
+    Paraguay's maquila law (Law 1064/97) provides incentives for
+    export-oriented manufacturing. At least 90% of production
+    must be exported.
+
+  benefits:
+    - "1% tax on value added"
+    - "Duty-free imports of inputs"
+    - "No VAT on exports"
+    - "No dividend taxes"
+    - "Simplified customs"
+
+  requirements:
+    - "90%+ of production exported"
+    - "Contract with foreign company"
+    - "Minimum investment levels"
+
+  sectors_benefiting:
+    - "Automotive components"
+    - "Textiles & apparel"
+    - "Electronics assembly"
+    - "Leather goods"
+    - "Plastic products"
+
+# =============================================================================
+# MARKET STRUCTURE
+# =============================================================================
+
+market_structure:
+  manufacturing_segments:
+    food_processing: "35%"
+    textiles_apparel: "20%"
+    auto_parts_maquila: "15%"
+    chemicals: "10%"
+    metal_products: "8%"
+    other: "12%"
+
+  export_orientation:
+    maquila_share: "70% of manufacturing exports"
+    main_markets: ["Brazil", "Argentina", "Uruguay", "USA"]
+
+  industrial_zones:
+    areas:
+      - "Greater Asuncion"
+      - "Ciudad del Este (border)"
+      - "Pilar (textiles)"
+      - "Villeta (processing)"
+
+# =============================================================================
+# RESEARCH FOCUS
+# =============================================================================
+
+research_focus:
+  themes:
+    - "Maquila sector expansion"
+    - "Auto parts manufacturing"
+    - "Textile industry"
+    - "Food processing growth"
+    - "Green manufacturing potential"
+    - "Industrial energy use"
+
+  key_metrics:
+    - "Maquila exports"
+    - "Manufacturing employment"
+    - "Industrial electricity use"
+    - "Export diversification"
+    - "FDI in manufacturing"
+
+ai_opportunities:
+  production:
+    - "Quality control vision AI"
+    - "Predictive maintenance"
+    - "Production scheduling"
+    - "Yield optimization"
+  supply_chain:
+    - "Demand forecasting"
+    - "Inventory optimization"
+    - "Logistics planning"
+  energy:
+    - "Energy optimization"
+    - "Load balancing"
+    - "Sustainability tracking"

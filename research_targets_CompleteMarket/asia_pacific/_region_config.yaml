@@ -1,0 +1,247 @@
+# Asia-Pacific Region Configuration
+# Emerging Connections with LATAM
+
+region:
+  name: "Asia-Pacific"
+  code: "APAC"
+  priority: "P4_low"
+
+  description: |
+    Asia-Pacific companies with LATAM operations or trade relationships.
+    Growing importance for commodities trade and infrastructure investment.
+
+  sub_regions:
+    east_asia:
+      countries: ["China", "Japan", "South Korea", "Taiwan"]
+      priority: P4
+
+    southeast_asia:
+      countries: ["Singapore", "Indonesia", "Thailand", "Vietnam", "Malaysia", "Philippines"]
+      priority: P5
+
+    south_asia:
+      countries: ["India"]
+      priority: P5
+
+    oceania:
+      countries: ["Australia", "New Zealand"]
+      priority: P4
+
+# China
+china:
+  priority: P4_low
+  rationale: "Major LATAM trade partner, infrastructure investor"
+
+  companies:
+    energy_utilities:
+      - name: "State Grid"
+        type: "state_owned"
+        latam_operations: ["Brazil (CPFL)", "Chile, Peru"]
+        priority: P3
+
+      - name: "China Three Gorges"
+        type: "state_owned"
+        latam_operations: ["Brazil hydro projects"]
+        priority: P4
+
+      - name: "CNOOC"
+        ticker: "CEO"
+        latam_operations: ["Brazil offshore"]
+        priority: P4
+
+    telecommunications:
+      - name: "Huawei"
+        type: "private"
+        latam_operations: ["Network equipment across LATAM"]
+        priority: P3
+
+      - name: "ZTE"
+        ticker: "000063.SZ"
+        latam_operations: ["Telecom equipment"]
+        priority: P4
+
+    technology:
+      - name: "Alibaba"
+        ticker: "BABA"
+        latam_operations: ["AliExpress, Ant Group"]
+        priority: P4
+
+      - name: "Tencent"
+        ticker: "0700.HK"
+        latam_operations: ["Gaming, investments"]
+        priority: P4
+
+      - name: "ByteDance/TikTok"
+        type: "private"
+        latam_operations: ["Major user base in LATAM"]
+        priority: P4
+
+      - name: "DiDi Global"
+        ticker: "DIDIY"
+        latam_operations: ["Mexico, Brazil (major)"]
+        priority: P3
+
+    automotive:
+      - name: "BYD"
+        ticker: "1211.HK"
+        latam_operations: ["Electric buses, expansion plans"]
+        priority: P4
+
+    mining:
+      - name: "MMG"
+        ticker: "1208.HK"
+        latam_operations: ["Las Bambas (Peru)"]
+        priority: P4
+
+    banking:
+      - name: "ICBC"
+        ticker: "1398.HK"
+        latam_operations: ["Argentina, Brazil, Peru"]
+        priority: P4
+
+# Japan
+japan:
+  priority: P4_low
+  rationale: "Historical LATAM investment, automotive"
+
+  companies:
+    automotive:
+      - name: "Toyota"
+        ticker: "TM"
+        latam_operations: ["Brazil, Argentina, Mexico manufacturing"]
+        priority: P4
+
+      - name: "Honda"
+        ticker: "HMC"
+        latam_operations: ["Brazil, Argentina, Mexico"]
+        priority: P4
+
+      - name: "Nissan"
+        ticker: "7201.T"
+        latam_operations: ["Mexico (major)"]
+        priority: P4
+
+    trading_companies:
+      - name: "Mitsubishi Corporation"
+        ticker: "8058.T"
+        latam_operations: ["Mining, commodities, infrastructure"]
+        priority: P4
+
+      - name: "Mitsui & Co"
+        ticker: "8031.T"
+        latam_operations: ["Mining, energy, agriculture"]
+        priority: P4
+
+      - name: "Sumitomo"
+        ticker: "8053.T"
+        latam_operations: ["Mining, infrastructure"]
+        priority: P4
+
+    technology:
+      - name: "SoftBank"
+        ticker: "9984.T"
+        latam_operations: ["Major LATAM tech investor"]
+        priority: P3
+        notes: "Invested in Nubank, Rappi, etc."
+
+    financial:
+      - name: "MUFG"
+        ticker: "MUFG"
+        latam_operations: ["Mexico (Banorte partnership)"]
+        priority: P4
+
+# South Korea
+south_korea:
+  priority: P4_low
+  companies:
+    technology:
+      - name: "Samsung"
+        ticker: "005930.KS"
+        latam_operations: ["Brazil manufacturing, retail"]
+        priority: P4
+
+      - name: "LG"
+        ticker: "066570.KS"
+        latam_operations: ["Brazil manufacturing"]
+        priority: P4
+
+    automotive:
+      - name: "Hyundai/Kia"
+        ticker: "005380.KS"
+        latam_operations: ["Brazil, Mexico manufacturing"]
+        priority: P4
+
+# Australia
+australia:
+  priority: P4_low
+  rationale: "Mining connections"
+
+  companies:
+    mining:
+      - name: "BHP"
+        ticker: "BHP"
+        latam_operations: ["Chile (Escondida), Peru, Brazil"]
+        priority: P3
+
+      - name: "Fortescue"
+        ticker: "FMG.AX"
+        latam_operations: ["Argentina (green hydrogen)"]
+        priority: P4
+
+    financial:
+      - name: "Macquarie"
+        ticker: "MQG.AX"
+        latam_operations: ["Infrastructure investments"]
+        priority: P4
+
+# Singapore
+singapore:
+  priority: P5_monitor
+  companies:
+    telecommunications:
+      - name: "Singtel"
+        ticker: "Z74.SI"
+        latam_operations: ["Indirect via associates"]
+        priority: P5
+
+    commodities:
+      - name: "Wilmar"
+        ticker: "F34.SI"
+        latam_operations: ["Brazil agriculture"]
+        priority: P5
+
+# India
+india:
+  priority: P5_monitor
+  companies:
+    technology:
+      - name: "TCS"
+        ticker: "TCS.NS"
+        latam_operations: ["IT services across LATAM"]
+        priority: P4
+
+      - name: "Infosys"
+        ticker: "INFY"
+        latam_operations: ["IT services"]
+        priority: P4
+
+      - name: "Wipro"
+        ticker: "WIT"
+        latam_operations: ["IT services"]
+        priority: P4
+
+    pharmaceuticals:
+      - name: "Dr. Reddy's"
+        ticker: "RDY"
+        latam_operations: ["Generic drugs distribution"]
+        priority: P5
+
+# Research Focus
+research_focus:
+  purpose: "Asian companies with LATAM exposure"
+  themes:
+    - "China Belt & Road / infrastructure"
+    - "Japanese automotive investment"
+    - "Korean tech manufacturing"
+    - "Commodity trade flows"
+    - "Tech investment (SoftBank)"

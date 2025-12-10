@@ -1,0 +1,170 @@
+# Brazil Country Configuration
+# Largest LATAM Economy
+
+country:
+  name: "Brazil"
+  code: "BR"
+  region: "latam/south_america"
+  priority: "P1_critical"
+
+  metrics:
+    population: "215M"
+    gdp_usd: "$2.1T"
+    gdp_growth: "2.9%"
+    currency: "BRL"
+    stock_exchange: "B3 (Brasil Bolsa Balcao)"
+    regulator: "CVM"
+
+  economy:
+    description: "Largest LATAM economy, diversified industrial base"
+    key_sectors:
+      - "Financial Services"
+      - "Oil & Gas"
+      - "Mining & Materials"
+      - "Agriculture"
+      - "Manufacturing"
+      - "Technology"
+
+# Sectors Directory
+sectors:
+  conglomerates:
+    path: "conglomerates/"
+    companies: 15
+    priority: P1
+
+  financial_services:
+    path: "financial_services/"
+    companies: 20
+    priority: P1
+
+  energy:
+    path: "energy/"
+    companies: 12
+    priority: P1
+
+  telecommunications:
+    path: "telecommunications/"
+    companies: 8
+    priority: P1
+
+  mining_materials:
+    path: "mining_materials/"
+    companies: 10
+    priority: P2
+
+  technology:
+    path: "technology/"
+    companies: 15
+    priority: P1
+
+  consumer_retail:
+    path: "consumer_retail/"
+    companies: 12
+    priority: P2
+
+  healthcare:
+    path: "healthcare/"
+    companies: 8
+    priority: P2
+
+  transportation:
+    path: "transportation/"
+    companies: 10
+    priority: P2
+
+  agriculture:
+    path: "agriculture/"
+    companies: 10
+    priority: P2
+
+  industrials:
+    path: "industrials/"
+    companies: 12
+    priority: P3
+
+  real_estate:
+    path: "real_estate/"
+    companies: 8
+    priority: P3
+
+# Top Companies by Market Cap
+top_companies:
+  - name: "Petrobras"
+    ticker: "PETR4.SA"
+    sector: "energy"
+    market_cap_usd: "100B+"
+
+  - name: "Vale"
+    ticker: "VALE3.SA"
+    sector: "mining"
+    market_cap_usd: "70B+"
+
+  - name: "Itau Unibanco"
+    ticker: "ITUB4.SA"
+    sector: "financial"
+    market_cap_usd: "55B+"
+
+  - name: "Banco Bradesco"
+    ticker: "BBDC4.SA"
+    sector: "financial"
+    market_cap_usd: "35B+"
+
+  - name: "Ambev"
+    ticker: "ABEV3.SA"
+    sector: "consumer"
+    market_cap_usd: "45B+"
+
+  - name: "WEG"
+    ticker: "WEGE3.SA"
+    sector: "industrials"
+    market_cap_usd: "40B+"
+
+  - name: "B3"
+    ticker: "B3SA3.SA"
+    sector: "financial"
+    market_cap_usd: "15B+"
+
+  - name: "JBS"
+    ticker: "JBSS3.SA"
+    sector: "consumer"
+    market_cap_usd: "15B+"
+
+  - name: "Suzano"
+    ticker: "SUZB3.SA"
+    sector: "materials"
+    market_cap_usd: "15B+"
+
+  - name: "Nubank"
+    ticker: "NU"
+    sector: "fintech"
+    market_cap_usd: "45B+"
+
+# Key Business Groups (Grupos Economicos)
+business_groups:
+  itausa:
+    controlling_family: "Setubal/Villela"
+    main_holdings: ["Itau", "Dexco", "Alpargatas", "CCR", "NTS"]
+
+  votorantim:
+    controlling_family: "Ermirio de Moraes"
+    main_holdings: ["Votorantim Cimentos", "CBA", "Banco Votorantim", "Nexa"]
+
+  jf_investimentos:
+    controlling_family: "Batista"
+    main_holdings: ["JBS", "Pilgrim's Pride", "Eldorado"]
+
+  safra:
+    controlling_family: "Safra"
+    main_holdings: ["Banco Safra", "Safra Investments"]
+
+  btg_pactual:
+    controlling: "Partnership"
+    main_holdings: ["BTG Pactual", "Banco Pan"]
+
+  cosan:
+    controlling_family: "Ometto"
+    main_holdings: ["Raizen", "Compass", "Rumo", "Moove"]
+
+  ultra:
+    controlling_family: "Igel/Ultra"
+    main_holdings: ["Ipiranga", "Ultragaz", "Ultracargo", "Oxiteno"]

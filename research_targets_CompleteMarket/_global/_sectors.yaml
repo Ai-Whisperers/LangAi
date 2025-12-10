@@ -1,0 +1,236 @@
+# Global Sector Taxonomy
+# Standardized classification for all research targets
+
+sectors:
+  FIN:
+    name: "Financial Services"
+    description: "Banking, insurance, and financial technology"
+    subsectors:
+      FIN_BNK:
+        name: "Banking"
+        types: ["retail_banking", "corporate_banking", "investment_banking", "private_banking"]
+      FIN_INS:
+        name: "Insurance"
+        types: ["life", "property_casualty", "health", "reinsurance"]
+      FIN_ASM:
+        name: "Asset Management"
+        types: ["mutual_funds", "hedge_funds", "pension_funds", "sovereign_wealth"]
+      FIN_FTK:
+        name: "FinTech"
+        types: ["payments", "lending", "neobanks", "crypto", "insurtech", "regtech"]
+      FIN_EXC:
+        name: "Exchanges & Markets"
+        types: ["stock_exchanges", "commodities", "forex", "clearing"]
+
+  TEL:
+    name: "Telecommunications"
+    description: "Connectivity and communication services"
+    subsectors:
+      TEL_MOB:
+        name: "Mobile Operators"
+        types: ["mnos", "mvnos", "5g_networks"]
+      TEL_FIX:
+        name: "Fixed Line & Broadband"
+        types: ["fiber", "cable", "dsl", "satellite"]
+      TEL_INF:
+        name: "Telecom Infrastructure"
+        types: ["tower_companies", "fiber_networks", "data_centers"]
+      TEL_MED:
+        name: "Media & Content"
+        types: ["cable_tv", "streaming", "broadcasting"]
+
+  ENE:
+    name: "Energy"
+    description: "Power generation and distribution"
+    subsectors:
+      ENE_OIL:
+        name: "Oil & Gas"
+        types: ["exploration", "production", "refining", "distribution"]
+      ENE_REN:
+        name: "Renewable Energy"
+        types: ["solar", "wind", "hydro", "geothermal", "biomass"]
+      ENE_UTL:
+        name: "Utilities"
+        types: ["electric_utilities", "gas_utilities", "water_utilities", "multi_utilities"]
+      ENE_SRV:
+        name: "Energy Services"
+        types: ["oilfield_services", "equipment", "storage"]
+
+  IND:
+    name: "Industrials"
+    description: "Manufacturing and industrial services"
+    subsectors:
+      IND_MFG:
+        name: "Manufacturing"
+        types: ["automotive", "machinery", "equipment", "aerospace"]
+      IND_CON:
+        name: "Construction"
+        types: ["residential", "commercial", "infrastructure", "engineering"]
+      IND_DEF:
+        name: "Defense & Aerospace"
+        types: ["defense_contractors", "aerospace_manufacturing", "space"]
+      IND_EQP:
+        name: "Industrial Equipment"
+        types: ["heavy_equipment", "electrical_equipment", "automation"]
+
+  CON:
+    name: "Consumer"
+    description: "Consumer goods and retail"
+    subsectors:
+      CON_RET:
+        name: "Retail"
+        types: ["supermarkets", "department_stores", "ecommerce", "specialty"]
+      CON_FNB:
+        name: "Food & Beverage"
+        types: ["packaged_food", "beverages", "restaurants", "food_service"]
+      CON_LUX:
+        name: "Luxury & Apparel"
+        types: ["luxury_goods", "fashion", "footwear", "accessories"]
+      CON_HPC:
+        name: "Personal Care"
+        types: ["cosmetics", "household_products", "personal_hygiene"]
+
+  TEC:
+    name: "Technology"
+    description: "Software, hardware, and technology services"
+    subsectors:
+      TEC_SFT:
+        name: "Software"
+        types: ["enterprise", "saas", "gaming", "cybersecurity"]
+      TEC_HRD:
+        name: "Hardware"
+        types: ["semiconductors", "computers", "electronics", "iot_devices"]
+      TEC_CLD:
+        name: "Cloud & Infrastructure"
+        types: ["cloud_computing", "data_centers", "hosting"]
+      TEC_AIM:
+        name: "AI & Machine Learning"
+        types: ["ai_platforms", "ml_services", "automation", "robotics"]
+      TEC_SRV:
+        name: "IT Services"
+        types: ["consulting", "outsourcing", "system_integration"]
+
+  HEA:
+    name: "Healthcare"
+    description: "Healthcare products and services"
+    subsectors:
+      HEA_PHA:
+        name: "Pharmaceuticals"
+        types: ["big_pharma", "generics", "biotech", "specialty_pharma"]
+      HEA_DEV:
+        name: "Medical Devices"
+        types: ["diagnostics", "surgical", "monitoring", "implants"]
+      HEA_SRV:
+        name: "Healthcare Services"
+        types: ["hospitals", "clinics", "labs", "managed_care"]
+      HEA_DIS:
+        name: "Distribution"
+        types: ["pharma_distribution", "medical_supply"]
+
+  MAT:
+    name: "Materials"
+    description: "Raw materials and basic industries"
+    subsectors:
+      MAT_MIN:
+        name: "Mining"
+        types: ["precious_metals", "base_metals", "industrial_minerals", "coal"]
+      MAT_STL:
+        name: "Steel & Metals"
+        types: ["steel_production", "aluminum", "specialty_metals"]
+      MAT_CHM:
+        name: "Chemicals"
+        types: ["basic_chemicals", "specialty_chemicals", "agrochemicals"]
+      MAT_FOR:
+        name: "Forestry & Paper"
+        types: ["timber", "pulp_paper", "packaging"]
+      MAT_CEM:
+        name: "Cement & Building Materials"
+        types: ["cement", "aggregates", "glass", "ceramics"]
+
+  TRA:
+    name: "Transportation"
+    description: "Movement of people and goods"
+    subsectors:
+      TRA_AIR:
+        name: "Airlines"
+        types: ["full_service", "low_cost", "cargo", "regional"]
+      TRA_LOG:
+        name: "Logistics"
+        types: ["freight", "express", "warehousing", "3pl"]
+      TRA_MAR:
+        name: "Maritime"
+        types: ["shipping", "ports", "cruise"]
+      TRA_GND:
+        name: "Ground Transportation"
+        types: ["rail", "trucking", "buses", "ride_hailing"]
+
+  REA:
+    name: "Real Estate"
+    description: "Property development and management"
+    subsectors:
+      REA_COM:
+        name: "Commercial"
+        types: ["office", "retail", "industrial"]
+      REA_RES:
+        name: "Residential"
+        types: ["homebuilders", "apartments", "affordable_housing"]
+      REA_RIT:
+        name: "REITs"
+        types: ["equity_reits", "mortgage_reits", "hybrid"]
+      REA_HSP:
+        name: "Hospitality"
+        types: ["hotels", "resorts", "timeshare"]
+
+  AGR:
+    name: "Agriculture"
+    description: "Farming and food production"
+    subsectors:
+      AGR_CRP:
+        name: "Crop Production"
+        types: ["grains", "oilseeds", "fruits_vegetables", "specialty"]
+      AGR_LIV:
+        name: "Livestock"
+        types: ["cattle", "poultry", "swine", "dairy"]
+      AGR_TRD:
+        name: "Agri Trading"
+        types: ["commodities_trading", "processing", "storage"]
+      AGR_EQP:
+        name: "Agri Equipment"
+        types: ["farm_machinery", "irrigation", "precision_ag"]
+      AGR_FRT:
+        name: "Fertilizers & Seeds"
+        types: ["fertilizers", "seeds", "crop_protection"]
+
+  MED:
+    name: "Media & Entertainment"
+    description: "Content creation and distribution"
+    subsectors:
+      MED_BRD:
+        name: "Broadcasting"
+        types: ["tv_networks", "radio", "sports_media"]
+      MED_STR:
+        name: "Streaming & Digital"
+        types: ["video_streaming", "music_streaming", "podcasts"]
+      MED_PUB:
+        name: "Publishing"
+        types: ["newspapers", "magazines", "books", "digital_media"]
+      MED_ENT:
+        name: "Entertainment"
+        types: ["film_studios", "music_labels", "live_events"]
+      MED_GAM:
+        name: "Gaming"
+        types: ["video_games", "esports", "gambling"]
+
+  DIV:
+    name: "Diversified"
+    description: "Multi-sector conglomerates"
+    subsectors:
+      DIV_CON:
+        name: "Conglomerates"
+        types: ["industrial_conglomerates", "investment_holdings"]
+      DIV_FAM:
+        name: "Family Holdings"
+        types: ["family_offices", "family_conglomerates"]
+      DIV_SOV:
+        name: "Sovereign Holdings"
+        types: ["government_holdings", "sovereign_funds"]

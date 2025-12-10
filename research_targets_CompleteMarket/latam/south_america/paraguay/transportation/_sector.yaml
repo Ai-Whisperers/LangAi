@@ -1,0 +1,359 @@
+# Paraguay - Transportation & Logistics Sector
+# Critical Infrastructure for Landlocked Economy
+
+sector:
+  name: "Transportation & Logistics"
+  code: "TRA"
+  country: "paraguay"
+  priority: P2_high
+
+  description: |
+    Transportation is critical for landlocked Paraguay. The Paraguay-Parana
+    waterway is the country's main export route. Road freight dominates
+    domestic transport. Airport infrastructure is developing.
+
+  market_metrics:
+    logistics_cost_gdp: "18%"
+    waterway_export_share: "80%"
+    road_network_km: "70,000+"
+    paved_roads_km: "8,000"
+    airports: 12
+    river_ports: 25+
+
+  strategic_importance:
+    challenges:
+      - "Landlocked geography"
+      - "Infrastructure gaps"
+      - "Seasonal water levels"
+      - "Road quality issues"
+    opportunities:
+      - "Bioceanic corridor"
+      - "Port modernization"
+      - "Road upgrades"
+      - "Logistics tech"
+
+  ai_potential:
+    areas:
+      - "Route optimization"
+      - "Demand forecasting"
+      - "Fleet management"
+      - "Port operations"
+      - "Predictive maintenance"
+
+# =============================================================================
+# COMPANIES
+# =============================================================================
+
+companies:
+  # RIVER TRANSPORT & PORTS
+
+  naviera_paraguaya:
+    file: "naviera_paraguaya.yaml"
+    priority: P1
+    type: "river_transport"
+    description: "Major river shipping company"
+    operations:
+      - "Barge transport"
+      - "Grain shipping"
+      - "Container transport"
+
+  flota_mercante_del_estado:
+    file: "flota_mercante.yaml"
+    priority: P2
+    type: "state_shipping"
+    ownership: "State-owned"
+    status: "Limited operations"
+
+  paraguayan_river_barge:
+    file: "prb.yaml"
+    priority: P2
+    type: "river_transport"
+    description: "Grain barge operations"
+
+  # PORT OPERATORS
+
+  puerto_de_asuncion:
+    file: "puerto_asuncion.yaml"
+    priority: P1
+    type: "port"
+    ownership: "ANNP (State)"
+    description: "Main capital port"
+    facilities:
+      - "Container terminal"
+      - "General cargo"
+      - "Grain terminal"
+
+  terport:
+    file: "terport.yaml"
+    priority: P1
+    type: "port_operator"
+    description: "Private port terminal"
+    location: "Villeta"
+    services:
+      - "Container handling"
+      - "Grain exports"
+      - "General cargo"
+
+  puerto_caacupe_mi:
+    file: "caacupe_mi.yaml"
+    priority: P2
+    type: "port"
+    description: "Private grain port"
+
+  puerto_fenix:
+    file: "puerto_fenix.yaml"
+    priority: P2
+    type: "port"
+    description: "Grain terminal"
+
+  puerto_angostura:
+    file: "angostura.yaml"
+    priority: P2
+    type: "port"
+    description: "Cargo port"
+
+  cargill_puerto:
+    file: "cargill_puerto.yaml"
+    priority: P2
+    type: "port"
+    parent: "Cargill"
+    description: "Grain export terminal"
+
+  adm_puerto:
+    file: "adm_puerto.yaml"
+    priority: P2
+    type: "port"
+    parent: "ADM"
+    description: "Grain terminal"
+
+  # ROAD FREIGHT
+
+  transporte_barrail:
+    file: "barrail.yaml"
+    priority: P2
+    type: "road_freight"
+    description: "Major trucking company"
+    fleet: 200+
+    services:
+      - "General cargo"
+      - "Agricultural products"
+      - "International routes"
+
+  transporte_jasy:
+    file: "jasy.yaml"
+    priority: P2
+    type: "road_freight"
+    fleet: 150+
+
+  transamerica_paraguay:
+    file: "transamerica.yaml"
+    priority: P2
+    type: "road_freight"
+    description: "Regional transport"
+
+  rapipago_logistics:
+    file: "rapipago.yaml"
+    priority: P3
+    type: "logistics"
+    description: "Last-mile delivery"
+
+  # AVIATION
+
+  dinac:
+    file: "dinac.yaml"
+    priority: P1
+    type: "airport_authority"
+    full_name: "Direccion Nacional de Aeronautica Civil"
+    ownership: "State"
+    manages:
+      - "Silvio Pettirossi International (ASU)"
+      - "Guarani International (AGT)"
+      - "Regional airports"
+
+  aeropuerto_silvio_pettirossi:
+    file: "asu_airport.yaml"
+    priority: P1
+    type: "airport"
+    code: "ASU"
+    location: "Luque (Asuncion)"
+    passengers_annual: "1.5M+"
+    airlines: 10+
+    status: "Expansion planned"
+
+  aeropuerto_guarani:
+    file: "agt_airport.yaml"
+    priority: P2
+    type: "airport"
+    code: "AGT"
+    location: "Ciudad del Este"
+    description: "Second international airport"
+
+  # AIRLINES
+
+  latam_paraguay:
+    file: "latam_py.yaml"
+    priority: P1
+    type: "airline"
+    parent: "LATAM Airlines Group"
+    routes:
+      - "ASU-SCL (Santiago)"
+      - "ASU-GRU (Sao Paulo)"
+      - "ASU-LIM (Lima)"
+    market_share: "40%"
+
+  amaszonas_paraguay:
+    file: "amaszonas_py.yaml"
+    priority: P2
+    type: "airline"
+    parent: "Amaszonas (Bolivia)"
+    description: "Regional carrier"
+    routes:
+      - "Regional destinations"
+      - "Bolivian cities"
+
+  paranair:
+    file: "paranair.yaml"
+    priority: P2
+    type: "airline"
+    description: "Local airline"
+    routes: "Domestic, regional"
+    status: "Developing"
+
+  gol_paraguay:
+    file: "gol_py.yaml"
+    priority: P2
+    type: "airline"
+    parent: "GOL (Brazil)"
+    routes: "ASU-GRU, ASU-GIG"
+
+  avianca_paraguay:
+    file: "avianca_py.yaml"
+    priority: P2
+    type: "airline"
+    parent: "Avianca"
+    routes: "ASU-BOG"
+
+  copa_paraguay:
+    file: "copa_py.yaml"
+    priority: P2
+    type: "airline"
+    parent: "Copa Airlines"
+    routes: "ASU-PTY (Panama)"
+    description: "Hub connectivity"
+
+  # LOGISTICS & WAREHOUSING
+
+  ransa_paraguay:
+    file: "ransa_py.yaml"
+    priority: P2
+    type: "logistics"
+    parent: "Ransa (Peru/Grupo Romero)"
+    services:
+      - "Warehousing"
+      - "Distribution"
+      - "3PL"
+
+  dhl_paraguay:
+    file: "dhl_py.yaml"
+    priority: P2
+    type: "logistics"
+    parent: "DHL"
+    services:
+      - "Express"
+      - "Freight"
+      - "Supply chain"
+
+  fedex_paraguay:
+    file: "fedex_py.yaml"
+    priority: P3
+    type: "logistics"
+    parent: "FedEx"
+
+  ups_paraguay:
+    file: "ups_py.yaml"
+    priority: P3
+    type: "logistics"
+    parent: "UPS"
+
+  # PUBLIC TRANSPORT
+
+  cetrapam:
+    file: "cetrapam.yaml"
+    priority: P3
+    type: "public_transport"
+    description: "Bus transport association"
+    coverage: "Asuncion metropolitan"
+    status: "Modernization needed"
+
+  # INFRASTRUCTURE DEVELOPMENT
+
+  mopc:
+    file: "mopc.yaml"
+    priority: P2
+    type: "government"
+    full_name: "Ministerio de Obras Publicas"
+    projects:
+      - "Road improvements"
+      - "Bridge construction"
+      - "Port development"
+
+  ruta_bioceanica:
+    file: "bioceanica.yaml"
+    priority: P2
+    type: "infrastructure_project"
+    description: "Bioceanic corridor project"
+    route: "Atlantic-Pacific connection"
+    status: "Under development"
+
+# =============================================================================
+# MARKET STRUCTURE
+# =============================================================================
+
+market_structure:
+  river_transport:
+    importance: "Critical for exports"
+    route: "Paraguay-Parana to Rio de la Plata"
+    challenges: ["Water levels", "Brazilian dependence"]
+
+  road_freight:
+    network: "70,000 km"
+    quality: "Variable, improving"
+    key_routes:
+      - "Asuncion-Ciudad del Este"
+      - "Asuncion-Encarnacion"
+      - "Chaco route"
+
+  aviation:
+    hub: "Asuncion (ASU)"
+    carriers: "LATAM dominates"
+    opportunity: "Low-cost carrier entry"
+
+# =============================================================================
+# RESEARCH FOCUS
+# =============================================================================
+
+research_focus:
+  themes:
+    - "Waterway infrastructure"
+    - "Port modernization"
+    - "Road network expansion"
+    - "Airport capacity"
+    - "Logistics technology"
+    - "Bioceanic corridor"
+
+  key_metrics:
+    - "Freight volumes"
+    - "Port throughput"
+    - "Road condition index"
+    - "Air passenger traffic"
+    - "Logistics costs"
+
+ai_opportunities:
+  operations:
+    - "Route optimization"
+    - "Fleet management"
+    - "Predictive maintenance"
+  planning:
+    - "Demand forecasting"
+    - "Capacity planning"
+    - "Network optimization"

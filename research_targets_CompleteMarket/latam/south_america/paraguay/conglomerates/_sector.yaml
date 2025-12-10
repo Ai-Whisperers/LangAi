@@ -1,0 +1,703 @@
+# Paraguay - Conglomerates & Business Groups Sector
+# Major Economic Powers Controlling Multiple Industries
+
+sector:
+  name: "Conglomerates & Business Groups"
+  code: "CON"
+  country: "paraguay"
+  priority: P1_critical
+
+  description: |
+    Paraguay's economy is significantly influenced by major business groups
+    (grupos economicos) that control diverse holdings across media, retail,
+    agriculture, finance, and other sectors. Understanding these groups is
+    essential for market entry and partnership strategies.
+
+  market_metrics:
+    major_groups: 12+
+    combined_revenue_usd: "$10B+"
+    economic_influence: "Control 40%+ of formal economy"
+    employment: "150,000+ direct"
+    key_sectors_controlled:
+      - "Media"
+      - "Retail"
+      - "Agriculture"
+      - "Finance"
+      - "Real Estate"
+      - "Automotive"
+
+  strategic_importance:
+    characteristics:
+      - "Family-controlled structures"
+      - "Cross-sector diversification"
+      - "Political influence"
+      - "Long-term horizons"
+    implications:
+      - "Market entry requires understanding group dynamics"
+      - "Partnership opportunities with established players"
+      - "Competition may face entrenched interests"
+      - "AI adoption depends on group leadership vision"
+
+  ai_potential:
+    areas:
+      - "Group-wide digital transformation"
+      - "Shared service optimization"
+      - "Cross-business analytics"
+      - "Customer data integration"
+
+# =============================================================================
+# MAJOR BUSINESS GROUPS
+# =============================================================================
+
+groups:
+  # TIER 1 - LARGEST CONGLOMERATES
+
+  grupo_vierci:
+    file: "grupo_vierci.yaml"
+    priority: P1
+    controlling_family: "Vierci"
+    patriarch: "Antonio J. Vierci"
+    estimated_revenue_usd: "$1.5B+"
+    employees: 10000+
+    description: "Largest local conglomerate"
+    founded: "1960s"
+
+    holdings:
+      media:
+        companies:
+          - name: "ABC Color"
+            type: "newspaper"
+            description: "Leading newspaper"
+            market_position: "#1 daily"
+
+          - name: "ABC TV (Canal 5)"
+            type: "television"
+            description: "Major TV network"
+            market_position: "Top 2"
+
+          - name: "ABC Digital"
+            type: "digital_media"
+            description: "News portal"
+            traffic: "5M+ monthly"
+
+          - name: "ABC Radio Network"
+            type: "radio"
+            stations: 5+
+
+      retail_real_estate:
+        companies:
+          - name: "Shopping del Sol"
+            type: "shopping_mall"
+            description: "Premier mall in Asuncion"
+            sqm: 80000+
+
+          - name: "Mariscal Lopez Shopping"
+            type: "shopping_mall"
+            description: "Major shopping center"
+            sqm: 60000+
+
+          - name: "Real Estate Development"
+            type: "development"
+            projects: "Multiple residential/commercial"
+
+      automotive:
+        companies:
+          - name: "Auto Dealerships"
+            type: "automotive"
+            brands: ["Various"]
+
+      agriculture:
+        companies:
+          - name: "Agribusiness Holdings"
+            type: "agriculture"
+            operations: "Farming, cattle"
+
+      other:
+        companies:
+          - name: "Various Services"
+            type: "services"
+            sectors: ["Import/export", "Distribution"]
+
+    research_priority:
+      level: P1
+      focus:
+        - "Digital transformation strategy"
+        - "Media AI adoption"
+        - "Retail technology"
+        - "Customer analytics across businesses"
+
+  grupo_cartes:
+    file: "grupo_cartes.yaml"
+    priority: P1
+    controlling_family: "Cartes"
+    key_figure: "Horacio Cartes"
+    description: "Former president's business empire"
+    controversy: "US sanctions on family members"
+    estimated_revenue_usd: "$1B+"
+    employees: 8000+
+
+    holdings:
+      tobacco:
+        companies:
+          - name: "Tabacalera del Este (Tabesa)"
+            type: "tobacco"
+            description: "Major cigarette manufacturer"
+            market_position: "Dominant local"
+            employees: 2000+
+            controversy: "Sanctions, smuggling allegations"
+
+      agriculture:
+        companies:
+          - name: "Farming Operations"
+            type: "agriculture"
+            description: "Large-scale farming"
+            products: ["Soybeans", "Cattle"]
+            hectares: "100,000+"
+
+      media:
+        companies:
+          - name: "Ultima Hora"
+            type: "newspaper"
+            description: "Major daily newspaper"
+            market_position: "#2 daily"
+
+          - name: "Telefuturo"
+            type: "television"
+            description: "TV network (Canal 4)"
+            market_position: "Top 3"
+
+      finance:
+        companies:
+          - name: "Financial Services"
+            type: "finance"
+            description: "Banking interests"
+
+      retail:
+        companies:
+          - name: "Farmacenter"
+            type: "pharmacy_chain"
+            stores: 80+
+            market_position: "Leading chain"
+
+      sports:
+        companies:
+          - name: "Club Libertad"
+            type: "football_club"
+            description: "Major football team"
+
+    research_priority:
+      level: P1
+      notes: "Research with caution due to sanctions environment"
+      focus:
+        - "Business diversification"
+        - "Agricultural operations"
+        - "Media holdings"
+
+  grupo_zuccolillo:
+    file: "grupo_zuccolillo.yaml"
+    priority: P2
+    controlling_family: "Zuccolillo"
+    description: "Historic media and business family"
+    history: "Founded ABC Color (sold)"
+
+    holdings:
+      services:
+        companies:
+          - name: "Business Services"
+            type: "services"
+            description: "Various business services"
+
+      real_estate:
+        companies:
+          - name: "Property Holdings"
+            type: "real_estate"
+            description: "Commercial properties"
+
+      investments:
+        companies:
+          - name: "Investment Portfolio"
+            type: "investments"
+            sectors: ["Various"]
+
+    research_priority:
+      level: P2
+      focus:
+        - "Investment portfolio"
+        - "Business services"
+
+  # TIER 2 - MAJOR GROUPS
+
+  grupo_vazquez:
+    file: "grupo_vazquez.yaml"
+    priority: P2
+    controlling_family: "Vazquez"
+    estimated_revenue_usd: "$400M+"
+
+    holdings:
+      energy:
+        companies:
+          - name: "Fuel Distribution"
+            type: "fuel"
+            description: "Gas stations network"
+            stations: 50+
+
+      retail:
+        companies:
+          - name: "Convenience Stores"
+            type: "retail"
+            description: "C-store network"
+
+      real_estate:
+        companies:
+          - name: "Commercial Properties"
+            type: "real_estate"
+
+    research_priority:
+      level: P2
+      focus:
+        - "Energy distribution"
+        - "Retail operations"
+
+  grupo_centurion:
+    file: "grupo_centurion.yaml"
+    priority: P2
+    controlling_family: "Centurion"
+    estimated_revenue_usd: "$300M+"
+
+    holdings:
+      automotive:
+        companies:
+          - name: "Automotive Dealerships"
+            type: "automotive"
+            brands: ["Toyota", "Nissan", "Others"]
+            market_position: "Major dealer network"
+
+      services:
+        companies:
+          - name: "Rental & Leasing"
+            type: "services"
+
+    research_priority:
+      level: P2
+      focus:
+        - "Automotive market"
+        - "Fleet services"
+
+  grupo_rio:
+    file: "grupo_rio.yaml"
+    priority: P2
+    description: "Agribusiness and logistics focused"
+    estimated_revenue_usd: "$500M+"
+
+    holdings:
+      agribusiness:
+        companies:
+          - name: "Grain Trading"
+            type: "agribusiness"
+            products: ["Soybeans", "Corn", "Wheat"]
+
+          - name: "Agricultural Production"
+            type: "farming"
+            hectares: "50,000+"
+
+      logistics:
+        companies:
+          - name: "River Transport"
+            type: "logistics"
+            description: "Barge operations"
+
+          - name: "Storage & Silos"
+            type: "logistics"
+            capacity_tons: "100,000+"
+
+    research_priority:
+      level: P2
+      focus:
+        - "Agricultural AI applications"
+        - "Logistics optimization"
+
+  grupo_rieder:
+    file: "grupo_rieder.yaml"
+    priority: P1
+    controlling_family: "Rieder"
+    estimated_revenue_usd: "$600M+"
+    employees: 3000+
+    description: "Construction and materials conglomerate"
+
+    holdings:
+      construction:
+        companies:
+          - name: "Rieder & Cia"
+            type: "construction"
+            description: "Major civil engineering"
+            projects: ["Highways", "Infrastructure"]
+
+      building_materials:
+        companies:
+          - name: "Cement Operations"
+            type: "materials"
+
+          - name: "Steel Distribution"
+            type: "materials"
+
+      real_estate:
+        companies:
+          - name: "Real Estate Development"
+            type: "development"
+
+    research_priority:
+      level: P1
+      focus:
+        - "Construction technology"
+        - "Project management AI"
+        - "Materials optimization"
+
+  grupo_parana:
+    file: "grupo_parana.yaml"
+    priority: P2
+    description: "Banking and financial services"
+
+    holdings:
+      banking:
+        companies:
+          - name: "Banco Parana"
+            type: "banking"
+            description: "Regional bank"
+            (status: "Historical, check current")
+
+      finance:
+        companies:
+          - name: "Financial Services"
+            type: "finance"
+
+    research_priority:
+      level: P2
+      focus:
+        - "Financial services"
+        - "Banking technology"
+
+  grupo_samaniego:
+    file: "grupo_samaniego.yaml"
+    priority: P2
+    controlling_family: "Samaniego"
+
+    holdings:
+      retail:
+        companies:
+          - name: "Retail Operations"
+            type: "retail"
+
+      agriculture:
+        companies:
+          - name: "Agribusiness"
+            type: "agriculture"
+
+    research_priority:
+      level: P2
+      focus:
+        - "Retail modernization"
+
+  # TIER 3 - EMERGING GROUPS
+
+  grupo_chortitzer:
+    file: "grupo_chortitzer.yaml"
+    priority: P2
+    type: "cooperative_group"
+    description: "Mennonite cooperative conglomerate"
+    community: "Mennonite Colony"
+    estimated_revenue_usd: "$700M+"
+    employees: 5000+
+
+    holdings:
+      dairy:
+        companies:
+          - name: "Lacteos Trebol"
+            type: "dairy"
+            description: "Leading dairy brand"
+            market_share: "50%+"
+
+      agriculture:
+        companies:
+          - name: "Grain Trading"
+            type: "agribusiness"
+            products: ["Soybeans", "Corn", "Sunflower"]
+
+          - name: "Cattle Operations"
+            type: "livestock"
+            head: "100,000+"
+
+      retail:
+        companies:
+          - name: "Cooperative Stores"
+            type: "retail"
+            description: "Rural retail network"
+
+      finance:
+        companies:
+          - name: "Cooperativa Chortitzer"
+            type: "cooperative_finance"
+            members: "15,000+"
+
+      industry:
+        companies:
+          - name: "Processing Plants"
+            type: "food_processing"
+            products: ["Flour", "Oil", "Feed"]
+
+    research_priority:
+      level: P2
+      focus:
+        - "Agricultural technology"
+        - "Dairy AI applications"
+        - "Supply chain optimization"
+      notes: "Strong adoption of technology"
+
+  grupo_neuland:
+    file: "grupo_neuland.yaml"
+    priority: P2
+    type: "cooperative_group"
+    description: "Mennonite meat cooperative"
+    estimated_revenue_usd: "$400M+"
+
+    holdings:
+      meat:
+        companies:
+          - name: "Frigorifico Neuland"
+            type: "meat_processing"
+            description: "Major meat processor"
+            exports: ["Chile", "Russia", "Israel"]
+
+      agriculture:
+        companies:
+          - name: "Cattle Operations"
+            type: "livestock"
+            head: "80,000+"
+
+    research_priority:
+      level: P2
+      focus:
+        - "Meat processing AI"
+        - "Quality control"
+        - "Traceability systems"
+
+  grupo_fernheim:
+    file: "grupo_fernheim.yaml"
+    priority: P2
+    type: "cooperative_group"
+    description: "Mennonite dairy and agriculture"
+    estimated_revenue_usd: "$300M+"
+
+    holdings:
+      dairy:
+        companies:
+          - name: "Lactolanda"
+            type: "dairy"
+            products: ["Milk", "Cheese", "Yogurt"]
+
+      agriculture:
+        companies:
+          - name: "Farming Operations"
+            type: "agriculture"
+
+    research_priority:
+      level: P2
+      focus:
+        - "Dairy processing"
+        - "Agricultural AI"
+
+# =============================================================================
+# MULTINATIONAL GROUPS WITH MAJOR PARAGUAY PRESENCE
+# =============================================================================
+
+multinationals:
+  millicom_tigo:
+    file: "millicom_py.yaml"
+    priority: P1
+    type: "multinational"
+    parent: "Millicom International"
+    headquarters: "Luxembourg"
+    local_entity: "Tigo Paraguay"
+    sector: "Telecommunications"
+    market_position: "#1 mobile operator"
+    investment_usd: "$1B+"
+    employees: 3000+
+
+    business_lines:
+      - "Mobile services"
+      - "Fixed broadband"
+      - "Pay TV"
+      - "B2B services"
+      - "Mobile money (Tigo Money)"
+
+    research_priority:
+      level: P1
+      focus:
+        - "AI/ML adoption"
+        - "Customer analytics"
+        - "Network optimization"
+        - "Digital services"
+
+  telecom_personal:
+    file: "telecom_personal_py.yaml"
+    priority: P1
+    type: "multinational"
+    parent: "Telecom Argentina"
+    local_entity: "Personal Paraguay"
+    sector: "Telecommunications"
+    market_position: "#2 mobile operator"
+
+    business_lines:
+      - "Mobile services"
+      - "Fixed services"
+      - "TV"
+
+    research_priority:
+      level: P1
+      focus:
+        - "Digital transformation"
+        - "AI adoption"
+
+  america_movil_claro:
+    file: "claro_py.yaml"
+    priority: P1
+    type: "multinational"
+    parent: "America Movil (Mexico)"
+    local_entity: "Claro Paraguay"
+    sector: "Telecommunications"
+    market_position: "#3 mobile operator"
+
+    research_priority:
+      level: P1
+      focus:
+        - "Regional AI strategy"
+        - "Customer service AI"
+
+  cargill_paraguay:
+    file: "cargill_py.yaml"
+    priority: P1
+    type: "multinational"
+    parent: "Cargill (USA)"
+    sector: "Agribusiness"
+    description: "Major grain trader and processor"
+
+    operations:
+      - "Grain trading"
+      - "Oilseed processing"
+      - "Port facilities"
+      - "Feed production"
+
+    research_priority:
+      level: P1
+      focus:
+        - "Agricultural AI"
+        - "Supply chain"
+        - "Trading analytics"
+
+  adm_paraguay:
+    file: "adm_py.yaml"
+    priority: P1
+    type: "multinational"
+    parent: "ADM (USA)"
+    sector: "Agribusiness"
+
+    operations:
+      - "Grain trading"
+      - "Processing"
+      - "Logistics"
+
+    research_priority:
+      level: P2
+      focus:
+        - "Agritech adoption"
+
+  bunge_paraguay:
+    file: "bunge_py.yaml"
+    priority: P1
+    type: "multinational"
+    parent: "Bunge (Netherlands/USA)"
+    sector: "Agribusiness"
+
+    operations:
+      - "Grain trading"
+      - "Oil processing"
+      - "Port operations"
+
+    research_priority:
+      level: P2
+
+  louis_dreyfus_py:
+    file: "ldc_py.yaml"
+    priority: P2
+    type: "multinational"
+    parent: "Louis Dreyfus Company"
+    sector: "Agribusiness"
+
+    research_priority:
+      level: P2
+
+  abinbev_py:
+    file: "abinbev_py.yaml"
+    priority: P2
+    type: "multinational"
+    parent: "AB InBev"
+    local_entity: "Cerveceria Paraguaya"
+    sector: "Beverages"
+    market_share: "90%+ beer market"
+
+    research_priority:
+      level: P2
+      focus:
+        - "Consumer analytics"
+        - "Distribution optimization"
+
+# =============================================================================
+# MARKET STRUCTURE
+# =============================================================================
+
+market_structure:
+  ownership_patterns:
+    family_controlled: "80%+ of major groups"
+    institutional: "Limited"
+    foreign: "Growing in specific sectors"
+
+  power_concentration:
+    top_5_groups: "Control ~30% of formal economy"
+    top_10_groups: "Control ~45% of formal economy"
+
+  sector_dominance:
+    media: "Vierci, Cartes"
+    retail: "Vierci, Multinational chains"
+    agriculture: "Multinationals + Mennonite cooperatives"
+    telecommunications: "Multinationals (Millicom, Telecom, AMX)"
+    construction: "Rieder, local groups"
+
+# =============================================================================
+# RESEARCH FOCUS
+# =============================================================================
+
+research_focus:
+  themes:
+    - "Group digital transformation strategies"
+    - "Cross-sector AI adoption"
+    - "Family business modernization"
+    - "Multinational vs local competition"
+    - "Cooperative model success"
+
+  key_metrics:
+    - "Group revenue"
+    - "Sector market shares"
+    - "Digital investment"
+    - "AI maturity"
+    - "Organizational structure"
+
+ai_opportunities:
+  group_level:
+    - "Enterprise-wide AI strategy"
+    - "Shared data platforms"
+    - "Cross-business analytics"
+    - "Centralized AI capabilities"
+  sector_specific:
+    - "Media: Content AI, ad targeting"
+    - "Retail: Customer analytics, inventory"
+    - "Agriculture: Precision farming, trading"
+    - "Finance: Credit scoring, fraud"

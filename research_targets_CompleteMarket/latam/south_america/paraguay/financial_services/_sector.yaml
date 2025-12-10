@@ -1,0 +1,136 @@
+# Paraguay - Financial Services Sector
+# Banking, Insurance, FinTech
+
+sector:
+  name: "Financial Services"
+  code: "FIN"
+  country: "paraguay"
+  priority: P2_high
+
+  description: |
+    Paraguay's financial sector with growing digital banking and
+    significant FinTech opportunity for financial inclusion.
+
+  market_metrics:
+    banking_assets_usd: "$25B+"
+    bank_penetration: "55%"
+    unbanked_population: "45%"
+    mobile_money_users: "2M+"
+
+  ai_potential:
+    areas:
+      - "Credit scoring for unbanked"
+      - "Fraud detection"
+      - "KYC automation"
+      - "Customer service chatbots"
+      - "Risk assessment"
+
+companies:
+  # Major Banks
+  banco_itau_paraguay:
+    file: "itau_py.yaml"
+    priority: P2
+    type: "foreign_bank"
+    parent: "Itau Unibanco (Brazil)"
+    market_position: "#1 private bank"
+
+  banco_continental:
+    file: "continental.yaml"
+    priority: P2
+    type: "local_bank"
+    ownership: "Grupo Continental"
+
+  banco_regional:
+    file: "regional.yaml"
+    priority: P2
+    type: "local_bank"
+
+  banco_gnb_paraguay:
+    file: "gnb_py.yaml"
+    priority: P2
+    type: "foreign_bank"
+    parent: "GNB Sudameris (Colombia)"
+
+  sudameris:
+    file: "sudameris.yaml"
+    priority: P2
+    type: "local_bank"
+
+  banco_familiar:
+    file: "familiar.yaml"
+    priority: P3
+    type: "microfinance_bank"
+
+  banco_nacional_de_fomento:
+    file: "bnf.yaml"
+    priority: P3
+    type: "state_bank"
+
+  # FinTech & Digital
+  tigo_money:
+    file: "tigo_money.yaml"
+    priority: P1
+    type: "mobile_money"
+    parent: "Tigo"
+    users: "1M+"
+    ai_opportunities:
+      - "Transaction fraud detection"
+      - "Credit scoring"
+      - "Personalized offers"
+
+  personal_pay:
+    file: "personal_pay.yaml"
+    priority: P2
+    type: "mobile_money"
+    parent: "Personal"
+
+  bancard:
+    file: "bancard.yaml"
+    priority: P2
+    type: "payment_processor"
+    notes: "National card network"
+
+  # Emerging FinTech
+  mango_app:
+    file: "mango.yaml"
+    priority: P2
+    type: "neobank"
+    status: "Growing"
+
+  muv:
+    file: "muv.yaml"
+    priority: P3
+    type: "ride_hailing_fintech"
+
+  eclub:
+    file: "eclub.yaml"
+    priority: P3
+    type: "loyalty_fintech"
+
+  # Insurance
+  sancor_seguros_py:
+    file: "sancor_py.yaml"
+    priority: P3
+    type: "insurance"
+    parent: "Sancor (Argentina)"
+
+  mapfre_paraguay:
+    file: "mapfre_py.yaml"
+    priority: P3
+    type: "insurance"
+    parent: "Mapfre (Spain)"
+
+research_focus:
+  themes:
+    - "Financial inclusion"
+    - "Mobile money growth"
+    - "Digital banking adoption"
+    - "Credit expansion"
+    - "FinTech regulation"
+
+  key_metrics:
+    - "Account penetration"
+    - "Mobile money adoption"
+    - "Loan growth"
+    - "NPL ratio"
+    - "Digital transaction volume"

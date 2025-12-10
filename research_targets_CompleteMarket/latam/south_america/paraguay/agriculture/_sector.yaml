@@ -1,0 +1,528 @@
+# Paraguay - Agriculture & Agribusiness Sector
+# STRATEGIC SECTOR - Economic Backbone (25% GDP)
+
+sector:
+  name: "Agriculture & Agribusiness"
+  code: "AGR"
+  country: "paraguay"
+  priority: P1_critical
+
+  description: |
+    Agriculture is Paraguay's economic backbone, contributing ~25% to GDP and
+    employing 25%+ of the workforce. Paraguay is the world's #4 soybean exporter,
+    a major beef exporter, and has significant grain production. The sector has
+    enormous potential for AI/precision agriculture adoption.
+
+  market_metrics:
+    agriculture_gdp_share: "25%"
+    agricultural_land_ha: "24M"
+    arable_land_ha: "6M"
+    employment_share: "25%"
+    export_share: "70%"
+
+    # Key Productions
+    soybean:
+      production_mt: "10.5M"
+      area_ha: "3.6M"
+      world_rank: "#4 exporter"
+      export_value_usd: "$3B+"
+
+    beef:
+      cattle_herd: "14M head"
+      beef_exports_mt: "400,000"
+      export_value_usd: "$2B+"
+      export_markets: ["Chile", "Russia", "Taiwan", "Brazil"]
+
+    corn:
+      production_mt: "5M"
+      area_ha: "1M"
+      export_value_usd: "$800M"
+
+    wheat:
+      production_mt: "1.2M"
+      area_ha: "500,000"
+
+    other_crops:
+      - "Sesame seeds (#3 world exporter)"
+      - "Sugarcane"
+      - "Cotton"
+      - "Cassava"
+      - "Rice"
+
+  ai_potential:
+    high_priority:
+      - "Precision agriculture (variable rate application)"
+      - "Yield prediction models"
+      - "Weather risk analytics"
+      - "Supply chain optimization"
+      - "Satellite/drone crop monitoring"
+    medium_priority:
+      - "Soil analysis & mapping"
+      - "Livestock management (traceability)"
+      - "Disease/pest detection"
+      - "Market price forecasting"
+      - "Quality grading automation"
+
+# =============================================================================
+# COMPANIES BY SUBSECTOR
+# =============================================================================
+
+companies:
+  # =========================================================================
+  # GLOBAL COMMODITY TRADERS (ABCD Companies)
+  # =========================================================================
+
+  cargill_paraguay:
+    file: "cargill_py.yaml"
+    priority: P1
+    type: "commodity_trader"
+    parent: "Cargill Inc (USA)"
+    description: "Largest agricultural company in Paraguay"
+    operations:
+      - "Soybean crushing"
+      - "Grain trading & export"
+      - "Oilseed processing"
+      - "Port terminals"
+      - "Agricultural inputs"
+    facilities:
+      - "Crushing plant (Minga Guazu)"
+      - "Export terminal (Puerto)"
+      - "Storage silos (multiple)"
+    estimated_market_share: "25%"
+    ai_opportunities:
+      - "Supply chain optimization"
+      - "Demand forecasting"
+      - "Quality prediction"
+      - "Logistics optimization"
+
+  adm_paraguay:
+    file: "adm_py.yaml"
+    priority: P1
+    type: "commodity_trader"
+    parent: "Archer Daniels Midland (USA)"
+    description: "Major grain and oilseed operations"
+    operations:
+      - "Grain handling & storage"
+      - "Soybean processing"
+      - "Export operations"
+    estimated_market_share: "18%"
+
+  bunge_paraguay:
+    file: "bunge_py.yaml"
+    priority: P1
+    type: "commodity_trader"
+    parent: "Bunge Ltd (Netherlands/USA)"
+    description: "Integrated agribusiness operations"
+    operations:
+      - "Oilseed processing"
+      - "Grain trading"
+      - "Fertilizer distribution"
+      - "Port facilities"
+    estimated_market_share: "15%"
+
+  louis_dreyfus_paraguay:
+    file: "louis_dreyfus_py.yaml"
+    priority: P2
+    type: "commodity_trader"
+    parent: "Louis Dreyfus Company (France)"
+    operations:
+      - "Grain origination"
+      - "Export operations"
+    estimated_market_share: "10%"
+
+  cofco_paraguay:
+    file: "cofco_py.yaml"
+    priority: P2
+    type: "commodity_trader"
+    parent: "COFCO (China)"
+    description: "Growing Chinese presence"
+    status: "Expanding operations"
+
+  viterra_paraguay:
+    file: "viterra_py.yaml"
+    priority: P3
+    type: "commodity_trader"
+    parent: "Viterra (Glencore)"
+
+  # =========================================================================
+  # MENNONITE COOPERATIVES (Major Agricultural Power)
+  # =========================================================================
+
+  cooperativa_chortitzer:
+    file: "chortitzer.yaml"
+    priority: P1
+    type: "agricultural_cooperative"
+    community: "Mennonite (Loma Plata)"
+    description: "Largest Mennonite cooperative"
+    founded: 1962
+    members: "3,500+"
+    operations:
+      dairy:
+        - "Lactolanda (dairy brand)"
+        - "Milk production: 250M+ liters/year"
+        - "Cheese, yogurt, butter"
+      meat:
+        - "Beef processing"
+        - "Export operations"
+      grains:
+        - "Sorghum, corn, peanuts"
+      retail:
+        - "Supermarkets"
+        - "Hardware stores"
+    revenue_usd: "$800M+"
+    ai_opportunities:
+      - "Dairy production optimization"
+      - "Livestock tracking"
+      - "Supply chain management"
+
+  cooperativa_neuland:
+    file: "neuland.yaml"
+    priority: P1
+    type: "agricultural_cooperative"
+    community: "Mennonite (Neuland)"
+    description: "Major Chaco cooperative"
+    founded: 1947
+    members: "2,000+"
+    operations:
+      - "Cattle ranching"
+      - "Dairy production"
+      - "Grain farming"
+      - "Retail operations"
+    revenue_usd: "$400M+"
+
+  cooperativa_fernheim:
+    file: "fernheim.yaml"
+    priority: P1
+    type: "agricultural_cooperative"
+    community: "Mennonite (Filadelfia)"
+    description: "Pioneer Chaco cooperative"
+    founded: 1930
+    members: "2,500+"
+    operations:
+      dairy:
+        - "Co-op dairy (Trebol brand)"
+      meat:
+        - "Beef production"
+      retail:
+        - "Supermarket chain"
+    revenue_usd: "$500M+"
+
+  # =========================================================================
+  # OTHER AGRICULTURAL COOPERATIVES
+  # =========================================================================
+
+  cooperativa_colonias_unidas:
+    file: "colonias_unidas.yaml"
+    priority: P1
+    type: "agricultural_cooperative"
+    location: "Itapua (German-Brazilian colony)"
+    description: "Major eastern cooperative"
+    members: "5,500+"
+    operations:
+      - "Soybean production"
+      - "Dairy (La Holanda brand)"
+      - "Grain storage"
+      - "Agricultural inputs"
+      - "Supermarkets"
+    revenue_usd: "$600M+"
+
+  cooperativa_yguazu:
+    file: "yguazu.yaml"
+    priority: P2
+    type: "agricultural_cooperative"
+    location: "Alto Parana (Japanese colony)"
+    members: "1,500+"
+    operations:
+      - "Soybean farming"
+      - "Wheat"
+      - "Agricultural services"
+
+  cooperativa_la_paz:
+    file: "la_paz.yaml"
+    priority: P2
+    type: "agricultural_cooperative"
+    location: "Itapua"
+    operations:
+      - "Grains"
+      - "Dairy"
+
+  cooperativa_pindo:
+    file: "pindo.yaml"
+    priority: P3
+    type: "agricultural_cooperative"
+    location: "Alto Parana"
+
+  cooperativa_raul_pena:
+    file: "raul_pena.yaml"
+    priority: P3
+    type: "agricultural_cooperative"
+    operations:
+      - "Grains"
+      - "Agricultural services"
+
+  # =========================================================================
+  # MEAT PROCESSING / FRIGORIFICOS
+  # =========================================================================
+
+  frigorifico_concepcion:
+    file: "frigorifico_concepcion.yaml"
+    priority: P1
+    type: "meat_processor"
+    description: "Paraguay's largest beef exporter"
+    ownership: "Local (Grupo Rio)"
+    capacity: "1,200 head/day"
+    certifications: ["EU", "Chile", "Russia", "China"]
+    export_markets: ["Chile", "Russia", "Taiwan", "Israel"]
+
+  minerva_foods_paraguay:
+    file: "minerva_py.yaml"
+    priority: P1
+    type: "meat_processor"
+    parent: "Minerva Foods (Brazil)"
+    description: "Brazilian multinational"
+    facilities:
+      - "Frigomerc"
+      - "Frigorifico San Antonio"
+    export_focus: "Premium markets"
+
+  jbs_paraguay:
+    file: "jbs_py.yaml"
+    priority: P1
+    type: "meat_processor"
+    parent: "JBS SA (Brazil)"
+    facilities:
+      - "San Petri"
+    capacity: "800+ head/day"
+
+  frigorifico_guarani:
+    file: "guarani.yaml"
+    priority: P2
+    type: "meat_processor"
+    ownership: "Local"
+
+  frigorifico_neuland:
+    file: "neuland_meat.yaml"
+    priority: P2
+    type: "meat_processor"
+    parent: "Cooperativa Neuland"
+
+  frigomerc:
+    file: "frigomerc.yaml"
+    priority: P2
+    type: "meat_processor"
+    description: "Export-focused"
+
+  # =========================================================================
+  # AGRICULTURAL INPUTS & SERVICES
+  # =========================================================================
+
+  agrofertil:
+    file: "agrofertil.yaml"
+    priority: P1
+    type: "agri_inputs"
+    description: "Largest agricultural inputs company"
+    products:
+      - "Seeds"
+      - "Fertilizers"
+      - "Agrochemicals"
+      - "Agricultural machinery"
+    coverage: "National"
+
+  dekalpar:
+    file: "dekalpar.yaml"
+    priority: P2
+    type: "agri_inputs"
+    description: "Major inputs distributor"
+    products:
+      - "Seeds (Monsanto/Bayer distributor)"
+      - "Agrochemicals"
+      - "Equipment"
+
+  agrotec:
+    file: "agrotec.yaml"
+    priority: P2
+    type: "agri_inputs"
+    products:
+      - "Agricultural machinery"
+      - "Irrigation systems"
+      - "Technology solutions"
+
+  tecnomyl:
+    file: "tecnomyl.yaml"
+    priority: P2
+    type: "agri_inputs"
+    description: "Agricultural technology"
+    products:
+      - "Agrochemicals"
+      - "Seeds"
+
+  diagro:
+    file: "diagro.yaml"
+    priority: P2
+    type: "agri_inputs"
+    description: "Inputs distributor"
+
+  syngenta_paraguay:
+    file: "syngenta_py.yaml"
+    priority: P2
+    type: "multinational"
+    parent: "Syngenta (ChemChina)"
+    products:
+      - "Seeds"
+      - "Crop protection"
+
+  bayer_crop_science_py:
+    file: "bayer_py.yaml"
+    priority: P2
+    type: "multinational"
+    parent: "Bayer (Germany)"
+    products:
+      - "Seeds (Monsanto)"
+      - "Crop protection"
+
+  basf_agricultural_py:
+    file: "basf_py.yaml"
+    priority: P3
+    type: "multinational"
+    parent: "BASF (Germany)"
+
+  # =========================================================================
+  # AGTECH & PRECISION AGRICULTURE
+  # =========================================================================
+
+  pz_flight:
+    file: "pz_flight.yaml"
+    priority: P2
+    type: "agtech"
+    description: "Drone services for agriculture"
+    services:
+      - "Aerial monitoring"
+      - "Precision spraying"
+      - "Crop mapping"
+
+  chakair:
+    file: "chakair.yaml"
+    priority: P2
+    type: "agtech"
+    description: "Agricultural drone services"
+    services:
+      - "Spraying"
+      - "Monitoring"
+
+  uav_latam:
+    file: "uav_latam.yaml"
+    priority: P2
+    type: "agtech"
+    description: "UAV solutions"
+
+  agrofy_paraguay:
+    file: "agrofy.yaml"
+    priority: P3
+    type: "agtech"
+    description: "Digital agricultural marketplace"
+    parent: "Agrofy (Argentina)"
+
+  auravant_py:
+    file: "auravant.yaml"
+    priority: P3
+    type: "agtech"
+    description: "Farm management software"
+
+  # =========================================================================
+  # OTHER AGRICULTURAL COMPANIES
+  # =========================================================================
+
+  # Sugar
+  azucarera_paraguaya:
+    file: "azucarera.yaml"
+    priority: P2
+    type: "sugar_producer"
+    description: "Sugar production"
+
+  petropar_alcohol:
+    file: "petropar_ethanol.yaml"
+    priority: P3
+    type: "biofuel"
+    description: "Ethanol production"
+
+  # Cotton
+  cadelga:
+    file: "cadelga.yaml"
+    priority: P3
+    type: "cotton"
+    description: "Cotton processing"
+
+  # Yerba Mate
+  selecta:
+    file: "selecta.yaml"
+    priority: P2
+    type: "yerba_mate"
+    description: "Yerba mate production"
+    brand: "Selecta"
+
+  pajarito:
+    file: "pajarito.yaml"
+    priority: P2
+    type: "yerba_mate"
+    description: "Yerba mate"
+    brand: "Pajarito"
+
+  # Stevia
+  steviapar:
+    file: "steviapar.yaml"
+    priority: P3
+    type: "specialty_crop"
+    description: "Stevia production (Paraguay origin)"
+
+# =============================================================================
+# MARKET STRUCTURE
+# =============================================================================
+
+market_structure:
+  grain_trading:
+    multinational_share: "70%"
+    cooperative_share: "20%"
+    local_private: "10%"
+
+  meat_processing:
+    top_5_share: "80%"
+    export_oriented: "90%"
+
+  dairy:
+    cooperative_dominated: true
+    major_players: ["Chortitzer/Lactolanda", "Trebol", "La Holanda"]
+
+  input_market:
+    multinational_seeds: "80%"
+    local_distribution: "Agrofertil, Dekalpar"
+
+# =============================================================================
+# RESEARCH FOCUS
+# =============================================================================
+
+research_focus:
+  themes:
+    - "Precision agriculture adoption rates"
+    - "Supply chain digitization"
+    - "Traceability systems (beef)"
+    - "Cooperative modernization"
+    - "Climate adaptation"
+    - "Deforestation & sustainability"
+    - "Export logistics optimization"
+    - "Value-added processing"
+
+  key_metrics:
+    - "Yield per hectare (soy, corn)"
+    - "Technology adoption rate"
+    - "Export volumes & values"
+    - "Processing capacity"
+    - "Input efficiency"
+    - "Cooperative membership growth"
+
+  data_sources:
+    - "CAPECO (Grain Chamber)"
+    - "ARP (Rural Association)"
+    - "SENACSA (Livestock Service)"
+    - "MAG (Agriculture Ministry)"
+    - "USDA reports"
+    - "Cooperative annual reports"

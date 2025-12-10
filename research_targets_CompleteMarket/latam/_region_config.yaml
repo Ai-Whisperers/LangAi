@@ -1,0 +1,167 @@
+# LATAM Region Configuration
+# Latin America - Primary Research Focus
+
+region:
+  name: "Latin America"
+  code: "LATAM"
+  priority: "P1_critical"
+
+  description: |
+    Primary research market covering 20 countries with focus on:
+    - Major economic conglomerates and family holdings
+    - Telecommunications and technology
+    - Financial services and FinTech
+    - Consumer and retail markets
+    - Natural resources and agriculture
+
+  market_metrics:
+    population: "660M+"
+    gdp_usd: "$6.5T"
+    gdp_growth: "2.5%"
+    largest_economies:
+      - country: "Brazil"
+        gdp_share: "32%"
+      - country: "Mexico"
+        gdp_share: "23%"
+      - country: "Argentina"
+        gdp_share: "8%"
+      - country: "Colombia"
+        gdp_share: "6%"
+      - country: "Chile"
+        gdp_share: "5%"
+
+# Sub-regions
+sub_regions:
+  south_america:
+    countries:
+      - argentina
+      - bolivia
+      - brazil
+      - chile
+      - colombia
+      - ecuador
+      - guyana
+      - paraguay
+      - peru
+      - suriname
+      - uruguay
+      - venezuela
+    priority: P1
+
+  central_america:
+    countries:
+      - belize
+      - costa_rica
+      - el_salvador
+      - guatemala
+      - honduras
+      - nicaragua
+      - panama
+    priority: P2
+
+  caribbean:
+    countries:
+      - cuba
+      - dominican_republic
+      - haiti
+      - jamaica
+      - puerto_rico
+      - trinidad_tobago
+    priority: P3
+
+  mexico:
+    countries:
+      - mexico
+    priority: P1
+
+# Key Sectors in LATAM
+key_sectors:
+  conglomerates:
+    description: "Family-controlled diversified holdings"
+    market_leaders:
+      brazil: ["Itausa", "Votorantim", "J&F", "Odebrecht"]
+      mexico: ["Grupo Carso", "FEMSA", "Grupo Alfa", "Grupo Bimbo"]
+      chile: ["Grupo Luksic", "Grupo Angelini", "Grupo Matte"]
+      argentina: ["Techint", "Perez Companc", "Grupo Arcor"]
+      colombia: ["GEA", "Grupo Aval", "Grupo Santo Domingo"]
+      peru: ["Grupo Breca", "Grupo Romero", "Intercorp"]
+
+  telecommunications:
+    description: "Mobile, fixed, and digital services"
+    market_leaders:
+      regional: ["America Movil (Claro)", "Telefonica (Movistar)", "Millicom (Tigo)"]
+      brazil: ["Vivo", "Claro", "TIM", "Oi"]
+      mexico: ["Telcel", "AT&T Mexico", "Movistar"]
+      argentina: ["Personal", "Claro", "Movistar"]
+
+  financial_services:
+    description: "Banking, insurance, and fintech"
+    market_leaders:
+      brazil: ["Itau", "Bradesco", "Banco do Brasil", "Nubank"]
+      mexico: ["BBVA Mexico", "Banorte", "Santander"]
+      chile: ["Banco de Chile", "Santander Chile", "BCI"]
+      colombia: ["Bancolombia", "Davivienda", "Banco de Bogota"]
+
+  energy:
+    description: "Oil, gas, and renewables"
+    market_leaders:
+      brazil: ["Petrobras", "Eletrobras", "Raizen"]
+      mexico: ["Pemex", "CFE"]
+      argentina: ["YPF", "Pampa Energia"]
+      colombia: ["Ecopetrol", "ISA"]
+      chile: ["ENAP", "Colbun", "Enel Chile"]
+
+  retail_consumer:
+    description: "Retail chains and consumer goods"
+    market_leaders:
+      chile: ["Falabella", "Cencosud"]
+      mexico: ["Walmart Mexico", "OXXO (FEMSA)"]
+      brazil: ["Magazine Luiza", "Via Varejo", "Lojas Americanas"]
+      argentina: ["Coto", "Carrefour Argentina"]
+
+  mining_materials:
+    description: "Mining, steel, and basic materials"
+    market_leaders:
+      brazil: ["Vale", "Gerdau", "CSN"]
+      mexico: ["Grupo Mexico", "CEMEX"]
+      chile: ["Codelco", "SQM", "Antofagasta"]
+      peru: ["Southern Copper", "Buenaventura"]
+
+# Research Focus Areas
+research_focus:
+  themes:
+    - "Digital transformation initiatives"
+    - "Family business succession"
+    - "ESG and sustainability"
+    - "Regional expansion strategies"
+    - "M&A consolidation"
+    - "FinTech disruption"
+    - "E-commerce growth"
+    - "Infrastructure investment"
+
+  data_sources:
+    official:
+      - "Stock exchanges (B3, BMV, BCS, BVC)"
+      - "Central banks"
+      - "Securities regulators (CVM, CNBV, CMF)"
+    commercial:
+      - "Bloomberg"
+      - "S&P Capital IQ"
+      - "Refinitiv"
+    public:
+      - "Company annual reports"
+      - "Press releases"
+      - "News sources"
+
+# Company Count by Country
+company_targets:
+  brazil: 80+
+  mexico: 60+
+  argentina: 40+
+  chile: 35+
+  colombia: 30+
+  peru: 25+
+  central_america: 50+
+  caribbean: 15+
+  other_south_america: 25+
+  total: 360+

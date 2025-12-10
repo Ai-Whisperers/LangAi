@@ -1,0 +1,342 @@
+# Paraguay - Retail & Commerce Sector
+# Growing Consumer Market
+
+sector:
+  name: "Retail & Commerce"
+  code: "CON_RET"
+  country: "paraguay"
+  priority: P2_high
+
+  description: |
+    Paraguay's retail sector is growing with an expanding middle class and
+    increasing formalization. Mix of modern retail (supermarkets, malls) and
+    traditional commerce. E-commerce is nascent but growing rapidly.
+
+  market_metrics:
+    retail_gdp_share: "15%"
+    formal_retail_share: "55%"
+    informal_share: "45%"
+    ecommerce_penetration: "5%"
+    shopping_malls: 15+
+    supermarket_chains: 10+
+
+  ai_potential:
+    areas:
+      - "Inventory optimization"
+      - "Demand forecasting"
+      - "Personalized marketing"
+      - "Customer analytics"
+      - "E-commerce recommendation"
+      - "Supply chain optimization"
+
+# =============================================================================
+# COMPANIES
+# =============================================================================
+
+companies:
+  # SUPERMARKETS & HYPERMARKETS
+
+  superseis:
+    file: "superseis.yaml"
+    priority: P1
+    type: "supermarket_chain"
+    description: "Largest supermarket chain"
+    stores: 20+
+    format: "Hypermarkets, supermarkets"
+    coverage: "Asuncion metropolitan, interior"
+    services:
+      - "Grocery retail"
+      - "Electronics"
+      - "Home goods"
+      - "E-commerce (limited)"
+
+  stock:
+    file: "stock.yaml"
+    priority: P1
+    type: "supermarket_chain"
+    description: "Major supermarket chain"
+    stores: 15+
+    coverage: "Asuncion, Ciudad del Este, interior"
+
+  la_colonial:
+    file: "la_colonial.yaml"
+    priority: P2
+    type: "supermarket_chain"
+    stores: 10+
+    coverage: "Asuncion metropolitan"
+
+  fortis:
+    file: "fortis.yaml"
+    priority: P2
+    type: "supermarket_chain"
+    stores: 8+
+
+  biggie:
+    file: "biggie.yaml"
+    priority: P2
+    type: "supermarket_chain"
+    description: "Discount supermarket"
+    stores: 20+
+    format: "Discount/value"
+
+  los_jardines:
+    file: "los_jardines.yaml"
+    priority: P3
+    type: "supermarket_chain"
+    stores: 5+
+
+  # INTERNATIONAL RETAILERS
+
+  grupo_carrefour_py:
+    file: "carrefour_py.yaml"
+    priority: P3
+    type: "multinational"
+    status: "Not present"
+    notes: "Market opportunity"
+
+  # SHOPPING MALLS
+
+  shopping_del_sol:
+    file: "shopping_del_sol.yaml"
+    priority: P1
+    type: "shopping_mall"
+    owner: "Grupo Vierci"
+    location: "Asuncion"
+    description: "Premier shopping destination"
+    tenants: 200+
+    features:
+      - "Anchor stores"
+      - "Cinema"
+      - "Food court"
+      - "Entertainment"
+
+  shopping_mariscal:
+    file: "shopping_mariscal.yaml"
+    priority: P1
+    type: "shopping_mall"
+    owner: "Grupo Vierci"
+    location: "Asuncion"
+    description: "Major shopping center"
+
+  shopping_paris:
+    file: "shopping_paris.yaml"
+    priority: P2
+    type: "shopping_mall"
+    location: "Asuncion"
+
+  shopping_multiplaza:
+    file: "shopping_multiplaza.yaml"
+    priority: P2
+    type: "shopping_mall"
+    location: "Asuncion (Villa Morra)"
+
+  paseo_la_galeria:
+    file: "paseo_galeria.yaml"
+    priority: P2
+    type: "shopping_mall"
+    location: "Asuncion"
+
+  shopping_china:
+    file: "shopping_china.yaml"
+    priority: P2
+    type: "shopping_mall"
+    location: "Ciudad del Este"
+    notes: "Border commerce hub"
+
+  # DEPARTMENT STORES
+
+  casa_rica:
+    file: "casa_rica.yaml"
+    priority: P2
+    type: "department_store"
+    description: "Traditional department store"
+    categories: ["Apparel", "Home", "Electronics"]
+
+  el_pueblo:
+    file: "el_pueblo.yaml"
+    priority: P3
+    type: "department_store"
+
+  # SPECIALTY RETAIL
+
+  # Electronics
+  cell_shop:
+    file: "cell_shop.yaml"
+    priority: P2
+    type: "electronics_retail"
+    description: "Mobile phones, electronics"
+    stores: 30+
+
+  nissei:
+    file: "nissei.yaml"
+    priority: P2
+    type: "electronics_retail"
+    description: "Electronics, appliances"
+    stores: 15+
+
+  electroban:
+    file: "electroban.yaml"
+    priority: P3
+    type: "electronics_retail"
+
+  # Home Improvement
+  cde_importados:
+    file: "cde_importados.yaml"
+    priority: P3
+    type: "home_improvement"
+    location: "Ciudad del Este"
+
+  # Pharmacy Chains
+  farmacenter:
+    file: "farmacenter.yaml"
+    priority: P2
+    type: "pharmacy_chain"
+    stores: 80+
+    description: "Largest pharmacy chain"
+
+  punto_farma:
+    file: "punto_farma.yaml"
+    priority: P2
+    type: "pharmacy_chain"
+    stores: 60+
+
+  farmacia_catedral:
+    file: "farmacia_catedral.yaml"
+    priority: P3
+    type: "pharmacy_chain"
+    stores: 40+
+
+  # Convenience Stores
+  shell_select:
+    file: "shell_select.yaml"
+    priority: P3
+    type: "convenience"
+    parent: "Shell"
+    format: "Gas station convenience"
+
+  # E-COMMERCE
+
+  mercado_libre_py:
+    file: "mercadolibre_py.yaml"
+    priority: P1
+    type: "ecommerce"
+    parent: "MercadoLibre (Argentina)"
+    description: "Leading e-commerce platform"
+    services:
+      - "Marketplace"
+      - "Payments (MercadoPago)"
+      - "Logistics (MercadoEnvios)"
+
+  clasipar:
+    file: "clasipar.yaml"
+    priority: P2
+    type: "classifieds"
+    description: "Online classifieds"
+
+  pedidosya_py:
+    file: "pedidosya.yaml"
+    priority: P2
+    type: "delivery"
+    parent: "PedidosYa (Delivery Hero)"
+    description: "Food delivery platform"
+
+  monchis:
+    file: "monchis.yaml"
+    priority: P2
+    type: "delivery"
+    description: "Local food delivery"
+
+  sushi_pop:
+    file: "sushi_pop.yaml"
+    priority: P3
+    type: "delivery"
+    description: "Food delivery service"
+
+  # WHOLESALE / CASH & CARRY
+
+  makro_py:
+    file: "makro_py.yaml"
+    priority: P3
+    type: "wholesale"
+    status: "Not present"
+    notes: "Market opportunity"
+
+  # FRANCHISE OPERATIONS
+
+  mcdonalds_py:
+    file: "mcdonalds_py.yaml"
+    priority: P3
+    type: "franchise"
+    description: "Fast food"
+    stores: 20+
+
+  burger_king_py:
+    file: "burger_king_py.yaml"
+    priority: P3
+    type: "franchise"
+
+  starbucks_py:
+    file: "starbucks_py.yaml"
+    priority: P3
+    type: "franchise"
+    status: "Recent entry"
+
+# =============================================================================
+# MARKET STRUCTURE
+# =============================================================================
+
+market_structure:
+  supermarkets:
+    concentration: "Top 5 = 60%"
+    leader: "Superseis"
+    format_mix:
+      hypermarket: "30%"
+      supermarket: "50%"
+      discount: "20%"
+
+  malls:
+    total: 15+
+    leader: "Grupo Vierci (Shopping del Sol, Mariscal)"
+    trend: "New developments in Asuncion suburbs"
+
+  ecommerce:
+    penetration: "5% (low)"
+    leader: "MercadoLibre"
+    growth_rate: "30%+ annually"
+    barriers:
+      - "Cash-based economy"
+      - "Logistics challenges"
+      - "Payment infrastructure"
+
+# =============================================================================
+# RESEARCH FOCUS
+# =============================================================================
+
+research_focus:
+  themes:
+    - "E-commerce growth potential"
+    - "Formalization of retail"
+    - "Digital payments adoption"
+    - "Mall development pipeline"
+    - "International retailer entry"
+    - "Last-mile delivery"
+
+  key_metrics:
+    - "Same-store sales growth"
+    - "E-commerce penetration"
+    - "Mall foot traffic"
+    - "Digital payment usage"
+    - "Consumer confidence"
+
+ai_opportunities:
+  inventory:
+    - "Demand forecasting"
+    - "Stock optimization"
+    - "Shrinkage prevention"
+  customer:
+    - "Personalization"
+    - "Loyalty analytics"
+    - "Churn prediction"
+  operations:
+    - "Labor scheduling"
+    - "Supply chain optimization"

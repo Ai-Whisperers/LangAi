@@ -1,0 +1,268 @@
+# Research Priority Matrix
+# Defines research priorities across regions and sectors
+
+version: "2.0"
+last_updated: "2024-12"
+
+# Priority Definitions
+priority_levels:
+  P1_critical:
+    description: "Strategic priority - full deep-dive research"
+    data_points: 50+
+    update_frequency: "monthly"
+    deliverables: ["full_report", "executive_summary", "financials", "competitive_analysis", "strategy"]
+
+  P2_high:
+    description: "Important targets - comprehensive analysis"
+    data_points: 30-50
+    update_frequency: "quarterly"
+    deliverables: ["full_report", "executive_summary", "financials"]
+
+  P3_medium:
+    description: "Standard research coverage"
+    data_points: 20-30
+    update_frequency: "semi-annual"
+    deliverables: ["overview_report", "key_metrics"]
+
+  P4_low:
+    description: "Basic overview only"
+    data_points: 10-20
+    update_frequency: "annual"
+    deliverables: ["basic_profile"]
+
+  P5_monitor:
+    description: "Watch list - track for future research"
+    data_points: 5-10
+    update_frequency: "as_needed"
+    deliverables: ["snapshot"]
+
+# Regional Priorities
+regional_priorities:
+  latam:
+    priority: P1_critical
+    rationale: "Primary market focus"
+    key_countries:
+      - brazil: P1
+      - mexico: P1
+      - argentina: P2
+      - chile: P2
+      - colombia: P2
+      - peru: P2
+      - paraguay: P1  # Special focus
+      - central_america: P2
+
+  north_america:
+    priority: P3_medium
+    rationale: "Reference market for benchmarking"
+    key_countries:
+      - usa: P3
+      - canada: P4
+
+  europe:
+    priority: P4_low
+    rationale: "Secondary market for comparison"
+    key_countries:
+      - spain: P3  # LATAM connections
+      - portugal: P4
+      - uk: P4
+      - germany: P4
+
+  asia_pacific:
+    priority: P4_low
+    rationale: "Emerging opportunities"
+    key_countries:
+      - china: P4
+      - india: P4
+      - japan: P5
+
+# Sector Priorities
+sector_priorities:
+  telecommunications:
+    priority: P1_critical
+    rationale: "Core research focus"
+    key_segments:
+      - mobile_operators: P1
+      - infrastructure: P2
+      - media: P3
+
+  financial_services:
+    priority: P1_critical
+    rationale: "Major economic driver"
+    key_segments:
+      - banking: P1
+      - fintech: P1
+      - insurance: P2
+
+  conglomerates:
+    priority: P1_critical
+    rationale: "Dominant LATAM business model"
+    key_segments:
+      - family_holdings: P1
+      - diversified: P1
+
+  technology:
+    priority: P2_high
+    rationale: "Growth sector"
+    key_segments:
+      - ai_ml: P1
+      - software: P2
+      - cloud: P2
+
+  energy:
+    priority: P2_high
+    rationale: "Regional importance"
+    key_segments:
+      - renewables: P1
+      - oil_gas: P2
+      - utilities: P2
+
+  healthcare:
+    priority: P2_high
+    rationale: "Growing market"
+    key_segments:
+      - pharma: P2
+      - services: P2
+      - medtech: P3
+
+  aviation:
+    priority: P2_high
+    rationale: "Strategic sector"
+    key_segments:
+      - airlines: P1
+      - logistics: P2
+
+  consumer:
+    priority: P2_high
+    rationale: "Large consumer base"
+    key_segments:
+      - retail: P2
+      - food_beverage: P2
+
+  agriculture:
+    priority: P2_high
+    rationale: "LATAM strength"
+    key_segments:
+      - agribusiness: P1
+      - agritech: P2
+
+  materials:
+    priority: P3_medium
+    rationale: "Resource-rich region"
+    key_segments:
+      - mining: P2
+      - steel: P3
+      - chemicals: P3
+
+  real_estate:
+    priority: P3_medium
+    rationale: "Regional development"
+    key_segments:
+      - commercial: P3
+      - residential: P4
+
+  media:
+    priority: P3_medium
+    rationale: "Market consolidation"
+    key_segments:
+      - broadcasting: P3
+      - digital: P3
+
+# Top Priority Targets (Immediate Research Queue)
+immediate_priorities:
+  P1_queue:
+    description: "Next 30 days research targets"
+    targets:
+      # Paraguay Focus
+      - company: "Tigo Paraguay"
+        region: "latam/south_america/paraguay"
+        sector: "telecommunications"
+        rationale: "Market leader, AI potential"
+
+      - company: "Personal Paraguay"
+        region: "latam/south_america/paraguay"
+        sector: "telecommunications"
+        rationale: "Major competitor analysis"
+
+      - company: "Grupo Vierci"
+        region: "latam/south_america/paraguay"
+        sector: "conglomerates"
+        rationale: "Largest local conglomerate"
+
+      # Major LATAM Conglomerates
+      - company: "Grupo Carso"
+        region: "latam/mexico"
+        sector: "conglomerates"
+        rationale: "Carlos Slim holdings"
+
+      - company: "Itausa"
+        region: "latam/south_america/brazil"
+        sector: "conglomerates"
+        rationale: "Major Brazilian holding"
+
+      - company: "Grupo Luksic"
+        region: "latam/south_america/chile"
+        sector: "conglomerates"
+        rationale: "Chilean leader"
+
+      # Telecoms
+      - company: "America Movil"
+        region: "latam/mexico"
+        sector: "telecommunications"
+        rationale: "Largest LATAM telecom"
+
+      - company: "Millicom"
+        region: "latam/_regional"
+        sector: "telecommunications"
+        rationale: "Tigo parent company"
+
+      # FinTech
+      - company: "Nubank"
+        region: "latam/south_america/brazil"
+        sector: "fintech"
+        rationale: "Largest LATAM neobank"
+
+      - company: "MercadoLibre"
+        region: "latam/south_america/argentina"
+        sector: "technology"
+        rationale: "LATAM e-commerce leader"
+
+  P2_queue:
+    description: "Next 60 days research targets"
+    targets:
+      - "FEMSA (Mexico)"
+      - "Grupo Bimbo (Mexico)"
+      - "Votorantim Group (Brazil)"
+      - "Cencosud (Chile)"
+      - "Grupo Aval (Colombia)"
+      - "Credicorp (Peru)"
+      - "Grupo Poma (Central America)"
+      - "LATAM Airlines"
+      - "Embraer"
+      - "Ternium"
+
+# Research Themes (Cross-cutting priorities)
+research_themes:
+  digital_transformation:
+    priority: P1
+    description: "Companies investing in AI/ML, automation, digital services"
+    target_sectors: ["telecommunications", "financial_services", "retail"]
+
+  sustainability_esg:
+    priority: P2
+    description: "ESG leaders and renewable energy adopters"
+    target_sectors: ["energy", "mining", "manufacturing"]
+
+  family_succession:
+    priority: P2
+    description: "Family businesses transitioning to next generation"
+    target_types: ["family_holdings", "conglomerates"]
+
+  market_consolidation:
+    priority: P2
+    description: "M&A activity and market consolidation trends"
+    target_sectors: ["telecommunications", "retail", "banking"]
+
+  emerging_champions:
+    priority: P3
+    description: "Fast-growing regional champions"
+    target_types: ["startups", "scale_ups", "unicorns"]

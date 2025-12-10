@@ -1,0 +1,221 @@
+# Mexico Country Configuration
+# Second Largest LATAM Economy
+
+country:
+  name: "Mexico"
+  code: "MX"
+  region: "latam"
+  priority: "P1_critical"
+
+  metrics:
+    population: "130M"
+    gdp_usd: "$1.5T"
+    gdp_growth: "3.2%"
+    currency: "MXN"
+    stock_exchange: "BMV (Bolsa Mexicana de Valores)"
+    regulator: "CNBV"
+
+  economy:
+    description: |
+      North America's gateway to LATAM, strong manufacturing base,
+      major US trade partner. Home to powerful business groups.
+    key_sectors:
+      - "Manufacturing (Auto, Aerospace)"
+      - "Financial Services"
+      - "Telecommunications"
+      - "Consumer/Retail"
+      - "Energy"
+      - "Mining"
+
+# Sectors
+sectors:
+  conglomerates:
+    path: "conglomerates/"
+    companies: 20
+    priority: P1
+
+  financial_services:
+    path: "financial_services/"
+    companies: 18
+    priority: P1
+
+  telecommunications:
+    path: "telecommunications/"
+    companies: 8
+    priority: P1
+
+  consumer_retail:
+    path: "consumer_retail/"
+    companies: 15
+    priority: P1
+
+  industrials:
+    path: "industrials/"
+    companies: 20
+    priority: P2
+
+  energy:
+    path: "energy/"
+    companies: 10
+    priority: P2
+
+  mining_materials:
+    path: "mining_materials/"
+    companies: 10
+    priority: P2
+
+  technology:
+    path: "technology/"
+    companies: 12
+    priority: P2
+
+  healthcare:
+    path: "healthcare/"
+    companies: 8
+    priority: P3
+
+  real_estate:
+    path: "real_estate/"
+    companies: 8
+    priority: P3
+
+# Major Business Groups
+business_groups:
+  grupo_carso:
+    controlling_family: "Slim"
+    main_holdings:
+      - "America Movil"
+      - "Grupo Financiero Inbursa"
+      - "Carso Infrastructure"
+      - "Sanborns"
+    market_cap_total: "$80B+"
+    priority: P1
+
+  femsa:
+    controlling_family: "Garza Sada (part)"
+    main_holdings:
+      - "OXXO (retail)"
+      - "Coca-Cola FEMSA"
+      - "FEMSA Commerce"
+      - "Heineken stake"
+    market_cap: "$30B+"
+    priority: P1
+
+  grupo_alfa:
+    controlling_family: "Garza Sada"
+    main_holdings:
+      - "Alpek"
+      - "Sigma Alimentos"
+      - "Nemak"
+      - "Axtel (sold)"
+    priority: P1
+
+  grupo_bimbo:
+    controlling_family: "Servitje"
+    main_holdings:
+      - "Bimbo (global bakery)"
+    market_cap: "$15B+"
+    priority: P1
+
+  cemex:
+    controlling_family: "Zambrano"
+    type: "Cement/Building Materials"
+    market_cap: "$12B+"
+    priority: P1
+
+  grupo_mexico:
+    controlling_family: "Larrea"
+    main_holdings:
+      - "Southern Copper"
+      - "Ferromex"
+      - "Infraestructura"
+    market_cap: "$50B+"
+    priority: P1
+
+  grupo_televisa:
+    controlling_family: "Azcarraga"
+    main_holdings:
+      - "Televisa (merged with Univision)"
+      - "Cable operations"
+      - "Sky Mexico"
+    priority: P2
+
+  grupo_bal:
+    controlling_family: "Bailleres"
+    main_holdings:
+      - "Penoles"
+      - "GNP Seguros"
+      - "Palacio de Hierro"
+      - "ITESM"
+    priority: P2
+
+  salinas_group:
+    controlling_family: "Salinas"
+    main_holdings:
+      - "TV Azteca"
+      - "Banco Azteca"
+      - "Elektra"
+      - "Totalplay"
+    priority: P2
+
+  empresas_ica:
+    type: "Construction/Infrastructure"
+    status: "Restructured"
+    priority: P3
+
+# Top Companies
+top_companies:
+  - name: "America Movil"
+    ticker: "AMX"
+    sector: "telecommunications"
+    market_cap_usd: "50B+"
+
+  - name: "FEMSA"
+    ticker: "FMX"
+    sector: "consumer"
+    market_cap_usd: "30B+"
+
+  - name: "Grupo Mexico"
+    ticker: "GMEXICOB.MX"
+    sector: "mining"
+    market_cap_usd: "50B+"
+
+  - name: "Walmart Mexico"
+    ticker: "WALMEX.MX"
+    sector: "retail"
+    market_cap_usd: "45B+"
+
+  - name: "Grupo Bimbo"
+    ticker: "BIMBOA.MX"
+    sector: "consumer"
+    market_cap_usd: "15B+"
+
+  - name: "Banorte"
+    ticker: "GFNORTEO.MX"
+    sector: "financial"
+    market_cap_usd: "20B+"
+
+  - name: "CEMEX"
+    ticker: "CX"
+    sector: "materials"
+    market_cap_usd: "12B+"
+
+  - name: "Grupo Aeroportuario del Pacifico"
+    ticker: "PAC"
+    sector: "transportation"
+    market_cap_usd: "15B+"
+
+research_focus:
+  themes:
+    - "Nearshoring opportunity"
+    - "US-Mexico trade dynamics"
+    - "Energy reform impacts"
+    - "Digital banking growth"
+    - "Retail modernization"
+    - "Infrastructure investment"
+
+  priority_sources:
+    - "BMV filings"
+    - "CNBV reports"
+    - "Banxico data"
+    - "Company annual reports"

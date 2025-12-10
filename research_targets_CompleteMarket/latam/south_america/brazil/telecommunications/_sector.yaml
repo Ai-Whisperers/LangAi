@@ -1,0 +1,131 @@
+# Brazil - Telecommunications Sector
+# Mobile, Fixed, Internet, Media
+
+sector:
+  name: "Telecommunications"
+  code: "TEL"
+  country: "brazil"
+  priority: P1_critical
+
+  description: |
+    Brazil is LATAM's largest telecom market with 200M+ mobile subscribers.
+    Major consolidation after Oi's restructuring with 3 main players.
+
+  market_metrics:
+    mobile_subscribers: "210M+"
+    mobile_penetration: "98%"
+    broadband_subscribers: "45M+"
+    5g_status: "Active deployment"
+    market_concentration: "Top 3 = 95%"
+
+companies:
+  # Mobile Network Operators
+  vivo_telefonica_brasil:
+    file: "vivo.yaml"
+    priority: P1
+    ticker: "VIVT3.SA"
+    type: "mno"
+    parent: "Telefonica (Spain)"
+    market_share: "38%"
+    subscribers: "95M"
+
+  claro_brasil:
+    file: "claro_brasil.yaml"
+    priority: P1
+    type: "mno"
+    parent: "America Movil (Mexico)"
+    market_share: "33%"
+    subscribers: "75M"
+
+  tim_brasil:
+    file: "tim_brasil.yaml"
+    priority: P1
+    ticker: "TIMS3.SA"
+    type: "mno"
+    parent: "TIM (Italy)"
+    market_share: "24%"
+    subscribers: "55M"
+
+  oi:
+    file: "oi.yaml"
+    priority: P2
+    ticker: "OIBR3.SA"
+    type: "fixed_telecom"
+    notes: "Post-restructuring, sold mobile to competitors"
+
+  # Internet & Broadband
+  brisanet:
+    file: "brisanet.yaml"
+    priority: P2
+    ticker: "BRIT3.SA"
+    type: "regional_isp"
+    region: "Northeast Brazil"
+
+  unifique:
+    file: "unifique.yaml"
+    priority: P3
+    ticker: "FIQE3.SA"
+    type: "regional_isp"
+    region: "South Brazil"
+
+  desktop:
+    file: "desktop.yaml"
+    priority: P3
+    ticker: "DESK3.SA"
+    type: "regional_isp"
+    region: "Sao Paulo state"
+
+  # Tower Companies & Infrastructure
+  american_tower_brazil:
+    file: "american_tower_br.yaml"
+    priority: P2
+    type: "tower_company"
+    parent: "American Tower Corp"
+
+  ihs_brasil:
+    file: "ihs_brasil.yaml"
+    priority: P3
+    type: "tower_company"
+
+  v_tal:
+    file: "v_tal.yaml"
+    priority: P2
+    type: "fiber_infrastructure"
+    notes: "Spun from Oi"
+
+  # Media & Pay TV
+  globo:
+    file: "globo.yaml"
+    priority: P1
+    type: "media_conglomerate"
+    assets: ["TV Globo", "Globoplay", "Globo.com"]
+
+  sky_brasil:
+    file: "sky_brasil.yaml"
+    priority: P3
+    type: "satellite_tv"
+    parent: "AT&T/DirecTV"
+
+  # Streaming & Digital
+  globoplay:
+    file: "globoplay.yaml"
+    priority: P2
+    type: "streaming"
+    parent: "Grupo Globo"
+
+research_focus:
+  themes:
+    - "5G deployment progress"
+    - "Fiber expansion"
+    - "Post-Oi market dynamics"
+    - "Streaming competition"
+    - "Rural connectivity"
+    - "IoT growth"
+
+  key_metrics:
+    - "ARPU"
+    - "Churn rate"
+    - "Postpaid mix"
+    - "FTTH coverage"
+    - "5G coverage"
+    - "CapEx/Revenue"

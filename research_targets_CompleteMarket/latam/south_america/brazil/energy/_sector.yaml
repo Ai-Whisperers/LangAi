@@ -1,0 +1,172 @@
+# Brazil - Energy Sector
+# Oil & Gas, Utilities, Renewables
+
+sector:
+  name: "Energy"
+  code: "ENE"
+  country: "brazil"
+  priority: P1_critical
+
+  description: |
+    Brazil is a major oil producer (pre-salt reserves) with significant
+    hydroelectric capacity and growing renewables sector.
+
+  market_metrics:
+    oil_production_bpd: "3.5M+"
+    renewable_share: "85% of electricity"
+    installed_capacity_gw: "200+"
+    oil_reserves_bbl: "13B"
+
+companies:
+  # Oil & Gas
+  petrobras:
+    file: "petrobras.yaml"
+    priority: P1
+    ticker: "PETR4.SA"
+    type: "integrated_oil"
+    market_cap_usd: "100B+"
+    production_bpd: "2.8M"
+    ownership: "State-controlled"
+
+  prio:
+    file: "prio.yaml"
+    priority: P2
+    ticker: "PRIO3.SA"
+    type: "independent_oil"
+    focus: "Mature fields"
+
+  3r_petroleum:
+    file: "3r_petroleum.yaml"
+    priority: P2
+    ticker: "RRRP3.SA"
+    type: "independent_oil"
+    focus: "Onshore/mature assets"
+
+  petroreconcavo:
+    file: "petroreconcavo.yaml"
+    priority: P3
+    ticker: "RECV3.SA"
+    type: "independent_oil"
+
+  # Integrated Energy
+  raizen:
+    file: "raizen.yaml"
+    priority: P1
+    ticker: "RAIZ4.SA"
+    type: "ethanol_fuels"
+    parent: "Cosan/Shell JV"
+    business: "Ethanol, sugar, fuel distribution"
+
+  vibra_energia:
+    file: "vibra.yaml"
+    priority: P2
+    ticker: "VBBR3.SA"
+    type: "fuel_distribution"
+    brand: "BR Distribuidora"
+
+  ipiranga_ultrapar:
+    file: "ipiranga.yaml"
+    priority: P2
+    parent: "Ultrapar"
+    type: "fuel_distribution"
+
+  # Electric Utilities
+  eletrobras:
+    file: "eletrobras.yaml"
+    priority: P1
+    ticker: "ELET3.SA"
+    type: "electric_utility"
+    market_cap_usd: "20B+"
+    status: "Recently privatized"
+
+  cpfl_energia:
+    file: "cpfl.yaml"
+    priority: P2
+    ticker: "CPFE3.SA"
+    type: "electric_distribution"
+    parent: "State Grid China"
+
+  equatorial_energia:
+    file: "equatorial.yaml"
+    priority: P2
+    ticker: "EQTL3.SA"
+    type: "electric_distribution"
+
+  energisa:
+    file: "energisa.yaml"
+    priority: P2
+    ticker: "ENGI11.SA"
+    type: "electric_distribution"
+
+  engie_brasil:
+    file: "engie_brasil.yaml"
+    priority: P2
+    ticker: "EGIE3.SA"
+    type: "electric_generation"
+    parent: "Engie (France)"
+
+  neoenergia:
+    file: "neoenergia.yaml"
+    priority: P2
+    ticker: "NEOE3.SA"
+    type: "integrated_utility"
+    parent: "Iberdrola (Spain)"
+
+  aes_brasil:
+    file: "aes_brasil.yaml"
+    priority: P3
+    ticker: "AESB3.SA"
+    type: "electric_generation"
+
+  copel:
+    file: "copel.yaml"
+    priority: P3
+    ticker: "CPLE6.SA"
+    type: "state_utility"
+    state: "Parana"
+
+  cemig:
+    file: "cemig.yaml"
+    priority: P3
+    ticker: "CMIG4.SA"
+    type: "state_utility"
+    state: "Minas Gerais"
+
+  # Renewables
+  omega_energia:
+    file: "omega.yaml"
+    priority: P2
+    ticker: "MEGA3.SA"
+    type: "renewable_pure_play"
+    focus: "Wind, solar"
+
+  auren_energia:
+    file: "auren.yaml"
+    priority: P2
+    ticker: "AURE3.SA"
+    type: "renewable_generation"
+
+  # Gas
+  comgas:
+    file: "comgas.yaml"
+    priority: P2
+    ticker: "CGAS5.SA"
+    type: "gas_distribution"
+    parent: "Cosan"
+
+research_focus:
+  themes:
+    - "Pre-salt oil development"
+    - "Energy transition"
+    - "Privatization impacts"
+    - "Renewable expansion"
+    - "Ethanol/biofuels"
+    - "Natural gas development"
+
+  key_metrics:
+    - "Production/reserves"
+    - "Lifting cost"
+    - "EBITDA margin"
+    - "Regulatory returns"
+    - "Renewable capacity"
+    - "Carbon intensity"

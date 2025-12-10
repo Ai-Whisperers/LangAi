@@ -1,0 +1,173 @@
+# Global Telecommunications Sector
+# Cross-Regional View
+
+sector:
+  name: "Telecommunications"
+  code: "TEL"
+  priority: P1_critical
+
+  description: |
+    Global telecommunications sector focusing on mobile operators,
+    fixed networks, infrastructure, and digital services.
+
+# Global Market Leaders
+global_leaders:
+  holding_companies:
+    - name: "America Movil"
+      ticker: "AMX"
+      headquarters: "Mexico"
+      market_cap_usd: "50B+"
+      coverage: ["Mexico", "Central America", "South America", "Caribbean"]
+      brands: ["Telcel", "Claro", "Tracfone"]
+      subscribers: "300M+"
+      priority: P1
+
+    - name: "Telefonica"
+      ticker: "TEF"
+      headquarters: "Spain"
+      market_cap_usd: "25B"
+      coverage: ["Spain", "UK", "Germany", "Brazil", "Mexico", "Chile", "Argentina", "Peru", "Colombia"]
+      brands: ["Movistar", "O2", "Vivo"]
+      subscribers: "350M+"
+      priority: P1
+
+    - name: "Millicom"
+      ticker: "TIGO"
+      headquarters: "Luxembourg/Sweden"
+      market_cap_usd: "5B"
+      coverage: ["Guatemala", "Honduras", "El Salvador", "Nicaragua", "Costa Rica", "Panama", "Colombia", "Paraguay", "Bolivia"]
+      brands: ["Tigo"]
+      subscribers: "50M+"
+      priority: P1
+      notes: "Pure LATAM play"
+
+    - name: "Liberty Latin America"
+      ticker: "LILAK"
+      headquarters: "USA"
+      market_cap_usd: "3B"
+      coverage: ["Chile", "Puerto Rico", "Caribbean"]
+      brands: ["VTR", "Liberty"]
+      priority: P2
+
+# LATAM Market Summary
+latam_telecom:
+  market_size_usd: "$150B+"
+  mobile_subscribers: "700M+"
+
+  by_country:
+    brazil:
+      subscribers: "210M"
+      operators: ["Vivo (Telefonica)", "Claro (America Movil)", "TIM"]
+      market_type: "competitive"
+      priority: P1
+
+    mexico:
+      subscribers: "130M"
+      operators: ["Telcel (America Movil)", "AT&T", "Movistar"]
+      market_type: "concentrated"
+      priority: P1
+
+    argentina:
+      subscribers: "60M"
+      operators: ["Personal", "Claro", "Movistar"]
+      priority: P2
+
+    colombia:
+      subscribers: "75M"
+      operators: ["Claro", "Movistar", "Tigo"]
+      priority: P2
+
+    chile:
+      subscribers: "25M"
+      operators: ["Entel", "Movistar", "Claro", "WOM"]
+      priority: P2
+
+    peru:
+      subscribers: "45M"
+      operators: ["Movistar", "Claro", "Entel", "Bitel"]
+      priority: P2
+
+    central_america:
+      subscribers: "50M"
+      operators: ["Tigo", "Claro", "Movistar"]
+      priority: P2
+
+    paraguay:
+      subscribers: "8.5M"
+      operators: ["Tigo", "Personal", "Claro", "Copaco/VOX"]
+      market_share:
+        tigo: "45%"
+        personal: "35%"
+        claro: "18%"
+        copaco: "2%"
+      priority: P1
+      notes: "Special focus market"
+
+# Infrastructure Companies
+infrastructure:
+  tower_companies:
+    - name: "American Tower"
+      ticker: "AMT"
+      latam_presence: ["Brazil", "Mexico", "Colombia", "Chile", "Argentina", "Peru"]
+      priority: P2
+
+    - name: "SBA Communications"
+      ticker: "SBAC"
+      latam_presence: ["Brazil"]
+      priority: P3
+
+    - name: "IHS Towers"
+      ticker: "IHS"
+      latam_presence: ["Brazil", "Colombia", "Peru"]
+      priority: P3
+
+  fiber_networks:
+    - name: "V.tal (Brazil)"
+      type: "wholesale_fiber"
+      priority: P3
+
+    - name: "KKR LATAM Fiber"
+      type: "private_equity"
+      priority: P4
+
+# Research Focus
+research_focus:
+  themes:
+    - "5G deployment progress"
+    - "Fiber expansion"
+    - "Mobile money / digital services"
+    - "Rural connectivity"
+    - "Infrastructure sharing"
+    - "OTT competition"
+    - "Regulatory changes"
+
+  key_metrics:
+    - "ARPU (prepaid/postpaid)"
+    - "Churn rate"
+    - "Postpaid mix"
+    - "Data usage/subscriber"
+    - "4G/5G penetration"
+    - "FTTH coverage"
+    - "CapEx intensity"
+    - "Mobile money users"
+
+  comparison_framework:
+    financial:
+      - "Revenue growth"
+      - "EBITDA margin"
+      - "Free cash flow"
+      - "CapEx/Revenue"
+      - "Net debt/EBITDA"
+
+    operational:
+      - "Subscriber growth"
+      - "ARPU trends"
+      - "Churn rate"
+      - "Network coverage"
+      - "Speed/quality metrics"
+
+    strategic:
+      - "Digital transformation"
+      - "B2B focus"
+      - "Content strategy"
+      - "Tower monetization"

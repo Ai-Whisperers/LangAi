@@ -1,0 +1,186 @@
+# Mexico - Conglomerates Sector
+# Major Business Groups
+
+sector:
+  name: "Conglomerates"
+  code: "DIV_CON"
+  country: "mexico"
+  priority: P1_critical
+
+  description: |
+    Mexico's economy is dominated by powerful family-controlled business
+    groups spanning telecoms, consumer goods, industrials, and finance.
+
+companies:
+  # Tier 1 - Mega Conglomerates
+  grupo_carso:
+    file: "grupo_carso.yaml"
+    priority: P1
+    ticker: "GCARSOA1.MX"
+    controlling_family: "Slim"
+    market_cap_usd: "10B"
+    key_holdings:
+      - name: "America Movil"
+        ticker: "AMX"
+        sector: "Telecom"
+      - name: "Grupo Financiero Inbursa"
+        ticker: "GFINBURO.MX"
+        sector: "Financial"
+      - name: "Carso Infraestructura"
+        sector: "Construction"
+      - name: "Sanborns"
+        ticker: "GSANBOB1.MX"
+        sector: "Retail"
+
+  femsa:
+    file: "femsa.yaml"
+    priority: P1
+    ticker: "FEMSAUBD.MX / FMX (NYSE)"
+    market_cap_usd: "30B"
+    key_holdings:
+      - name: "OXXO"
+        sector: "Convenience Retail"
+        stores: "21,000+"
+      - name: "Coca-Cola FEMSA"
+        ticker: "KOF"
+        sector: "Beverages"
+      - name: "FEMSA Comercio"
+        sector: "Retail/Pharmacy"
+      - name: "Heineken stake"
+        ownership: "14.8%"
+
+  grupo_alfa:
+    file: "grupo_alfa.yaml"
+    priority: P1
+    ticker: "ALFAA.MX"
+    controlling_family: "Garza Sada"
+    key_holdings:
+      - name: "Alpek"
+        ticker: "ALPEKA.MX"
+        sector: "Petrochemicals"
+      - name: "Sigma Alimentos"
+        sector: "Food Processing"
+      - name: "Nemak"
+        ticker: "NEMAKA.MX"
+        sector: "Auto Parts"
+
+  grupo_bimbo:
+    file: "grupo_bimbo.yaml"
+    priority: P1
+    ticker: "BIMBOA.MX"
+    controlling_family: "Servitje"
+    market_cap_usd: "15B"
+    description: "World's largest bakery company"
+    brands: ["Bimbo", "Marinela", "Sara Lee", "Thomas'", "Entenmann's"]
+
+  # Tier 2 - Large Conglomerates
+  cemex:
+    file: "cemex.yaml"
+    priority: P1
+    ticker: "CEMEXCPO.MX / CX (NYSE)"
+    controlling_family: "Zambrano"
+    market_cap_usd: "12B"
+    sector_focus: "Cement, Building Materials"
+
+  grupo_mexico:
+    file: "grupo_mexico.yaml"
+    priority: P1
+    ticker: "GMEXICOB.MX"
+    controlling_family: "Larrea"
+    market_cap_usd: "50B"
+    key_holdings:
+      - name: "Southern Copper"
+        ticker: "SCCO"
+        sector: "Mining"
+      - name: "Ferromex"
+        sector: "Rail Transportation"
+      - name: "Mexico Infra"
+        sector: "Infrastructure"
+
+  grupo_bal:
+    file: "grupo_bal.yaml"
+    priority: P2
+    controlling_family: "Bailleres"
+    key_holdings:
+      - name: "Industrias Penoles"
+        ticker: "PENOLES.MX"
+        sector: "Mining"
+      - name: "GNP Seguros"
+        sector: "Insurance"
+      - name: "Palacio de Hierro"
+        ticker: "PALOLEO.MX"
+        sector: "Retail"
+      - name: "Fresnillo"
+        ticker: "FRES.L"
+        sector: "Precious Metals"
+
+  grupo_televisa:
+    file: "grupo_televisa.yaml"
+    priority: P2
+    ticker: "TLEVISACPO.MX"
+    controlling_family: "Azcarraga"
+    key_holdings:
+      - name: "TelevisaUnivision"
+        sector: "Media"
+      - name: "Izzi"
+        sector: "Cable/Broadband"
+      - name: "Sky Mexico"
+        sector: "Satellite TV"
+
+  salinas_group:
+    file: "salinas_group.yaml"
+    priority: P2
+    controlling_family: "Salinas Pliego"
+    key_holdings:
+      - name: "TV Azteca"
+        ticker: "AZTECACPO.MX"
+        sector: "Media"
+      - name: "Grupo Elektra"
+        ticker: "ELEKTRA.MX"
+        sector: "Retail/Financial"
+      - name: "Banco Azteca"
+        sector: "Banking"
+      - name: "Totalplay"
+        sector: "Telecom"
+
+  # Tier 3 - Industrial Conglomerates
+  gruma:
+    file: "gruma.yaml"
+    priority: P2
+    ticker: "GRUMAB.MX"
+    description: "World's largest tortilla producer"
+    brands: ["Mission", "Guerrero", "Maseca"]
+
+  mexichem_orbia:
+    file: "orbia.yaml"
+    priority: P2
+    ticker: "ORBIA.MX"
+    description: "Specialty chemicals and building materials"
+    segments: ["Polymer Solutions", "Building & Infra", "Precision Agriculture"]
+
+  kuo:
+    file: "kuo.yaml"
+    priority: P3
+    ticker: "KUOA.MX"
+    segments: ["Auto parts", "Consumer products", "Chemicals"]
+
+  desc_soma:
+    file: "desc.yaml"
+    priority: P3
+    segments: ["Real estate", "Chemicals", "Food"]
+
+research_focus:
+  themes:
+    - "Succession planning"
+    - "Digital transformation"
+    - "ESG adoption"
+    - "International expansion"
+    - "Portfolio optimization"
+    - "Governance reforms"
+
+  key_metrics:
+    - "Sum-of-parts valuation"
+    - "Holding discount/premium"
+    - "ROIC by segment"
+    - "Capital allocation"
+    - "Family ownership %"

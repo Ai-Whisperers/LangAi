@@ -1,0 +1,308 @@
+# Paraguay - Energy Sector
+# STRATEGIC SECTOR - World's Largest Hydroelectric Per Capita
+
+sector:
+  name: "Energy & Hydroelectric"
+  code: "ENE"
+  country: "paraguay"
+  priority: P1_critical
+
+  description: |
+    Paraguay is uniquely positioned in global energy with massive hydroelectric
+    capacity from Itaipu (world's 2nd largest dam) and Yacyreta. The country
+    exports ~85% of its electricity, primarily to Brazil and Argentina, and has
+    the LOWEST electricity costs in the region - creating massive opportunities
+    for energy-intensive industries, green hydrogen, and data centers.
+
+  market_metrics:
+    installed_capacity_mw: "8,810"
+    electricity_production_gwh: "60,000+"
+    electricity_export_share: "85%"
+    domestic_consumption_gwh: "15,000"
+    renewable_share: "100%"
+    electricity_cost_kwh: "$0.05 (lowest in LATAM)"
+
+  strategic_importance:
+    unique_advantages:
+      - "World's largest per capita hydroelectric producer"
+      - "100% renewable electricity"
+      - "Lowest electricity costs in South America"
+      - "Massive surplus capacity"
+      - "Strategic bilateral agreements (Brazil, Argentina)"
+
+    emerging_opportunities:
+      - "Green hydrogen production"
+      - "Cryptocurrency mining"
+      - "Data centers"
+      - "Energy-intensive manufacturing"
+      - "Electric vehicle ecosystem"
+
+# =============================================================================
+# MAJOR ASSETS & COMPANIES
+# =============================================================================
+
+companies:
+  # BINATIONAL HYDROELECTRIC ENTITIES
+
+  itaipu_binacional:
+    file: "itaipu.yaml"
+    priority: P1
+    type: "binational_entity"
+    ownership: "Paraguay 50% / Brazil 50%"
+    description: "World's 2nd largest hydroelectric dam"
+    metrics:
+      installed_capacity_mw: 14,000
+      annual_production_gwh: 80,000+
+      turbines: 20
+      reservoir_area_km2: 1,350
+      construction_cost_usd: "$20B+"
+    revenue_to_paraguay_usd: "$500M+/year"
+    treaty_expiration: 2023 (renegotiated)
+    research_focus:
+      - "Treaty renegotiation impacts"
+      - "Surplus energy monetization"
+      - "Green hydrogen projects"
+      - "Infrastructure modernization"
+
+  yacyreta_binacional:
+    file: "yacyreta.yaml"
+    priority: P1
+    type: "binational_entity"
+    ownership: "Paraguay 50% / Argentina 50%"
+    description: "Major hydroelectric complex"
+    metrics:
+      installed_capacity_mw: 3,200
+      annual_production_gwh: 20,000+
+      turbines: 20
+    research_focus:
+      - "Expansion projects"
+      - "Energy distribution"
+      - "Environmental management"
+
+  # NATIONAL ELECTRICITY COMPANY
+
+  ande:
+    file: "ande.yaml"
+    priority: P1
+    type: "state_utility"
+    full_name: "Administracion Nacional de Electricidad"
+    ownership: "100% State-owned"
+    description: "National electricity company - transmission, distribution"
+    metrics:
+      customers: "1.8M+"
+      coverage: "99%"
+      employees: "8,000+"
+      transmission_lines_km: "6,500+"
+      distribution_lines_km: "80,000+"
+    business_segments:
+      - "Electricity purchase (Itaipu/Yacyreta)"
+      - "Transmission"
+      - "Distribution"
+      - "Retail sales"
+    research_focus:
+      - "Grid modernization"
+      - "Smart meter deployment"
+      - "Loss reduction"
+      - "Industrial tariffs"
+      - "EV infrastructure"
+
+  # FUEL DISTRIBUTION
+
+  petropar:
+    file: "petropar.yaml"
+    priority: P2
+    type: "state_company"
+    full_name: "Petroleos Paraguayos"
+    ownership: "100% State-owned"
+    description: "National oil company - fuel import and distribution"
+    business_segments:
+      - "Fuel import"
+      - "Refining (limited)"
+      - "Distribution"
+      - "Retail (gas stations)"
+    market_share: "25%"
+    challenges:
+      - "Competition from private sector"
+      - "Efficiency issues"
+      - "Price subsidies"
+
+  copetrol:
+    file: "copetrol.yaml"
+    priority: P2
+    type: "private"
+    description: "Major private fuel distributor"
+    market_share: "20%"
+    stations: 150+
+
+  puma_energy_paraguay:
+    file: "puma_py.yaml"
+    priority: P2
+    type: "multinational"
+    parent: "Puma Energy (Trafigura)"
+    description: "International fuel distributor"
+    market_share: "15%"
+    stations: 100+
+
+  shell_paraguay:
+    file: "shell_py.yaml"
+    priority: P3
+    type: "multinational"
+    parent: "Shell"
+    market_share: "10%"
+
+  petrobras_paraguay:
+    file: "petrobras_py.yaml"
+    priority: P3
+    type: "multinational"
+    parent: "Petrobras (Brazil)"
+    status: "Reduced operations"
+
+  # LPG DISTRIBUTION
+
+  copagaz:
+    file: "copagaz.yaml"
+    priority: P3
+    type: "private"
+    description: "LPG distribution"
+    market_position: "Leader"
+
+  gas_corona:
+    file: "gas_corona.yaml"
+    priority: P3
+    type: "private"
+    description: "LPG distribution"
+
+  # EMERGING ENERGY COMPANIES
+
+  # Green Hydrogen Initiatives
+  green_hydrogen_py:
+    file: "green_hydrogen.yaml"
+    priority: P2
+    type: "emerging"
+    description: "Green hydrogen production projects"
+    status: "Development stage"
+    potential:
+      - "Export to Europe"
+      - "Industrial use"
+      - "Transportation fuel"
+    research_focus:
+      - "Project feasibility"
+      - "Investment requirements"
+      - "Export logistics"
+
+  # Crypto Mining Operations
+  crypto_mining_py:
+    file: "crypto_mining.yaml"
+    priority: P2
+    type: "emerging"
+    description: "Bitcoin/crypto mining operations attracted by cheap power"
+    companies:
+      - "Various international miners"
+      - "Local operations"
+    regulatory_status: "Under development"
+    research_focus:
+      - "Energy consumption"
+      - "Economic impact"
+      - "Regulatory framework"
+
+  # Data Center Potential
+  data_centers_py:
+    file: "data_centers.yaml"
+    priority: P2
+    type: "emerging"
+    description: "Data center development potential"
+    current_state: "Early stage"
+    opportunity:
+      - "Low energy costs"
+      - "Regional hub potential"
+      - "Green energy appeal"
+
+  # SOLAR/WIND (Limited but growing)
+
+  solar_projects_py:
+    file: "solar.yaml"
+    priority: P4
+    type: "emerging"
+    description: "Small-scale solar projects"
+    notes: "Limited due to abundant hydro"
+
+# =============================================================================
+# ENERGY MARKET DYNAMICS
+# =============================================================================
+
+market_dynamics:
+  electricity_market:
+    structure: "State monopoly (ANDE)"
+    pricing: "Regulated, subsidized"
+    average_tariff_residential: "$0.05/kWh"
+    average_tariff_industrial: "$0.03-0.04/kWh"
+    comparison:
+      brazil: "$0.15/kWh"
+      argentina: "$0.08/kWh"
+      chile: "$0.12/kWh"
+
+  fuel_market:
+    structure: "Mixed (state + private)"
+    import_dependency: "100%"
+    key_suppliers: ["Argentina", "Brazil"]
+    pricing: "Partially regulated"
+
+  energy_exports:
+    itaipu_to_brazil:
+      volume_gwh: "40,000+"
+      price_negotiation: "Ongoing"
+      treaty_terms: "Under revision"
+    yacyreta_to_argentina:
+      volume_gwh: "10,000+"
+      status: "Stable"
+
+# =============================================================================
+# RESEARCH FOCUS & OPPORTUNITIES
+# =============================================================================
+
+research_focus:
+  themes:
+    - "Itaipu treaty renegotiation impacts"
+    - "Green hydrogen feasibility"
+    - "Crypto mining economics"
+    - "Data center development"
+    - "Industrial energy users"
+    - "Grid modernization"
+    - "EV infrastructure"
+    - "Energy storage"
+
+  key_metrics:
+    - "Electricity production/export"
+    - "Domestic consumption growth"
+    - "Industrial tariffs"
+    - "ANDE efficiency"
+    - "Investment in infrastructure"
+    - "Green hydrogen projects"
+
+  investment_opportunities:
+    high_potential:
+      - "Green hydrogen production"
+      - "Data centers"
+      - "Energy-intensive industries"
+      - "Smart grid technology"
+    medium_potential:
+      - "Crypto mining (regulatory dependent)"
+      - "EV charging infrastructure"
+      - "Solar complementary projects"
+    challenges:
+      - "ANDE modernization needs"
+      - "Transmission infrastructure"
+      - "Regulatory framework for new industries"
+
+ai_opportunities:
+  grid_management:
+    - "Demand forecasting"
+    - "Load balancing"
+    - "Predictive maintenance"
+  distribution:
+    - "Loss detection"
+    - "Theft prevention"
+    - "Smart metering analytics"
+  customer_service:
+    - "Billing optimization"
+    - "Customer support automation"

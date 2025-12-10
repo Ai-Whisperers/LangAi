@@ -1,0 +1,158 @@
+# Colombia Country Configuration
+# Growing Andean Economy
+
+country:
+  name: "Colombia"
+  code: "CO"
+  region: "latam/south_america"
+  priority: "P2_high"
+
+  metrics:
+    population: "52M"
+    gdp_usd: "$350B"
+    gdp_growth: "3.0%"
+    currency: "COP"
+    stock_exchange: "BVC (Bolsa de Valores de Colombia)"
+
+  economy:
+    description: |
+      Diversified Andean economy with strong financial sector,
+      energy resources, and growing consumer market.
+    key_sectors:
+      - "Financial Services"
+      - "Oil & Gas"
+      - "Consumer/Retail"
+      - "Manufacturing"
+      - "Mining"
+      - "Technology"
+
+# Major Business Groups
+business_groups:
+  grupo_empresarial_antioqueno:
+    alias: "GEA / Sindicato Antioqueno"
+    description: "Cross-ownership network of major Medellin companies"
+    key_companies:
+      - name: "Grupo Nutresa"
+        ticker: "NUTRESA.BVC"
+        sector: "Food Processing"
+      - name: "Grupo Sura"
+        ticker: "GRUPOSURA.BVC"
+        sector: "Financial Services"
+      - name: "Bancolombia"
+        ticker: "CIB"
+        sector: "Banking"
+      - name: "Grupo Argos"
+        ticker: "CEMARGOS.BVC"
+        sector: "Cement/Infrastructure"
+    priority: P1
+
+  grupo_aval:
+    controlling_family: "Sarmiento Angulo"
+    ticker: "AVAL.BVC"
+    key_holdings:
+      - "Banco de Bogota"
+      - "Banco de Occidente"
+      - "Banco Popular"
+      - "Banco AV Villas"
+      - "Corficolombiana"
+      - "Porvenir"
+    market_cap_usd: "$5B+"
+    priority: P1
+
+  grupo_santo_domingo:
+    controlling_family: "Santo Domingo"
+    holding: "Valorem"
+    key_holdings:
+      - "Bavaria (sold to AB InBev)"
+      - "Caracol TV"
+      - "El Tiempo"
+      - "Comunican"
+    priority: P2
+
+  organizacion_ardila_lulle:
+    controlling_family: "Ardila Lulle"
+    key_holdings:
+      - "Postobón"
+      - "RCN Television"
+      - "Incauca (sugar)"
+    priority: P2
+
+  grupo_gilinski:
+    controlling_family: "Gilinski"
+    key_holdings:
+      - "GNB Sudameris"
+      - "Nutresa stake"
+      - "Sura stake"
+    notes: "Recent aggressive expansion"
+    priority: P2
+
+# Sectors
+sectors:
+  conglomerates:
+    path: "conglomerates/"
+    companies: 8
+    priority: P1
+
+  financial_services:
+    path: "financial_services/"
+    companies: 12
+    priority: P1
+
+  energy:
+    path: "energy/"
+    companies: 8
+    priority: P1
+
+  consumer_retail:
+    path: "consumer_retail/"
+    companies: 8
+    priority: P2
+
+  industrials:
+    path: "industrials/"
+    companies: 6
+    priority: P2
+
+  technology:
+    path: "technology/"
+    companies: 6
+    priority: P2
+
+  telecommunications:
+    path: "telecommunications/"
+    companies: 4
+    priority: P2
+
+# Top Companies
+top_companies:
+  - name: "Ecopetrol"
+    ticker: "EC"
+    sector: "energy"
+    market_cap_usd: "$25B+"
+    notes: "State oil company"
+
+  - name: "Bancolombia"
+    ticker: "CIB"
+    sector: "banking"
+    market_cap_usd: "$10B+"
+
+  - name: "Grupo Nutresa"
+    ticker: "NUTRESA.BVC"
+    sector: "food"
+    market_cap_usd: "$8B"
+
+  - name: "ISA"
+    ticker: "ISA.BVC"
+    sector: "utilities"
+    market_cap_usd: "$12B"
+    parent: "Ecopetrol"
+
+  - name: "Grupo Sura"
+    ticker: "GRUPOSURA.BVC"
+    sector: "financial"
+    market_cap_usd: "$4B"
+
+  - name: "Grupo Argos"
+    ticker: "CEMARGOS.BVC"
+    sector: "cement/infra"
+    market_cap_usd: "$3B"

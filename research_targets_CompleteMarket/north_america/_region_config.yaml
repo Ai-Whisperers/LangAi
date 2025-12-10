@@ -1,0 +1,245 @@
+# North America Region Configuration
+# USA, Canada - Reference Market for Benchmarking
+
+region:
+  name: "North America"
+  code: "NA"
+  priority: "P3_medium"
+
+  description: |
+    Reference market for global benchmarking. Focus on companies
+    with LATAM operations or comparison value.
+
+  countries:
+    - name: "United States"
+      code: "US"
+      priority: P3
+      gdp_usd: "$26T"
+      population: "335M"
+
+    - name: "Canada"
+      code: "CA"
+      priority: P4
+      gdp_usd: "$2.1T"
+      population: "40M"
+
+# USA Configuration
+usa:
+  sectors:
+    technology:
+      priority: P3
+      companies:
+        # Big Tech
+        - name: "Apple"
+          ticker: "AAPL"
+          market_cap: "$3T+"
+        - name: "Microsoft"
+          ticker: "MSFT"
+          market_cap: "$3T+"
+        - name: "Alphabet/Google"
+          ticker: "GOOGL"
+          market_cap: "$2T+"
+        - name: "Amazon"
+          ticker: "AMZN"
+          market_cap: "$1.8T+"
+        - name: "Meta"
+          ticker: "META"
+          market_cap: "$1T+"
+        - name: "Nvidia"
+          ticker: "NVDA"
+          market_cap: "$3T+"
+
+        # Enterprise/Cloud
+        - name: "Salesforce"
+          ticker: "CRM"
+        - name: "Oracle"
+          ticker: "ORCL"
+        - name: "Adobe"
+          ticker: "ADBE"
+        - name: "ServiceNow"
+          ticker: "NOW"
+
+        # AI/ML Leaders
+        - name: "OpenAI"
+          type: "private"
+        - name: "Anthropic"
+          type: "private"
+        - name: "Databricks"
+          type: "private"
+
+    financial_services:
+      priority: P3
+      companies:
+        - name: "JPMorgan Chase"
+          ticker: "JPM"
+        - name: "Bank of America"
+          ticker: "BAC"
+        - name: "Goldman Sachs"
+          ticker: "GS"
+        - name: "Morgan Stanley"
+          ticker: "MS"
+        - name: "Visa"
+          ticker: "V"
+        - name: "Mastercard"
+          ticker: "MA"
+        - name: "PayPal"
+          ticker: "PYPL"
+        - name: "Square/Block"
+          ticker: "SQ"
+        - name: "Stripe"
+          type: "private"
+
+    telecommunications:
+      priority: P3
+      companies:
+        - name: "AT&T"
+          ticker: "T"
+        - name: "Verizon"
+          ticker: "VZ"
+        - name: "T-Mobile"
+          ticker: "TMUS"
+        - name: "Comcast"
+          ticker: "CMCSA"
+        - name: "Charter"
+          ticker: "CHTR"
+
+    consumer_retail:
+      priority: P3
+      companies:
+        - name: "Walmart"
+          ticker: "WMT"
+          notes: "Major LATAM presence"
+        - name: "Amazon"
+          ticker: "AMZN"
+        - name: "Costco"
+          ticker: "COST"
+        - name: "Home Depot"
+          ticker: "HD"
+        - name: "Target"
+          ticker: "TGT"
+        - name: "Starbucks"
+          ticker: "SBUX"
+        - name: "McDonald's"
+          ticker: "MCD"
+        - name: "Nike"
+          ticker: "NKE"
+        - name: "Coca-Cola"
+          ticker: "KO"
+        - name: "PepsiCo"
+          ticker: "PEP"
+
+    energy:
+      priority: P4
+      companies:
+        - name: "ExxonMobil"
+          ticker: "XOM"
+        - name: "Chevron"
+          ticker: "CVX"
+        - name: "NextEra Energy"
+          ticker: "NEE"
+        - name: "Duke Energy"
+          ticker: "DUK"
+
+    healthcare:
+      priority: P4
+      companies:
+        - name: "UnitedHealth"
+          ticker: "UNH"
+        - name: "Johnson & Johnson"
+          ticker: "JNJ"
+        - name: "Pfizer"
+          ticker: "PFE"
+        - name: "AbbVie"
+          ticker: "ABBV"
+        - name: "Merck"
+          ticker: "MRK"
+
+    industrials:
+      priority: P4
+      companies:
+        - name: "Caterpillar"
+          ticker: "CAT"
+        - name: "John Deere"
+          ticker: "DE"
+        - name: "3M"
+          ticker: "MMM"
+        - name: "Honeywell"
+          ticker: "HON"
+        - name: "Boeing"
+          ticker: "BA"
+
+    transportation:
+      priority: P3
+      companies:
+        - name: "American Airlines"
+          ticker: "AAL"
+        - name: "Delta Air Lines"
+          ticker: "DAL"
+        - name: "United Airlines"
+          ticker: "UAL"
+        - name: "FedEx"
+          ticker: "FDX"
+        - name: "UPS"
+          ticker: "UPS"
+        - name: "Uber"
+          ticker: "UBER"
+
+# Canada Configuration
+canada:
+  sectors:
+    financial_services:
+      priority: P4
+      companies:
+        - name: "Royal Bank of Canada"
+          ticker: "RY"
+        - name: "Toronto-Dominion Bank"
+          ticker: "TD"
+        - name: "Bank of Nova Scotia"
+          ticker: "BNS"
+          notes: "Major LATAM presence"
+        - name: "BMO"
+          ticker: "BMO"
+        - name: "CIBC"
+          ticker: "CM"
+
+    mining:
+      priority: P3
+      companies:
+        - name: "Barrick Gold"
+          ticker: "GOLD"
+          notes: "LATAM operations"
+        - name: "Franco-Nevada"
+          ticker: "FNV"
+        - name: "Agnico Eagle"
+          ticker: "AEM"
+        - name: "Teck Resources"
+          ticker: "TECK"
+        - name: "First Quantum"
+          ticker: "FM.TO"
+
+    energy:
+      priority: P4
+      companies:
+        - name: "Suncor"
+          ticker: "SU"
+        - name: "Canadian Natural"
+          ticker: "CNQ"
+        - name: "Enbridge"
+          ticker: "ENB"
+
+    technology:
+      priority: P4
+      companies:
+        - name: "Shopify"
+          ticker: "SHOP"
+        - name: "Constellation Software"
+          ticker: "CSU.TO"
+
+# Research Focus
+research_focus:
+  purpose: "Benchmarking and comparison with LATAM targets"
+  themes:
+    - "Global best practices"
+    - "Technology trends"
+    - "LATAM-exposed multinationals"
+    - "M&A comparables"

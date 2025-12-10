@@ -1,0 +1,164 @@
+# Peru Country Configuration
+# Mining-Rich Andean Economy
+
+country:
+  name: "Peru"
+  code: "PE"
+  region: "latam/south_america"
+  priority: "P2_high"
+
+  metrics:
+    population: "34M"
+    gdp_usd: "$240B"
+    gdp_growth: "2.5%"
+    currency: "PEN"
+    stock_exchange: "BVL (Bolsa de Valores de Lima)"
+
+  economy:
+    description: |
+      Major copper and precious metals producer, growing financial
+      sector, emerging retail and consumer markets.
+    key_sectors:
+      - "Mining"
+      - "Financial Services"
+      - "Retail"
+      - "Construction"
+      - "Agriculture"
+      - "Fishing"
+
+# Major Business Groups
+business_groups:
+  grupo_breca:
+    alias: "Grupo Brescia"
+    controlling_family: "Brescia Cafferata"
+    key_holdings:
+      - name: "Minsur"
+        sector: "Mining (Tin, Gold)"
+      - name: "BBVA Peru stake"
+        sector: "Banking"
+      - name: "Rímac Seguros"
+        sector: "Insurance"
+      - name: "Tasa"
+        sector: "Fishing"
+      - name: "Intursa"
+        sector: "Hotels"
+    priority: P1
+
+  grupo_romero:
+    controlling_family: "Romero"
+    key_holdings:
+      - name: "Credicorp"
+        ticker: "BAP"
+        sector: "Banking"
+      - name: "BCP (Banco de Credito)"
+        sector: "Banking"
+      - name: "Alicorp"
+        ticker: "ALICORC1.BVL"
+        sector: "Consumer Goods"
+      - name: "Primax"
+        sector: "Fuel Distribution"
+      - name: "Ransa"
+        sector: "Logistics"
+    priority: P1
+
+  intercorp:
+    controlling_family: "Rodriguez-Pastor"
+    key_holdings:
+      - name: "Interbank"
+        sector: "Banking"
+      - name: "Supermercados Peruanos"
+        sector: "Retail"
+      - name: "InRetail"
+        ticker: "INRETC1.BVL"
+        sector: "Retail"
+      - name: "Interseguro"
+        sector: "Insurance"
+      - name: "Innova Schools"
+        sector: "Education"
+    priority: P1
+
+  grupo_hochschild:
+    controlling_family: "Hochschild"
+    key_holdings:
+      - name: "Hochschild Mining"
+        ticker: "HOC.L"
+        sector: "Precious Metals"
+      - name: "Cementos Pacasmayo"
+        sector: "Cement"
+    priority: P2
+
+  grana_y_montero:
+    type: "Construction/Engineering"
+    ticker: "GRAMONC1.BVL"
+    status: "Restructured post-Odebrecht"
+    priority: P3
+
+# Sectors
+sectors:
+  mining:
+    path: "mining/"
+    companies: 15
+    priority: P1
+    notes: "Major copper, gold, silver producer"
+
+  financial_services:
+    path: "financial_services/"
+    companies: 10
+    priority: P1
+
+  conglomerates:
+    path: "conglomerates/"
+    companies: 6
+    priority: P1
+
+  retail:
+    path: "retail/"
+    companies: 6
+    priority: P2
+
+  energy:
+    path: "energy/"
+    companies: 5
+    priority: P2
+
+  construction:
+    path: "construction/"
+    companies: 5
+    priority: P3
+
+  agriculture_fishing:
+    path: "agriculture_fishing/"
+    companies: 8
+    priority: P2
+
+# Top Companies
+top_companies:
+  - name: "Credicorp"
+    ticker: "BAP"
+    sector: "banking"
+    market_cap_usd: "$12B+"
+    notes: "Largest Peruvian financial group"
+
+  - name: "Southern Copper Peru"
+    parent: "Grupo Mexico"
+    sector: "mining"
+
+  - name: "Buenaventura"
+    ticker: "BVN"
+    sector: "mining"
+    market_cap_usd: "$4B"
+
+  - name: "InRetail"
+    ticker: "INRETC1.BVL"
+    sector: "retail"
+    market_cap_usd: "$3B"
+
+  - name: "Alicorp"
+    ticker: "ALICORC1.BVL"
+    sector: "consumer"
+    market_cap_usd: "$3B"
+
+  - name: "Ferreycorp"
+    ticker: "FERREYC1.BVL"
+    sector: "equipment"
+    market_cap_usd: "$1B"

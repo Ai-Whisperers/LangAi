@@ -1,0 +1,275 @@
+# Global FinTech Sector
+# Cross-Regional View - High Priority
+
+sector:
+  name: "FinTech"
+  code: "FIN_FTK"
+  priority: P1_critical
+
+  description: |
+    Global fintech ecosystem with focus on LATAM - one of the
+    fastest growing fintech markets globally.
+
+# LATAM FinTech Ecosystem
+latam_fintech:
+  market_overview:
+    total_startups: "2,500+"
+    total_funding_usd: "$15B+ (2021-2023)"
+    unicorns: 20+
+    key_hubs: ["Brazil", "Mexico", "Argentina", "Colombia", "Chile"]
+
+  subsectors:
+    digital_banking:
+      description: "Neobanks and digital-first banks"
+      market_leaders:
+        - name: "Nubank"
+          ticker: "NU (NYSE)"
+          country: "Brazil"
+          valuation_usd: "45B"
+          customers: "90M+"
+          products: ["Credit cards", "Personal loans", "Savings", "Insurance"]
+          priority: P1
+
+        - name: "Inter"
+          ticker: "INBR32"
+          country: "Brazil"
+          customers: "30M+"
+          priority: P2
+
+        - name: "C6 Bank"
+          country: "Brazil"
+          investor: "JP Morgan"
+          customers: "20M+"
+          priority: P2
+
+        - name: "Ualá"
+          country: "Argentina"
+          valuation_usd: "2.5B"
+          customers: "5M+"
+          priority: P2
+
+        - name: "Klar"
+          country: "Mexico"
+          priority: P3
+
+        - name: "Albo"
+          country: "Mexico"
+          priority: P3
+
+        - name: "Nequi"
+          country: "Colombia"
+          parent: "Bancolombia"
+          customers: "15M+"
+          priority: P2
+
+        - name: "Rappipay"
+          country: "Colombia"
+          parent: "Rappi"
+          priority: P3
+
+    payments:
+      description: "Digital payments and merchant services"
+      market_leaders:
+        - name: "MercadoPago"
+          parent: "MercadoLibre"
+          country: "Argentina/Brazil"
+          tpv_usd: "$150B+"
+          priority: P1
+
+        - name: "PicPay"
+          country: "Brazil"
+          users: "65M+"
+          priority: P2
+
+        - name: "Stone"
+          ticker: "STNE"
+          country: "Brazil"
+          type: "merchant_acquiring"
+          priority: P2
+
+        - name: "PagSeguro"
+          ticker: "PAGS"
+          country: "Brazil"
+          type: "merchant_acquiring"
+          priority: P2
+
+        - name: "Clip"
+          country: "Mexico"
+          type: "merchant_acquiring"
+          priority: P2
+
+        - name: "EBANX"
+          country: "Brazil"
+          type: "cross_border_payments"
+          priority: P2
+
+        - name: "dLocal"
+          ticker: "DLO"
+          country: "Uruguay"
+          type: "cross_border_payments"
+          priority: P2
+
+    lending:
+      description: "Digital lending and credit"
+      market_leaders:
+        - name: "Creditas"
+          country: "Brazil"
+          valuation_usd: "4B"
+          type: "secured_lending"
+          priority: P2
+
+        - name: "Konfio"
+          country: "Mexico"
+          type: "sme_lending"
+          priority: P3
+
+        - name: "Kueski"
+          country: "Mexico"
+          type: "consumer_lending"
+          priority: P3
+
+        - name: "Cora"
+          country: "Brazil"
+          type: "sme_banking"
+          priority: P3
+
+    crypto_blockchain:
+      description: "Cryptocurrency and blockchain"
+      market_leaders:
+        - name: "Mercado Bitcoin"
+          country: "Brazil"
+          type: "crypto_exchange"
+          priority: P3
+
+        - name: "Bitso"
+          country: "Mexico"
+          type: "crypto_exchange"
+          users: "7M+"
+          priority: P2
+
+        - name: "Ripio"
+          country: "Argentina"
+          type: "crypto_platform"
+          priority: P3
+
+        - name: "Buda.com"
+          country: "Chile"
+          type: "crypto_exchange"
+          priority: P4
+
+    insurtech:
+      description: "Digital insurance"
+      market_leaders:
+        - name: "Justos"
+          country: "Brazil"
+          type: "auto_insurance"
+          priority: P3
+
+        - name: "Coru"
+          country: "Mexico"
+          type: "insurance_marketplace"
+          priority: P4
+
+        - name: "Pier"
+          country: "Brazil"
+          type: "insurance_platform"
+          priority: P4
+
+    wealth_management:
+      description: "Investment and wealth tech"
+      market_leaders:
+        - name: "XP Inc"
+          ticker: "XP"
+          country: "Brazil"
+          aum_usd: "$200B+"
+          priority: P2
+
+        - name: "Warren"
+          country: "Brazil"
+          type: "robo_advisor"
+          priority: P3
+
+        - name: "GBM+"
+          country: "Mexico"
+          type: "trading_platform"
+          priority: P3
+
+    b2b_fintech:
+      description: "Business financial services"
+      market_leaders:
+        - name: "Contabilizei"
+          country: "Brazil"
+          type: "accounting_saas"
+          priority: P3
+
+        - name: "Omie"
+          country: "Brazil"
+          type: "erp_fintech"
+          priority: P3
+
+        - name: "Nuvemshop"
+          country: "Argentina"
+          type: "ecommerce_platform"
+          priority: P3
+
+# Global Reference Companies
+global_fintech_leaders:
+  digital_banks:
+    - name: "Chime"
+      country: "USA"
+      priority: P4
+    - name: "Revolut"
+      country: "UK"
+      priority: P4
+    - name: "N26"
+      country: "Germany"
+      priority: P4
+
+  payments:
+    - name: "Stripe"
+      country: "USA"
+      priority: P3
+    - name: "Square/Block"
+      ticker: "SQ"
+      country: "USA"
+      priority: P3
+    - name: "Adyen"
+      ticker: "ADYEN"
+      country: "Netherlands"
+      priority: P4
+
+  lending:
+    - name: "SoFi"
+      ticker: "SOFI"
+      country: "USA"
+      priority: P4
+    - name: "Affirm"
+      ticker: "AFRM"
+      country: "USA"
+      priority: P4
+
+# Research Focus
+research_focus:
+  themes:
+    - "Digital banking adoption"
+    - "Payments revolution (PIX, CoDi)"
+    - "Financial inclusion"
+    - "Embedded finance"
+    - "Open banking/Open Finance"
+    - "Crypto regulation"
+    - "B2B fintech growth"
+
+  key_metrics:
+    - "Customer acquisition cost"
+    - "Customer lifetime value"
+    - "Take rate"
+    - "TPV growth"
+    - "NIM for lenders"
+    - "Unit economics"
+    - "Funding rounds"
+
+  regulatory_environment:
+    brazil: "PIX, Open Banking mandate"
+    mexico: "Ley Fintech"
+    colombia: "Sandbox approach"
+    chile: "New fintech law"

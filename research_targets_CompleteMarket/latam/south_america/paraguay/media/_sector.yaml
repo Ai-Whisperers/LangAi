@@ -1,0 +1,524 @@
+# Paraguay - Media & Entertainment Sector
+# Traditional and Digital Media Landscape
+
+sector:
+  name: "Media & Entertainment"
+  code: "MED"
+  country: "paraguay"
+  priority: P3_medium
+
+  description: |
+    Paraguay's media landscape includes traditional TV, radio, and print
+    alongside rapidly growing digital media. A few conglomerates dominate
+    traditional media. Digital advertising and streaming are growing fast.
+    Strong Guarani language content market.
+
+  market_metrics:
+    advertising_market_usd: "$150M+"
+    tv_penetration: "95%"
+    internet_penetration: "75%"
+    social_media_users: "4M+"
+    digital_ad_share: "35%"
+    streaming_adoption: "Growing rapidly"
+
+  strategic_importance:
+    characteristics:
+      - "Concentrated ownership"
+      - "Strong local content"
+      - "Bilingual market (Spanish/Guarani)"
+      - "Digital transition underway"
+    challenges:
+      - "Small market size"
+      - "Limited ad budgets"
+      - "Piracy concerns"
+      - "Talent drain"
+    opportunities:
+      - "Digital transformation"
+      - "Streaming services"
+      - "Digital advertising"
+      - "Content production"
+      - "Guarani-language content"
+
+  ai_potential:
+    areas:
+      - "Content recommendation"
+      - "Ad targeting"
+      - "Automated content creation"
+      - "Audience analytics"
+      - "Translation (Spanish/Guarani)"
+
+# =============================================================================
+# COMPANIES
+# =============================================================================
+
+companies:
+  # TELEVISION NETWORKS
+
+  abc_tv:
+    file: "abc_tv.yaml"
+    priority: P1
+    type: "television"
+    parent: "Grupo Vierci"
+    channel: "Canal 5"
+    description: "Leading TV network"
+    programming:
+      - "News"
+      - "Entertainment"
+      - "Sports"
+    reach: "National"
+    market_share: "25%+"
+
+  telefuturo:
+    file: "telefuturo.yaml"
+    priority: P1
+    type: "television"
+    parent: "Grupo Cartes"
+    channel: "Canal 4"
+    description: "Major TV network"
+    programming:
+      - "News"
+      - "Entertainment"
+      - "Local programming"
+    market_share: "20%+"
+
+  sntt:
+    file: "sntt.yaml"
+    priority: P1
+    type: "television"
+    full_name: "Sistema Nacional de Television"
+    ownership: "State (public TV)"
+    channel: "Canal 9"
+    focus: "Public interest programming"
+
+  rpc_tv:
+    file: "rpc_tv.yaml"
+    priority: P2
+    type: "television"
+    channel: "Canal 13"
+    description: "General entertainment"
+    programming:
+      - "Entertainment"
+      - "Sports"
+      - "Movies"
+
+  canal_latele:
+    file: "latele.yaml"
+    priority: P2
+    type: "television"
+    channel: "Canal 11"
+    description: "News and entertainment"
+
+  trece_tv:
+    file: "trece_tv.yaml"
+    priority: P2
+    type: "television"
+    description: "Entertainment channel"
+
+  paravisio:
+    file: "paravision.yaml"
+    priority: P3
+    type: "television"
+    description: "Regional channel"
+
+  # CABLE & SATELLITE TV
+
+  tigo_tv:
+    file: "tigo_tv.yaml"
+    priority: P1
+    type: "pay_tv"
+    parent: "Millicom (Tigo)"
+    services:
+      - "Cable TV"
+      - "Satellite"
+      - "OTT streaming"
+    subscribers: "400,000+"
+    market_share: "50%+"
+
+  personal_tv:
+    file: "personal_tv.yaml"
+    priority: P1
+    type: "pay_tv"
+    parent: "Telecom Personal"
+    services:
+      - "IPTV"
+      - "Streaming"
+    subscribers: "150,000+"
+
+  claro_tv:
+    file: "claro_tv.yaml"
+    priority: P2
+    type: "pay_tv"
+    parent: "America Movil (Claro)"
+    services: "Cable and satellite TV"
+    market_share: "15%"
+
+  copaco_tv:
+    file: "copaco_tv.yaml"
+    priority: P3
+    type: "pay_tv"
+    parent: "COPACO"
+    services: "IPTV"
+    status: "Growing"
+
+  # STREAMING & OTT
+
+  tigo_star:
+    file: "tigo_star.yaml"
+    priority: P2
+    type: "streaming"
+    parent: "Millicom"
+    description: "OTT platform"
+    content: "Movies, series, sports"
+
+  netflix_py:
+    file: "netflix_py.yaml"
+    priority: P2
+    type: "streaming"
+    parent: "Netflix"
+    subscribers: "Growing"
+    status: "Major player"
+
+  amazon_prime_py:
+    file: "amazon_prime_py.yaml"
+    priority: P3
+    type: "streaming"
+    parent: "Amazon"
+
+  disney_plus_py:
+    file: "disney_py.yaml"
+    priority: P3
+    type: "streaming"
+    parent: "Disney"
+
+  # RADIO NETWORKS
+
+  radio_nanduti:
+    file: "nanduti.yaml"
+    priority: P2
+    type: "radio"
+    frequency: "1020 AM"
+    description: "Leading news radio"
+    focus: "News, talk, political commentary"
+    reach: "National"
+
+  radio_cardinal:
+    file: "cardinal.yaml"
+    priority: P2
+    type: "radio"
+    frequency: "FM"
+    description: "Popular FM station"
+    focus: "Music, entertainment"
+
+  radio_1ro_de_marzo:
+    file: "1marzo.yaml"
+    priority: P2
+    type: "radio"
+    description: "News and sports"
+
+  radio_venus:
+    file: "venus.yaml"
+    priority: P3
+    type: "radio"
+    focus: "Music"
+
+  radio_rock_and_pop:
+    file: "rock_pop.yaml"
+    priority: P3
+    type: "radio"
+    focus: "Rock music, youth"
+
+  sistema_de_radios_abc:
+    file: "abc_radio.yaml"
+    priority: P2
+    type: "radio_network"
+    parent: "Grupo Vierci"
+    stations: 5+
+    description: "Radio network"
+
+  # PRINT MEDIA
+
+  abc_color:
+    file: "abc_color.yaml"
+    priority: P1
+    type: "newspaper"
+    parent: "Grupo Vierci"
+    founded: 1967
+    circulation: "40,000+ daily"
+    description: "Leading newspaper"
+    format: "Print + Digital"
+    website: "abc.com.py"
+    digital_reach: "5M+ monthly visitors"
+
+  ultima_hora:
+    file: "ultima_hora.yaml"
+    priority: P1
+    type: "newspaper"
+    parent: "Grupo Cartes"
+    founded: 1973
+    circulation: "25,000+ daily"
+    description: "Major newspaper"
+    format: "Print + Digital"
+    website: "ultimahora.com"
+
+  la_nacion:
+    file: "la_nacion.yaml"
+    priority: P2
+    type: "newspaper"
+    founded: 1995
+    description: "Daily newspaper"
+    format: "Print + Digital"
+    website: "lanacion.com.py"
+
+  cinco_dias:
+    file: "5dias.yaml"
+    priority: P2
+    type: "newspaper"
+    full_name: "5 Dias"
+    description: "Business newspaper"
+    focus: "Economic news"
+    website: "5dias.com.py"
+
+  popular:
+    file: "popular.yaml"
+    priority: P3
+    type: "newspaper"
+    description: "Popular/tabloid"
+
+  cronica:
+    file: "cronica.yaml"
+    priority: P3
+    type: "newspaper"
+    description: "Daily newspaper"
+
+  # DIGITAL MEDIA
+
+  abc_digital:
+    file: "abc_digital.yaml"
+    priority: P1
+    type: "digital_media"
+    parent: "Grupo Vierci"
+    website: "abc.com.py"
+    traffic: "Top news site"
+    services:
+      - "News portal"
+      - "Video"
+      - "Social media"
+
+  hoy_paraguay:
+    file: "hoy_py.yaml"
+    priority: P2
+    type: "digital_media"
+    description: "Digital news portal"
+    website: "hoy.com.py"
+
+  ea_paraguay:
+    file: "ea_py.yaml"
+    priority: P2
+    type: "digital_media"
+    description: "Digital portal"
+    website: "ea.com.py"
+
+  paraguayo_cubano:
+    file: "py_cubano.yaml"
+    priority: P3
+    type: "digital_media"
+    description: "Entertainment site"
+
+  # ADVERTISING & MARKETING
+
+  bbdo_paraguay:
+    file: "bbdo_py.yaml"
+    priority: P2
+    type: "advertising_agency"
+    parent: "BBDO/Omnicom"
+    services:
+      - "Creative"
+      - "Media planning"
+      - "Digital"
+
+  publicidad_prado:
+    file: "prado.yaml"
+    priority: P2
+    type: "advertising_agency"
+    description: "Local agency"
+    services:
+      - "Full service"
+      - "Traditional and digital"
+
+  adman_media:
+    file: "adman.yaml"
+    priority: P2
+    type: "advertising_agency"
+    description: "Digital focused agency"
+
+  crea_publicidad:
+    file: "crea.yaml"
+    priority: P3
+    type: "advertising_agency"
+    services: "Creative and media"
+
+  wpp_paraguay:
+    file: "wpp_py.yaml"
+    priority: P2
+    type: "advertising_holding"
+    parent: "WPP"
+    agencies: "Multiple"
+
+  # DIGITAL MARKETING
+
+  digitas_py:
+    file: "digitas_py.yaml"
+    priority: P3
+    type: "digital_agency"
+    focus: "Digital marketing"
+
+  social_media_py:
+    file: "social_media_py.yaml"
+    priority: P3
+    type: "digital_agency"
+    focus: "Social media management"
+
+  google_ads_py:
+    file: "google_ads_py.yaml"
+    priority: P3
+    type: "digital_advertising"
+    description: "Digital ad market"
+
+  meta_advertising_py:
+    file: "meta_py.yaml"
+    priority: P3
+    type: "digital_advertising"
+    parent: "Meta"
+    platforms: ["Facebook", "Instagram"]
+
+  # ENTERTAINMENT & EVENTS
+
+  gmp_producciones:
+    file: "gmp.yaml"
+    priority: P3
+    type: "entertainment_production"
+    description: "Event production"
+    events:
+      - "Concerts"
+      - "Corporate events"
+      - "Sports events"
+
+  t4f_paraguay:
+    file: "t4f_py.yaml"
+    priority: P3
+    type: "entertainment"
+    parent: "Time For Fun (Brazil)"
+    events: "Major concerts"
+
+  # CINEMA
+
+  cinemark_paraguay:
+    file: "cinemark_py.yaml"
+    priority: P2
+    type: "cinema"
+    parent: "Cinemark"
+    locations:
+      - "Shopping del Sol"
+      - "Mariscal Lopez"
+    screens: 15+
+
+  village_cines_py:
+    file: "village_py.yaml"
+    priority: P2
+    type: "cinema"
+    parent: "Village Cines (Argentina)"
+    locations: 3+
+
+  # MUSIC INDUSTRY
+
+  paraguay_music:
+    file: "py_music.yaml"
+    priority: P3
+    type: "music_industry"
+    description: "Local music market"
+    genres:
+      - "Polka paraguaya"
+      - "Guarania"
+      - "Pop"
+      - "Latin"
+
+  sony_music_py:
+    file: "sony_music_py.yaml"
+    priority: P3
+    type: "music_label"
+    parent: "Sony Music"
+
+  universal_music_py:
+    file: "universal_py.yaml"
+    priority: P3
+    type: "music_label"
+    parent: "Universal Music"
+
+  # ESPORTS & GAMING
+
+  esports_py:
+    file: "esports_py.yaml"
+    priority: P3
+    type: "esports"
+    description: "Emerging esports scene"
+    status: "Growing"
+    games: ["FIFA", "League of Legends", "Counter-Strike"]
+
+# =============================================================================
+# MARKET STRUCTURE
+# =============================================================================
+
+market_structure:
+  ownership_concentration:
+    grupo_vierci: ["ABC Color", "ABC TV", "Radio network"]
+    grupo_cartes: ["Ultima Hora", "Telefuturo"]
+    multinationals: ["Pay TV", "Streaming", "Agencies"]
+
+  advertising_spend:
+    television: "40%"
+    digital: "35%"
+    radio: "12%"
+    print: "8%"
+    outdoor: "5%"
+
+  digital_landscape:
+    social_media: ["Facebook", "Instagram", "TikTok", "YouTube"]
+    top_platforms: "Facebook leads, Instagram growing"
+    local_content: "Strong demand"
+
+# =============================================================================
+# RESEARCH FOCUS
+# =============================================================================
+
+research_focus:
+  themes:
+    - "Digital transformation"
+    - "Streaming adoption"
+    - "Digital advertising growth"
+    - "Content production"
+    - "Media ownership"
+    - "Audience measurement"
+
+  key_metrics:
+    - "TV ratings"
+    - "Digital traffic"
+    - "Ad spending"
+    - "Streaming subscribers"
+    - "Social media engagement"
+    - "Print circulation"
+
+ai_opportunities:
+  content:
+    - "Automated content creation"
+    - "Translation (Guarani/Spanish)"
+    - "Content recommendation"
+    - "Video summarization"
+  advertising:
+    - "Programmatic buying"
+    - "Audience targeting"
+    - "Performance optimization"
+    - "Creative generation"
+  operations:
+    - "Audience analytics"
+    - "Scheduling optimization"
+    - "Content moderation"

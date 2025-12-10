@@ -1,0 +1,110 @@
+# Brazil - Conglomerates Sector
+# Major diversified business groups
+
+sector:
+  name: "Conglomerates"
+  code: "DIV_CON"
+  country: "brazil"
+  priority: P1_critical
+
+  description: |
+    Brazil's largest diversified business groups, typically family-controlled
+    with holdings across multiple sectors including finance, industry,
+    energy, and consumer goods.
+
+  market_characteristics:
+    - "Family-controlled ownership dominant"
+    - "Cross-sector diversification"
+    - "Strong political connections"
+    - "Multi-generational wealth"
+    - "Complex holding structures"
+
+# Companies in this sector
+companies:
+  # Tier 1 - Major Conglomerates
+  itausa:
+    file: "itausa.yaml"
+    priority: P1
+    market_cap_usd: "20B+"
+    key_holdings: ["Itau Unibanco", "Dexco", "Alpargatas"]
+
+  votorantim:
+    file: "votorantim.yaml"
+    priority: P1
+    market_cap_usd: "15B+"
+    key_holdings: ["Votorantim Cimentos", "CBA", "Nexa Resources"]
+
+  jf_investimentos:
+    file: "jf_investimentos.yaml"
+    priority: P1
+    market_cap_usd: "30B+"
+    key_holdings: ["JBS", "Eldorado Celulose", "Flora"]
+
+  cosan:
+    file: "cosan.yaml"
+    priority: P1
+    market_cap_usd: "12B+"
+    key_holdings: ["Raizen", "Compass", "Rumo", "Moove"]
+
+  ultrapar:
+    file: "ultrapar.yaml"
+    priority: P1
+    market_cap_usd: "8B+"
+    key_holdings: ["Ipiranga", "Ultragaz", "Ultracargo"]
+
+  # Tier 2 - Large Conglomerates
+  odebrecht_novonor:
+    file: "odebrecht_novonor.yaml"
+    priority: P2
+    notes: "Restructured after Lava Jato"
+
+  andrade_gutierrez:
+    file: "andrade_gutierrez.yaml"
+    priority: P2
+    key_holdings: ["AG Concessoes", "CCR stake"]
+
+  camargo_correa:
+    file: "camargo_correa.yaml"
+    priority: P2
+    key_holdings: ["CPFL", "InterCement", "Alpargatas stake"]
+
+  safra_group:
+    file: "safra_group.yaml"
+    priority: P2
+    key_holdings: ["Banco Safra", "Safra National Bank NY"]
+
+  btg_pactual:
+    file: "btg_pactual.yaml"
+    priority: P2
+    key_holdings: ["BTG Pactual", "Banco Pan"]
+
+  # Tier 3 - Regional/Sector Conglomerates
+  grupo_mateus:
+    file: "grupo_mateus.yaml"
+    priority: P3
+    sector_focus: "Retail"
+
+  ermirio_moraes_family:
+    file: "ermirio_moraes.yaml"
+    priority: P3
+    notes: "Votorantim controlling family"
+
+  moreira_salles_family:
+    file: "moreira_salles.yaml"
+    priority: P3
+    notes: "Itau founding family"
+
+research_focus:
+  themes:
+    - "Ownership structure and governance"
+    - "Succession planning"
+    - "Digital transformation investments"
+    - "ESG initiatives"
+    - "Portfolio optimization"
+
+  key_metrics:
+    - "Sum-of-parts valuation"
+    - "Holding discount"
+    - "NAV breakdown"
+    - "Dividend policy"
+    - "Capital allocation"
