@@ -45,13 +45,7 @@ echo  Press Ctrl+C to stop
 echo ========================================
 echo.
 
-REM Try using langgraph command if in PATH, otherwise use python -m
-where langgraph >nul 2>nul
-if %errorlevel%==0 (
-    langgraph dev
-) else (
-    echo Using fallback method (langgraph not in PATH)...
-    python -c "from langgraph_cli.cli import cli; cli()" dev
-)
+REM Use langgraph dev command
+langgraph dev --host 0.0.0.0 --port 8123
 
 pause
