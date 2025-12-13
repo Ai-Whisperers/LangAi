@@ -29,17 +29,15 @@ Usage:
     )
 """
 
-import os
 import time
-import logging
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
-from datetime import datetime
 
 from ..config import get_config
 from .client_factory import safe_extract_text
+from ..utils import get_config, get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # LangChain imports with graceful fallback
 try:
@@ -239,7 +237,7 @@ def invoke_with_tracing(
         tags=tags or [],
         metadata={
             **(metadata or {}),
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": utc_now().isoformat(),
             "model": config.llm_model,
         },
         run_name=run_name or "llm_invoke",
@@ -285,7 +283,7 @@ def invoke_with_tracing(
     # Build trace URL
     trace_url = None
     if run_id:
-        project = os.environ.get("LANGCHAIN_PROJECT", "langai-research")
+        project = get_config("LANGCHAIN_PROJECT", default="langai-research")
         trace_url = f"https://smith.langchain.com/o/default/projects/p/{project}/r/{run_id}"
 
     return TracedLLMResponse(
@@ -340,7 +338,7 @@ async def ainvoke_with_tracing(
         tags=tags or [],
         metadata={
             **(metadata or {}),
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": utc_now().isoformat(),
             "model": config.llm_model,
         },
         run_name=run_name or "llm_ainvoke",

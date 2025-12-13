@@ -35,11 +35,11 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from threading import Lock
 import time
-import json
 
 from anthropic import Anthropic
 
 from .client_factory import get_anthropic_client
+from ..utils import utc_now
 
 
 @dataclass
@@ -165,7 +165,7 @@ class BatchProcessor:
                 batch_id=batch.id,
                 status="created",
                 total_requests=len(requests),
-                created_at=datetime.utcnow()
+                created_at=utc_now()
             )
 
         return batch.id

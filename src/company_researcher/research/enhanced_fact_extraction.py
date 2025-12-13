@@ -13,14 +13,13 @@ Extracts structured facts from unstructured source content with:
 """
 
 import re
-import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple, Set
+from typing import Dict, List, Optional, Any, Tuple
 from enum import Enum
-import json
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class FactType(Enum):
@@ -116,7 +115,7 @@ class ExtractionResult:
     source_title: str
     facts: List[ExtractedFact]
     raw_text: str
-    extraction_time: datetime = field(default_factory=datetime.now)
+    extraction_time: datetime = field(default_factory=utc_now)
 
     @property
     def fact_count(self) -> int:

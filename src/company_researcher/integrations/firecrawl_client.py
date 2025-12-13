@@ -9,13 +9,12 @@ Firecrawl converts websites to clean, LLM-ready markdown with support for:
 - Web search
 """
 
-import logging
-import os
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel
+from ..utils import get_config, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -115,7 +114,7 @@ class FirecrawlClient:
         Args:
             api_key: Firecrawl API key. If not provided, reads from FIRECRAWL_API_KEY env var.
         """
-        self.api_key = api_key or os.getenv("FIRECRAWL_API_KEY")
+        self.api_key = api_key or get_config("FIRECRAWL_API_KEY")
         self._app = None
 
     def _get_app(self):

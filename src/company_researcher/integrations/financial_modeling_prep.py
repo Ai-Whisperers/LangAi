@@ -7,13 +7,13 @@ Provides: Financial statements, ratios, DCF valuations, company profiles
 Documentation: https://site.financialmodelingprep.com/developer/docs
 """
 
-import logging
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from .base_client import BaseAPIClient
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass

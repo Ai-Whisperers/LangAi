@@ -20,15 +20,15 @@ Usage:
 
 import asyncio
 from enum import Enum
-from typing import Dict, Any, List, Optional, Callable, Tuple, Set
+from typing import Dict, Any, List, Optional, Callable, Set
 from dataclasses import dataclass, field
 from datetime import datetime
 from collections import defaultdict
 import hashlib
 import statistics
-import logging
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ConsensusStrategy(Enum):
@@ -82,7 +82,7 @@ class AgentResult:
     confidence: float
     execution_time: float
     metadata: Dict[str, Any] = field(default_factory=dict)
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
 
     @property
     def result_hash(self) -> str:
@@ -118,7 +118,7 @@ class SwarmResult:
     execution_time: float
     confidence: float
     coverage_score: float           # How many aspects were covered
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
 
 
 class AgentWrapper:
@@ -139,7 +139,7 @@ class AgentWrapper:
 
     async def execute(self, task: Dict[str, Any]) -> AgentResult:
         """Execute the agent and return result."""
-        start_time = datetime.now()
+        start_time = utc_now()
 
         try:
             # Execute the agent function
@@ -151,7 +151,7 @@ class AgentWrapper:
             # Extract confidence if present
             confidence = result.pop("confidence", 0.8) if isinstance(result, dict) else 0.8
 
-            execution_time = (datetime.now() - start_time).total_seconds()
+            execution_time = (utc_now() - start_time).total_seconds()
             self.execution_history.append(execution_time)
 
             return AgentResult(
@@ -164,7 +164,7 @@ class AgentWrapper:
 
         except Exception as e:
             logger.error(f"Agent {self.agent_id} failed: {e}")
-            execution_time = (datetime.now() - start_time).total_seconds()
+            execution_time = (utc_now() - start_time).total_seconds()
 
             return AgentResult(
                 agent_id=self.agent_id,
@@ -233,7 +233,7 @@ class SwarmOrchestrator:
         Returns:
             SwarmResult with consensus result
         """
-        start_time = datetime.now()
+        start_time = utc_now()
         task_id = hashlib.md5(str(task).encode()).hexdigest()[:8]
         task_description = task.get("description", str(task)[:100])
 
@@ -270,7 +270,7 @@ class SwarmOrchestrator:
                 agent_results=agent_results,
                 conflicts_found=0,
                 conflicts_resolved=0,
-                execution_time=(datetime.now() - start_time).total_seconds(),
+                execution_time=(utc_now() - start_time).total_seconds(),
                 confidence=0,
                 coverage_score=0
             )
@@ -300,7 +300,7 @@ class SwarmOrchestrator:
         # Calculate coverage score
         coverage_score = self._calculate_coverage(valid_results)
 
-        execution_time = (datetime.now() - start_time).total_seconds()
+        execution_time = (utc_now() - start_time).total_seconds()
 
         result = SwarmResult(
             task_id=task_id,

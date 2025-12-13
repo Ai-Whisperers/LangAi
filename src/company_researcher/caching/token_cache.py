@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from .lru_cache import LRUCache, LRUCacheConfig
+from ..utils import utc_now
 
 
 @dataclass
@@ -24,7 +25,7 @@ class TokenUsage:
     prompt_tokens: int
     completion_tokens: int
     total_tokens: int
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=utc_now)
 
     # Cost tracking (optional)
     prompt_cost: float = 0.0
@@ -236,14 +237,14 @@ class TokenCache:
     ) -> List[TokenUsage]:
         """Get recent usage entries."""
         with self._lock:
-            cutoff = datetime.utcnow() - timedelta(hours=hours)
+            cutoff = utc_now() - timedelta(hours=hours)
             recent = [u for u in self._history if u.timestamp >= cutoff]
             return recent[-limit:]
 
     def get_hourly_summary(self, hours: int = 24) -> Dict[str, Dict[str, Any]]:
         """Get hourly usage summary."""
         with self._lock:
-            cutoff = datetime.utcnow() - timedelta(hours=hours)
+            cutoff = utc_now() - timedelta(hours=hours)
             hourly = {}
 
             for usage in self._history:
@@ -275,7 +276,7 @@ class TokenCache:
 
     def _cleanup_old_entries(self) -> None:
         """Remove entries older than retention period."""
-        cutoff = datetime.utcnow() - timedelta(hours=self._retention_hours)
+        cutoff = utc_now() - timedelta(hours=self._retention_hours)
         self._history = [u for u in self._history if u.timestamp >= cutoff]
 
     def clear(self) -> None:

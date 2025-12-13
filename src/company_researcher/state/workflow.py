@@ -8,6 +8,7 @@ the research workflow state transitions.
 from typing import TypedDict, Annotated, List, Dict, Any, Optional
 from datetime import datetime
 from operator import add
+from ..utils import utc_now
 
 
 def merge_dicts(left: Optional[Dict], right: Optional[Dict]) -> Dict:
@@ -111,6 +112,7 @@ class OverallState(TypedDict):
 
     # Enhanced Analysis (Phase 2+)
     competitive_matrix: Optional[Dict[str, Any]]  # Competitive analysis data
+    financial_comparison: Optional[Dict[str, Any]]  # Financial comparison table
     risk_profile: Optional[Dict[str, Any]]  # Risk assessment data
     investment_thesis: Optional[Dict[str, Any]]  # Investment thesis data
     news_sentiment: Optional[Dict[str, Any]]  # News sentiment analysis
@@ -187,13 +189,14 @@ def create_initial_state(company_name: str) -> OverallState:
         "scraped_content": None,
         # Enhanced Analysis
         "competitive_matrix": None,
+        "financial_comparison": None,
         "risk_profile": None,
         "investment_thesis": None,
         "news_sentiment": None,
         "detected_region": None,
         "detected_language": None,
         "agent_outputs": {},
-        "start_time": datetime.now(),
+        "start_time": utc_now(),
         "total_cost": 0.0,
         "total_tokens": {"input": 0, "output": 0},
         "report_path": None
@@ -210,7 +213,7 @@ def create_output_state(state: OverallState) -> OutputState:
     Returns:
         OutputState with results and metrics
     """
-    duration = (datetime.now() - state.get("start_time", datetime.now())).total_seconds()
+    duration = (utc_now() - state.get("start_time", utc_now())).total_seconds()
 
     return {
         "company_name": state.get("company_name", ""),

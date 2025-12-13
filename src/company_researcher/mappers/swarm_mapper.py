@@ -9,7 +9,11 @@ Supports:
 
 import inspect
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, List, Optional
+
+from ..utils import get_logger
+
+logger = get_logger(__name__)
 
 from .base_mapper import (
     BaseMapper,
@@ -84,8 +88,8 @@ class SwarmMapper(BaseMapper):
                     return_hint = hints.get('return', None)
                     if return_hint and 'Agent' in str(return_hint):
                         returns_agent = True
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Failed to check function return type: {e}")
 
             functions.append(SwarmFunction(
                 name=getattr(func, '__name__', 'unknown') if callable(func) else str(func),
@@ -175,7 +179,7 @@ class SwarmMapper(BaseMapper):
         """Convert to LangGraph StateGraph."""
         try:
             from langgraph.graph import StateGraph, END
-            from typing import TypedDict, Annotated, Literal
+            from typing import TypedDict, Annotated
             import operator
         except ImportError:
             raise ImportError("langgraph is required for conversion")

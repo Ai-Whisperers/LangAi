@@ -9,20 +9,14 @@ Provides comprehensive market analysis including:
 - Customer intelligence
 """
 
-import logging
 from typing import Dict, Any, Optional, Callable
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 from ...config import get_config
 from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
-from ...tools.market_sizing_utils import (
-    MarketTrend,
-    CompetitiveIntensity,
-    classify_trend,
-    assess_competitive_intensity
-)
 
 
 class EnhancedMarketAgent:

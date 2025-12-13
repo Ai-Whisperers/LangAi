@@ -8,21 +8,20 @@ Handles:
 - Content assembly
 """
 
-import asyncio
-import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, AsyncIterator, Callable, Dict, Iterator, List, Optional, TypeVar
+from typing import AsyncIterator, Callable, List, Optional
 import uuid
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def _utcnow() -> datetime:
     """Get current UTC time (timezone-aware)."""
     return datetime.now(timezone.utc)
 
-from .stream_wrapper import StreamChunk, StreamMetrics
+from .stream_wrapper import StreamChunk
 
 
 @dataclass

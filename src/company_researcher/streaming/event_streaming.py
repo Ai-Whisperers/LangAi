@@ -9,15 +9,15 @@ Provides real-time streaming to clients via:
 
 import asyncio
 import json
-import logging
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Set
+from typing import Any, AsyncIterator, Dict, List, Optional, Set
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def _utcnow() -> datetime:
@@ -136,17 +136,14 @@ class EventStreamer(ABC):
     @abstractmethod
     async def connect(self, client_id: str, **kwargs) -> bool:
         """Connect a client."""
-        pass
 
     @abstractmethod
     async def disconnect(self, client_id: str) -> bool:
         """Disconnect a client."""
-        pass
 
     @abstractmethod
     async def send_event(self, event: StreamEvent, client_id: Optional[str] = None) -> bool:
         """Send event to client(s)."""
-        pass
 
     async def broadcast(self, event: StreamEvent) -> int:
         """Broadcast event to all connected clients."""

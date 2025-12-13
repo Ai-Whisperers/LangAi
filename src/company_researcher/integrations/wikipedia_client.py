@@ -34,10 +34,10 @@ import requests
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
 from threading import Lock
-import logging
 import re
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass

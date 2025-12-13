@@ -12,16 +12,16 @@ Supports python-pptx with markdown fallback.
 
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum
 import os
+from ..utils import utc_now
 
 # Try to import presentation library
 try:
     from pptx import Presentation
     from pptx.util import Inches, Pt
     from pptx.dml.color import RgbColor
-    from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+    from pptx.enum.text import PP_ALIGN
     PPTX_AVAILABLE = True
 except ImportError:
     PPTX_AVAILABLE = False
@@ -72,7 +72,7 @@ class PresentationConfig:
     max_slides: int = 20
     include_appendix: bool = False
     author: str = "Company Researcher"
-    date: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
+    date: str = field(default_factory=lambda: utc_now().strftime("%Y-%m-%d"))
 
 
 # ============================================================================

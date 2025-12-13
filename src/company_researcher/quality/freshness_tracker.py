@@ -13,6 +13,9 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from ..utils import get_logger, utc_now
+
+logger = get_logger(__name__)
 
 
 class FreshnessLevel(str, Enum):
@@ -227,14 +230,14 @@ class DateExtractor:
         if isinstance(value, (int, float)):
             try:
                 return datetime.fromtimestamp(value)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to parse timestamp {value}: {e}")
         if isinstance(value, str):
             try:
                 from dateutil import parser
                 return parser.parse(value)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to parse date string '{value[:50]}': {e}")
         return None
 
     def _extract_from_text(self, text: str) -> Optional[datetime]:
@@ -246,12 +249,13 @@ class DateExtractor:
                 try:
                     from dateutil import parser
                     return parser.parse(match.group(1))
-                except Exception:
+                except Exception as e:
+                    logger.debug(f"Date pattern match failed to parse: {e}")
                     continue
 
         # Try relative patterns
         text_lower = text.lower()
-        now = datetime.utcnow()
+        now = utc_now()
 
         for pattern, days in self.RELATIVE_PATTERNS:
             match = re.search(pattern, text_lower)
@@ -268,7 +272,8 @@ class DateExtractor:
                             return now - timedelta(days=num * 30)
                         else:
                             return now - timedelta(days=num)
-                    except Exception:
+                    except Exception as e:
+                        logger.debug(f"Relative date extraction failed: {e}")
                         continue
 
         return None
@@ -322,7 +327,7 @@ class FreshnessTracker:
         Returns:
             FreshnessAssessment object
         """
-        now = datetime.utcnow()
+        now = utc_now()
         warnings = []
 
         # Determine source date

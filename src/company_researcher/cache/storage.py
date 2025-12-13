@@ -37,7 +37,6 @@ Usage:
 """
 
 import json
-import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -48,6 +47,7 @@ from .models import (
     CachedSource,
     CachedCompanyData,
 )
+from ..utils import get_logger
 
 # Support both package and standalone imports
 try:
@@ -65,7 +65,7 @@ except ImportError:
         DataSection,
     )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ResearchCache:
@@ -484,8 +484,8 @@ class ResearchCache:
             try:
                 with open(history_file, "r", encoding="utf-8") as f:
                     history = json.load(f)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to load history for {company_name}: {e}")
 
         history.append({
             "timestamp": datetime.now(timezone.utc).isoformat(),

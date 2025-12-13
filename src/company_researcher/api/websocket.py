@@ -9,15 +9,14 @@ Real-time updates via WebSocket:
 
 import re
 import threading
-from typing import Dict, Any, List, Optional, Set
+from typing import Dict, Any, Optional, Set
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-import asyncio
 import json
 import logging
 
 try:
-    from fastapi import WebSocket, WebSocketDisconnect
+    from fastapi import WebSocket
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False

@@ -7,6 +7,7 @@ Dataclasses for spans and metrics.
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from ...utils import utc_now
 
 
 @dataclass
@@ -46,7 +47,7 @@ class Span:
         """Add an event to the span."""
         self.events.append(SpanEvent(
             name=name,
-            timestamp=datetime.utcnow(),
+            timestamp=utc_now(),
             attributes=attributes or {}
         ))
 

@@ -33,8 +33,9 @@ from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 from ...config import get_config, ResearchConfig
 from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Generic type for result dataclass
 T = TypeVar('T')
@@ -97,7 +98,6 @@ class BaseSpecialistAgent(ABC, Generic[T]):
         Returns:
             Complete prompt string for the LLM
         """
-        pass
 
     @abstractmethod
     def _parse_analysis(self, company_name: str, analysis: str) -> T:
@@ -111,7 +111,6 @@ class BaseSpecialistAgent(ABC, Generic[T]):
         Returns:
             Structured result object
         """
-        pass
 
     def _format_search_results(self, results: List[Dict[str, Any]]) -> str:
         """
@@ -207,8 +206,9 @@ class BaseSpecialistAgent(ABC, Generic[T]):
         result = self._parse_analysis(company_name, analysis)
 
         # Store analysis text and metrics if result has those attributes
+        # (hasattr check ensures runtime safety; type-ignore for generic T)
         if hasattr(result, 'analysis'):
-            result.analysis = analysis
+            result.analysis = analysis  # type: ignore[union-attr]
 
         return result
 
@@ -264,8 +264,9 @@ class BaseSpecialistAgent(ABC, Generic[T]):
         # Parse into structured result
         result = self._parse_analysis(company_name, analysis)
 
+        # (hasattr check ensures runtime safety; type-ignore for generic T)
         if hasattr(result, 'analysis'):
-            result.analysis = analysis
+            result.analysis = analysis  # type: ignore[union-attr]
 
         return result, metrics
 
@@ -335,16 +336,33 @@ class ParsingMixin:
 
         in_section = False
         for line in lines:
-            if section_keyword.lower() in line.lower() and ("##" in line or "**" in line):
+            stripped = line.strip()
+            # Check for section header - must START with ## or ** (not just contain them)
+            is_header = stripped.startswith(("##", "**"))
+
+            # Check if this line is a section header with our keyword
+            # Important: Avoid matching key-value pairs like "**Brand Strength:** STRONG"
+            # by checking if there's content after a colon on the same line
+            if section_keyword.lower() in line.lower() and is_header:
+                # Check if this looks like a key-value pair (has ": <content>" pattern)
+                colon_idx = stripped.find(":")
+                if colon_idx > 0:
+                    # Check if there's significant content after the colon on same line
+                    after_colon = stripped[colon_idx + 1:].strip()
+                    # If there's content after colon that's not just closing **, it's a key-value pair
+                    if after_colon and after_colon not in ("**", ""):
+                        # This is a key-value pair, not a section header - skip it
+                        continue
                 in_section = True
                 continue
 
             if in_section:
-                if line.strip().startswith(("1.", "2.", "3.", "4.", "5.", "6.", "7.", "8.", "9.", "-", "•")):
-                    item = line.strip().lstrip("0123456789.-•* ").strip()
+                if stripped.startswith(("1.", "2.", "3.", "4.", "5.", "6.", "7.", "8.", "9.", "-", "•")):
+                    item = stripped.lstrip("0123456789.-•* ").strip()
                     if item and len(item) > min_item_length:
                         items.append(item[:max_item_length])
-                elif "##" in line or "**" in line:
+                elif is_header:
+                    # New section header found, stop
                     break
 
         return items[:max_items]
@@ -378,6 +396,8 @@ class ParsingMixin:
             rf"{escaped_keyword}[:\s*]*(\d{{1,3}})",
             # "Brand Score: 75/100"
             rf"{escaped_keyword}.*?(\d{{1,3}})\s*/\s*100",
+            # Table format: "| Brand Awareness | 80 |" - keyword followed by | number |
+            rf"{escaped_keyword}\s*\|\s*(\d{{1,3}})",
             # Fallback: just find XX/100 pattern
             r"(\d{1,3})\s*/\s*100"
         ]
@@ -512,18 +532,28 @@ class ParsingMixin:
 
         for name in metric_names:
             if name in analysis:
-                # Find score
-                pattern = rf"{name}.*?([\d]{{1,3}})"
-                match = re.search(pattern, analysis)
+                # Find the line containing this metric
+                idx = analysis.find(name)
+                if idx < 0:
+                    continue
+
+                # Find the end of the line (limit context to just this line)
+                line_end = analysis.find("\n", idx)
+                if line_end < 0:
+                    line_end = len(analysis)
+                line_context = analysis[idx:line_end]
+
+                # Find score from the line
+                pattern = rf"{re.escape(name)}.*?([\d]{{1,3}})"
+                match = re.search(pattern, line_context)
                 score = float(match.group(1)) if match else 50.0
 
-                # Find trend
+                # Find trend from the same line only
                 trend = "stable"
-                idx = analysis.find(name)
-                context = analysis[idx:idx + 100] if idx >= 0 else ""
-                if "↑" in context or "improving" in context.lower():
+                line_lower = line_context.lower()
+                if "↑" in line_context or "improving" in line_lower:
                     trend = "improving"
-                elif "↓" in context or "declining" in context.lower():
+                elif "↓" in line_context or "declining" in line_lower:
                     trend = "declining"
 
                 metrics[name] = {
@@ -590,15 +620,17 @@ class ParsingMixin:
         Returns:
             One of: positive, negative, neutral, mixed
         """
+        import re
         analysis_lower = analysis.lower()
 
-        # Check for explicit sentiment mentions
-        if "positive" in analysis_lower and "sentiment" in analysis_lower:
-            return "positive"
-        elif "negative" in analysis_lower and "sentiment" in analysis_lower:
-            return "negative"
-        elif "mixed" in analysis_lower and "sentiment" in analysis_lower:
+        # Check for explicit sentiment mentions (use word boundaries to avoid partial matches)
+        # Check "mixed" first since it's most specific
+        if re.search(r'\bmixed\b', analysis_lower) and "sentiment" in analysis_lower:
             return "mixed"
+        elif re.search(r'\bpositive\b', analysis_lower) and "sentiment" in analysis_lower:
+            return "positive"
+        elif re.search(r'\bnegative\b', analysis_lower) and "sentiment" in analysis_lower:
+            return "negative"
 
         # Fallback to word counting
         positive_words = ["strong", "excellent", "good", "growth", "success"]
@@ -648,13 +680,15 @@ class ParsingMixin:
             idx = analysis_lower.find(keyword.lower())
             context = analysis_lower[idx:idx + 100]
 
-            for indicator in true_indicators:
-                if indicator in context:
-                    return True
-
+            # Check false_indicators FIRST - they take precedence over true_indicators
+            # This handles cases like "Active: No" where the keyword matches a true_indicator
             for indicator in false_indicators:
                 if indicator in context:
                     return False
+
+            for indicator in true_indicators:
+                if indicator in context:
+                    return True
 
         return default
 

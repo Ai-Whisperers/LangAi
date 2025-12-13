@@ -15,8 +15,6 @@ The schema supports:
 - Incremental research updates
 """
 
-from datetime import datetime
-from typing import Optional, Dict, Any
 
 from sqlalchemy import (
     Column,
@@ -29,10 +27,10 @@ from sqlalchemy import (
     ForeignKey,
     Boolean,
     Index,
-    UniqueConstraint
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from ..utils import utc_now
 
 Base = declarative_base()
 
@@ -57,8 +55,8 @@ class Company(Base):
     founded_year = Column(Integer, nullable=True)
 
     # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
     last_researched_at = Column(DateTime, nullable=True)
 
     # Relationships
@@ -98,7 +96,7 @@ class ResearchRun(Base):
     error_message = Column(Text, nullable=True)
 
     # Timing
-    started_at = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(DateTime, default=utc_now)
     completed_at = Column(DateTime, nullable=True)
     duration_seconds = Column(Float, nullable=True)
 
@@ -138,18 +136,28 @@ class ResearchRun(Base):
 
     def mark_completed(self) -> None:
         """Mark run as completed with timing."""
+        from datetime import timezone
         self.status = "completed"
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
         if self.started_at:
-            self.duration_seconds = (self.completed_at - self.started_at).total_seconds()
+            # Handle timezone-naive started_at for duration calculation
+            started = self.started_at
+            if started.tzinfo is None:
+                started = started.replace(tzinfo=timezone.utc)
+            self.duration_seconds = (self.completed_at - started).total_seconds()
 
     def mark_failed(self, error: str) -> None:
         """Mark run as failed with error."""
+        from datetime import timezone
         self.status = "failed"
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
         self.error_message = error
         if self.started_at:
-            self.duration_seconds = (self.completed_at - self.started_at).total_seconds()
+            # Handle timezone-naive started_at for duration calculation
+            started = self.started_at
+            if started.tzinfo is None:
+                started = started.replace(tzinfo=timezone.utc)
+            self.duration_seconds = (self.completed_at - started).total_seconds()
 
 
 class AgentOutput(Base):
@@ -184,9 +192,9 @@ class AgentOutput(Base):
     data_freshness = Column(String(50), nullable=True)  # recent, stale, unknown
 
     # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
     model_used = Column(String(100), nullable=True)
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column(JSON, nullable=True)  # Renamed from 'metadata' (reserved by SQLAlchemy)
 
     # Relationships
     research_run = relationship("ResearchRun", back_populates="agent_outputs")
@@ -216,9 +224,9 @@ class Source(Base):
 
     # Source identification
     url = Column(String(2000), nullable=False)
-    url_hash = Column(String(64), index=True)  # SHA256 hash for deduplication
+    url_hash = Column(String(64))  # SHA256 hash for deduplication (indexed below)
     title = Column(String(500), nullable=True)
-    domain = Column(String(255), nullable=True, index=True)
+    domain = Column(String(255), nullable=True)  # Indexed below
 
     # Content
     content_snippet = Column(Text, nullable=True)
@@ -230,7 +238,7 @@ class Source(Base):
     freshness_date = Column(DateTime, nullable=True)
 
     # Metadata
-    discovered_at = Column(DateTime, default=datetime.utcnow)
+    discovered_at = Column(DateTime, default=utc_now)
     discovered_by_agent = Column(String(100), nullable=True)
     source_type = Column(String(50), nullable=True)  # news, official, social, financial
 
@@ -265,9 +273,9 @@ class CostLog(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     research_run_id = Column(Integer, ForeignKey("research_runs.id"), nullable=True, index=True)
 
-    # Call identification
-    model = Column(String(100), nullable=False, index=True)
-    agent_name = Column(String(100), nullable=True, index=True)
+    # Call identification (indexed via composite index below)
+    model = Column(String(100), nullable=False)
+    agent_name = Column(String(100), nullable=True)
 
     # Token counts
     input_tokens = Column(Integer, nullable=False)
@@ -278,10 +286,10 @@ class CostLog(Base):
     cost = Column(Float, nullable=False)
     cache_savings = Column(Float, default=0.0)
 
-    # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    # Metadata (indexed below)
+    created_at = Column(DateTime, default=utc_now)
     is_batch = Column(Boolean, default=False)
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column(JSON, nullable=True)  # Renamed from 'metadata' (reserved by SQLAlchemy)
 
     # Relationships
     research_run = relationship("ResearchRun", back_populates="cost_logs")
@@ -316,7 +324,7 @@ class ResearchCache(Base):
     data_version = Column(String(20), default="1.0")
 
     # Validity
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
     expires_at = Column(DateTime, nullable=False)
     is_valid = Column(Boolean, default=True)
 
@@ -328,7 +336,7 @@ class ResearchCache(Base):
 
     def is_expired(self) -> bool:
         """Check if cache entry has expired."""
-        return datetime.utcnow() > self.expires_at
+        return utc_now() > self.expires_at
 
 
 class ScheduledResearch(Base):
@@ -357,7 +365,7 @@ class ScheduledResearch(Base):
     notification_email = Column(String(255), nullable=True)
 
     # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
     created_by = Column(String(100), nullable=True)
 
     def __repr__(self):

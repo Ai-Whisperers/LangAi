@@ -14,9 +14,10 @@ by enforcing standards before report finalization.
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional
 import re
 from datetime import datetime
+from ..utils import utc_now
 
 
 class QualityLevel(Enum):
@@ -96,7 +97,7 @@ class QualityReport:
     recommendations: List[str] = field(default_factory=list)
     metrics_coverage: float = 0.0
     source_coverage: float = 0.0
-    assessment_date: datetime = field(default_factory=datetime.now)
+    assessment_date: datetime = field(default_factory=utc_now)
 
 
 class ReportQualityEnforcer:
@@ -447,7 +448,7 @@ class ReportQualityEnforcer:
             ))
 
         # Check for outdated data
-        current_year = datetime.now().year
+        current_year = utc_now().year
         if f"20{current_year - 3}" in content or f"20{current_year - 4}" in content:
             issues.append(QualityIssue(
                 issue_type=IssueType.OUTDATED_DATA,

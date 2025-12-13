@@ -28,6 +28,10 @@ Usage:
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+
+from ..utils import get_logger
+
+logger = get_logger(__name__)
 from typing import Any, Dict, List, Optional
 
 
@@ -161,8 +165,8 @@ class CachedCompanyData:
         for k, v in data.get("section_updated", {}).items():
             try:
                 section_updated[k] = datetime.fromisoformat(v)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to parse section timestamp for '{k}': {e}")
 
         return cls(
             company_name=data["company_name"],

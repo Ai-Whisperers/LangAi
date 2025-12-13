@@ -31,9 +31,9 @@ Usage:
 
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
-import re
+from ..utils import utc_now
 
 
 # ============================================================================
@@ -92,7 +92,7 @@ class SourceReference(BaseModel):
     url: str = Field(..., description="Source URL")
     title: str = Field(default="", description="Source title")
     domain: str = Field(default="", description="Source domain")
-    accessed_at: datetime = Field(default_factory=datetime.now)
+    accessed_at: datetime = Field(default_factory=utc_now)
     relevance_score: float = Field(default=0.5, ge=0, le=1)
     authority_tier: int = Field(default=3, ge=1, le=4)
 
@@ -382,7 +382,7 @@ class AgentOutput(BaseModel):
     completeness_score: float = Field(default=0, ge=0, le=1)
 
     # Timestamp
-    completed_at: datetime = Field(default_factory=datetime.now)
+    completed_at: datetime = Field(default_factory=utc_now)
 
 
 class FinancialAgentOutput(AgentOutput):
@@ -432,7 +432,7 @@ class QualityAssessment(BaseModel):
     unverified_claims: List[str] = Field(default_factory=list)
 
     # Metadata
-    assessed_at: datetime = Field(default_factory=datetime.now)
+    assessed_at: datetime = Field(default_factory=utc_now)
     assessor: str = Field(default="quality_system")
 
 
@@ -505,7 +505,7 @@ class TypedResearchState(BaseModel):
     total_tokens_output: int = Field(default=0, ge=0)
 
     # Timing
-    started_at: datetime = Field(default_factory=datetime.now)
+    started_at: datetime = Field(default_factory=utc_now)
     completed_at: Optional[datetime] = Field(default=None)
 
     # Output
@@ -515,7 +515,7 @@ class TypedResearchState(BaseModel):
     @property
     def duration_seconds(self) -> float:
         """Get research duration in seconds."""
-        end = self.completed_at or datetime.now()
+        end = self.completed_at or utc_now()
         return (end - self.started_at).total_seconds()
 
     @property
@@ -575,7 +575,7 @@ class TypedResearchState(BaseModel):
             quality_score=data.get("quality_score"),
             iteration_count=data.get("iteration_count", 0),
             total_cost_usd=data.get("total_cost", 0),
-            started_at=data.get("start_time", datetime.now()),
+            started_at=data.get("start_time", utc_now()),
             report_path=data.get("report_path")
         )
 

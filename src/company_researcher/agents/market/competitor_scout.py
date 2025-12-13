@@ -19,15 +19,10 @@ from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_ext
 from ...state import OverallState
 from ..base import get_agent_logger, create_empty_result
 from ...tools.competitor_analysis_utils import (
-    CompetitorType,
-    ThreatLevel,
     classify_competitor,
     assess_threat_level,
     TechStackAnalyzer,
-    GitHubMetrics,
-    analyze_competitive_positioning,
-    analyze_patent_portfolio,
-    aggregate_review_sentiment
+    analyze_competitive_positioning
 )
 
 

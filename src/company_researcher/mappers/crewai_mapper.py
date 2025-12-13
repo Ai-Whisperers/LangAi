@@ -10,7 +10,7 @@ Supports:
 import ast
 import inspect
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type
 
 from .base_mapper import (
     BaseMapper,

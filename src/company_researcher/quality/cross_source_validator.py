@@ -23,9 +23,9 @@ from typing import Dict, Any, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from collections import defaultdict
-import logging
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class SourceTier(Enum):
@@ -143,7 +143,7 @@ class Fact:
     source: SourceInfo
     confidence: float = 0.5
     extraction_method: str = "llm"
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -172,7 +172,7 @@ class ValidationResult:
     unverified_facts: List[Fact]
     source_coverage: Dict[str, int]
     recommendations: List[str]
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
 
 
 class CrossSourceValidator:

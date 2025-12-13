@@ -15,13 +15,13 @@ Usage:
 """
 
 import json
-import logging
 import re
-from typing import Any, Dict, List, Optional, Union, TypeVar, Callable
+from typing import Any, Dict, List, Optional, Union, TypeVar
 from dataclasses import dataclass
+from ..utils import get_logger
 
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 T = TypeVar('T')
 

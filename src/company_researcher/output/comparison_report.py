@@ -14,14 +14,14 @@ Output formats:
 - JSON for API responses
 """
 
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 import json
-import logging
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ComparisonMetric(str, Enum):
@@ -253,7 +253,7 @@ class ComparisonReportGenerator:
         return ComparisonReport(
             title=title,
             companies=company_names,
-            generated_at=datetime.utcnow(),
+            generated_at=utc_now(),
             metric_comparisons=metric_comparisons,
             swot_matrix=swot_matrix,
             winner_summary=winner_summary,

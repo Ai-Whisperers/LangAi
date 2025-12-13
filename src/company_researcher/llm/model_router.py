@@ -18,14 +18,13 @@ Usage:
     )
 """
 
-import os
 from enum import Enum
 from typing import Dict, Any, Optional, Tuple, List
 from dataclasses import dataclass, field
 from datetime import datetime
-import logging
+from ..utils import get_config, get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class TaskType(Enum):
@@ -78,7 +77,7 @@ class RoutingDecision:
     estimated_cost: float
     reasoning: str
     fallback_models: List[ModelConfig] = field(default_factory=list)
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
 
 
 class ModelRegistry:
@@ -282,7 +281,7 @@ class ModelRouter:
         quality_priority: float = 0.5,  # 0 = cost focused, 1 = quality focused
         enable_fallbacks: bool = True
     ):
-        self.preferred_provider = preferred_provider or os.getenv("PREFERRED_LLM_PROVIDER", "anthropic")
+        self.preferred_provider = preferred_provider or get_config("PREFERRED_LLM_PROVIDER", default="groq")
         self.max_cost_per_call = max_cost_per_call
         self.quality_priority = quality_priority
         self.enable_fallbacks = enable_fallbacks
@@ -583,7 +582,7 @@ def get_model_for_task(
 def create_router_for_research() -> ModelRouter:
     """Create a router optimized for research tasks."""
     return ModelRouter(
-        preferred_provider="anthropic",
+        preferred_provider="groq",
         max_cost_per_call=0.15,
         quality_priority=0.7,  # Favor quality for research
         enable_fallbacks=True

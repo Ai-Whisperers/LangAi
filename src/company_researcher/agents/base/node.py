@@ -5,7 +5,7 @@ Provides decorators and base functions to eliminate duplication
 across the 19 agent node functions.
 """
 
-from typing import Dict, Any, Callable, Optional, TypeVar, List
+from typing import Dict, Any, Callable, TypeVar, List, cast
 from functools import wraps
 from dataclasses import dataclass
 
@@ -13,10 +13,9 @@ from ...config import get_config
 from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
 from ...state import OverallState
 from .types import (
-    AgentResult, AgentOutput, AgentConfig, AgentStatus,
-    SearchResult, create_empty_result, create_agent_result
+    AgentResult, AgentStatus, create_empty_result, create_agent_result
 )
-from .logger import get_agent_logger, AgentLogger
+from .logger import get_agent_logger
 
 
 F = TypeVar('F', bound=Callable[..., Dict[str, Any]])
@@ -184,7 +183,7 @@ def agent_node(
 
                     # If result is already an AgentResult dict
                     if isinstance(result, dict) and "agent_outputs" in result:
-                        return result
+                        return cast(AgentResult, result)
 
                     # Fallback
                     logger.warning("Unexpected result type from agent function")

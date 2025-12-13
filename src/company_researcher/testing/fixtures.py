@@ -7,11 +7,10 @@ Provides:
 - Mock research state
 """
 
-import json
 import uuid
-from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
+from ..utils import utc_now
 
 
 @dataclass
@@ -65,7 +64,7 @@ class MockLLM:
         self._call_history.append({
             "prompt": prompt,
             "kwargs": kwargs,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": utc_now().isoformat()
         })
 
         # Simulate delay
@@ -151,7 +150,7 @@ class MockTool:
         self._call_history.append({
             "input": input,
             "kwargs": kwargs,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": utc_now().isoformat()
         })
 
         # Check queue
@@ -200,7 +199,7 @@ def mock_llm_response(
     return {
         "id": f"mock-{uuid.uuid4()}",
         "object": "chat.completion",
-        "created": int(datetime.utcnow().timestamp()),
+        "created": int(utc_now().timestamp()),
         "model": model,
         "choices": [
             {
@@ -241,7 +240,7 @@ def mock_tool_result(
         "tool_call_id": f"call_{uuid.uuid4()}",
         "result": result,
         "success": success,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": utc_now().isoformat()
     }
 
 
@@ -284,7 +283,7 @@ def mock_research_state(
                 "quality": "high"
             }
         ],
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": utc_now().isoformat()
     }
 
     if include_financials:

@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set
+from ..utils import utc_now
 
 
 class PermissionAction(str, Enum):
@@ -107,7 +108,7 @@ class User:
     direct_permissions: Set[str] = field(default_factory=set)
     attributes: Dict[str, Any] = field(default_factory=dict)
     active: bool = True
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=utc_now)
 
     def add_role(self, role: str) -> None:
         """Assign a role to user."""

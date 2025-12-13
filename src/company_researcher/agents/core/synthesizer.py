@@ -9,11 +9,10 @@ This agent is responsible for:
 - Integrating historical trend analysis and forecasts
 """
 
-import logging
-from datetime import datetime
 from typing import Any, Dict, List, Optional
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 from ...config import get_config
 from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
@@ -22,9 +21,7 @@ from ...state import OverallState
 # Import trend analyst with fallback
 try:
     from ..research.trend_analyst import (
-        TrendAnalystAgent,
         create_trend_analyst,
-        TrendDirection,
         TrendAnalysis,
     )
     TREND_ANALYST_AVAILABLE = True

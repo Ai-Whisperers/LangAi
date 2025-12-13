@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 import statistics
+from ..utils import utc_now
 
 
 # ============================================================================
@@ -110,7 +111,7 @@ class DashboardData:
     top_companies: List[Dict[str, Any]]
     performance_summary: Dict[str, Any]
     alerts: List[Dict[str, Any]]
-    generated_at: datetime = field(default_factory=datetime.now)
+    generated_at: datetime = field(default_factory=utc_now)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -184,7 +185,7 @@ class AnalyticsAggregator:
             "duration": duration_seconds,
             "cost": cost,
             "depth": depth,
-            "timestamp": datetime.now()
+            "timestamp": utc_now()
         }
 
         self._research_events.append(event)
@@ -201,13 +202,13 @@ class AnalyticsAggregator:
                     "tokens": stats.get("tokens", 0),
                     "cost": stats.get("cost", 0),
                     "success": stats.get("success", True),
-                    "timestamp": datetime.now()
+                    "timestamp": utc_now()
                 })
 
         # Record cost
         self._cost_events.append({
             "amount": cost,
-            "timestamp": datetime.now()
+            "timestamp": utc_now()
         })
 
     def record_research_failed(
@@ -222,7 +223,7 @@ class AnalyticsAggregator:
             "company_name": company_name,
             "error": error,
             "duration": duration_seconds,
-            "timestamp": datetime.now()
+            "timestamp": utc_now()
         }
         self._research_events.append(event)
 
@@ -259,7 +260,7 @@ class AnalyticsAggregator:
 
     def _get_cutoff(self, time_range: TimeRange) -> datetime:
         """Get cutoff datetime for time range."""
-        now = datetime.now()
+        now = utc_now()
         if time_range == TimeRange.HOUR:
             return now - timedelta(hours=1)
         elif time_range == TimeRange.DAY:

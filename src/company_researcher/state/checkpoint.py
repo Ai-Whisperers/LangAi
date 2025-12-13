@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from ..utils import utc_now
 
 
 @dataclass
@@ -45,7 +46,7 @@ class Checkpoint:
         if isinstance(created_at, str):
             created_at = datetime.fromisoformat(created_at)
         else:
-            created_at = datetime.utcnow()
+            created_at = utc_now()
 
         return cls(
             id=data.get("id", str(uuid.uuid4())),
@@ -105,7 +106,7 @@ class CheckpointManager:
             id=str(uuid.uuid4()),
             thread_id=thread_id,
             state=state.copy(),
-            created_at=datetime.utcnow(),
+            created_at=utc_now(),
             metadata=metadata or {},
             step=step,
             parent_id=parent_id

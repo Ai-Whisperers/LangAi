@@ -12,8 +12,10 @@ from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from collections import defaultdict
 import threading
+from ..utils import get_logger, utc_now
+
+logger = get_logger(__name__)
 
 
 # ============================================================================
@@ -36,7 +38,7 @@ class CostEntry:
     amount: float
     category: CostCategory
     description: str
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
     task_id: Optional[str] = None
     company_name: Optional[str] = None
     agent_name: Optional[str] = None
@@ -61,7 +63,7 @@ class Budget:
     limit: float
     period: str  # "daily", "weekly", "monthly"
     current: float = 0.0
-    start_date: datetime = field(default_factory=datetime.now)
+    start_date: datetime = field(default_factory=utc_now)
     alert_threshold: float = 0.8  # Alert at 80%
 
     @property
@@ -307,8 +309,8 @@ class CostTracker:
         for callback in self._on_budget_alert:
             try:
                 callback(budget)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Budget alert callback failed for {budget.name}: {e}")
 
     def set_budget(
         self,
@@ -343,7 +345,7 @@ class CostTracker:
         """Reset a budget."""
         if budget_name in self._budgets:
             self._budgets[budget_name].current = 0.0
-            self._budgets[budget_name].start_date = datetime.now()
+            self._budgets[budget_name].start_date = utc_now()
 
     def on_budget_alert(self, callback: callable):
         """Register budget alert callback."""
@@ -401,19 +403,19 @@ class CostTracker:
 
     def get_daily_summary(self) -> CostSummary:
         """Get today's cost summary."""
-        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        today = utc_now().replace(hour=0, minute=0, second=0, microsecond=0)
         return self.get_summary(since=today)
 
     def get_weekly_summary(self) -> CostSummary:
         """Get this week's cost summary."""
-        today = datetime.now()
+        today = utc_now()
         week_start = today - timedelta(days=today.weekday())
         week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
         return self.get_summary(since=week_start)
 
     def get_monthly_summary(self) -> CostSummary:
         """Get this month's cost summary."""
-        today = datetime.now()
+        today = utc_now()
         month_start = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         return self.get_summary(since=month_start)
 

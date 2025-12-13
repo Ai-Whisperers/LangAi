@@ -16,12 +16,11 @@ Examples:
 
 from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum
 import re
-import logging
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class QueryIntent(str, Enum):

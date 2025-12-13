@@ -121,12 +121,24 @@ from .web_search import (
     get_claude_web_search,
 )
 
-# DeepSeek (Ultra-low cost: $0.14/1M tokens)
+# DeepSeek (Ultra-low cost: $0.14/1M tokens, reasoning, FIM, tool use)
 from .deepseek_client import (
+    # Sync Client
     DeepSeekClient,
     DeepSeekResponse,
     get_deepseek_client,
     DEEPSEEK_PRICING,
+    # Async Client (concurrent queries)
+    AsyncDeepSeekClient,
+    get_async_deepseek_client,
+    # Model Selection (task-based routing)
+    DeepSeekModelSelector,
+    DeepSeekTaskType,
+    # Tool Use / Function Calling
+    ToolDefinition as DeepSeekToolDefinition,
+    create_deepseek_research_tools,
+    # Utilities
+    reset_deepseek_clients,
 )
 
 # Smart Client (Automatic model routing for cost optimization)
@@ -141,21 +153,51 @@ from .smart_client import (
     print_llm_stats,
 )
 
-# Gemini (Search grounding + 2M context)
+# Gemini (Search grounding + 2M context + caching + tool use)
 from .gemini_client import (
+    # Sync Client
     GeminiClient,
     GeminiResponse,
     GeminiSource,
     get_gemini_client,
     GEMINI_PRICING,
+    # Async Client (concurrent queries)
+    AsyncGeminiClient,
+    get_async_gemini_client,
+    # Model Selection (task-based routing)
+    GeminiModelSelector,
+    GeminiTaskType,
+    # Context Caching (75% cost savings)
+    GeminiCache,
+    # Tool Use / Function Calling
+    ToolDefinition as GeminiToolDefinition,
+    create_gemini_research_tools,
+    # Utilities
+    reset_gemini_clients,
 )
 
-# Groq (Ultra-fast: 1,300 tok/sec)
+# Groq (Ultra-fast: 1,300 tok/sec, async, tool use, batch)
 from .groq_client import (
+    # Sync Client
     GroqClient,
     GroqResponse,
     get_groq_client,
-    GROQ_PRICING,
+    # Async Client (10x faster batch)
+    AsyncGroqClient,
+    get_async_groq_client,
+    # Batch Processing (50% cost savings)
+    GroqBatchClient,
+    BatchJob as GroqBatchJob,
+    get_batch_client as get_groq_batch_client,
+    # Model Selection
+    GroqModelSelector,
+    TaskType as GroqTaskType,
+    # Tool Use / Function Calling
+    ToolDefinition as GroqToolDefinition,
+    create_tool as create_groq_tool,
+    create_research_tools as create_groq_research_tools,
+    # Utilities
+    reset_groq_clients,
 )
 
 # Vision (image analysis)
@@ -258,11 +300,22 @@ __all__ = [
     "ClaudeWebSearch",
     "WebSearchResult",
     "get_claude_web_search",
-    # DeepSeek
+    # DeepSeek (Ultra-low cost: $0.14/1M tokens, reasoning, FIM, tool use)
     "DeepSeekClient",
     "DeepSeekResponse",
     "get_deepseek_client",
     "DEEPSEEK_PRICING",
+    # DeepSeek Async Client (concurrent queries)
+    "AsyncDeepSeekClient",
+    "get_async_deepseek_client",
+    # DeepSeek Model Selection (task-based routing)
+    "DeepSeekModelSelector",
+    "DeepSeekTaskType",
+    # DeepSeek Tool Use / Function Calling
+    "DeepSeekToolDefinition",
+    "create_deepseek_research_tools",
+    # DeepSeek Utilities
+    "reset_deepseek_clients",
     # Smart Client (Cost-optimized routing)
     "SmartLLMClient",
     "CompletionResult",
@@ -272,17 +325,45 @@ __all__ = [
     "analyze_text",
     "generate_report",
     "print_llm_stats",
-    # Gemini
+    # Gemini (Search grounding + 2M context + caching + tool use)
     "GeminiClient",
     "GeminiResponse",
     "GeminiSource",
     "get_gemini_client",
     "GEMINI_PRICING",
-    # Groq
+    # Gemini Async Client (concurrent queries)
+    "AsyncGeminiClient",
+    "get_async_gemini_client",
+    # Gemini Model Selection (task-based routing)
+    "GeminiModelSelector",
+    "GeminiTaskType",
+    # Gemini Context Caching (75% cost savings)
+    "GeminiCache",
+    # Gemini Tool Use / Function Calling
+    "GeminiToolDefinition",
+    "create_gemini_research_tools",
+    # Gemini Utilities
+    "reset_gemini_clients",
+    # Groq (Ultra-fast: 1,300 tok/sec, async, tool use, batch)
     "GroqClient",
     "GroqResponse",
     "get_groq_client",
-    "GROQ_PRICING",
+    # Groq Async Client (10x faster batch operations)
+    "AsyncGroqClient",
+    "get_async_groq_client",
+    # Groq Batch Processing (50% cost savings)
+    "GroqBatchClient",
+    "GroqBatchJob",
+    "get_groq_batch_client",
+    # Groq Model Selection (cost-optimized)
+    "GroqModelSelector",
+    "GroqTaskType",
+    # Groq Tool Use / Function Calling
+    "GroqToolDefinition",
+    "create_groq_tool",
+    "create_groq_research_tools",
+    # Groq Utilities
+    "reset_groq_clients",
     # Vision
     "VisionAnalyzer",
     "ImageAnalysisResult",

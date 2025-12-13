@@ -9,10 +9,10 @@ This agent is responsible for:
 - VALIDATING data quality before report generation
 """
 
-import logging
 from typing import Any, Dict, List, Optional
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 from ...config import get_config
 from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
@@ -27,14 +27,10 @@ from ...prompts import (
 # Import quality validation modules
 try:
     from ..research.metrics_validator import (
-        MetricsValidator,
         create_metrics_validator,
-        CompanyType,
     )
     from ..research.quality_enforcer import (
-        QualityEnforcer,
         create_quality_enforcer,
-        ReportStatus,
     )
     QUALITY_MODULES_AVAILABLE = True
 except ImportError:

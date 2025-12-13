@@ -32,18 +32,15 @@ Usage:
 
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
-from datetime import datetime
 from threading import Lock
-import logging
 import asyncio
-import json
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Try to import crawl4ai
 try:
     from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig
-    from crawl4ai.extraction_strategy import JsonCssExtractionStrategy, LLMExtractionStrategy
     CRAWL4AI_AVAILABLE = True
 except ImportError:
     CRAWL4AI_AVAILABLE = False

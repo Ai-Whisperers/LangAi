@@ -7,17 +7,15 @@ Provides consistent streaming interface across different sources:
 - Agent outputs
 """
 
-import asyncio
-import logging
-import time
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, AsyncIterator, Callable, Dict, Iterator, List, Optional, TypeVar, Generic
+from typing import Any, AsyncIterator, Callable, Dict, List, Optional, TypeVar, Generic
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 T = TypeVar('T')
 
@@ -122,12 +120,10 @@ class BaseStreamWrapper(ABC, Generic[T]):
     @abstractmethod
     async def _get_chunks(self) -> AsyncIterator[T]:
         """Get raw chunks from the underlying source."""
-        pass
 
     @abstractmethod
     def _process_chunk(self, raw_chunk: T) -> StreamChunk:
         """Process raw chunk into StreamChunk."""
-        pass
 
     def on_chunk(self, callback: Callable[[StreamChunk], None]) -> "BaseStreamWrapper":
         """Register callback for each chunk."""

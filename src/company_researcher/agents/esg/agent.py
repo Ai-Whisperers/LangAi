@@ -5,9 +5,13 @@ Main ESG analysis agent implementation.
 """
 
 import re
-from typing import Any, Callable, Dict, List
+from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 from langchain_core.messages import HumanMessage, SystemMessage
+
+from ...utils import get_logger
+
+logger = get_logger(__name__)
 
 from .models import (
     ESGCategory,
@@ -36,10 +40,13 @@ class ESGAgent:
         environmental = [m for m in result.metrics if m.category == ESGCategory.ENVIRONMENTAL]
     """
 
+    # Type alias for async search tool: takes query string, returns list of dicts
+    SearchToolType = Callable[[str], Awaitable[List[Dict[str, Any]]]]
+
     def __init__(
         self,
         llm_client: Any,
-        search_tool: Callable = None,
+        search_tool: Optional[SearchToolType] = None,
         enable_controversy_detection: bool = True
     ):
         """
@@ -47,11 +54,11 @@ class ESGAgent:
 
         Args:
             llm_client: LLM client for analysis
-            search_tool: Optional search tool for data gathering
+            search_tool: Optional async search tool for data gathering
             enable_controversy_detection: Whether to detect controversies
         """
         self.llm = llm_client
-        self.search_tool = search_tool
+        self.search_tool: Optional[ESGAgent.SearchToolType] = search_tool
         self.enable_controversy_detection = enable_controversy_detection
         self.scorer = ESGScorer()
 
@@ -130,7 +137,8 @@ class ESGAgent:
                 results = await self.search_tool(query)
                 if isinstance(results, list):
                     all_results.extend(results)
-            except Exception:
+            except Exception as e:
+                logger.debug(f"ESG search query failed: {query[:50]}... - {e}")
                 continue
 
         return all_results
@@ -182,8 +190,8 @@ Return ONLY the metrics found with factual data. Do not estimate or make up numb
                 ])
                 metrics_text = response.content
                 metrics = self._parse_metrics_response(metrics_text)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to extract ESG metrics for {company_name}: {e}")
 
         return metrics
 
@@ -240,7 +248,8 @@ Return ONLY the metrics found with factual data. Do not estimate or make up numb
                     results = await self.search_tool(query)
                     if isinstance(results, list):
                         controversy_results.extend(results)
-                except Exception:
+                except Exception as e:
+                    logger.debug(f"Controversy search failed: {query[:50]}... - {e}")
                     continue
 
         if not controversy_results:
@@ -272,8 +281,8 @@ Only report factual controversies with evidence. Do not speculate."""
                     HumanMessage(content=prompt)
                 ])
                 controversies = self._parse_controversies(response.content)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to detect controversies for {company_name}: {e}")
 
         return controversies
 
@@ -338,8 +347,8 @@ Be factual and concise."""
                     HumanMessage(content=prompt)
                 ])
                 return response.content[:500]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to generate {category.value} summary for {company_name}: {e}")
 
         return f"{company_name} has {len(category_metrics)} {category.value} metrics tracked."
 
@@ -390,6 +399,9 @@ async def esg_agent_node(state: Dict[str, Any]) -> Dict[str, Any]:
 # Factory Function
 # ============================================================================
 
-def create_esg_agent(llm_client: Any, search_tool: Callable = None) -> ESGAgent:
+def create_esg_agent(
+    llm_client: Any,
+    search_tool: Optional[ESGAgent.SearchToolType] = None
+) -> ESGAgent:
     """Create an ESG agent."""
     return ESGAgent(llm_client, search_tool)

@@ -10,7 +10,11 @@ Provides:
 
 import inspect
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Type, get_type_hints
+from typing import Any, Callable, Dict, Optional, Type, get_type_hints
+
+from ..utils import get_logger
+
+logger = get_logger(__name__)
 
 from .base_mapper import (
     BaseMapper,
@@ -221,8 +225,8 @@ class LangGraphMapper(BaseMapper):
             try:
                 hints = get_type_hints(state_schema)
                 state_fields = {k: str(v) for k, v in hints.items()}
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to extract state schema hints: {e}")
 
         # Get entry point
         entry_point = getattr(state_graph, 'entry_point', None)

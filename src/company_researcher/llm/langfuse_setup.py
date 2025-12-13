@@ -33,14 +33,12 @@ Usage:
     llm = ChatAnthropic(callbacks=[handler])
 """
 
-import os
-import logging
 from typing import Optional, Dict, Any, List
 from threading import Lock
 from dataclasses import dataclass
-from datetime import datetime
+from ..utils import get_config, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # Check if Langfuse is installed
@@ -98,12 +96,12 @@ class LangfuseManager:
     def _load_config_from_env(self) -> LangfuseConfig:
         """Load configuration from environment variables."""
         return LangfuseConfig(
-            public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
-            secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
-            host=os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com"),
-            enabled=os.getenv("LANGFUSE_ENABLED", "true").lower() == "true",
-            debug=os.getenv("LANGFUSE_DEBUG", "false").lower() == "true",
-            release=os.getenv("LANGFUSE_RELEASE")
+            public_key=get_config("LANGFUSE_PUBLIC_KEY"),
+            secret_key=get_config("LANGFUSE_SECRET_KEY"),
+            host=get_config("LANGFUSE_HOST", default="https://cloud.langfuse.com"),
+            enabled=get_config("LANGFUSE_ENABLED", default="true").lower() == "true",
+            debug=get_config("LANGFUSE_DEBUG", default="false").lower() == "true",
+            release=get_config("LANGFUSE_RELEASE")
         )
 
     def _initialize(self) -> bool:

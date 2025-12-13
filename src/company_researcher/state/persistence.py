@@ -12,10 +12,9 @@ import sqlite3
 import threading
 import uuid
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from ..utils import utc_now
 
 
 class StatePersistence(ABC):
@@ -24,22 +23,18 @@ class StatePersistence(ABC):
     @abstractmethod
     def save(self, key: str, state: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None) -> str:
         """Save state and return ID."""
-        pass
 
     @abstractmethod
     def load(self, state_id: str) -> Optional[Dict[str, Any]]:
         """Load state by ID."""
-        pass
 
     @abstractmethod
     def list_keys(self, prefix: Optional[str] = None) -> List[str]:
         """List all keys with optional prefix filter."""
-        pass
 
     @abstractmethod
     def delete(self, state_id: str) -> bool:
         """Delete state by ID."""
-        pass
 
 
 class InMemoryPersistence(StatePersistence):
@@ -61,7 +56,7 @@ class InMemoryPersistence(StatePersistence):
             self._storage[state_id] = state.copy()
             self._metadata[state_id] = {
                 "key": key,
-                "created_at": datetime.utcnow().isoformat(),
+                "created_at": utc_now().isoformat(),
                 **(metadata or {})
             }
         return state_id
@@ -149,7 +144,7 @@ class SQLitePersistence(StatePersistence):
     def save(self, key: str, state: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None) -> str:
         """Save state to SQLite."""
         state_id = f"{key}:{uuid.uuid4()}"
-        now = datetime.utcnow().isoformat()
+        now = utc_now().isoformat()
 
         conn = self._get_connection()
         conn.execute(
@@ -192,7 +187,7 @@ class SQLitePersistence(StatePersistence):
             """,
             (
                 json.dumps(state, default=str),
-                datetime.utcnow().isoformat(),
+                utc_now().isoformat(),
                 state_id
             )
         )

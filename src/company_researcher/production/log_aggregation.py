@@ -17,9 +17,10 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
+from ..utils import get_logger
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger(__name__)
 
 
 class LogLevel(str, Enum):
@@ -296,11 +297,9 @@ class LogShipper:
 
     def start(self) -> None:
         """Start the shipper."""
-        pass
 
     def stop(self) -> None:
         """Stop the shipper."""
-        pass
 
     def ship(self, entry: LogEntry) -> None:
         """Ship a log entry."""
@@ -362,7 +361,6 @@ class AsyncLogShipper(LogShipper):
 
     def _send_batch(self, batch: List[LogEntry]) -> None:
         """Send a batch of entries. Override in subclass."""
-        pass
 
 
 class FileShipper(AsyncLogShipper):

@@ -10,9 +10,9 @@ Provides:
 
 import random
 import string
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, Generator, List, Optional, TypeVar, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, TypeVar
 
 T = TypeVar('T')
 

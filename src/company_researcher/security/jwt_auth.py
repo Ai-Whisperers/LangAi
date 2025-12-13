@@ -12,14 +12,14 @@ import base64
 import hashlib
 import hmac
 import json
-import logging
 import threading
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
+from ..utils import get_config, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -66,7 +66,6 @@ class TokenPayload:
 
 class JWTSecurityError(Exception):
     """Raised when JWT security requirements are not met."""
-    pass
 
 
 # Minimum key lengths (in bytes) for HMAC algorithms
@@ -103,10 +102,8 @@ def validate_secret_key(
     Raises:
         JWTSecurityError: If key doesn't meet requirements in strict mode
     """
-    import logging
-    import os
 
-    logger = logging.getLogger(__name__)
+    logger = get_logger(__name__)
     issues = []
 
     # Check minimum length
@@ -141,7 +138,7 @@ def validate_secret_key(
     # Log or raise issues
     if issues:
         message = "JWT security issues found:\n" + "\n".join(f"  - {issue}" for issue in issues)
-        if strict and os.getenv("ENVIRONMENT", "development") == "production":
+        if strict and get_config("ENVIRONMENT", default="development") == "production":
             raise JWTSecurityError(message)
         else:
             logger.warning(message)

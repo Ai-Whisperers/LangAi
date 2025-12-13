@@ -11,12 +11,11 @@ Key features:
 4. Query-specific filtering
 """
 
-import re
-import logging
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Any
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass

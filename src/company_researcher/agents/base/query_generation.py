@@ -36,6 +36,12 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional, Dict, Any
 import re
+from ...utils import (
+    get_logger,
+    get_current_year,
+    get_relevant_years,
+    get_freshness_indicator,
+)
 
 
 class QueryDomain(str, Enum):
@@ -543,8 +549,7 @@ def generate_research_queries(
             return result.to_query_list()
 
         except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
+            logger = get_logger(__name__)
             logger.warning(f"AI query generation failed, using legacy: {e}")
 
             if not config.query_generation.fallback_to_legacy:
@@ -553,3 +558,308 @@ def generate_research_queries(
 
     # Legacy template-based generation
     return get_fallback_queries(company_name, count=num_queries)
+
+
+# ==============================================================================
+# Spanish Language Templates (LATAM Companies)
+# ==============================================================================
+
+SPANISH_OVERVIEW_TEMPLATES = [
+    "{company} empresa información general",
+    "{company} historia fundación origen",
+    "{company} sede central ubicación empleados",
+]
+
+SPANISH_FINANCIAL_TEMPLATES = [
+    "{company} ingresos resultados financieros",
+    "{company} facturación ganancias",
+    "{company} inversores valoración",
+]
+
+SPANISH_LEADERSHIP_TEMPLATES = [
+    "{company} CEO director ejecutivo actual",
+    "{company} equipo directivo gerencia",
+    "{company} presidente junta directiva",
+    "{company} nuevo CEO nombramiento",
+]
+
+SPANISH_MARKET_TEMPLATES = [
+    "{company} participación de mercado cuota",
+    "{company} clientes suscriptores usuarios",
+    "{company} crecimiento tendencias mercado",
+]
+
+SPANISH_NEWS_TEMPLATES = [
+    "{company} noticias recientes actualidad",
+    "{company} últimas novedades anuncios",
+    "{company} comunicados de prensa",
+]
+
+SPANISH_REGULATORY_TEMPLATES = [
+    "{company} regulación CONATEL telecomunicaciones",
+    "{company} licencia operador móvil",
+    "{company} multas sanciones regulatorias",
+]
+
+# Map Spanish templates by domain
+SPANISH_DOMAIN_TEMPLATES: Dict[QueryDomain, List[str]] = {
+    QueryDomain.OVERVIEW: SPANISH_OVERVIEW_TEMPLATES,
+    QueryDomain.FINANCIAL: SPANISH_FINANCIAL_TEMPLATES,
+    QueryDomain.LEADERSHIP: SPANISH_LEADERSHIP_TEMPLATES,
+    QueryDomain.MARKET: SPANISH_MARKET_TEMPLATES,
+    QueryDomain.NEWS: SPANISH_NEWS_TEMPLATES,
+}
+
+
+# ==============================================================================
+# Date-Aware Query Generation
+# ==============================================================================
+
+def get_date_filtered_queries(
+    company_name: str,
+    domain: QueryDomain,
+    count: int = 3,
+    include_year: bool = True,
+) -> List[str]:
+    """
+    Generate queries with appropriate date filtering.
+
+    Args:
+        company_name: Name of company
+        domain: Research domain
+        count: Number of queries to generate
+        include_year: Whether to append year to queries
+
+    Returns:
+        List of date-filtered queries
+    """
+    base_queries = get_domain_queries(company_name, domain, count)
+
+    if not include_year:
+        return base_queries
+
+    current_year = get_current_year()
+
+    # Determine year strategy based on domain
+    if domain in [QueryDomain.LEADERSHIP, QueryDomain.NEWS]:
+        # Need current year data
+        years = [current_year]
+    elif domain in [QueryDomain.FINANCIAL, QueryDomain.MARKET]:
+        # Financial data may lag - include previous year
+        years = [current_year, current_year - 1]
+    else:
+        # Default: current year
+        years = [current_year]
+
+    filtered_queries = []
+    for query in base_queries:
+        # Add most relevant year
+        filtered_queries.append(f"{query} {years[0]}")
+
+    return filtered_queries
+
+
+def get_leadership_queries(
+    company_name: str,
+    include_spanish: bool = False,
+) -> List[str]:
+    """
+    Generate comprehensive leadership queries.
+
+    Designed to find current CEO and executive team info.
+
+    Args:
+        company_name: Name of company
+        include_spanish: Include Spanish queries for LATAM companies
+
+    Returns:
+        List of leadership-focused queries
+    """
+    current_year = get_current_year()
+
+    queries = [
+        f"{company_name} CEO {current_year}",
+        f"{company_name} current CEO chief executive",
+        f"{company_name} new CEO appointed {current_year}",
+        f"{company_name} CEO change {current_year - 1} {current_year}",
+        f"{company_name} executive leadership team",
+        f"{company_name} management team executives",
+    ]
+
+    if include_spanish:
+        spanish_queries = [
+            f"{company_name} CEO actual {current_year}",
+            f"{company_name} director ejecutivo gerente general",
+            f"{company_name} nuevo CEO nombramiento {current_year}",
+            f"{company_name} cambio CEO {current_year - 1} {current_year}",
+            f"{company_name} equipo directivo ejecutivos",
+        ]
+        queries.extend(spanish_queries)
+
+    return queries
+
+
+def get_market_data_queries(
+    company_name: str,
+    include_spanish: bool = False,
+) -> List[str]:
+    """
+    Generate queries for current market data.
+
+    Designed to find up-to-date market share, subscribers, revenue.
+
+    Args:
+        company_name: Name of company
+        include_spanish: Include Spanish queries for LATAM companies
+
+    Returns:
+        List of market data queries
+    """
+    current_year = get_current_year()
+    prev_year = current_year - 1
+
+    queries = [
+        f"{company_name} market share {current_year}",
+        f"{company_name} subscribers users {current_year}",
+        f"{company_name} revenue {prev_year} {current_year}",
+        f"{company_name} quarterly results Q1 Q2 Q3 Q4 {current_year}",
+        f"{company_name} annual report {prev_year}",
+        f"{company_name} financial results {current_year}",
+    ]
+
+    if include_spanish:
+        spanish_queries = [
+            f"{company_name} participación mercado {current_year}",
+            f"{company_name} suscriptores usuarios {current_year}",
+            f"{company_name} ingresos facturación {prev_year} {current_year}",
+            f"{company_name} resultados trimestrales {current_year}",
+            f"{company_name} informe anual {prev_year}",
+        ]
+        queries.extend(spanish_queries)
+
+    return queries
+
+
+def get_bilingual_queries(
+    company_name: str,
+    domain: QueryDomain,
+    count: int = 3,
+) -> List[str]:
+    """
+    Generate queries in both English and Spanish.
+
+    Args:
+        company_name: Name of company
+        domain: Research domain
+        count: Number of queries per language
+
+    Returns:
+        List of bilingual queries
+    """
+    # Get English queries
+    english_queries = get_domain_queries(company_name, domain, count)
+
+    # Get Spanish queries if available
+    spanish_templates = SPANISH_DOMAIN_TEMPLATES.get(domain, [])
+    spanish_queries = [t.format(company=company_name) for t in spanish_templates[:count]]
+
+    return english_queries + spanish_queries
+
+
+def get_comprehensive_dated_queries(
+    company_name: str,
+    depth: str = "standard",
+    region: Optional[str] = None,
+) -> List[str]:
+    """
+    Generate comprehensive queries with date context.
+
+    Args:
+        company_name: Name of company
+        depth: Research depth ("basic", "standard", "deep")
+        region: Geographic region (e.g., "LATAM", "US", "EU")
+
+    Returns:
+        List of comprehensive date-aware queries
+    """
+    current_year = get_current_year()
+    relevant_years = get_relevant_years(depth)
+    include_spanish = region and region.upper() in ["LATAM", "SOUTH_AMERICA", "LATIN_AMERICA"]
+
+    queries = []
+
+    # Always include leadership queries with current year
+    queries.extend(get_leadership_queries(company_name, include_spanish))
+
+    # Market data queries
+    queries.extend(get_market_data_queries(company_name, include_spanish))
+
+    # Add year-filtered domain queries
+    domains_by_depth = {
+        "basic": [QueryDomain.OVERVIEW, QueryDomain.NEWS],
+        "standard": [QueryDomain.OVERVIEW, QueryDomain.FINANCIAL, QueryDomain.NEWS, QueryDomain.MARKET],
+        "deep": list(QueryDomain),
+    }
+
+    for domain in domains_by_depth.get(depth, domains_by_depth["standard"]):
+        if include_spanish:
+            queries.extend(get_bilingual_queries(company_name, domain, 2))
+        else:
+            queries.extend(get_date_filtered_queries(company_name, domain, 2))
+
+    # Deduplicate while preserving order
+    seen = set()
+    unique_queries = []
+    for q in queries:
+        q_lower = q.lower()
+        if q_lower not in seen:
+            seen.add(q_lower)
+            unique_queries.append(q)
+
+    return unique_queries
+
+
+def generate_targeted_queries(
+    company_name: str,
+    field_type: str,
+    region: Optional[str] = None,
+) -> List[str]:
+    """
+    Generate queries targeted at specific data fields.
+
+    Uses freshness indicators to determine appropriate date filtering.
+
+    Args:
+        company_name: Company name
+        field_type: Type of data needed (e.g., "ceo", "revenue", "subscribers")
+        region: Geographic region
+
+    Returns:
+        List of targeted queries
+    """
+    freshness = get_freshness_indicator(field_type)
+    include_spanish = region and region.upper() in ["LATAM", "SOUTH_AMERICA", "LATIN_AMERICA"]
+
+    queries = []
+
+    # Build targeted query
+    base_query = f"{company_name} {field_type}"
+    if freshness:
+        queries.append(f"{base_query} {freshness}")
+    else:
+        queries.append(base_query)
+
+    # Add variations
+    if "ceo" in field_type.lower() or "leadership" in field_type.lower():
+        queries.extend(get_leadership_queries(company_name, include_spanish))
+    elif "revenue" in field_type.lower() or "financial" in field_type.lower():
+        queries.extend(get_market_data_queries(company_name, include_spanish))
+    elif "subscriber" in field_type.lower() or "user" in field_type.lower():
+        current_year = get_current_year()
+        queries.append(f"{company_name} subscribers count {current_year}")
+        queries.append(f"{company_name} active users {current_year}")
+        if include_spanish:
+            queries.append(f"{company_name} número suscriptores {current_year}")
+            queries.append(f"{company_name} usuarios activos {current_year}")
+
+    return validate_queries(queries)

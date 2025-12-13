@@ -13,6 +13,7 @@ from typing import Dict, Any, List, Optional, Set
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from ...utils import utc_now
 
 
 class IsolationLevel(str, Enum):
@@ -49,7 +50,7 @@ class ContextItem:
     owner_agent: str = ""
     allowed_agents: Set[str] = field(default_factory=set)
     tags: List[str] = field(default_factory=list)
-    created_at: datetime = field(default_factory=datetime.now)
+    created_at: datetime = field(default_factory=utc_now)
     expires_at: Optional[datetime] = None
 
     def is_visible_to(self, agent_name: str) -> bool:
@@ -67,7 +68,7 @@ class ContextItem:
         """Check if item has expired."""
         if self.expires_at is None:
             return False
-        return datetime.now() > self.expires_at
+        return utc_now() > self.expires_at
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary representation."""

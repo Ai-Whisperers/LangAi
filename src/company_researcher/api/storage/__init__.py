@@ -25,7 +25,6 @@ Environment Variables:
     REDIS_PASSWORD - Redis password (optional)
 """
 
-import os
 from typing import Optional
 
 # Import all classes from submodules
@@ -33,6 +32,7 @@ from .models import TaskStorage, _utcnow, _serialize_datetime
 from .sqlite import SQLiteTaskStorage
 from .redis import RedisTaskStorage
 from .memory import InMemoryTaskStorage
+from ...utils import get_config
 
 # Re-export all public APIs
 __all__ = [
@@ -79,19 +79,19 @@ def get_task_storage() -> TaskStorage:
     global _task_storage
 
     if _task_storage is None:
-        backend = os.getenv("TASK_STORAGE_BACKEND", "sqlite")
+        backend = get_config("TASK_STORAGE_BACKEND", default="sqlite")
 
         if backend == "redis":
             _task_storage = RedisTaskStorage(
-                host=os.getenv("REDIS_HOST", "localhost"),
-                port=int(os.getenv("REDIS_PORT", "6379")),
-                password=os.getenv("REDIS_PASSWORD")
+                host=get_config("REDIS_HOST", default="localhost"),
+                port=int(get_config("REDIS_PORT", default="6379")),
+                password=get_config("REDIS_PASSWORD")
             )
         elif backend == "memory":
             _task_storage = InMemoryTaskStorage()
         else:
             # Default to SQLite
-            db_path = os.getenv("TASK_DB_PATH", "data/tasks.db")
+            db_path = get_config("TASK_DB_PATH", default="data/tasks.db")
             _task_storage = SQLiteTaskStorage(db_path)
 
     return _task_storage

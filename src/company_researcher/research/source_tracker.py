@@ -14,9 +14,10 @@ by analyzing what information is available vs. what was extracted.
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 import re
 from collections import defaultdict
+from ..utils import utc_now
 
 
 class SourceType(Enum):
@@ -60,7 +61,7 @@ class ExtractedFact:
     source_url: str
     extraction_method: str  # e.g., "pattern", "table", "llm"
     confidence: float
-    extracted_at: datetime = field(default_factory=datetime.now)
+    extracted_at: datetime = field(default_factory=utc_now)
     context: str = ""  # Surrounding text for verification
 
 
@@ -208,7 +209,7 @@ class SourceUtilizationTracker:
             title=title,
             source_type=source_type,
             content_length=len(content),
-            fetch_time=datetime.now(),
+            fetch_time=utc_now(),
             potential_facts=potential,
             quality_score=quality,
             language=language

@@ -15,6 +15,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
+from ..utils import utc_now
 
 
 class SourceType(str, Enum):
@@ -45,7 +46,7 @@ class Source:
     source_type: SourceType = SourceType.OTHER
     quality: SourceQuality = SourceQuality.UNKNOWN
     domain: str = ""
-    accessed_at: datetime = field(default_factory=datetime.utcnow)
+    accessed_at: datetime = field(default_factory=utc_now)
     published_at: Optional[datetime] = None
     author: Optional[str] = None
     relevance_score: float = 0.0
@@ -60,7 +61,7 @@ class Source:
     def age_days(self) -> Optional[int]:
         """Get age in days since publication."""
         if self.published_at:
-            return (datetime.utcnow() - self.published_at).days
+            return (utc_now() - self.published_at).days
         return None
 
     @property

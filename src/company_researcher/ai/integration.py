@@ -1,14 +1,13 @@
 """Integration layer for AI components in workflow."""
 from typing import Dict, Any, Optional, List, TYPE_CHECKING
-import logging
 
-from .config import get_ai_config, AIConfig
-from .utils import CostTracker
+from .config import get_ai_config
+from .utils import CostTracker, get_logger
 
 if TYPE_CHECKING:
     from ..state import OverallState
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class AIIntegrationLayer:
@@ -56,7 +55,7 @@ class AIIntegrationLayer:
     def sentiment_analyzer(self):
         """Lazy load sentiment analyzer."""
         if self._sentiment is None and self.config.sentiment.enabled:
-            from company_researcher.ai.sentiment import get_sentiment_analyzer
+            from .sentiment import get_sentiment_analyzer
             self._sentiment = get_sentiment_analyzer()
         return self._sentiment
 
@@ -64,7 +63,7 @@ class AIIntegrationLayer:
     def query_generator(self):
         """Lazy load query generator."""
         if self._query_gen is None and self.config.query_generation.enabled:
-            from company_researcher.ai.query import get_query_generator
+            from .query import get_query_generator
             self._query_gen = get_query_generator()
         return self._query_gen
 
@@ -72,7 +71,7 @@ class AIIntegrationLayer:
     def quality_assessor(self):
         """Lazy load quality assessor."""
         if self._quality is None and self.config.quality_assessment.enabled:
-            from company_researcher.ai.quality import get_quality_assessor
+            from .quality import get_quality_assessor
             self._quality = get_quality_assessor()
         return self._quality
 
@@ -80,7 +79,7 @@ class AIIntegrationLayer:
     def data_extractor(self):
         """Lazy load data extractor."""
         if self._extraction is None and self.config.data_extraction.enabled:
-            from company_researcher.ai.extraction import get_data_extractor
+            from .extraction import get_data_extractor
             self._extraction = get_data_extractor()
         return self._extraction
 
@@ -106,7 +105,7 @@ class AIIntegrationLayer:
             return self._legacy_queries(company_name, num_queries)
 
         try:
-            from company_researcher.ai.query import CompanyContext
+            from .query import CompanyContext
 
             ctx = CompanyContext(
                 company_name=company_name,

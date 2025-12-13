@@ -10,8 +10,6 @@ Provides:
 """
 
 import asyncio
-import logging
-import os
 from abc import ABC
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -20,18 +18,17 @@ from typing import Any, Dict, Optional
 
 import aiohttp
 from cachetools import TTLCache
+from ..utils import get_logger, utc_now, get_config
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class APIError(Exception):
     """Base exception for API errors."""
-    pass
 
 
 class RateLimitError(APIError):
     """Raised when API rate limit is exceeded."""
-    pass
 
 
 class CircuitState(Enum):
@@ -71,7 +68,7 @@ class CircuitBreaker:
     def record_failure(self) -> None:
         """Record failed request."""
         self.failure_count += 1
-        self.last_failure_time = datetime.now()
+        self.last_failure_time = utc_now()
 
         if self.failure_count >= self.failure_threshold:
             self.state = CircuitState.OPEN
@@ -84,7 +81,7 @@ class CircuitBreaker:
 
         if self.state == CircuitState.OPEN:
             if self.last_failure_time and \
-               datetime.now() - self.last_failure_time > timedelta(seconds=self.recovery_timeout):
+               utc_now() - self.last_failure_time > timedelta(seconds=self.recovery_timeout):
                 self.state = CircuitState.HALF_OPEN
                 self.success_count = 0
                 logger.info("Circuit breaker half-open - testing recovery")
@@ -110,13 +107,13 @@ class RateLimiter:
         self.calls = calls
         self.period = period
         self.tokens = calls
-        self.last_update = datetime.now()
+        self.last_update = utc_now()
         self._lock = asyncio.Lock()
 
     async def acquire(self) -> None:
         """Wait until a request can be made."""
         async with self._lock:
-            now = datetime.now()
+            now = utc_now()
             elapsed = (now - self.last_update).total_seconds()
 
             # Refill tokens
@@ -169,7 +166,7 @@ class BaseAPIClient(ABC):
             rate_limit_calls: Max calls per period
             rate_limit_period: Rate limit period in seconds
         """
-        self.api_key = api_key or (os.getenv(env_var) if env_var else None)
+        self.api_key = api_key or (get_config(env_var) if env_var else None)
         self._session: Optional[aiohttp.ClientSession] = None
         self._cache: TTLCache = TTLCache(maxsize=cache_maxsize, ttl=cache_ttl)
         self._rate_limiter = RateLimiter(rate_limit_calls, rate_limit_period)

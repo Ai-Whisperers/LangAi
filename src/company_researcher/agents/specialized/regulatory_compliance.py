@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
+from ...utils import utc_now
 
 
 class RegulatoryBody(str, Enum):
@@ -127,7 +128,7 @@ class RegulatoryComplianceAgent:
 
     async def analyze(self, company_name: str, ticker: str = None) -> ComplianceAnalysis:
         return ComplianceAnalysis(
-            company_name=company_name, analyzed_at=datetime.utcnow(),
+            company_name=company_name, analyzed_at=utc_now(),
             overall_compliance_score=85.0, overall_risk_level=RiskLevel.LOW,
             filings=[], compliance_issues=[], legal_matters=[],
             regulatory_risks=[], industry_regulations=[],

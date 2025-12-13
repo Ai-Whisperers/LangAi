@@ -27,14 +27,14 @@ from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 from threading import Lock
-import logging
 
 from anthropic import Anthropic
 
 from .client_factory import get_anthropic_client
 from .cost_tracker import get_cost_tracker
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -46,7 +46,7 @@ class WebSearchResult:
     input_tokens: int = 0
     output_tokens: int = 0
     search_count: int = 1
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=utc_now)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     @property

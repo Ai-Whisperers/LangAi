@@ -9,7 +9,11 @@ Supports:
 
 import inspect
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Type, get_type_hints
+from typing import Any, Dict, List, Optional, Type
+
+from ..utils import get_logger
+
+logger = get_logger(__name__)
 
 from .base_mapper import (
     BaseMapper,
@@ -90,8 +94,8 @@ class PydanticMapper(BaseMapper):
                         "required": field_info.required,
                         "default": str(field_info.default) if field_info.default is not None else None
                     }
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Failed to extract Pydantic fields from {model_class.__name__}: {e}")
 
         # Get validators
         validators = []

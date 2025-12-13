@@ -61,6 +61,7 @@ from .enrichment_nodes import (
     news_sentiment_node,
     competitive_analysis_node,
     risk_assessment_node,
+    financial_comparison_node,
 )
 
 from .output_nodes import (
@@ -82,6 +83,7 @@ from .data_collection_nodes import (
 )
 
 from .comprehensive_output_nodes import (
+    enrich_executive_summary_node,
     save_comprehensive_report_node,
 )
 
@@ -100,6 +102,7 @@ __all__ = [
     "news_sentiment_node",
     "competitive_analysis_node",
     "risk_assessment_node",
+    "financial_comparison_node",
     # Output nodes
     "investment_thesis_node",
     "save_report_node",
@@ -113,6 +116,7 @@ __all__ = [
     "fetch_financial_data_node",
     "fetch_news_node",
     # Comprehensive output nodes
+    "enrich_executive_summary_node",
     "save_comprehensive_report_node",
     # Flags
     "SEC_EDGAR_AVAILABLE",

@@ -6,9 +6,7 @@ historical trends from extracted facts and source content.
 """
 
 import re
-from collections import defaultdict
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from .models import (
     TrendDirection,
@@ -18,6 +16,7 @@ from .models import (
     TrendAnalysis,
     TrendTable,
 )
+from ...utils import utc_now
 
 
 class HistoricalTrendAnalyzer:
@@ -73,7 +72,7 @@ class HistoricalTrendAnalyzer:
             lookback_years: Number of years to analyze (default 5)
         """
         self.lookback_years = lookback_years
-        self.current_year = datetime.now().year
+        self.current_year = utc_now().year
         self.metrics: Dict[str, TrendMetric] = {}
 
     def extract_historical_data(

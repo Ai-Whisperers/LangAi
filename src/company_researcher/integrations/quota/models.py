@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from ...utils import utc_now
 
 
 class QuotaStatus(Enum):
@@ -92,7 +93,7 @@ class QuotaInfo:
 @dataclass
 class QuotaReport:
     """Complete quota report for all APIs."""
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
     apis: List[QuotaInfo] = field(default_factory=list)
 
     def add(self, info: QuotaInfo):

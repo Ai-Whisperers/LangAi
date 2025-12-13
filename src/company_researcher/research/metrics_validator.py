@@ -16,13 +16,12 @@ Different validation profiles for:
 """
 
 import re
-import logging
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Dict, List, Optional, Any, Set, Tuple
+from typing import Dict, List, Optional, Any
 from enum import Enum
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class CompanyType(Enum):
@@ -473,8 +472,23 @@ class MetricsValidator:
         },
     }
 
-    def __init__(self):
+    def __init__(
+        self,
+        min_score: Optional[float] = None,
+        critical_threshold: Optional[float] = None
+    ):
+        """
+        Initialize MetricsValidator with optional custom thresholds.
+
+        Args:
+            min_score: Override minimum score for publishability (0-100).
+                      If None, uses company-type specific defaults.
+            critical_threshold: Fraction of critical metrics allowed to be missing (0-1).
+                              If None, uses company-type specific defaults.
+        """
         self._patterns_compiled = {}
+        self._custom_min_score = min_score
+        self._custom_critical_threshold = critical_threshold
 
     def validate(
         self,
@@ -523,6 +537,14 @@ class MetricsValidator:
             self.PUBLISHABILITY_THRESHOLDS[CompanyType.PUBLIC]
         )
 
+        # Apply custom thresholds if set
+        effective_min_score = self._custom_min_score if self._custom_min_score is not None else thresholds["min_score"]
+        effective_max_critical_missing = thresholds["max_critical_missing"]
+        if self._custom_critical_threshold is not None:
+            # Convert threshold fraction to max missing count
+            total_critical = sum(1 for v in validations if v.metric.priority == MetricPriority.CRITICAL)
+            effective_max_critical_missing = int(total_critical * self._custom_critical_threshold)
+
         high_present = sum(
             1 for v in validations
             if v.status == MetricStatus.PRESENT
@@ -530,8 +552,8 @@ class MetricsValidator:
         )
 
         is_publishable = (
-            score >= thresholds["min_score"]
-            and len(critical_missing) <= thresholds["max_critical_missing"]
+            score >= effective_min_score
+            and len(critical_missing) <= effective_max_critical_missing
             and high_present >= thresholds["min_high_present"]
         )
 
@@ -962,14 +984,16 @@ def create_metrics_validator(
 
     Args:
         min_score: Minimum score (0-100) to generate report (default 60)
-        critical_threshold: Fraction of critical metrics needed (default 0.5)
+        critical_threshold: Fraction of critical metrics allowed to be missing (default 0.5)
+                          e.g., 0.5 means up to 50% of critical metrics can be missing
 
     Returns:
         Configured MetricsValidator instance
     """
-    # Note: The current MetricsValidator uses class-level thresholds.
-    # This factory provides compatibility with agents/research/ API.
-    return MetricsValidator()
+    return MetricsValidator(
+        min_score=min_score,
+        critical_threshold=critical_threshold
+    )
 
 
 # Alias for backward compatibility with agents/research/ version

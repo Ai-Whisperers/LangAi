@@ -19,7 +19,6 @@ class BaseAgent(ABC):
         Returns:
             Agent name string
         """
-        pass
 
     @property
     @abstractmethod
@@ -30,7 +29,6 @@ class BaseAgent(ABC):
         Returns:
             Description of agent's responsibilities
         """
-        pass
 
     @abstractmethod
     def execute(self, state: OverallState) -> Dict[str, Any]:
@@ -43,4 +41,3 @@ class BaseAgent(ABC):
         Returns:
             State update dictionary with agent's contributions
         """
-        pass

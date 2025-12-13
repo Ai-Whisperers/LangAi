@@ -11,7 +11,8 @@ Provides:
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List
+from ...utils import utc_now
 
 
 class ConfidenceLevel(str, Enum):
@@ -55,7 +56,7 @@ class SelfReflectionResult:
     weaknesses: List[str]
     improvement_suggestions: List[str]
     reflection_reasoning: str
-    reflected_at: datetime = field(default_factory=datetime.utcnow)
+    reflected_at: datetime = field(default_factory=utc_now)
 
     @property
     def average_aspect_score(self) -> float:

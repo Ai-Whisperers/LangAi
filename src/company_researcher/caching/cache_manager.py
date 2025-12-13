@@ -8,18 +8,15 @@ Provides:
 - Cache statistics aggregation
 """
 
-import asyncio
-import hashlib
-import json
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar, Union
+from typing import Any, Dict, Generic, List, Optional, TypeVar
 
-from .lru_cache import LRUCache, LRUCacheConfig
 from .ttl_cache import TTLCache, TTLCacheConfig
 from .redis_cache import RedisCache, RedisCacheConfig
+from ..utils import utc_now
 
 K = TypeVar('K')
 V = TypeVar('V')
@@ -70,8 +67,8 @@ class CacheEntry(Generic[V]):
     key: str
     value: V
     tier: CacheTier
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    accessed_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=utc_now)
+    accessed_at: datetime = field(default_factory=utc_now)
     access_count: int = 0
     ttl: Optional[float] = None
     tags: List[str] = field(default_factory=list)
@@ -211,7 +208,7 @@ class CacheManager(Generic[K, V]):
             entry = self._memory_cache.get(key)
             if entry and not entry.stale:
                 self._stats.memory_hits += 1
-                entry.accessed_at = datetime.utcnow()
+                entry.accessed_at = utc_now()
                 entry.access_count += 1
                 self._record_read_time(start)
                 return entry.value

@@ -9,23 +9,55 @@ This module contains specialized analysis nodes for comprehensive research:
 - Brand and reputation analysis
 
 Each node focuses on a specific aspect of company intelligence.
+
+Uses SmartLLMClient for automatic provider fallback:
+- Primary: Anthropic Claude
+- Fallback 1: Groq (llama-3.3-70b-versatile) on rate limit
+- Fallback 2: DeepSeek on rate limit
 """
 
 import json
-import logging
 from typing import Dict, Any, List, Optional
-
-from anthropic import Anthropic
 
 from ...state import OverallState
 from ...config import get_config
-from ...llm.client_factory import safe_extract_text
+from ...llm.smart_client import get_smart_client, TaskType
 from ...prompts import (
     ANALYZE_RESULTS_PROMPT,
     BRAND_AUDIT_PROMPT,
 )
+from ...quality.models import MarketShareValidator
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
+
+
+def _create_completion(prompt: str, system: Optional[str] = None, max_tokens: int = 2000, temperature: float = 0.1):
+    """Create a completion using SmartLLMClient with automatic provider fallback."""
+    smart_client = get_smart_client()
+
+    # Combine system and user prompt if system is provided
+    full_prompt = prompt
+    if system:
+        full_prompt = f"{system}\n\n{prompt}"
+
+    result = smart_client.complete(
+        prompt=full_prompt,
+        task_type=TaskType.REASONING,
+        complexity="medium",
+        max_tokens=max_tokens,
+        temperature=temperature
+    )
+
+    logger.info(f"[LLM] Provider: {result.provider}/{result.model} ({result.routing_reason})")
+
+    return {
+        "content": result.content,
+        "input_tokens": result.input_tokens,
+        "output_tokens": result.output_tokens,
+        "provider": result.provider,
+        "cost": result.cost
+    }
 
 
 # =============================================================================
@@ -74,7 +106,6 @@ def core_analysis_node(state: OverallState) -> Dict[str, Any]:
     Core analysis of search results - company overview, products, etc.
     """
     config = get_config()
-    client = Anthropic(api_key=config.anthropic_api_key)
 
     logger.info("[NODE] Running core analysis...")
 
@@ -86,22 +117,24 @@ def core_analysis_node(state: OverallState) -> Dict[str, Any]:
         search_results=formatted_results
     )
 
-    response = client.messages.create(
-        model=config.llm_model,
+    result = _create_completion(
+        prompt=prompt,
         max_tokens=config.llm_max_tokens,
-        temperature=config.llm_temperature,
-        messages=[{"role": "user", "content": prompt}]
+        temperature=config.llm_temperature
     )
 
-    notes = safe_extract_text(response, agent_name="core_analysis")
-    cost = config.calculate_llm_cost(response.usage.input_tokens, response.usage.output_tokens)
+    notes = result["content"]
+    cost = result["cost"]
 
-    logger.info("[OK] Core analysis complete")
+    logger.info(f"[OK] Core analysis complete (via {result['provider']})")
 
     return {
         "notes": [notes],
         "total_cost": state.get("total_cost", 0.0) + cost,
-        "total_tokens": _update_tokens(state, response.usage)
+        "total_tokens": {
+            "input": state.get("total_tokens", {}).get("input", 0) + result["input_tokens"],
+            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"]
+        }
     }
 
 
@@ -109,9 +142,6 @@ def financial_analysis_node(state: OverallState) -> Dict[str, Any]:
     """
     Financial analysis using available financial data.
     """
-    config = get_config()
-    client = Anthropic(api_key=config.anthropic_api_key)
-
     logger.info("[NODE] Running financial analysis...")
 
     # Combine financial data from provider and search results
@@ -145,32 +175,31 @@ Provide a comprehensive financial analysis including:
 Be specific with numbers and cite your sources.
 """
 
-    response = client.messages.create(
-        model=config.llm_model,
+    result = _create_completion(
+        prompt=prompt,
         max_tokens=1500,
-        temperature=0.1,
-        messages=[{"role": "user", "content": prompt}]
+        temperature=0.1
     )
 
-    analysis = safe_extract_text(response, agent_name="financial_analysis")
-    cost = config.calculate_llm_cost(response.usage.input_tokens, response.usage.output_tokens)
+    analysis = result["content"]
+    cost = result["cost"]
 
-    logger.info("[OK] Financial analysis complete")
+    logger.info(f"[OK] Financial analysis complete (via {result['provider']})")
 
     return {
         "agent_outputs": {"financial": analysis},
         "total_cost": state.get("total_cost", 0.0) + cost,
-        "total_tokens": _update_tokens(state, response.usage)
+        "total_tokens": {
+            "input": state.get("total_tokens", {}).get("input", 0) + result["input_tokens"],
+            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"]
+        }
     }
 
 
 def market_analysis_node(state: OverallState) -> Dict[str, Any]:
     """
-    Market position and competitive analysis.
+    Market position and competitive analysis with market share validation.
     """
-    config = get_config()
-    client = Anthropic(api_key=config.anthropic_api_key)
-
     logger.info("[NODE] Running market analysis...")
 
     # Extract market-related info
@@ -193,22 +222,46 @@ Provide analysis of:
 Be specific and cite sources where possible.
 """
 
-    response = client.messages.create(
-        model=config.llm_model,
+    result = _create_completion(
+        prompt=prompt,
         max_tokens=1200,
-        temperature=0.1,
-        messages=[{"role": "user", "content": prompt}]
+        temperature=0.1
     )
 
-    analysis = safe_extract_text(response, agent_name="market_analysis")
-    cost = config.calculate_llm_cost(response.usage.input_tokens, response.usage.output_tokens)
+    analysis = result["content"]
+    cost = result["cost"]
 
-    logger.info("[OK] Market analysis complete")
+    # Validate market share data if present in the analysis
+    validator = MarketShareValidator(tolerance=5.0)
+    validation_result, extracted_shares = validator.validate_from_text(
+        text=analysis,
+        company_name=state["company_name"]
+    )
+
+    # Add validation warnings to the analysis if issues found
+    if extracted_shares and not validation_result.is_valid:
+        validation_warning = "\n\n⚠️ **Market Share Data Quality Warning**\n"
+        validation_warning += f"- Total market shares: {validation_result.total_percentage:.1f}%\n"
+        validation_warning += f"- Deviation from 100%: {validation_result.deviation_from_100:.1f}%\n"
+        for issue in validation_result.issues:
+            validation_warning += f"- Issue: {issue}\n"
+        if validation_result.corrected_shares:
+            validation_warning += f"- Suggested normalized shares: {validation_result.corrected_shares}\n"
+        analysis += validation_warning
+        logger.warning(f"[VALIDATION] Market share validation issues: {validation_result.issues}")
+    elif extracted_shares and validation_result.warnings:
+        for warning in validation_result.warnings:
+            logger.info(f"[VALIDATION] Market share note: {warning}")
+
+    logger.info(f"[OK] Market analysis complete (via {result['provider']})")
 
     return {
         "agent_outputs": {"market": analysis},
         "total_cost": state.get("total_cost", 0.0) + cost,
-        "total_tokens": _update_tokens(state, response.usage)
+        "total_tokens": {
+            "input": state.get("total_tokens", {}).get("input", 0) + result["input_tokens"],
+            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"]
+        }
     }
 
 
@@ -216,9 +269,6 @@ def esg_analysis_node(state: OverallState) -> Dict[str, Any]:
     """
     ESG (Environmental, Social, Governance) analysis.
     """
-    config = get_config()
-    client = Anthropic(api_key=config.anthropic_api_key)
-
     logger.info("[NODE] Running ESG analysis...")
 
     # Extract ESG-related info
@@ -229,22 +279,24 @@ def esg_analysis_node(state: OverallState) -> Dict[str, Any]:
         context=esg_context or "Limited ESG data available from search results."
     )
 
-    response = client.messages.create(
-        model=config.llm_model,
+    result = _create_completion(
+        prompt=prompt,
         max_tokens=1200,
-        temperature=0.1,
-        messages=[{"role": "user", "content": prompt}]
+        temperature=0.1
     )
 
-    analysis = safe_extract_text(response, agent_name="esg_analysis")
-    cost = config.calculate_llm_cost(response.usage.input_tokens, response.usage.output_tokens)
+    analysis = result["content"]
+    cost = result["cost"]
 
-    logger.info("[OK] ESG analysis complete")
+    logger.info(f"[OK] ESG analysis complete (via {result['provider']})")
 
     return {
         "agent_outputs": {"esg": analysis},
         "total_cost": state.get("total_cost", 0.0) + cost,
-        "total_tokens": _update_tokens(state, response.usage)
+        "total_tokens": {
+            "input": state.get("total_tokens", {}).get("input", 0) + result["input_tokens"],
+            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"]
+        }
     }
 
 
@@ -252,9 +304,6 @@ def brand_analysis_node(state: OverallState) -> Dict[str, Any]:
     """
     Brand perception and reputation analysis.
     """
-    config = get_config()
-    client = Anthropic(api_key=config.anthropic_api_key)
-
     logger.info("[NODE] Running brand analysis...")
 
     # Extract brand-related info
@@ -265,22 +314,24 @@ def brand_analysis_node(state: OverallState) -> Dict[str, Any]:
         search_results=brand_context or "Limited brand data available from search results."
     )
 
-    response = client.messages.create(
-        model=config.llm_model,
+    result = _create_completion(
+        prompt=prompt,
         max_tokens=1000,
-        temperature=0.1,
-        messages=[{"role": "user", "content": prompt}]
+        temperature=0.1
     )
 
-    analysis = safe_extract_text(response, agent_name="brand_analysis")
-    cost = config.calculate_llm_cost(response.usage.input_tokens, response.usage.output_tokens)
+    analysis = result["content"]
+    cost = result["cost"]
 
-    logger.info("[OK] Brand analysis complete")
+    logger.info(f"[OK] Brand analysis complete (via {result['provider']})")
 
     return {
         "agent_outputs": {"brand": analysis},
         "total_cost": state.get("total_cost", 0.0) + cost,
-        "total_tokens": _update_tokens(state, response.usage)
+        "total_tokens": {
+            "input": state.get("total_tokens", {}).get("input", 0) + result["input_tokens"],
+            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"]
+        }
     }
 
 
@@ -303,10 +354,10 @@ def _format_search_results(results: List[Dict]) -> str:
 
 def _update_tokens(state: OverallState, usage) -> Dict[str, int]:
     """Update token counts."""
-    current = state.get("total_tokens", {"input": 0, "output": 0})
+    current = state.get("total_tokens") or {}
     return {
-        "input": current["input"] + usage.input_tokens,
-        "output": current["output"] + usage.output_tokens
+        "input": current.get("input", 0) + usage.input_tokens,
+        "output": current.get("output", 0) + usage.output_tokens
     }
 
 

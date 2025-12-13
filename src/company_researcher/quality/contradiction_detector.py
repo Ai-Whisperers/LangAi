@@ -15,13 +15,45 @@ import re
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
 from pydantic import BaseModel, Field
-from anthropic import Anthropic
-
 from ..config import get_config
-from ..llm.client_factory import safe_extract_text
+from ..llm.smart_client import get_smart_client, TaskType
 from ..types import ContradictionSeverity, ResolutionStrategy  # Centralized enums
-# AI models for extraction
-from ..ai.extraction import ExtractedFact, FactCategory
+# Import ExtractedFact from fact_extractor (has .content and .source_agent attributes)
+from .fact_extractor import ExtractedFact
+from ..utils import utc_now
+
+
+# ============================================================================
+# Helper Functions
+# ============================================================================
+
+def _get_fact_content(fact: Any) -> str:
+    """
+    Get content from a fact object, handling both ExtractedFact types.
+
+    The codebase has two ExtractedFact classes:
+    - quality/fact_extractor.py: dataclass with 'content' attribute
+    - ai/extraction/models.py: Pydantic model with 'value' attribute
+
+    This helper safely extracts the text content from either type.
+    """
+    # Try 'content' first (fact_extractor.ExtractedFact)
+    if hasattr(fact, 'content') and fact.content:
+        return str(fact.content)
+    # Fall back to 'value' (ai.extraction.ExtractedFact)
+    if hasattr(fact, 'value') and fact.value:
+        return str(fact.value)
+    # Last resort: try source_text
+    if hasattr(fact, 'source_text') and fact.source_text:
+        return str(fact.source_text)
+    return ""
+
+
+def _get_fact_source(fact: Any) -> str:
+    """Get source agent from a fact object, handling both ExtractedFact types."""
+    if hasattr(fact, 'source_agent') and fact.source_agent:
+        return str(fact.source_agent)
+    return "unknown"
 
 
 # ============================================================================
@@ -48,7 +80,7 @@ class Contradiction(BaseModel):
     explanation: str
     resolution_strategy: ResolutionStrategy = ResolutionStrategy.INVESTIGATE
     resolution_suggestion: str = ""
-    detected_at: datetime = Field(default_factory=datetime.now)
+    detected_at: datetime = Field(default_factory=utc_now)
 
     def to_markdown(self) -> str:
         """Format contradiction as markdown."""
@@ -83,7 +115,7 @@ class ContradictionReport(BaseModel):
     total_facts_analyzed: int = 0
     topics_analyzed: int = 0
     analysis_time_ms: float = 0.0
-    generated_at: datetime = Field(default_factory=datetime.now)
+    generated_at: datetime = Field(default_factory=utc_now)
 
     @property
     def critical_count(self) -> int:
@@ -175,7 +207,7 @@ def extract_topics(facts: List[ExtractedFact]) -> Dict[str, List[ExtractedFact]]
     topics = {}
 
     for fact in facts:
-        fact_lower = fact.source_text.lower()
+        fact_lower = _get_fact_content(fact).lower()
 
         # Check each topic
         for topic, keywords in TOPIC_KEYWORDS.items():
@@ -232,7 +264,7 @@ class ContradictionDetector:
         Returns:
             ContradictionReport with detected contradictions
         """
-        start_time = datetime.now()
+        start_time = utc_now()
         self._contradiction_count = 0
 
         # Group facts by topic
@@ -258,7 +290,7 @@ class ContradictionDetector:
                 )
                 contradictions.extend(semantic_contradictions)
 
-        analysis_time = (datetime.now() - start_time).total_seconds() * 1000
+        analysis_time = (utc_now() - start_time).total_seconds() * 1000
 
         return ContradictionReport(
             contradictions=contradictions,
@@ -305,7 +337,7 @@ class ContradictionDetector:
         # Extract numerical values from facts
         numerical_facts = []
         for fact in facts:
-            numbers = self._extract_numbers(fact.source_text)
+            numbers = self._extract_numbers(_get_fact_content(fact))
             if numbers:
                 numerical_facts.append((fact, numbers))
 
@@ -313,22 +345,22 @@ class ContradictionDetector:
         for i, (fact_a, nums_a) in enumerate(numerical_facts):
             for j, (fact_b, nums_b) in enumerate(numerical_facts[i+1:], i+1):
                 # Check if facts are about similar things
-                if self._facts_are_comparable(fact_a.source_text, fact_b.source_text):
+                if self._facts_are_comparable(_get_fact_content(fact_a), _get_fact_content(fact_b)):
                     # Check for numerical disagreement
                     disagreement = self._check_numerical_disagreement(nums_a, nums_b)
                     if disagreement:
                         self._contradiction_count += 1
-                        # Get source URL or use "unknown" for agent tracking
-                        source_a = fact_a.source_url or "unknown"
-                        source_b = fact_b.source_url or "unknown"
+                        # Get source using helper to handle different ExtractedFact types
+                        source_a = _get_fact_source(fact_a)
+                        source_b = _get_fact_source(fact_b)
                         contradictions.append(Contradiction(
                             id=f"NUM-{self._contradiction_count}",
                             topic=topic,
                             severity=self._assess_numerical_severity(
                                 disagreement['diff_pct']
                             ),
-                            fact_a=fact_a.source_text,
-                            fact_b=fact_b.source_text,
+                            fact_a=_get_fact_content(fact_a),
+                            fact_b=_get_fact_content(fact_b),
                             agent_a=source_a,
                             agent_b=source_b,
                             explanation=f"Numerical disagreement: {disagreement['value_a']} vs {disagreement['value_b']} ({disagreement['diff_pct']:.1f}% difference)",
@@ -350,7 +382,7 @@ class ContradictionDetector:
 
         # Prepare facts for analysis
         facts_text = "\n".join([
-            f"[{i+1}] ({fact.source_url or 'unknown'}): {fact.source_text}"
+            f"[{i+1}] ({_get_fact_source(fact)}): {_get_fact_content(fact)}"
             for i, fact in enumerate(facts)
         ])
 
@@ -372,15 +404,20 @@ SEVERITY: [level]
 ---"""
 
         try:
-            client = Anthropic(api_key=self._config.anthropic_api_key)
-            response = client.messages.create(
-                model=self._config.llm_model,
+            # Use SmartLLMClient for automatic provider fallback:
+            # Primary: Anthropic Claude
+            # Fallback 1: Groq (llama-3.3-70b-versatile) on rate limit
+            # Fallback 2: DeepSeek on rate limit
+            smart_client = get_smart_client()
+            result = smart_client.complete(
+                prompt=prompt,
+                task_type=TaskType.REASONING,
+                complexity="low",
                 max_tokens=500,
-                temperature=0.0,
-                messages=[{"role": "user", "content": prompt}]
+                temperature=0.0
             )
 
-            result_text = safe_extract_text(response, default="", agent_name="contradiction_detector")
+            result_text = result.content
 
             if "NO CONTRADICTIONS" in result_text.upper():
                 return []
@@ -408,8 +445,9 @@ SEVERITY: [level]
         """Extract numerical values from text."""
         numbers = []
 
-        # Currency patterns
-        currency_pattern = r'\$?([\d,]+(?:\.\d+)?)\s*([BMK])?(?:illion)?'
+        # Currency patterns - case insensitive for B/M/K multipliers
+        # Match patterns like "$1.5 billion", "$2.1B", "1.5 million", etc.
+        currency_pattern = r'\$?([\d,]+(?:\.\d+)?)\s*([BMKbmk])?(?:illion|ILLION)?'
         for match in re.finditer(currency_pattern, text):
             value = float(match.group(1).replace(',', ''))
             multiplier = match.group(2)
@@ -419,6 +457,16 @@ SEVERITY: [level]
                 elif multiplier.upper() == 'M':
                     value *= 1_000_000
                 elif multiplier.upper() == 'K':
+                    value *= 1_000
+            else:
+                # Check for "billion/million" spelled out after the number
+                # Look for the full word following the matched number
+                remaining_text = text[match.end():].lower().strip()
+                if remaining_text.startswith('billion'):
+                    value *= 1_000_000_000
+                elif remaining_text.startswith('million'):
+                    value *= 1_000_000
+                elif remaining_text.startswith('thousand'):
                     value *= 1_000
             numbers.append((value, match.group(0)))
 
@@ -432,18 +480,24 @@ SEVERITY: [level]
 
     def _facts_are_comparable(self, fact_a: str, fact_b: str) -> bool:
         """Check if two facts are about comparable things."""
-        # Simple keyword overlap check
-        words_a = set(fact_a.lower().split())
-        words_b = set(fact_b.lower().split())
+        # Normalize text: lowercase and remove punctuation
+        import string
+        translator = str.maketrans('', '', string.punctuation)
+
+        clean_a = fact_a.lower().translate(translator)
+        clean_b = fact_b.lower().translate(translator)
+
+        words_a = set(clean_a.split())
+        words_b = set(clean_b.split())
 
         # Remove common words
-        stopwords = {'the', 'a', 'an', 'is', 'was', 'are', 'were', 'to', 'of', 'and', 'in'}
+        stopwords = {'the', 'a', 'an', 'is', 'was', 'are', 'were', 'to', 'of', 'and', 'in', 'last', 'year', 'this'}
         words_a -= stopwords
         words_b -= stopwords
 
-        # Check overlap
+        # Check overlap - reduce threshold to 2 for better detection
         overlap = len(words_a & words_b)
-        return overlap >= 3
+        return overlap >= 2
 
     def _check_numerical_disagreement(
         self,
@@ -491,11 +545,11 @@ SEVERITY: [level]
         fact_b: ExtractedFact
     ) -> ResolutionStrategy:
         """Suggest resolution strategy for numerical contradiction."""
-        # Check for official source indicators
-        official_keywords = ['official', 'SEC', '10-K', '10-Q', 'annual report', 'investor relations']
+        # Check for official source indicators (case-insensitive)
+        official_keywords = ['official', 'sec', '10-k', '10-q', 'annual report', 'investor relations', 'filing']
 
-        a_is_official = any(kw in fact_a.source_text.lower() for kw in official_keywords)
-        b_is_official = any(kw in fact_b.source_text.lower() for kw in official_keywords)
+        a_is_official = any(kw in _get_fact_content(fact_a).lower() for kw in official_keywords)
+        b_is_official = any(kw in _get_fact_content(fact_b).lower() for kw in official_keywords)
 
         if a_is_official and not b_is_official:
             return ResolutionStrategy.USE_OFFICIAL
@@ -541,10 +595,10 @@ SEVERITY: [level]
                     id="",  # Will be set by caller
                     topic="",  # Will be set by caller
                     severity=severity,
-                    fact_a=fact_a.source_text,
-                    fact_b=fact_b.source_text,
-                    agent_a=fact_a.source_url or "unknown",
-                    agent_b=fact_b.source_url or "unknown",
+                    fact_a=_get_fact_content(fact_a),
+                    fact_b=_get_fact_content(fact_b),
+                    agent_a=_get_fact_source(fact_a),
+                    agent_b=_get_fact_source(fact_b),
                     explanation=explanation,
                     resolution_strategy=ResolutionStrategy.INVESTIGATE
                 )

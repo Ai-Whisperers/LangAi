@@ -24,7 +24,6 @@ Usage:
     print_cost_summary()
 """
 
-from pathlib import Path
 
 from .models import (
     ProviderCategory,

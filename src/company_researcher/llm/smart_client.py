@@ -34,20 +34,18 @@ Usage:
     report = generate_report(analysis)  # Uses Claude
 """
 
-import os
-import logging
 from typing import Optional, Dict, Any, List, Union
 from dataclasses import dataclass
 from threading import Lock
-from datetime import datetime
 
 from anthropic import Anthropic
 from openai import OpenAI
 
-from .model_router import ModelRouter, TaskType, ModelTier, ModelConfig, RoutingDecision
-from .deepseek_client import DeepSeekClient, DeepSeekResponse
+from .model_router import ModelRouter, TaskType
+from .deepseek_client import DeepSeekClient
+from ..utils import get_config, get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -119,25 +117,25 @@ class SmartLLMClient:
         self._groq = None
 
         # Anthropic
-        anthropic_key = anthropic_api_key or os.getenv("ANTHROPIC_API_KEY")
+        anthropic_key = anthropic_api_key or get_config("ANTHROPIC_API_KEY")
         if anthropic_key:
             self._anthropic = Anthropic(api_key=anthropic_key)
             logger.info("Anthropic client initialized")
 
         # OpenAI
-        openai_key = openai_api_key or os.getenv("OPENAI_API_KEY")
+        openai_key = openai_api_key or get_config("OPENAI_API_KEY")
         if openai_key:
             self._openai = OpenAI(api_key=openai_key)
             logger.info("OpenAI client initialized")
 
         # DeepSeek
-        deepseek_key = deepseek_api_key or os.getenv("DEEPSEEK_API_KEY")
+        deepseek_key = deepseek_api_key or get_config("DEEPSEEK_API_KEY")
         if deepseek_key:
             self._deepseek = DeepSeekClient(api_key=deepseek_key)
             logger.info("DeepSeek client initialized")
 
         # Groq
-        groq_key = groq_api_key or os.getenv("GROQ_API_KEY")
+        groq_key = groq_api_key or get_config("GROQ_API_KEY")
         if groq_key:
             self._groq = OpenAI(
                 api_key=groq_key,
@@ -224,37 +222,90 @@ class SmartLLMClient:
         # Check provider availability
         available = self._get_available_providers()
         if provider not in available:
-            # Fallback to available provider
-            if "anthropic" in available:
-                provider = "anthropic"
-                model_id = "claude-sonnet-4-20250514"
-            elif "openai" in available:
-                provider = "openai"
-                model_id = "gpt-4o-mini"
+            # Fallback to available provider - prioritize Groq (fast, cheap, no rate limits)
+            if "groq" in available:
+                provider = "groq"
+                model_id = "llama-3.3-70b-versatile"
             elif "deepseek" in available:
                 provider = "deepseek"
                 model_id = "deepseek-chat"
-            elif "groq" in available:
-                provider = "groq"
-                model_id = "llama-3.3-70b-versatile"
+            elif "openai" in available:
+                provider = "openai"
+                model_id = "gpt-4o-mini"
+            elif "anthropic" in available:
+                provider = "anthropic"
+                model_id = "claude-sonnet-4-20250514"
             else:
                 raise ValueError("No LLM providers available")
             routing_reason = f"Fallback to {provider}/{model_id}"
 
         logger.info(f"Routing: {task_type.value} -> {provider}/{model_id}")
 
-        # Execute completion
-        start_time = datetime.now()
-        result = self._execute_completion(
-            provider=provider,
-            model=model_id,
-            prompt=prompt,
-            system=system,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            json_mode=json_mode
-        )
-        latency_ms = int((datetime.now() - start_time).total_seconds() * 1000)
+        # Execute completion with automatic fallback on rate limit errors
+        start_time = utc_now()
+        try:
+            result = self._execute_completion(
+                provider=provider,
+                model=model_id,
+                prompt=prompt,
+                system=system,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                json_mode=json_mode
+            )
+        except Exception as e:
+            error_msg = str(e).lower()
+            # Check for rate limit, billing, authentication, or API errors
+            # 400 = billing/credit issues, 401 = auth issues, 429 = rate limit
+            is_recoverable = (
+                "rate" in error_msg or
+                "limit" in error_msg or
+                "429" in str(e) or
+                "400" in str(e) or  # Billing/credit exhausted
+                "401" in str(e) or  # Authentication errors (invalid/expired key)
+                "authentication" in error_msg or
+                "invalid" in error_msg or  # Invalid API key
+                "credit" in error_msg or
+                "quota" in error_msg or
+                "billing" in error_msg or
+                "payment" in error_msg or
+                "insufficient" in error_msg
+            )
+            if is_recoverable:
+                logger.warning(f"API error for {provider} ({str(e)[:100]}), falling back to alternative provider")
+                # Try Groq as fallback
+                if provider != "groq" and self._groq:
+                    provider = "groq"
+                    model_id = "llama-3.3-70b-versatile"
+                    routing_reason = f"Fallback to {provider}/{model_id} (rate limit)"
+                    result = self._execute_completion(
+                        provider=provider,
+                        model=model_id,
+                        prompt=prompt,
+                        system=system,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        json_mode=json_mode
+                    )
+                # Try DeepSeek as second fallback
+                elif provider != "deepseek" and self._deepseek:
+                    provider = "deepseek"
+                    model_id = "deepseek-chat"
+                    routing_reason = f"Fallback to {provider}/{model_id} (rate limit)"
+                    result = self._execute_completion(
+                        provider=provider,
+                        model=model_id,
+                        prompt=prompt,
+                        system=system,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        json_mode=json_mode
+                    )
+                else:
+                    raise  # Re-raise if no fallback available
+            else:
+                raise  # Re-raise non-rate-limit errors
+        latency_ms = int((utc_now() - start_time).total_seconds() * 1000)
 
         # Track usage
         self._track_usage(provider, result["cost"], result["input_tokens"], result["output_tokens"])
@@ -400,8 +451,8 @@ class SmartLLMClient:
         temperature: float,
         json_mode: bool
     ) -> Dict[str, Any]:
-        """Execute DeepSeek completion."""
-        response = self._deepseek.create_message(
+        """Execute DeepSeek completion using the query method."""
+        response = self._deepseek.query(
             prompt=prompt,
             system=system,
             model=model,

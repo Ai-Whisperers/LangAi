@@ -21,13 +21,13 @@ Usage:
 """
 
 import json
-import logging
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
 from .models import TaskStorage, _utcnow, _serialize_datetime
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class RedisTaskStorage(TaskStorage):
@@ -148,8 +148,8 @@ class RedisTaskStorage(TaskStorage):
             try:
                 await self._redis.srem(f"{self.prefix}tasks:status:{old_status}", task_id)
                 await self._redis.sadd(f"{self.prefix}tasks:status:{new_status}", task_id)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to update task status index: {e}")
 
         return await self.save_task(task_id, task)
 

@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from ..utils import utc_now
 
 
 @dataclass
@@ -24,7 +25,7 @@ class EvalCase:
     expected_output: Dict[str, Any]
     tags: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=utc_now)
 
     # Optional fields for specific test types
     company_name: Optional[str] = None
@@ -55,7 +56,7 @@ class EvalCase:
         if isinstance(created_at, str):
             created_at = datetime.fromisoformat(created_at)
         else:
-            created_at = datetime.utcnow()
+            created_at = utc_now()
 
         return cls(
             id=data.get("id", str(uuid.uuid4())),
@@ -82,7 +83,7 @@ class EvalResult:
     errors: List[str] = field(default_factory=list)
     metrics: Dict[str, float] = field(default_factory=dict)
     duration_seconds: float = 0.0
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=utc_now)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -125,7 +126,7 @@ class EvalDataset:
         self.description = description
         self.cases: List[EvalCase] = []
         self.metadata: Dict[str, Any] = {}
-        self.created_at = datetime.utcnow()
+        self.created_at = utc_now()
         self.version = "1.0"
 
     def add_case(self, case: EvalCase) -> None:

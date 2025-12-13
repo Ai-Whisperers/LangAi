@@ -11,17 +11,16 @@ Cold memory layer with:
 This is the persistent storage layer for semantic search over research data.
 """
 
-import os
 import hashlib
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
+from ..utils import get_config, utc_now
 
 # Conditional imports for vector databases
 try:
     import chromadb
-    from chromadb.config import Settings
     CHROMADB_AVAILABLE = True
 except ImportError:
     CHROMADB_AVAILABLE = False
@@ -46,7 +45,7 @@ class VectorDocument:
     content: str
     metadata: Dict[str, Any] = field(default_factory=dict)
     embedding: Optional[List[float]] = None
-    created_at: datetime = field(default_factory=datetime.now)
+    created_at: datetime = field(default_factory=utc_now)
 
     @staticmethod
     def generate_id(content: str, prefix: str = "doc") -> str:
@@ -105,7 +104,7 @@ class EmbeddingGenerator:
             api_key: OpenAI API key (uses env var if not provided)
         """
         self.model = model
-        self._api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self._api_key = api_key or get_config("OPENAI_API_KEY")
         self._client = None
 
         if OPENAI_AVAILABLE and self._api_key:
@@ -262,7 +261,7 @@ class VectorStore:
 
         # Prepare metadata
         doc_metadata = metadata or {}
-        doc_metadata["created_at"] = datetime.now().isoformat()
+        doc_metadata["created_at"] = utc_now().isoformat()
         doc_metadata["content_length"] = len(content)
 
         # Add to collection

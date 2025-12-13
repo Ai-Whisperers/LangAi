@@ -10,13 +10,13 @@ Implements a priority-based fallback strategy:
 Each provider is tried in order until news is successfully retrieved.
 """
 
-import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from enum import Enum
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class NewsProviderStatus(Enum):
@@ -66,7 +66,7 @@ class NewsResult:
     articles: List[NewsArticle] = field(default_factory=list)
     total_results: int = 0
     sources_used: List[str] = field(default_factory=list)
-    search_time: datetime = field(default_factory=datetime.now)
+    search_time: datetime = field(default_factory=utc_now)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -96,7 +96,7 @@ class ProviderState:
         if self.status == NewsProviderStatus.DISABLED:
             return False
         if self.status == NewsProviderStatus.RATE_LIMITED:
-            if self.reset_time and datetime.now() > self.reset_time:
+            if self.reset_time and utc_now() > self.reset_time:
                 self.status = NewsProviderStatus.AVAILABLE
                 self.calls_count = 0
                 return True
@@ -104,18 +104,18 @@ class ProviderState:
         if self.limit and self.calls_count >= self.limit:
             self.status = NewsProviderStatus.RATE_LIMITED
             if self.reset_period == "daily":
-                self.reset_time = datetime.now().replace(
+                self.reset_time = utc_now().replace(
                     hour=0, minute=0, second=0
                 ) + timedelta(days=1)
             else:  # monthly
-                next_month = datetime.now().replace(day=1) + timedelta(days=32)
+                next_month = utc_now().replace(day=1) + timedelta(days=32)
                 self.reset_time = next_month.replace(day=1)
             return False
         return True
 
     def record_call(self, success: bool, error: Optional[str] = None):
         """Record a call attempt."""
-        self.last_call = datetime.now()
+        self.last_call = utc_now()
         self.calls_count += 1
         if not success:
             self.last_error = error
@@ -134,7 +134,7 @@ class NewsProvider:
         # Or search with date range
         news = provider.search_news(
             "Apple earnings",
-            from_date=datetime.now() - timedelta(days=7)
+            from_date=utc_now() - timedelta(days=7)
         )
     """
 
@@ -483,7 +483,7 @@ class NewsProvider:
         if cache_key not in self._cache:
             return None
         cached = self._cache[cache_key]
-        if datetime.now() - cached.search_time > self._cache_ttl:
+        if utc_now() - cached.search_time > self._cache_ttl:
             del self._cache[cache_key]
             return None
         return cached
@@ -505,7 +505,7 @@ class NewsProvider:
         Returns:
             NewsResult with company news
         """
-        from_date = datetime.now() - timedelta(days=days_back)
+        from_date = utc_now() - timedelta(days=days_back)
         return self.search_news(
             query=company_name,
             max_results=max_results,

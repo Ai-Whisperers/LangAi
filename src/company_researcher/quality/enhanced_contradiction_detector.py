@@ -9,13 +9,13 @@ Addresses Issue #5: Contradiction Detection Weaknesses.
 """
 
 import re
-import logging
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Tuple, Set
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Any
 from enum import Enum
 from datetime import datetime
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ContradictionType(Enum):

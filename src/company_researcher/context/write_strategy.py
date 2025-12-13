@@ -15,7 +15,7 @@ from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-import json
+from ..utils import utc_now
 
 
 # ============================================================================
@@ -52,7 +52,7 @@ class ScratchpadNote:
     priority: NotePriority = NotePriority.MEDIUM
     tags: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
-    created_at: datetime = field(default_factory=datetime.now)
+    created_at: datetime = field(default_factory=utc_now)
     references: List[str] = field(default_factory=list)  # IDs of related notes
 
     def to_dict(self) -> Dict[str, Any]:
@@ -78,7 +78,7 @@ class ScratchpadNote:
             priority=NotePriority(data.get("priority", "medium")),
             tags=data.get("tags", []),
             metadata=data.get("metadata", {}),
-            created_at=datetime.fromisoformat(data["created_at"]) if isinstance(data.get("created_at"), str) else datetime.now(),
+            created_at=datetime.fromisoformat(data["created_at"]) if isinstance(data.get("created_at"), str) else utc_now(),
             references=data.get("references", [])
         )
 
@@ -94,7 +94,7 @@ class WorkingMemory:
 
     def add_thought(self, thought: str) -> None:
         """Add a thought to the chain."""
-        self.chain_of_thought.append(f"[{datetime.now().strftime('%H:%M:%S')}] {thought}")
+        self.chain_of_thought.append(f"[{utc_now().strftime('%H:%M:%S')}] {thought}")
 
     def set_variable(self, name: str, value: Any) -> None:
         """Set a working variable."""
@@ -159,7 +159,7 @@ class Scratchpad:
         self._notes: Dict[str, ScratchpadNote] = {}
         self._note_counter = 0
         self._working_memories: Dict[str, WorkingMemory] = {}
-        self._created_at = datetime.now()
+        self._created_at = utc_now()
 
     @property
     def note_count(self) -> int:

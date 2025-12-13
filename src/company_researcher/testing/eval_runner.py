@@ -10,7 +10,6 @@ Provides:
 import asyncio
 import time
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
 
 from .eval_dataset import EvalCase, EvalDataset, EvalResult

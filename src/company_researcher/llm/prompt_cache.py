@@ -16,7 +16,6 @@ Usage:
 """
 
 from typing import Dict, Any, Optional, List
-import hashlib
 from threading import Lock
 
 from anthropic import Anthropic

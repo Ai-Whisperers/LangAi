@@ -9,13 +9,13 @@ Workflow: Researcher → Analyst → Quality Check → (iterate or finish)
 """
 
 from typing import Dict, Any
-from datetime import datetime
 from langgraph.graph import StateGraph, END
 
 from ..state import OverallState, InputState, OutputState, create_initial_state, create_output_state
 from ..agents import researcher_agent_node, analyst_agent_node
 from ..quality import check_research_quality
 from ..prompts import format_sources_for_report
+from ..utils import utc_now
 
 
 # ============================================================================
@@ -74,7 +74,7 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
     print("\n[NODE] Generating markdown report...")
 
     # Generate report content
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = utc_now().strftime("%Y%m%d_%H%M%S")
     company_name = state["company_name"]
 
     # Get agent outputs for attribution
@@ -83,12 +83,12 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
     analyst_metrics = agent_outputs.get("analyst", {})
 
     # Calculate duration
-    duration = (datetime.now() - state.get("start_time", datetime.now())).total_seconds()
+    duration = (utc_now() - state.get("start_time", utc_now())).total_seconds()
 
     # Build report
     report_content = f"""# {company_name} - Research Report
 
-*Generated on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}*
+*Generated on {utc_now().strftime("%Y-%m-%d %H:%M:%S")}*
 
 ---
 

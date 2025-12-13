@@ -29,14 +29,14 @@ Usage:
 
 import re
 import json
-import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Callable, Tuple
+from typing import Dict, List, Optional, Any, Tuple
 from enum import Enum
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class PromptCategory(Enum):
@@ -68,7 +68,7 @@ class PromptMetrics:
     ):
         """Record a prompt use."""
         self.total_uses += 1
-        self.last_used = datetime.now()
+        self.last_used = utc_now()
 
         # Running averages
         n = self.total_uses
@@ -109,7 +109,7 @@ class PromptVersion:
     description: str = ""
     required_vars: List[str] = field(default_factory=list)
     optional_vars: Dict[str, Any] = field(default_factory=dict)
-    created_at: datetime = field(default_factory=datetime.now)
+    created_at: datetime = field(default_factory=utc_now)
     is_active: bool = True
     metrics: PromptMetrics = field(default_factory=PromptMetrics)
 

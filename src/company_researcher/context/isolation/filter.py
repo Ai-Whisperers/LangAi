@@ -11,6 +11,7 @@ Provides filtering capabilities for context items based on:
 from typing import Dict, Any, List, Optional
 
 from .models import ContextItem, ContextVisibility
+from ...utils import utc_now
 
 
 class ContextFilter:
@@ -196,10 +197,10 @@ class ContextFilter:
         Returns:
             Filtered context dictionary with recent items only
         """
-        from datetime import datetime, timedelta
+        from datetime import timedelta
 
         filtered = {}
-        cutoff = datetime.now() - timedelta(seconds=max_age_seconds)
+        cutoff = utc_now() - timedelta(seconds=max_age_seconds)
 
         for key, item in items.items():
             if item.is_expired():

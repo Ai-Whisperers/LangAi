@@ -9,11 +9,10 @@ Main application setup and configuration:
 - Server startup
 """
 
-from typing import Dict, Any, Optional, List, Set
-from datetime import datetime
+from typing import Dict, Optional, List, Set
 import logging
-import os
 import re
+from ..utils import get_config, utc_now
 
 try:
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -43,7 +42,7 @@ def _get_allowed_origins(cors_origins: Optional[List[str]] = None) -> List[str]:
     Security: Never returns wildcard when credentials are enabled.
     """
     # Check environment variable first
-    env_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
+    env_origins = get_config("CORS_ALLOWED_ORIGINS", default="")
     if env_origins:
         origins = [o.strip() for o in env_origins.split(",") if o.strip()]
     elif cors_origins:
@@ -223,7 +222,7 @@ Include your API key in the `X-API-Key` header.
             "version": version,
             "status": "running",
             "docs": "/docs",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": utc_now().isoformat()
         }
 
     # WebSocket endpoint
@@ -251,7 +250,7 @@ Include your API key in the `X-API-Key` header.
             content={
                 "error": "Not found",
                 "path": str(request.url.path),
-                "timestamp": datetime.now().isoformat()
+                "timestamp": utc_now().isoformat()
             }
         )
 
@@ -262,7 +261,7 @@ Include your API key in the `X-API-Key` header.
             status_code=500,
             content={
                 "error": "Internal server error",
-                "timestamp": datetime.now().isoformat()
+                "timestamp": utc_now().isoformat()
             }
         )
 

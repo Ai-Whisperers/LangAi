@@ -4,7 +4,7 @@ Standard types for agent results.
 Provides consistent typing across all agents using TypedDict.
 """
 
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Optional
 from typing_extensions import TypedDict, NotRequired
 from dataclasses import dataclass, field
 from enum import Enum
@@ -128,10 +128,10 @@ def create_agent_result(
         "total_tokens": {"input": input_tokens, "output": output_tokens}
     }
 
-    # Add any extra fields
+    # Add any extra fields (dynamic key access is valid at runtime for TypedDict)
     for key, value in extra_fields.items():
         if value is not None:
-            result[key] = value
+            result[key] = value  # type: ignore[literal-required]
 
     return result
 
@@ -155,8 +155,9 @@ def merge_agent_results(*results: AgentResult) -> AgentResult:
         merged["total_tokens"]["output"] += tokens.get("output", 0)
 
         # Carry forward optional fields from last result that has them
+        # (dynamic key access is valid at runtime for TypedDict)
         for field in ["company_overview", "notes", "sources", "quality_score"]:
-            if field in result and result[field] is not None:
-                merged[field] = result[field]
+            if field in result and result[field] is not None:  # type: ignore[literal-required]
+                merged[field] = result[field]  # type: ignore[literal-required]
 
     return merged

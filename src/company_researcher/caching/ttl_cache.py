@@ -9,14 +9,13 @@ Supports:
 """
 
 import asyncio
-import logging
 import threading
 import time
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, Generic, Optional, TypeVar
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 K = TypeVar('K')
 V = TypeVar('V')

@@ -13,7 +13,7 @@ import html
 import re
 import unicodedata
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, Optional, Set
 
 
 @dataclass
@@ -400,7 +400,6 @@ def validate_safe_path(user_path: str, base_directory: str) -> Optional[str]:
             raise ValueError("Invalid path")
         # Use safe_path for file operations
     """
-    import os
     from pathlib import Path
 
     try:

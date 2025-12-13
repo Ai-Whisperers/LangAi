@@ -15,14 +15,13 @@ Usage:
         start_langflow_server()
 """
 
-import os
 import sys
-import logging
 import subprocess
 from typing import Optional, Dict, Any
 from pathlib import Path
+from ..utils import get_config, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Check if LangFlow is available
 try:
@@ -91,10 +90,10 @@ def get_langflow_config(
     }
 
     # Add environment-based configuration
-    if os.getenv("LANGFLOW_HOST"):
-        config["host"] = os.getenv("LANGFLOW_HOST")
-    if os.getenv("LANGFLOW_PORT"):
-        config["port"] = int(os.getenv("LANGFLOW_PORT"))
+    if get_config("LANGFLOW_HOST"):
+        config["host"] = get_config("LANGFLOW_HOST")
+    if get_config("LANGFLOW_PORT"):
+        config["port"] = int(get_config("LANGFLOW_PORT"))
 
     return config
 

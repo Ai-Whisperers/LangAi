@@ -10,7 +10,6 @@ Provides:
 """
 
 from typing import Dict, Any, List, Optional, Set
-from datetime import datetime
 
 from .models import (
     IsolationLevel,
@@ -20,6 +19,7 @@ from .models import (
     AgentContext,
 )
 from .filter import ContextFilter
+from ...utils import utc_now
 
 
 class ContextIsolationManager:
@@ -312,7 +312,7 @@ class ContextIsolationManager:
         if not to_ctx:
             return ""
 
-        msg_id = f"msg_{from_agent}_{datetime.now().timestamp()}"
+        msg_id = f"msg_{from_agent}_{utc_now().timestamp()}"
 
         to_ctx.add(
             key=msg_id,
@@ -320,7 +320,7 @@ class ContextIsolationManager:
                 "from": from_agent,
                 "message": message,
                 "type": message_type,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": utc_now().isoformat()
             },
             visibility=ContextVisibility.PRIVATE,
             tags=["message", message_type]

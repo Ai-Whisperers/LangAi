@@ -4,10 +4,10 @@ Metrics Module.
 MeterProvider, Meter, and metric instruments.
 """
 
-from datetime import datetime
 from typing import Dict, List
 
 from .models import MetricPoint
+from ...utils import utc_now
 
 
 class Instrument:
@@ -23,7 +23,7 @@ class Instrument:
     def _record(self, value: float, attributes: Dict[str, str] = None) -> None:
         """Record a measurement."""
         self._points.append(MetricPoint(
-            timestamp=datetime.utcnow(),
+            timestamp=utc_now(),
             value=value,
             attributes=attributes or {}
         ))

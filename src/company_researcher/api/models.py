@@ -15,6 +15,7 @@ import re
 import ipaddress
 import socket
 from urllib.parse import urlparse
+from ..utils import utc_now
 
 try:
     from pydantic import BaseModel, Field, field_validator
@@ -412,7 +413,7 @@ if PYDANTIC_AVAILABLE:
         error: str
         detail: Optional[str] = None
         code: str = "UNKNOWN_ERROR"
-        timestamp: datetime = Field(default_factory=datetime.now)
+        timestamp: datetime = Field(default_factory=utc_now)
 
         class Config:
             json_schema_extra = {
@@ -502,5 +503,5 @@ else:
     class HealthResponse:
         status: str = "healthy"
         version: str = "1.0.0"
-        timestamp: datetime = dc_field(default_factory=datetime.now)
+        timestamp: datetime = dc_field(default_factory=utc_now)
         services: Dict[str, str] = dc_field(default_factory=dict)

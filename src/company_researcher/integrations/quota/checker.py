@@ -6,16 +6,14 @@ across all integrated APIs using async HTTP requests.
 """
 
 import asyncio
-import logging
-import os
 from datetime import datetime
-from typing import Optional
 
 import httpx
 
 from .models import QuotaInfo, QuotaReport, QuotaStatus
+from ...utils import get_config, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class APIQuotaChecker:
@@ -29,37 +27,37 @@ class APIQuotaChecker:
         """Load API keys from environment."""
         self.keys = {
             # Core
-            "anthropic": os.getenv("ANTHROPIC_API_KEY"),
-            "tavily": os.getenv("TAVILY_API_KEY"),
+            "anthropic": get_config("ANTHROPIC_API_KEY"),
+            "tavily": get_config("TAVILY_API_KEY"),
 
             # Financial
-            "fmp": os.getenv("FMP_API_KEY"),
-            "finnhub": os.getenv("FINNHUB_API_KEY"),
-            "polygon": os.getenv("POLYGON_API_KEY"),
-            "alpha_vantage": os.getenv("ALPHA_VANTAGE_API_KEY"),
+            "fmp": get_config("FMP_API_KEY"),
+            "finnhub": get_config("FINNHUB_API_KEY"),
+            "polygon": get_config("POLYGON_API_KEY"),
+            "alpha_vantage": get_config("ALPHA_VANTAGE_API_KEY"),
 
             # News
-            "newsapi": os.getenv("NEWSAPI_KEY"),
-            "gnews": os.getenv("GNEWS_API_KEY"),
-            "mediastack": os.getenv("MEDIASTACK_API_KEY"),
+            "newsapi": get_config("NEWSAPI_KEY"),
+            "gnews": get_config("GNEWS_API_KEY"),
+            "mediastack": get_config("MEDIASTACK_API_KEY"),
 
             # Contact/Company
-            "hunter": os.getenv("HUNTER_API_KEY"),
+            "hunter": get_config("HUNTER_API_KEY"),
 
             # Web Scraping
-            "firecrawl": os.getenv("FIRECRAWL_API_KEY"),
-            "scrapegraph": os.getenv("SCRAPEGRAPH_API_KEY"),
+            "firecrawl": get_config("FIRECRAWL_API_KEY"),
+            "scrapegraph": get_config("SCRAPEGRAPH_API_KEY"),
 
             # Other
-            "github": os.getenv("GITHUB_TOKEN"),
-            "reddit_client": os.getenv("REDDIT_CLIENT_ID"),
-            "reddit_secret": os.getenv("REDDIT_CLIENT_SECRET"),
-            "opencage": os.getenv("OPENCAGE_API_KEY"),
-            "huggingface": os.getenv("HUGGINGFACE_API_KEY"),
+            "github": get_config("GITHUB_TOKEN"),
+            "reddit_client": get_config("REDDIT_CLIENT_ID"),
+            "reddit_secret": get_config("REDDIT_CLIENT_SECRET"),
+            "opencage": get_config("OPENCAGE_API_KEY"),
+            "huggingface": get_config("HUGGINGFACE_API_KEY"),
 
             # Observability
-            "agentops": os.getenv("AGENTOPS_API_KEY"),
-            "langsmith": os.getenv("LANGSMITH_API_KEY"),
+            "agentops": get_config("AGENTOPS_API_KEY"),
+            "langsmith": get_config("LANGSMITH_API_KEY"),
         }
 
     async def check_all(self) -> QuotaReport:

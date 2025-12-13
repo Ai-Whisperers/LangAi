@@ -31,7 +31,6 @@ from .streaming import (
 
 # Check for FastAPI availability
 try:
-    from fastapi import FastAPI
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
@@ -40,20 +39,6 @@ if FASTAPI_AVAILABLE:
     from .app import (
         create_app,
         get_app,
-    )
-    from .routes import router as research_router
-    from .websocket import WebSocketManager
-    from .middleware import (
-        RateLimitMiddleware,
-        APIKeyMiddleware,
-        RequestLoggingMiddleware,
-    )
-    from .models import (
-        ResearchRequest,
-        ResearchResponse,
-        BatchRequest,
-        BatchResponse,
-        HealthResponse,
     )
 
     __all__ = [

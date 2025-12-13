@@ -15,6 +15,7 @@ from enum import Enum
 import time
 import threading
 import statistics
+from ..utils import utc_now
 
 
 # ============================================================================
@@ -36,7 +37,7 @@ class PerformanceMetric:
     name: str
     value: float
     unit: str
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
     context: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -83,7 +84,7 @@ class ThroughputMetric:
     name: str
     requests_per_second: float
     requests_per_minute: float
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -386,7 +387,7 @@ class PerformanceMonitor:
 
     def cleanup(self, older_than: Optional[datetime] = None):
         """Remove old metrics."""
-        cutoff = older_than or datetime.now() - self._retention
+        cutoff = older_than or utc_now() - self._retention
 
         with self._lock:
             for name in list(self._latencies.keys()):

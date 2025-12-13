@@ -75,7 +75,6 @@ __all__ = [
 # ============================================================================
 
 if __name__ == "__main__":
-    from datetime import datetime, timezone
     from pathlib import Path
 
     print("Research Cache Demo")

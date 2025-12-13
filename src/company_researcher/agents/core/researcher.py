@@ -12,16 +12,15 @@ This agent is responsible for:
 Enhanced with multilingual search support for LATAM and international companies.
 """
 
-import json
-import logging
 from typing import Any, Callable, Dict, List, Optional, Set
 from urllib.parse import urlparse
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 from ...config import get_config
 from ...llm.client_factory import (
-    get_anthropic_client, get_tavily_client, calculate_cost, safe_extract_json
+    get_anthropic_client, get_tavily_client, safe_extract_json
 )
 from ...state import OverallState
 from ...prompts import GENERATE_QUERIES_PROMPT
@@ -30,14 +29,10 @@ from ...crawling.domain_explorer import DomainExplorer, format_exploration_for_r
 # Import enhancement modules
 try:
     from ..research.multilingual_search import (
-        MultilingualSearchGenerator,
-        create_multilingual_generator,
-        Language
+        create_multilingual_generator
     )
     from ..research.data_threshold import (
-        DataThresholdChecker,
-        create_threshold_checker,
-        RetryStrategy
+        create_threshold_checker
     )
     ENHANCEMENTS_AVAILABLE = True
 except ImportError:

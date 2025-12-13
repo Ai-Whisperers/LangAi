@@ -31,15 +31,25 @@ Usage:
     content = edgar.get_filing_content(filing_url)
 """
 
+import json
 import requests
+from requests.exceptions import (
+    ConnectionError as RequestsConnectionError,
+    HTTPError,
+    Timeout as RequestsTimeout,
+    RequestException,
+)
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
-from datetime import datetime
 from threading import Lock
-import logging
 import time
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
+
+# Error message constants (avoid duplication)
+ERR_REQUEST_TIMEOUT = "Request timeout"
+ERR_INVALID_JSON = "Invalid JSON response"
 
 
 # SEC requires a User-Agent header with contact info
@@ -206,6 +216,7 @@ class SECEdgarClient:
             response = self._session.get(url, timeout=self.timeout)
 
             if response.status_code == 404:
+                logger.debug(f"SEC EDGAR: CIK {cik} not found (404)")
                 return None
 
             response.raise_for_status()
@@ -229,8 +240,23 @@ class SECEdgarClient:
                 fiscal_year_end=data.get("fiscalYearEnd")
             )
 
+        except RequestsTimeout:
+            logger.warning(f"SEC EDGAR timeout for CIK {cik} (timeout={self.timeout}s)")
+            return None
+        except RequestsConnectionError as e:
+            logger.warning(f"SEC EDGAR connection error for CIK {cik}: {e}")
+            return None
+        except HTTPError as e:
+            logger.error(f"SEC EDGAR HTTP error for CIK {cik}: {e.response.status_code if e.response else 'unknown'}")
+            return None
+        except json.JSONDecodeError as e:
+            logger.error(f"SEC EDGAR invalid JSON response for CIK {cik}: {e}")
+            return None
+        except RequestException as e:
+            logger.error(f"SEC EDGAR request error for CIK {cik}: {e}")
+            return None
         except Exception as e:
-            logger.error(f"SEC EDGAR company lookup error for CIK {cik}: {e}")
+            logger.error(f"SEC EDGAR unexpected error for CIK {cik}: {type(e).__name__}: {e}")
             return None
 
     def search_company(
@@ -313,13 +339,25 @@ class SECEdgarClient:
 
             return result
 
+        except RequestsTimeout:
+            logger.warning(f"SEC company search timeout for '{query}' (timeout={self.timeout}s)")
+            return SECSearchResult(query=query, success=False, error=ERR_REQUEST_TIMEOUT)
+        except RequestsConnectionError as e:
+            logger.warning(f"SEC company search connection error for '{query}': {e}")
+            return SECSearchResult(query=query, success=False, error=f"Connection error: {e}")
+        except HTTPError as e:
+            status_code = e.response.status_code if e.response else "unknown"
+            logger.error(f"SEC company search HTTP error for '{query}': {status_code}")
+            return SECSearchResult(query=query, success=False, error=f"HTTP error: {status_code}")
+        except json.JSONDecodeError as e:
+            logger.error(f"SEC company search invalid JSON for '{query}': {e}")
+            return SECSearchResult(query=query, success=False, error=ERR_INVALID_JSON)
+        except RequestException as e:
+            logger.error(f"SEC company search request error for '{query}': {e}")
+            return SECSearchResult(query=query, success=False, error=f"Request error: {e}")
         except Exception as e:
-            logger.error(f"SEC company search error for '{query}': {e}")
-            return SECSearchResult(
-                query=query,
-                success=False,
-                error=str(e)
-            )
+            logger.error(f"SEC company search unexpected error for '{query}': {type(e).__name__}: {e}")
+            return SECSearchResult(query=query, success=False, error=str(e))
 
     def get_cik(self, ticker: str) -> Optional[str]:
         """
@@ -465,13 +503,25 @@ class SECEdgarClient:
 
             return result
 
+        except RequestsTimeout:
+            logger.warning(f"SEC filings timeout for '{ticker_or_cik}' (timeout={self.timeout}s)")
+            return SECSearchResult(query=ticker_or_cik, success=False, error=ERR_REQUEST_TIMEOUT)
+        except RequestsConnectionError as e:
+            logger.warning(f"SEC filings connection error for '{ticker_or_cik}': {e}")
+            return SECSearchResult(query=ticker_or_cik, success=False, error=f"Connection error: {e}")
+        except HTTPError as e:
+            status_code = e.response.status_code if e.response else "unknown"
+            logger.error(f"SEC filings HTTP error for '{ticker_or_cik}': {status_code}")
+            return SECSearchResult(query=ticker_or_cik, success=False, error=f"HTTP error: {status_code}")
+        except json.JSONDecodeError as e:
+            logger.error(f"SEC filings invalid JSON for '{ticker_or_cik}': {e}")
+            return SECSearchResult(query=ticker_or_cik, success=False, error=ERR_INVALID_JSON)
+        except RequestException as e:
+            logger.error(f"SEC filings request error for '{ticker_or_cik}': {e}")
+            return SECSearchResult(query=ticker_or_cik, success=False, error=f"Request error: {e}")
         except Exception as e:
-            logger.error(f"SEC filings error for '{ticker_or_cik}': {e}")
-            return SECSearchResult(
-                query=ticker_or_cik,
-                success=False,
-                error=str(e)
-            )
+            logger.error(f"SEC filings unexpected error for '{ticker_or_cik}': {type(e).__name__}: {e}")
+            return SECSearchResult(query=ticker_or_cik, success=False, error=str(e))
 
     def get_10k_filings(
         self,
@@ -569,8 +619,21 @@ class SECEdgarClient:
                 return response.text
             return response.content
 
+        except RequestsTimeout:
+            logger.warning(f"SEC filing download timeout for {filing_url} (timeout={self.timeout}s)")
+            return None
+        except RequestsConnectionError as e:
+            logger.warning(f"SEC filing download connection error for {filing_url}: {e}")
+            return None
+        except HTTPError as e:
+            status = e.response.status_code if e.response is not None else "unknown"
+            logger.error(f"SEC filing download HTTP error for {filing_url}: {status}")
+            return None
+        except RequestException as e:
+            logger.error(f"SEC filing download request error for {filing_url}: {e}")
+            return None
         except Exception as e:
-            logger.error(f"SEC filing download error for {filing_url}: {e}")
+            logger.error(f"SEC filing download unexpected error for {filing_url}: {type(e).__name__}: {e}")
             return None
 
     def full_text_search(
@@ -602,7 +665,7 @@ class SECEdgarClient:
                 "q": query,
                 "dateRange": "custom",
                 "startdt": start_date or "2000-01-01",
-                "enddt": end_date or datetime.now().strftime("%Y-%m-%d"),
+                "enddt": end_date or utc_now().strftime("%Y-%m-%d"),
             }
 
             if form_types:
@@ -640,13 +703,25 @@ class SECEdgarClient:
                 success=True
             )
 
+        except RequestsTimeout:
+            logger.warning(f"SEC full-text search timeout for '{query}' (timeout={self.timeout}s)")
+            return SECSearchResult(query=query, success=False, error=ERR_REQUEST_TIMEOUT)
+        except RequestsConnectionError as e:
+            logger.warning(f"SEC full-text search connection error for '{query}': {e}")
+            return SECSearchResult(query=query, success=False, error=f"Connection error: {e}")
+        except HTTPError as e:
+            status = e.response.status_code if e.response is not None else "unknown"
+            logger.error(f"SEC full-text search HTTP error for '{query}': {status}")
+            return SECSearchResult(query=query, success=False, error=f"HTTP {status}")
+        except json.JSONDecodeError as e:
+            logger.error(f"SEC full-text search invalid JSON response for '{query}': {e}")
+            return SECSearchResult(query=query, success=False, error=ERR_INVALID_JSON)
+        except RequestException as e:
+            logger.error(f"SEC full-text search request error for '{query}': {e}")
+            return SECSearchResult(query=query, success=False, error=str(e))
         except Exception as e:
-            logger.error(f"SEC full-text search error for '{query}': {e}")
-            return SECSearchResult(
-                query=query,
-                success=False,
-                error=str(e)
-            )
+            logger.error(f"SEC full-text search unexpected error for '{query}': {type(e).__name__}: {e}")
+            return SECSearchResult(query=query, success=False, error=str(e))
 
     def get_stats(self) -> Dict[str, Any]:
         """Get usage statistics."""

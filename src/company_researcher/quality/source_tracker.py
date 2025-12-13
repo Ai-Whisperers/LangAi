@@ -5,8 +5,8 @@ Tracks all research facts with source attribution, calculates multi-factor
 quality scores, and generates comprehensive quality reports.
 """
 
-from typing import List, Dict, Optional
-from datetime import datetime, timedelta
+from typing import List, Dict
+from datetime import timedelta
 from collections import defaultdict
 
 from .models import (
@@ -17,6 +17,7 @@ from .models import (
     ConfidenceLevel
 )
 from .source_assessor import SourceQualityAssessor
+from ..utils import utc_now
 
 
 class SourceTracker:
@@ -172,7 +173,7 @@ class SourceTracker:
         if not self.sources:
             return 50.0  # Neutral score
 
-        now = datetime.now()
+        now = utc_now()
         scores = []
 
         for source in self.sources:

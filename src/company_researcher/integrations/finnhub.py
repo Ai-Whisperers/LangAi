@@ -7,14 +7,14 @@ Provides: Real-time quotes, fundamentals, news, sentiment
 Documentation: https://finnhub.io/docs/api
 """
 
-import logging
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
 from .base_client import BaseAPIClient
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -213,9 +213,9 @@ class FinnhubClient(BaseAPIClient):
             List of CompanyNews objects
         """
         if not from_date:
-            from_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+            from_date = (utc_now() - timedelta(days=7)).strftime("%Y-%m-%d")
         if not to_date:
-            to_date = datetime.now().strftime("%Y-%m-%d")
+            to_date = utc_now().strftime("%Y-%m-%d")
 
         data = await self._request("company-news", {
             "symbol": symbol,
@@ -310,9 +310,9 @@ class FinnhubClient(BaseAPIClient):
             List of earnings events
         """
         if not from_date:
-            from_date = datetime.now().strftime("%Y-%m-%d")
+            from_date = utc_now().strftime("%Y-%m-%d")
         if not to_date:
-            to_date = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
+            to_date = (utc_now() + timedelta(days=30)).strftime("%Y-%m-%d")
 
         params = {"from": from_date, "to": to_date}
         if symbol:

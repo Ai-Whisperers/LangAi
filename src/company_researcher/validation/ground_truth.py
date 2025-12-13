@@ -8,13 +8,13 @@ This is the most critical anti-hallucination measure in the system.
 """
 
 import re
-import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, timedelta
 from enum import Enum
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ValidationResult(Enum):
@@ -175,7 +175,7 @@ class GroundTruthValidator:
         # Check cache
         if ticker in self._cache:
             cached = self._cache[ticker]
-            if datetime.now() - cached.timestamp < self._cache_ttl:
+            if utc_now() - cached.timestamp < self._cache_ttl:
                 logger.debug(f"Using cached ground truth for {ticker}")
                 return cached
 
@@ -226,7 +226,7 @@ class GroundTruthValidator:
         ground_truth = GroundTruthData(
             source="yahoo_finance",
             ticker=ticker,
-            timestamp=datetime.now(),
+            timestamp=utc_now(),
             data=data,
             confidence=0.95
         )

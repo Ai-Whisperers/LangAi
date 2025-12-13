@@ -21,7 +21,6 @@ Usage:
 """
 
 import json
-import logging
 import sqlite3
 import threading
 from datetime import timedelta
@@ -29,8 +28,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .models import TaskStorage, _utcnow, _serialize_datetime
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class SQLiteTaskStorage(TaskStorage):

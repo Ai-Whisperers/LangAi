@@ -1,10 +1,10 @@
 """Configuration for AI components."""
 from pydantic import BaseModel, Field
-from typing import Dict, Optional
+from typing import Optional
 import os
-import logging
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class AIComponentConfig(BaseModel):

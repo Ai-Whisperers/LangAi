@@ -9,12 +9,11 @@ This enhanced researcher builds on the base researcher by adding:
 - Structured data extraction from company pages
 """
 
-import logging
-import os
 from typing import Any, Callable, Dict, List, Optional, Set
 from urllib.parse import urlparse
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 from ...config import get_config
 from ...llm.client_factory import get_tavily_client
@@ -25,7 +24,6 @@ from ...crawling import (
     WebScraper,
     create_web_scraper,
     ScrapingBackend,
-    UnifiedScrapeResult,
 )
 
 

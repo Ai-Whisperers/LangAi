@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from ..utils import utc_now
 
 
 @dataclass
@@ -30,13 +31,17 @@ class StateSnapshot:
     checksum: str
     label: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
+    _initialized: bool = field(default=False, repr=False, compare=False)
 
     def __post_init__(self):
         # Make state immutable by deep copying
         object.__setattr__(self, 'state', copy.deepcopy(self.state))
+        # Mark as initialized to enable immutability
+        object.__setattr__(self, '_initialized', True)
 
     def __setattr__(self, name, value):
-        if hasattr(self, 'id'):
+        # Allow setting during initialization, block after
+        if getattr(self, '_initialized', False) and name != '_initialized':
             raise AttributeError("Snapshots are immutable")
         object.__setattr__(self, name, value)
 
@@ -58,7 +63,7 @@ class StateSnapshot:
         if isinstance(created_at, str):
             created_at = datetime.fromisoformat(created_at)
         else:
-            created_at = datetime.utcnow()
+            created_at = utc_now()
 
         return cls(
             id=data.get("id", str(uuid.uuid4())),
@@ -173,7 +178,7 @@ class SnapshotStore:
         snapshot = StateSnapshot(
             id=str(uuid.uuid4()),
             state=state,
-            created_at=datetime.utcnow(),
+            created_at=utc_now(),
             checksum=self._calculate_checksum(state),
             label=label,
             metadata=metadata or {}

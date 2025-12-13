@@ -8,8 +8,8 @@ Robust retry mechanisms:
 - Circuit breaker integration
 """
 
-from typing import TypeVar, Callable, Optional, List, Type, Union
-from dataclasses import dataclass, field
+from typing import TypeVar, Callable, Optional
+from dataclasses import dataclass
 from functools import wraps
 import asyncio
 import random

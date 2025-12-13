@@ -19,12 +19,12 @@ Usage:
     matrix = generator.generate_matrix(company_name, competitors, dimensions)
 """
 
-import logging
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class MatrixDimension(Enum):
@@ -394,8 +394,8 @@ class CompetitiveMatrixGenerator:
 
     def _classify_strategic_group(self, data: Dict[str, Any]) -> str:
         """Classify company into strategic group."""
-        market_share = data.get("market_share", 0)
-        product_range = data.get("product_range_score", 5)
+        market_share = data.get("market_share") or 0
+        product_range = data.get("product_range_score") or 5
 
         if market_share > 20 and product_range > 7:
             return "broad_market"
@@ -588,4 +588,403 @@ def create_competitive_matrix(
     generator = CompetitiveMatrixGenerator()
     return generator.generate_matrix(
         company_name, company_data, competitors_data, dimensions
+    )
+
+
+# ============================================================================
+# Financial Comparison Table - Structured competitor financial metrics
+# ============================================================================
+
+class FinancialMetric(Enum):
+    """Financial metrics for structured comparison."""
+    REVENUE = "revenue"
+    REVENUE_GROWTH = "revenue_growth"
+    EBITDA = "ebitda"
+    EBITDA_MARGIN = "ebitda_margin"
+    NET_INCOME = "net_income"
+    PROFIT_MARGIN = "profit_margin"
+    DEBT_TO_EQUITY = "debt_to_equity"
+    CURRENT_RATIO = "current_ratio"
+    MARKET_CAP = "market_cap"
+    ENTERPRISE_VALUE = "enterprise_value"
+    PE_RATIO = "pe_ratio"
+    EV_EBITDA = "ev_ebitda"
+    SUBSCRIBERS = "subscribers"  # For telecom
+    ARPU = "arpu"  # Average Revenue Per User
+
+
+@dataclass
+class FinancialRow:
+    """A row in the financial comparison table."""
+    metric: FinancialMetric
+    label: str
+    unit: str  # e.g., "$M", "%", "x"
+    values: Dict[str, Optional[float]]  # company_name -> value
+    best_performer: Optional[str] = None
+    higher_is_better: bool = True
+    notes: str = ""
+
+
+@dataclass
+class FinancialComparisonTable:
+    """Structured financial comparison across competitors."""
+    company_name: str
+    competitors: List[str]
+    as_of_date: str  # e.g., "2024"
+    currency: str  # e.g., "USD"
+    rows: List[FinancialRow]
+    summary: Dict[str, str]  # {company: "brief assessment"}
+    data_sources: List[str]
+    data_quality_notes: List[str]
+
+    def to_markdown(self) -> str:
+        """Convert to markdown table format."""
+        if not self.rows:
+            return "No financial data available for comparison."
+
+        # Header
+        companies = [self.company_name] + self.competitors
+        header = "| Metric | " + " | ".join(companies) + " |"
+        separator = "|---" + "|---" * len(companies) + "|"
+
+        lines = [
+            f"## Financial Comparison ({self.as_of_date})",
+            f"*Currency: {self.currency}*",
+            "",
+            header,
+            separator
+        ]
+
+        # Data rows
+        for row in self.rows:
+            row_vals = []
+            for comp in companies:
+                val = row.values.get(comp)
+                if val is None:
+                    row_vals.append("N/A")
+                elif row.unit == "%":
+                    row_vals.append(f"{val:.1f}%")
+                elif row.unit == "$M":
+                    row_vals.append(f"${val:,.0f}M")
+                elif row.unit == "$B":
+                    row_vals.append(f"${val:,.1f}B")
+                elif row.unit == "x":
+                    row_vals.append(f"{val:.1f}x")
+                elif row.unit == "M":
+                    row_vals.append(f"{val:,.1f}M")
+                else:
+                    row_vals.append(f"{val:,.2f}")
+
+            # Mark best performer
+            best = row.best_performer
+            if best:
+                for i, comp in enumerate(companies):
+                    if comp == best:
+                        row_vals[i] = f"**{row_vals[i]}**"
+
+            lines.append(f"| {row.label} ({row.unit}) | " + " | ".join(row_vals) + " |")
+
+        # Summary section
+        if self.summary:
+            lines.extend(["", "### Summary"])
+            for comp, assessment in self.summary.items():
+                lines.append(f"- **{comp}**: {assessment}")
+
+        # Data quality notes
+        if self.data_quality_notes:
+            lines.extend(["", "*Notes:*"])
+            for note in self.data_quality_notes:
+                lines.append(f"- {note}")
+
+        return "\n".join(lines)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return {
+            "company_name": self.company_name,
+            "competitors": self.competitors,
+            "as_of_date": self.as_of_date,
+            "currency": self.currency,
+            "metrics": [
+                {
+                    "metric": row.metric.value,
+                    "label": row.label,
+                    "unit": row.unit,
+                    "values": row.values,
+                    "best_performer": row.best_performer,
+                    "higher_is_better": row.higher_is_better,
+                }
+                for row in self.rows
+            ],
+            "summary": self.summary,
+            "data_sources": self.data_sources,
+            "data_quality_notes": self.data_quality_notes,
+        }
+
+
+class FinancialComparisonGenerator:
+    """Generate structured financial comparison tables."""
+
+    # Metric configuration with labels and units
+    METRIC_CONFIG = {
+        FinancialMetric.REVENUE: {
+            "label": "Revenue",
+            "unit": "$M",
+            "higher_is_better": True,
+            "extract_keys": ["revenue", "annual_revenue", "total_revenue"]
+        },
+        FinancialMetric.REVENUE_GROWTH: {
+            "label": "Revenue Growth",
+            "unit": "%",
+            "higher_is_better": True,
+            "extract_keys": ["revenue_growth", "growth_rate", "yoy_growth"]
+        },
+        FinancialMetric.EBITDA: {
+            "label": "EBITDA",
+            "unit": "$M",
+            "higher_is_better": True,
+            "extract_keys": ["ebitda", "operating_income"]
+        },
+        FinancialMetric.EBITDA_MARGIN: {
+            "label": "EBITDA Margin",
+            "unit": "%",
+            "higher_is_better": True,
+            "extract_keys": ["ebitda_margin", "operating_margin"]
+        },
+        FinancialMetric.NET_INCOME: {
+            "label": "Net Income",
+            "unit": "$M",
+            "higher_is_better": True,
+            "extract_keys": ["net_income", "profit", "earnings"]
+        },
+        FinancialMetric.PROFIT_MARGIN: {
+            "label": "Net Profit Margin",
+            "unit": "%",
+            "higher_is_better": True,
+            "extract_keys": ["profit_margin", "net_margin"]
+        },
+        FinancialMetric.DEBT_TO_EQUITY: {
+            "label": "Debt/Equity",
+            "unit": "x",
+            "higher_is_better": False,
+            "extract_keys": ["debt_to_equity", "d_e_ratio", "leverage"]
+        },
+        FinancialMetric.MARKET_CAP: {
+            "label": "Market Cap",
+            "unit": "$B",
+            "higher_is_better": True,
+            "extract_keys": ["market_cap", "market_capitalization"]
+        },
+        FinancialMetric.PE_RATIO: {
+            "label": "P/E Ratio",
+            "unit": "x",
+            "higher_is_better": None,  # Context-dependent
+            "extract_keys": ["pe_ratio", "price_earnings"]
+        },
+        FinancialMetric.SUBSCRIBERS: {
+            "label": "Subscribers",
+            "unit": "M",
+            "higher_is_better": True,
+            "extract_keys": ["subscribers", "customer_count", "users"]
+        },
+        FinancialMetric.ARPU: {
+            "label": "ARPU",
+            "unit": "$",
+            "higher_is_better": True,
+            "extract_keys": ["arpu", "average_revenue_per_user"]
+        },
+    }
+
+    def __init__(self):
+        """Initialize the financial comparison generator."""
+        pass
+
+    def generate_comparison(
+        self,
+        company_name: str,
+        company_data: Dict[str, Any],
+        competitors_data: List[Dict[str, Any]],
+        metrics: Optional[List[FinancialMetric]] = None,
+        currency: str = "USD",
+        as_of_date: str = "2024"
+    ) -> FinancialComparisonTable:
+        """
+        Generate a structured financial comparison table.
+
+        Args:
+            company_name: Name of the target company
+            company_data: Financial data for target company
+            competitors_data: List of competitor data dicts
+            metrics: Specific metrics to compare (default: all available)
+            currency: Currency for display
+            as_of_date: Date/year for the comparison
+
+        Returns:
+            FinancialComparisonTable with structured comparison
+        """
+        logger.info(f"Generating financial comparison for {company_name}")
+
+        if metrics is None:
+            # Default to common financial metrics
+            metrics = [
+                FinancialMetric.REVENUE,
+                FinancialMetric.REVENUE_GROWTH,
+                FinancialMetric.EBITDA_MARGIN,
+                FinancialMetric.PROFIT_MARGIN,
+                FinancialMetric.DEBT_TO_EQUITY,
+                FinancialMetric.MARKET_CAP,
+            ]
+
+        competitor_names = [c.get("name", f"Competitor {i+1}") for i, c in enumerate(competitors_data)]
+
+        # Build rows
+        rows = []
+        data_quality_notes = []
+
+        for metric in metrics:
+            config = self.METRIC_CONFIG.get(metric)
+            if not config:
+                continue
+
+            # Extract values
+            values = {}
+            values[company_name] = self._extract_metric(company_data, config["extract_keys"])
+
+            for comp_data in competitors_data:
+                comp_name = comp_data.get("name", "Unknown")
+                values[comp_name] = self._extract_metric(comp_data, config["extract_keys"])
+
+            # Determine best performer
+            best = self._find_best_performer(values, config.get("higher_is_better", True))
+
+            # Track data quality
+            missing = [k for k, v in values.items() if v is None]
+            if len(missing) > len(values) / 2:
+                data_quality_notes.append(f"{config['label']}: Limited data available")
+
+            rows.append(FinancialRow(
+                metric=metric,
+                label=config["label"],
+                unit=config["unit"],
+                values=values,
+                best_performer=best,
+                higher_is_better=config.get("higher_is_better", True)
+            ))
+
+        # Generate summaries
+        summary = self._generate_summaries(company_name, competitor_names, rows)
+
+        return FinancialComparisonTable(
+            company_name=company_name,
+            competitors=competitor_names,
+            as_of_date=as_of_date,
+            currency=currency,
+            rows=rows,
+            summary=summary,
+            data_sources=[],  # Would be populated from actual data sources
+            data_quality_notes=data_quality_notes
+        )
+
+    def _extract_metric(
+        self,
+        data: Dict[str, Any],
+        keys: List[str]
+    ) -> Optional[float]:
+        """Extract a metric value from data using multiple possible keys."""
+        if not data:
+            return None
+
+        for key in keys:
+            # Try direct key
+            if key in data:
+                val = data[key]
+                if val is not None:
+                    return self._normalize_value(val)
+
+            # Try nested paths (e.g., "financial.revenue")
+            if "." in key:
+                parts = key.split(".")
+                current = data
+                for part in parts:
+                    if isinstance(current, dict) and part in current:
+                        current = current[part]
+                    else:
+                        current = None
+                        break
+                if current is not None:
+                    return self._normalize_value(current)
+
+        return None
+
+    def _normalize_value(self, val: Any) -> Optional[float]:
+        """Normalize a value to float."""
+        if val is None:
+            return None
+        if isinstance(val, (int, float)):
+            return float(val)
+        if isinstance(val, str):
+            # Try to parse numeric string
+            try:
+                # Remove common formatting
+                cleaned = val.replace(",", "").replace("$", "").replace("%", "").strip()
+                return float(cleaned)
+            except ValueError:
+                return None
+        return None
+
+    def _find_best_performer(
+        self,
+        values: Dict[str, Optional[float]],
+        higher_is_better: Optional[bool]
+    ) -> Optional[str]:
+        """Find the best performer for a metric."""
+        if higher_is_better is None:
+            return None
+
+        valid_values = {k: v for k, v in values.items() if v is not None}
+        if not valid_values:
+            return None
+
+        if higher_is_better:
+            return max(valid_values, key=valid_values.get)
+        else:
+            return min(valid_values, key=valid_values.get)
+
+    def _generate_summaries(
+        self,
+        company_name: str,
+        competitors: List[str],
+        rows: List[FinancialRow]
+    ) -> Dict[str, str]:
+        """Generate brief assessment for each company."""
+        summary = {}
+
+        all_companies = [company_name] + competitors
+
+        for comp in all_companies:
+            wins = sum(1 for row in rows if row.best_performer == comp)
+            total = len([r for r in rows if r.values.get(comp) is not None])
+
+            if total == 0:
+                summary[comp] = "Insufficient data for assessment"
+            elif wins >= total * 0.6:
+                summary[comp] = "Strong financial performer"
+            elif wins >= total * 0.3:
+                summary[comp] = "Mixed financial performance"
+            else:
+                summary[comp] = "Lagging on key financial metrics"
+
+        return summary
+
+
+def create_financial_comparison(
+    company_name: str,
+    company_data: Dict[str, Any],
+    competitors_data: List[Dict[str, Any]],
+    metrics: Optional[List[FinancialMetric]] = None
+) -> FinancialComparisonTable:
+    """Factory function to generate financial comparison table."""
+    generator = FinancialComparisonGenerator()
+    return generator.generate_comparison(
+        company_name, company_data, competitors_data, metrics
     )

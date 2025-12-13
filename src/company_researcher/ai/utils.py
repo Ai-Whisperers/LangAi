@@ -2,9 +2,9 @@
 from typing import Any, Dict, List, Optional, TypeVar, Type
 from pydantic import BaseModel
 import re
-import logging
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 T = TypeVar('T', bound=BaseModel)
 

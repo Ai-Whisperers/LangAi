@@ -23,13 +23,13 @@ Usage:
 import hashlib
 import json
 from enum import Enum
-from typing import Dict, Any, List, Optional, Set, Tuple
+from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from collections import defaultdict
-import logging
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class EvidenceType(Enum):
@@ -85,7 +85,7 @@ class SourceDocument:
             content=content,
             content_hash=content_hash,
             domain=domain,
-            retrieved_at=datetime.now(),
+            retrieved_at=utc_now(),
             word_count=len(content.split()),
             **kwargs
         )
@@ -100,7 +100,7 @@ class Evidence:
     text: str                          # The actual evidence text
     location: Optional[str] = None     # Where in source (paragraph, section)
     confidence: float = 0.8
-    extracted_at: datetime = field(default_factory=datetime.now)
+    extracted_at: datetime = field(default_factory=utc_now)
     extraction_method: str = "llm"
 
 
@@ -113,7 +113,7 @@ class EvidenceChain:
     evidences: List[Evidence]
     source_documents: List[SourceDocument]
     chain_confidence: float
-    created_at: datetime = field(default_factory=datetime.now)
+    created_at: datetime = field(default_factory=utc_now)
 
     @property
     def primary_source(self) -> Optional[SourceDocument]:
@@ -151,7 +151,7 @@ class SourceTracker:
     """
 
     def __init__(self, project_id: Optional[str] = None):
-        self.project_id = project_id or datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.project_id = project_id or utc_now().strftime("%Y%m%d_%H%M%S")
         self.sources: Dict[str, SourceDocument] = {}
         self.evidences: Dict[str, List[Evidence]] = defaultdict(list)
         self.fact_chains: Dict[str, EvidenceChain] = {}
@@ -232,7 +232,7 @@ class SourceTracker:
                 content="",
                 content_hash="",
                 domain="unknown",
-                retrieved_at=datetime.now()
+                retrieved_at=utc_now()
             )
 
         # Create evidence
@@ -337,7 +337,7 @@ class SourceTracker:
             return Citation(
                 source=SourceDocument(
                     id=source_id, url="", title="Unknown", content="",
-                    content_hash="", domain="", retrieved_at=datetime.now()
+                    content_hash="", domain="", retrieved_at=utc_now()
                 ),
                 style=style,
                 formatted="[Source not found]",
@@ -496,7 +496,7 @@ class SourceTracker:
         """Export attribution data for inclusion in reports."""
         return {
             "project_id": self.project_id,
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": utc_now().isoformat(),
             "summary": self.generate_source_summary(),
             "facts": [
                 {
@@ -528,5 +528,5 @@ class SourceTracker:
 
 def create_tracker_for_research(company_name: str) -> SourceTracker:
     """Create a source tracker for a company research project."""
-    project_id = f"{company_name.lower().replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}"
+    project_id = f"{company_name.lower().replace(' ', '_')}_{utc_now().strftime('%Y%m%d')}"
     return SourceTracker(project_id=project_id)

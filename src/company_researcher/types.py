@@ -17,8 +17,9 @@ Organization:
 
 from enum import Enum
 from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from datetime import datetime
+from .utils import utc_now
 
 
 # ============================================================================
@@ -480,7 +481,7 @@ class AgentMetrics:
     cost: float = 0.0
     tokens: TokenUsage = field(default_factory=TokenUsage)
     duration_seconds: float = 0.0
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
 
     def to_dict(self) -> Dict[str, Any]:
         return {

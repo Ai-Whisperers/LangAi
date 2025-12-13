@@ -15,12 +15,11 @@ Environment Variables Required:
 """
 
 import os
-import logging
 from typing import Optional, Dict, Any
-from datetime import datetime
 from contextlib import contextmanager
+from ..utils import get_config, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Track initialization state
 _langsmith_initialized = False
@@ -70,13 +69,13 @@ def init_langsmith(
         return {
             "enabled": True,
             "project": _project_name,
-            "endpoint": os.environ.get("LANGCHAIN_ENDPOINT", endpoint),
+            "endpoint": get_config("LANGCHAIN_ENDPOINT", default=endpoint),
             "sdk_available": LANGSMITH_SDK_AVAILABLE,
             "message": "Already initialized"
         }
 
     # Get API key from argument or environment
-    api_key = api_key or os.environ.get("LANGSMITH_API_KEY")
+    api_key = api_key or get_config("LANGSMITH_API_KEY")
 
     if not api_key:
         logger.info("[LANGSMITH] No API key provided - tracing disabled")
@@ -113,8 +112,8 @@ def init_langsmith(
 def is_langsmith_enabled() -> bool:
     """Check if LangSmith tracing is enabled."""
     return (
-        os.environ.get("LANGCHAIN_TRACING_V2", "").lower() == "true"
-        and bool(os.environ.get("LANGSMITH_API_KEY") or os.environ.get("LANGCHAIN_API_KEY"))
+        get_config("LANGCHAIN_TRACING_V2", default="").lower() == "true"
+        and bool(get_config("LANGSMITH_API_KEY") or get_config("LANGCHAIN_API_KEY"))
     )
 
 
@@ -131,7 +130,7 @@ def get_langsmith_url(run_id: Optional[str] = None) -> Optional[str]:
     if not is_langsmith_enabled():
         return None
 
-    project = os.environ.get("LANGCHAIN_PROJECT", "langai-research")
+    project = get_config("LANGCHAIN_PROJECT", default="langai-research")
     base_url = f"https://smith.langchain.com/o/default/projects/p/{project}"
 
     if run_id:
@@ -199,7 +198,7 @@ def create_run_tree(
         })()
         return
 
-    project = os.environ.get("LANGCHAIN_PROJECT", "langai-research")
+    project = get_config("LANGCHAIN_PROJECT", default="langai-research")
 
     run = RunTree(
         name=name,
@@ -267,7 +266,7 @@ def get_trace_stats(
     if not client:
         return None
 
-    project = project or os.environ.get("LANGCHAIN_PROJECT", "langai-research")
+    project = project or get_config("LANGCHAIN_PROJECT", default="langai-research")
 
     try:
         # Get recent runs

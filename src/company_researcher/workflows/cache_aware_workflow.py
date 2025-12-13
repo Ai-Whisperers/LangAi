@@ -25,25 +25,20 @@ Usage:
     existing = get_cached_report("Apple Inc")
 """
 
-import logging
-from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional, List
 
 from ..cache import (
     ResearchCache,
     get_cache,
     CachedCompanyData,
-    DataSection,
     URLStatus,
-    CompletenessReport,
 )
 from ..state import OverallState, InputState, OutputState, create_initial_state, create_output_state
 from ..config import get_config
 
 # Import base workflows
 from .basic_research import (
-    create_research_workflow,
     generate_queries_node,
     search_node as base_search_node,
     analyze_node,
@@ -55,8 +50,9 @@ from .basic_research import (
     investment_thesis_node,
     save_report_node,
 )
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Global cache instance
 _workflow_cache: Optional[ResearchCache] = None

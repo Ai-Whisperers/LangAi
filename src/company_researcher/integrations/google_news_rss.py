@@ -31,16 +31,14 @@ Usage:
 """
 
 import feedparser
-import requests
 from typing import Optional, Dict, Any, List
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from dataclasses import dataclass
+from datetime import datetime
 from threading import Lock
 from urllib.parse import quote
-import logging
-import re
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -173,8 +171,8 @@ class GoogleNewsRSS:
                 # feedparser provides parsed time
                 if hasattr(entry, "published_parsed") and entry.published_parsed:
                     published = datetime(*entry.published_parsed[:6])
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to parse RSS published date '{published_str}': {e}")
 
         return NewsArticle(
             title=title,

@@ -13,15 +13,13 @@ Replaces quantity-based search with coverage-based search.
 """
 
 import asyncio
-import re
 import random
-import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Any, Set
 from datetime import datetime, timedelta
-from enum import Enum
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -48,14 +46,14 @@ class ProviderHealth:
             # Allow retry after exponential cooldown
             if self.last_failure:
                 cooldown = timedelta(seconds=60 * (2 ** min(self.consecutive_failures - 3, 5)))
-                if datetime.now() - self.last_failure < cooldown:
+                if utc_now() - self.last_failure < cooldown:
                     return False
         return True
 
     def record_success(self, response_time_ms: float):
         """Record a successful request."""
         self.consecutive_failures = 0
-        self.last_success = datetime.now()
+        self.last_success = utc_now()
         self.total_requests += 1
         self.total_successes += 1
         # Rolling average (90% old, 10% new)
@@ -64,7 +62,7 @@ class ProviderHealth:
     def record_failure(self):
         """Record a failed request."""
         self.consecutive_failures += 1
-        self.last_failure = datetime.now()
+        self.last_failure = utc_now()
         self.total_requests += 1
 
 
@@ -246,7 +244,7 @@ class QueryDiversifier:
     ) -> List[DiverseQuery]:
         """Generate diverse queries covering all categories."""
         if year is None:
-            year = datetime.now().year
+            year = utc_now().year
 
         queries = []
 
@@ -449,9 +447,9 @@ class RobustSearchClient:
 
         for provider in healthy_providers:
             try:
-                start_time = datetime.now()
+                start_time = utc_now()
                 results = await self._search_provider(provider, query, max_results)
-                response_time = (datetime.now() - start_time).total_seconds() * 1000
+                response_time = (utc_now() - start_time).total_seconds() * 1000
 
                 if results:
                     self._health[provider].record_success(response_time)

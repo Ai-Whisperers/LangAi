@@ -21,18 +21,17 @@ Usage:
 """
 
 import asyncio
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
-from .lru_cache import ResearchCache, CacheStats
+from .lru_cache import ResearchCache
 from .vector_store import (
     ResearchVectorStore,
-    VectorDocument,
-    SearchResult,
     CHROMADB_AVAILABLE
 )
+from ..utils import utc_now
 
 
 # ============================================================================
@@ -61,7 +60,7 @@ class MemoryItem:
     metadata: Dict[str, Any] = field(default_factory=dict)
     layer: MemoryLayer = MemoryLayer.COLD
     access_count: int = 0
-    last_accessed: datetime = field(default_factory=datetime.now)
+    last_accessed: datetime = field(default_factory=utc_now)
     score: float = 0.0  # Relevance score for search results
 
     def to_dict(self) -> Dict[str, Any]:
@@ -79,7 +78,7 @@ class MemoryItem:
 @dataclass
 class DualLayerStats:
     """Statistics for dual-layer memory."""
-    hot_stats: CacheStats
+    hot_stats: Dict[str, Any]  # Dict from TypedLRUCache.get_stats()
     cold_count: int
     total_recalls: int = 0
     hot_hits: int = 0
@@ -101,7 +100,7 @@ class DualLayerStats:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "hot_layer": self.hot_stats.to_dict(),
+            "hot_layer": self.hot_stats,  # Already a dict from TypedLRUCache.get_stats()
             "cold_count": self.cold_count,
             "total_recalls": self.total_recalls,
             "hot_hits": self.hot_hits,
@@ -171,7 +170,7 @@ class DualLayerMemory:
             promotion_threshold: Access count threshold for promotion
         """
         # Initialize hot layer (always available)
-        self._hot = ResearchCache(max_size=hot_max_size, default_ttl=hot_ttl)
+        self._hot = ResearchCache(max_size_per_type=hot_max_size, default_ttl=hot_ttl)
 
         # Initialize cold layer (requires ChromaDB)
         self._cold: Optional[ResearchVectorStore] = None
@@ -210,7 +209,7 @@ class DualLayerMemory:
     def stats(self) -> DualLayerStats:
         """Get memory statistics."""
         return DualLayerStats(
-            hot_stats=self._hot.stats,
+            hot_stats=self._hot.get_stats(),
             cold_count=self._cold.count if self._cold else 0,
             total_recalls=self._total_recalls,
             hot_hits=self._hot_hits,
@@ -247,20 +246,22 @@ class DualLayerMemory:
         """
         meta = metadata or {}
 
+        # Determine data type early for both layers
+        dtype = data_type or meta.get("data_type", "general")
+
         # Store in hot layer
         if layer in (MemoryLayer.HOT, MemoryLayer.BOTH):
             hot_data = {
                 "content": content,
                 "metadata": meta,
-                "stored_at": datetime.now().isoformat()
+                "stored_at": utc_now().isoformat()
             }
-            self._hot.put(key, hot_data, ttl=hot_ttl)
+            self._hot.put(dtype, key, hot_data, ttl=hot_ttl)
 
         # Store in cold layer
         if layer in (MemoryLayer.COLD, MemoryLayer.BOTH) and self._cold_available:
-            # Determine company and type
+            # Determine company
             comp = company_name or meta.get("company", "unknown")
-            dtype = data_type or meta.get("data_type", "general")
 
             self._cold.store_research(
                 company_name=comp,
@@ -286,8 +287,8 @@ class DualLayerMemory:
         self._total_recalls += 1
         self._access_counts[key] = self._access_counts.get(key, 0) + 1
 
-        # Check hot layer first
-        hot_data = self._hot.get(key)
+        # Check hot layer first (search across all types)
+        hot_data = self._hot.get_any_type(key)
         if hot_data is not None:
             self._hot_hits += 1
             return MemoryItem(
@@ -583,7 +584,7 @@ class DualLayerMemory:
         hot_data = {
             "content": item.content,
             "metadata": item.metadata,
-            "promoted_at": datetime.now().isoformat(),
+            "promoted_at": utc_now().isoformat(),
             "original_layer": "cold"
         }
 

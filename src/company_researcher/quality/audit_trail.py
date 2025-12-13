@@ -16,6 +16,7 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from ..utils import utc_now
 
 
 class AuditEventType(str, Enum):
@@ -227,7 +228,7 @@ class ResearchAuditTrail:
         self._research_metadata[research_id] = {
             "company_name": company_name,
             "depth": depth,
-            "started_at": datetime.utcnow().isoformat(),
+            "started_at": utc_now().isoformat(),
             **(metadata or {})
         }
 
@@ -248,7 +249,7 @@ class ResearchAuditTrail:
         summary: str = ""
     ) -> None:
         """Mark research as complete."""
-        self._research_metadata[research_id]["completed_at"] = datetime.utcnow().isoformat()
+        self._research_metadata[research_id]["completed_at"] = utc_now().isoformat()
         self._research_metadata[research_id]["quality_score"] = quality_score
 
         self._log_event(
@@ -271,7 +272,7 @@ class ResearchAuditTrail:
         """Log agent execution start."""
         execution = AgentExecution(
             agent_name=agent_name,
-            started_at=datetime.utcnow(),
+            started_at=utc_now(),
             input_summary=input_summary
         )
         self._agent_executions[research_id][agent_name] = execution
@@ -297,7 +298,7 @@ class ResearchAuditTrail:
         """Log agent execution completion."""
         if agent_name in self._agent_executions.get(research_id, {}):
             execution = self._agent_executions[research_id][agent_name]
-            execution.completed_at = datetime.utcnow()
+            execution.completed_at = utc_now()
             execution.status = "completed"
             execution.claims_extracted = claims_count
             execution.sources_used = sources_count
@@ -328,7 +329,7 @@ class ResearchAuditTrail:
         """Log agent error."""
         if agent_name in self._agent_executions.get(research_id, {}):
             execution = self._agent_executions[research_id][agent_name]
-            execution.completed_at = datetime.utcnow()
+            execution.completed_at = utc_now()
             execution.status = "error"
             execution.errors.append(error)
 
@@ -351,7 +352,7 @@ class ResearchAuditTrail:
         source = SourceReference(
             url=url,
             title=title,
-            accessed_at=datetime.utcnow()
+            accessed_at=utc_now()
         )
 
         self._log_event(
@@ -384,7 +385,7 @@ class ResearchAuditTrail:
         provenance = ClaimProvenance(
             claim_id=claim_id,
             claim_text=claim_text,
-            extracted_at=datetime.utcnow(),
+            extracted_at=utc_now(),
             extracted_by=extracted_by,
             sources=sources,
             confidence=confidence,
@@ -419,7 +420,7 @@ class ResearchAuditTrail:
         if claim_id in self._claims:
             claim = self._claims[claim_id]
             claim.verified = verified
-            claim.verified_at = datetime.utcnow()
+            claim.verified_at = utc_now()
             claim.verified_by = verified_by
             claim.verification_notes = notes
 
@@ -522,7 +523,7 @@ class ResearchAuditTrail:
             "agents": agent_summary,
             "claims": [c.to_dict() for c in claims],
             "events": [e.to_dict() for e in events],
-            "generated_at": datetime.utcnow().isoformat()
+            "generated_at": utc_now().isoformat()
         }
 
     def export_audit_trail(
@@ -586,7 +587,7 @@ class ResearchAuditTrail:
         event = AuditEvent(
             id=str(uuid.uuid4())[:8],
             event_type=event_type,
-            timestamp=datetime.utcnow(),
+            timestamp=utc_now(),
             description=description,
             actor=actor,
             data=data or {},

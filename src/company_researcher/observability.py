@@ -27,12 +27,11 @@ LangSmith Integration:
 """
 
 import os
-import logging
 from typing import Optional, Dict, Any, List
-from datetime import datetime
 from contextlib import contextmanager
 
 from .config import get_config
+from .utils import get_logger, utc_now
 
 # Optional imports (gracefully handle if not installed)
 try:
@@ -62,7 +61,7 @@ except ImportError:
     flush_traces = lambda **kwargs: True
     create_run_tree = None
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # ============================================================================
 # Global State
@@ -183,7 +182,7 @@ def track_research_session(company_name: str, tags: Optional[List[str]] = None):
             _current_session_id = session_id
             agentops.record_action(
                 action_type="research_start",
-                params={"company": company_name, "timestamp": datetime.now().isoformat()}
+                params={"company": company_name, "timestamp": utc_now().isoformat()}
             )
             logger.info(f"[OBSERVABILITY] AgentOps session started: {session_id}")
         except Exception as e:
@@ -355,7 +354,7 @@ class CostTracker:
             "tokens": tokens,
             "cost": cost,
             "iteration": iteration,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": utc_now().isoformat()
         }
 
         self.session_costs.append(cost_entry)

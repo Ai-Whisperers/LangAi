@@ -10,13 +10,14 @@ Provides:
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
+from ..utils import utc_now
 
 
 @dataclass
 class StateVersion:
     """Version information for state schema."""
     version: str
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=utc_now)
     description: str = ""
     schema_hash: Optional[str] = None
 
@@ -166,7 +167,7 @@ class VersionManager:
 
         # Add version metadata
         result["_version"] = target
-        result["_migrated_at"] = datetime.utcnow().isoformat()
+        result["_migrated_at"] = utc_now().isoformat()
 
         return result
 

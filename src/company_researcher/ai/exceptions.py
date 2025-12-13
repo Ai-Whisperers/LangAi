@@ -1,5 +1,5 @@
 """Custom exceptions for AI components."""
-from typing import Optional, Any
+from typing import Optional
 
 
 class AIComponentError(Exception):

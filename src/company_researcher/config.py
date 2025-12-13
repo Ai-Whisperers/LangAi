@@ -5,23 +5,22 @@ This module handles all configuration settings including API keys,
 model selection, and research parameters.
 """
 
-import logging
 import os
 import re
 from typing import List, Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
+from .utils import get_logger
 
 # Load environment variables
 load_dotenv()
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ConfigurationError(Exception):
     """Raised when configuration validation fails."""
-    pass
 
 
 # API Key validation patterns
@@ -161,17 +160,17 @@ class ResearchConfig(BaseSettings):
     )
 
     langchain_tracing_v2: bool = Field(
-        default_factory=lambda: os.getenv("LANGCHAIN_TRACING_V2", "false").lower() == "true",
+        default_factory=lambda: os.getenv("LANGCHAIN_TRACING_V2","false").lower() == "true",
         description="Enable LangSmith tracing"
     )
 
     langchain_project: str = Field(
-        default_factory=lambda: os.getenv("LANGCHAIN_PROJECT", "langai-research"),
+        default_factory=lambda: os.getenv("LANGCHAIN_PROJECT","langai-research"),
         description="LangSmith project name"
     )
 
     langchain_endpoint: str = Field(
-        default_factory=lambda: os.getenv("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com"),
+        default_factory=lambda: os.getenv("LANGCHAIN_ENDPOINT","https://api.smith.langchain.com"),
         description="LangSmith API endpoint"
     )
 

@@ -14,15 +14,15 @@ Usage:
     health = check_integration_health(categories=["financial", "news"])
 """
 
-import logging
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class HealthStatus(Enum):
@@ -41,7 +41,7 @@ class IntegrationHealth:
     status: HealthStatus
     latency_ms: Optional[float] = None
     message: str = ""
-    last_checked: datetime = field(default_factory=datetime.now)
+    last_checked: datetime = field(default_factory=utc_now)
     details: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -65,7 +65,7 @@ class HealthReport:
     unconfigured_count: int
     error_count: int
     integrations: List[IntegrationHealth] = field(default_factory=list)
-    generated_at: datetime = field(default_factory=datetime.now)
+    generated_at: datetime = field(default_factory=utc_now)
 
     def to_dict(self) -> Dict[str, Any]:
         return {

@@ -9,9 +9,10 @@ Provides frameworks for:
 - Patent and review analysis
 """
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 from enum import Enum
 from datetime import datetime, timedelta
+from ..utils import utc_now
 
 
 # ==============================================================================
@@ -262,7 +263,7 @@ class GitHubMetrics:
         if not commits:
             return 0.0
 
-        cutoff_date = datetime.now() - timedelta(days=period_days)
+        cutoff_date = utc_now() - timedelta(days=period_days)
         recent_commits = [c for c in commits if c >= cutoff_date]
 
         frequency = len(recent_commits) / period_days

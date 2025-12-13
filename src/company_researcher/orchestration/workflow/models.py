@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
+from ...utils import utc_now
 
 
 class NodeType(str, Enum):
@@ -63,7 +64,7 @@ class ExecutionResult:
     error: Optional[str] = None
     duration_ms: float = 0.0
     retries: int = 0
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -96,7 +97,7 @@ class WorkflowState:
         """Calculate duration in seconds."""
         if not self.start_time:
             return 0
-        end = self.end_time or datetime.now()
+        end = self.end_time or utc_now()
         return (end - self.start_time).total_seconds()
 
     def to_dict(self) -> Dict[str, Any]:

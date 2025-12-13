@@ -30,9 +30,8 @@ from typing import (
     Any,
     Generator
 )
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from threading import Lock
-import asyncio
 
 from anthropic import Anthropic
 

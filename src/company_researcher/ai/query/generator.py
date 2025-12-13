@@ -1,11 +1,9 @@
 """AI-powered query generator using LLM."""
 from typing import List, Optional, Dict, Any
-import logging
 
 from ..base import AIComponent
-from ..config import get_ai_config
 from ..fallback import FallbackHandler
-from ..utils import truncate_text
+from ..utils import get_logger
 from ...llm.response_parser import parse_json_response
 
 from .models import (
@@ -21,7 +19,7 @@ from .prompts import (
     MULTILINGUAL_QUERY_PROMPT
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # Legacy templates for fallback

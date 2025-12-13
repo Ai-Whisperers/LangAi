@@ -9,7 +9,6 @@ This module provides intelligent domain exploration by:
 """
 
 import asyncio
-import logging
 import re
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple
@@ -17,8 +16,9 @@ from urllib.parse import urljoin, urlparse
 
 import httpx
 from bs4 import BeautifulSoup
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # High-value page patterns for company research

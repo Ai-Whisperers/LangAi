@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from ...utils import utc_now
 
 
 class ESGCategory(str, Enum):
@@ -127,7 +128,7 @@ class ESGAnalysis:
     risks: List[str]
     recommendations: List[str]
     data_sources: List[str]
-    analysis_date: datetime = field(default_factory=datetime.utcnow)
+    analysis_date: datetime = field(default_factory=utc_now)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""

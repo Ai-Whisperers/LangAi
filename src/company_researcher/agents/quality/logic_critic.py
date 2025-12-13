@@ -12,11 +12,10 @@ This agent runs after all specialist agents and before report generation
 to ensure research quality and accuracy.
 """
 
-import logging
-from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
+from ...utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 from ...config import get_config
 from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
@@ -25,10 +24,8 @@ from ...state import OverallState
 from ...ai.extraction import ExtractedFact, FactCategory, FactType
 from ...quality.contradiction_detector import (
     ContradictionDetector,
-    ContradictionReport,
-    ContradictionSeverity
+    ContradictionReport
 )
-from ...quality.models import QualityReport, ConfidenceLevel
 from enum import Enum
 from dataclasses import dataclass
 
@@ -229,7 +226,7 @@ def identify_gaps(
     # Group facts by category
     facts_by_category = {}
     for fact in facts:
-        cat = fact.category.value
+        cat = fact.category.value if hasattr(fact.category, 'value') else fact.category
         if cat not in facts_by_category:
             facts_by_category[cat] = []
         facts_by_category[cat].append(fact)
@@ -250,7 +247,7 @@ def identify_gaps(
         # Check specific fields
         for field in section_info["fields"]:
             field_covered = any(
-                field in fact.source_text.lower()
+                field in getattr(fact, 'content', getattr(fact, 'source_text', '')).lower()
                 for fact in section_facts
             )
             if not field_covered:
@@ -320,7 +317,7 @@ def calculate_comprehensive_quality(
     gap_score = max(0, min(100, gap_score))
 
     # Confidence score
-    high_confidence = sum(1 for f in facts if f.confidence > 0.7)
+    high_confidence = sum(1 for f in facts if getattr(f, 'confidence_hint', getattr(f, 'confidence', 0.5)) > 0.7)
     if total_facts > 0:
         confidence_score = (high_confidence / total_facts) * 100
     else:
@@ -405,7 +402,7 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
     company_name = state["company_name"]
     agent_outputs = state.get("agent_outputs", {})
 
-    start_time = datetime.now()
+    start_time = utc_now()
 
     # Step 1: Extract facts from all agent outputs
     logger.debug("Step 1: Extracting facts")
@@ -484,7 +481,7 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
         response.usage.output_tokens
     )
 
-    duration = (datetime.now() - start_time).total_seconds()
+    duration = (utc_now() - start_time).total_seconds()
 
     logger.info(f"Logic Critic agent complete - cost: ${cost:.4f}")
 

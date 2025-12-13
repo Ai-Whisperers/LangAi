@@ -26,7 +26,6 @@ Phase 10 Quality Assurance:
 """
 
 from typing import Dict, Any
-from datetime import datetime
 from langgraph.graph import StateGraph, END
 
 from ..state import OverallState, InputState, OutputState, create_initial_state, create_output_state
@@ -46,6 +45,7 @@ from ..observability import (
     record_quality_check,
     is_observability_enabled
 )
+from ..utils import utc_now
 
 
 # ============================================================================
@@ -148,7 +148,7 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
     print("\n[NODE] Generating markdown report...")
 
     # Generate report content
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = utc_now().strftime("%Y%m%d_%H%M%S")
     company_name = state["company_name"]
 
     # Get agent outputs for attribution
@@ -162,12 +162,12 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
     logic_critic_metrics = agent_outputs.get("logic_critic", {})  # Phase 10
 
     # Calculate duration
-    duration = (datetime.now() - state.get("start_time", datetime.now())).total_seconds()
+    duration = (utc_now() - state.get("start_time", utc_now())).total_seconds()
 
     # Build report
     report_content = f"""# {company_name} - Research Report (Phase 10: Logic Critic QA)
 
-*Generated on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}*
+*Generated on {utc_now().strftime("%Y-%m-%d %H:%M:%S")}*
 
 ---
 

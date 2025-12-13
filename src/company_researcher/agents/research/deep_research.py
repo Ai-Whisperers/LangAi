@@ -12,7 +12,7 @@ This agent performs deep, multi-iteration research to gather
 comprehensive information about a company.
 """
 
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -21,6 +21,7 @@ from ...config import get_config
 from ...llm.smart_client import smart_completion
 from ...state import OverallState
 from ..base import get_agent_logger, create_empty_result
+from ...utils import utc_now
 
 
 # ============================================================================
@@ -52,7 +53,7 @@ class ResearchIteration:
     facts_extracted: int
     gaps_identified: List[str] = field(default_factory=list)
     quality_score: float = 0.0
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
 
 
 @dataclass

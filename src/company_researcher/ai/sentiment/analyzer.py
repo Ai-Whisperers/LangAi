@@ -1,11 +1,9 @@
 """AI-powered sentiment analyzer using LLM."""
 from typing import List, Optional, Dict, Any
-import logging
 
 from ..base import AIComponent
-from ..config import get_ai_config
 from ..fallback import FallbackHandler
-from ..utils import truncate_text, normalize_confidence
+from ..utils import get_logger, normalize_confidence, truncate_text
 from ...llm.response_parser import parse_json_response
 
 from .models import (
@@ -14,17 +12,17 @@ from .models import (
     NewsCategorization,
     SentimentAggregation,
     NewsCategory,
-    EntitySentiment
+    EntitySentiment,
+    SearchResultSentimentProfile
 )
 from .prompts import (
     SENTIMENT_ANALYSIS_PROMPT,
     NEWS_CATEGORIZATION_PROMPT,
-    SENTIMENT_AGGREGATION_PROMPT,
     SENTIMENT_SYSTEM_PROMPT,
     CATEGORIZATION_SYSTEM_PROMPT
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
@@ -251,6 +249,79 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
             top_positive_factors=top_positive,
             top_negative_factors=top_negative,
             top_categories=top_categories
+        )
+
+    def analyze_from_search_results(
+        self,
+        company_name: str,
+        search_results: List[Dict[str, Any]],
+        max_articles: int = 20
+    ) -> SearchResultSentimentProfile:
+        """
+        Analyze sentiment from search results and return a high-level profile.
+
+        This is a convenience method that combines analyze_batch and aggregate_sentiment
+        to produce a SearchResultSentimentProfile suitable for workflow integration.
+
+        Args:
+            company_name: The target company name
+            search_results: List of search result dicts with 'content', 'snippet', or 'title' keys
+            max_articles: Maximum articles to analyze
+
+        Returns:
+            SearchResultSentimentProfile with overall sentiment analysis
+        """
+        if not search_results:
+            return SearchResultSentimentProfile.empty(company_name)
+
+        # Analyze batch of articles
+        results = self.analyze_batch(search_results, company_name, max_articles)
+
+        if not results:
+            return SearchResultSentimentProfile.empty(company_name)
+
+        # Aggregate results
+        aggregation = self.aggregate_sentiment(results)
+
+        # Extract key topics from categorization
+        key_topics = []
+        for r in results:
+            if r.news_category and r.news_category != NewsCategory.GENERAL:
+                cat_name = r.news_category.value if isinstance(r.news_category, NewsCategory) else str(r.news_category)
+                if cat_name not in key_topics:
+                    key_topics.append(cat_name)
+            # Also extract from key factors
+            for factor in r.key_factors[:2]:  # Limit to avoid too many
+                if factor and factor not in key_topics:
+                    key_topics.append(factor)
+        key_topics = key_topics[:10]  # Limit total topics
+
+        # Build category breakdown from aggregation
+        category_breakdown = {}
+        for cat in aggregation.top_categories:
+            cat_name = cat.value if isinstance(cat, NewsCategory) else str(cat)
+            category_breakdown[cat_name] = category_breakdown.get(cat_name, 0) + 1
+
+        # Also count from individual results for more accurate breakdown
+        for r in results:
+            cat = r.news_category
+            cat_name = cat.value if isinstance(cat, NewsCategory) else str(cat)
+            category_breakdown[cat_name] = category_breakdown.get(cat_name, 0) + 1
+
+        # Create profile from aggregation
+        return SearchResultSentimentProfile(
+            company_name=company_name,
+            total_articles=aggregation.article_count,
+            sentiment_score=aggregation.overall_score,
+            sentiment_level=aggregation.overall_sentiment,
+            sentiment_trend="improving" if aggregation.positive_ratio > aggregation.negative_ratio + 0.2
+                          else "declining" if aggregation.negative_ratio > aggregation.positive_ratio + 0.2
+                          else "stable",
+            key_topics=key_topics,
+            positive_highlights=aggregation.top_positive_factors,
+            negative_highlights=aggregation.top_negative_factors,
+            category_breakdown=category_breakdown,
+            confidence=aggregation.confidence
         )
 
     def _parse_sentiment_result(

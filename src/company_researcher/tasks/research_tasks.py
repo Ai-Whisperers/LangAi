@@ -24,11 +24,11 @@ Usage:
 """
 
 from typing import List, Dict, Any, Optional
-import os
 from datetime import datetime
+from ..utils import get_config, utc_now
 
 try:
-    from celery import Celery, chain, group, chord
+    from celery import Celery, group
     from celery.result import AsyncResult
     CELERY_AVAILABLE = True
 except ImportError:
@@ -40,8 +40,8 @@ except ImportError:
 if CELERY_AVAILABLE:
     app = Celery(
         'research_tasks',
-        broker=os.getenv('REDIS_URL', 'redis://localhost:6379/0'),
-        backend=os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        broker=get_config('REDIS_URL', default='redis://localhost:6379/0'),
+        backend=get_config('REDIS_URL', default='redis://localhost:6379/0')
     )
 
     # Celery configuration
@@ -105,7 +105,7 @@ if CELERY_AVAILABLE:
             meta={
                 'status': 'Starting research',
                 'company': company_name,
-                'started_at': datetime.utcnow().isoformat()
+                'started_at': utc_now().isoformat()
             }
         )
 
@@ -162,7 +162,7 @@ if CELERY_AVAILABLE:
                 'company': company_name,
                 'run_id': run.run_id if run else None,
                 'total_cost': result.get('total_cost', 0),
-                'completed_at': datetime.utcnow().isoformat()
+                'completed_at': utc_now().isoformat()
             }
 
         except Exception as e:
@@ -196,7 +196,7 @@ if CELERY_AVAILABLE:
             meta={
                 'status': 'Starting batch research',
                 'total_companies': len(company_names),
-                'started_at': datetime.utcnow().isoformat()
+                'started_at': utc_now().isoformat()
             }
         )
 
@@ -233,7 +233,7 @@ if CELERY_AVAILABLE:
             'successful': successful,
             'failed': failed,
             'results': results,
-            'completed_at': datetime.utcnow().isoformat()
+            'completed_at': utc_now().isoformat()
         }
 
     @app.task(name='research.update_company_data')
@@ -266,7 +266,7 @@ if CELERY_AVAILABLE:
                 last_run = recent[0]
                 last_completed = datetime.fromisoformat(last_run['completed_at'])
 
-                if (datetime.utcnow() - last_completed) < timedelta(days=max_age_days):
+                if (utc_now() - last_completed) < timedelta(days=max_age_days):
                     return {
                         'status': 'skipped',
                         'reason': 'Data is fresh',
@@ -281,7 +281,7 @@ if CELERY_AVAILABLE:
             'status': 'updated',
             'company': company_name,
             'run_id': result.get('run_id'),
-            'completed_at': datetime.utcnow().isoformat()
+            'completed_at': utc_now().isoformat()
         }
 
     @app.task(name='reports.generate')
@@ -346,7 +346,7 @@ if CELERY_AVAILABLE:
             'run_id': research_run_id,
             'formats': formats,
             'files': generated_files,
-            'generated_at': datetime.utcnow().isoformat()
+            'generated_at': utc_now().isoformat()
         }
 
     @app.task(name='research.cleanup_old_runs')
@@ -364,7 +364,7 @@ if CELERY_AVAILABLE:
         from ..database import get_repository
 
         repo = get_repository()
-        cutoff = datetime.utcnow() - timedelta(days=days_to_keep)
+        cutoff = utc_now() - timedelta(days=days_to_keep)
 
         # This would need implementation in repository
         # For now, return a placeholder

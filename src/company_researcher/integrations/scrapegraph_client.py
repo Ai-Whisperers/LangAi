@@ -8,13 +8,12 @@ ScrapeGraph uses LLMs to intelligently extract data from websites:
 - Search and scrape capabilities
 """
 
-import logging
-import os
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Type
 from pydantic import BaseModel
+from ..utils import get_config, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -103,7 +102,7 @@ class ScrapeGraphClient:
         Args:
             api_key: ScrapeGraph API key. If not provided, reads from SCRAPEGRAPH_API_KEY env var.
         """
-        self.api_key = api_key or os.getenv("SCRAPEGRAPH_API_KEY")
+        self.api_key = api_key or get_config("SCRAPEGRAPH_API_KEY")
         self._client = None
 
     def _get_client(self):

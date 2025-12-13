@@ -24,15 +24,14 @@ Usage:
     pages = scraper.crawl("https://company.com", max_pages=10)
 """
 
-import logging
-import os
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Type
 
 from pydantic import BaseModel
+from ..utils import get_config, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ScrapingBackend(str, Enum):
@@ -126,8 +125,8 @@ class WebScraper:
             scrapegraph_api_key: ScrapeGraph API key
             preferred_backend: Preferred backend to use (if available)
         """
-        self.firecrawl_key = firecrawl_api_key or os.getenv("FIRECRAWL_API_KEY")
-        self.scrapegraph_key = scrapegraph_api_key or os.getenv("SCRAPEGRAPH_API_KEY")
+        self.firecrawl_key = firecrawl_api_key or get_config("FIRECRAWL_API_KEY")
+        self.scrapegraph_key = scrapegraph_api_key or get_config("SCRAPEGRAPH_API_KEY")
         self.preferred_backend = preferred_backend
 
         # Lazy-loaded clients

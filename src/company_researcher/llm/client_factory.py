@@ -25,12 +25,12 @@ Usage:
     client = factory.get_anthropic()
 """
 
-import logging
 from typing import Optional, Any
 import threading
 import httpx
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 from anthropic import Anthropic
 
@@ -145,7 +145,6 @@ class LLMClientFactory:
         Raises:
             TimeoutError: If search exceeds configured timeout
         """
-        import asyncio
         import concurrent.futures
 
         client = self.get_tavily()
@@ -399,7 +398,6 @@ def get_cost_tracker():
 
 class LLMResponseError(Exception):
     """Raised when LLM response extraction fails."""
-    pass
 
 
 def safe_extract_text(

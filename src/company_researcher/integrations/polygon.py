@@ -7,14 +7,14 @@ Provides: Historical stock data, company details, news
 Documentation: https://polygon.io/docs
 """
 
-import logging
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
 from .base_client import BaseAPIClient
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -179,9 +179,9 @@ class PolygonClient(BaseAPIClient):
             List of StockBar objects
         """
         if not from_date:
-            from_date = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
+            from_date = (utc_now() - timedelta(days=365)).strftime("%Y-%m-%d")
         if not to_date:
-            to_date = datetime.now().strftime("%Y-%m-%d")
+            to_date = utc_now().strftime("%Y-%m-%d")
 
         endpoint = f"/v2/aggs/ticker/{ticker}/range/{multiplier}/{timespan}/{from_date}/{to_date}"
         data = await self._request(endpoint, {"limit": limit})
@@ -206,8 +206,8 @@ class PolygonClient(BaseAPIClient):
         Returns:
             List of StockBar objects
         """
-        from_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
-        to_date = datetime.now().strftime("%Y-%m-%d")
+        from_date = (utc_now() - timedelta(days=days)).strftime("%Y-%m-%d")
+        to_date = utc_now().strftime("%Y-%m-%d")
         return await self.get_aggregates(ticker, 1, "day", from_date, to_date, days)
 
     # =========================================================================

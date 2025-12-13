@@ -27,18 +27,17 @@ Usage:
     cache.set("custom_key", data, ttl_hours=12)
 """
 
-import os
 import json
 import hashlib
-import logging
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, asdict
 from threading import Lock
 import gzip
+from ..utils import get_logger, utc_now, get_config
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -55,7 +54,7 @@ class CacheEntry:
     def is_expired(self) -> bool:
         """Check if entry is expired."""
         expires = datetime.fromisoformat(self.expires_at)
-        return datetime.now() > expires
+        return utc_now() > expires
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -103,9 +102,9 @@ class ResultCache:
             compress: Whether to compress cached data
             max_size_mb: Maximum cache size in MB
         """
-        self.cache_dir = Path(cache_dir or os.getenv(
+        self.cache_dir = Path(cache_dir or get_config(
             "RESEARCH_CACHE_DIR",
-            ".research_cache"
+            default=".research_cache"
         ))
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -204,7 +203,7 @@ class ResultCache:
         key_hash = self._hash_key(key)
         path = self._get_path(key_hash, cache_type)
 
-        now = datetime.now()
+        now = utc_now()
         expires = now + timedelta(hours=ttl_hours)
 
         entry = CacheEntry(
@@ -298,8 +297,8 @@ class ResultCache:
                                 if entry.is_expired():
                                     path.unlink()
                                     count += 1
-                            except Exception:
-                                pass
+                            except Exception as e:
+                                logger.debug(f"Failed to clean cache file {path}: {e}")
         return count
 
     def get_stats(self) -> Dict[str, Any]:

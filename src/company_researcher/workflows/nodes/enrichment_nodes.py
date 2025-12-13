@@ -7,12 +7,16 @@ This module contains nodes responsible for data enrichment:
 - risk_assessment_node: Quantify risks for the company
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 from ...state import OverallState
 # AI-powered sentiment analysis
 from ...ai.sentiment import get_sentiment_analyzer, SentimentLevel
-from ...agents.research.competitive_matrix import create_competitive_matrix
+from ...agents.research.competitive_matrix import (
+    create_competitive_matrix,
+    create_financial_comparison,
+    FinancialMetric
+)
 from ...agents.research.risk_quantifier import create_risk_quantifier
 
 
@@ -164,43 +168,165 @@ def risk_assessment_node(state: OverallState) -> Dict[str, Any]:
     """
     print("\n[NODE] Quantifying risks...")
 
-    # Build company data from state
+    company_name = state["company_name"]
+
+    # Build company data from state (financial/operational metrics)
     company_data = {
-        "name": state["company_name"],
-        "overview": state.get("company_overview", ""),
-        "notes": state.get("notes", []),
-        "key_metrics": state.get("key_metrics", {}),
-        "competitors": state.get("competitors", []),
-        "key_insights": state.get("key_insights", []),
-        "region": state.get("detected_region"),
+        "debt_to_equity": state.get("key_metrics", {}).get("debt_to_equity") if state.get("key_metrics") else None,
+        "profit_margin": state.get("key_metrics", {}).get("profit_margin") if state.get("key_metrics") else None,
+        "revenue_growth": state.get("key_metrics", {}).get("revenue_growth") if state.get("key_metrics") else None,
+        "pe_ratio": state.get("key_metrics", {}).get("pe_ratio") if state.get("key_metrics") else None,
+        "employee_turnover": state.get("key_metrics", {}).get("employee_turnover") if state.get("key_metrics") else None,
     }
 
-    # Generate risk assessment
-    quantifier = create_risk_quantifier()
-    risk_profile = quantifier.assess_risks(company_data)
+    # Build market data from state
+    market_data = {
+        "market_share": state.get("key_metrics", {}).get("market_share") if state.get("key_metrics") else None,
+        "competitors": state.get("competitors", []),
+        "market_growth": state.get("key_metrics", {}).get("market_growth") if state.get("key_metrics") else None,
+    }
 
-    # Convert to dict for state storage
+    # Combine text content for risk indicator extraction
+    content_parts = []
+    if state.get("company_overview"):
+        content_parts.append(state["company_overview"])
+    for note in state.get("notes", []) or []:
+        if isinstance(note, str):
+            content_parts.append(note)
+    content = "\n".join(content_parts) if content_parts else None
+
+    # Generate risk assessment with correct signature
+    quantifier = create_risk_quantifier()
+    risk_profile = quantifier.assess_risks(
+        company_name=company_name,
+        company_data=company_data,
+        market_data=market_data,
+        content=content
+    )
+
+    # Convert to dict for state storage (using correct attribute names)
     profile_dict = {
         "company_name": risk_profile.company_name,
-        "overall_score": risk_profile.overall_score,
-        "grade": risk_profile.grade,
+        "overall_score": risk_profile.overall_risk_score,
+        "grade": risk_profile.risk_grade,
         "risks": [
             {
+                "name": r.name,
                 "category": r.category.value,
                 "description": r.description,
-                "severity": r.severity.value,
+                "level": r.level.value,
                 "probability": r.probability.value if r.probability else None,
                 "impact_score": r.impact_score,
+                "likelihood_score": r.likelihood_score,
+                "risk_score": r.risk_score,
                 "mitigation": r.mitigation,
+                "trend": r.trend,
             }
             for r in risk_profile.risks
         ],
-        "category_scores": {k.value: v for k, v in risk_profile.category_scores.items()},
+        "risk_by_category": {k: [r.name for r in v] for k, v in risk_profile.risk_by_category.items()},
+        "risk_matrix": risk_profile.risk_matrix,
+        "key_risks": risk_profile.key_risks,
         "risk_adjusted_metrics": risk_profile.risk_adjusted_metrics,
+        "recommendations": risk_profile.recommendations,
+        "summary": risk_profile.summary,
     }
 
-    print(f"[OK] Risk assessment complete: Grade {risk_profile.grade}, Score {risk_profile.overall_score:.1f}/100")
+    print(f"[OK] Risk assessment complete: Grade {risk_profile.risk_grade}, Score {risk_profile.overall_risk_score:.1f}/100")
 
     return {
         "risk_profile": profile_dict
+    }
+
+
+def financial_comparison_node(state: OverallState) -> Dict[str, Any]:
+    """
+    Node 9: Generate structured financial comparison with competitors.
+
+    Args:
+        state: Current workflow state
+
+    Returns:
+        State update with financial comparison table
+    """
+    print("\n[NODE] Generating financial comparison table...")
+
+    company_name = state["company_name"]
+
+    # Build company financial data from state
+    key_metrics = state.get("key_metrics", {}) or {}
+    company_data = {
+        "name": company_name,
+        "revenue": key_metrics.get("revenue"),
+        "revenue_growth": key_metrics.get("revenue_growth"),
+        "ebitda_margin": key_metrics.get("ebitda_margin") or key_metrics.get("operating_margin"),
+        "profit_margin": key_metrics.get("profit_margin") or key_metrics.get("net_margin"),
+        "debt_to_equity": key_metrics.get("debt_to_equity"),
+        "market_cap": key_metrics.get("market_cap"),
+        "subscribers": key_metrics.get("subscribers"),
+        "arpu": key_metrics.get("arpu"),
+    }
+
+    # Build competitors data from state
+    competitors_list = state.get("competitors", []) or []
+    competitors_data = []
+
+    for comp_name in competitors_list[:5]:  # Limit to 5 competitors
+        # Try to get competitor data from competitive_matrix if available
+        comp_matrix = state.get("competitive_matrix", {})
+        comp_scores = {}
+        if comp_matrix:
+            for comp_info in comp_matrix.get("competitors", []):
+                if comp_info.get("name") == comp_name:
+                    comp_scores = comp_info.get("scores", {})
+                    break
+
+        competitors_data.append({
+            "name": comp_name,
+            "revenue": comp_scores.get("revenue"),
+            "revenue_growth": comp_scores.get("revenue_growth"),
+            "ebitda_margin": comp_scores.get("ebitda_margin"),
+            "profit_margin": comp_scores.get("profit_margin"),
+            "debt_to_equity": comp_scores.get("debt_to_equity"),
+            "market_cap": comp_scores.get("market_cap"),
+        })
+
+    # Determine metrics based on industry (telecom includes subscribers/ARPU)
+    detected_industry = state.get("detected_industry", "")
+    if "telecom" in detected_industry.lower() or "telecommunications" in detected_industry.lower():
+        metrics = [
+            FinancialMetric.REVENUE,
+            FinancialMetric.REVENUE_GROWTH,
+            FinancialMetric.EBITDA_MARGIN,
+            FinancialMetric.PROFIT_MARGIN,
+            FinancialMetric.DEBT_TO_EQUITY,
+            FinancialMetric.SUBSCRIBERS,
+            FinancialMetric.ARPU,
+        ]
+    else:
+        metrics = [
+            FinancialMetric.REVENUE,
+            FinancialMetric.REVENUE_GROWTH,
+            FinancialMetric.EBITDA_MARGIN,
+            FinancialMetric.PROFIT_MARGIN,
+            FinancialMetric.DEBT_TO_EQUITY,
+            FinancialMetric.MARKET_CAP,
+        ]
+
+    # Generate financial comparison
+    comparison = create_financial_comparison(
+        company_name=company_name,
+        company_data=company_data,
+        competitors_data=competitors_data,
+        metrics=metrics
+    )
+
+    # Convert to dict for state storage
+    comparison_dict = comparison.to_dict()
+    comparison_dict["markdown"] = comparison.to_markdown()
+
+    print(f"[OK] Financial comparison complete: {len(comparison.rows)} metrics compared across {len(competitors_list)} competitors")
+
+    return {
+        "financial_comparison": comparison_dict
     }

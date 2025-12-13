@@ -125,6 +125,15 @@ from .query_generation import (
     clean_query,
     validate_queries,
     parse_query_response,
+    # Date-aware queries
+    get_date_filtered_queries,
+    get_leadership_queries,
+    get_market_data_queries,
+    get_bilingual_queries,
+    get_comprehensive_dated_queries,
+    generate_targeted_queries,
+    # Spanish templates
+    SPANISH_DOMAIN_TEMPLATES,
 )
 
 # Error handling
@@ -208,6 +217,14 @@ __all__ = [
     "clean_query",
     "validate_queries",
     "parse_query_response",
+    # Date-aware queries
+    "get_date_filtered_queries",
+    "get_leadership_queries",
+    "get_market_data_queries",
+    "get_bilingual_queries",
+    "get_comprehensive_dated_queries",
+    "generate_targeted_queries",
+    "SPANISH_DOMAIN_TEMPLATES",
     # Error handling
     "AgentError",
     "ParsingError",

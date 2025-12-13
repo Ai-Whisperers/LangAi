@@ -31,8 +31,9 @@ from pathlib import Path
 from threading import Lock
 from typing import Optional
 import json
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ScrapingProvider(str, Enum):
@@ -66,7 +67,7 @@ class ScrapeResult:
 
     def __post_init__(self):
         if self.timestamp is None:
-            self.timestamp = datetime.now()
+            self.timestamp = utc_now()
         if self.metadata is None:
             self.metadata = {}
 
@@ -191,7 +192,7 @@ class ScrapingRouter:
 
             # Check expiration
             timestamp = datetime.fromisoformat(data["timestamp"])
-            if datetime.now() - timestamp > self.cache_ttl:
+            if utc_now() - timestamp > self.cache_ttl:
                 cache_file.unlink()  # Delete expired
                 return None
 
@@ -389,7 +390,7 @@ class ScrapingRouter:
 
         try:
             # Firecrawl has sync API, wrap in executor
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             result = await loop.run_in_executor(
                 None, self._firecrawl.scrape_url, url
             )
@@ -432,7 +433,7 @@ class ScrapingRouter:
             )
 
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             result = await loop.run_in_executor(
                 None, self._scrapegraph.scrape, url
             )
@@ -513,8 +514,8 @@ class ScrapingRouter:
                 try:
                     from .cost_tracker import track_cost
                     track_cost(provider.value.replace("_", "-"), 1)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Failed to track cost for {provider.value}: {e}")
 
                 # Cache successful result
                 if use_cache:
@@ -577,13 +578,7 @@ class ScrapingRouter:
         Returns:
             ScrapeResult
         """
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-        return loop.run_until_complete(self.scrape(url, quality))
+        return asyncio.run(self.scrape(url, quality))
 
     def get_provider_status(self) -> list[ProviderStatus]:
         """Get status of all providers."""
@@ -630,7 +625,7 @@ class ScrapingRouter:
                     with open(cache_file, "r") as f:
                         data = json.load(f)
                     timestamp = datetime.fromisoformat(data["timestamp"])
-                    if datetime.now() - timestamp < timedelta(hours=older_than_hours):
+                    if utc_now() - timestamp < timedelta(hours=older_than_hours):
                         continue
 
                 cache_file.unlink()

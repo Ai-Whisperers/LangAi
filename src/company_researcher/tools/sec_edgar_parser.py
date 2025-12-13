@@ -10,8 +10,8 @@ Note: SEC requires User-Agent header with contact info
 """
 
 from typing import Dict, List, Optional, Any
-from datetime import datetime, timedelta
-import re
+from datetime import timedelta
+from ..utils import utc_now
 
 
 class SECEdgarParser:
@@ -61,7 +61,7 @@ class SECEdgarParser:
         cache_key = str(params)
         if cache_key in self._cache:
             cached_data, cached_time = self._cache[cache_key]
-            if datetime.now() - cached_time < self._cache_ttl:
+            if utc_now() - cached_time < self._cache_ttl:
                 return cached_data
 
         # In production, would make actual HTTP request with requests library
@@ -72,7 +72,7 @@ class SECEdgarParser:
         mock_response = self._get_mock_data(**params)
 
         # Cache response
-        self._cache[cache_key] = (mock_response, datetime.now())
+        self._cache[cache_key] = (mock_response, utc_now())
 
         return mock_response
 
@@ -81,7 +81,7 @@ class SECEdgarParser:
         return {
             "note": "Mock SEC EDGAR data. Replace with actual HTTP request.",
             "params": params,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": utc_now().isoformat()
         }
 
     def search_company(self, company_name: str) -> Optional[Dict[str, Any]]:
@@ -249,7 +249,7 @@ class SECEdgarParser:
             "available": True,
             "company_name": company_name,
             "cik": cik,
-            "fetched_at": datetime.now().isoformat(),
+            "fetched_at": utc_now().isoformat(),
             "latest_10k": latest_10k,
             "latest_10q": latest_10q,
             "annual_financials": None,  # Would be parsed from 10-K

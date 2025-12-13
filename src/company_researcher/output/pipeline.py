@@ -29,15 +29,15 @@ Usage:
 """
 
 import json
-import logging
 import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from threading import Lock
 from typing import Dict, Any, List, Optional
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -132,7 +132,7 @@ class ReportPipeline:
         output_path.mkdir(parents=True, exist_ok=True)
 
         company_name = state.get("company_name", "Unknown")
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = utc_now().strftime("%Y%m%d_%H%M%S")
         safe_name = self._sanitize_filename(company_name)
         base_name = f"{safe_name}_{timestamp}"
 
@@ -279,7 +279,7 @@ class ReportPipeline:
 
         return {
             "company_name": company_name,
-            "generated_at": datetime.now(),
+            "generated_at": utc_now(),
             "run_id": state.get("run_id"),
 
             # Analyses
@@ -318,7 +318,7 @@ class ReportPipeline:
             format="markdown",
             filepath=filepath,
             size_bytes=filepath.stat().st_size,
-            generated_at=datetime.now(),
+            generated_at=utc_now(),
             company_name=data["company_name"],
             run_id=data.get("run_id")
         )
@@ -408,7 +408,7 @@ class ReportPipeline:
             format="excel",
             filepath=filepath,
             size_bytes=filepath.stat().st_size,
-            generated_at=datetime.now(),
+            generated_at=utc_now(),
             company_name=data["company_name"],
             run_id=data.get("run_id")
         )
@@ -435,7 +435,7 @@ class ReportPipeline:
             format="json",
             filepath=filepath,
             size_bytes=filepath.stat().st_size,
-            generated_at=datetime.now(),
+            generated_at=utc_now(),
             company_name=data["company_name"],
             run_id=data.get("run_id")
         )

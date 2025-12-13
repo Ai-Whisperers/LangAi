@@ -6,15 +6,18 @@ This module contains nodes responsible for data analysis:
 - extract_data_node: Extract structured data from notes
 - check_quality_node: Assess research quality
 - should_continue_research: Decision function for iteration
+
+Uses SmartLLMClient for automatic provider fallback:
+- Primary: Anthropic Claude
+- Fallback 1: Groq (llama-3.3-70b-versatile) on rate limit
+- Fallback 2: DeepSeek on rate limit
 """
 
-from typing import Dict, Any
-
-from anthropic import Anthropic
+from typing import Dict, Any, Optional
 
 from ...state import OverallState
 from ...config import get_config
-from ...llm.client_factory import safe_extract_text
+from ...llm.smart_client import get_smart_client, TaskType
 from ...prompts import (
     ANALYZE_RESULTS_PROMPT,
     EXTRACT_DATA_PROMPT,
@@ -22,11 +25,42 @@ from ...prompts import (
     format_sources_for_extraction,
 )
 from ...quality import check_research_quality
+from ...utils import get_logger
+
+logger = get_logger(__name__)
+
+
+def _create_completion(prompt: str, system: Optional[str] = None, max_tokens: int = 2000, temperature: float = 0.1):
+    """Create a completion using SmartLLMClient with automatic provider fallback."""
+    smart_client = get_smart_client()
+
+    # Combine system and user prompt if system is provided
+    full_prompt = prompt
+    if system:
+        full_prompt = f"{system}\n\n{prompt}"
+
+    result = smart_client.complete(
+        prompt=full_prompt,
+        task_type=TaskType.REASONING,
+        complexity="medium",
+        max_tokens=max_tokens,
+        temperature=temperature
+    )
+
+    logger.info(f"[LLM] Provider: {result.provider}/{result.model} ({result.routing_reason})")
+
+    return {
+        "content": result.content,
+        "input_tokens": result.input_tokens,
+        "output_tokens": result.output_tokens,
+        "provider": result.provider,
+        "cost": result.cost
+    }
 
 
 def analyze_node(state: OverallState) -> Dict[str, Any]:
     """
-    Node 3: Analyze search results with Claude.
+    Node 3: Analyze search results with LLM.
 
     Args:
         state: Current workflow state
@@ -35,7 +69,6 @@ def analyze_node(state: OverallState) -> Dict[str, Any]:
         State update with analysis notes
     """
     config = get_config()
-    client = Anthropic(api_key=config.anthropic_api_key)
 
     print("\n[NODE] Analyzing search results...")
 
@@ -48,30 +81,24 @@ def analyze_node(state: OverallState) -> Dict[str, Any]:
         search_results=formatted_results
     )
 
-    # Call Claude
-    response = client.messages.create(
-        model=config.llm_model,
+    # Call LLM (Groq first, Anthropic fallback)
+    result = _create_completion(
+        prompt=prompt,
         max_tokens=config.llm_max_tokens,
-        temperature=config.llm_temperature,
-        messages=[{"role": "user", "content": prompt}]
+        temperature=config.llm_temperature
     )
 
-    notes = safe_extract_text(response, agent_name="analyze")
+    notes = result["content"]
+    cost = result["cost"]
 
-    # Update cost
-    cost = config.calculate_llm_cost(
-        response.usage.input_tokens,
-        response.usage.output_tokens
-    )
-
-    print("[OK] Analysis complete")
+    print(f"[OK] Analysis complete (via {result['provider']})")
 
     return {
         "notes": [notes],
         "total_cost": state.get("total_cost", 0.0) + cost,
         "total_tokens": {
-            "input": state.get("total_tokens", {"input": 0, "output": 0})["input"] + response.usage.input_tokens,
-            "output": state.get("total_tokens", {"input": 0, "output": 0})["output"] + response.usage.output_tokens
+            "input": state.get("total_tokens", {"input": 0, "output": 0})["input"] + result["input_tokens"],
+            "output": state.get("total_tokens", {"input": 0, "output": 0})["output"] + result["output_tokens"]
         }
     }
 
@@ -87,7 +114,6 @@ def extract_data_node(state: OverallState) -> Dict[str, Any]:
         State update with extracted structured data
     """
     config = get_config()
-    client = Anthropic(api_key=config.anthropic_api_key)
 
     print("\n[NODE] Extracting structured data...")
 
@@ -104,31 +130,25 @@ def extract_data_node(state: OverallState) -> Dict[str, Any]:
         sources=formatted_sources
     )
 
-    # Call Claude
-    response = client.messages.create(
-        model=config.llm_model,
+    # Call LLM (Groq first, Anthropic fallback)
+    result = _create_completion(
+        prompt=prompt,
         max_tokens=config.llm_max_tokens,
-        temperature=config.llm_temperature,
-        messages=[{"role": "user", "content": prompt}]
+        temperature=config.llm_temperature
     )
 
-    extracted_text = safe_extract_text(response, agent_name="extract_data")
+    extracted_text = result["content"]
+    cost = result["cost"]
 
-    # Update cost
-    cost = config.calculate_llm_cost(
-        response.usage.input_tokens,
-        response.usage.output_tokens
-    )
-
-    print("[OK] Data extraction complete")
+    print(f"[OK] Data extraction complete (via {result['provider']})")
 
     # Store extracted text as-is (it's already formatted markdown)
     return {
         "company_overview": extracted_text,
         "total_cost": state.get("total_cost", 0.0) + cost,
         "total_tokens": {
-            "input": state.get("total_tokens", {"input": 0, "output": 0})["input"] + response.usage.input_tokens,
-            "output": state.get("total_tokens", {"input": 0, "output": 0})["output"] + response.usage.output_tokens
+            "input": state.get("total_tokens", {"input": 0, "output": 0})["input"] + result["input_tokens"],
+            "output": state.get("total_tokens", {"input": 0, "output": 0})["output"] + result["output_tokens"]
         }
     }
 

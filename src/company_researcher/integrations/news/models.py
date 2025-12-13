@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Optional
+from ...utils import utc_now
 
 
 class NewsProvider(str, Enum):
@@ -81,8 +82,8 @@ class ProviderQuota:
     monthly_limit: int
     daily_used: int = 0
     monthly_used: int = 0
-    last_reset_daily: datetime = field(default_factory=datetime.now)
-    last_reset_monthly: datetime = field(default_factory=datetime.now)
+    last_reset_daily: datetime = field(default_factory=utc_now)
+    last_reset_monthly: datetime = field(default_factory=utc_now)
 
     def is_available(self) -> bool:
         """Check if provider has quota remaining."""
@@ -101,7 +102,7 @@ class ProviderQuota:
 
     def _check_reset(self):
         """Reset counters if needed."""
-        now = datetime.now()
+        now = utc_now()
 
         # Daily reset
         if now.date() > self.last_reset_daily.date():

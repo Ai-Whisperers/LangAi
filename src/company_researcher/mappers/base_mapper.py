@@ -8,7 +8,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Type
+from typing import Any, Callable, Dict, List, Optional, Type
+from ..utils import utc_now
 
 
 class FrameworkType(str, Enum):
@@ -149,7 +150,7 @@ class MappedGraph:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     # Analysis timestamp
-    analyzed_at: datetime = field(default_factory=datetime.utcnow)
+    analyzed_at: datetime = field(default_factory=utc_now)
 
     def get_node(self, node_id: str) -> Optional[MappedNode]:
         """Get node by ID."""
@@ -254,7 +255,6 @@ class BaseMapper(ABC):
         Returns:
             MappedGraph representation
         """
-        pass
 
     @abstractmethod
     def to_langgraph(self, graph: MappedGraph) -> Any:
@@ -267,7 +267,6 @@ class BaseMapper(ABC):
         Returns:
             LangGraph StateGraph or CompiledGraph
         """
-        pass
 
     def validate(self, graph: MappedGraph) -> List[str]:
         """

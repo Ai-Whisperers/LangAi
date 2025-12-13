@@ -5,14 +5,14 @@ Exporters for sending spans to various backends.
 """
 
 import json
-import logging
 import urllib.request
 import urllib.error
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from .models import Span
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class SpanExporter:
@@ -24,7 +24,6 @@ class SpanExporter:
 
     def shutdown(self) -> None:
         """Shutdown the exporter."""
-        pass
 
 
 class ConsoleSpanExporter(SpanExporter):

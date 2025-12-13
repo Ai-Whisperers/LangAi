@@ -120,10 +120,30 @@ Create comprehensive notes covering:
 - Strategic initiatives
 - Challenges or controversies
 
-## 7. Data Confidence Assessment
+## 7. Regulatory Environment (CRITICAL for LATAM)
+- **Regulatory Body**: Name of telecom/industry regulator
+  - Paraguay: CONATEL
+  - Brazil: ANATEL
+  - Mexico: IFT
+  - Colombia: CRC
+  - Chile: SUBTEL
+- **License Status**: Any spectrum or operating licenses mentioned
+- **Regulatory Actions**: Fines, investigations, compliance issues
+- **Industry Rules**: Key regulations affecting the company
+
+## 8. Data Confidence Assessment
 - List which data points are well-sourced
 - Note any conflicting information
 - Identify gaps in the research
+
+## CRITICAL DATA CHECKLIST (Verify these are extracted if present):
+- [ ] CEO/General Manager name
+- [ ] Exact subscriber/customer count
+- [ ] Market share percentage
+- [ ] Annual revenue with year
+- [ ] Employee count
+- [ ] Competitor names with their market shares
+- [ ] Regulatory body overseeing the company
 
 Requirements:
 - Be exhaustive - extract EVERY data point
@@ -131,6 +151,7 @@ Requirements:
 - Note the language of original source
 - Flag any conflicting information
 - Be factual and objective
+- PRIORITIZE: CEO name, subscriber count, market share, revenue
 
 Format your analysis as detailed bullet points with section headers."""
 
@@ -153,11 +174,35 @@ Task: Extract ALL available structured information. Be thorough and extract ever
 
 CRITICAL INSTRUCTIONS:
 1. Extract data in ANY language found (Spanish, Portuguese, English)
-2. Convert currencies to USD where possible (1 BRL ≈ 0.20 USD, 1 MXN ≈ 0.06 USD)
+2. Convert currencies to USD where possible (1 BRL ≈ 0.20 USD, 1 MXN ≈ 0.06 USD, 1 PYG ≈ 0.00013 USD)
 3. For LATAM companies: look for "receita", "ingresos", "faturamento" (revenue), "lucro" (profit)
 4. Include BOTH local currency AND USD equivalent when available
 5. If the company is a subsidiary, mention the parent company
 6. Extract ANY numerical data points mentioned (backlog, projects, employees, etc.)
+7. VALIDATE: Flag any conflicting numbers found (e.g., different subscriber counts)
+
+## REQUIRED FIELDS (Must extract if ANY evidence exists)
+These fields are CRITICAL - search thoroughly for each:
+
+### Leadership (CRITICAL)
+- **CEO/General Manager**: Name and title (look for "CEO", "Director General", "Gerente General", "Chief Executive")
+- **Executive Team**: Other C-suite executives mentioned
+- **Founders/Owners**: Key shareholders or parent company leadership
+
+### Financial Data (CRITICAL)
+- **Revenue**: Annual revenue with year and currency
+- **Profit/Loss**: Net income, EBITDA, or profitability status
+- **Market Share**: Percentage in primary market
+
+### Operational Data (CRITICAL)
+- **Subscribers/Customers**: EXACT number if telecom/services (look for "abonados", "suscriptores", "clientes", "usuarios")
+- **Employees**: Number with year
+- **Network Coverage**: For telecom (4G/5G coverage percentage)
+
+### Regulatory Environment (Important for LATAM)
+- **Regulatory Body**: (e.g., CONATEL Paraguay, ANATEL Brazil, IFT Mexico)
+- **License Status**: Spectrum licenses, operating permits
+- **Compliance Issues**: Any regulatory challenges mentioned
 
 ## Company Overview
 A 2-3 sentence summary of the company, its purpose, industry, and what it does.
@@ -166,25 +211,35 @@ Include: Country of origin, parent company (if subsidiary), key business areas.
 ## Key Metrics
 Extract ALL available metrics. Be specific with years and sources:
 
+**Leadership:**
+- CEO: [FULL NAME and title - THIS IS CRITICAL]
+- Key Executives: [Names and roles]
+- Board Chair: [if available]
+
 **Financial Metrics:**
 - Revenue: [amount in local currency AND USD, specify year]
 - Net Income/Profit: [amount, year]
 - EBITDA: [if available]
 - Market Cap: [amount, date] (for public companies)
 - Valuation: [amount, date] (for private companies)
-- Funding: [total raised, last round]
+- Debt: [if mentioned]
 
 **Operational Metrics:**
 - Employees: [number, year if specified]
+- Subscribers/Customers: [EXACT number if telecom - CRITICAL]
 - Founded: [year]
 - Headquarters: [city, country]
 - Operating Countries: [list if available]
 
 **Business Metrics:**
-- Backlog/Order Book: [amount if available]
-- Market Share: [percentage if mentioned]
-- Number of Projects/Clients: [if available]
-- Assets Under Management: [if applicable]
+- Market Share: [percentage if mentioned - CRITICAL]
+- Customer Growth: [YoY growth rate if available]
+- ARPU: [Average Revenue Per User if telecom]
+- Churn Rate: [if available]
+
+**Regulatory:**
+- Regulator: [e.g., CONATEL, ANATEL]
+- Key Licenses: [spectrum, operating permits]
 
 ## Main Products/Services
 List ALL products and services mentioned (bullet points):
@@ -193,10 +248,10 @@ List ALL products and services mentioned (bullet points):
 - Note any flagship or key products
 
 ## Competitors
-List ALL competitors mentioned:
-- Direct competitors in same market
-- Regional competitors
-- Global competitors (if applicable)
+List ALL competitors mentioned WITH their metrics:
+- **Competitor 1**: [Name, Market Share %, Revenue if available]
+- **Competitor 2**: [Name, Market Share %, Revenue if available]
+- Include regional and global competitors
 
 ## Key Insights
 List 3-5 most important insights:
@@ -206,10 +261,16 @@ List 3-5 most important insights:
 - Challenges or risks mentioned
 - Industry position
 
+## Data Validation
+IMPORTANT: Check for and note any conflicting data:
+- **Conflicting Numbers**: List any metrics with multiple different values found
+- **Resolution**: Which value is likely correct and why (prefer official sources)
+
 ## Data Quality Notes
 - Confidence level: [HIGH/MEDIUM/LOW]
-- Data gaps identified: [list any missing critical information]
+- Data gaps identified: [list any missing CRITICAL fields from above]
 - Data freshness: [most recent data year found]
+- Missing CRITICAL fields: [List which required fields couldn't be found]
 
 Requirements:
 - Extract EVERY data point found, even partial information
@@ -217,6 +278,7 @@ Requirements:
 - For missing sections, provide what partial data you have, then note gaps
 - Include source references where possible
 - Format as clean markdown with clear sections
+- FLAG CONTRADICTIONS - if you find conflicting numbers, list all versions
 
 Extract ALL available data now:"""
 

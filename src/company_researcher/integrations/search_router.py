@@ -37,17 +37,16 @@ Usage:
     stats = router.get_stats()
 """
 
-import logging
 import json
 import hashlib
-import os
 from pathlib import Path
 from typing import Optional, Dict, Any, List, Literal
 from dataclasses import dataclass, field
 from threading import Lock
 from datetime import datetime, timedelta
+from ..utils import get_config, get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # Quality tiers - now represent COST tiers
@@ -183,7 +182,7 @@ class PersistentCache:
             timestamp = data.get("cache_timestamp")
             if timestamp:
                 cache_time = datetime.fromisoformat(timestamp)
-                if datetime.now() - cache_time > timedelta(days=self.ttl_days):
+                if utc_now() - cache_time > timedelta(days=self.ttl_days):
                     # Expired - delete and return None
                     cache_path.unlink(missing_ok=True)
                     return None
@@ -214,7 +213,7 @@ class PersistentCache:
 
         try:
             data = response.to_dict()
-            data["cache_timestamp"] = datetime.now().isoformat()
+            data["cache_timestamp"] = utc_now().isoformat()
 
             with self._lock:
                 with open(cache_path, 'w', encoding='utf-8') as f:
@@ -232,8 +231,8 @@ class PersistentCache:
             try:
                 cache_file.unlink()
                 count += 1
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to delete cache file {cache_file}: {e}")
         return count
 
     def get_stats(self) -> Dict[str, Any]:
@@ -309,9 +308,9 @@ class SearchRouter:
             cache_dir: Directory for persistent cache
             cache_ttl_days: Cache TTL in days
         """
-        self.tavily_api_key = tavily_api_key or os.getenv("TAVILY_API_KEY")
-        self.serper_api_key = serper_api_key or os.getenv("SERPER_API_KEY")
-        self.brave_api_key = brave_api_key or os.getenv("BRAVE_API_KEY")
+        self.tavily_api_key = tavily_api_key or get_config("TAVILY_API_KEY")
+        self.serper_api_key = serper_api_key or get_config("SERPER_API_KEY")
+        self.brave_api_key = brave_api_key or get_config("BRAVE_API_KEY")
         self.default_tier = default_tier
 
         # Track usage and costs

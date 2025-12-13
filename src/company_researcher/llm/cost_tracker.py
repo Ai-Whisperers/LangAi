@@ -28,6 +28,7 @@ from threading import Lock
 from enum import Enum
 import asyncio
 import json
+from ..utils import utc_now
 
 
 class CostModel(str, Enum):
@@ -288,7 +289,7 @@ class CostTracker:
         cache_savings = full_input_cost - input_cost if cached_tokens > 0 else 0
 
         call = APICall(
-            timestamp=datetime.now(),
+            timestamp=utc_now(),
             model=model,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
@@ -338,7 +339,7 @@ class CostTracker:
         total_cost = input_cost + output_cost
 
         call = APICall(
-            timestamp=datetime.now(),
+            timestamp=utc_now(),
             model=model,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
@@ -483,12 +484,12 @@ class CostTracker:
 
     def get_today_summary(self) -> CostSummary:
         """Get summary for today."""
-        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        today = utc_now().replace(hour=0, minute=0, second=0, microsecond=0)
         return self.get_summary(since=today)
 
     def get_week_summary(self) -> CostSummary:
         """Get summary for the past 7 days."""
-        week_ago = datetime.now() - timedelta(days=7)
+        week_ago = utc_now() - timedelta(days=7)
         return self.get_summary(since=week_ago)
 
     def get_research_run_summary(self, run_id: str) -> CostSummary:
@@ -504,7 +505,7 @@ class CostTracker:
         """
         with self._lock:
             data = {
-                "exported_at": datetime.now().isoformat(),
+                "exported_at": utc_now().isoformat(),
                 "total_calls": len(self.calls),
                 "calls": [call.to_dict() for call in self.calls]
             }

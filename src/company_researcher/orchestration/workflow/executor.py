@@ -7,17 +7,16 @@ Node execution logic for different node types.
 import asyncio
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
-from typing import Any, Callable, Dict, List
+from typing import Callable, Dict, List
 
 from .models import (
-    NodeType,
     ExecutionStatus,
     RouteCondition,
     NodeConfig,
     ExecutionResult,
     WorkflowState,
 )
+from ...utils import utc_now
 
 
 class NodeExecutor:
@@ -241,7 +240,7 @@ class NodeExecutor:
 
         # Create state snapshot
         checkpoint = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": utc_now().isoformat(),
             "completed_nodes": state.completed_nodes.copy(),
             "data_keys": list(state.data.keys()),
             "total_cost": state.total_cost

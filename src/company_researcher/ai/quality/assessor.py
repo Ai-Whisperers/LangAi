@@ -1,12 +1,10 @@
 """AI-powered quality assessment using LLM."""
 from typing import List, Optional, Dict, Any
-import logging
 from urllib.parse import urlparse
 
 from ..base import AIComponent
-from ..config import get_ai_config
 from ..fallback import FallbackHandler
-from ..utils import truncate_text, normalize_confidence
+from ..utils import get_logger, normalize_confidence, truncate_text
 from ...llm.response_parser import parse_json_response
 
 from .models import (
@@ -24,7 +22,7 @@ from .prompts import (
     CONFIDENCE_ASSESSMENT_PROMPT
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class AIQualityAssessor(AIComponent[OverallQualityReport]):
@@ -38,14 +36,14 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
         assessor = get_quality_assessor()
 
         # Assess content quality
-        content_quality = await assessor.assess_content_quality(
+        content_quality = assessor.assess_content_quality(
             content="Tesla reported $81.5B revenue...",
             section_name="financial",
             company_name="Tesla"
         )
 
         # Generate overall report
-        report = await assessor.generate_overall_report(
+        report = assessor.generate_overall_report(
             company_name="Tesla",
             section_assessments=[content_quality],
             source_assessments=[...]
@@ -63,7 +61,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
         super().__init__()
         self._fallback_handler = FallbackHandler("quality_assessment")
 
-    async def assess_content_quality(
+    def assess_content_quality(
         self,
         content: str,
         section_name: str,
@@ -105,7 +103,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
         )
 
         try:
-            result = await self._call_llm(
+            result = self._call_llm(
                 prompt=prompt,
                 task_type="reflection",
                 complexity="medium"
@@ -118,7 +116,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
             logger.error(f"Content quality assessment failed: {e}")
             return self._fallback_content_assessment(content, section_name)
 
-    async def assess_source_quality(
+    def assess_source_quality(
         self,
         url: str,
         title: str,
@@ -148,7 +146,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
         )
 
         try:
-            result = await self._call_llm(
+            result = self._call_llm(
                 prompt=prompt,
                 task_type="classification",
                 complexity="low"
@@ -161,7 +159,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
             logger.error(f"Source quality assessment failed: {e}")
             return self._fallback_source_assessment(url, domain, title)
 
-    async def assess_confidence(
+    def assess_confidence(
         self,
         claim: str,
         evidence: List[Dict[str, Any]],
@@ -192,7 +190,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
         )
 
         try:
-            result = await self._call_llm(
+            result = self._call_llm(
                 prompt=prompt,
                 task_type="reasoning",
                 complexity="low"
@@ -211,7 +209,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
                 reasoning=f"Assessment failed: {str(e)}"
             )
 
-    async def generate_overall_report(
+    def generate_overall_report(
         self,
         company_name: str,
         section_assessments: List[ContentQualityAssessment],
@@ -261,7 +259,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
         )
 
         try:
-            result = await self._call_llm(
+            result = self._call_llm(
                 prompt=prompt,
                 task_type="reasoning",
                 complexity="medium"
@@ -284,7 +282,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
                 threshold
             )
 
-    async def assess_batch_sources(
+    def assess_batch_sources(
         self,
         sources: List[Dict[str, str]],
         company_name: str
@@ -307,7 +305,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
             batch = sources[i:i + batch_size]
 
             for source in batch:
-                assessment = await self.assess_source_quality(
+                assessment = self.assess_source_quality(
                     url=source.get("url", ""),
                     title=source.get("title", ""),
                     snippet=source.get("snippet", ""),
@@ -557,7 +555,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
             quality_threshold=threshold
         )
 
-    async def process(
+    def process(
         self,
         company_name: str,
         sections: Dict[str, str],
@@ -567,13 +565,13 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
         # Assess each section
         section_assessments = []
         for name, content in sections.items():
-            assessment = await self.assess_content_quality(content, name, company_name)
+            assessment = self.assess_content_quality(content, name, company_name)
             section_assessments.append(assessment)
 
         # Assess sources
         source_assessments = []
         for source in sources[:20]:  # Limit to 20 sources
-            assessment = await self.assess_source_quality(
+            assessment = self.assess_source_quality(
                 url=source.get("url", ""),
                 title=source.get("title", ""),
                 snippet=source.get("snippet", ""),
@@ -582,7 +580,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
             source_assessments.append(assessment)
 
         # Generate overall report
-        return await self.generate_overall_report(
+        return self.generate_overall_report(
             company_name=company_name,
             section_assessments=section_assessments,
             source_assessments=source_assessments

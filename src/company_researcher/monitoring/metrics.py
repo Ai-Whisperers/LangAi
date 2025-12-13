@@ -16,6 +16,9 @@ from collections import defaultdict
 import time
 import threading
 import statistics
+from ..utils import get_logger, utc_now
+
+logger = get_logger(__name__)
 
 
 # ============================================================================
@@ -36,7 +39,7 @@ class Metric:
     name: str
     type: MetricType
     value: float
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
     labels: Dict[str, str] = field(default_factory=dict)
     unit: str = ""
 
@@ -238,8 +241,8 @@ class MetricsCollector:
         for callback in self._on_metric:
             try:
                 callback(metric)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Metric callback failed for {metric.name}: {e}")
 
     def _make_key(self, name: str, labels: Optional[Dict[str, str]]) -> str:
         """Create unique key for metric."""
@@ -428,7 +431,7 @@ class MetricsCollector:
     def cleanup(self, older_than: Optional[datetime] = None):
         """Remove old metrics."""
         with self._lock:
-            cutoff = older_than or datetime.now() - self._retention
+            cutoff = older_than or utc_now() - self._retention
             self._metrics = [m for m in self._metrics if m.timestamp >= cutoff]
 
     def reset(self):

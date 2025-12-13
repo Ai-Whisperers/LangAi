@@ -25,9 +25,9 @@ Usage:
 
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
-import logging
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 T = TypeVar('T')
 
@@ -43,7 +43,6 @@ class ValidationError(Exception):
 
 class ResponseValidationWarning(Warning):
     """Warning for non-critical validation issues."""
-    pass
 
 
 # ============================================================================

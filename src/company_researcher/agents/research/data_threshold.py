@@ -8,13 +8,13 @@ This module provides:
 - Early abort/retry decisions
 """
 
-import logging
 import re
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class RetryStrategy(Enum):
@@ -243,8 +243,8 @@ class DataThresholdChecker:
                     domain = parsed.netloc.replace("www.", "")
                     if domain:
                         domains.add(domain)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Failed to extract domain from URL: {e}")
         return len(domains)
 
     def _aggregate_content(self, results: List[Dict]) -> str:

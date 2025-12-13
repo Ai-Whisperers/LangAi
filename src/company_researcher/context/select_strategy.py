@@ -11,11 +11,12 @@ The SELECT strategy retrieves the most relevant information
 from memory to augment agent context.
 """
 
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 import re
+from ..utils import utc_now
 
 
 # ============================================================================
@@ -47,7 +48,7 @@ class RetrievedChunk:
     relevance_score: float
     metadata: Dict[str, Any] = field(default_factory=dict)
     chunk_type: str = "text"
-    retrieved_at: datetime = field(default_factory=datetime.now)
+    retrieved_at: datetime = field(default_factory=utc_now)
 
     def to_dict(self) -> Dict[str, Any]:
         return {

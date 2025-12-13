@@ -25,9 +25,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from collections import defaultdict
 import statistics
-import logging
+from ...utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ComparisonCategory(Enum):
@@ -251,7 +251,7 @@ class ComparativeAnalystAgent:
 
         return ComparativeAnalysis(
             target_company=self.target_company,
-            comparison_date=datetime.now(),
+            comparison_date=utc_now(),
             companies_analyzed=list(self.companies.keys()),
             metric_comparisons=metric_comparisons,
             swot_analyses=swot_analyses,

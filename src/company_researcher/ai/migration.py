@@ -1,15 +1,15 @@
 """Migration utilities for transitioning from legacy to AI."""
-from typing import Callable, Any, Optional, Dict, List
+from typing import Callable, Any, Dict, List
 from functools import wraps
-import logging
 import random
 import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime
 
 from .config import get_ai_config
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -126,7 +126,7 @@ class MigrationValidator:
             ComparisonResult with both outputs and comparison
         """
         # Run AI
-        ai_start = datetime.now()
+        ai_start = utc_now()
         try:
             if asyncio.iscoroutinefunction(ai_func):
                 ai_result = await ai_func(*args, **kwargs)
@@ -135,23 +135,23 @@ class MigrationValidator:
         except Exception as e:
             ai_result = {"error": str(e)}
             logger.warning(f"AI {self.component_name} error during validation: {e}")
-        ai_latency = (datetime.now() - ai_start).total_seconds() * 1000
+        ai_latency = (utc_now() - ai_start).total_seconds() * 1000
 
         # Run legacy
-        legacy_start = datetime.now()
+        legacy_start = utc_now()
         try:
             legacy_result = legacy_func(*args, **kwargs)
         except Exception as e:
             legacy_result = {"error": str(e)}
             logger.warning(f"Legacy {self.component_name} error during validation: {e}")
-        legacy_latency = (datetime.now() - legacy_start).total_seconds() * 1000
+        legacy_latency = (utc_now() - legacy_start).total_seconds() * 1000
 
         # Compare
         match, similarity, differences = self._compare_results(ai_result, legacy_result)
 
         comparison = ComparisonResult(
             component=self.component_name,
-            timestamp=datetime.now(),
+            timestamp=utc_now(),
             ai_result=ai_result,
             legacy_result=legacy_result,
             match=match,

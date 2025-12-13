@@ -11,7 +11,6 @@ This module contains the NewsRouter class which handles:
 import asyncio
 import hashlib
 import json
-import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Lock
@@ -24,8 +23,9 @@ from .models import (
     NewsSearchResult,
     ProviderQuota,
 )
+from ...utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class NewsRouter:
@@ -161,7 +161,7 @@ class NewsRouter:
 
             # Check expiration
             timestamp = datetime.fromisoformat(data["timestamp"])
-            if datetime.now() - timestamp > self.cache_ttl:
+            if utc_now() - timestamp > self.cache_ttl:
                 cache_file.unlink()
                 return None
 
@@ -206,7 +206,7 @@ class NewsRouter:
             data = {
                 "query": query,
                 "provider": result.provider.value,
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": utc_now().isoformat(),
                 "articles": [a.to_dict() for a in result.articles]
             }
 
@@ -307,7 +307,7 @@ class NewsRouter:
             )
 
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             result = await loop.run_in_executor(
                 None, lambda: self._gnews.search(query, max_results=max_results, language=language)
             )
@@ -362,7 +362,7 @@ class NewsRouter:
             )
 
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             result = await loop.run_in_executor(
                 None, lambda: self._newsapi.search(query, page_size=max_results, language=language)
             )
@@ -419,7 +419,7 @@ class NewsRouter:
             )
 
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             result = await loop.run_in_executor(
                 None, lambda: self._mediastack.search(query, limit=max_results, languages=language)
             )
@@ -531,8 +531,8 @@ class NewsRouter:
                     try:
                         from ..cost_tracker import track_cost
                         track_cost(provider.value.replace("_", "-"), 1)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.debug(f"Failed to track cost for {provider.value}: {e}")
 
                     # Cache successful result
                     if use_cache:
@@ -617,13 +617,7 @@ class NewsRouter:
         Returns:
             NewsSearchResult
         """
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-        return loop.run_until_complete(self.search(query, max_results, quality=quality))
+        return asyncio.run(self.search(query, max_results, quality=quality))
 
     def get_quota_status(self) -> dict[str, dict]:
         """Get quota status for all providers."""
@@ -659,7 +653,7 @@ class NewsRouter:
                     with open(cache_file, "r") as f:
                         data = json.load(f)
                     timestamp = datetime.fromisoformat(data["timestamp"])
-                    if datetime.now() - timestamp < timedelta(minutes=older_than_minutes):
+                    if utc_now() - timestamp < timedelta(minutes=older_than_minutes):
                         continue
 
                 cache_file.unlink()

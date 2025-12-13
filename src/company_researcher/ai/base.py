@@ -2,9 +2,9 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, Optional, Any, Dict
 from pydantic import BaseModel
-import logging
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 T = TypeVar('T', bound=BaseModel)
 
@@ -21,8 +21,8 @@ class AIComponent(ABC, Generic[T]):
             component_name = "sentiment"
             default_task_type = TaskType.CLASSIFICATION
 
-            async def process(self, text: str) -> SentimentResult:
-                return await self._call_llm(prompt, response_model=SentimentResult)
+            def process(self, text: str) -> SentimentResult:
+                return self._call_llm(prompt, response_model=SentimentResult)
     """
 
     component_name: str = "base"
@@ -40,11 +40,11 @@ class AIComponent(ABC, Generic[T]):
     def client(self):
         """Lazy-load the smart client."""
         if self._client is None:
-            from company_researcher.llm import get_smart_client
+            from ..llm import get_smart_client
             self._client = get_smart_client()
         return self._client
 
-    async def _call_llm(
+    def _call_llm(
         self,
         prompt: str,
         task_type: Optional[str] = None,
@@ -69,7 +69,7 @@ class AIComponent(ABC, Generic[T]):
         Returns:
             Parsed response model if provided, otherwise raw content string
         """
-        from company_researcher.llm.response_parser import parse_json_response
+        from ..llm.response_parser import parse_json_response
 
         # Build completion kwargs
         kwargs = {
@@ -124,13 +124,12 @@ class AIComponent(ABC, Generic[T]):
         self._total_output_tokens = 0
 
     @abstractmethod
-    async def process(self, *args, **kwargs) -> T:
+    def process(self, *args, **kwargs) -> T:
         """
         Main processing method to implement.
 
         Subclasses must implement this method with their specific logic.
         """
-        pass
 
 
 class AIComponentRegistry:

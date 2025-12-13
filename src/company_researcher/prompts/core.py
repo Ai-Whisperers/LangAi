@@ -295,7 +295,7 @@ Score each criterion and provide:
 
 Output Format:
 ```json
-{
+{{
   "quality_score": <0-100>,
   "completeness_score": <0-40>,
   "data_quality_score": <0-30>,
@@ -304,7 +304,7 @@ Output Format:
   "missing_information": ["item1", "item2", ...],
   "data_gaps": ["gap1", "gap2", ...],
   "recommendations": ["recommendation1", "recommendation2", ...]
-}
+}}
 ```
 
 Provide your evaluation:"""

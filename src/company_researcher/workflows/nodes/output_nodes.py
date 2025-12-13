@@ -9,13 +9,13 @@ Also includes formatters for report sections.
 """
 
 from typing import Dict, Any, Optional
-from datetime import datetime
 from pathlib import Path
 
 from ...state import OverallState
 from ...config import get_config
 from ...prompts import format_sources_for_report
 from ...agents.research.investment_thesis import create_thesis_generator
+from ...utils import utc_now
 
 
 # ============================================================================
@@ -223,56 +223,97 @@ def investment_thesis_node(state: OverallState) -> Dict[str, Any]:
     """
     print("\n[NODE] Generating investment thesis...")
 
+    company_name = state["company_name"]
+
     # Build company data from state
     company_data = {
-        "name": state["company_name"],
         "overview": state.get("company_overview", ""),
-        "key_metrics": state.get("key_metrics", {}),
         "products_services": state.get("products_services", []),
-        "competitors": state.get("competitors", []),
         "key_insights": state.get("key_insights", []),
         "competitive_matrix": state.get("competitive_matrix"),
+        "strengths": [],  # Could be extracted from analysis
     }
 
-    # Get risk profile if available
-    risk_profile = state.get("risk_profile")
+    # Build financial data from key_metrics
+    key_metrics = state.get("key_metrics", {}) or {}
+    financial_data = {
+        "revenue_growth": key_metrics.get("revenue_growth"),
+        "profit_margin": key_metrics.get("profit_margin"),
+        "debt_to_equity": key_metrics.get("debt_to_equity"),
+        "pe_ratio": key_metrics.get("pe_ratio"),
+        "stock_price": key_metrics.get("stock_price"),
+        "earnings_per_share": key_metrics.get("earnings_per_share"),
+        "dividend_yield": key_metrics.get("dividend_yield"),
+        "ev_ebitda": key_metrics.get("ev_ebitda"),
+        "price_to_sales": key_metrics.get("price_to_sales"),
+        "price_to_book": key_metrics.get("price_to_book"),
+    }
 
-    # Generate investment thesis
+    # Build market data
+    market_data = {
+        "market_share": key_metrics.get("market_share"),
+        "market_growth": key_metrics.get("market_growth"),
+        "competitors": state.get("competitors", []),
+        "peer_average_pe": key_metrics.get("peer_average_pe"),
+    }
+
+    # Get risk assessment if available
+    risk_assessment = state.get("risk_profile") or {}
+
+    # Generate investment thesis with correct signature
     generator = create_thesis_generator()
-    thesis = generator.generate_thesis(company_data, risk_profile)
+    thesis = generator.generate_thesis(
+        company_name=company_name,
+        company_data=company_data,
+        financial_data=financial_data,
+        market_data=market_data,
+        risk_assessment=risk_assessment
+    )
 
-    # Convert to dict for state storage
+    # Convert to dict for state storage (using correct attribute names)
     thesis_dict = {
         "company_name": thesis.company_name,
         "recommendation": thesis.recommendation.value,
         "confidence": thesis.confidence,
-        "target_horizon": thesis.target_horizon.value,
+        "target_horizon": thesis.horizon.value,  # Correct: horizon not target_horizon
+        "target_price": thesis.target_price,
+        "current_price": thesis.current_price,
+        "upside_potential": thesis.upside_potential,
         "summary": thesis.summary,
+        "rationale": thesis.rationale,
         "bull_case": {
-            "thesis": thesis.bull_case.thesis,
+            "headline": thesis.bull_case.headline,  # Correct: headline not thesis
+            "key_drivers": thesis.bull_case.key_drivers,
             "catalysts": thesis.bull_case.catalysts,
-            "upside_potential": thesis.bull_case.upside_potential,
+            "target_upside": thesis.bull_case.target_upside,  # Correct name
             "probability": thesis.bull_case.probability,
+            "timeframe": thesis.bull_case.timeframe,
         },
         "bear_case": {
-            "thesis": thesis.bear_case.thesis,
-            "risks": thesis.bear_case.risks,
-            "downside_risk": thesis.bear_case.downside_risk,
+            "headline": thesis.bear_case.headline,  # Correct: headline not thesis
+            "key_risks": thesis.bear_case.key_risks,  # Correct: key_risks not risks
+            "triggers": thesis.bear_case.triggers,
+            "target_downside": thesis.bear_case.target_downside,  # Correct name
             "probability": thesis.bear_case.probability,
+            "timeframe": thesis.bear_case.timeframe,
         },
         "valuation": {
             "current_price": thesis.valuation.current_price,
-            "target_price": thesis.valuation.target_price,
-            "upside_downside": thesis.valuation.upside_downside,
+            "fair_value_estimate": thesis.valuation.fair_value_estimate,  # Correct name
+            "upside_potential": thesis.valuation.upside_potential,  # Correct name
             "pe_ratio": thesis.valuation.pe_ratio,
             "ev_ebitda": thesis.valuation.ev_ebitda,
+            "price_to_sales": thesis.valuation.price_to_sales,
+            "price_to_book": thesis.valuation.price_to_book,
             "valuation_grade": thesis.valuation.valuation_grade,
         } if thesis.valuation else None,
-        "key_metrics_to_watch": thesis.key_metrics_to_watch,
+        "investment_highlights": thesis.investment_highlights,
+        "key_risks": thesis.key_risks,
+        "catalysts": thesis.catalysts,
         "suitable_for": [p.value for p in thesis.suitable_for],
     }
 
-    print(f"[OK] Investment thesis complete: {thesis.recommendation.value} ({thesis.confidence:.0%} confidence)")
+    print(f"[OK] Investment thesis complete: {thesis.recommendation.value} ({thesis.confidence:.0f}% confidence)")
 
     return {
         "investment_thesis": thesis_dict
@@ -301,14 +342,14 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
     print("\n[NODE] Generating enhanced markdown report...")
 
     # Calculate duration
-    duration = (datetime.now() - state.get("start_time", datetime.now())).total_seconds()
+    duration = (utc_now() - state.get("start_time", utc_now())).total_seconds()
 
     # Create output directory
     output_dir = Path(config.output_dir) / state["company_name"].replace(" ", "_")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Generate report filename
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = utc_now().strftime("%Y%m%d_%H%M%S")
     report_path = output_dir / f"report_{timestamp}.md"
 
     # Format sources for report
@@ -328,7 +369,7 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
     # Generate report content
     report_content = f"""# {state['company_name']} - Research Report
 
-*Generated on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}*{region_info}
+*Generated on {utc_now().strftime("%Y-%m-%d %H:%M:%S")}*{region_info}
 
 ---
 

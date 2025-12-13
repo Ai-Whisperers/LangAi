@@ -31,7 +31,6 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 from contextlib import contextmanager
 import uuid
-import hashlib
 from threading import Lock
 
 from sqlalchemy import create_engine, func, desc
@@ -47,6 +46,7 @@ from .models import (
     CostLog,
     ResearchCache
 )
+from ..utils import utc_now
 
 
 class ResearchRepository:
@@ -234,7 +234,7 @@ class ResearchRepository:
         """
         company = self.get_or_create_company(company_name)
 
-        run_id = f"{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+        run_id = f"{utc_now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
 
         with self.get_session() as session:
             run = ResearchRun(
@@ -253,18 +253,121 @@ class ResearchRepository:
             # Update company last researched
             session.query(Company).filter(
                 Company.id == company.id
-            ).update({"last_researched_at": datetime.utcnow()})
+            ).update({"last_researched_at": utc_now()})
 
             return run
 
-    def get_research_run(self, run_id: str) -> Optional[ResearchRun]:
-        """Get research run by ID."""
+    def get_research_run(self, run_id) -> Optional[ResearchRun]:
+        """Get research run by ID (integer) or run_id (string).
+
+        Args:
+            run_id: Either the integer primary key or the string run_id.
+
+        Returns:
+            ResearchRun instance if found, None otherwise.
+        """
         with self.get_session() as session:
-            run = session.query(ResearchRun).filter(
-                ResearchRun.run_id == run_id
-            ).first()
+            if isinstance(run_id, int):
+                run = session.query(ResearchRun).filter(
+                    ResearchRun.id == run_id
+                ).first()
+            else:
+                run = session.query(ResearchRun).filter(
+                    ResearchRun.run_id == run_id
+                ).first()
             if run:
                 session.expunge(run)
+            return run
+
+    def update_run_status(self, run_id: int, status: str) -> Optional[ResearchRun]:
+        """Update research run status by integer ID.
+
+        Args:
+            run_id: The integer primary key of the research run.
+            status: New status value (e.g., 'running', 'completed', 'failed').
+
+        Returns:
+            Updated ResearchRun instance if found, None otherwise.
+        """
+        with self.get_session() as session:
+            run = session.query(ResearchRun).filter(
+                ResearchRun.id == run_id
+            ).first()
+
+            if run:
+                run.status = status
+                if status == "completed":
+                    run.completed_at = utc_now()
+                    if run.started_at:
+                        # Handle timezone-naive started_at for duration calculation
+                        started = run.started_at
+                        if started.tzinfo is None:
+                            from datetime import timezone
+                            started = started.replace(tzinfo=timezone.utc)
+                        run.duration_seconds = (run.completed_at - started).total_seconds()
+                session.flush()
+                session.refresh(run)
+                session.expunge(run)
+
+            return run
+
+    def update_run_metrics(
+        self,
+        run_id: int,
+        total_cost: Optional[float] = None,
+        total_input_tokens: Optional[int] = None,
+        total_output_tokens: Optional[int] = None,
+        quality_score: Optional[float] = None
+    ) -> Optional[ResearchRun]:
+        """Update research run metrics by integer ID.
+
+        Args:
+            run_id: The integer primary key of the research run.
+            total_cost: Total API cost.
+            total_input_tokens: Total input tokens used.
+            total_output_tokens: Total output tokens used.
+            quality_score: Quality score (0-100).
+
+        Returns:
+            Updated ResearchRun instance if found, None otherwise.
+        """
+        with self.get_session() as session:
+            run = session.query(ResearchRun).filter(
+                ResearchRun.id == run_id
+            ).first()
+
+            if run:
+                if total_cost is not None:
+                    run.total_cost = total_cost
+                if total_input_tokens is not None:
+                    run.total_input_tokens = total_input_tokens
+                if total_output_tokens is not None:
+                    run.total_output_tokens = total_output_tokens
+                if quality_score is not None:
+                    run.quality_score = quality_score
+                session.flush()
+                session.refresh(run)
+                session.expunge(run)
+
+            return run
+
+    def get_latest_run(self, company_id: int) -> Optional[ResearchRun]:
+        """Get the most recent research run for a company.
+
+        Args:
+            company_id: The integer primary key of the company.
+
+        Returns:
+            Most recent ResearchRun instance if found, None otherwise.
+        """
+        with self.get_session() as session:
+            run = session.query(ResearchRun).filter(
+                ResearchRun.company_id == company_id
+            ).order_by(desc(ResearchRun.started_at)).first()
+
+            if run:
+                session.expunge(run)
+
             return run
 
     def complete_research_run(
@@ -359,12 +462,14 @@ class ResearchRepository:
         self,
         research_run_id: int,
         agent_name: str,
-        analysis: str,
+        analysis: str = "",
         cost: float = 0.0,
         input_tokens: int = 0,
         output_tokens: int = 0,
         cached_tokens: int = 0,
         model_used: Optional[str] = None,
+        model: Optional[str] = None,  # Alias for model_used
+        agent_type: Optional[str] = None,
         structured_data: Optional[Dict] = None,
         metadata: Optional[Dict] = None
     ) -> AgentOutput:
@@ -379,13 +484,23 @@ class ResearchRepository:
             input_tokens: Input token count
             output_tokens: Output token count
             cached_tokens: Cached token count
-            model_used: Model used
+            model_used: Model used (preferred parameter name)
+            model: Alias for model_used (for backwards compatibility)
+            agent_type: Type of agent (e.g., 'core', 'specialist')
             structured_data: Extracted structured data
             metadata: Additional metadata
 
         Returns:
             AgentOutput instance
         """
+        # Handle model alias
+        actual_model = model_used or model
+
+        # Build extra_metadata including agent_type if provided
+        extra_meta = metadata.copy() if metadata else {}
+        if agent_type:
+            extra_meta["agent_type"] = agent_type
+
         with self.get_session() as session:
             output = AgentOutput(
                 research_run_id=research_run_id,
@@ -395,9 +510,9 @@ class ResearchRepository:
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
                 cached_tokens=cached_tokens,
-                model_used=model_used,
+                model_used=actual_model,
                 structured_data=structured_data,
-                metadata=metadata
+                extra_metadata=extra_meta if extra_meta else None
             )
             session.add(output)
             session.flush()
@@ -498,25 +613,36 @@ class ResearchRepository:
         """
         from urllib.parse import urlparse
 
+        if not sources:
+            return 0
+
         saved_count = 0
 
         with self.get_session() as session:
+            # Compute all url_hashes first
+            url_hashes = {}
             for source_data in sources:
                 url = source_data.get("url", "")
-                if not url:
-                    continue
+                if url:
+                    url_hashes[Source.compute_url_hash(url)] = source_data
 
-                url_hash = Source.compute_url_hash(url)
+            if not url_hashes:
+                return 0
 
-                # Skip if already exists
-                existing = session.query(Source).filter(
+            # Single query to get ALL existing hashes (fixes N+1 pattern)
+            existing_hashes = {
+                row[0] for row in session.query(Source.url_hash).filter(
                     Source.research_run_id == research_run_id,
-                    Source.url_hash == url_hash
-                ).first()
+                    Source.url_hash.in_(list(url_hashes.keys()))
+                ).all()
+            }
 
-                if existing:
+            # Process only new sources
+            for url_hash, source_data in url_hashes.items():
+                if url_hash in existing_hashes:
                     continue
 
+                url = source_data.get("url", "")
                 source = Source(
                     research_run_id=research_run_id,
                     url=url,
@@ -600,6 +726,43 @@ class ResearchRepository:
                 "total_calls": int(result.total_calls or 0)
             }
 
+    def get_cost_logs(self, research_run_id: int) -> List[CostLog]:
+        """Get all cost logs for a research run.
+
+        Args:
+            research_run_id: The integer primary key of the research run.
+
+        Returns:
+            List of CostLog instances.
+        """
+        with self.get_session() as session:
+            logs = session.query(CostLog).filter(
+                CostLog.research_run_id == research_run_id
+            ).order_by(CostLog.created_at).all()
+
+            for log in logs:
+                session.expunge(log)
+
+            return logs
+
+    def get_total_cost(self, research_run_id: int) -> float:
+        """Get total cost for a research run.
+
+        Args:
+            research_run_id: The integer primary key of the research run.
+
+        Returns:
+            Total cost as float.
+        """
+        with self.get_session() as session:
+            result = session.query(
+                func.sum(CostLog.cost).label("total")
+            ).filter(
+                CostLog.research_run_id == research_run_id
+            ).first()
+
+            return float(result.total or 0.0)
+
     # =========================================================================
     # Cache Operations
     # =========================================================================
@@ -624,7 +787,7 @@ class ResearchRepository:
                 company_name=company_name,
                 cache_key=cache_key,
                 cached_data=data,
-                expires_at=datetime.utcnow() + timedelta(hours=ttl_hours),
+                expires_at=utc_now() + timedelta(hours=ttl_hours),
                 source_run_id=source_run_id
             )
             session.add(cache)
@@ -642,7 +805,7 @@ class ResearchRepository:
             cache = session.query(ResearchCache).filter(
                 ResearchCache.cache_key == cache_key,
                 ResearchCache.is_valid == True,
-                ResearchCache.expires_at > datetime.utcnow()
+                ResearchCache.expires_at > utc_now()
             ).first()
 
             if cache:

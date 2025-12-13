@@ -8,31 +8,33 @@ This module contains nodes responsible for data gathering:
 - website_scraping_node: Scrape Wikipedia and company websites (FREE)
 """
 
-from typing import Dict, Any, List
-
-from anthropic import Anthropic
+from typing import Dict, Any
 
 from ...state import OverallState
+from ...llm.smart_client import get_smart_client, TaskType
 from ...integrations.search_router import get_search_router
 from ...config import get_config
-from ...llm.client_factory import safe_extract_text
 from ...prompts import GENERATE_QUERIES_PROMPT
 from ...agents.research.multilingual_search import (
     create_multilingual_generator,
-    Language,
     Region
+)
+
+# Date-aware query generation
+from ...agents.base.query_generation import (
+    get_leadership_queries,
+    get_market_data_queries,
 )
 
 # SEC EDGAR integration (FREE - US public companies)
 try:
-    from ...integrations.sec_edgar import get_sec_edgar, SECEdgarClient
+    from ...integrations.sec_edgar import get_sec_edgar
     SEC_EDGAR_AVAILABLE = True
 except ImportError:
     SEC_EDGAR_AVAILABLE = False
 
 # Jina Reader integration (FREE - URL to Markdown)
 try:
-    from ...integrations.jina_reader import JinaReader
     JINA_AVAILABLE = True
 except ImportError:
     JINA_AVAILABLE = False
@@ -49,6 +51,11 @@ def generate_queries_node(state: OverallState) -> Dict[str, Any]:
     """
     Node 1: Generate search queries for the company using multilingual support.
 
+    Uses SmartLLMClient with automatic provider fallback:
+    - Primary: Anthropic Claude
+    - Fallback 1: Groq (llama-3.3-70b-versatile) on rate limit
+    - Fallback 2: DeepSeek on rate limit
+
     Args:
         state: Current workflow state
 
@@ -56,7 +63,7 @@ def generate_queries_node(state: OverallState) -> Dict[str, Any]:
         State update with generated queries
     """
     config = get_config()
-    client = Anthropic(api_key=config.anthropic_api_key)
+    smart_client = get_smart_client()
 
     print(f"\n[NODE] Generating search queries for: {state['company_name']}")
 
@@ -64,16 +71,20 @@ def generate_queries_node(state: OverallState) -> Dict[str, Any]:
     detected_region = state.get("detected_region", "")
 
     # Map detected region to Region enum
+    # Region enum values: NORTH_AMERICA, LATAM_SPANISH, LATAM_BRAZIL, EUROPE, ASIA, UNKNOWN
     region_mapping = {
         "north_america": Region.NORTH_AMERICA,
-        "latin_america": Region.LATIN_AMERICA,
+        "latin_america": Region.LATAM_SPANISH,  # Default to Spanish for LATAM
+        "latam_spanish": Region.LATAM_SPANISH,
+        "latam_brazil": Region.LATAM_BRAZIL,
         "europe": Region.EUROPE,
-        "asia_pacific": Region.ASIA_PACIFIC,
-        "middle_east": Region.MIDDLE_EAST,
-        "africa": Region.AFRICA,
-        "global": Region.GLOBAL,
+        "asia_pacific": Region.ASIA,
+        "asia": Region.ASIA,
+        "middle_east": Region.UNKNOWN,  # No specific Middle East region
+        "africa": Region.UNKNOWN,  # No specific Africa region
+        "global": Region.UNKNOWN,
     }
-    region = region_mapping.get(detected_region, Region.GLOBAL)
+    region = region_mapping.get(detected_region, Region.UNKNOWN)
 
     # Use multilingual generator for enhanced queries
     generator = create_multilingual_generator()
@@ -82,36 +93,76 @@ def generate_queries_node(state: OverallState) -> Dict[str, Any]:
         region=region
     )
 
-    # Combine base queries with enhanced multilingual queries
-    base_prompt = GENERATE_QUERIES_PROMPT.format(company_name=state["company_name"])
+    # Extract query strings from MultilingualQuery objects
+    multilingual_query_strings = [q.query for q in multilingual_queries[:10]]
 
-    response = client.messages.create(
-        model=config.llm_model,
-        max_tokens=1000,
-        temperature=0.3,
-        messages=[{"role": "user", "content": base_prompt}]
+    # Generate regional source queries (site:conatel.gov.py, site:bvpasa.com.py, etc.)
+    regional_queries = generator.get_regional_source_queries(
+        company_name=state["company_name"],
+        max_queries=8
     )
 
-    base_queries_text = safe_extract_text(response, agent_name="generate_queries")
+    # Generate parent company and alternative name queries
+    parent_queries = generator.get_parent_company_queries(state["company_name"])
+    alt_name_queries = generator.get_alternative_name_queries(state["company_name"])
+
+    # Generate date-aware queries for leadership and market data
+    # Include Spanish for LATAM Spanish-speaking regions
+    include_spanish = region in (Region.LATAM_SPANISH, Region.LATAM_BRAZIL)
+    leadership_queries = get_leadership_queries(
+        state["company_name"],
+        include_spanish=include_spanish
+    )
+    market_queries = get_market_data_queries(
+        state["company_name"],
+        include_spanish=include_spanish
+    )
+
+    # Combine base queries with enhanced multilingual queries
+    base_prompt = GENERATE_QUERIES_PROMPT.format(
+        company_name=state["company_name"],
+        num_queries=10
+    )
+
+    # Use SmartLLMClient with automatic provider fallback (Anthropic → Groq → DeepSeek)
+    result = smart_client.complete(
+        prompt=base_prompt,
+        task_type=TaskType.SEARCH_QUERY,
+        complexity="low",
+        max_tokens=1000,
+        temperature=0.3
+    )
+
+    base_queries_text = result.content
     base_queries = [q.strip() for q in base_queries_text.strip().split("\n") if q.strip()]
 
-    # Merge queries (base + multilingual)
-    all_queries = list(set(base_queries + multilingual_queries.all_queries[:10]))
+    # Log which provider was used
+    print(f"[INFO] LLM provider: {result.provider}/{result.model} ({result.routing_reason})")
 
-    # Update cost tracking
-    cost = config.calculate_llm_cost(
-        response.usage.input_tokens,
-        response.usage.output_tokens
-    )
+    # Merge all queries (base + multilingual + regional + parent + alternatives + date-aware)
+    all_queries = list(set(
+        base_queries +
+        multilingual_query_strings +
+        regional_queries +
+        parent_queries +
+        alt_name_queries +
+        leadership_queries +
+        market_queries
+    ))
 
-    print(f"[OK] Generated {len(all_queries)} queries (region: {region.value})")
+    print(f"[OK] Generated {len(all_queries)} queries (region: {region.value}, date-aware: {len(leadership_queries) + len(market_queries)}, regional: {len(regional_queries)})")
+
+    # Get existing token counts with proper type handling
+    existing_tokens = state.get("total_tokens") or {"input": 0, "output": 0}
+    new_input_tokens = existing_tokens.get("input", 0) + result.input_tokens
+    new_output_tokens = existing_tokens.get("output", 0) + result.output_tokens
 
     return {
         "queries": all_queries,
-        "total_cost": state.get("total_cost", 0.0) + cost,
+        "total_cost": state.get("total_cost", 0.0) + result.cost,
         "total_tokens": {
-            "input": state.get("total_tokens", {"input": 0, "output": 0})["input"] + response.usage.input_tokens,
-            "output": state.get("total_tokens", {"input": 0, "output": 0})["output"] + response.usage.output_tokens
+            "input": new_input_tokens,
+            "output": new_output_tokens
         }
     }
 

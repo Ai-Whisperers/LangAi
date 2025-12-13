@@ -7,13 +7,13 @@ Provides: Live news from 7,500+ sources in 50+ countries
 Documentation: https://mediastack.com/documentation
 """
 
-import logging
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 from .base_client import BaseAPIClient
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass

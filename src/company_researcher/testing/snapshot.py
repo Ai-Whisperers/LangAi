@@ -9,11 +9,11 @@ Provides:
 
 import hashlib
 import json
-import os
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
+from ..utils import utc_now
 
 
 @dataclass
@@ -42,7 +42,7 @@ class Snapshot:
         if isinstance(created_at, str):
             created_at = datetime.fromisoformat(created_at)
         else:
-            created_at = datetime.utcnow()
+            created_at = utc_now()
 
         return cls(
             name=data.get("name", ""),
@@ -123,7 +123,7 @@ class SnapshotManager:
         snapshot = Snapshot(
             name=name,
             data=serialized,
-            created_at=datetime.utcnow(),
+            created_at=utc_now(),
             checksum=checksum,
             metadata=metadata or {}
         )

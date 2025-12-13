@@ -4,16 +4,15 @@ Tracing Module.
 TracerProvider and Tracer for distributed tracing.
 """
 
-import logging
 import uuid
 from contextlib import contextmanager
-from datetime import datetime
 from typing import Any, Dict, Iterator, List, Optional
 
 from .models import Span, SpanContext
 from .exporters import SpanExporter
+from ...utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class TracerProvider:
@@ -94,7 +93,7 @@ class Tracer:
         span = Span(
             name=name,
             context=context,
-            start_time=datetime.utcnow(),
+            start_time=utc_now(),
             kind=kind,
             attributes=attributes or {},
             links=links or []
@@ -111,7 +110,7 @@ class Tracer:
             span.record_exception(e)
             raise
         finally:
-            span.end_time = datetime.utcnow()
+            span.end_time = utc_now()
             self._current_span = previous_span
             self.provider.export_span(span)
 
@@ -131,7 +130,7 @@ class Tracer:
         span = Span(
             name=name,
             context=context,
-            start_time=datetime.utcnow(),
+            start_time=utc_now(),
             kind=kind,
             attributes=attributes or {}
         )

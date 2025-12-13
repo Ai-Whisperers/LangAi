@@ -19,16 +19,15 @@ Usage:
     forecast = await analyst.forecast(metric, periods=4)
 """
 
-import math
 from enum import Enum
-from typing import Dict, Any, List, Optional, Tuple, Callable
+from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from collections import defaultdict
 import statistics
-import logging
+from ...utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class TrendDirection(Enum):
@@ -231,7 +230,7 @@ class TrendAnalystAgent:
 
         return TrendAnalysis(
             company_name=self.company_name,
-            analysis_date=datetime.now(),
+            analysis_date=utc_now(),
             trends=trends,
             forecasts=forecasts,
             signals=all_signals,

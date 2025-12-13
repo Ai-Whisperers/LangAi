@@ -12,22 +12,17 @@ This agent specializes in:
 Refactored to use @agent_node decorator for reduced boilerplate.
 """
 
-import logging
 from typing import Any, Callable, Dict, List, Optional
 
 from ..base import agent_node, AgentResult
 from ...config import ResearchConfig
 from ...state import OverallState
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Import competitive matrix with fallback
 try:
-    from ..research.competitive_matrix import (
-        CompetitiveMatrixGenerator,
-        create_competitive_matrix,
-        MatrixDimension,
-    )
     COMPETITIVE_MATRIX_AVAILABLE = True
 except ImportError:
     COMPETITIVE_MATRIX_AVAILABLE = False

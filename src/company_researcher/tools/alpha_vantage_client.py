@@ -7,10 +7,9 @@ API Documentation: https://www.alphavantage.co/documentation/
 Free Tier: 25 API calls per day
 """
 
-import os
 from typing import Dict, Optional, Any
-from datetime import datetime, timedelta
-import json
+from datetime import timedelta
+from ..utils import get_config, utc_now
 
 
 class AlphaVantageClient:
@@ -32,7 +31,7 @@ class AlphaVantageClient:
         Args:
             api_key: Alpha Vantage API key (defaults to env var)
         """
-        self.api_key = api_key or os.getenv("ALPHA_VANTAGE_API_KEY")
+        self.api_key = api_key or get_config("ALPHA_VANTAGE_API_KEY")
         self.base_url = "https://www.alphavantage.co/query"
         self._cache = {}  # Simple in-memory cache
         self._cache_ttl = timedelta(hours=6)  # Cache for 6 hours
@@ -57,7 +56,7 @@ class AlphaVantageClient:
         cache_key = f"{function}_{symbol}"
         if cache_key in self._cache:
             cached_data, cached_time = self._cache[cache_key]
-            if datetime.now() - cached_time < self._cache_ttl:
+            if utc_now() - cached_time < self._cache_ttl:
                 return cached_data
 
         # Make API call (placeholder - would use requests library)
@@ -74,7 +73,7 @@ class AlphaVantageClient:
         mock_response = self._get_mock_data(function, symbol)
 
         # Cache the response
-        self._cache[cache_key] = (mock_response, datetime.now())
+        self._cache[cache_key] = (mock_response, utc_now())
 
         return mock_response
 
@@ -260,7 +259,7 @@ class AlphaVantageClient:
         financials = {
             "available": True,
             "symbol": symbol,
-            "fetched_at": datetime.now().isoformat(),
+            "fetched_at": utc_now().isoformat(),
             "overview": self.get_company_overview(symbol),
             "quote": self.get_quote(symbol),
             "income_statement": self.get_income_statement(symbol),

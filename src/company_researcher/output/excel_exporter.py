@@ -11,21 +11,19 @@ Excel workbook generation with:
 Supports both openpyxl and xlsxwriter with fallback.
 """
 
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum
 import os
+from ..utils import utc_now
 
 # Try to import Excel libraries
 try:
     import openpyxl
     from openpyxl.styles import (
-        Font, Fill, PatternFill, Border, Side, Alignment,
-        NamedStyle
+        Font, PatternFill, Border, Side, Alignment, NamedStyle
     )
     from openpyxl.utils import get_column_letter
-    from openpyxl.chart import BarChart, PieChart, Reference
     OPENPYXL_AVAILABLE = True
 except ImportError:
     OPENPYXL_AVAILABLE = False
@@ -64,7 +62,7 @@ class ExcelConfig:
         SheetType.COMPETITIVE,
         SheetType.METRICS
     ])
-    date: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
+    date: str = field(default_factory=lambda: utc_now().strftime("%Y-%m-%d"))
 
 
 # ============================================================================

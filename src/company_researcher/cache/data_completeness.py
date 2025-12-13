@@ -8,13 +8,13 @@ Determines what research data is complete vs missing for a company:
 - Tracks freshness of existing data
 """
 
-import logging
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
 from enum import Enum
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class DataSection(str, Enum):
@@ -256,8 +256,8 @@ class CompletenessChecker:
                     age_days = (now - updated_dt).days
                     if age_days > reqs.max_age_days:
                         stale_sections.append(section)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Failed to check section staleness: {e}")
 
             # Calculate completeness for this section
             status, completeness, section_gaps = self._check_section(

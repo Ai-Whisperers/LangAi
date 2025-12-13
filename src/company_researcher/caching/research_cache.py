@@ -13,12 +13,15 @@ import json
 import pickle
 import sqlite3
 import threading
-import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set
+
+from ..utils import get_logger, utc_now
+
+logger = get_logger(__name__)
 
 
 class ResearchCacheStatus(str, Enum):
@@ -50,12 +53,12 @@ class ResearchCacheEntry:
     @property
     def is_expired(self) -> bool:
         """Check if entry is expired."""
-        return datetime.utcnow() > self.expires_at
+        return utc_now() > self.expires_at
 
     @property
     def age_seconds(self) -> float:
         """Get age in seconds."""
-        return (datetime.utcnow() - self.created_at).total_seconds()
+        return (utc_now() - self.created_at).total_seconds()
 
     @property
     def status(self) -> ResearchCacheStatus:
@@ -218,7 +221,7 @@ class ResearchResultCache:
         """
         key = self._generate_key(company_name, depth)
         ttl = ttl_hours or self.default_ttl_hours
-        now = datetime.utcnow()
+        now = utc_now()
 
         entry = ResearchCacheEntry(
             key=key,
@@ -284,7 +287,7 @@ class ResearchResultCache:
                 return None
 
             entry.access_count += 1
-            entry.last_accessed = datetime.utcnow()
+            entry.last_accessed = utc_now()
             self._stats.hits += 1
 
             return entry
@@ -305,8 +308,8 @@ class ResearchResultCache:
         for callback in self._invalidation_callbacks:
             try:
                 callback(company_name)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Invalidation callback failed for {company_name}: {e}")
 
         return count
 
@@ -347,8 +350,8 @@ class ResearchResultCache:
                 with sqlite3.connect(str(self._db_path)) as conn:
                     conn.execute("DELETE FROM research_cache WHERE key = ?", (key,))
                     conn.commit()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to delete cache entry from DB (key={key}): {e}")
 
         self._stats.total_entries = len(self._cache)
 
@@ -373,8 +376,8 @@ class ResearchResultCache:
                     json.dumps(entry.metadata)
                 ))
                 conn.commit()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to persist cache entry for {entry.company_name}: {e}")
 
     def _load_entry(self, key: str) -> Optional[ResearchCacheEntry]:
         """Load entry from database."""
@@ -398,8 +401,8 @@ class ResearchResultCache:
                         last_accessed=datetime.fromisoformat(row[7]),
                         metadata=json.loads(row[8])
                     )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Failed to load cache entry (key={key}): {e}")
 
         return None
 
@@ -428,8 +431,8 @@ class ResearchResultCache:
                     with sqlite3.connect(str(self._db_path)) as conn:
                         conn.execute("DELETE FROM research_cache")
                         conn.commit()
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Failed to clear cache database: {e}")
 
     def on_invalidation(self, callback: Callable[[str], None]) -> None:
         """Register invalidation callback."""
@@ -510,7 +513,8 @@ class CacheWarmer:
                     )
                     results[company] = True
 
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"Cache warming failed for {company}: {e}")
                     results[company] = False
 
         unique_companies = list(set(self._companies))
@@ -559,7 +563,8 @@ class NewsBasedInvalidator:
                 news = await source(company_name)
                 if self._has_significant_news(news):
                     return True
-            except Exception:
+            except Exception as e:
+                logger.debug(f"News source check failed for {company_name}: {e}")
                 continue
         return False
 

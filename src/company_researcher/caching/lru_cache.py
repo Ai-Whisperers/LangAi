@@ -4,17 +4,15 @@ LRU Cache - Least Recently Used cache implementation.
 Thread-safe LRU cache with configurable size limits.
 """
 
-import hashlib
 import json
-import logging
 import threading
-import time
 from collections import OrderedDict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Generic, Optional, TypeVar
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def _utcnow() -> datetime:

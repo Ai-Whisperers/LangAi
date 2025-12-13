@@ -31,13 +31,12 @@ Usage:
 
 import requests
 from typing import Optional, Dict, Any, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from threading import Lock
-from datetime import datetime
-import logging
 import time
+from ..utils import get_config, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -372,8 +371,7 @@ def get_jina_reader(api_key: Optional[str] = None) -> JinaReader:
     if _jina_reader is None:
         with _reader_lock:
             if _jina_reader is None:
-                import os
-                key = api_key or os.getenv("JINA_API_KEY")
+                key = api_key or get_config("JINA_API_KEY")
                 _jina_reader = JinaReader(api_key=key)
     return _jina_reader
 

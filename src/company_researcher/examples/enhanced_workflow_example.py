@@ -20,10 +20,6 @@ Run this example:
     python -m company_researcher.examples.enhanced_workflow_example
 """
 
-import asyncio
-import json
-from datetime import datetime
-from typing import Dict, Any
 
 # Import enhanced modules
 from company_researcher.shared import (
@@ -52,9 +48,6 @@ from company_researcher.quality import (
     EnhancedContradictionDetector,
 )
 
-from company_researcher.retrieval import (
-    SemanticSourceSelector,
-)
 
 from company_researcher.prompts import (
     get_prompt,

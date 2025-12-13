@@ -16,7 +16,7 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
-from enum import Enum
+from ..utils import utc_now
 
 
 # ============================================================================
@@ -28,8 +28,8 @@ class CacheEntry:
     """An entry in the LRU cache."""
     key: str
     value: Any
-    created_at: datetime = field(default_factory=datetime.now)
-    last_accessed: datetime = field(default_factory=datetime.now)
+    created_at: datetime = field(default_factory=utc_now)
+    last_accessed: datetime = field(default_factory=utc_now)
     access_count: int = 0
     ttl_seconds: Optional[int] = None
 
@@ -37,11 +37,11 @@ class CacheEntry:
         """Check if entry has expired."""
         if self.ttl_seconds is None:
             return False
-        return datetime.now() > self.created_at + timedelta(seconds=self.ttl_seconds)
+        return utc_now() > self.created_at + timedelta(seconds=self.ttl_seconds)
 
     def touch(self):
         """Update last access time and count."""
-        self.last_accessed = datetime.now()
+        self.last_accessed = utc_now()
         self.access_count += 1
 
 
@@ -182,7 +182,7 @@ class LRUCache:
                 self._cache.move_to_end(key)
                 entry = self._cache[key]
                 entry.value = value
-                entry.last_accessed = datetime.now()
+                entry.last_accessed = utc_now()
             else:
                 # Evict if at capacity
                 while len(self._cache) >= self.max_size:
@@ -352,6 +352,25 @@ class TypedLRUCache:
         cache = self._get_cache(type_name)
         return cache.get(key, default)
 
+    def get_any_type(self, key: str, default: Any = None) -> Any:
+        """Get value from any type cache by key only.
+
+        Searches all type caches for the key.
+
+        Args:
+            key: The key to search for
+            default: Default value if not found
+
+        Returns:
+            The cached value if found, default otherwise
+        """
+        with self._lock:
+            for cache in self._caches.values():
+                result = cache.get(key)
+                if result is not None:
+                    return result
+        return default
+
     def put(
         self,
         type_name: str,
@@ -483,5 +502,5 @@ class ResearchCache(TypedLRUCache):
         if entry is None:
             return False
 
-        age = datetime.now() - entry.created_at
+        age = utc_now() - entry.created_at
         return age.total_seconds() < max_age_hours * 3600

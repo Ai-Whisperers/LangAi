@@ -14,10 +14,10 @@ Provides:
 - Funding analysis (for private companies)
 """
 
-import logging
 from typing import Dict, Any, Optional, Callable
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 from ...config import get_config
 from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text

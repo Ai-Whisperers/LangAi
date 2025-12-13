@@ -12,9 +12,8 @@ This agent applies structured reasoning to research data
 to generate insights and strategic recommendations.
 """
 
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum
 
 from ...config import get_config

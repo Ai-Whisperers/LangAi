@@ -9,7 +9,6 @@ Custom middleware for:
 """
 
 from typing import Dict, Any, Optional, Callable, List
-from datetime import datetime, timedelta
 import asyncio
 import threading
 import time
@@ -19,7 +18,7 @@ import logging
 from collections import defaultdict
 
 try:
-    from fastapi import Request, Response, HTTPException
+    from fastapi import Request, Response
     from fastapi.responses import JSONResponse
     from starlette.middleware.base import BaseHTTPMiddleware
     FASTAPI_AVAILABLE = True

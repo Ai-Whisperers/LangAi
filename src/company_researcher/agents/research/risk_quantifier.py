@@ -20,13 +20,13 @@ Usage:
     assessment = quantifier.assess_risks(company_data, market_data)
 """
 
-import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class RiskCategory(Enum):

@@ -30,12 +30,12 @@ Usage:
     gaps = run_gap_detection(research_output)
 """
 
-import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Tuple
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # ============================================================================
@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 # Quality modules
 from .quality import UnifiedQualityScorer, QualityResult
 from .gaps import SemanticGapDetector, GapAssessment
-from .search import RobustSearchClient, QueryDiversifier, SearchResult
+from .search import QueryDiversifier
 
 # Validation
 from ..validation.ground_truth import GroundTruthValidator, ValidationReport
@@ -60,10 +60,8 @@ from ..quality.enhanced_contradiction_detector import (
 from ..retrieval.source_selector import SemanticSourceSelector
 
 # Prompts
-from ..prompts import get_prompt_registry, get_prompt
 
 # State (typed models)
-from ..state import TypedResearchState, FinancialMetrics
 
 
 # ============================================================================
@@ -94,7 +92,7 @@ class EnhancedAnalysisResult:
 
     # Processing metadata
     processing_time_seconds: float = 0.0
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -394,7 +392,7 @@ class EnhancedResearchPipeline:
         Returns:
             EnhancedAnalysisResult with all assessments
         """
-        start_time = datetime.now()
+        start_time = utc_now()
 
         result = EnhancedAnalysisResult(company_name=self.company_name)
 
@@ -444,7 +442,7 @@ class EnhancedResearchPipeline:
 
         # Calculate processing time
         result.processing_time_seconds = (
-            datetime.now() - start_time
+            utc_now() - start_time
         ).total_seconds()
 
         return result

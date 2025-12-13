@@ -48,7 +48,6 @@ class TaskStorage(ABC):
         Returns:
             True if successful, False otherwise
         """
-        pass
 
     @abstractmethod
     async def get_task(self, task_id: str) -> Optional[Dict[str, Any]]:
@@ -61,7 +60,6 @@ class TaskStorage(ABC):
         Returns:
             Task data dictionary or None if not found
         """
-        pass
 
     @abstractmethod
     async def update_task(self, task_id: str, updates: Dict[str, Any]) -> bool:
@@ -75,7 +73,6 @@ class TaskStorage(ABC):
         Returns:
             True if successful, False otherwise
         """
-        pass
 
     @abstractmethod
     async def delete_task(self, task_id: str) -> bool:
@@ -88,7 +85,6 @@ class TaskStorage(ABC):
         Returns:
             True if successful, False otherwise
         """
-        pass
 
     @abstractmethod
     async def list_tasks(
@@ -110,7 +106,6 @@ class TaskStorage(ABC):
         Returns:
             List of task dictionaries
         """
-        pass
 
     @abstractmethod
     async def save_batch(self, batch_id: str, batch: Dict[str, Any]) -> bool:
@@ -124,7 +119,6 @@ class TaskStorage(ABC):
         Returns:
             True if successful, False otherwise
         """
-        pass
 
     @abstractmethod
     async def get_batch(self, batch_id: str) -> Optional[Dict[str, Any]]:
@@ -137,7 +131,6 @@ class TaskStorage(ABC):
         Returns:
             Batch data dictionary or None if not found
         """
-        pass
 
     @abstractmethod
     async def update_batch(self, batch_id: str, updates: Dict[str, Any]) -> bool:
@@ -151,7 +144,6 @@ class TaskStorage(ABC):
         Returns:
             True if successful, False otherwise
         """
-        pass
 
     @abstractmethod
     async def count_tasks(self, status: Optional[str] = None) -> int:
@@ -164,7 +156,6 @@ class TaskStorage(ABC):
         Returns:
             Number of tasks matching criteria
         """
-        pass
 
     @abstractmethod
     async def cleanup_old_tasks(self, max_age_days: int = 7) -> int:
@@ -177,4 +168,3 @@ class TaskStorage(ABC):
         Returns:
             Number of tasks deleted
         """
-        pass

@@ -1,13 +1,13 @@
 """Fallback handlers for AI components."""
 from typing import Callable, TypeVar, Any, Optional
 from functools import wraps
-import logging
 import asyncio
 
 from .config import get_ai_config
-from .exceptions import AIFallbackTriggered, AIComponentError
+from .exceptions import AIFallbackTriggered
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 T = TypeVar('T')
 

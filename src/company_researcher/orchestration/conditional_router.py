@@ -17,7 +17,7 @@ Usage:
     result = workflow.invoke({"company_name": "Tesla"})
 """
 
-from typing import Dict, Any, Literal, Optional, List, Callable
+from typing import Dict, Any, Optional, List, Callable
 from dataclasses import dataclass
 from enum import Enum
 

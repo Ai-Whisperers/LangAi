@@ -7,14 +7,14 @@ Provides: News articles from 60,000+ sources worldwide
 Documentation: https://gnews.io/docs/
 """
 
-import logging
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Dict, List, Optional
 
 from .base_client import BaseAPIClient
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -182,7 +182,7 @@ class GNewsClient(BaseAPIClient):
         Returns:
             List of GNewsArticle objects
         """
-        from_date = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%dT00:00:00Z")
+        from_date = (utc_now() - timedelta(days=days_back)).strftime("%Y-%m-%dT00:00:00Z")
 
         return await self.search(
             query=f'"{company_name}"',

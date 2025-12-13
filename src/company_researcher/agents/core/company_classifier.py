@@ -14,12 +14,12 @@ Data Source Hierarchy:
 - Private: Wikipedia → Google News → Web Search
 """
 
-import logging
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Any, List
 from enum import Enum
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class CompanyType(str, Enum):

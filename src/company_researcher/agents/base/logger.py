@@ -6,10 +6,11 @@ Provides consistent formatting and log levels.
 """
 
 import logging
-from typing import Optional, Dict, Any
 from datetime import datetime
+from typing import Optional, Dict, Any
 from contextlib import contextmanager
 from dataclasses import dataclass
+from ...utils import utc_now
 
 
 @dataclass
@@ -87,7 +88,7 @@ class AgentLogger:
         self._context = AgentLogContext(
             agent_name=self.agent_name,
             company_name=company_name,
-            start_time=datetime.now(),
+            start_time=utc_now(),
             metadata=metadata
         )
 

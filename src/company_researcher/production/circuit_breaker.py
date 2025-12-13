@@ -13,8 +13,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 from functools import wraps
 import threading
-import time
 import logging
+from ..utils import utc_now
 
 
 # ============================================================================
@@ -163,7 +163,7 @@ class CircuitBreaker:
         """Check if enough time has passed to try reset."""
         if not self._opened_at:
             return True
-        return datetime.now() - self._opened_at >= timedelta(seconds=self._timeout)
+        return utc_now() - self._opened_at >= timedelta(seconds=self._timeout)
 
     # ==========================================================================
     # Decorator Interface
@@ -187,7 +187,7 @@ class CircuitBreaker:
 
             if state == CircuitState.OPEN:
                 self._stats.rejected_calls += 1
-                retry_after = self._timeout - (datetime.now() - self._opened_at).total_seconds()
+                retry_after = self._timeout - (utc_now() - self._opened_at).total_seconds()
                 raise CircuitOpenError(self.name, max(0, retry_after))
 
             self._stats.total_calls += 1
@@ -229,7 +229,7 @@ class CircuitBreaker:
 
             if state == CircuitState.OPEN:
                 self._stats.rejected_calls += 1
-                retry_after = self._timeout - (datetime.now() - self._opened_at).total_seconds()
+                retry_after = self._timeout - (utc_now() - self._opened_at).total_seconds()
                 raise CircuitOpenError(self.name, max(0, retry_after))
 
             self._stats.total_calls += 1
@@ -252,7 +252,7 @@ class CircuitBreaker:
         """Record a successful call."""
         with self._lock:
             self._stats.successful_calls += 1
-            self._stats.last_success_time = datetime.now()
+            self._stats.last_success_time = utc_now()
 
             if self._state == CircuitState.HALF_OPEN:
                 self._success_count += 1
@@ -265,9 +265,9 @@ class CircuitBreaker:
         """Record a failed call."""
         with self._lock:
             self._stats.failed_calls += 1
-            self._stats.last_failure_time = datetime.now()
+            self._stats.last_failure_time = utc_now()
             self._failure_count += 1
-            self._last_failure_time = datetime.now()
+            self._last_failure_time = utc_now()
 
             if self._state == CircuitState.HALF_OPEN:
                 # Immediate transition back to open
@@ -283,7 +283,7 @@ class CircuitBreaker:
         self._stats.state_changes += 1
 
         if new_state == CircuitState.OPEN:
-            self._opened_at = datetime.now()
+            self._opened_at = utc_now()
             self._logger.warning(f"Circuit '{self.name}' OPENED after {self._failure_count} failures")
         elif new_state == CircuitState.HALF_OPEN:
             self._success_count = 0

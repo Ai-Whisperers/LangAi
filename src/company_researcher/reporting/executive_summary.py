@@ -11,7 +11,8 @@ Provides:
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
+from ..utils import utc_now
 
 
 class SummarySection(str, Enum):
@@ -375,7 +376,7 @@ class ExecutiveSummaryGenerator:
 
         return ExecutiveSummary(
             company_name=company,
-            generated_at=datetime.utcnow(),
+            generated_at=utc_now(),
             overview=overview,
             key_metrics=metrics[:6],
             highlights=highlights[:self.max_highlights],

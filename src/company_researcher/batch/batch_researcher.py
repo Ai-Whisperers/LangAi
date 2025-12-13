@@ -32,16 +32,14 @@ Usage:
     comparison = researcher.generate_comparison(results)
 """
 
-import asyncio
-import logging
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
 import time
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -56,7 +54,7 @@ class CompanyResearchResult:
     cached: bool = False
     duration_seconds: float = 0.0
     error: Optional[str] = None
-    timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
+    timestamp: str = field(default_factory=lambda: utc_now().isoformat())
     # Quality metrics
     quality_score: Optional[float] = None
     quality_issues: List[str] = field(default_factory=list)
@@ -76,7 +74,7 @@ class BatchResearchResult:
     cache_misses: int = 0
     success_count: int = 0
     failure_count: int = 0
-    timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
+    timestamp: str = field(default_factory=lambda: utc_now().isoformat())
     # Quality metrics
     avg_quality_score: float = 0.0
     low_quality_count: int = 0  # Quality score < 70
@@ -392,7 +390,7 @@ class BatchResearcher:
         # Build comparison report
         report = f"""# Company Comparison Report
 
-**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Generated**: {utc_now().strftime('%Y-%m-%d %H:%M:%S')}
 **Companies Analyzed**: {len(successful)}
 **Total Cost**: ${batch_result.total_cost:.4f}
 **Cache Hit Rate**: {batch_result.cache_hits}/{len(batch_result.results)} ({100 * batch_result.cache_hits / max(len(batch_result.results), 1):.1f}%)
@@ -486,7 +484,6 @@ class BatchResearcher:
         Returns:
             Path to saved files
         """
-        import os
         import json
         from pathlib import Path
 
@@ -495,7 +492,7 @@ class BatchResearcher:
         output_path.mkdir(parents=True, exist_ok=True)
 
         # Generate timestamp-based folder
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = utc_now().strftime("%Y%m%d_%H%M%S")
         batch_dir = output_path / f"batch_{timestamp}"
         batch_dir.mkdir(exist_ok=True)
 
@@ -559,7 +556,7 @@ class BatchResearcher:
         """
         report = f"""# Quality Issues Report
 
-**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Generated**: {utc_now().strftime('%Y-%m-%d %H:%M:%S')}
 **Low Quality Threshold**: {self.quality_threshold}/100
 **Total Low Quality Reports**: {len(low_quality_results)}
 

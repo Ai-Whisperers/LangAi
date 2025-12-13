@@ -14,6 +14,7 @@ from enum import Enum
 import time
 import logging
 import asyncio
+from ..utils import utc_now
 
 
 # ============================================================================
@@ -36,7 +37,7 @@ class HealthCheck:
     message: str = ""
     duration_ms: float = 0.0
     details: Dict[str, Any] = field(default_factory=dict)
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -54,7 +55,7 @@ class HealthReport:
     """Complete health report."""
     status: HealthStatus
     checks: List[HealthCheck]
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=utc_now)
     version: str = "1.0.0"
 
     @property
@@ -149,7 +150,6 @@ class HealthChecker:
             )
 
         try:
-            import psutil
             self._checks["memory"] = check_memory
             self._checks["disk"] = check_disk
         except ImportError:

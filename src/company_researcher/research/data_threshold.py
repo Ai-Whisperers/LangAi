@@ -14,13 +14,12 @@ Features:
 """
 
 import re
-import logging
-from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple, Callable
+from dataclasses import dataclass
+from typing import Dict, List, Any, Tuple
 from enum import Enum
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class DataSufficiency(Enum):

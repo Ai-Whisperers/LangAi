@@ -7,14 +7,14 @@ Provides: Subreddit posts, comments, sentiment analysis
 Documentation: https://www.reddit.com/dev/api/
 """
 
-import logging
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from .base_client import BaseAPIClient
+from ..utils import get_config, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -118,9 +118,8 @@ class RedditClient(BaseAPIClient):
         client_secret: Optional[str] = None,
         user_agent: str = "CompanyResearcher/1.0"
     ):
-        import os
-        self.client_id = client_id or os.getenv("REDDIT_CLIENT_ID")
-        self.client_secret = client_secret or os.getenv("REDDIT_CLIENT_SECRET")
+        self.client_id = client_id or get_config("REDDIT_CLIENT_ID")
+        self.client_secret = client_secret or get_config("REDDIT_CLIENT_SECRET")
         self.user_agent = user_agent
         self._access_token: Optional[str] = None
         self._token_expires: float = 0

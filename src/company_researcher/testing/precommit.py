@@ -10,11 +10,14 @@ Provides:
 """
 
 import subprocess
-import sys
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
+
+from ..utils import get_logger
+
+logger = get_logger(__name__)
 
 
 class CheckStatus(str, Enum):
@@ -271,7 +274,8 @@ def check_docstring_coverage(path: str = "src/") -> CheckResult:
                     else:
                         missing.append(f"{py_file}:{node.lineno}:{node.name}")
 
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Failed to analyze docstrings in {py_file}: {e}")
             continue
 
     if total_items == 0:
@@ -318,7 +322,8 @@ def check_no_debug(path: str = "src/") -> CheckResult:
                         if re.search(pattern, line):
                             findings.append(f"{py_file}:{i}")
                             break
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Failed to check debug patterns in {py_file}: {e}")
             continue
 
     return CheckResult(
@@ -349,7 +354,8 @@ def check_todo_fixme(path: str = "src/") -> CheckResult:
                                 "content": line.strip()[:100]
                             })
                             break
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Failed to check patterns in {py_file}: {e}")
             continue
 
     # This is informational, not a failure
@@ -417,7 +423,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.company_researcher.testing.precommit import create_fast_runner
+from company_researcher.testing.precommit import create_fast_runner
 
 def main():
     runner = create_fast_runner(str(project_root))
@@ -458,7 +464,7 @@ def install_precommit_hook(project_root: str = ".") -> bool:
     # Make executable (Unix)
     try:
         hook_path.chmod(0o755)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"Failed to make hook executable (expected on Windows): {e}")
 
     return True

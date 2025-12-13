@@ -13,14 +13,15 @@ Designed for large-scale research operations.
 
 from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 import time
 import queue
 import threading
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 
-from .workflow_engine import WorkflowEngine, WorkflowState, ExecutionStatus
+from .workflow_engine import WorkflowState
+from ..utils import utc_now
 
 
 # ============================================================================
@@ -63,7 +64,7 @@ class ScheduledTask:
     company_name: str
     priority: Priority = Priority.NORMAL
     status: TaskStatus = TaskStatus.QUEUED
-    created_at: datetime = field(default_factory=datetime.now)
+    created_at: datetime = field(default_factory=utc_now)
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     retries: int = 0
@@ -94,7 +95,7 @@ class BatchResult:
     def duration_seconds(self) -> float:
         if not self.start_time:
             return 0
-        end = self.end_time or datetime.now()
+        end = self.end_time or utc_now()
         return (end - self.start_time).total_seconds()
 
     @property
@@ -240,7 +241,7 @@ class WorkflowScheduler:
         batch_result = BatchResult(
             batch_id=batch_id,
             total_tasks=len(companies),
-            start_time=datetime.now()
+            start_time=utc_now()
         )
 
         factory = workflow_factory or self._workflow_factory
@@ -275,7 +276,7 @@ class WorkflowScheduler:
                 elif task.status == TaskStatus.CANCELLED:
                     batch_result.cancelled += 1
 
-        batch_result.end_time = datetime.now()
+        batch_result.end_time = utc_now()
 
         for callback in self._on_batch_complete:
             callback(batch_result)
@@ -340,7 +341,7 @@ class WorkflowScheduler:
     ) -> ScheduledTask:
         """Execute a single scheduled task."""
         task.status = TaskStatus.RUNNING
-        task.started_at = datetime.now()
+        task.started_at = utc_now()
 
         for callback in self._on_task_start:
             callback(task)
@@ -376,7 +377,7 @@ class WorkflowScheduler:
                 for callback in self._on_task_error:
                     callback(task, task.error)
 
-        task.completed_at = datetime.now()
+        task.completed_at = utc_now()
         return task
 
     def _apply_rate_limit(self):

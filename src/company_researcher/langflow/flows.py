@@ -10,12 +10,11 @@ Flows can be imported directly into LangFlow's visual builder.
 """
 
 import json
-import logging
 from typing import Dict, Any, Optional, List
 from pathlib import Path
-from datetime import datetime
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # ============================================================================
@@ -26,7 +25,7 @@ BASIC_RESEARCH_FLOW = {
     "name": "Basic Company Research",
     "description": "Simple single-agent company research workflow",
     "version": "1.0.0",
-    "created": datetime.now().isoformat(),
+    "created": utc_now().isoformat(),
     "nodes": [
         {
             "id": "researcher-1",
@@ -84,7 +83,7 @@ PARALLEL_RESEARCH_FLOW = {
     "name": "Parallel Multi-Agent Research",
     "description": "Full parallel multi-agent company research (Phase 4)",
     "version": "1.0.0",
-    "created": datetime.now().isoformat(),
+    "created": utc_now().isoformat(),
     "nodes": [
         # Input
         {
@@ -290,7 +289,7 @@ def export_workflow(
     flow = FLOW_REGISTRY[workflow_id].copy()
 
     # Update timestamp
-    flow["exported_at"] = datetime.now().isoformat()
+    flow["exported_at"] = utc_now().isoformat()
 
     # Save to file if path provided
     if output_path:

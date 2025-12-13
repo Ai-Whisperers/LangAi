@@ -4,10 +4,8 @@ Workflow Engine Module.
 Core workflow orchestration engine.
 """
 
-import asyncio
 import time
-from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional
 
 from .models import (
     NodeType,
@@ -18,6 +16,7 @@ from .models import (
     WorkflowState,
 )
 from .executor import NodeExecutor
+from ...utils import utc_now
 
 
 class WorkflowEngine:
@@ -151,7 +150,7 @@ class WorkflowEngine:
         state = WorkflowState(
             workflow_id=workflow_id or f"wf_{int(time.time())}",
             data=initial_data.copy(),
-            start_time=datetime.now()
+            start_time=utc_now()
         )
 
         state.status = ExecutionStatus.RUNNING
@@ -163,7 +162,7 @@ class WorkflowEngine:
             state.status = ExecutionStatus.FAILED
             print(f"[Workflow] Execution failed: {e}")
 
-        state.end_time = datetime.now()
+        state.end_time = utc_now()
         return state
 
     async def execute_async(
@@ -175,7 +174,7 @@ class WorkflowEngine:
         state = WorkflowState(
             workflow_id=workflow_id or f"wf_{int(time.time())}",
             data=initial_data.copy(),
-            start_time=datetime.now()
+            start_time=utc_now()
         )
 
         state.status = ExecutionStatus.RUNNING
@@ -187,7 +186,7 @@ class WorkflowEngine:
             state.status = ExecutionStatus.FAILED
             print(f"[Workflow] Async execution failed: {e}")
 
-        state.end_time = datetime.now()
+        state.end_time = utc_now()
         return state
 
     def _execute_from_node(self, node_name: str, state: WorkflowState):

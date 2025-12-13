@@ -30,15 +30,25 @@ Usage:
     stats = serper.get_stats()
 """
 
-import os
+import time
 import requests
+from requests.exceptions import (
+    Timeout as RequestsTimeout,
+    ConnectionError as RequestsConnectionError,
+    HTTPError,
+    RequestException
+)
 from typing import Optional, Dict, Any, List, Literal
 from dataclasses import dataclass, field
-from datetime import datetime
 from threading import Lock
-import logging
+from ..utils import get_config, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
+
+# Default retry configuration
+DEFAULT_MAX_RETRIES = 3
+DEFAULT_RETRY_DELAY = 1.0  # seconds
+DEFAULT_RETRY_BACKOFF = 2.0  # exponential backoff multiplier
 
 
 SearchType = Literal["search", "news", "images", "places", "scholar"]
@@ -131,7 +141,7 @@ class SerperClient:
             default_country: Default country code for results
             default_language: Default language for results
         """
-        self.api_key = api_key or os.getenv("SERPER_API_KEY")
+        self.api_key = api_key or get_config("SERPER_API_KEY")
         self.timeout = timeout
         self.default_country = default_country
         self.default_language = default_language
@@ -159,9 +169,10 @@ class SerperClient:
         num_results: int = 10,
         country: Optional[str] = None,
         language: Optional[str] = None,
+        max_retries: int = DEFAULT_MAX_RETRIES,
         **kwargs
     ) -> SerperResponse:
-        """Make request to Serper API."""
+        """Make request to Serper API with retry logic for 5xx errors."""
         if not self.api_key:
             return SerperResponse(
                 query=query,
@@ -170,128 +181,189 @@ class SerperClient:
                 error="Serper API key not configured"
             )
 
-        try:
-            endpoint = self.ENDPOINTS.get(search_type, "/search")
-            url = f"{self.BASE_URL}{endpoint}"
+        endpoint = self.ENDPOINTS.get(search_type, "/search")
+        url = f"{self.BASE_URL}{endpoint}"
 
-            payload = {
-                "q": query,
-                "num": num_results,
-                "gl": country or self.default_country,
-                "hl": language or self.default_language,
-            }
+        payload = {
+            "q": query,
+            "num": num_results,
+            "gl": country or self.default_country,
+            "hl": language or self.default_language,
+        }
 
-            # Add any additional parameters
-            payload.update(kwargs)
+        # Add any additional parameters
+        payload.update(kwargs)
 
-            response = self._session.post(
-                url,
-                json=payload,
-                timeout=self.timeout
-            )
-            response.raise_for_status()
-            data = response.json()
+        last_error: Optional[str] = None
+        retry_delay = DEFAULT_RETRY_DELAY
 
-            # Parse results based on search type
-            results = []
+        for attempt in range(max_retries + 1):
+            try:
+                response = self._session.post(
+                    url,
+                    json=payload,
+                    timeout=self.timeout
+                )
+                response.raise_for_status()
+                data = response.json()
 
-            if search_type == "search":
-                organic = data.get("organic", [])
-                for i, item in enumerate(organic):
-                    results.append(SerperResult(
-                        title=item.get("title", ""),
-                        link=item.get("link", ""),
-                        snippet=item.get("snippet", ""),
-                        position=item.get("position", i + 1),
-                        date=item.get("date"),
-                    ))
+                # Parse results based on search type
+                results = self._parse_results(search_type, data)
 
-            elif search_type == "news":
-                news = data.get("news", [])
-                for i, item in enumerate(news):
-                    results.append(SerperResult(
-                        title=item.get("title", ""),
-                        link=item.get("link", ""),
-                        snippet=item.get("snippet", ""),
-                        position=i + 1,
-                        date=item.get("date"),
-                        source=item.get("source"),
-                        image_url=item.get("imageUrl"),
-                    ))
+                # Extract additional data
+                answer_box = data.get("answerBox")
+                knowledge_graph = data.get("knowledgeGraph")
+                related_searches = [
+                    item.get("query", "")
+                    for item in data.get("relatedSearches", [])
+                ]
 
-            elif search_type == "images":
-                images = data.get("images", [])
-                for i, item in enumerate(images):
-                    results.append(SerperResult(
-                        title=item.get("title", ""),
-                        link=item.get("link", ""),
-                        snippet="",
-                        position=i + 1,
-                        image_url=item.get("imageUrl"),
-                    ))
+                # Track usage
+                with self._lock:
+                    self._total_queries += 1
+                    self._total_cost += self.COST_PER_QUERY
+                    self._queries_by_type[search_type] = self._queries_by_type.get(search_type, 0) + 1
 
-            elif search_type == "places":
-                places = data.get("places", [])
-                for i, item in enumerate(places):
-                    results.append(SerperResult(
-                        title=item.get("title", ""),
-                        link=item.get("link", ""),
-                        snippet=item.get("address", ""),
-                        position=i + 1,
-                    ))
+                return SerperResponse(
+                    query=query,
+                    search_type=search_type,
+                    results=results,
+                    answer_box=answer_box,
+                    knowledge_graph=knowledge_graph,
+                    related_searches=related_searches,
+                    credits_used=1,
+                    success=True
+                )
 
-            elif search_type == "scholar":
-                organic = data.get("organic", [])
-                for i, item in enumerate(organic):
-                    results.append(SerperResult(
-                        title=item.get("title", ""),
-                        link=item.get("link", ""),
-                        snippet=item.get("snippet", ""),
-                        position=i + 1,
-                        date=item.get("year"),
-                    ))
+            except RequestsTimeout:
+                last_error = f"Request timeout (timeout={self.timeout}s)"
+                logger.warning(f"Serper timeout for '{query}' (attempt {attempt + 1}/{max_retries + 1})")
+                # Timeout - retry with backoff
+                if attempt < max_retries:
+                    time.sleep(retry_delay)
+                    retry_delay *= DEFAULT_RETRY_BACKOFF
 
-            # Extract additional data
-            answer_box = data.get("answerBox")
-            knowledge_graph = data.get("knowledgeGraph")
-            related_searches = [
-                item.get("query", "")
-                for item in data.get("relatedSearches", [])
-            ]
+            except RequestsConnectionError as e:
+                last_error = f"Connection error: {e}"
+                logger.warning(f"Serper connection error for '{query}' (attempt {attempt + 1}/{max_retries + 1}): {e}")
+                # Connection error - retry with backoff
+                if attempt < max_retries:
+                    time.sleep(retry_delay)
+                    retry_delay *= DEFAULT_RETRY_BACKOFF
 
-            # Track usage
-            with self._lock:
-                self._total_queries += 1
-                self._total_cost += self.COST_PER_QUERY
-                self._queries_by_type[search_type] = self._queries_by_type.get(search_type, 0) + 1
+            except HTTPError as e:
+                status_code = e.response.status_code if e.response is not None else 0
+                last_error = f"HTTP {status_code}: {e}"
 
-            return SerperResponse(
-                query=query,
-                search_type=search_type,
-                results=results,
-                answer_box=answer_box,
-                knowledge_graph=knowledge_graph,
-                related_searches=related_searches,
-                credits_used=1,
-                success=True
-            )
+                # 5xx errors are server-side - retry with backoff
+                if 500 <= status_code < 600 and attempt < max_retries:
+                    logger.warning(
+                        f"Serper server error {status_code} for '{query}' "
+                        f"(attempt {attempt + 1}/{max_retries + 1}), retrying..."
+                    )
+                    time.sleep(retry_delay)
+                    retry_delay *= DEFAULT_RETRY_BACKOFF
+                else:
+                    # 4xx errors or max retries exceeded - don't retry
+                    logger.error(f"Serper HTTP error for '{query}': {status_code}")
+                    return SerperResponse(
+                        query=query,
+                        search_type=search_type,
+                        success=False,
+                        error=last_error
+                    )
 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Serper request error for '{query}': {e}")
-            return SerperResponse(
-                query=query,
-                search_type=search_type,
-                success=False,
-                error=str(e)
-            )
-        except Exception as e:
-            logger.error(f"Serper error for '{query}': {e}")
-            return SerperResponse(
-                query=query,
-                search_type=search_type,
-                success=False,
-                error=str(e)
-            )
+            except RequestException as e:
+                last_error = f"Request error: {e}"
+                logger.error(f"Serper request error for '{query}': {e}")
+                # Generic request error - don't retry
+                return SerperResponse(
+                    query=query,
+                    search_type=search_type,
+                    success=False,
+                    error=last_error
+                )
+
+            except Exception as e:
+                last_error = f"Unexpected error: {type(e).__name__}: {e}"
+                logger.error(f"Serper unexpected error for '{query}': {type(e).__name__}: {e}")
+                return SerperResponse(
+                    query=query,
+                    search_type=search_type,
+                    success=False,
+                    error=last_error
+                )
+
+        # All retries exhausted
+        logger.error(f"Serper request failed after {max_retries + 1} attempts for '{query}': {last_error}")
+        return SerperResponse(
+            query=query,
+            search_type=search_type,
+            success=False,
+            error=last_error or "Max retries exceeded"
+        )
+
+    def _parse_results(self, search_type: SearchType, data: Dict[str, Any]) -> List[SerperResult]:
+        """Parse results based on search type."""
+        results = []
+
+        if search_type == "search":
+            organic = data.get("organic", [])
+            for i, item in enumerate(organic):
+                results.append(SerperResult(
+                    title=item.get("title", ""),
+                    link=item.get("link", ""),
+                    snippet=item.get("snippet", ""),
+                    position=item.get("position", i + 1),
+                    date=item.get("date"),
+                ))
+
+        elif search_type == "news":
+            news = data.get("news", [])
+            for i, item in enumerate(news):
+                results.append(SerperResult(
+                    title=item.get("title", ""),
+                    link=item.get("link", ""),
+                    snippet=item.get("snippet", ""),
+                    position=i + 1,
+                    date=item.get("date"),
+                    source=item.get("source"),
+                    image_url=item.get("imageUrl"),
+                ))
+
+        elif search_type == "images":
+            images = data.get("images", [])
+            for i, item in enumerate(images):
+                results.append(SerperResult(
+                    title=item.get("title", ""),
+                    link=item.get("link", ""),
+                    snippet="",
+                    position=i + 1,
+                    image_url=item.get("imageUrl"),
+                ))
+
+        elif search_type == "places":
+            places = data.get("places", [])
+            for i, item in enumerate(places):
+                results.append(SerperResult(
+                    title=item.get("title", ""),
+                    link=item.get("link", ""),
+                    snippet=item.get("address", ""),
+                    position=i + 1,
+                ))
+
+        elif search_type == "scholar":
+            organic = data.get("organic", [])
+            for i, item in enumerate(organic):
+                results.append(SerperResult(
+                    title=item.get("title", ""),
+                    link=item.get("link", ""),
+                    snippet=item.get("snippet", ""),
+                    position=i + 1,
+                    date=item.get("year"),
+                ))
+
+        return results
 
     def search(
         self,

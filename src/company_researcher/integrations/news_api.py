@@ -12,16 +12,14 @@ Provides:
 import asyncio
 import hashlib
 import json
-import logging
-import os
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
-from urllib.parse import quote_plus
+from ..utils import get_config, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def _utcnow() -> datetime:
@@ -194,7 +192,7 @@ class NewsAPIClient:
         # Search with filters
         results = await client.search(
             query="Tesla earnings",
-            from_date=datetime.now() - timedelta(days=7),
+            from_date=utc_now() - timedelta(days=7),
             language="en"
         )
     """
@@ -207,7 +205,7 @@ class NewsAPIClient:
         timeout: float = 30.0,
         enable_sentiment: bool = True
     ):
-        self.api_key = api_key or os.environ.get("NEWS_API_KEY", "")
+        self.api_key = api_key or get_config("NEWS_API_KEY", default="")
         self.timeout = timeout
         self.enable_sentiment = enable_sentiment
         self._sentiment_analyzer = SimpleSentimentAnalyzer() if enable_sentiment else None
@@ -316,6 +314,8 @@ class NewsAPIClient:
         """Make API request."""
         import urllib.request
         import urllib.parse
+        import urllib.error
+        import socket
 
         url = f"{self.BASE_URL}/{endpoint}?{urllib.parse.urlencode(params)}"
 
@@ -333,7 +333,40 @@ class NewsAPIClient:
 
             return json.loads(response.read().decode('utf-8'))
 
+        except socket.timeout:
+            logger.warning(f"NewsAPI timeout for {endpoint} (timeout={self.timeout}s)")
+            return {
+                "status": "error",
+                "message": "Request timeout",
+                "totalResults": 0,
+                "articles": []
+            }
+        except urllib.error.HTTPError as e:
+            logger.error(f"NewsAPI HTTP error for {endpoint}: {e.code} {e.reason}")
+            return {
+                "status": "error",
+                "message": f"HTTP {e.code}: {e.reason}",
+                "totalResults": 0,
+                "articles": []
+            }
+        except urllib.error.URLError as e:
+            logger.warning(f"NewsAPI connection error for {endpoint}: {e.reason}")
+            return {
+                "status": "error",
+                "message": f"Connection error: {e.reason}",
+                "totalResults": 0,
+                "articles": []
+            }
+        except json.JSONDecodeError as e:
+            logger.error(f"NewsAPI invalid JSON response for {endpoint}: {e}")
+            return {
+                "status": "error",
+                "message": "Invalid JSON response",
+                "totalResults": 0,
+                "articles": []
+            }
         except Exception as e:
+            logger.error(f"NewsAPI unexpected error for {endpoint}: {type(e).__name__}: {e}")
             return {
                 "status": "error",
                 "message": str(e),

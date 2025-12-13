@@ -8,12 +8,13 @@ Provides:
 - Connection pooling
 """
 
-import asyncio
 import json
 import hashlib
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar, Union
+from dataclasses import dataclass
+from typing import Any, Dict, Generic, List, Optional, TypeVar
+from ..utils import get_logger, utc_now
+
+logger = get_logger(__name__)
 
 K = TypeVar('K')
 V = TypeVar('V')
@@ -117,7 +118,7 @@ class RedisCache(Generic[K, V]):
         """Serialize value for storage."""
         return json.dumps({
             "value": value,
-            "stored_at": datetime.utcnow().isoformat(),
+            "stored_at": utc_now().isoformat(),
             "type": type(value).__name__
         }, default=str)
 
@@ -343,8 +344,8 @@ class RedisCache(Generic[K, V]):
                 info = await self._redis.info("memory")
                 stats["used_memory"] = info.get("used_memory_human", "unknown")
                 stats["used_memory_bytes"] = info.get("used_memory", 0)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to get Redis memory info: {e}")
 
         return stats
 

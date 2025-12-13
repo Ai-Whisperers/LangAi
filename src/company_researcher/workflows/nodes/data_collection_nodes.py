@@ -6,7 +6,6 @@ This module contains nodes that fetch data from external sources:
 - News providers (with fallback chain)
 """
 
-import logging
 from typing import Dict, Any, Optional
 
 from ...state import OverallState
@@ -15,8 +14,9 @@ from ...integrations import (
     create_financial_provider,
     create_news_provider,
 )
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # =============================================================================

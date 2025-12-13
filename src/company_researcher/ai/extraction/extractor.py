@@ -1,12 +1,11 @@
 """AI-powered data extraction using LLM."""
 from typing import List, Optional, Dict, Any
-import logging
 import re
 import asyncio
 
 from ..base import AIComponent
 from ..fallback import FallbackHandler
-from ..utils import truncate_text, normalize_confidence
+from ..utils import get_logger, normalize_confidence, truncate_text
 from ...llm.response_parser import parse_json_response
 
 from .models import (
@@ -28,7 +27,7 @@ from .prompts import (
     COUNTRY_DETECTION_PROMPT
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class AIDataExtractor(AIComponent[ExtractionResult]):

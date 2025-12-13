@@ -9,7 +9,6 @@ Visualizes the complete company research process:
 """
 
 import json
-import logging
 import re
 from typing import TypedDict, Annotated, List, Dict, Any
 from langgraph.graph import StateGraph, START, END
@@ -18,8 +17,9 @@ import operator
 from ..llm.client_factory import get_tavily_client
 from ..llm.smart_client import smart_completion
 from ..config import get_config
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ResearchState(TypedDict):

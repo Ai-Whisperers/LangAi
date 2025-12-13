@@ -9,15 +9,14 @@ Maintains a persistent registry of all URLs encountered during research:
 """
 
 import json
-import logging
-import hashlib
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Set
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from enum import Enum
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class URLStatus(str, Enum):

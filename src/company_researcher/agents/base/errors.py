@@ -31,8 +31,9 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, TypeVar
 from functools import wraps
 import time
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # ==============================================================================
@@ -125,7 +126,6 @@ class SearchError(AgentError):
 
 class ConfigurationError(AgentError):
     """Error in agent configuration."""
-    pass
 
 
 class ValidationError(AgentError):

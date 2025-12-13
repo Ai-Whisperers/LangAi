@@ -19,12 +19,12 @@ Usage:
     thesis = generator.generate_thesis(company_data, financials, risks)
 """
 
-import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from ...utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class InvestmentRecommendation(Enum):
@@ -165,6 +165,9 @@ class InvestmentThesisGenerator:
         market_data = market_data or {}
         risk_assessment = risk_assessment or {}
 
+        # Check if we have sufficient data
+        has_sufficient_data = self._has_sufficient_financial_data(financial_data, market_data)
+
         # Build valuation metrics
         valuation = self._analyze_valuation(financial_data, market_data)
 
@@ -181,13 +184,15 @@ class InvestmentThesisGenerator:
         # Calculate upside potential
         upside = self._calculate_upside(valuation, bull_case, bear_case)
 
-        # Determine recommendation
-        risk_score = risk_assessment.get("overall_risk_score", 50)
-        recommendation = self._determine_recommendation(upside, risk_score)
-
-        # Calculate confidence
+        # Calculate confidence first (needed for recommendation)
         confidence = self._calculate_confidence(
             financial_data, market_data, risk_assessment
+        )
+
+        # Determine recommendation (with data sufficiency check)
+        risk_score = risk_assessment.get("overall_risk_score", 50)
+        recommendation = self._determine_recommendation(
+            upside, risk_score, has_sufficient_data, confidence
         )
 
         # Identify suitable investor profiles
@@ -333,6 +338,25 @@ class InvestmentThesisGenerator:
         else:
             return "D"
 
+    def _has_sufficient_financial_data(
+        self,
+        financial_data: Dict[str, Any],
+        market_data: Dict[str, Any]
+    ) -> bool:
+        """Check if we have enough data for a quantitative thesis."""
+        data_points = 0
+        if financial_data.get("revenue_growth") is not None:
+            data_points += 1
+        if financial_data.get("profit_margin") is not None:
+            data_points += 1
+        if financial_data.get("pe_ratio") is not None:
+            data_points += 1
+        if market_data.get("market_share") is not None:
+            data_points += 1
+        if market_data.get("market_growth") is not None:
+            data_points += 1
+        return data_points >= 2  # Need at least 2 data points
+
     def _generate_bull_case(
         self,
         company_data: Dict[str, Any],
@@ -340,37 +364,46 @@ class InvestmentThesisGenerator:
         market_data: Dict[str, Any]
     ) -> BullCase:
         """Generate bullish investment thesis."""
+        _ = company_data  # Unused but kept for API consistency
         drivers = []
         catalysts = []
+        has_data = self._has_sufficient_financial_data(financial_data, market_data)
 
-        # Analyze growth
-        revenue_growth = financial_data.get("revenue_growth", 0)
-        if revenue_growth > 10:
+        # Analyze growth (handle None values)
+        revenue_growth = financial_data.get("revenue_growth")
+        if revenue_growth is not None and revenue_growth > 10:
             drivers.append(f"Strong revenue growth ({revenue_growth:.1f}%)")
             catalysts.append("Continued market expansion")
 
-        # Analyze market position
-        market_share = market_data.get("market_share", 0)
-        if market_share > 15:
+        # Analyze market position (handle None values)
+        market_share = market_data.get("market_share")
+        if market_share is not None and market_share > 15:
             drivers.append(f"Market leadership ({market_share:.1f}% share)")
 
-        # Analyze profitability
-        profit_margin = financial_data.get("profit_margin", 0)
-        if profit_margin > 15:
+        # Analyze profitability (handle None values)
+        profit_margin = financial_data.get("profit_margin")
+        if profit_margin is not None and profit_margin > 15:
             drivers.append(f"Strong profitability ({profit_margin:.1f}% margin)")
 
-        # Industry tailwinds
-        market_growth = market_data.get("market_growth", 0)
-        if market_growth > 5:
+        # Industry tailwinds (handle None values)
+        market_growth = market_data.get("market_growth")
+        if market_growth is not None and market_growth > 5:
             drivers.append(f"Growing market ({market_growth:.1f}% industry growth)")
             catalysts.append("Industry tailwinds supporting growth")
 
         # Default drivers if none found
         if not drivers:
-            drivers = [
-                "Potential for operational improvement",
-                "Market consolidation opportunities"
-            ]
+            if has_data:
+                drivers = [
+                    "Potential for operational improvement",
+                    "Market consolidation opportunities"
+                ]
+            else:
+                drivers = [
+                    "Insufficient data for quantitative analysis",
+                    "Qualitative assessment suggests market position",
+                    "Further research recommended"
+                ]
 
         if not catalysts:
             catalysts = [
@@ -378,15 +411,22 @@ class InvestmentThesisGenerator:
                 "Market expansion initiatives"
             ]
 
-        # Calculate potential upside
-        upside = min(50, revenue_growth * 2 + market_share * 0.5)
+        # Calculate potential upside - with minimum when data is missing
+        if has_data:
+            rg = revenue_growth if revenue_growth is not None else 0
+            ms = market_share if market_share is not None else 0
+            upside = min(50, max(10, rg * 2 + ms * 0.5))  # Min 10% upside for bull case
+        else:
+            # Without data, use conservative estimate
+            upside = 15.0  # Conservative bull case without data
+            drivers.insert(0, "Based on qualitative factors (limited financial data)")
 
         return BullCase(
-            headline=f"Growth story with {upside:.0f}% upside potential",
+            headline=f"Growth story with {upside:.0f}% upside potential" if has_data else f"Potential upside scenario ({upside:.0f}% estimate, limited data)",
             key_drivers=drivers[:4],
             catalysts=catalysts[:3],
             target_upside=upside,
-            probability=0.4,  # Base probability
+            probability=0.4 if has_data else 0.3,  # Lower probability without data
             timeframe="12-24 months"
         )
 
@@ -397,17 +437,18 @@ class InvestmentThesisGenerator:
         risk_assessment: Dict[str, Any]
     ) -> BearCase:
         """Generate bearish investment thesis."""
+        _ = company_data  # Unused but kept for API consistency
         risks = []
         triggers = []
 
-        # Analyze financial risks
-        debt_equity = financial_data.get("debt_to_equity", 0)
+        # Analyze financial risks (handle None values)
+        debt_equity = financial_data.get("debt_to_equity") or 0
         if debt_equity > 1.5:
             risks.append(f"High leverage (D/E: {debt_equity:.1f})")
             triggers.append("Rising interest rates impact")
 
-        # Revenue decline
-        revenue_growth = financial_data.get("revenue_growth", 0)
+        # Revenue decline (handle None values)
+        revenue_growth = financial_data.get("revenue_growth") or 0
         if revenue_growth < 0:
             risks.append(f"Revenue decline ({revenue_growth:.1f}%)")
             triggers.append("Continued market share loss")
@@ -468,9 +509,16 @@ class InvestmentThesisGenerator:
     def _determine_recommendation(
         self,
         upside: float,
-        risk_score: float
+        risk_score: float,
+        has_sufficient_data: bool = True,
+        confidence: float = 50.0
     ) -> InvestmentRecommendation:
         """Determine investment recommendation."""
+        # If we don't have enough data or confidence is too low, don't make a strong recommendation
+        if not has_sufficient_data or confidence < 55:
+            logger.info(f"Insufficient data for recommendation (has_data={has_sufficient_data}, confidence={confidence})")
+            return InvestmentRecommendation.NOT_RATED
+
         # Adjust upside for risk
         risk_adjusted_upside = upside - (risk_score * 0.3)
 
@@ -519,16 +567,19 @@ class InvestmentThesisGenerator:
         """Identify suitable investor profiles."""
         suitable = []
 
-        # Growth investors
-        if upside > 20 and financial_data.get("revenue_growth", 0) > 10:
+        # Growth investors (handle None values with 'or')
+        revenue_growth = financial_data.get("revenue_growth") or 0
+        if upside > 20 and revenue_growth > 10:
             suitable.append(InvestorProfile.GROWTH)
 
-        # Value investors
-        if financial_data.get("pe_ratio", 100) < 15:
+        # Value investors (handle None values with 'or')
+        pe_ratio = financial_data.get("pe_ratio") or 100
+        if pe_ratio < 15:
             suitable.append(InvestorProfile.VALUE)
 
-        # Income investors
-        if financial_data.get("dividend_yield", 0) > 3:
+        # Income investors (handle None values with 'or')
+        dividend_yield = financial_data.get("dividend_yield") or 0
+        if dividend_yield > 3:
             suitable.append(InvestorProfile.INCOME)
 
         # Balanced investors
@@ -554,28 +605,32 @@ class InvestmentThesisGenerator:
         """Extract key investment highlights."""
         highlights = []
 
-        # Market position
-        if market_data.get("market_share", 0) > 15:
+        # Market position (handle None values with 'or')
+        market_share = market_data.get("market_share") or 0
+        if market_share > 15:
             highlights.append(
-                f"Market leader with {market_data['market_share']:.1f}% share"
+                f"Market leader with {market_share:.1f}% share"
             )
 
-        # Growth
-        if financial_data.get("revenue_growth", 0) > 10:
+        # Growth (handle None values with 'or')
+        revenue_growth = financial_data.get("revenue_growth") or 0
+        if revenue_growth > 10:
             highlights.append(
-                f"Strong growth at {financial_data['revenue_growth']:.1f}% annually"
+                f"Strong growth at {revenue_growth:.1f}% annually"
             )
 
-        # Profitability
-        if financial_data.get("profit_margin", 0) > 15:
+        # Profitability (handle None values with 'or')
+        profit_margin = financial_data.get("profit_margin") or 0
+        if profit_margin > 15:
             highlights.append(
-                f"High profitability with {financial_data['profit_margin']:.1f}% margins"
+                f"High profitability with {profit_margin:.1f}% margins"
             )
 
-        # Valuation
-        if financial_data.get("pe_ratio") and financial_data["pe_ratio"] < 20:
+        # Valuation (check for None explicitly)
+        pe_ratio = financial_data.get("pe_ratio")
+        if pe_ratio is not None and pe_ratio < 20:
             highlights.append(
-                f"Attractive valuation at {financial_data['pe_ratio']:.1f}x P/E"
+                f"Attractive valuation at {pe_ratio:.1f}x P/E"
             )
 
         # Company strengths
@@ -624,8 +679,9 @@ class InvestmentThesisGenerator:
         """Identify potential stock catalysts."""
         catalysts = list(bull_case.catalysts)
 
-        # Market catalysts
-        if market_data.get("market_growth", 0) > 5:
+        # Market catalysts (handle None values with 'or')
+        market_growth = market_data.get("market_growth") or 0
+        if market_growth > 5:
             catalysts.append("Industry tailwinds and market expansion")
 
         # Company-specific catalysts
@@ -688,6 +744,14 @@ class InvestmentThesisGenerator:
     ) -> str:
         """Generate executive summary."""
         rec_text = recommendation.value.replace("_", " ").title()
+
+        if recommendation == InvestmentRecommendation.NOT_RATED:
+            return (
+                f"Investment Thesis: {company_name} is currently Not Rated due to "
+                f"insufficient financial data for quantitative analysis. "
+                f"Further research with financial statements is recommended. "
+                f"Data confidence: {confidence:.0f}%."
+            )
 
         return (
             f"Investment Thesis: {rec_text} on {company_name} with "

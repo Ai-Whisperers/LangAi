@@ -31,7 +31,9 @@ from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
 from threading import Lock
 import hashlib
-import os
+from ..utils import get_config, get_logger
+
+logger = get_logger(__name__)
 
 try:
     import chromadb
@@ -503,8 +505,8 @@ class ResearchVectorStore:
         company_id = f"company_{self._normalize_name(company_name)}"
         try:
             self.companies_collection.delete(ids=[company_id])
-        except Exception:
-            pass  # May not exist
+        except Exception as e:
+            logger.debug(f"Company {company_name} not in collection (expected): {e}")
 
     def get_stats(self) -> Dict[str, int]:
         """Get collection statistics."""
@@ -575,9 +577,9 @@ def get_vector_store(
     if _vector_store is None:
         with _store_lock:
             if _vector_store is None:
-                directory = persist_directory or os.environ.get(
+                directory = persist_directory or get_config(
                     "CHROMA_PERSIST_DIR",
-                    "./chroma_db"
+                    default="./chroma_db"
                 )
                 _vector_store = ResearchVectorStore(directory)
 

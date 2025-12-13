@@ -1,6 +1,6 @@
 """Pydantic models for AI quality assessment."""
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Tuple
 from enum import Enum
 
 
@@ -14,7 +14,13 @@ class QualityLevel(str, Enum):
 
     @classmethod
     def from_score(cls, score: float) -> "QualityLevel":
-        """Convert a 0-100 score to quality level."""
+        """Convert a 0-100 score to quality level.
+
+        Scores are clamped to 0-100 range for classification.
+        """
+        # Clamp score to valid range
+        score = max(0.0, min(100.0, score))
+
         if score >= 90:
             return cls.EXCELLENT
         elif score >= 75:
@@ -26,16 +32,16 @@ class QualityLevel(str, Enum):
         else:
             return cls.INSUFFICIENT
 
-    def to_score_range(self) -> tuple:
+    def to_score_range(self) -> Tuple[int, int]:
         """Get score range for this level."""
-        ranges = {
-            self.EXCELLENT: (90, 100),
-            self.GOOD: (75, 89),
-            self.ACCEPTABLE: (60, 74),
-            self.POOR: (40, 59),
-            self.INSUFFICIENT: (0, 39)
+        ranges: Dict[QualityLevel, Tuple[int, int]] = {
+            QualityLevel.EXCELLENT: (90, 100),
+            QualityLevel.GOOD: (75, 89),
+            QualityLevel.ACCEPTABLE: (60, 74),
+            QualityLevel.POOR: (40, 59),
+            QualityLevel.INSUFFICIENT: (0, 39)
         }
-        return ranges.get(self, (0, 100))
+        return ranges[self]  # All enum values covered, safe to index directly
 
     def is_passing(self, threshold: float = 75.0) -> bool:
         """Check if this level meets threshold."""

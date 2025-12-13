@@ -19,7 +19,6 @@ Usage:
         item = item[:ExtractionConstants.LIST_ITEM_MAX_LENGTH]
 """
 
-from dataclasses import dataclass
 from typing import Final
 
 

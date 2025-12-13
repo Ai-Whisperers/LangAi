@@ -13,11 +13,11 @@ Supports multiple PDF libraries with fallback.
 from __future__ import annotations
 
 from typing import Dict, Any, List, Optional, TYPE_CHECKING
+from ..utils import utc_now
 
 if TYPE_CHECKING:
     from reportlab.platypus import Table
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum
 import os
 
@@ -29,9 +29,9 @@ try:
     from reportlab.lib.units import inch
     from reportlab.platypus import (
         SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-        PageBreak, Image, ListFlowable, ListItem
+        PageBreak
     )
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
+    from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
     REPORTLAB_AVAILABLE = True
 except ImportError:
     REPORTLAB_AVAILABLE = False
@@ -72,7 +72,7 @@ class ReportConfig:
     include_appendix: bool = False
     logo_path: Optional[str] = None
     author: str = "Company Researcher"
-    date: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
+    date: str = field(default_factory=lambda: utc_now().strftime("%Y-%m-%d"))
 
 
 # ============================================================================

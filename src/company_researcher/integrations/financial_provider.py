@@ -11,13 +11,13 @@ Each provider is tried in order until data is successfully retrieved.
 Failed providers are logged and skipped for subsequent calls during the session.
 """
 
-import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Callable
 from enum import Enum
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ProviderStatus(Enum):
@@ -44,14 +44,14 @@ class ProviderState:
         if self.status == ProviderStatus.DISABLED:
             return False
         if self.status == ProviderStatus.RATE_LIMITED:
-            if self.reset_time and datetime.now() > self.reset_time:
+            if self.reset_time and utc_now() > self.reset_time:
                 self.status = ProviderStatus.AVAILABLE
                 self.calls_today = 0
                 return True
             return False
         if self.daily_limit and self.calls_today >= self.daily_limit:
             self.status = ProviderStatus.RATE_LIMITED
-            self.reset_time = datetime.now().replace(
+            self.reset_time = utc_now().replace(
                 hour=0, minute=0, second=0
             ) + timedelta(days=1)
             return False
@@ -59,7 +59,7 @@ class ProviderState:
 
     def record_call(self, success: bool, error: Optional[str] = None):
         """Record a call attempt."""
-        self.last_call = datetime.now()
+        self.last_call = utc_now()
         self.calls_today += 1
         if not success:
             self.last_error = error
@@ -144,7 +144,7 @@ class FinancialData:
 
     # Meta
     data_sources: List[str] = field(default_factory=list)
-    last_updated: datetime = field(default_factory=datetime.now)
+    last_updated: datetime = field(default_factory=utc_now)
     data_quality: str = "partial"  # complete, partial, minimal
 
     def to_dict(self) -> Dict[str, Any]:
@@ -343,7 +343,7 @@ class FinancialDataProvider:
         if ticker not in self._cache:
             return None
         cached = self._cache[ticker]
-        if datetime.now() - cached.last_updated > self._cache_ttl:
+        if utc_now() - cached.last_updated > self._cache_ttl:
             del self._cache[ticker]
             return None
         return cached

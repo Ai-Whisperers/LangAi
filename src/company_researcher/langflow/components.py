@@ -11,10 +11,10 @@ Components follow LangFlow's custom component pattern:
 - Implement build() method for component logic
 """
 
-import logging
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
+from ..utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Check if LangFlow is available
 try:

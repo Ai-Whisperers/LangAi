@@ -11,7 +11,7 @@ from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
 from enum import Enum
 import os
-import logging
+from ..utils import get_logger
 
 
 # ============================================================================
@@ -221,7 +221,6 @@ class ProductionConfig:
 
 class ConfigValidationError(Exception):
     """Configuration validation error."""
-    pass
 
 
 def validate_config(config: ProductionConfig) -> List[str]:
@@ -314,7 +313,7 @@ def load_config(
     if validate:
         errors = validate_config(config)
         if errors:
-            logger = logging.getLogger("config")
+            logger = get_logger("config")
             for error in errors:
                 logger.warning(f"Config warning: {error}")
 

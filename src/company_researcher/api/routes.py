@@ -8,14 +8,12 @@ REST API endpoints for company research:
 - Health checks
 """
 
-import logging
-from typing import Dict, Any, List, Optional
-from datetime import datetime
+from typing import Dict, Any, Optional
 import time
+from ..utils import get_config, get_logger, utc_now
 
 try:
-    from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Query, Path
-    from fastapi.responses import JSONResponse
+    from fastapi import APIRouter, HTTPException, BackgroundTasks, Query, Path
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
@@ -47,7 +45,7 @@ from .models import (
 )
 from .task_storage import get_task_storage, TaskStorage
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # ============================================================================
@@ -91,7 +89,7 @@ if FASTAPI_AVAILABLE:
             "company_name": request.company_name,
             "depth": request.depth.value,
             "status": TaskStatusEnum.PENDING.value,
-            "created_at": datetime.now(),
+            "created_at": utc_now(),
             "config": {
                 "include_financial": request.include_financial,
                 "include_market": request.include_market,
@@ -130,7 +128,7 @@ if FASTAPI_AVAILABLE:
             company_name=request.company_name,
             status=TaskStatusEnum.PENDING,
             depth=request.depth,
-            created_at=datetime.now(),
+            created_at=utc_now(),
             estimated_duration_seconds=duration_map.get(request.depth.value, 120),
             message="Research task created successfully"
         )
@@ -216,7 +214,7 @@ if FASTAPI_AVAILABLE:
 
         await storage.update_task(task_id, {
             "status": TaskStatusEnum.CANCELLED.value,
-            "cancelled_at": datetime.now()
+            "cancelled_at": utc_now()
         })
 
         return {"message": f"Task {task_id} cancelled"}
@@ -252,7 +250,7 @@ if FASTAPI_AVAILABLE:
                 "batch_id": batch_id,
                 "depth": request.depth.value,
                 "status": TaskStatusEnum.PENDING.value,
-                "created_at": datetime.now(),
+                "created_at": utc_now(),
                 "result": None,
                 "error": None
             }
@@ -264,7 +262,7 @@ if FASTAPI_AVAILABLE:
             "companies": request.companies,
             "task_ids": task_ids,
             "status": TaskStatusEnum.PENDING.value,
-            "created_at": datetime.now(),
+            "created_at": utc_now(),
             "completed": 0,
             "failed": 0
         }
@@ -281,7 +279,7 @@ if FASTAPI_AVAILABLE:
             batch_id=batch_id,
             total_companies=len(request.companies),
             status=TaskStatusEnum.PENDING,
-            created_at=datetime.now(),
+            created_at=utc_now(),
             task_ids=task_ids,
             message="Batch research started"
         )
@@ -381,7 +379,7 @@ if FASTAPI_AVAILABLE:
         return HealthResponse(
             status="healthy",
             version="1.0.0",
-            timestamp=datetime.now(),
+            timestamp=utc_now(),
             services={
                 "api": "running",
                 "storage": type(storage).__name__,
@@ -412,7 +410,7 @@ if FASTAPI_AVAILABLE:
             "running": running,
             "pending": pending,
             "storage_backend": type(storage).__name__,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": utc_now().isoformat()
         }
 
 
@@ -430,7 +428,7 @@ async def _execute_research(task_id: str, request: ResearchRequest):
     # Update to running
     await storage.update_task(task_id, {
         "status": TaskStatusEnum.RUNNING.value,
-        "started_at": datetime.now()
+        "started_at": utc_now()
     })
 
     try:
@@ -451,7 +449,7 @@ async def _execute_research(task_id: str, request: ResearchRequest):
         # Update to completed
         await storage.update_task(task_id, {
             "status": TaskStatusEnum.COMPLETED.value,
-            "completed_at": datetime.now(),
+            "completed_at": utc_now(),
             "result": {
                 "agent_outputs": result.data.get("agent_outputs", {}),
                 "synthesis": result.data.get("synthesis"),
@@ -471,7 +469,7 @@ async def _execute_research(task_id: str, request: ResearchRequest):
         await storage.update_task(task_id, {
             "status": TaskStatusEnum.FAILED.value,
             "error": str(e),
-            "failed_at": datetime.now()
+            "failed_at": utc_now()
         })
 
 
@@ -507,7 +505,7 @@ async def _execute_batch(batch_id: str, request: BatchRequest):
 
     await storage.update_batch(batch_id, {
         "status": TaskStatusEnum.COMPLETED.value,
-        "completed_at": datetime.now(),
+        "completed_at": utc_now(),
         "completed": completed_count,
         "failed": failed_count
     })
@@ -521,7 +519,6 @@ async def _send_webhook(url: str, payload: Dict[str, Any]):
         url: Webhook URL (must be HTTPS in production)
         payload: Data to send
     """
-    import os
 
     # Validate URL scheme
     if not url.startswith(("http://", "https://")):
@@ -529,7 +526,7 @@ async def _send_webhook(url: str, payload: Dict[str, Any]):
         return
 
     # Require HTTPS in production
-    is_production = os.getenv("ENVIRONMENT", "development") == "production"
+    is_production = get_config("ENVIRONMENT", default="development") == "production"
     if is_production and not url.startswith("https://"):
         logger.warning(f"Webhook URL must use HTTPS in production: {url}")
         return

@@ -14,9 +14,9 @@ from datetime import datetime
 from enum import Enum
 import asyncio
 import json
-import logging
+from ..utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class EventType(str, Enum):
@@ -44,7 +44,7 @@ class StreamEvent:
     """A streaming event with metadata."""
     event_type: EventType
     data: Dict[str, Any]
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=utc_now)
     agent_name: Optional[str] = None
     progress_percent: Optional[float] = None
     message: Optional[str] = None
@@ -133,7 +133,7 @@ class ProgressTracker:
 
     async def start_research(self, company_name: str, total_agents: int = 0) -> None:
         """Signal research has started."""
-        self._started_at = datetime.utcnow()
+        self._started_at = utc_now()
         self._total_agents = total_agents
         self._completed_agents = 0
 
@@ -147,7 +147,7 @@ class ProgressTracker:
         """Signal research has completed."""
         duration = None
         if self._started_at:
-            duration = (datetime.utcnow() - self._started_at).total_seconds()
+            duration = (utc_now() - self._started_at).total_seconds()
 
         await self.emit(
             EventType.RESEARCH_COMPLETED,

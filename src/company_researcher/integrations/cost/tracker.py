@@ -9,7 +9,6 @@ This module contains the CostTracker class that:
 """
 
 import json
-import logging
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
@@ -18,14 +17,13 @@ from typing import Optional
 
 from .models import (
     ProviderCategory,
-    ProviderConfig,
     PROVIDER_CONFIGS,
     UsageRecord,
-    DailyUsage,
     CostAlert,
 )
+from ...utils import get_logger, utc_now
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class CostTracker:
@@ -60,7 +58,7 @@ class CostTracker:
         self._lock = Lock()
         self._usage: list[UsageRecord] = []
         self._alerts: list[CostAlert] = []
-        self._session_start = datetime.now()
+        self._session_start = utc_now()
 
         # Load historical data
         self._load_usage()
@@ -165,7 +163,7 @@ class CostTracker:
         record = UsageRecord(
             provider=provider,
             category=config.category.value,
-            timestamp=datetime.now(),
+            timestamp=utc_now(),
             units=units,
             cost=cost,
             metadata=metadata or {}
@@ -240,7 +238,7 @@ class CostTracker:
         provider: Optional[str] = None
     ) -> float:
         """Get cost for a specific period."""
-        now = datetime.now()
+        now = utc_now()
 
         if period == "daily":
             start = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -279,7 +277,7 @@ class CostTracker:
 
     def get_summary(self) -> dict:
         """Get comprehensive cost summary."""
-        now = datetime.now()
+        now = utc_now()
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
