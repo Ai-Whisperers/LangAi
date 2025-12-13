@@ -9,7 +9,6 @@
 
 venv-langflow/*
 .cache/*
-
 # Don't ignore outputs folder - it contains valuable research data
 !outputs/
 !outputs/**
@@ -237,6 +236,12 @@ nul
 # =============================================================================
 # Project Specific - IGNORED
 # =============================================================================
+
+# LangGraph API (generated)
+.langgraph_api/
+
+# Test reports (generated)
+test_reports/
 
 # Logs (outside outputs)
 logs/
