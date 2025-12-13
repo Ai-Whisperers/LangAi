@@ -12,40 +12,33 @@ Tests the complete workflow including:
 
 import pytest
 from datetime import datetime
-from unittest.mock import Mock, patch, MagicMock
-from typing import Dict, Any
+from unittest.mock import patch
 
 # Import workflow components
-from src.company_researcher.state import (
-    OverallState,
-    InputState,
-    OutputState,
+from company_researcher.state import (
     create_initial_state,
     create_output_state,
 )
 
-# Import analysis modules
-from src.company_researcher.agents.research.multilingual_search import (
+# Import analysis modules from consolidated package
+from company_researcher.agents.research import (
+    # Multilingual search
     create_multilingual_generator,
     Language,
     Region,
-)
-from src.company_researcher.agents.research.competitive_matrix import (
+    # Competitive matrix
     create_competitive_matrix,
     MatrixDimension,
     CompetitivePosition,
-)
-from src.company_researcher.agents.research.risk_quantifier import (
+    # Risk quantifier
     create_risk_quantifier,
     RiskCategory,
     RiskLevel,
-)
-from src.company_researcher.agents.research.investment_thesis import (
+    # Investment thesis
     create_thesis_generator,
     InvestmentRecommendation,
     InvestmentHorizon,
-)
-from src.company_researcher.agents.research.news_sentiment import (
+    # News sentiment (AI-powered)
     create_sentiment_analyzer,
     SentimentLevel,
     NewsCategory,
@@ -213,6 +206,37 @@ class TestMultilingualSearchIntegration:
 class TestNewsSentimentIntegration:
     """Integration tests for news sentiment analysis."""
 
+    @pytest.fixture
+    def mock_sentiment_response(self):
+        """Mock LLM response for sentiment analysis."""
+        import json
+        return json.dumps({
+            "overall_sentiment": "positive",
+            "overall_score": 0.6,
+            "overall_confidence": 0.85,
+            "target_company_sentiment": "positive",
+            "target_company_confidence": 0.8,
+            "entity_sentiments": [
+                {
+                    "entity_name": "Petrobras",
+                    "entity_type": "company",
+                    "sentiment": "positive",
+                    "confidence": 0.85,
+                    "reasoning": "Strong earnings reported",
+                    "context_snippet": "record revenue growth",
+                    "is_target_company": True
+                }
+            ],
+            "key_factors": ["Strong Q3 earnings", "Strategic partnerships", "Market expansion"],
+            "detected_language": "en",
+            "has_negations": False,
+            "has_uncertainty": False,
+            "has_sarcasm": False,
+            "news_category": "financial",
+            "secondary_categories": ["partnership"],
+            "summary": "Positive news about company performance"
+        })
+
     def test_analyze_search_results(self, sample_company_name, sample_search_results):
         """Test sentiment analysis from search results."""
         analyzer = create_sentiment_analyzer()
@@ -226,22 +250,28 @@ class TestNewsSentimentIntegration:
         assert isinstance(profile.sentiment_level, SentimentLevel)
         assert profile.sentiment_trend in ["improving", "stable", "declining"]
 
-    def test_extract_topics(self, sample_search_results):
+    def test_extract_topics(self, sample_search_results, mock_sentiment_response):
         """Test topic extraction from news."""
         analyzer = create_sentiment_analyzer()
-        profile = analyzer.analyze_from_search_results(
-            "Petrobras", sample_search_results
-        )
+
+        # Mock the _call_llm method with lambda to ensure synchronous return
+        with patch.object(analyzer, '_call_llm', lambda *args, **kwargs: mock_sentiment_response):
+            profile = analyzer.analyze_from_search_results(
+                "Petrobras", sample_search_results
+            )
 
         # Should detect relevant topics
         assert len(profile.key_topics) > 0
 
-    def test_positive_and_negative_highlights(self, sample_company_name, sample_search_results):
+    def test_positive_and_negative_highlights(self, sample_company_name, sample_search_results, mock_sentiment_response):
         """Test extraction of positive and negative highlights."""
         analyzer = create_sentiment_analyzer()
-        profile = analyzer.analyze_from_search_results(
-            sample_company_name, sample_search_results
-        )
+
+        # Mock the _call_llm method with lambda to ensure synchronous return
+        with patch.object(analyzer, '_call_llm', lambda *args, **kwargs: mock_sentiment_response):
+            profile = analyzer.analyze_from_search_results(
+                sample_company_name, sample_search_results
+            )
 
         # Should have some highlights (positive or negative)
         total_highlights = len(profile.positive_highlights) + len(profile.negative_highlights)

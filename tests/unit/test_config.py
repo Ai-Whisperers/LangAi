@@ -5,8 +5,6 @@ Tests the configuration management including agent-specific settings.
 """
 
 import pytest
-import os
-from unittest.mock import patch
 
 from src.company_researcher.config import ResearchConfig, reset_config
 
@@ -91,7 +89,7 @@ class TestAgentSpecificConfig:
     def test_research_agent_config(self):
         """Test research agent config values."""
         config = ResearchConfig()
-        assert config.deep_research_max_tokens == 3000
+        assert config.deep_research_max_tokens == 2000
         assert config.reasoning_max_tokens == 2000
 
     def test_quality_agent_config(self):

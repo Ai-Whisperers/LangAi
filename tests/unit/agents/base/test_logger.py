@@ -4,9 +4,7 @@ Tests for agents.base.logger module.
 Tests the centralized logging system for agents.
 """
 
-import pytest
 import logging
-from io import StringIO
 
 from src.company_researcher.agents.base.logger import (
     AgentLogger,

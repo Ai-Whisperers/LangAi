@@ -1,6 +1,6 @@
 """Tests for AI data extractor."""
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 import json
 
 from company_researcher.ai.extraction import (
@@ -15,7 +15,6 @@ from company_researcher.ai.extraction import (
     ExtractedFact,
     FinancialData,
     ExtractionResult,
-    CountryDetectionResult,
 )
 
 
@@ -390,16 +389,21 @@ class TestAIDataExtractor:
             assert result.confidence == 0.9
 
     @pytest.mark.asyncio
-    async def test_fallback_classification(self, extractor):
-        """Test fallback classification when AI fails."""
+    async def test_fallback_on_classification_failure(self, extractor):
+        """Test that classification falls back when AI fails."""
+        from company_researcher.ai.extraction.models import CompanyType
+
         with patch.object(extractor, '_async_call_llm', new_callable=AsyncMock) as mock_call:
             mock_call.side_effect = Exception("LLM Error")
 
+            # Should return fallback classification, not raise
             result = await extractor.classify_company(
                 company_name="Unknown Company",
                 context="Some context"
             )
 
+            # Verify fallback classification
+            assert result.company_name == "Unknown Company"
             assert result.company_type == CompanyType.UNKNOWN
             assert result.confidence == 0.0
             assert "fallback" in result.reasoning.lower()

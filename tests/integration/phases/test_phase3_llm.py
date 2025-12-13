@@ -9,7 +9,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from company_researcher.workflows.multi_agent_research import research_company
-from company_researcher.config import get_config
 
 
 def main():

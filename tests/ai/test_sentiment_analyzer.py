@@ -9,8 +9,6 @@ from company_researcher.ai.sentiment import (
     SentimentLevel,
     SentimentAnalysisResult,
     NewsCategory,
-    EntitySentiment,
-    SentimentAggregation,
 )
 
 

@@ -164,7 +164,7 @@ def sample_contradictory_facts():
             confidence_hint=0.9
         ),
         ExtractedFact(
-            content="Company revenue was $2.1 billion last year.",
+            content="Company revenue was $3 billion last year.",
             category=FactCategory.FINANCIAL,
             claim_type=ClaimType.NUMERICAL,
             source_agent="market",

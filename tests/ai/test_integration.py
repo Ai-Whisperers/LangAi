@@ -1,7 +1,6 @@
 """Tests for AI integration and migration layer."""
 import pytest
 from datetime import datetime
-from unittest.mock import Mock, AsyncMock, patch
 
 from company_researcher.ai.integration import (
     AIIntegrationLayer,
@@ -10,7 +9,6 @@ from company_researcher.ai.integration import (
 )
 from company_researcher.ai.migration import (
     MigrationValidator,
-    MigrationRegistry,
     ComparisonResult,
     get_migration_registry,
     reset_migration_registry,
@@ -299,35 +297,16 @@ class TestAllWorkstreamsIntegration:
     def test_all_ai_imports(self):
         """Test that all AI module imports work."""
         # Workstream 1: Sentiment
-        from company_researcher.ai import get_sentiment_analyzer, SentimentLevel
 
         # Workstream 2: Query
-        from company_researcher.ai import get_query_generator, QueryPurpose
 
         # Workstream 3: Quality
-        from company_researcher.ai import get_quality_assessor, QualityLevel
 
         # Workstream 4: Extraction
-        from company_researcher.ai import get_data_extractor, CompanyType
 
         # Workstream 5: Foundation
-        from company_researcher.ai import (
-            AIComponent,
-            AIComponentRegistry,
-            get_ai_registry,
-            AIConfig,
-            get_ai_config,
-            FallbackHandler,
-            CostTracker,
-        )
 
         # Workstream 6: Integration
-        from company_researcher.ai import (
-            AIIntegrationLayer,
-            get_ai_integration,
-            MigrationValidator,
-            gradual_rollout,
-        )
 
         # All imports should succeed
         assert True

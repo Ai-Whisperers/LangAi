@@ -15,7 +15,7 @@ Usage:
     python test_phase9_competitor.py
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from src.company_researcher.tools.competitor_analysis_utils import (
     CompetitorType,
@@ -28,12 +28,11 @@ from src.company_researcher.tools.competitor_analysis_utils import (
     analyze_patent_portfolio,
     aggregate_review_sentiment
 )
-from src.company_researcher.agents.competitor_scout import (
+from src.company_researcher.agents.market.competitor_scout import (
     extract_competitor_data,
     format_competitor_search_results,
     assess_competitors_from_data,
-    compare_tech_stacks,
-    generate_competitive_positioning
+    compare_tech_stacks
 )
 
 
@@ -159,8 +158,8 @@ def test_github_metrics():
 
     print("\n  Testing commit frequency calculation...")
 
-    # Generate test commits
-    now = datetime.now()
+    # Generate test commits with timezone-aware datetimes
+    now = datetime.now(timezone.utc)
     commits = [
         now - timedelta(days=i)
         for i in range(45)  # 45 commits spread over 45 days
@@ -533,10 +532,6 @@ def test_agent_structure():
 
     print("\n  Verifying agent imports...")
 
-    from src.company_researcher.agents import (
-        competitor_scout_agent_node,
-        competitor_scout_agent_node_traced
-    )
 
     print("  [OK] competitor_scout_agent_node imported")
     print("  [OK] competitor_scout_agent_node_traced imported")
@@ -555,7 +550,6 @@ def test_agent_structure():
     print("\n  Verifying LangFlow component...")
 
     from src.company_researcher.langflow.components import (
-        CompetitorScoutComponent,
         COMPONENT_REGISTRY
     )
 

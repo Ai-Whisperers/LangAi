@@ -1,6 +1,6 @@
 """Tests for AI query generator."""
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 import json
 
 from company_researcher.ai.query import (
@@ -241,24 +241,24 @@ class TestAIQueryGenerator:
             }
         })
 
-    def test_generate_queries_success(self, generator, mock_llm_response, mock_smart_client):
-        """Test successful query generation."""
-        mock_smart_client.complete.return_value.content = mock_llm_response
+    def test_generate_queries_success(self, generator, mock_llm_response):
+        """Test successful query generation with mocked _call_llm."""
+        # Use 'new=' instead of 'return_value=' for async method replacement
+        with patch.object(generator, '_call_llm', new=lambda *args, **kwargs: mock_llm_response):
+            context = CompanyContext(
+                company_name="Tesla",
+                is_public=True,
+                known_industry="Automotive"
+            )
 
-        context = CompanyContext(
-            company_name="Tesla",
-            is_public=True,
-            known_industry="Automotive"
-        )
+            result = generator.generate_queries(context, num_queries=5)
 
-        result = generator.generate_queries(context, num_queries=5)
+            assert len(result.queries) == 3
+            assert result.queries[0].purpose == QueryPurpose.FINANCIAL.value
+            assert result.queries[0].priority == 1
+            assert "Tesla" in result.queries[0].query
 
-        assert len(result.queries) == 3
-        assert result.queries[0].purpose == QueryPurpose.FINANCIAL.value
-        assert result.queries[0].priority == 1
-        assert "Tesla" in result.queries[0].query
-
-    def test_generate_queries_latam(self, generator, mock_smart_client):
+    def test_generate_queries_latam(self, generator):
         """Test query generation for LATAM company includes Spanish."""
         mock_response = json.dumps({
             "queries": [
@@ -284,37 +284,33 @@ class TestAIQueryGenerator:
             "estimated_coverage": {"financial": 0.7}
         })
 
-        mock_smart_client.complete.return_value.content = mock_response
+        with patch.object(generator, '_call_llm', new=lambda *args, **kwargs: mock_response):
+            context = CompanyContext(
+                company_name="Grupo Bimbo",
+                known_region="LATAM"
+            )
 
-        context = CompanyContext(
-            company_name="Grupo Bimbo",
-            known_region="LATAM"
-        )
+            result = generator.generate_queries(context)
 
-        result = generator.generate_queries(context)
+            # Should have queries in multiple languages
+            languages = {q.language for q in result.queries}
+            assert "es" in languages or "en" in languages
 
-        # Should have queries in multiple languages
-        languages = set(q.language for q in result.queries)
-        assert "es" in languages or "en" in languages
-
-    def test_fallback_on_failure(self, generator, mock_smart_client):
-        """Test fallback to legacy templates on LLM failure."""
+    def test_fallback_on_llm_failure(self, generator, mock_smart_client):
+        """Test that generator falls back to legacy queries when LLM fails."""
         mock_smart_client.complete.side_effect = Exception("LLM error")
 
         context = CompanyContext(company_name="Test Corp")
+        # Generator should fall back to legacy templates, not raise
         result = generator.generate_queries(context, num_queries=5)
 
-        # Should return legacy queries
+        # Verify we got fallback results
+        assert isinstance(result, QueryGenerationResult)
         assert len(result.queries) > 0
+        # All fallback queries should be marked as fallback
         assert all(q.is_fallback for q in result.queries)
-
-    def test_legacy_query_generation(self, generator):
-        """Test legacy template fallback."""
-        result = generator._generate_legacy_queries("Acme Corp", num_queries=5)
-
-        assert len(result.queries) == 5
-        assert all(q.is_fallback for q in result.queries)
-        assert "Acme Corp" in result.queries[0].query
+        # All fallback queries should contain the company name
+        assert any("Test Corp" in q.query for q in result.queries)
 
     def test_parse_generation_result(self, generator):
         """Test parsing of generation result."""

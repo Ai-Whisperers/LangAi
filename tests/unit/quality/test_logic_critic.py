@@ -6,7 +6,7 @@ contradiction detection, gap identification, and quality scoring.
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch, MagicMock
 from company_researcher.agents.quality.logic_critic import (
     logic_critic_agent_node,
     quick_logic_critic_node,
@@ -16,7 +16,8 @@ from company_researcher.agents.quality.logic_critic import (
     ResearchGap,
     REQUIRED_SECTIONS
 )
-from company_researcher.quality.fact_extractor import ExtractedFact, FactCategory
+# Use the AI extraction ExtractedFact which is what logic_critic.py uses
+from company_researcher.ai.extraction import ExtractedFact, FactCategory, FactType
 from company_researcher.quality.contradiction_detector import ContradictionReport, ContradictionSeverity
 
 
@@ -66,12 +67,24 @@ class TestIdentifyGaps:
         facts = []
 
         # Create sufficient facts for each section
+        # Map section_id to FactCategory values
+        category_map = {
+            "company_overview": FactCategory.COMPANY_INFO,
+            "financial": FactCategory.FINANCIAL,
+            "market": FactCategory.MARKET,
+            "product": FactCategory.PRODUCT,
+            "competitive": FactCategory.MARKET,
+            "leadership": FactCategory.LEADERSHIP,
+        }
         for section_id, section_info in REQUIRED_SECTIONS.items():
+            category = category_map.get(section_id, FactCategory.NEWS)
             for i in range(5):  # 5 facts per section (above minimum of 3)
                 fact = ExtractedFact(
-                    content=f"Fact about {section_id} - {i}",
-                    category=FactCategory(section_id) if section_id in [e.value for e in FactCategory] else FactCategory.COMPANY,
-                    source_agent="test"
+                    category=category,
+                    fact_type=FactType.OTHER,
+                    value=f"Fact about {section_id} - {i}",
+                    source_text=f"Source text for {section_id} fact {i}",
+                    confidence=0.8
                 )
                 facts.append(fact)
 
@@ -85,9 +98,11 @@ class TestIdentifyGaps:
         """Test gap identification when section has too few facts."""
         facts = [
             ExtractedFact(
-                content="Company revenue is $1B",
                 category=FactCategory.FINANCIAL,
-                source_agent="financial"
+                fact_type=FactType.REVENUE,
+                value="$1B",
+                source_text="Company revenue is $1B",
+                confidence=0.8
             )
             # Only 1 fact (< minimum of 3)
         ]
@@ -103,19 +118,25 @@ class TestIdentifyGaps:
         # Create facts that don't mention specific required fields
         facts = [
             ExtractedFact(
-                content="The company is doing well",
                 category=FactCategory.FINANCIAL,
-                source_agent="financial"
+                fact_type=FactType.OTHER,
+                value="The company is doing well",
+                source_text="The company is doing well",
+                confidence=0.7
             ),
             ExtractedFact(
-                content="The market is growing",
                 category=FactCategory.FINANCIAL,
-                source_agent="financial"
+                fact_type=FactType.OTHER,
+                value="The market is growing",
+                source_text="The market is growing",
+                confidence=0.7
             ),
             ExtractedFact(
-                content="Good performance overall",
                 category=FactCategory.FINANCIAL,
-                source_agent="financial"
+                fact_type=FactType.OTHER,
+                value="Good performance overall",
+                source_text="Good performance overall",
+                confidence=0.7
             )
         ]
 
@@ -137,10 +158,11 @@ class TestCalculateComprehensiveQuality:
         # Create 50+ facts (high fact score)
         facts = [
             ExtractedFact(
-                content=f"High quality fact {i}",
                 category=FactCategory.FINANCIAL,
-                source_agent="test",
-                confidence_hint=0.9
+                fact_type=FactType.OTHER,
+                value=f"High quality fact {i}",
+                source_text=f"Source text for high quality fact {i}",
+                confidence=0.9
             )
             for i in range(50)
         ]
@@ -166,7 +188,13 @@ class TestCalculateComprehensiveQuality:
         """Test quality calculation with contradictions."""
         from company_researcher.quality.contradiction_detector import Contradiction
 
-        facts = [ExtractedFact(content=f"Fact {i}", category=FactCategory.COMPANY, source_agent="test") for i in range(30)]
+        facts = [ExtractedFact(
+            category=FactCategory.COMPANY_INFO,
+            fact_type=FactType.OTHER,
+            value=f"Fact {i}",
+            source_text=f"Source text for fact {i}",
+            confidence=0.8
+        ) for i in range(30)]
 
         # Create critical contradiction
         contradiction = Contradiction(
@@ -196,7 +224,13 @@ class TestCalculateComprehensiveQuality:
 
     def test_calculate_quality_with_gaps(self):
         """Test quality calculation with research gaps."""
-        facts = [ExtractedFact(content=f"Fact {i}", category=FactCategory.COMPANY, source_agent="test") for i in range(30)]
+        facts = [ExtractedFact(
+            category=FactCategory.COMPANY_INFO,
+            fact_type=FactType.OTHER,
+            value=f"Fact {i}",
+            source_text=f"Source text for fact {i}",
+            confidence=0.8
+        ) for i in range(30)]
 
         contradiction_report = ContradictionReport(contradictions=[], total_facts_analyzed=30)
 
@@ -220,10 +254,11 @@ class TestCalculateComprehensiveQuality:
         # Create facts with low confidence
         facts = [
             ExtractedFact(
-                content=f"Uncertain fact {i}",
-                category=FactCategory.COMPANY,
-                source_agent="test",
-                confidence_hint=0.3  # Low confidence
+                category=FactCategory.COMPANY_INFO,
+                fact_type=FactType.OTHER,
+                value=f"Uncertain fact {i}",
+                source_text=f"Source text for uncertain fact {i}",
+                confidence=0.3  # Low confidence
             )
             for i in range(30)
         ]
@@ -317,11 +352,11 @@ class TestQuickLogicCriticNode:
 
 @pytest.mark.unit
 @pytest.mark.quality
-@patch('company_researcher.agents.quality.logic_critic.Anthropic')
+@patch('company_researcher.agents.quality.logic_critic.get_anthropic_client')
 class TestLogicCriticAgent:
     """Test full logic critic agent (with mocked LLM)."""
 
-    def test_logic_critic_node_basic_execution(self, mock_anthropic_class, sample_agent_outputs):
+    def test_logic_critic_node_basic_execution(self, mock_get_client, sample_agent_outputs):
         """Test basic execution of logic critic node."""
         # Mock the LLM response
         mock_client = MagicMock()
@@ -330,7 +365,7 @@ class TestLogicCriticAgent:
         mock_response.usage.input_tokens = 1000
         mock_response.usage.output_tokens = 500
         mock_client.messages.create.return_value = mock_response
-        mock_anthropic_class.return_value = mock_client
+        mock_get_client.return_value = mock_client
 
         state = {
             "company_name": "TestCorp",
@@ -344,7 +379,7 @@ class TestLogicCriticAgent:
         assert "quality_score" in result
         assert "total_cost" in result
 
-    def test_logic_critic_node_output_structure(self, mock_anthropic_class, sample_agent_outputs):
+    def test_logic_critic_node_output_structure(self, mock_get_client, sample_agent_outputs):
         """Test output structure of logic critic."""
         # Mock LLM
         mock_client = MagicMock()
@@ -353,7 +388,7 @@ class TestLogicCriticAgent:
         mock_response.usage.input_tokens = 1000
         mock_response.usage.output_tokens = 500
         mock_client.messages.create.return_value = mock_response
-        mock_anthropic_class.return_value = mock_client
+        mock_get_client.return_value = mock_client
 
         state = {
             "company_name": "TestCorp",
@@ -375,7 +410,7 @@ class TestLogicCriticAgent:
         assert "duration_seconds" in output
         assert "tokens" in output
 
-    def test_logic_critic_node_contradiction_details(self, mock_anthropic_class):
+    def test_logic_critic_node_contradiction_details(self, mock_get_client):
         """Test contradiction details in output."""
         mock_client = MagicMock()
         mock_response = MagicMock()
@@ -383,7 +418,7 @@ class TestLogicCriticAgent:
         mock_response.usage.input_tokens = 1000
         mock_response.usage.output_tokens = 500
         mock_client.messages.create.return_value = mock_response
-        mock_anthropic_class.return_value = mock_client
+        mock_get_client.return_value = mock_client
 
         # Create agent outputs with contradictory information
         agent_outputs = {

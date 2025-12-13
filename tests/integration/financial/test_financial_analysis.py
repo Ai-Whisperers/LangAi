@@ -20,7 +20,7 @@ from src.company_researcher.tools.financial_analysis_utils import (
     analyze_profitability,
     analyze_financial_health
 )
-from src.company_researcher.agents.enhanced_financial import infer_ticker_symbol
+from src.company_researcher.agents.financial.enhanced_financial import infer_ticker_symbol
 
 
 def test_alpha_vantage():

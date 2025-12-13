@@ -235,7 +235,7 @@ class TestExtractedFact:
         source = Source(
             url="https://example.com",
             title="Test Source",
-            quality=SourceQuality.HIGH
+            quality=SourceQuality.AUTHORITATIVE
         )
 
         research_fact = fact.to_research_fact(source)

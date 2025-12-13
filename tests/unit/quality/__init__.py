@@ -1,1 +1,1 @@
-"""Unit tests for quality assurance components (Phase 10)."""
+"""Tests for quality system modules."""

@@ -23,11 +23,9 @@ from src.company_researcher.tools.market_sizing_utils import (
     analyze_industry_trend,
     assess_competitive_intensity,
     calculate_market_share_distribution,
-    format_currency,
-    MarketTrend,
-    CompetitiveIntensity
+    format_currency
 )
-from src.company_researcher.agents.enhanced_market import (
+from src.company_researcher.agents.market.enhanced_market import (
     infer_industry_category,
     get_industry_context
 )

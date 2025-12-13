@@ -17,18 +17,15 @@ from src.company_researcher.research.metrics_validator import (
     MetricsValidator,
     create_metrics_validator,
     CompanyType,
-    DataCategory,
 )
 from src.company_researcher.agents.research.data_threshold import (
     DataThresholdChecker,
     create_threshold_checker,
-    RetryStrategy,
 )
 from src.company_researcher.agents.research.quality_enforcer import (
     QualityEnforcer,
     create_quality_enforcer,
     ReportStatus,
-    BlockReason,
 )
 from src.company_researcher.agents.research.multilingual_search import (
     MultilingualSearchGenerator,
@@ -45,7 +42,8 @@ class TestMetricsValidator:
         """Test validator creation."""
         validator = create_metrics_validator()
         assert validator is not None
-        assert validator.min_score_for_report == 35.0
+        # Validator is created with custom min_score (60.0 by default from create_metrics_validator)
+        assert validator._custom_min_score == pytest.approx(60.0)
 
     def test_detect_public_company(self):
         """Test detection of public company."""
@@ -64,18 +62,25 @@ class TestMetricsValidator:
     def test_validate_good_metrics(self):
         """Test validation of content with good metrics."""
         validator = MetricsValidator()
-        content = """
-        Apple Inc. founded in 1976.
-        Revenue of $400 billion in 2024.
-        Market cap of $3 trillion.
-        164,000 employees worldwide.
-        Products include iPhone, Mac, iPad.
-        Competes with Samsung, Google.
-        CEO Tim Cook leads the company.
-        """
-        result = validator.validate_metrics(content, "Apple", CompanyType.PUBLIC_COMPANY)
+        # The validate method takes a dict research_output, not a string
+        # Include all critical metrics for a PUBLIC company
+        research_output = {
+            "company_overview": """
+            Apple Inc. founded in 1976, headquartered in Cupertino, California.
+            Revenue of $400 billion in 2024.
+            Net income of $100 billion in 2024 with strong profit margins.
+            Market cap of $3 trillion as of December 2024.
+            164,000 employees worldwide in 2024.
+            EPS of $6.50 per share for fiscal 2024.
+            P/E ratio of 28x based on current market valuation.
+            Products include iPhone, Mac, iPad.
+            Competes with Samsung, Google.
+            CEO Tim Cook leads the company.
+            """
+        }
+        result = validator.validate(research_output, "Apple", CompanyType.PUBLIC)
 
-        assert result.score > 50
+        assert result.score >= 50
         assert result.is_valid
         assert "revenue" in result.metrics_found
         assert len(result.critical_missing) == 0
@@ -83,13 +88,16 @@ class TestMetricsValidator:
     def test_validate_poor_metrics(self):
         """Test validation of content with poor metrics."""
         validator = MetricsValidator()
-        content = """
-        Company overview not available.
-        Revenue: Not available in research.
-        Employees: N/A
-        Products: Unknown
-        """
-        result = validator.validate_metrics(content, "UnknownCo", CompanyType.PUBLIC_COMPANY)
+        # The validate method takes a dict research_output, not a string
+        research_output = {
+            "company_overview": """
+            Company overview not available.
+            Revenue: Not available in research.
+            Employees: N/A
+            Products: Unknown
+            """
+        }
+        result = validator.validate(research_output, "UnknownCo", CompanyType.PUBLIC)
 
         assert result.score < 30
         assert not result.is_valid

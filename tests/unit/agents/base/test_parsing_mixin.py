@@ -4,7 +4,6 @@ Unit tests for ParsingMixin extraction utilities.
 Tests all extraction methods in the ParsingMixin class used by specialist agents.
 """
 
-import pytest
 
 from src.company_researcher.agents.base import ParsingMixin
 
