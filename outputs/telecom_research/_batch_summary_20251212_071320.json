@@ -1,0 +1,38 @@
+{
+  "run_timestamp": "2025-12-12T07:13:20.598497",
+  "vertical": "Telecommunications",
+  "total_companies": 3,
+  "successful": 0,
+  "failed": 3,
+  "total_duration_seconds": 168.693435,
+  "results_by_region": {
+    "Paraguay": {
+      "total": 3,
+      "successful": 0,
+      "failed": 3
+    }
+  },
+  "all_results": [
+    {
+      "company": "Tigo Paraguay",
+      "region": "Paraguay",
+      "success": false,
+      "duration": 37.072854,
+      "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CW2cjmeVfqdNY1w9sMV6b'}"
+    },
+    {
+      "company": "Personal Paraguay",
+      "region": "Paraguay",
+      "success": false,
+      "duration": 24.357707,
+      "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CW2cngiAhCTpTLzMv1iQs'}"
+    },
+    {
+      "company": "Claro Paraguay",
+      "region": "Paraguay",
+      "success": false,
+      "duration": 29.408879,
+      "error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CW2cqxXG2nbr3KJiDfhtU'}"
+    }
+  ]
+}

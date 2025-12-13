@@ -1,0 +1,12 @@
+{
+  "company_name": "Tesla",
+  "quality_score": 72.0,
+  "iterations": 2,
+  "duration_seconds": 0.0,
+  "total_cost": 27.7925208,
+  "sources_count": 150,
+  "contradictions_count": 0,
+  "confidence_scores": {},
+  "source_quality": {},
+  "timestamp": "20251210_234441"
+}

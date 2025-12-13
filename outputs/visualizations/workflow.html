@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Workflow</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #00b894;
+            margin-bottom: 30px;
+        }
+        .diagram-container {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #00a187;
+        }
+        .info {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Research Workflow</h1>
+
+        <div class="controls">
+            <button onclick="zoomIn()">🔍 Zoom In</button>
+            <button onclick="zoomOut()">🔍 Zoom Out</button>
+            <button onclick="resetZoom()">↺ Reset</button>
+            <button onclick="downloadSVG()">💾 Download SVG</button>
+        </div>
+
+        <div class="diagram-container" id="diagram">
+            <pre class="mermaid">
+graph TD
+    %% Styling
+    classDef phase fill:#1a1a2e,stroke:#16213e,color:#fff
+    classDef data fill:#0f3460,stroke:#16213e,color:#fff
+    classDef analysis fill:#533483,stroke:#16213e,color:#fff
+    classDef quality fill:#e94560,stroke:#16213e,color:#fff
+    classDef output fill:#00b894,stroke:#16213e,color:#fff
+
+    %% Phase 1: Data Collection
+    subgraph P1["📥 PHASE 1: DATA COLLECTION"]
+        START([🚀 START]) --> GQ[Generate Queries<br/>Multilingual]
+        GQ --> SEARCH[Web Search<br/>Tavily/Serper/DDG]
+        SEARCH --> FF[Fetch Financial<br/>FMP/Finnhub/Yahoo]
+        FF --> FN[Fetch News<br/>NewsAPI/GNews/RSS]
+    end
+
+    %% Phase 2: Parallel Analysis
+    subgraph P2["🔬 PHASE 2: PARALLEL ANALYSIS"]
+        FN --> CA[Core Analysis<br/>ResearcherAgent]
+        CA --> FA[Financial Analysis<br/>FinancialAgent]
+        FA --> MA[Market Analysis<br/>MarketAgent]
+        MA --> EA[ESG Analysis<br/>ESGAgent]
+        EA --> BA[Brand Analysis<br/>BrandAuditorAgent]
+        BA --> NS[News Sentiment<br/>SentimentAnalyzer]
+    end
+
+    %% Phase 3: Quality Assurance
+    subgraph P3["✅ PHASE 3: QUALITY ASSURANCE"]
+        NS --> ED[Extract Data<br/>StructuredExtractor]
+        ED --> QC{Quality Check<br/>≥85%?}
+        QC -->|No, retry| CA
+        QC -->|Yes| CM
+    end
+
+    %% Phase 4: Advanced Analysis
+    subgraph P4["📊 PHASE 4: ADVANCED ANALYSIS"]
+        CM[Competitive Matrix<br/>CompetitiveMatrixGenerator]
+        CM --> RA[Risk Assessment<br/>RiskQuantifier]
+        RA --> IT[Investment Thesis<br/>ThesisGenerator]
+    end
+
+    %% Phase 5: Output
+    subgraph P5["📄 PHASE 5: OUTPUT"]
+        IT --> SR[Save Report<br/>Markdown + JSON]
+        SR --> DONE([✅ COMPLETE])
+    end
+
+    %% Apply styles
+    class P1 phase
+    class GQ,SEARCH,FF,FN data
+    class CA,FA,MA,EA,BA,NS analysis
+    class ED,QC quality
+    class CM,RA,IT analysis
+    class SR output
+
+            </pre>
+        </div>
+
+        <div class="info">
+            <h3>📌 Legend</h3>
+            <ul>
+                <li><strong>Blue nodes</strong>: Core processing agents</li>
+                <li><strong>Purple nodes</strong>: Analysis components</li>
+                <li><strong>Green nodes</strong>: Data collection</li>
+                <li><strong>Red nodes</strong>: Quality gates</li>
+                <li><strong>Dashed lines</strong>: Conditional flows</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+
+        let scale = 1;
+
+        function zoomIn() {
+            scale *= 1.2;
+            document.querySelector('.mermaid svg').style.transform = `scale(${scale})`;
+        }
+
+        function zoomOut() {
+            scale *= 0.8;
+            document.querySelector('.mermaid svg').style.transform = `scale(${scale})`;
+        }
+
+        function resetZoom() {
+            scale = 1;
+            document.querySelector('.mermaid svg').style.transform = `scale(1)`;
+        }
+
+        function downloadSVG() {
+            const svg = document.querySelector('.mermaid svg');
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const blob = new Blob([svgData], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'workflow.svg';
+            a.click();
+        }
+    </script>
+</body>
+</html>

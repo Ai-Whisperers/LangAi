@@ -1,20 +1,8 @@
 {
   "company_name": "Tigo Paraguay",
-  "quality_score": 40,
-  "sources_count": 0,
-  "used_fallback": true,
-  "fallback_sections": [
-    "overview",
-    "financial",
-    "market",
-    "competitive",
-    "brand",
-    "esg",
-    "risk",
-    "investment",
-    "executive_summary"
-  ],
-  "duration_seconds": 258.956642,
-  "timestamp": "20251210_142442",
-  "warning": "Report generated using AI knowledge only - verify with official sources"
+  "timestamp": "2025-12-12T18:13:20.514680",
+  "total_cost": 0.00095305,
+  "total_tokens": 1535,
+  "queries_count": 5,
+  "sources_count": 15
 }

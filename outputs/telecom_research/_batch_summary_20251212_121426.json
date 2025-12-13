@@ -1,0 +1,35 @@
+{
+  "run_timestamp": "2025-12-12T12:14:26.913755",
+  "vertical": "Telecommunications",
+  "total_companies": 1,
+  "successful": 1,
+  "failed": 0,
+  "total_duration_seconds": 190.799964,
+  "results_by_region": {
+    "Paraguay": {
+      "total": 1,
+      "successful": 1,
+      "failed": 0
+    }
+  },
+  "all_results": [
+    {
+      "company": "Tigo Paraguay",
+      "region": "Paraguay",
+      "success": true,
+      "duration": 175.798139,
+      "report_path": "outputs\\tigo_paraguay\\00_full_report.md",
+      "metrics": {
+        "duration_seconds": 0.0,
+        "cost_usd": 0.0,
+        "tokens": {
+          "input": 0,
+          "output": 0
+        },
+        "sources_count": 0,
+        "quality_score": 0.0,
+        "iterations": 0
+      }
+    }
+  ]
+}

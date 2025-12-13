@@ -1,0 +1,349 @@
+# Tigo Paraguay - Intelligent Gap Fill Results
+*Generated: 2025-12-12 20:48:41*
+*Method: AI-driven gap detection and targeted query generation*
+
+---
+
+## Summary
+
+| Metric | Value |
+|--------|-------|
+| Gaps Identified | 19 |
+| Gaps Successfully Filled | 14 |
+| High Confidence Fills | 14 |
+| Fill Rate | 73.7% |
+
+---
+
+## Filled Data Points
+
+### ceo_name
+- **Value:** Roberto Laratro
+- **Source:** https://www.abc.com.py/empresariales/2024/05/14/roberto-laratro-es-el-nuevo-director-general-de-tigo-paraguay/
+- **Confidence:** 90%
+- **Category:** leadership
+- **Priority:** critical
+
+### appointment_date
+- **Value:** 2024-06-01
+- **Source:** https://www.ultimahora.com/nuevo-ceo-de-tigo-paraguay-asumira-el-proximo-1-de-junio
+- **Confidence:** 90%
+- **Category:** leadership
+- **Priority:** high
+
+### 2024_ebitda
+- **Value:** 441302
+- **Source:** https://www.millicom.com/media/5850/managements-discussion-analysis-paraguay-q1-2024.pdf
+- **Confidence:** 90%
+- **Category:** financial
+- **Priority:** high
+
+### market_share
+- **Value:** 55.9%
+- **Source:** https://www.bnamericas.com/en/features/spotlight-how-the-central-american-ict-market-is-evolving
+- **Confidence:** 90%
+- **Category:** market_position
+- **Priority:** high
+
+### subscriber_count
+- **Value:** 3.1
+- **Source:** https://dcfmodeling.com/products/tigo-marketing-mix?srsltid=AfmBOoqSl83Rdw-3t4wtypDhQTpqVZfFVOEXX0M1wsIj7nmpVUrq8v9x
+- **Confidence:** 90%
+- **Category:** market_position
+- **Priority:** high
+
+### 5g_status
+- **Value:** Not launched
+- **Source:** https://www.bnamericas.com/en/news/tigo-speeds-up-talks-with-conatel-to-avoid-being-left-out-of-5g-in-paraguay
+- **Confidence:** 70%
+- **Category:** regulatory
+- **Priority:** high
+
+### competitor_data
+- **Value:** [{"competitor": "Tigo", "market_share": 43}, {"competitor": "Personal", "market_share": 31}, {"competitor": "Claro", "market_share": null}]
+- **Source:** https://www.facebook.com/fabrico.benitezquevedo/videos/tigo-vs-personal-vs-claro-qui%C3%A9n-domina-realmente-paraguay-datos-oficiales-2025-d/1387642706214696/
+- **Confidence:** 90%
+- **Category:** competitors
+- **Priority:** high
+
+### competitive_analysis
+- **Value:** Tigo Paraguay operates in a highly competitive market with key competitors including Claro Paraguay, Copaco, Personal, and Ufinet, with Tigo presenting improvements in its download and upload speed indicators
+- **Source:** https://repositorio.cun.edu.co/bitstream/handle/cun/8981/DiazYolis_2025_TigoCorporativaMercado.pdf?sequence=1&isAllowed=y
+- **Confidence:** 70%
+- **Category:** competitors
+- **Priority:** high
+
+### other_executives
+- **Value:** ['Olga María Haydee González Barboza (CEO Valeri Gourmed)', 'Aldo Natalizia (Corporate Affairs Director)', 'Nancy', 'Roberto Laratro Bosch (Director General)', 'Marcelo Benitez (CEO)']
+- **Source:** https://rocketreach.co/tigo-paraguay-management_b44d7fd5fd26d2ba
+- **Confidence:** 90%
+- **Category:** leadership
+- **Priority:** medium
+
+### market_rank
+- **Value:** 1
+- **Source:** https://www.budde.com.au/Research/Paraguay-Telecoms-Mobile-and-Broadband-Statistics-and-Analyses
+- **Confidence:** 90%
+- **Category:** market_position
+- **Priority:** medium
+
+### regulator_interactions
+- **Value:** Tigo Paraguay works with Conatel to access new spectrum bands and deploy its 5G network
+- **Source:** https://www.bnamericas.com/es/noticias/tigo-acelera-gestiones-con-conatel-para-no-quedarse-fuera-del-5g-en-paraguay
+- **Confidence:** 90%
+- **Category:** regulatory
+- **Priority:** medium
+
+### licenses
+- **Value:** ['4G AWS licence']
+- **Source:** https://developingtelecoms.com/telecom-business/telecom-regulation/11824-claro-and-tigo-granted-4g-licence-renewal-in-paraguay.html
+- **Confidence:** 90%
+- **Category:** regulatory
+- **Priority:** medium
+
+### product_details
+- **Value:** ['TIGO Money', 'TIGO Sports', 'TIGO ONEtv', 'Satellite TV', '4G', 'Fibre networks', 'Internet', 'Televisión', 'Móvil']
+- **Source:** https://www.tigo.com.py/conocenos/millicom-international-cellular
+- **Confidence:** 90%
+- **Category:** business_segments
+- **Priority:** medium
+
+### digital_services
+- **Value:** ['TIGO Money', 'mobile financial services', 'streaming services (HBO Max, Prime Video, Disney+, Paramount+)', 'internet services', 'TV services', 'WiFi services']
+- **Source:** https://finance.yahoo.com/news/millicom-tigo-subsidiary-telef-nica-130000121.html
+- **Confidence:** 90%
+- **Category:** business_segments
+- **Priority:** medium
+
+---
+
+## Unfilled Gaps (Require Manual Research)
+
+### 2024_revenue
+- **Category:** financial
+- **Priority:** critical
+- **Queries Attempted:** 3
+
+### 2024_profit_margin
+- **Category:** financial
+- **Priority:** high
+- **Queries Attempted:** 3
+
+### segment_revenue
+- **Category:** business_segments
+- **Priority:** high
+- **Queries Attempted:** 3
+
+### 2024_assets
+- **Category:** financial
+- **Priority:** medium
+- **Queries Attempted:** 3
+
+### spectrum
+- **Category:** regulatory
+- **Priority:** medium
+- **Queries Attempted:** 3
+
+---
+
+## Methodology
+
+This report was generated using the **Intelligent Gap Filler** system which:
+
+1. **AI Gap Analysis**: Used AI to analyze the existing research report and identify specific missing data points
+2. **Dynamic Query Generation**: Generated targeted search queries using AI based on the identified gaps and company context
+3. **Multi-Provider Search**: Executed searches using premium search providers (Tavily)
+4. **AI Data Extraction**: Used AI to extract and validate specific data points from search results
+
+This approach addresses the limitation of static, hardcoded queries by dynamically generating queries based on what's actually missing from the research.
+
+---
+
+## Raw Results
+
+```json
+{
+  "company_name": "Tigo Paraguay",
+  "gaps_found": 19,
+  "gaps_filled": 14,
+  "high_confidence_fills": 14,
+  "filled_data": {
+    "ceo_name": {
+      "value": "Roberto Laratro",
+      "source": "https://www.abc.com.py/empresariales/2024/05/14/roberto-laratro-es-el-nuevo-director-general-de-tigo-paraguay/",
+      "confidence": 0.9,
+      "category": "leadership",
+      "priority": "critical"
+    },
+    "appointment_date": {
+      "value": "2024-06-01",
+      "source": "https://www.ultimahora.com/nuevo-ceo-de-tigo-paraguay-asumira-el-proximo-1-de-junio",
+      "confidence": 0.9,
+      "category": "leadership",
+      "priority": "high"
+    },
+    "2024_ebitda": {
+      "value": 441302,
+      "source": "https://www.millicom.com/media/5850/managements-discussion-analysis-paraguay-q1-2024.pdf",
+      "confidence": 0.9,
+      "category": "financial",
+      "priority": "high"
+    },
+    "market_share": {
+      "value": "55.9%",
+      "source": "https://www.bnamericas.com/en/features/spotlight-how-the-central-american-ict-market-is-evolving",
+      "confidence": 0.9,
+      "category": "market_position",
+      "priority": "high"
+    },
+    "subscriber_count": {
+      "value": 3.1,
+      "source": "https://dcfmodeling.com/products/tigo-marketing-mix?srsltid=AfmBOoqSl83Rdw-3t4wtypDhQTpqVZfFVOEXX0M1wsIj7nmpVUrq8v9x",
+      "confidence": 0.9,
+      "category": "market_position",
+      "priority": "high"
+    },
+    "5g_status": {
+      "value": "Not launched",
+      "source": "https://www.bnamericas.com/en/news/tigo-speeds-up-talks-with-conatel-to-avoid-being-left-out-of-5g-in-paraguay",
+      "confidence": 0.7,
+      "category": "regulatory",
+      "priority": "high"
+    },
+    "competitor_data": {
+      "value": "[{\"competitor\": \"Tigo\", \"market_share\": 43}, {\"competitor\": \"Personal\", \"market_share\": 31}, {\"competitor\": \"Claro\", \"market_share\": null}]",
+      "source": "https://www.facebook.com/fabrico.benitezquevedo/videos/tigo-vs-personal-vs-claro-qui%C3%A9n-domina-realmente-paraguay-datos-oficiales-2025-d/1387642706214696/",
+      "confidence": 0.9,
+      "category": "competitors",
+      "priority": "high"
+    },
+    "competitive_analysis": {
+      "value": "Tigo Paraguay operates in a highly competitive market with key competitors including Claro Paraguay, Copaco, Personal, and Ufinet, with Tigo presenting improvements in its download and upload speed indicators",
+      "source": "https://repositorio.cun.edu.co/bitstream/handle/cun/8981/DiazYolis_2025_TigoCorporativaMercado.pdf?sequence=1&isAllowed=y",
+      "confidence": 0.7,
+      "category": "competitors",
+      "priority": "high"
+    },
+    "other_executives": {
+      "value": [
+        "Olga María Haydee González Barboza (CEO Valeri Gourmed)",
+        "Aldo Natalizia (Corporate Affairs Director)",
+        "Nancy",
+        "Roberto Laratro Bosch (Director General)",
+        "Marcelo Benitez (CEO)"
+      ],
+      "source": "https://rocketreach.co/tigo-paraguay-management_b44d7fd5fd26d2ba",
+      "confidence": 0.9,
+      "category": "leadership",
+      "priority": "medium"
+    },
+    "market_rank": {
+      "value": 1,
+      "source": "https://www.budde.com.au/Research/Paraguay-Telecoms-Mobile-and-Broadband-Statistics-and-Analyses",
+      "confidence": 0.9,
+      "category": "market_position",
+      "priority": "medium"
+    },
+    "regulator_interactions": {
+      "value": "Tigo Paraguay works with Conatel to access new spectrum bands and deploy its 5G network",
+      "source": "https://www.bnamericas.com/es/noticias/tigo-acelera-gestiones-con-conatel-para-no-quedarse-fuera-del-5g-en-paraguay",
+      "confidence": 0.9,
+      "category": "regulatory",
+      "priority": "medium"
+    },
+    "licenses": {
+      "value": [
+        "4G AWS licence"
+      ],
+      "source": "https://developingtelecoms.com/telecom-business/telecom-regulation/11824-claro-and-tigo-granted-4g-licence-renewal-in-paraguay.html",
+      "confidence": 0.9,
+      "category": "regulatory",
+      "priority": "medium"
+    },
+    "product_details": {
+      "value": [
+        "TIGO Money",
+        "TIGO Sports",
+        "TIGO ONEtv",
+        "Satellite TV",
+        "4G",
+        "Fibre networks",
+        "Internet",
+        "Televisión",
+        "Móvil"
+      ],
+      "source": "https://www.tigo.com.py/conocenos/millicom-international-cellular",
+      "confidence": 0.9,
+      "category": "business_segments",
+      "priority": "medium"
+    },
+    "digital_services": {
+      "value": [
+        "TIGO Money",
+        "mobile financial services",
+        "streaming services (HBO Max, Prime Video, Disney+, Paramount+)",
+        "internet services",
+        "TV services",
+        "WiFi services"
+      ],
+      "source": "https://finance.yahoo.com/news/millicom-tigo-subsidiary-telef-nica-130000121.html",
+      "confidence": 0.9,
+      "category": "business_segments",
+      "priority": "medium"
+    }
+  },
+  "unfilled_gaps": [
+    {
+      "field": "2024_revenue",
+      "category": "financial",
+      "priority": "critical",
+      "queries_tried": [
+        "Tigo Paraguay revenue 2024 SEC filings",
+        "Tigo Paraguay ingresos 2024 informe financiero anual",
+        "Millicom International Cellular S.A. Paraguay revenue Q4 2024 earnings call"
+      ]
+    },
+    {
+      "field": "2024_profit_margin",
+      "category": "financial",
+      "priority": "high",
+      "queries_tried": [
+        "Tigo Paraguay profit margin 2024 financial statements",
+        "Tigo Paraguay margen de beneficio 2024 informe financiero",
+        "Millicom International Cellular S.A. Paraguay profit margin Q2 2024 earnings"
+      ]
+    },
+    {
+      "field": "segment_revenue",
+      "category": "business_segments",
+      "priority": "high",
+      "queries_tried": [
+        "Tigo Paraguay segment revenue 2024 financial reports",
+        "Tigo Paraguay ingresos por segmento 2024 informe financiero",
+        "Tigo Paraguay business segment revenue Q1 2024 earnings"
+      ]
+    },
+    {
+      "field": "2024_assets",
+      "category": "financial",
+      "priority": "medium",
+      "queries_tried": [
+        "Tigo Paraguay assets 2024 financial statements",
+        "Tigo Paraguay activos 2024 informe financiero",
+        "Millicom International Cellular S.A. Paraguay assets Q4 2024 earnings"
+      ]
+    },
+    {
+      "field": "spectrum",
+      "category": "regulatory",
+      "priority": "medium",
+      "queries_tried": [
+        "Tigo Paraguay spectrum allocation 2024",
+        "Tigo Paraguay asignación de espectro 2024",
+        "CONATEL Paraguay Tigo Paraguay spectrum bands 2024"
+      ]
+    }
+  ],
+  "timestamp": "2025-12-12T20:48:41.071377"
+}
+```
