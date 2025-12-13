@@ -1,0 +1,14 @@
+# =============================================================================
+# QUICK FIX: Update these 2 lines in your .env file
+# =============================================================================
+#
+# Change TAVILY_API_KEY to:
+TAVILY_API_KEY=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
+
+# Change SERPER_API_KEY to:
+SERPER_API_KEY=ee48cdc2999c513e56bc3199a2383eab8dadab33
+
+# =============================================================================
+# Your .env already has most keys configured correctly!
+# Just update the two keys above.
+# =============================================================================
