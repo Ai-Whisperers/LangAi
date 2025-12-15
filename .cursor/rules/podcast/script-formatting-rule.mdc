@@ -1,0 +1,436 @@
+---
+rule_id: podcast.script-formatting-rule
+title: "Podcast Script Formatting Standards"
+description: "Professional formatting standards for podcast scripts ensuring readability, delivery optimization, and production efficiency"
+version: 1.0.0
+created: 2025-12-13
+status: active
+kind: rule
+governs: **/prompts/podcast/convert-essay-to-script.prompt.md, **/prompts/podcast/optimize-script-flow.prompt.md, **/prompts/podcast/validate-script-quality.prompt.md
+globs: **/prompts/podcast/convert-essay-to-script.prompt.md, **/prompts/podcast/optimize-script-flow.prompt.md, **/prompts/podcast/validate-script-quality.prompt.md
+implements: podcast.script-formatting
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-podcast, last_review: 2025-12-13 }
+alwaysApply: false
+---
+
+# Podcast Script Formatting Standards
+
+## Purpose
+
+Establish professional formatting standards for podcast scripts that optimize readability for performers, ensure consistent production workflow, and maintain quality across recording and editing processes.
+
+## Scope
+
+**Covers**:
+- Script structure and layout standards
+- Delivery notation and performance cues
+- Timing estimation and segmentation
+- Production metadata and technical cues
+- Accessibility and collaboration features
+
+**Does Not Cover**:
+- Content development (see `rule.podcast.authentic-voice-rule`)
+- Research methodology (see `rule.podcast.content-research-rule`)
+- Audio production techniques beyond script formatting
+
+## When to Apply
+
+Apply when:
+- Converting essays or outlines to podcast scripts
+- Optimizing scripts for recording performance
+- Preparing scripts for editing and post-production
+- Ensuring consistency across episode production
+- Collaborating with co-hosts or production team
+
+## Core Principles
+
+### 1. Performance-First Design
+**Scripts serve the speaker** - Format exists to enhance delivery, not constrain it. Clear visual hierarchy enables natural, engaging performance.
+
+### 2. Production Efficiency
+**Streamline workflow** - Standardized formatting reduces editing time and ensures consistent quality across episodes.
+
+### 3. Accessibility Priority
+**Multiple users, multiple contexts** - Script must work for performers, editors, collaborators, and future reference.
+
+### 4. Living Document
+**Evolve with delivery** - Allow for improvisation while maintaining structure that supports both planned and spontaneous content.
+
+## Script Structure Standards
+
+### Overall Document Organization
+
+#### Header Section (Required)
+**Essential Metadata**:
+```
+EPISODE TITLE: [Full episode title as it will appear]
+
+DESCRIPTION: [2-3 sentence episode summary for internal use]
+
+RUNTIME TARGET: [X] minutes
+WORD COUNT: [X] words
+SPEAKING RATE: [X] words per minute
+
+CREATED: [Date]
+LAST UPDATED: [Date]
+VERSION: [X.X]
+
+HOST: [Name(s)]
+PRODUCER: [Name]
+```
+
+#### Content Sections (Standard Format)
+**Segment Organization**:
+```
+[OPENING MUSIC - X seconds]
+
+**HOST**: [Opening script content]
+
+[Content paragraphs with delivery cues]
+
+[SEGMENT TRANSITION]
+
+**HOST**: [Next segment content]
+
+[Continue pattern throughout]
+```
+
+### Content Formatting Standards
+
+#### Text Layout
+**Readability Priorities**:
+- **Font**: Sans-serif (Arial, Helvetica) 12pt for screen readability
+- **Line Spacing**: 1.5 spacing for easy scanning
+- **Margins**: 1-inch margins for note-taking space
+- **Page Breaks**: Logical breaks at segment transitions, not arbitrary page ends
+
+#### Content Hierarchy
+**Visual Structure**:
+- **H1**: Episode title (largest, centered)
+- **H2**: Major segments (e.g., "Opening", "Main Analysis")
+- **H3**: Sub-segments or key topics
+- **Bold**: Speaker names, emphasis words
+- **Italics**: Internal notes, optional phrases
+- **ALL CAPS**: Sound cues, production notes
+
+#### Delivery Notation Standards
+
+##### Performance Cues (Inline)
+**Emphasis Indicators**:
+- *[WORD]*: Words to emphasize vocally
+- **[PAUSE]**: Natural breathing or reflection points (2-3 seconds)
+- **[ENERGY UP]**: Increase vocal energy and enthusiasm
+- **[SLOWER]**: Slow down for complex ideas (specify duration if needed)
+
+**Delivery Variations**:
+- **[WHISPER]**: Speak softly for intimate moments
+- **[EXCITED]**: Convey excitement in delivery
+- **[SERIOUS]**: Adopt serious tone for important points
+- **[QUESTIONING]**: Use questioning intonation
+
+##### Timing and Pacing
+**Time Markers**:
+- **[X MINUTE MARK]**: Reference points for editing
+- **[TIMING NOTE]**: Expected duration for segment
+- **[PACE QUICKEN]**: Speed up delivery for building excitement
+- **[STRETCH MOMENT]**: Allow flexibility for emotional delivery
+
+##### Engagement Elements
+**Audience Interaction Cues**:
+- **[DIRECT ADDRESS]**: Speak directly to listener ("You can see...")
+- **[RHETORICAL PAUSE]**: Pause for listener reflection (3-5 seconds)
+- **[QUESTION PROMPT]**: Pose question expecting listener consideration
+
+### Production and Technical Cues
+
+#### Audio Cues (Standard Format)
+**Music and Sound Effects**:
+```
+[OPENING MUSIC - 15 seconds - "Theme Song V2"]
+[BACKGROUND MUSIC IN - subtle, 20% volume]
+[SOUND EFFECT - door creaking]
+[OUTRO MUSIC - 30 seconds - "Closing Theme"]
+[MUSIC FADE OUT - 5 seconds]
+```
+
+**Recording Session Notes**:
+```
+[RECORDING NOTE: Allow natural pause here for emphasis]
+[EDIT NOTE: This segment may need tightening in post-production]
+[IMPROV NOTE: Feel free to elaborate on this point naturally]
+```
+
+#### Voice-Over vs. Conversation Distinction
+**Solo Narration**:
+```
+**HOST**: [Standard script content]
+```
+
+**Co-Host Conversation**:
+```
+**ALEX**: [Host dialogue]
+**JORDAN**: [Co-host response]
+**ALEX**: [Follow-up]
+```
+
+### Timing Estimation Standards
+
+#### Word Count to Time Conversion
+**Speaking Rate Guidelines**:
+- **Normal Conversation**: 120-150 words per minute
+- **Analytical Content**: 110-130 words per minute (allows thinking time)
+- **Passionate Delivery**: 130-160 words per minute
+- **Complex Technical Content**: 100-120 words per minute
+
+#### Segment Timing Allocation
+**Episode Structure Targets**:
+- **Opening**: 10-15% of total runtime (hook + context setting)
+- **Main Content**: 70-80% of total runtime (analysis + discussion)
+- **Closing**: 10-15% of total runtime (conclusion + takeaways)
+
+**Buffer Time**: Always include 10-15% buffer for natural delivery variations, emphasis, and unexpected additions.
+
+### Accessibility and Collaboration Features
+
+#### Editor-Friendly Formatting
+**Clear Segmentation**:
+- Numbered segments for easy reference
+- Consistent transition markers
+- Edit point suggestions clearly marked
+- Alternative takes noted when applicable
+
+#### Collaboration Support
+**Version Control**:
+- Clear version numbering in header
+- Change tracking when collaborating
+- Revision notes for significant changes
+- Approval checkpoints for co-hosts
+
+#### Accessibility Features
+**Screen Reader Friendly**:
+- Semantic heading structure
+- Alt text for any images (if included)
+- Clear distinction between script and notes
+- Consistent formatting patterns
+
+## Quality Assurance Checklist
+
+### Formatting Validation
+- [ ] Complete header metadata included
+- [ ] Consistent font and spacing used
+- [ ] Clear visual hierarchy maintained
+- [ ] Delivery cues properly formatted
+- [ ] Production notes clearly distinguished
+
+### Content Structure Validation
+- [ ] Logical segment progression
+- [ ] Realistic timing estimates
+- [ ] Engagement elements strategically placed
+- [ ] Performance cues enhance rather than distract
+- [ ] Technical cues complete and clear
+
+### Production Readiness Validation
+- [ ] Word count appropriate for target runtime
+- [ ] Speaking rate guidelines followed
+- [ ] Buffer time included for natural delivery
+- [ ] Edit points clearly marked
+- [ ] Collaboration features functional
+
+## Anti-Patterns to Avoid
+
+### ❌ Readability Issues
+- **Tiny Font**: Using 8-10pt font that strains eyes
+- **Dense Blocks**: Walls of text without paragraph breaks
+- **Inconsistent Formatting**: Mixing fonts, sizes, or styles randomly
+- **Poor Contrast**: Light text on light backgrounds
+
+### ❌ Performance Interference
+- **Over-Cueing**: Excessive delivery notes disrupting flow
+- **Rigid Instructions**: Commands that prevent natural performance
+- **Confusing Notation**: Non-standard symbols or abbreviations
+- **Note Pollution**: Internal notes mixed with script content
+
+### ❌ Production Inefficiency
+- **Unclear Cues**: Ambiguous sound or timing directions
+- **Missing Metadata**: Incomplete header information
+- **Edit-Unfriendly**: No clear segment breaks or timing markers
+- **Version Confusion**: Unclear revision tracking
+
+## Success Metrics
+
+- **Readability Score**: Ease of reading during recording (performer feedback)
+- **Production Efficiency**: Time saved in editing due to clear formatting
+- **Consistency Index**: Format adherence across episode series
+- **Collaboration Rating**: Ease of use by co-hosts and production team
+- **Error Reduction**: Fewer production mistakes due to clear formatting
+
+## Integration with Other Rules
+
+**Works With**:
+- `rule.podcast.spoken-word-optimization-rule` - Formatting supports optimized delivery
+- `rule.podcast.episode-structure-rule` - Structure serves episode organization
+- `rule.podcast.quality-assurance-rule` - Formatting enables quality validation
+
+**Enables**:
+- `rule.podcast.recording-standards-rule` - Clear scripts support efficient recording
+- `rule.podcast.editing-workflow-rule` - Formatting streamlines post-production
+
+## Inputs (Contract)
+
+- Episode content requiring script formatting
+- Target runtime and speaking rate requirements
+- Production team size and collaboration needs
+- Accessibility and performance optimization requirements
+
+## Outputs (Contract)
+
+- Professionally formatted podcast script with delivery cues
+- Complete metadata header with timing estimates
+- Production-ready document with technical cues
+- Collaboration-friendly format for team review
+
+## Deterministic Steps
+
+1. **Create Header Metadata**: Populate essential episode information and timing estimates
+2. **Structure Content Hierarchy**: Apply consistent heading levels and segment organization
+3. **Add Delivery Notation**: Insert performance cues and engagement elements
+4. **Include Production Cues**: Add audio cues, timing markers, and technical notes
+5. **Optimize for Accessibility**: Ensure screen reader compatibility and collaboration features
+6. **Validate Formatting Standards**: Confirm compliance with all formatting requirements
+
+## Formatting Requirements
+
+Script follows professional podcast formatting standards:
+- Header metadata in standardized format with all required fields
+- Content organized with clear visual hierarchy (H1-H3 headings)
+- Delivery cues using consistent notation and placement
+- Production cues clearly distinguished from script content
+- Accessibility features integrated throughout document
+
+## OPSEC and Leak Control
+
+- NO internal production costs or budget information
+- NO unreleased episode content in templates or examples
+- NO personal contact information of production team
+- NO confidential collaboration notes or feedback
+
+## Integration Points
+
+- Works with `rule.podcast.quality-assurance-rule` for formatting validation
+- Works with `rule.podcast.authentic-voice-rule` for delivery cue integration
+- Enables `rule.podcast.recording-standards-rule` and `rule.podcast.editing-workflow-rule`
+
+## Failure Modes and Recovery
+
+**Readability Issues**: Script difficult to read during recording
+- **Detection**: Performer feedback indicates formatting problems
+- **Recovery**: Apply readability standards, increase font size, add line spacing
+
+**Timing Inaccuracy**: Estimated runtime significantly differs from actual
+- **Detection**: Recording session shows timing misalignment
+- **Recovery**: Refine word count calculations, include appropriate buffers
+
+**Cue Confusion**: Delivery or production cues cause performance disruption
+- **Detection**: Recording requires multiple takes due to formatting issues
+- **Recovery**: Simplify cue notation, test with performer before full recording
+
+## Provenance Footer Specification
+
+Formatted scripts include production metadata:
+
+```
+Produced-by: podcast.script-formatting-rule | words={{count}} | estimated-runtime={{minutes}} | speaking-rate={{wpm}} | ts={{timestamp}}
+```
+
+## Tool Integration
+
+**Recommended Script Writing Tools**:
+- **Google Docs**: Real-time collaboration, comment system
+- **Microsoft Word**: Advanced formatting, track changes
+- **Notion**: Database integration, template system
+- **Celtx/AWriter**: Dedicated script writing software
+- **Markdown Editors**: For version control friendly formatting
+
+**Script Management Workflow**:
+1. **Draft**: Initial content creation
+2. **Format**: Apply professional formatting standards
+3. **Review**: Co-host and producer feedback
+4. **Record**: Performer uses formatted script
+5. **Archive**: Version-controlled storage for future reference
+
+## Exception Handling
+
+### Non-Standard Episode Formats
+**Interview Episodes**: Different cue structure for guest dialogue
+**Live Recordings**: Simplified formatting for spontaneous delivery
+**Multi-Host Episodes**: Enhanced notation for conversation management
+
+**Adaptation Strategy**:
+1. **Maintain Core Standards**: Keep essential formatting elements
+2. **Document Variations**: Note format deviations in header
+3. **Test in Production**: Verify adapted format works for specific episode type
+4. **Update Standards**: Incorporate successful variations into future templates
+
+## Template Examples
+
+### Standard Solo Episode Template
+```
+EPISODE TITLE: [Title]
+
+DESCRIPTION: [2-3 sentences]
+
+RUNTIME TARGET: 45 minutes
+WORD COUNT: 5400 words
+SPEAKING RATE: 120 wpm
+
+[OPENING MUSIC - 15 seconds]
+
+**HOST**: [Opening hook - 30 seconds]
+
+[Opening content with delivery cues]
+
+[SEGMENT 1: Topic - 12 minutes]
+
+**HOST**: [Segment content]
+
+[Continue pattern]
+
+[CLOSING MUSIC - 30 seconds]
+```
+
+### Co-Host Conversation Template
+```
+EPISODE TITLE: [Title]
+
+HOSTS: [Host 1], [Host 2]
+
+[OPENING MUSIC]
+
+**HOST 1**: [Opening line]
+
+**HOST 2**: [Response]
+
+**HOST 1**: [Follow-up]
+
+[Conversation flows naturally with cues]
+```
+
+## FINAL VALIDATION CHECKLIST
+
+Before recording session:
+
+- [ ] Complete header metadata included and accurate
+- [ ] Consistent, readable formatting throughout
+- [ ] Clear delivery cues that enhance performance
+- [ ] Realistic timing estimates with appropriate buffers
+- [ ] Production cues complete and unambiguous
+- [ ] Collaboration features functional for team
+- [ ] Accessibility standards maintained
+- [ ] Quality assurance checklist fully validated
+- [ ] Script tested by performer for readability
+
+---
+
+**TL;DR**: Professional podcast script formatting that prioritizes performer experience, production efficiency, and consistent quality through standardized structure, clear delivery notation, and accessibility features.

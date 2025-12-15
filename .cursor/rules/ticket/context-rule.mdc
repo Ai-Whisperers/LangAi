@@ -1,0 +1,139 @@
+---
+id: rule.ticket.context.v1
+kind: rule
+version: 1.0.1
+description: Rules for context.md - maintains current technical state, focus areas, and immediate next steps for tickets
+globs: **/tickets/**/context.md, **/tickets/**/plan.md, **/tickets/**/progress.md
+governs: **/tickets/**/context.md
+implements: context.update
+requires:
+  - templar.context.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Context Rule
+
+## Purpose & Scope
+
+The context.md file maintains the ticket's current technical state and situational awareness. It serves as the ticket's "working memory" - always reflecting the present state of understanding and focus. This is a mutable file that gets updated as work progresses.
+
+**Applies to**: All `context.md` files in `tickets/**/` directories for active tickets.
+
+**Does not apply to**: Template files (`templates/`), archived tickets (`archives/`), or completed tickets no longer being worked on.
+
+## Inputs (Contract)
+
+- Ticket ID in format `PROJECT-NUMBER`
+- Directory `tickets/TICKET-ID/` must exist
+- Current technical state or focus change to document
+- Understanding of key components, classes, or system elements involved
+- Current timestamp for last updated field
+
+## Outputs (Contract)
+
+- Creates `tickets/TICKET-ID/context.md` if missing
+- Updates existing context.md by replacing relevant sections
+- Ensures sections present: `## Technical Background`, `## Current Focus`, `## Key Components`, `## Outstanding Issues`, `## Next Steps`
+- Structure follows `templar.context.v1`
+- Updates "Last Updated" timestamp in file
+- Preserves active information, removes stale entries
+- Reflects current state only (historical info moved to progress.md)
+
+## Deterministic Steps
+
+1. Validate ticket ID format matches `PROJECT-NUMBER` pattern
+2. Verify `tickets/TICKET-ID/` directory exists
+3. Read existing `context.md` if present
+4. Load `templar.context.v1` for structure reference
+5. Update `## Technical Background` with current system understanding
+6. Update `## Current Focus` with active work area
+7. Update `## Key Components` with relevant classes, files, services
+8. Update `## Outstanding Issues` with current blockers, risks, questions
+9. Update `## Next Steps` with immediate actions to take
+10. Update "Last Updated" field with current timestamp
+11. Remove stale or resolved items (move to progress.md if significant)
+12. Write updated context.md to disk
+13. Log major context changes in progress.md if significant
+
+## Formatting Requirements
+
+Context.md must follow `templar.context.v1` structure:
+
+- **Heading Level 1**: File title (optional, "# Context" or "# TICKET-ID Context")
+- **Metadata**: `**Last Updated**: YYYY-MM-DD HH:MM:SSZ` at top
+- **Heading Level 2**: Required sections in order:
+  1. `## Technical Background` - Current system understanding and problem space
+  2. `## Current Focus` - What is being worked on right now
+  3. `## Key Components` - Classes, files, services, databases involved
+  4. `## Outstanding Issues` - Current blockers, risks, unknowns, questions
+  5. `## Next Steps` - Immediate actions to take (ordered list)
+  6. `## Active Constraints` (optional) - Known limitations affecting work
+  7. `## Current Hypotheses` (optional) - Active theories being investigated
+- **Bullet Lists**: Use for component lists, issue lists
+- **Ordered Lists**: Use for next steps (priority order)
+- **Code References**: Use inline code for class names, file names, function names
+
+## OPSEC and Leak Control
+
+- NO internal system paths or server names (use generic references like "authentication service")
+- NO credentials, tokens, or API keys
+- NO email addresses or personal identifiable information
+- NO customer data or production identifiers
+- NO sensitive URLs or internal hostnames
+- Redact specific system names; use architecture-level references
+- Focus on patterns and problems, not specific deployment details
+
+## Integration Points
+
+- **Syncs with**: `rule.ticket.progress.v1` (major context changes logged in progress)
+- **Informed by**: `rule.ticket.plan.v1` (context aligns with plan phase)
+- **Referenced by**: `rule.ticket.switching-discipline.v1` (context updated on switches)
+- **Updates**: When technical understanding changes, focus shifts, or new risks discovered
+- **Session Continuity**: Enables work resumption after interruptions
+- **Team Handovers**: Provides current state for reviews and collaboration
+
+## Failure Modes and Recovery
+
+**Missing ticket directory**:
+- Detection: `tickets/TICKET-ID/` does not exist
+- Recovery: Create directory before proceeding
+- Fallback: Abort and request user create ticket directory structure
+
+**Stale context detected**:
+- Detection: Last Updated timestamp is >7 days old for active ticket
+- Recovery: Review and update all sections, remove obsolete items
+- Fallback: Mark as "Context Review Needed" and continue
+
+**Context conflicts with plan**:
+- Detection: Current Focus doesn't align with plan objectives
+- Recovery: Update context to match plan or update plan if scope changed
+- Fallback: Log discrepancy in progress.md for manual review
+
+**Next steps unclear**:
+- Detection: Next Steps section is empty or vague
+- Recovery: Review plan and progress to determine appropriate next actions
+- Fallback: Note "Next steps need clarification" and request guidance
+
+## Provenance Footer Specification
+
+Not applicable - context.md is continuously updated, not generated output. Provenance tracked via "Last Updated" timestamp in file.
+
+## Related Rules
+
+- `rule.ticket.plan.v1` - Context should align with current plan phase
+- `rule.ticket.progress.v1` - Major context changes logged in progress
+- `rule.ticket.switching-discipline.v1` - Context updated when switching tickets
+- `rule.ticket.workflow.v1` - Context maintained throughout workflow
+- `templar.context.v1` - Structure template for context.md
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no internal paths, credentials, emails, sensitive URLs)
+- [ ] context.md contains all required sections
+- [ ] Last Updated timestamp is current
+- [ ] Current Focus is specific and actionable
+- [ ] Next Steps are clear and prioritized
+- [ ] Only context.md modified (governs compliance)
+- [ ] Stale or resolved items removed (historical info in progress.md)

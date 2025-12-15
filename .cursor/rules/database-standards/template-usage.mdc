@@ -1,0 +1,124 @@
+# SQL Template Usage Guide
+
+## Template Categories
+
+### 1. Upgrade Templates (UpGeneric_*)
+Used for database upgrades and modifications:
+- UpGeneric_ADD_COLUMN.sql
+- UpGeneric_MOD_COLUMN.sql
+- UpGeneric_DROP_COLUMN.sql
+- UpGeneric_ADD_IX_INDEX.sql
+- UpGeneric_ADD_UX_INDEX.sql
+- UpGeneric_FK_CONSTRAINT.sql
+
+### 2. Solution Templates (SolGeneric_*)
+Used for solution-specific implementations:
+- SolGeneric_ADD_COLUMN.sql
+- SolGeneric_MOD_COLUMN.sql
+- SolGeneric_AddDbversion.sql
+
+### 3. Materialized View Templates (MVGeneric_*)
+Used for materialized view operations:
+- MVGeneric_DROP_TRIGGER.sql
+- MVGeneric_DROP_TABLE.sql
+- MVGeneric_DROP_PROCEDURE.sql
+
+### 4. Creation Templates (CrGeneric_*)
+Used for initial object creation:
+- CrGeneric_CR_JOB.sql
+- CrGeneric_CR_FUNCTION.sql
+- CrGeneric_CR_SEQUENCE.sql
+
+## Template Selection Guide
+
+### When to Use Each Template Type
+
+1. **UpGeneric_* Templates**
+   - Database upgrades
+   - Schema modifications
+   - Index operations
+   - Constraint changes
+
+2. **SolGeneric_* Templates**
+   - Solution-specific implementations
+   - Custom business logic
+   - Solution version tracking
+
+3. **MVGeneric_* Templates**
+   - Materialized view maintenance
+   - View-related procedures
+   - View triggers
+
+4. **CrGeneric_* Templates**
+   - Initial object creation
+   - Job creation
+   - Function creation
+   - Sequence creation
+
+## Template Variables
+
+### Standard Variables
+```sql
+$(V_SCHEMA_NAME)      -- Schema name
+$(V_TABLE_NAME)       -- Full table name
+$(V_COLUMN_NAME)      -- Full column name
+$(V_TABLE_SHORTNAME)  -- Short table name
+$(V_COLUMN_SHORTNAME) -- Short column name
+$(V_SCRIPTSETVERSION) -- Script version
+$(V_TASKID)          -- Task identifier
+```
+
+### Usage Rules
+1. Always use variables instead of hardcoded values
+2. Maintain consistent variable naming
+3. Document any custom variables
+4. Validate variable values before use
+
+## Template Examples
+
+### Adding a Column
+```sql
+-- Using UpGeneric_ADD_COLUMN.sql
+/ Script type           :       Create
+/ Script name           :       R970_ADD_COLUMN_EXAMPLE.sql
+/ Author               :       [author]
+/ Date                 :       [date]
+/ Purpose              :       Add new column to table
+/ Version              :       R970
+
+-- Variable declarations
+DECLARE @V_SCHEMA_NAME varchar(128) = '$(V_SCHEMA_NAME)'
+DECLARE @V_TABLE_NAME varchar(128) = '$(V_TABLE_NAME)'
+DECLARE @V_COLUMN_NAME varchar(128) = '$(V_COLUMN_NAME)'
+
+-- Main logic
+BEGIN TRY
+    ALTER TABLE $(V_SCHEMA_NAME).$(V_TABLE_NAME)
+    ADD $(V_COLUMN_NAME) [data_type] [constraints]
+END TRY
+BEGIN CATCH
+    -- Error handling
+END CATCH
+```
+
+## Best Practices
+
+1. **Template Selection**
+   - Use the most specific template available
+   - Follow template naming conventions
+   - Document any template modifications
+
+2. **Variable Usage**
+   - Declare all variables at the start
+   - Use consistent variable names
+   - Validate variable values
+
+3. **Error Handling**
+   - Include standard error handling blocks
+   - Add specific error checks
+   - Log all errors appropriately
+
+4. **Documentation**
+   - Follow header documentation format
+   - Document any deviations from template
+   - Include business logic comments 

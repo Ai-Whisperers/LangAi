@@ -1,0 +1,436 @@
+---
+id: rule.technical-specifications.hybrid-architecture.v1
+kind: rule
+version: 1.0.1
+description: Defines hybrid documentation architecture combining 3-file database pattern with Domain-Driven Design for C++ to C# migration projects
+globs: **/docs/technical/**/*.md, **/.cursor/rules/technical-specifications/*.mdc
+governs: **/docs/technical/**/*.md
+implements: hybrid-architecture.documentation
+requires:
+  - rule.technical-specifications.architecture.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Hybrid Documentation Architecture Rule
+
+## Purpose & Scope
+
+This rule defines the hybrid documentation architecture that combines the **3-file database pattern** with **Domain-Driven Design** for higher-level concerns, ensuring optimal documentation structure for C++ to C# migration projects.
+
+**Applies to**: C++ to C# migration projects with complex database schemas (10+ tables) AND rich business domains requiring layered documentation. Technical specification documentation created during migration Phase 1 (Data Collection) and Phase 2 (Specification Creation).
+
+**Does not apply to**: Simple systems without complex database schemas, single-layer applications, prototype projects, or documentation outside the technical specifications domain (implementation plans, RFCs, general documentation).
+
+## Inputs (Contract)
+
+- Migration project with identified domain areas requiring documentation
+- Phase 1 data collection findings from C++ source system analysis
+- Understanding of database schema complexity (table count, relationships)
+- Understanding of business domain complexity (entities, rules, processes)
+- Decision on whether hybrid architecture is appropriate (see "When to Apply" criteria)
+
+## Outputs (Contract)
+
+Technical specification documentation structure containing:
+- Three-folder separation: `docs/technical/`, `docs/implementation/`, `docs/rfcs/`
+- Per-domain layered structure: database layer (3-file pattern) + domain layer (DDD pattern)
+- Database layer files: `[domain]-database-schema.md`, `[domain]-database-constraints.md`, `[domain]-database-analysis.md`
+- Domain layer files: domain objects, enumerations, mappers organized in subfolders
+- Cross-layer coordination: business rules and integration points at domain root
+- Complete folder structure per domain enabling parallel team development
+
+## Purpose (Original)
+
+## When to Apply This Rule
+
+### **Use This Architecture When**
+✅ **C++ to C# Migration Projects**: Legacy system migration requiring detailed technical analysis  
+✅ **Complex Database Schemas**: Systems with extensive database structures requiring detailed analysis  
+✅ **Rich Business Domains**: Systems with complex business logic requiring domain modeling  
+✅ **Multiple Stakeholders**: Technical teams, business analysts, and domain experts need different views  
+✅ **Layered System Architecture**: Systems with clear separation between data, domain, and application layers  
+
+### **Don't Use This Architecture When**
+❌ **Simple Systems**: Basic applications without complex business domains or database schemas  
+❌ **Pure Technical Documentation**: Systems requiring only technical documentation without business context  
+❌ **Single-Layer Applications**: Applications without clear domain/database separation  
+❌ **Prototype Projects**: Early-stage projects without established architecture patterns  
+
+### **Key Indicators for Application**
+- **Database Complexity**: 10+ tables with complex relationships
+- **Business Domain Richness**: Multiple business entities with complex rules
+- **Migration Scope**: Large-scale C++ to C# transformation projects
+- **Team Structure**: Separate database, domain, and implementation teams
+- **Documentation Consumers**: Multiple audiences requiring different abstraction levels
+
+## Documentation Architecture Overview
+
+### **Three-Folder Separation Pattern**
+
+```text
+docs/
+├── technical/          # "WHAT" - Current System Specifications
+├── implementation/     # "HOW" - C# Target Design Documents  
+└── rfcs/              # "FUTURE" - Request for Comments & Proposals
+```
+
+### **Hybrid Documentation Strategy by Abstraction Level**
+
+The architecture uses **different documentation patterns** depending on the **abstraction level**:
+
+## Database Layer Documentation: 3-File Pattern
+
+**For low-level database documentation**, use the proven 3-file pattern:
+
+```text
+docs/technical/[domain]/
+├── [domain]-database-schema.md                           # WHAT exists
+├── [domain]-database-constraints-and-relationships.md    # HOW it's constrained  
+└── [domain]-database-analysis-summary.md                 # WHY it matters
+```
+
+### **3-File Pattern Responsibilities**
+
+#### **Schema File** - "WHAT exists"
+- Complete CREATE TABLE statements with all fields
+- Data types and Oracle/MSSQL mappings
+- Primary keys, indexes, and basic constraints
+- Entity relationship diagrams (Mermaid ERDs)
+- Database-level comments and field descriptions
+
+#### **Constraints File** - "HOW it's constrained"
+- Field constraints (NOT NULL, DEFAULT, CHECK)
+- Foreign key relationships and referential integrity
+- Business rule constraints and validation logic
+- Index strategies and performance considerations
+- Integration relationship mappings
+
+#### **Analysis File** - "WHY it matters"
+- Business logic implications and domain context
+- Migration considerations for C# implementation
+- Integration patterns and cross-domain dependencies
+- Performance analysis and optimization strategies
+- Design rationale and business value
+
+## Layered Architecture Documentation: Clean Architecture + DDD
+
+**For higher-level architecture documentation**, use layered organization that supports Clean Architecture with DDD:
+
+```text
+docs/technical/[domain]/
+├── [domain]-domain-overview.md                    # Navigation hub & ubiquitous language
+├── [domain]-business-rules.md                     # Domain logic & algorithms
+├── [domain]-integration-points.md                 # External system interfaces
+├── database/                                      # Database/Infrastructure layer
+│   ├── [domain]-database-schema.md               # Tables, constraints, relationships
+│   ├── [domain]-database-constraints.md          # Referential integrity rules
+│   ├── [domain]-database-analysis.md             # Migration context & business meaning
+│   ├── entities/                                 # EF Core entities (data contracts)
+│   │   ├── [entity-name]-entity.md              # Simple data access objects
+│   │   └── [another-entity]-entity.md           # Database mapping configurations
+│   └── repositories/                             # Data access patterns
+│       ├── [repository-name]-repository.md       # Access patterns & queries
+│       └── [another-repository]-repository.md    # Performance optimizations
+├── domain/                                       # Domain/Core layer
+│   ├── domain-objects/                          # Rich domain models (business logic)
+│   │   ├── [object-name]-domain-object.md       # Business behavior & rules
+│   │   └── [another-object]-domain-object.md    # Domain logic & validation
+│   ├── enumerations/                            # Business enumerations
+│   │   ├── [enum-name]-enum.md                  # Business values & meanings
+│   │   └── [another-enum]-enum.md               # Include source C++ enum reference
+│   └── mappers/                                 # Layer translation
+│       ├── [mapper-name]-mapper.md              # Entity ↔ Domain Object mapping
+│       └── [another-mapper]-mapper.md           # Transformation logic
+└── caching/                                     # Distributed caching (future)
+    ├── cache-strategies.md                      # Cache patterns & policies
+    ├── cache-keys.md                            # Key generation strategies
+    └── invalidation-rules.md                    # Cache invalidation logic
+```
+
+### **Layered Architecture Pattern Responsibilities**
+
+#### **Database Layer Documentation**
+
+##### **Database Schema Files (3-File Pattern)**
+- Complete table structures with Oracle/MSSQL compatibility
+- Constraints and referential integrity rules  
+- Business context and migration guidance
+
+##### **Entity Files** - EF Core Data Contracts
+- **Light-weight documentation** for EF Core entities
+- Database table mapping configurations
+- Navigation properties and relationships
+- Custom value converters and configurations
+- **Cross-reference** to domain objects and database schema
+
+##### **Repository Files** - Data Access Patterns
+- **Light-weight documentation** for repository interfaces
+- Query patterns and performance optimizations
+- Data access abstractions and contracts
+- **Cross-reference** to entities and domain objects
+
+#### **Domain Layer Documentation**
+
+##### **Domain Object Files** - Rich Business Models
+- **One file per domain object** (business logic focus)
+- Business behavior, rules, and validation
+- Domain-specific constraints and invariants
+- **Distinct from database entities** - business meaning focus
+- Migration of business logic from C++ domain classes
+
+##### **Enumeration Files** - Business Value Objects
+- **One file per enumeration**
+- **Must include source C++ enum reference**
+- Business values and meanings (not just data storage)
+- Domain-specific usage patterns and validation
+- **Distinct from database enums** - business logic focus
+
+##### **Mapper Files** - Layer Translation
+- **Entity ↔ Domain Object mapping logic**
+- Transformation rules and business logic
+- Performance considerations for mapping
+- Validation during layer transitions
+- Support for distributed caching serialization
+
+#### **Caching Layer Documentation (Future)**
+
+##### **Cache Strategy Files**
+- Distributed caching patterns and policies
+- Cache key generation strategies  
+- Invalidation rules and dependency management
+- Serialization patterns for domain objects
+
+#### **Business Rules** - Domain logic
+- Mathematical algorithms and formulas
+- Validation frameworks and rules
+- Decision criteria and business processes
+- Domain-specific calculations
+
+#### **Integration Points** - External interfaces
+- External system interfaces and protocols
+- Data exchange patterns and formats
+- Integration dependencies and constraints
+- Performance characteristics
+
+## Technology Stack Documentation: Separate Pattern
+
+**Technology-specific documentation** will be handled separately:
+
+```text
+docs/implementation/[domain]/
+├── oracle-implementation.md        # Oracle-specific details
+├── mssql-implementation.md         # SQL Server-specific details
+├── csharp-entities.md              # C# class definitions
+├── entity-framework.md             # EF mappings & configurations
+└── api-contracts.md                # REST/GraphQL schemas
+```
+
+## Layered Architecture Documentation: Separate Pattern
+
+**Architectural layer documentation** will be handled separately:
+
+```text
+docs/implementation/[domain]/
+├── presentation-layer.md           # UI/API concerns
+├── application-layer.md            # Use cases & orchestration
+├── domain-layer.md                 # Business logic (references technical specs)
+├── infrastructure-layer.md         # Database & external systems
+└── cross-cutting-concerns.md       # Logging, security, etc.
+```
+
+## Use Case Documentation: Future Pattern
+
+**Use case driven documentation** will be added later:
+
+```text
+docs/implementation/[domain]/use-cases/
+├── create-[entity].md              # Creation scenarios
+├── update-[entity].md              # Update scenarios
+├── query-[entity].md               # Query scenarios
+└── delete-[entity].md              # Deletion scenarios
+```
+
+## File Naming Conventions
+
+### **Database Files (3-File Pattern)**
+- `[domain]-database-schema.md`
+- `[domain]-database-constraints-and-relationships.md`  
+- `[domain]-database-analysis-summary.md`
+
+### **Domain Files (DDD Pattern)**
+- `[domain]-domain-overview.md`
+- `[domain]-entity-relationships.md`
+- `[domain]-business-rules.md`
+- `[domain]-integration-points.md`
+
+### **Individual Entity Files**
+- `entities/[entity-name]-domain-object.md`
+- Use singular form: `customer-domain-object.md`, not `customers-domain-object.md`
+- Use kebab-case: `price-segment-domain-object.md`
+
+### **Individual Enumeration Files**
+- `enumerations/[enum-name]-enum.md`
+- Use singular form: `validation-type-enum.md`
+- Use kebab-case: `market-role-type-enum.md`
+- **Must include source C++ enum reference in file**
+
+## Content Standards
+
+### **Database Documentation Standards**
+- **Schema files**: Complete table structures with Oracle/MSSQL compatibility
+- **Constraints files**: Detailed constraint analysis with business rule context
+- **Analysis files**: Business logic implications and migration guidance
+- **Source references**: Standardized MSSQL R830 format
+
+### **Domain Documentation Standards**
+- **Entity files**: One file per domain entity with complete field specifications
+- **Enumeration files**: One file per enum with source C++ enum reference
+- **Business context**: Focus on business meaning, not implementation details
+- **Migration ready**: Complete specifications for C# implementation
+
+### **Cross-Reference Standards**
+- Database files reference domain files for business context
+- Domain files reference database files for technical structure
+- Entity files reference enumeration files for field value constraints
+- All files include "Related Documentation" sections
+
+## Quality Gates
+
+### **Database Documentation Quality Gates**
+- All three files present for each domain with database tables
+- Schema files contain complete table structures
+- Constraints files detail all relationships and business rules
+- Analysis files provide business context and migration guidance
+
+### **Domain Documentation Quality Gates**
+- Domain overview provides clear navigation and ubiquitous language
+- One entity file per domain object with complete specifications
+- One enumeration file per enum with source C++ reference
+- Business rules capture all domain logic and algorithms
+
+### **Integration Quality Gates**
+- Clear separation between database and domain concerns
+- Consistent cross-references between related files
+- No duplication of information across patterns
+- Maintainable structure supporting parallel development
+
+## Migration Process Integration
+
+### **Phase 1 (Data Collection)**
+- Creates database documentation (3-file pattern)
+- Creates domain overview and entity relationship files
+- Identifies individual entities and enumerations for detailed documentation
+
+### **Phase 2 (Specification Creation)**
+- Creates individual entity files (one per domain object)
+- Creates individual enumeration files (one per enum with source reference)
+- Creates business rules and integration points documentation
+- Completes domain documentation (DDD pattern)
+
+### **Phase 3 (Migration Planning)**
+- Creates implementation documentation using separate patterns
+- References technical specifications as foundation
+- Designs C# architecture based on domain and database specifications
+
+## Success Criteria
+
+### **Pattern Effectiveness**
+- Database documentation provides complete technical foundation
+- Domain documentation provides complete business context
+- Individual files enable focused development and review
+- Hybrid approach serves all stakeholder needs effectively
+
+### **Maintenance Efficiency**
+- Clear boundaries between different documentation concerns
+- Manageable file sizes and focused responsibilities
+- Parallel development supported across different abstraction levels
+- Consistent patterns enable tooling and automation
+
+### **Migration Support**
+- Complete specifications enable accurate C# implementation
+- Business context preserved through domain documentation
+- Technical details captured through database documentation
+- Individual entity and enum files support focused migration tasks
+
+This hybrid architecture optimizes documentation for both technical accuracy and business context while supporting efficient C++ to C# migration execution.
+
+## Deterministic Steps
+
+When applying this architecture to a new domain:
+
+1. **Assess Applicability**: Verify domain meets criteria (10+ tables, complex business logic, migration project)
+2. **Create Domain Folder**: Create `docs/technical/[domain]/` directory structure
+3. **Create Database Layer**: 
+   - Create `docs/technical/[domain]/database/` folder
+   - Create `[domain]-database-schema.md` with table structures
+   - Create `[domain]-database-constraints.md` with relationships
+   - Create `[domain]-database-analysis.md` with business context
+4. **Create Domain Layer**:
+   - Create `docs/technical/[domain]/domain/` folder
+   - Create `docs/technical/[domain]/domain/domain-objects/` folder for entities
+   - Create `docs/technical/[domain]/domain/enumerations/` folder for enums
+5. **Create Root Files**:
+   - Create `[domain]-domain-overview.md` at domain root (navigation hub)
+   - Create `[domain]-business-rules.md` at domain root (cross-layer logic)
+   - Create `[domain]-integration-points.md` at domain root (external interfaces)
+6. **Establish Cross-References**: Link between layers using relative paths
+7. **Validate Structure**: Ensure all required folders and files present per this rule
+
+## OPSEC and Leak Control
+
+Documentation files must NOT contain:
+- **NO** internal server names, IP addresses, or URLs
+- **NO** credentials, tokens, API keys, or passwords
+- **NO** employee email addresses or personal information
+- **NO** proprietary vendor information or licensing details
+- **NO** confidential customer data or examples
+- References to C++ source code by file path only (no absolute paths with server names)
+
+## Integration Points
+
+This rule integrates with:
+- **rule.technical-specifications.architecture.v1**: Provides three-folder foundation (technical/implementation/rfcs)
+- **rule.technical-specifications.domain-object.v1**: Governs domain layer entity files
+- **rule.technical-specifications.enumeration.v1**: Governs domain layer enumeration files
+- **rule.technical-specifications.entity-relationship.v1**: Governs database layer schema files
+- **rule.technical-specifications.business-rules.v1**: Governs root-level business rules files
+- **rule.technical-specifications.integration-points.v1**: Governs root-level integration files
+
+## Failure Modes and Recovery
+
+**Failure**: Domain complexity assessment incorrect (applied to simple system)
+- **Detection**: Excessive overhead for simple schema/logic
+- **Recovery**: Fall back to single-layer documentation, consolidate files
+
+**Failure**: Team confusion between database entities and domain objects
+- **Detection**: Duplication of content across layers
+- **Recovery**: Apply rule.technical-specifications.anti-duplication.v1, clarify layer separation
+
+**Failure**: Cross-references broken after folder reorganization
+- **Detection**: Dead links in navigation
+- **Recovery**: Update all cross-references, validate links systematically
+
+**Failure**: Missing required folders in domain structure
+- **Detection**: Documentation team cannot find where to place files
+- **Recovery**: Create complete folder structure per Deterministic Steps above
+
+## Related Rules
+
+- **rule.technical-specifications.architecture.v1**: Three-folder separation pattern
+- **rule.technical-specifications.domain-object.v1**: Domain entity documentation standards
+- **rule.technical-specifications.enumeration.v1**: Enumeration documentation standards
+- **rule.technical-specifications.entity-relationship.v1**: Database schema documentation standards
+- **rule.technical-specifications.business-rules.v1**: Business logic documentation standards
+- **rule.technical-specifications.anti-duplication.v1**: Reference patterns to prevent duplication
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no server names, IPs, credentials, emails, confidential data)
+- [ ] Domain meets applicability criteria (10+ tables AND complex business logic AND migration project)
+- [ ] Three-folder root structure present: docs/technical/, docs/implementation/, docs/rfcs/
+- [ ] Database layer has 3-file pattern: schema.md, constraints.md, analysis.md
+- [ ] Domain layer has domain-objects/ and enumerations/ folders
+- [ ] Root has navigation hub, business rules, and integration points files
+- [ ] Cross-references use relative paths and link correctly between layers

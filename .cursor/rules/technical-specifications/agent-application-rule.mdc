@@ -1,0 +1,406 @@
+---
+id: rule.technical-specifications.agent-application.v1
+kind: rule
+version: 1.0.1
+description: Agent guidance for when and how to apply technical specification rules. Use this when user requests involve C++ to C# migration documentation, creating/updating specs in docs/technical/, documenting domains/entities/enumerations/business rules, or architectural decisions for technical documentation.
+implements: technical-specifications.agent-application
+requires:
+  - rule.technical-specifications.overview.v1
+  - rule.technical-specifications.architecture.v1
+  - rule.technical-specifications.hybrid-architecture.v1
+  - rule.technical-specifications.domain-object.v1
+  - rule.technical-specifications.enumeration.v1
+  - rule.technical-specifications.business-rules.v1
+  - rule.technical-specifications.entity-relationship.v1
+  - rule.technical-specifications.integration-points.v1
+  - rule.technical-specifications.domain-overview.v1
+  - rule.technical-specifications.anti-duplication.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Technical Specifications - Agent Application Rule
+
+## Purpose & Scope
+
+This rule provides explicit agent guidance for when and how to apply technical specification rules during C++ to C# migration projects. It bridges the gap between rule definitions and practical application by mapping file patterns, user requests, and migration scenarios to specific rules.
+
+**Applies to**: AI agents working on C++ to C# migration documentation in `docs/technical/` folder structure.
+
+**Does not apply to**: Human developers (use rule-authoring overview), implementation code, or non-migration documentation.
+
+## Inputs (Contract)
+
+- User request or task involving technical specification documentation
+- File path or pattern being created/edited
+- Migration phase context (Phase 1 Data Collection, Phase 2 Specification Creation)
+- Domain or entity being documented
+
+## Outputs (Contract)
+
+Agent decision on:
+- Which technical specification rules to apply
+- In what order to apply multiple rules
+- Which anti-patterns to avoid
+- How to validate rule application was successful
+
+## File Pattern to Rule Mapping
+
+### Architecture Decision Files
+
+| File Path Pattern | Primary Rule | When to Apply |
+|-------------------|--------------|---------------|
+| `docs/technical/` (folder structure) | `rule.technical-specifications.architecture.v1` | Creating initial folder structure for new domain |
+| `docs/technical/[domain]/` (layered) | `rule.technical-specifications.hybrid-architecture.v1` | Creating complex domain with DB + Domain layers |
+
+**Decision Criteria**:
+- **Simple domain** (≤5 entities, minimal business logic) → Use `architecture.v1` (3-folder only)
+- **Complex domain** (>5 entities, rich business logic) → Use `hybrid-architecture.v1` (layered structure)
+
+### Domain Navigation Files
+
+| File Path Pattern | Primary Rule | Supporting Rules |
+|-------------------|--------------|------------------|
+| `docs/technical/[domain]/overview.md` | `rule.technical-specifications.domain-overview.v1` | `rule.technical-specifications.anti-duplication.v1` |
+| `docs/technical/[domain]/[domain]-overview.md` | `rule.technical-specifications.domain-overview.v1` | `rule.technical-specifications.anti-duplication.v1` |
+
+**Apply When**: Creating domain navigation hub (central entry point for domain documentation)
+
+### Database Layer Files (Hybrid Architecture)
+
+| File Path Pattern | Primary Rule | Supporting Rules |
+|-------------------|--------------|------------------|
+| `docs/technical/[domain]/database/schema.md` | `rule.technical-specifications.entity-relationship.v1` | - |
+| `docs/technical/[domain]/database/[entity]-schema.md` | `rule.technical-specifications.entity-relationship.v1` | - |
+
+**Apply When**: Documenting database tables, fields, relationships from C++ system
+
+### Domain Layer Files (Entity Documentation)
+
+| File Path Pattern | Primary Rule | Supporting Rules |
+|-------------------|--------------|------------------|
+| `docs/technical/[domain]/[Entity].md` | `rule.technical-specifications.domain-object.v1` | `rule.technical-specifications.anti-duplication.v1` |
+| `docs/technical/[domain]/domain/[Entity].md` | `rule.technical-specifications.domain-object.v1` | `rule.technical-specifications.anti-duplication.v1` |
+| `docs/technical/[domain]/entities/[Entity].md` | `rule.technical-specifications.domain-object.v1` | `rule.technical-specifications.anti-duplication.v1` |
+
+**Apply When**: Documenting individual domain entities with business meaning
+
+### Enumeration Files
+
+| File Path Pattern | Primary Rule | Supporting Rules |
+|-------------------|--------------|------------------|
+| `docs/technical/[domain]/[Domain]-enums.md` | `rule.technical-specifications.enumeration.v1` | `rule.technical-specifications.anti-duplication.v1` |
+| `docs/technical/[domain]/enumerations.md` | `rule.technical-specifications.enumeration.v1` | `rule.technical-specifications.anti-duplication.v1` |
+| `docs/technical/[domain]/domain/enumerations.md` | `rule.technical-specifications.enumeration.v1` | `rule.technical-specifications.anti-duplication.v1` |
+
+**Apply When**: Documenting C++ enums/constants requiring exact value preservation
+
+**CRITICAL**: Apply enumeration qualification criteria BEFORE creating file (see Deterministic Steps below)
+
+### Business Rules Files
+
+| File Path Pattern | Primary Rule | Supporting Rules |
+|-------------------|--------------|------------------|
+| `docs/technical/[domain]/[Domain]-business-rules.md` | `rule.technical-specifications.business-rules.v1` | `rule.technical-specifications.anti-duplication.v1` |
+| `docs/technical/[domain]/business-rules.md` | `rule.technical-specifications.business-rules.v1` | `rule.technical-specifications.anti-duplication.v1` |
+| `docs/technical/[domain]/domain/business-rules.md` | `rule.technical-specifications.business-rules.v1` | `rule.technical-specifications.anti-duplication.v1` |
+
+**Apply When**: Documenting business logic, algorithms, validation rules, decision criteria
+
+### Integration Points Files
+
+| File Path Pattern | Primary Rule | Supporting Rules |
+|-------------------|--------------|------------------|
+| `docs/technical/[domain]/[Domain]-integration-points.md` | `rule.technical-specifications.integration-points.v1` | - |
+| `docs/technical/[domain]/integration-points.md` | `rule.technical-specifications.integration-points.v1` | - |
+
+**Apply When**: Documenting external system interfaces, APIs, script functions (DBCREATE*, DBGET*, DBSET*)
+
+### Always Apply
+
+| Rule | When | Priority |
+|------|------|----------|
+| `rule.technical-specifications.anti-duplication.v1` | ALL technical specification files | ALWAYS |
+
+**Enforcement**: On every file creation/update, validate no SQL duplication, no business rule duplication, no enum value duplication.
+
+## Deterministic Steps
+
+### Step 1: Identify Request Type
+
+When user provides request, categorize:
+
+1. **Architecture Setup**: "Create docs structure for [domain]"
+   - → Apply architecture decision logic (see below)
+   
+2. **Domain Overview**: "Document [domain] overview"
+   - → Apply `rule.technical-specifications.domain-overview.v1`
+   
+3. **Entity Documentation**: "Document [Entity] entity/class/object"
+   - → Apply `rule.technical-specifications.domain-object.v1`
+   
+4. **Enumeration Documentation**: "Document [Enum] enumeration/constants"
+   - → Run qualification check first (Step 2)
+   - → If qualified, apply `rule.technical-specifications.enumeration.v1`
+   
+5. **Business Logic Documentation**: "Document business rules for [domain/process]"
+   - → Apply `rule.technical-specifications.business-rules.v1`
+   
+6. **Database Documentation**: "Document database schema for [domain]"
+   - → Apply `rule.technical-specifications.entity-relationship.v1`
+   
+7. **Integration Documentation**: "Document integrations with [system]"
+   - → Apply `rule.technical-specifications.integration-points.v1`
+
+### Step 2: Enumeration Qualification Check
+
+**BEFORE creating enumeration file, verify qualification** per `rule.technical-specifications.enumeration.v1`:
+
+✅ **Qualifies as Enumeration** (create enumeration file):
+- Fixed set of named values (Status: PENDING=0, APPROVED=1)
+- Numeric values MUST be preserved exactly
+- Values represent discrete states/categories
+- Used across multiple entities/domains
+
+❌ **NOT an Enumeration** (document elsewhere):
+- Database foreign keys → Document in entity-relationship as relationships
+- Boolean flags → Document in domain objects as boolean fields
+- Configuration values → Document in business rules or integration points
+- Dynamic/user-defined values → Document in business rules
+
+**If enumeration doesn't qualify**: Stop, document in appropriate alternative specification type.
+
+### Step 3: Architecture Decision Logic
+
+When setting up new domain documentation:
+
+**Decision Tree**:
+```
+Is domain complex? (>5 entities OR rich business logic OR external integrations)
+  ├─ YES → Use hybrid-architecture.v1 (layered structure)
+  │   └─ Create: docs/technical/[domain]/database/, domain/, overview.md
+  │
+  └─ NO → Use architecture.v1 (simple 3-folder)
+      └─ Create: docs/technical/[domain]/, [entity files at root]
+```
+
+### Step 4: Apply Rules in Order
+
+For **new domain** (complex):
+1. `rule.technical-specifications.hybrid-architecture.v1` → Create folder structure
+2. `rule.technical-specifications.entity-relationship.v1` → Document database schema
+3. `rule.technical-specifications.domain-overview.v1` → Create navigation hub
+4. `rule.technical-specifications.domain-object.v1` → Per entity (reference schema, don't duplicate)
+5. `rule.technical-specifications.enumeration.v1` → If enums qualified
+6. `rule.technical-specifications.business-rules.v1` → Document business logic
+7. `rule.technical-specifications.integration-points.v1` → If external systems
+
+For **new domain** (simple):
+1. `rule.technical-specifications.architecture.v1` → Create folder structure
+2. `rule.technical-specifications.domain-overview.v1` → Create navigation hub
+3. `rule.technical-specifications.domain-object.v1` → Per entity
+4. `rule.technical-specifications.enumeration.v1` → If enums qualified
+5. `rule.technical-specifications.business-rules.v1` → If complex logic
+
+For **single entity** (existing domain):
+1. Check if domain-overview exists (if not, create it first)
+2. Apply `rule.technical-specifications.domain-object.v1`
+3. Enforce `rule.technical-specifications.anti-duplication.v1` (reference, don't duplicate)
+
+For **enumeration** (existing domain):
+1. Run qualification check (Step 2)
+2. If qualified, apply `rule.technical-specifications.enumeration.v1`
+3. If not qualified, redirect to appropriate specification type
+
+### Step 5: Validate Anti-Duplication
+
+After ANY file creation/update:
+
+**Check for violations**:
+- ❌ SQL CREATE TABLE in domain object files → VIOLATION
+- ❌ Detailed field specs copied from schema → VIOLATION
+- ❌ Business rules duplicated across files → VIOLATION
+- ❌ Enum value tables copied → VIOLATION
+
+**If violation detected**: Remove duplication, add reference to authoritative source
+
+### Step 6: Cross-Reference Validation
+
+After file creation:
+
+**Validate references**:
+- All references use relative file paths
+- All referenced files exist
+- No broken links
+
+## Common Scenarios
+
+### Scenario A: User Says "Document Payment domain"
+
+**Agent Actions**:
+1. Assess complexity: How many entities? Business logic complexity?
+2. Choose architecture: hybrid-architecture.v1 (if complex) or architecture.v1 (if simple)
+3. Create folder structure per chosen architecture
+4. Create domain-overview.md as navigation hub
+5. Identify entities from C++ analysis
+6. For each entity, apply domain-object.v1
+7. Check for enumerations → Run qualification → Apply enumeration.v1 if qualified
+8. Document business rules → Apply business-rules.v1
+9. Check for external integrations → Apply integration-points.v1 if present
+10. Validate anti-duplication across all files
+
+### Scenario B: User Says "Document PaymentStatus enum"
+
+**Agent Actions**:
+1. **STOP - Run qualification check first**:
+   - Is it a fixed set of named values? → YES
+   - Must numeric values be preserved? → Check C++ source
+   - Represents discrete states? → YES
+   - Used across multiple places? → Check usage
+2. **If qualified**:
+   - Apply `rule.technical-specifications.enumeration.v1`
+   - Create `Payment-enums.md` or `enumerations.md`
+   - Extract exact numeric values from C++ source
+   - Document business meaning per value
+3. **If NOT qualified** (e.g., just a boolean flag):
+   - Do NOT create enumeration file
+   - Document in domain object as field
+   - Explain to user why it's not an enumeration
+
+### Scenario C: User Says "Document business rules for Payment processing"
+
+**Agent Actions**:
+1. Apply `rule.technical-specifications.business-rules.v1`
+2. Create `Payment-business-rules.md`
+3. Document WHAT rules do (step-by-step logic), NOT HOW implemented
+4. Extract algorithms, validation rules, decision criteria
+5. Cross-reference related domain objects
+6. Enforce anti-duplication (no SQL, no detailed field specs)
+
+### Scenario D: User Says "Add Transaction entity to Payment domain"
+
+**Agent Actions**:
+1. Check domain-overview.md exists (create if missing)
+2. Apply `rule.technical-specifications.domain-object.v1`
+3. Create `Transaction.md` (or `domain/Transaction.md` if hybrid)
+4. Reference database schema (don't duplicate SQL)
+5. Reference enumerations (don't duplicate value tables)
+6. Add entry to domain-overview.md entity list
+7. Validate anti-duplication
+
+### Scenario E: User Provides SQL Schema
+
+**Agent Actions**:
+1. Recognize as database schema documentation request
+2. Apply `rule.technical-specifications.entity-relationship.v1`
+3. Create schema file in appropriate location:
+   - Hybrid: `database/schema.md`
+   - Simple: `[Domain]-schema.md`
+4. Include full SQL with exact DDL
+5. Mark as AUTHORITATIVE source for field specifications
+6. When creating domain objects later, reference this schema (don't duplicate)
+
+## Behavioral Guidelines
+
+### Always Do
+
+✅ **Check domain-overview exists** before creating entity files
+✅ **Run enumeration qualification** before creating enumeration files
+✅ **Enforce anti-duplication** on every file creation/update
+✅ **Use relative file paths** for cross-references
+✅ **Apply OPSEC** (no server names, credentials, emails, confidential data)
+✅ **Validate completeness** before claiming documentation complete
+
+### Never Do
+
+❌ **Create enumeration files without qualification check**
+❌ **Duplicate SQL, business rules, or enum values across files**
+❌ **Skip domain-overview when creating new domain**
+❌ **Apply hybrid-architecture to simple domains** (over-engineering)
+❌ **Apply simple architecture to complex domains** (under-engineering)
+❌ **Create files without checking existing architecture pattern**
+
+### When Unsure
+
+**If unclear which rule applies**:
+1. Check file path pattern in mapping table above
+2. Check "Applies to" criteria in rule's Purpose & Scope
+3. If still unclear, ask user for clarification (don't guess)
+
+**If unclear if content qualifies as enumeration**:
+1. Run qualification check explicitly
+2. If fails ANY criterion, it's NOT an enumeration
+3. Document in appropriate alternative (domain object, business rules, etc.)
+
+**If unclear about architecture choice**:
+1. Count entities and assess business logic complexity
+2. Use complexity threshold: >5 entities OR rich business logic → hybrid
+3. When in doubt, start simple (can refactor to hybrid later)
+
+## Integration Points
+
+This agent application rule coordinates with all technical specification rules:
+
+- **rule.technical-specifications.overview.v1**: Provides rule catalog and relationships
+- **rule.technical-specifications.architecture.v1**: Applied for simple domains
+- **rule.technical-specifications.hybrid-architecture.v1**: Applied for complex domains
+- **rule.technical-specifications.domain-object.v1**: Applied per entity
+- **rule.technical-specifications.enumeration.v1**: Applied after qualification check
+- **rule.technical-specifications.business-rules.v1**: Applied for business logic
+- **rule.technical-specifications.entity-relationship.v1**: Applied for database schema
+- **rule.technical-specifications.integration-points.v1**: Applied for external interfaces
+- **rule.technical-specifications.domain-overview.v1**: Applied as navigation hub
+- **rule.technical-specifications.anti-duplication.v1**: Enforced on every file
+
+## Failure Modes and Recovery
+
+**Failure**: Agent creates enumeration file without qualification check
+- **Detection**: File created for boolean flag, foreign key, or config value
+- **Recovery**: Delete enumeration file, document in appropriate specification type, explain to user
+
+**Failure**: Agent duplicates SQL/business rules/enum values across files
+- **Detection**: Anti-duplication violation detected
+- **Recovery**: Remove duplication, add reference to authoritative source, update cross-references
+
+**Failure**: Agent applies hybrid-architecture to simple domain
+- **Detection**: 2-3 entities with minimal business logic have complex folder structure
+- **Recovery**: Simplify to flat structure, consolidate files, update domain-overview
+
+**Failure**: Agent applies simple architecture to complex domain
+- **Detection**: >10 entity files at root with no organization
+- **Recovery**: Refactor to hybrid-architecture, create database/ and domain/ layers, reorganize files
+
+**Failure**: Agent creates entity files without domain-overview
+- **Detection**: Multiple entity files exist but no navigation hub
+- **Recovery**: Create domain-overview.md retroactively, link all entities
+
+## OPSEC and Leak Control
+
+This agent application rule enforces OPSEC across all technical specifications:
+- **NO** internal server names, IP addresses, or URLs
+- **NO** credentials, tokens, API keys, or passwords
+- **NO** employee names or email addresses
+- **NO** confidential customer data or business-sensitive information
+- **NO** proprietary vendor details or licensing information
+
+**Agent must validate** every technical specification for OPSEC compliance before completing task.
+
+## Related Rules
+
+- **rule.technical-specifications.overview.v1**: Rule catalog and dependency graph
+- **rule.authoring.contracts-and-scope.v1**: Defines globs/governs intent
+- **rule.ticket.workflow.v1**: May coordinate with ticket documentation
+
+## FINAL MUST-PASS CHECKLIST
+
+Before claiming technical specification task complete:
+
+- [ ] Correct rule(s) identified from file pattern mapping
+- [ ] Enumeration qualification check performed if creating enumeration file
+- [ ] Architecture decision logic applied if creating new domain
+- [ ] Anti-duplication enforced (NO SQL/business rule/enum value duplication)
+- [ ] Domain-overview exists before entity files created
+- [ ] Cross-references validated (all links work, relative paths used)
+- [ ] OPSEC clean (no server names, credentials, emails, confidential data)
+- [ ] All required specification types present for domain completeness

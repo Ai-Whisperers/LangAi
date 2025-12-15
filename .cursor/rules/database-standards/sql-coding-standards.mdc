@@ -1,0 +1,227 @@
+# SQL Coding Standards (R970)
+
+## File Structure
+
+### Header Documentation
+Every SQL script must include a standardized header:
+```sql
+/ Script type           :       Create/Alter/Drop/Upsert
+/ Script name           :       [filename]
+/ Author               :       [author name]
+/ Date                 :       [date]
+/ Purpose              :       [brief description]
+/ Disclaimer           :       Make sure before executing this script a full backup of the database
+/ Version              :       R970
+```
+
+### Header Synchronization Requirements
+The following elements must be kept in sync:
+1. **File Name**: The actual file name must match the script name in the header
+2. **Script Version**: The script version in the header must reflect the date of the most recent change
+3. **Change History**: The most recent entry in the change history must match the script version date
+4. **V_SCRIPTSETVERSION**: In Begin_Release files, this variable must match the script version of the most recently modified file
+
+When renaming files or making changes:
+1. Update the script name in the header to match the new file name
+2. Update the script version to the current date (YYYYMMDD format)
+3. Add an entry to the change history with the current date, author, and description of the change
+4. Update V_SCRIPTSETVERSION in Begin_Release files to match the new script version
+
+### Change History Format
+The change history section must use tab characters for alignment:
+```sql
+/ --------------------   Change history  ------------------------------
+/ Script version	Name				Change
+/ 20250424		John van der Pol		Initial version
+/ 20250425		Jane Smith			Updated error handling
+/ --------------------   End Change history  --------------------------
+```
+
+Note: Do not use spaces for alignment in the change history section. Always use tab characters to ensure consistent formatting across different editors and environments.
+
+### Code Organization
+1. Variable Declarations
+2. Validation Checks
+3. Main Logic
+4. Error Handling
+5. Version Updates
+
+## Error Handling
+
+### Standard Error Handling Block
+```sql
+BEGIN TRY
+    -- operation code
+END TRY
+BEGIN CATCH
+    SET @ErrorMessage = ERROR_MESSAGE()
+    SET @ErrorSeverity = ERROR_SEVERITY()
+    SET @ErrorState = ERROR_STATE()
+    RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
+END CATCH
+```
+
+### Required Error Checks
+- Schema existence
+- Object existence
+- Data validation
+- Version compatibility
+
+## Performance Guidelines
+
+### Index Usage
+- Create indexes for foreign keys
+- Use appropriate index types (IX, UX)
+- Consider index impact on modifications
+
+### Data Types
+- Use datetime2(0) over datetime
+- Appropriate string lengths
+- Avoid deprecated types
+
+### Query Optimization
+- Use set-based operations
+- Avoid cursors
+- Include appropriate hints
+
+## Safety Practices
+
+### Backup Procedures
+- Create backup tables before destructive operations
+- Use _BU suffix for backup tables
+- Document rollback procedures
+
+### Version Control
+- Check version before execution
+- Update version after successful execution
+- Update V_SCRIPTSETVERSION variable to match the new script version
+- Update all related files in the set when changes are made
+- Log all changes in version history
+
+### Begin_Release File Verification Checklist
+Before deploying a Begin_Release script, verify the following:
+- All SQL files referenced in the Begin_Release script are present in the directory
+- All generic scripts (UpGeneric_*, CrGeneric_*, etc.) are included
+- Connection check scripts (Generic_CheckMainConnection.sql, Generic_CheckSchemaConnection.sql) are present
+- Version check scripts (UpGeneric_CheckDbversion.sql) are present
+- All scripts have proper headers and version information
+- The V_SCRIPTSETVERSION variable is updated to match the current version
+- The change history is updated with the latest changes
+
+## Template Usage
+
+### Required Templates
+- UpGeneric_* for upgrades
+- SolGeneric_* for solutions
+- MVGeneric_* for materialized views
+- CrGeneric_* for creation
+
+### Variable Naming
+- V_SCHEMA_NAME
+- V_TABLE_NAME
+- V_COLUMN_NAME
+- V_TABLE_SHORTNAME
+- V_COLUMN_SHORTNAME
+
+## Best Practices
+
+### Data Modifications
+- Use MERGE for upserts
+- Include WHERE clauses
+- Validate row counts
+- Use transactions appropriately
+
+### Documentation
+- Comment complex logic
+- Document assumptions
+- Include business rules
+- Note technical debt
+
+## Testing Requirements
+
+### Pre-deployment
+- Test in development
+- Validate data integrity
+- Check performance impact
+- Verify error handling
+
+### Post-deployment
+- Verify version updates
+- Validate data changes
+- Check constraint integrity
+- Monitor performance
+
+## Error Pattern Checking
+
+### Similar Error Detection
+When fixing errors in SQL scripts, especially during onboarding of new code or releases, follow these guidelines:
+
+1. **Pattern Recognition**
+   - When a specific error is identified and fixed, document the pattern
+   - Create a checklist of similar files that might contain the same issue
+   - Look for files with similar naming patterns or functionality
+
+2. **Systematic Verification**
+   - Check all files in the same release/directory for similar patterns
+   - Verify related files that perform similar functions
+   - Review files with similar naming conventions
+
+3. **Documentation Requirements**
+   - Document the error pattern and its fix
+   - Update the change history in all affected files
+   - Add comments explaining why the fix was necessary
+
+4. **Verification Process**
+   - Create a verification checklist for each type of error
+   - Include this checklist in the release process
+   - Verify fixes across all similar files before completing the release
+
+5. **Examples of Common Patterns**
+   - GO statements inside BEGIN TRY blocks
+   - Missing error handling in stored procedures
+   - Incorrect batch separation
+   - Missing schema qualifications
+   - Inconsistent transaction handling
+
+6. **Onboarding Checklist**
+   - Review error logs for patterns
+   - Check similar files for the same issues
+   - Verify fixes across all affected files
+   - Document findings in the release notes
+
+## Error Handling and Consistency
+
+### Error Handling Structure
+1. Error handling should be implemented at the appropriate level:
+   - For stored procedures: Use a single BEGIN TRY/BEGIN CATCH block at the procedure level
+   - For scripts: Use error handling at the script level
+   - Never nest BEGIN TRY/BEGIN CATCH blocks
+   - Never redeclare error handling variables inside CATCH blocks
+
+2. Variable Declarations:
+   - Declare error handling variables at the script level
+   - Never redeclare variables inside CATCH blocks
+   - Use consistent variable names across all files
+
+3. GO Statements:
+   - Place GO statements outside of BEGIN TRY/BEGIN CATCH blocks
+   - Use GO statements to separate batches appropriately
+   - Never place GO statements inside procedure definitions
+
+### Cross-File Consistency
+1. When fixing errors or making improvements:
+   - Check all similar files in the same release/version
+   - Apply the same fix consistently across all affected files
+   - Update change history in all modified files
+   - Document the changes in the same format across all files
+
+2. File Naming and Structure:
+   - Maintain consistent naming conventions across all files
+   - Keep the same structure for similar types of files
+   - Ensure error handling follows the same pattern in similar files
+
+3. Change History:
+   - Document all changes in the change history section
+   - Use consistent formatting for change history entries
+   - Include the date, author, and description of changes
+   - When fixing similar issues across multiple files, use the same description 

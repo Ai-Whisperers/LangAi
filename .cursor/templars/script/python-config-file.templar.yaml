@@ -1,0 +1,24 @@
+# Configuration file for {{SCRIPT_NAME}}.py
+# Schema validated by Pydantic ScriptConfig model
+
+# Build configuration (Debug or Release)
+configuration: Release
+
+# Output directory path (leave empty for automatic detection)
+output_path: null
+
+# {{PARAMETER_DESCRIPTION}}
+{{PARAMETER_NAME}}: {{DEFAULT_VALUE}}
+
+# Enable optional feature
+enable_feature: false
+
+# List of items to exclude from processing
+excluded_items:
+  - "*.tmp"
+  - "*.bak"
+  # Add more patterns as needed
+
+# Additional configuration options
+# Add your custom settings here following YAML syntax
+

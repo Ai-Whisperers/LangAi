@@ -1,0 +1,416 @@
+---
+id: rule.authoring.contracts-and-scope.v1
+kind: rule
+version: 1.0.1
+description: Defines how to write explicit input/output contracts and scope boundaries for rules
+globs: **/*-rule.mdc, **/rules/**/*.mdc
+governs: **/*-rule.mdc, **/rules/**/*.mdc
+implements: rule.authoring.contracts
+requires:
+  - rule.authoring.file-structure.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ai, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Rule Contracts and Scope
+
+## Purpose & Scope
+
+This rule defines how to write explicit, verifiable contracts for rule inputs and outputs, and how to properly scope what a rule governs. Clear contracts enable automation, validation, and safe parallel rule execution.
+
+**Applies to**: All rule files that modify files or state.
+
+**Does not apply to**: Documentation-only rules or reference materials (though they benefit from clear scope statements).
+
+## Inputs (Contract)
+
+- Rule concept or requirement
+- Understanding of what information the rule needs to execute
+- Knowledge of what files or state must exist before rule runs
+- List of dependencies on other rules or systems
+
+## Outputs (Contract)
+
+Rule file containing:
+- Explicit input contract (bullet list, no ambiguity)
+- Explicit output contract (bullet list, verifiable)
+- Clear `governs` field in front-matter (Cursor's comma-delimited format)
+- Clear `globs` field in front-matter (Cursor's comma-delimited format)
+- Purpose & Scope section with explicit inclusion/exclusion criteria
+
+[!]? **NOTE**: `globs` and `governs` use Cursor's custom comma-delimited format (NOT YAML arrays, NOT JSON arrays)
+
+## Why Contracts Matter
+
+**For Automation**: Tools can validate preconditions before execution and postconditions after.
+
+**For Humans**: Readers immediately understand what a rule needs and produces.
+
+**For Safety**: Explicit contracts prevent unintended mutations and scope creep.
+
+**For Composition**: Clear contracts enable safe parallel execution and rule chaining.
+
+## Writing Input Contracts
+
+Input contracts specify what must be available for the rule to execute successfully.
+
+### Format
+
+Use bullet list with clear, testable statements:
+
+```markdown
+## Inputs (Contract)
+
+- File X must exist and contain section Y
+- Environment variable Z must be set
+- Previous rule A must have completed successfully
+- User must provide parameter P in format F
+```
+
+### Input Contract Checklist
+
+Each input must:
+- Be **necessary** (rule cannot execute without it)
+- Be **verifiable** (can be checked programmatically)
+- Be **specific** (exact file, field, format, or value)
+- Be **singular** (one requirement per bullet)
+
+### Good Input Contract Examples
+
+[X] **Good**:
+```markdown
+- `plan.md` must exist with non-empty "## Objective" section
+- Ticket number must be provided in format `PROJ-1234`
+- Database connection string in environment variable `DB_CONN`
+- `rule.ticket.opsec.redact.v1` must be loaded
+```
+
+[X] **Bad**:
+```markdown
+- Plan file should probably exist
+- Some kind of ticket identifier
+- Database access (if needed)
+- Security rules or whatever
+```
+
+**Why bad?** Vague ("should probably"), ambiguous ("some kind"), conditional ("if needed"), unclear ("or whatever").
+
+### Input Types to Consider
+
+1. **Files**: Exact paths or patterns, required sections/fields
+2. **Environment**: Variables, configurations, runtime state
+3. **Dependencies**: Other rules that must run first
+4. **Parameters**: User-provided values, formats, constraints
+5. **State**: System state, timestamps, locks, flags
+6. **Context**: Working directory, active branch, deployment environment
+
+## Writing Output Contracts
+
+Output contracts specify what the rule will create, modify, or guarantee after execution.
+
+### Format
+
+Use bullet list with clear, testable statements:
+
+```markdown
+## Outputs (Contract)
+
+- Creates or updates `plan.md` with sections X, Y, Z
+- Appends provenance footer with fields A, B, C
+- Sets timestamp in `context.md` field "Last Updated"
+- Returns success/failure status code
+```
+
+### Output Contract Checklist
+
+Each output must:
+- Be **complete** (all side effects listed)
+- Be **verifiable** (can be checked programmatically)
+- Be **specific** (exact file, section, format, or value)
+- Be **deterministic** (same inputs always produce same outputs)
+
+### Good Output Contract Examples
+
+[X] **Good**:
+```markdown
+- Creates `plan.md` if missing, updates if present
+- Ensures sections: "## Objective", "## Acceptance Criteria", "## Complexity"
+- Appends provenance footer: `Produced-by: rule.ticket.plan.update.v1 | ...`
+- Updates `timeline.md` with entry: `[TIMESTAMP] Plan created/updated`
+- Preserves all existing content not explicitly modified
+```
+
+[X] **Bad**:
+```markdown
+- Updates plan file
+- Adds some metadata
+- Might update timeline
+- Does other stuff as needed
+```
+
+**Why bad?** Vague ("updates", "some"), conditional ("might"), incomplete ("other stuff"), ambiguous ("as needed").
+
+### Output Types to Consider
+
+1. **File Creation**: New files, locations, initial content
+2. **File Modification**: Specific sections, fields, or lines changed
+3. **File Deletion**: What gets removed (use sparingly)
+4. **Metadata**: Timestamps, provenance, tags, status
+5. **State Changes**: Flags set, locks acquired/released
+6. **Side Effects**: External API calls, notifications, logs
+7. **Guarantees**: Invariants maintained, validation passed
+
+## Defining Scope: The `governs` Field
+
+The `governs` field in front-matter explicitly declares which files a rule may modify.
+
+### Format
+
+```yaml
+governs: **/plan.md, **/timeline.md
+```
+
+### Governs Rules
+
+1. **Explicit**: List exact patterns for writable files
+2. **Minimal**: Only include files the rule actually modifies
+3. **Glob Syntax**: Use standard glob patterns
+4. **No Wildcards**: Avoid overly broad patterns like `**/*`
+5. **Empty**: Use empty string `governs: ""` for read-only rules (or omit)
+
+### Good Governs Examples
+
+[X] **Good**:
+```yaml
+governs: **/plan.md  # Rule only writes plan.md
+```
+
+[X] **Good**:
+```yaml
+governs: **/plan.md, **/context.md  # Rule writes both
+```
+
+[X] **Good**:
+```yaml
+governs: ""  # Read-only rule, no mutations
+```
+
+[X] **Bad**:
+```yaml
+governs: **/*  # Too broad, unsafe
+```
+
+[X] **Bad**:
+```yaml
+governs: tickets/  # Directory pattern, ambiguous
+```
+
+### Governs Validation
+
+A rule must NEVER modify a file not listed in its `governs` field. Validation tools should:
+- Check that all file writes target governed patterns
+- Fail execution if ungoverned mutation attempted
+- Log warnings for overly broad patterns
+
+## Defining Scope: The `globs` Field
+
+The `globs` field declares which files a rule may read (broader than `governs`).
+
+### Format
+
+```yaml
+globs: **/plan.md, **/*-rule.mdc, **/templates/*.md
+```
+
+### Globs Rules
+
+1. **Inclusive**: Can be broader than `governs`
+2. **Relevant**: Only include files actually needed
+3. **Performance**: Overly broad patterns slow tools down
+4. **Discovery**: Helps tools preload required context
+
+### Good Globs Examples
+
+[X] **Good**:
+```yaml
+globs: **/plan.md, **/context.md, **/timeline.md
+```
+
+[X] **Good**:
+```yaml
+globs: **/*-rule.mdc  # Rule analyzer needs all rules
+```
+
+[X] **Bad**:
+```yaml
+globs: **/*  # Everything, very slow
+```
+
+## Defining Scope: Purpose & Scope Section
+
+Every rule must have a "Purpose & Scope" section with explicit inclusion and exclusion statements.
+
+### Format
+
+```markdown
+## Purpose & Scope
+
+[One paragraph explaining WHY this rule exists and WHAT problem it solves]
+
+**Applies to**: [Specific files, contexts, or scenarios]
+
+**Does not apply to**: [Explicit exclusions to prevent misuse]
+```
+
+### Purpose & Scope Examples
+
+[X] **Good**:
+```markdown
+## Purpose & Scope
+
+This rule ensures all plan.md files follow a consistent structure with required sections for objectives, acceptance criteria, and complexity assessment. It enables automated validation and helps teams quickly understand ticket scope.
+
+**Applies to**: All `plan.md` files in `tickets/` directories at any depth.
+
+**Does not apply to**: Template files, documentation, or plan.md files in `examples/` or `archives/` directories.
+```
+
+[X] **Bad**:
+```markdown
+## Purpose & Scope
+
+This rule helps with plans.
+
+**Applies to**: Plans
+
+**Does not apply to**: Other stuff
+```
+
+**Why bad?** No rationale, vague scope, unhelpful exclusions.
+
+## Contract Anti-Patterns
+
+### 1. Conditional Contracts
+
+[X] **Bad**:
+```markdown
+- If X exists, update it; otherwise create it
+- May write to timeline.md if available
+```
+
+[X] **Good**:
+```markdown
+- Creates X if missing; updates X if present
+- Always updates timeline.md (creates if missing)
+```
+
+### 2. Implicit Dependencies
+
+[X] **Bad**:
+```markdown
+- Assumes plan.md has been validated
+```
+
+[X] **Good**:
+```markdown
+- Requires `rule.ticket.plan.validate.v1` to have run successfully
+- Input `plan.md` must pass validation (see rule.ticket.plan.validate.v1)
+```
+
+### 3. Vague Outputs
+
+[X] **Bad**:
+```markdown
+- Updates relevant files
+- Makes necessary changes
+```
+
+[X] **Good**:
+```markdown
+- Updates `plan.md` section "## Acceptance Criteria"
+- Appends entry to `timeline.md` with timestamp and action
+```
+
+### 4. Missing Side Effects
+
+[X] **Bad** (missing side effect):
+```markdown
+Outputs:
+- Creates recap.md
+```
+
+But rule also updates timeline.md (not listed).
+
+[X] **Good**:
+```markdown
+Outputs:
+- Creates recap.md with sections: Summary, Learnings, Follow-ups
+- Appends timeline.md with entry: "[TIMESTAMP] Ticket recap created"
+```
+
+## Testing Contracts
+
+Every contract should be testable:
+
+1. **Input Validation**: Before execution, verify all inputs present
+2. **Output Verification**: After execution, verify all outputs present
+3. **Scope Enforcement**: During execution, ensure only governed files modified
+4. **Determinism Check**: Same inputs produce same outputs
+
+### Example Validation Script Pattern
+
+```python
+# Input validation
+assert os.path.exists("plan.md"), "Input contract violated: plan.md missing"
+assert "## Objective" in read_file("plan.md"), "Input contract violated: plan.md missing Objective section"
+
+# Execute rule
+execute_rule("rule.ticket.plan.update.v1")
+
+# Output verification
+assert "## Acceptance Criteria" in read_file("plan.md"), "Output contract violated: missing Acceptance Criteria"
+assert "Produced-by: rule.ticket.plan.update.v1" in read_file("plan.md"), "Output contract violated: missing provenance"
+```
+
+## Scope Boundaries and Overlap
+
+When multiple rules govern overlapping files, define clear boundaries:
+
+### Sectional Governance
+
+Rules can share a file if they govern different sections:
+
+```yaml
+# rule.ticket.plan.objective.v1
+governs: **/plan.md  # Only modifies "## Objective" section
+
+# rule.ticket.plan.acceptance.v1
+governs: **/plan.md  # Only modifies "## Acceptance Criteria" section
+```
+
+Document in each rule's scope:
+```markdown
+**Governs**: Section "## Objective" only; other sections managed by other rules
+```
+
+### Sequential vs Parallel
+
+- **Sequential**: Rule B requires rule A to complete first (use `requires` field)
+- **Parallel**: Rules can run simultaneously if they govern disjoint sections/files
+
+## Related Rules
+
+- `rule.authoring.file-structure.v1` - Overall rule structure including contracts
+- `rule.authoring.cross-references.v1` - Referencing dependencies in requires field
+- `rule.authoring.validation.v1` - Validating contract compliance
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Input contract is explicit bullet list of necessary, verifiable requirements
+- [ ] Output contract is explicit bullet list of complete, verifiable guarantees
+- [ ] `governs` field lists minimal set of writable file patterns
+- [ ] `globs` field lists all readable file patterns
+- [ ] Purpose & Scope has "Applies to" and "Does not apply to" statements
+- [ ] No conditional language ("if", "might", "may") in contracts
+- [ ] All side effects explicitly listed in output contract

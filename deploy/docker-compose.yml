@@ -22,7 +22,7 @@ services:
       - LANGCHAIN_PROJECT=${LANGCHAIN_PROJECT:-company-researcher}
       - REDIS_URL=redis://redis:6379/0
       - CHROMADB_HOST=chromadb
-      - CHROMADB_PORT=8001
+      - CHROMADB_PORT=8000
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
       - app-data:/app/data
@@ -85,14 +85,14 @@ services:
       dockerfile: deploy/Dockerfile
     container_name: company-researcher-worker
     restart: unless-stopped
-    command: celery -A src.company_researcher.production.tasks worker --loglevel=info
+    command: celery -A company_researcher.tasks worker --loglevel=info
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - TAVILY_API_KEY=${TAVILY_API_KEY}
       - REDIS_URL=redis://redis:6379/0
       - CHROMADB_HOST=chromadb
-      - CHROMADB_PORT=8001
+      - CHROMADB_PORT=8000
     volumes:
       - app-data:/app/data
       - app-logs:/app/logs
@@ -109,7 +109,7 @@ services:
       dockerfile: deploy/Dockerfile
     container_name: company-researcher-scheduler
     restart: unless-stopped
-    command: celery -A src.company_researcher.production.tasks beat --loglevel=info
+    command: celery -A company_researcher.tasks beat --loglevel=info
     environment:
       - REDIS_URL=redis://redis:6379/0
     depends_on:

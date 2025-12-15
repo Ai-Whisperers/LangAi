@@ -1,0 +1,417 @@
+---
+id: rule.ticket.coding-and-folder-structure.v1
+kind: rule
+version: 1.0.0
+description: Defines ticket ID coding conventions, folder structure with numbered sub-tickets, and cleanup policies for maintaining organized ticket management
+globs: tickets/**/
+governs: tickets/**/
+implements: ticket.coding-and-folder-structure
+requires:
+  - rule.ticket.workflow.v1
+  - rule.ticket.plan.v1
+  - rule.ticket.context.v1
+  - rule.ticket.progress.v1
+  - rule.ticket.timeline.v1
+  - rule.ticket.references.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-12-12 }
+alwaysApply: false
+---
+
+# Ticket Coding and Folder Structure Rule
+
+## Purpose & Scope
+
+Defines the standardized coding conventions for ticket IDs, folder structure with numbered sub-tickets, descriptive naming patterns, and cleanup policies. Enables systematic organization, easy navigation, and prevents ticket clutter while supporting parallel work on multiple tickets.
+
+**Applies to**: All ticket creation, organization, and management within the `tickets/` directory.
+
+**Does not apply to**: External ticket tracking systems (JIRA, etc.) or non-ticket work organization.
+
+## Inputs (Contract)
+
+- Ticket project identifier (e.g., EPP, DMIG)
+- Ticket number (sequential or issue tracker derived)
+- Optional descriptive component for top-level tickets
+- Understanding of ticket scope and complexity
+- Current tickets directory state
+
+## Outputs (Contract)
+
+- Standardized folder structure: `tickets/[PROJECT]-[NUMBER]-[OPTIONAL_DESC]/`
+- Numbered sub-ticket folders: `[TICKET_CODE]-[NN]-[DESCRIPTIVE_NAME]/`
+- Complete ticket documentation files in each folder
+- Organized archive structure for completed tickets
+- Clean active/planned folder separation
+- Parallel ticket work support without conflicts
+
+## Ticket ID Coding Convention
+
+### Format Pattern
+
+**Primary Format**: `[PROJECT]-[NUMBER]`
+
+**Extended Format**: `[PROJECT]-[NUMBER]-[DESCRIPTIVE_COMPONENT]`
+
+### Components
+
+**PROJECT**: 3-6 character project code
+- Examples: `EPP`, `DMIG`, `CORE`, `FEAT`
+- Should match JIRA project or organizational grouping
+- Consistent across related tickets
+
+**NUMBER**: Sequential or issue tracker number
+- Examples: `123`, `456`, `789`
+- May include leading zeros for consistent formatting
+- Should be unique within project
+
+**DESCRIPTIVE_COMPONENT** (optional): Short descriptive phrase
+- Examples: `IMPORT-RESOLVER`, `UI-VALIDATION`, `API-INTEGRATION`
+- Used for top-level tickets when multiple exist
+- Helps with folder navigation and identification
+
+### Examples
+
+**Basic Tickets**:
+- `EPP-192` - Simple ticket
+- `DMIG-1235` - Data migration ticket
+
+**Extended Tickets** (with descriptive component):
+- `EPP-192-AUTH-SYSTEM` - Authentication system ticket
+- `DMIG-1235-IMPORT-RESOLVER` - Import resolver sub-system
+
+### ID Validation Rules
+
+1. **Format Compliance**: Must match `[A-Z]{3,6}-[0-9]+` or `[A-Z]{3,6}-[0-9]+-[A-Z-]+`
+2. **Uniqueness**: No duplicate IDs within same project
+3. **Length Limit**: Total ID ≤ 20 characters
+4. **Character Set**: Letters, numbers, hyphens only
+5. **Case**: All uppercase for consistency
+
+## Folder Structure Architecture
+
+### Top-Level Organization
+
+```
+tickets/
+├── active/           # Currently active tickets
+├── planned/          # Planned but not started tickets
+├── archived/         # Completed tickets (organized by year/quarter)
+└── current.md        # Local workspace state (not committed)
+```
+
+### Ticket Folder Structure
+
+**Main Ticket Folder**:
+```
+tickets/active/EPP-192/
+├── plan.md           # Main ticket plan
+├── context.md        # Current state
+├── progress.md       # Chronological log
+├── timeline.md       # Timestamped events
+├── references.md     # File/conversation references
+├── roadmap.md        # Sub-ticket overview (optional)
+└── [sub-ticket folders...]
+```
+
+**Sub-Ticket Folders**:
+```
+EPP-192-01-AUTH-VALIDATION/
+├── plan.md           # Sub-ticket specific plan
+├── context.md        # Sub-ticket current state
+├── progress.md       # Sub-ticket progress log
+├── timeline.md       # Sub-ticket timeline
+└── references.md     # Sub-ticket references
+```
+
+### Sub-Ticket Numbering Convention
+
+**Format**: `[PARENT_TICKET]-[NN]-[DESCRIPTIVE_NAME]`
+
+**Components**:
+- **PARENT_TICKET**: Full parent ticket ID (e.g., `EPP-192`, `DMIG-1235`)
+- **NN**: Two-digit sequential number (01, 02, 03, ...)
+- **DESCRIPTIVE_NAME**: Short descriptive phrase in `UPPER-CASE-WITH-HYPHENS`
+
+### Sub-Ticket Numbering Examples
+
+**Data Migration Ticket**:
+- `DMIG-1235-01-RESOLVER` - Import resolver implementation
+- `DMIG-1235-02-ADAPTER` - Domain object adapter
+- `DMIG-1235-03-INTEGRATION` - Pipeline integration
+- `DMIG-1235-04-TEST` - End-to-end testing
+- `DMIG-1235-05-DOCUMENTATION` - Technical documentation
+- `DMIG-1235-06-UNITTESTS` - Unit test creation
+- `DMIG-1235-07-VALIDATE-UNITTESTS` - Unit test validation
+
+**Authentication System Ticket**:
+- `EPP-192-01-LOGIN-FORM` - Login form component
+- `EPP-192-02-TOKEN-MANAGEMENT` - JWT token handling
+- `EPP-192-03-SESSION-STORAGE` - Session persistence
+- `EPP-192-04-API-INTEGRATION` - Backend API integration
+
+### Sub-Ticket Naming Rules
+
+1. **Sequential Numbers**: Always use 01, 02, 03... (no gaps unless intentional)
+2. **Descriptive Names**: Clear, actionable names that indicate purpose
+3. **Consistent Format**: `UPPER-CASE-WITH-HYPHENS`
+4. **Length Limit**: Descriptive name ≤ 25 characters
+5. **Unique Within Parent**: No duplicate names within same parent ticket
+6. **Logical Ordering**: Numbers should reflect implementation sequence
+
+## Folder State Management
+
+### Active Folder (`tickets/active/`)
+
+**Purpose**: Tickets currently being worked on
+
+**Contents**: 
+- Tickets with recent activity (< 30 days)
+- Tickets in active development phases
+- Tickets awaiting review or deployment
+
+**Management Rules**:
+- Move to `planned/` if work paused > 30 days
+- Move to `archived/` when ticket completed
+- Maximum 10 active tickets per developer (parallel work limit)
+
+### Planned Folder (`tickets/planned/`)
+
+**Purpose**: Tickets planned but not yet started
+
+**Contents**:
+- Approved tickets awaiting development start
+- Tickets with defined scope but no active work
+- Future work items
+
+**Management Rules**:
+- Move to `active/` when development begins
+- Review quarterly for relevance
+- Archive if cancelled or deprioritized
+
+### Archived Folder (`tickets/archived/`)
+
+**Purpose**: Completed tickets organized for historical reference
+
+**Structure**:
+```
+tickets/archived/
+├── 2025/
+│   ├── Q1/
+│   │   ├── EPP-192/
+│   │   └── DMIG-1235/
+│   └── Q2/
+│       └── [completed tickets...]
+└── 2024/
+    └── [older archives...]
+```
+
+**Management Rules**:
+- Archive completed tickets within 7 days of completion
+- Organize by year/quarter for efficient retrieval
+- Keep full ticket documentation for reference
+- Delete work/ directories (not needed for historical reference)
+- Compress old archives (> 2 years) to save space
+
+### Cleanup Policies
+
+**Automatic Cleanup**:
+- Delete `work/` directories from archived tickets (temporary analysis only)
+- Remove local `current.md` files older than 90 days
+- Archive tickets completed > 7 days
+
+**Manual Cleanup**:
+- Review `planned/` folder quarterly
+- Compress archives older than 2 years
+- Delete cancelled tickets after 6 months
+
+**Retention Rules**:
+- Keep all ticket documentation for reference
+- Retain sub-ticket structure for complex implementations
+- Archive conversations referenced in tickets
+- Maintain timeline data for billing/analysis
+
+## Parallel Ticket Work Support
+
+### Multi-Ticket Management
+
+**Policy**: Multiple tickets can be active simultaneously
+
+**Guidelines**:
+- Maximum 3 active tickets per developer (avoids context switching overhead)
+- Use `current.md` to track which ticket is currently focused
+- Document context switches in progress.md of affected tickets
+- Warn user before pausing tickets (unless direct instruction given)
+
+### Context Switching Protocol
+
+**When Switching Tickets**:
+
+1. **Document Current State**: Update context.md with current progress and next steps
+2. **Pause Current Ticket**: Mark as "PAUSED" in context.md
+3. **Switch Current**: Update `tickets/current.md` to new ticket ID
+4. **Resume New Ticket**: Read context.md to understand current state
+5. **Log Switch**: Document in progress.md of both tickets
+
+**Switch Warning Protocol**:
+- Always warn user about pausing existing tickets
+- Exception: If user gives direct instruction ("switch to ticket X"), proceed without additional confirmation
+- Document switch decisions in progress.md
+
+### Resource Conflicts Prevention
+
+**File Conflicts**:
+- Different tickets modify different files (by design)
+- If overlap occurs, coordinate through JIRA or team communication
+- Document shared file modifications in both tickets
+
+**Time Allocation**:
+- Estimate time per ticket in plan.md
+- Track actual time in timeline.md
+- Adjust parallel work based on capacity
+
+## Deterministic Steps
+
+### Creating New Ticket Structure
+
+1. **Validate Ticket ID**: Ensure format compliance and uniqueness
+2. **Create Main Folder**: `tickets/active/[TICKET_ID]/`
+3. **Initialize Documentation**: Create plan.md, context.md, progress.md, timeline.md, references.md
+4. **Execute Plan Rule**: Run `rule.ticket.plan.v1` to create initial plan
+5. **Execute Context Rule**: Run `rule.ticket.context.v1` to initialize context
+6. **Execute Progress Rule**: Run `rule.ticket.progress.v1` for initial entry
+7. **Update Current**: Set `tickets/current.md` to new ticket ID
+8. **Create Roadmap** (if complex): Create roadmap.md overview of planned sub-tickets
+
+### Creating Sub-Ticket Structure
+
+1. **Determine Scope**: Assess if ticket needs sub-tickets based on complexity
+2. **Plan Sub-Tickets**: Define sequential breakdown in roadmap.md
+3. **Create Folders**: `tickets/active/[TICKET_ID]/[SUBTICKET_ID]/`
+4. **Initialize Each**: Create plan.md, context.md, progress.md, timeline.md, references.md for each sub-ticket
+5. **Link to Parent**: Reference parent ticket in each sub-ticket plan.md
+
+### Ticket Completion and Archiving
+
+1. **Mark Complete**: Update context.md to "COMPLETE" status
+2. **Execute Recap**: Run `rule.ticket.recap.v1` to create recap.md
+3. **Execute RCA** (if defect): Run `rule.ticket.rca.v1` to create rca.md
+4. **Final Commit**: Commit all changes with closure message
+5. **Move to Archive**: Move completed ticket to `tickets/archived/[YEAR]/[QUARTER]/`
+6. **Cleanup**: Remove work/ directories, compress if old
+
+## Formatting Requirements
+
+### Folder Naming
+- **Main Ticket**: `[PROJECT]-[NUMBER]-[OPTIONAL_DESC]/`
+- **Sub-Ticket**: `[TICKET_CODE]-[NN]-[DESCRIPTIVE_NAME]/`
+- **Archive**: `tickets/archived/YYYY/QN/[TICKET_ID]/`
+
+### File Organization Within Folders
+```
+[TICKET_FOLDER]/
+├── plan.md           # Primary planning document
+├── context.md        # Current technical state
+├── progress.md       # Chronological work log
+├── timeline.md       # Timestamp tracking
+├── references.md     # File and conversation links
+├── roadmap.md        # Sub-ticket overview (optional)
+├── recap.md          # Completion summary (after completion)
+├── rca.md            # Root cause analysis (defects only)
+└── [sub-ticket folders...]
+```
+
+### Roadmap.md Structure (for complex tickets)
+
+```markdown
+# Roadmap: [TICKET_ID] - [Brief Description]
+
+## Overview
+[High-level breakdown of sub-tickets and dependencies]
+
+## Sub-Tickets
+
+### 01-RESOLVER
+**Status**: [Not Started | In Progress | Complete]
+**Description**: [What this sub-ticket accomplishes]
+**Dependencies**: [Prerequisites]
+**Estimated Effort**: [time estimate]
+
+### 02-ADAPTER
+**Status**: [Not Started | In Progress | Complete]
+**Description**: [What this sub-ticket accomplishes]
+**Dependencies**: [Prerequisites]
+**Estimated Effort**: [time estimate]
+
+[...additional sub-tickets...]
+
+## Integration Points
+[How sub-tickets come together]
+
+## Success Criteria
+[Overall ticket completion requirements]
+```
+
+## OPSEC and Leak Control
+
+When organizing tickets:
+- NO sensitive project names in folder structure
+- NO customer identifiers in ticket descriptions
+- NO internal system names in folder names (use generic terms)
+- NO credentials or tokens in any ticket documentation
+- Archive old tickets to prevent accumulation of sensitive historical data
+- Sanitize conversation references before archiving
+
+## Integration Points
+
+- **Creates Structure For**: All other ticket rules (plan, context, progress, timeline, references)
+- **Informs**: `rule.ticket.switching-discipline.v1` (folder structure enables parallel work)
+- **Referenced by**: `rule.ticket.workflow.v1` (folder structure is part of workflow)
+- **Supports**: `rule.ticket.complexity-assessment.v1` (sub-ticket breakdown for complex tickets)
+- **Enables**: `rule.ticket.validation.v1` (structured folders enable systematic validation)
+
+## Failure Modes and Recovery
+
+**Invalid ticket ID format**:
+- Detection: ID doesn't match `[PROJECT]-[NUMBER]` pattern
+- Recovery: Request corrected ID from user
+- Fallback: Use temporary ID with clear "INVALID_FORMAT" marker
+
+**Missing parent folder**:
+- Detection: Attempting to create sub-ticket without parent folder
+- Recovery: Create parent folder first, then sub-ticket
+- Fallback: Abort with clear error message
+
+**Duplicate ticket IDs**:
+- Detection: Folder with same ID already exists
+- Recovery: Check if it's the same ticket or naming conflict
+- Fallback: Append suffix (e.g., `EPP-192-v2`) for differentiation
+
+**Archive structure corrupted**:
+- Detection: Archived tickets not following year/quarter structure
+- Recovery: Reorganize into proper structure
+- Fallback: Create new archive structure alongside old
+
+## Provenance Footer Specification
+
+Ticket documentation files include provenance tracking via timeline.md entries and git commit history. No additional provenance footer needed for folder structure management.
+
+## Related Rules
+
+- `rule.ticket.workflow.v1` - Overall ticket lifecycle using this structure
+- `rule.ticket.switching-discipline.v1` - Parallel work management within this structure
+- `rule.ticket.complexity-assessment.v1` - Determines when sub-tickets are needed
+- `rule.authoring.file-structure.v1` - General file organization principles
+- `rule.authoring.naming-conventions.v1` - Naming patterns applied to ticket IDs
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Ticket ID follows format `[PROJECT]-[NUMBER]` or extended format
+- [ ] Folder structure created: `tickets/active/[TICKET_ID]/`
+- [ ] Required documentation files present in each ticket folder
+- [ ] Sub-tickets use numbered format `[PARENT]-[NN]-[DESCRIPTIVE_NAME]`
+- [ ] Active/planned/archived folders properly organized
+- [ ] No more than 10 active tickets per developer
+- [ ] Completed tickets moved to archive within 7 days
+- [ ] Parallel work supported without conflicts
+- [ ] OPSEC maintained (no sensitive data in folder structure)

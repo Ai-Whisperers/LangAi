@@ -1,0 +1,69 @@
+---
+id: rule.general.file-by-file.v1
+kind: rule
+version: 1.0.0
+description: Requires changes to be made file-by-file for reviewability
+globs: "**/*"
+governs: ""
+implements: coding.workflow
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# File-by-File Changes Rule
+
+## Purpose & Scope
+
+This rule requires the AI to present and execute changes one file at a time (or in logical batches), allowing the user to review each change individually.
+
+**Applies to**: Multi-file refactoring or feature implementation.
+
+## Inputs (Contract)
+
+- User request affecting multiple files
+- List of target files
+
+## Outputs (Contract)
+
+- Sequential updates to files
+- Clear separation between file updates
+
+## Deterministic Steps
+
+1. Identify all files needing change.
+2. Sort files by dependency order (if applicable) or logical grouping.
+3. Apply changes to the first file (or logical group).
+4. Allow user review/confirmation (implicit in tool output).
+5. Proceed to next file.
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.single-chunk.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Changes presented file-by-file
+- [ ] No overwhelming massive dump of changes
+- [ ] User has opportunity to spot mistakes per file

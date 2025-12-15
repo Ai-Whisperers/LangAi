@@ -1,0 +1,671 @@
+---
+id: rule.authoring.validation-and-checklists.v1
+kind: rule
+version: 1.0.1
+description: Defines checklist patterns, validation approaches, and enforcement mechanisms for rules
+globs: **/*-rule.mdc, **/rules/**/*.mdc
+governs: **/*-rule.mdc, **/rules/**/*.mdc
+implements: rule.authoring.validation-checklists
+requires:
+  - rule.authoring.file-structure.v1
+  - rule.authoring.contracts-and-scope.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ai, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Rule Validation and Checklists
+
+## Purpose & Scope
+
+This rule defines how to create effective must-pass checklists for rules, and how to implement validation approaches (manual, automated, or hybrid). Checklists ensure compliance and provide clear pass/fail criteria. Validation approaches enable enforcement at multiple levels.
+
+**Applies to**: All rule files that enforce behavior or generate outputs.
+
+**Does not apply to**: Purely informational documentation without enforcement requirements.
+
+## Inputs (Contract)
+
+- Rule file requiring validation criteria
+- Understanding of what must be validated (OPSEC, format, contracts, etc.)
+- Knowledge of validation approach (manual, automated, or both)
+- Critical failure modes that must be prevented
+
+## Outputs (Contract)
+
+Rule file containing:
+- Final Must-Pass Checklist section (always last)
+- 3-7 clear, binary validation items
+- Each item testable (manual or automated)
+- Checklist covers OPSEC, format, and contract compliance
+- Validation approach documented (if automated)
+- No ambiguous or subjective checklist items
+
+## Why Checklists Matter
+
+### The Recency Effect
+
+LLMs and agents are most influenced by recent context. Placing the checklist **last** maximizes compliance:
+
+```markdown
+[Long rule content...]
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] Output matches templar structure
+- [ ] All required fields present
+```
+
+**Result**: Agent sees checklist immediately before generating output, increasing adherence.
+
+### The Clarity Principle
+
+Checklists must be **binary** (pass/fail, no interpretation):
+
+[X] **Good** (binary):
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+
+[X] **Bad** (subjective):
+- [ ] Output is reasonably secure
+
+### The Brevity Principle
+
+3-7 items is optimal:
+
+- **Too few** (<3): Misses critical validations
+- **Too many** (>7): Dilutes focus, harder to remember
+- **Just right** (3-7): Covers critical points, memorable
+
+## Checklist Structure
+
+### Canonical Format
+
+```markdown
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Item 1 with clear pass/fail criteria
+- [ ] Item 2 with clear pass/fail criteria
+- [ ] Item 3 with clear pass/fail criteria
+- [ ] Item 4 with clear pass/fail criteria (optional)
+- [ ] Item 5 with clear pass/fail criteria (optional)
+```
+
+### Required Elements
+
+1. **Section heading**: `## FINAL MUST-PASS CHECKLIST` (exact text, all caps)
+2. **Position**: Always last section in rule file
+3. **Format**: Markdown task list (`- [ ]` syntax)
+4. **Count**: 3-7 items
+5. **Clarity**: Each item is binary (pass/fail)
+
+### Checklist Item Anatomy
+
+```
+- [ ] {What} ({Specifics})
+```
+
+**What**: The requirement being validated
+**Specifics**: Concrete examples or details
+
+**Examples**:
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] Output matches templar (sections: Objective, Criteria, Complexity)
+- [ ] Only governed files modified (plan.md only, no other files)
+
+## Checklist Content Categories
+
+Every checklist should cover these categories (when applicable):
+
+### 1. OPSEC / Leak Prevention
+
+**Purpose**: Prevent sensitive data leaks
+
+**Examples**:
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] No internal system paths or hostnames
+- [ ] No exemplar content copied to output
+- [ ] Redaction rules applied (see rule.ticket.opsec.redact.v1)
+
+**When to include**: Always for rules that generate or modify files.
+
+### 2. Structure / Format Compliance
+
+**Purpose**: Ensure output matches expected structure
+
+**Examples**:
+- [ ] Output matches templar structure (sections: X, Y, Z)
+- [ ] All required sections present (Objective, Criteria)
+- [ ] Markdown formatting valid (headers, bullets, code blocks)
+- [ ] Provenance footer present and correctly formatted
+
+**When to include**: Always for rules that generate structured output.
+
+### 3. Contract Compliance
+
+**Purpose**: Verify input requirements met and output guarantees delivered
+
+**Examples**:
+- [ ] All input requirements met (plan.md exists, has Objective section)
+- [ ] All required output fields present (Complexity, Rationale)
+- [ ] Only governed files modified (per governs field)
+- [ ] All side effects documented (timeline.md updated)
+
+**When to include**: Always for rules with explicit contracts.
+
+### 4. Dependency Satisfaction
+
+**Purpose**: Ensure required rules/resources available
+
+**Examples**:
+- [ ] All required rules loaded (per requires field)
+- [ ] Templar template loaded and validated
+- [ ] External dependencies available (API keys, DB access)
+
+**When to include**: When rule has dependencies in `requires` field.
+
+### 5. Specific Domain Constraints
+
+**Purpose**: Enforce domain-specific requirements
+
+**Examples** (ticket rules):
+- [ ] Ticket ID format valid (PROJ-1234)
+- [ ] Complexity assessment present with rationale
+- [ ] Timeline entry added with timestamp
+
+**Examples** (migration rules):
+- [ ] Source system references included
+- [ ] Database table names validated against schema
+- [ ] Business logic preservation verified
+
+**When to include**: When rule has domain-specific requirements.
+
+## Writing Good Checklist Items
+
+### Pattern 1: Simple Binary
+
+```
+- [ ] {Requirement} ({constraint})
+```
+
+**Examples**:
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] File exists (plan.md)
+- [ ] Section present (## Objective)
+
+### Pattern 2: Reference to Standard
+
+```
+- [ ] {Requirement} (see {rule_id})
+```
+
+**Examples**:
+- [ ] Redaction passed (see rule.ticket.opsec.redact.v1)
+- [ ] Structure valid (see templar.plan.v1)
+- [ ] Naming correct (see rule.authoring.naming-conventions.v1)
+
+### Pattern 3: Enumerated Requirements
+
+```
+- [ ] {Category} includes {list}
+```
+
+**Examples**:
+- [ ] Required sections present (Objective, Criteria, Complexity)
+- [ ] Only governed files modified (plan.md, timeline.md)
+- [ ] All dependencies loaded (templar.plan.v1, rule.opsec.v1)
+
+### Pattern 4: Negation
+
+```
+- [ ] No {forbidden_thing} ({examples})
+```
+
+**Examples**:
+- [ ] No exemplar content copied (check phrases against exemplar.plan.good.v1)
+- [ ] No ungoverned file modifications (only plan.md changed)
+- [ ] No ambiguous language (no "might", "should", "maybe")
+
+## Anti-Patterns
+
+### 1. Subjective Items
+
+[X] **Bad**:
+- [ ] Output is good quality
+- [ ] User will probably like this
+- [ ] Seems reasonable
+
+**Problem**: No clear pass/fail criteria, interpretation required.
+
+[X] **Good**:
+- [ ] Output matches templar structure (sections: Objective, Criteria)
+- [ ] All required fields present per contract
+- [ ] OPSEC validation passed (no secrets/URLs)
+
+### 2. Compound Items
+
+[X] **Bad**:
+- [ ] Output is structured correctly and has no OPSEC issues and follows naming conventions
+
+**Problem**: Multiple requirements in one item, can't tell which failed.
+
+[X] **Good**:
+- [ ] Output matches templar structure
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] Naming follows conventions (see rule.authoring.naming-conventions.v1)
+
+### 3. Too Many Items
+
+[X] **Bad** (15 items):
+- [ ] Item 1
+- [ ] Item 2
+- ...
+- [ ] Item 15
+
+**Problem**: Dilutes focus, hard to remember, cognitive overload.
+
+[X] **Good** (5 items):
+- [ ] OPSEC clean
+- [ ] Structure valid
+- [ ] Contracts met
+- [ ] Dependencies satisfied
+- [ ] Provenance present
+
+### 4. Too Vague
+
+[X] **Bad**:
+- [ ] Everything looks okay
+- [ ] No major issues
+- [ ] Follow best practices
+
+**Problem**: Impossible to validate, no specific criteria.
+
+[X] **Good**:
+- [ ] All required sections present (Objective, Criteria, Complexity)
+- [ ] No OPSEC violations (no secrets/tokens/URLs/emails)
+- [ ] File modifications limited to governed patterns (plan.md only)
+
+### 5. Checklist Not Last
+
+[X] **Bad**:
+```markdown
+## FINAL MUST-PASS CHECKLIST
+- [ ] ...
+
+## Related Rules
+- rule.x.v1
+```
+
+**Problem**: Checklist not in final position, loses recency effect.
+
+[X] **Good**:
+```markdown
+## Related Rules
+- rule.x.v1
+
+## FINAL MUST-PASS CHECKLIST
+- [ ] ...
+```
+
+## Validation Approaches
+
+### Manual Validation
+
+**Description**: Human reviews output against checklist
+
+**When to use**:
+- Rule output requires human judgment
+- Automated tooling not available yet
+- Low-volume, high-stakes outputs
+
+**Implementation**: Checklist in rule file, reviewer checks each item manually.
+
+**Example**:
+```markdown
+## FINAL MUST-PASS CHECKLIST
+
+*Manual review required before submission*
+
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] Output matches templar structure
+- [ ] All required fields present
+```
+
+### Automated Validation
+
+**Description**: Scripts or tools validate output against checklist
+
+**When to use**:
+- Clear pass/fail criteria
+- High-volume outputs
+- Validation logic is codifiable
+
+**Implementation**: Checklist in rule + validation script.
+
+**Example**:
+
+*In rule file:*
+```markdown
+## FINAL MUST-PASS CHECKLIST
+
+*Automated validation via validate_plan.py*
+
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] Output matches templar structure (sections: Objective, Criteria, Complexity)
+- [ ] Provenance footer present
+```
+
+*Validation script (validate_plan.py):*
+```python
+import re
+
+def validate_plan(file_path):
+    content = read_file(file_path)
+    
+    # Check 1: OPSEC
+    opsec_violations = check_opsec(content)
+    assert len(opsec_violations) == 0, f"OPSEC violations: {opsec_violations}"
+    
+    # Check 2: Structure
+    assert "## Objective" in content, "Missing Objective section"
+    assert "## Acceptance Criteria" in content, "Missing Criteria section"
+    assert "## Complexity" in content, "Missing Complexity section"
+    
+    # Check 3: Provenance
+    assert "Produced-by:" in content, "Missing provenance footer"
+    
+    print("[X] All validations passed")
+
+def check_opsec(content):
+    violations = []
+    
+    # Check for secrets
+    if re.search(r'(password|token|api[_-]?key)\s*[:=]\s*\S+', content, re.I):
+        violations.append("Potential secret found")
+    
+    # Check for emails
+    if re.search(r'\b[\w.+-]+@[\w-]+\.\w+\b', content):
+        violations.append("Email address found")
+    
+    # Check for internal URLs
+    if re.search(r'https?://internal\.|\.local', content):
+        violations.append("Internal URL found")
+    
+    return violations
+```
+
+### Hybrid Validation
+
+**Description**: Automated checks + manual review
+
+**When to use**:
+- Some items automatable, others require judgment
+- Best of both worlds: automation for coverage, human for nuance
+
+**Implementation**: Automated script validates what it can, flags items for manual review.
+
+**Example**:
+
+*In rule file:*
+```markdown
+## FINAL MUST-PASS CHECKLIST
+
+*Automated validation via validate_plan.py, then manual review*
+
+Automated:
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] Structure valid (all required sections)
+- [ ] Provenance footer present
+
+Manual:
+- [ ] Complexity rationale is sound
+- [ ] Acceptance criteria are testable
+```
+
+*Validation script:*
+```python
+def validate_plan_hybrid(file_path):
+    # Automated checks
+    automated_passed = run_automated_checks(file_path)
+    
+    if not automated_passed:
+        print("[X] Automated checks failed, fix before manual review")
+        return False
+    
+    print("[X] Automated checks passed")
+    print("\nManual review required:")
+    print("  - [ ] Complexity rationale is sound")
+    print("  - [ ] Acceptance criteria are testable")
+    print("\nProceed with manual review.")
+```
+
+## Validation Tooling Patterns
+
+### Pre-Commit Hooks
+
+Validate rule files before commit:
+
+```bash
+# .git/hooks/pre-commit
+
+#!/bin/bash
+for rule in $(git diff --cached --name-only | grep '\.mdc$'); do
+    python validate_rule.py "$rule" || exit 1
+done
+```
+
+### CI/CD Integration
+
+Validate in continuous integration:
+
+```yaml
+# .github/workflows/validate-rules.yml
+name: Validate Rules
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Validate rule files
+        run: |
+          for rule in $(find .cursor/rules -name "*.mdc"); do
+            python validate_rule.py "$rule"
+          done
+```
+
+### IDE Integration
+
+Real-time validation in editor:
+
+```json
+// .vscode/settings.json
+{
+  "files.associations": {
+    "*.mdc": "markdown"
+  },
+  "markdown.validate.enabled": true,
+  "markdownlint.config": {
+    "MD033": false  // Allow inline HTML for YAML
+  }
+}
+```
+
+### Custom Validation Scripts
+
+**validate_rule.py**:
+```python
+import yaml
+import re
+
+def validate_rule_file(file_path):
+    with open(file_path) as f:
+        content = f.read()
+    
+    # 1. Parse front-matter
+    fm_match = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
+    assert fm_match, "Missing front-matter"
+    
+    front_matter = yaml.safe_load(fm_match.group(1))
+    
+    # 2. Validate required fields
+    required = ['id', 'kind', 'version', 'description', 'globs', 'governs', 
+                'implements', 'requires', 'provenance']
+    for field in required:
+        assert field in front_matter, f"Missing field: {field}"
+    
+    # 3. Validate ID format
+    assert re.match(r'^(rule|templar|exemplar)\.\w+\.\w+\.v\d+$', front_matter['id']), \
+        f"Invalid ID format: {front_matter['id']}"
+    
+    # 4. Check for final checklist
+    assert "## FINAL MUST-PASS CHECKLIST" in content, "Missing final checklist"
+    
+    # 5. Verify checklist is last section
+    sections = re.findall(r'^## (.+)$', content, re.MULTILINE)
+    assert sections[-1] == "FINAL MUST-PASS CHECKLIST", "Checklist not last section"
+    
+    # 6. Count checklist items
+    checklist_match = re.search(r'## FINAL MUST-PASS CHECKLIST\n\n(.*)', content, re.DOTALL)
+    items = re.findall(r'- \[ \]', checklist_match.group(1))
+    assert 3 <= len(items) <= 7, f"Checklist should have 3-7 items, has {len(items)}"
+    
+    print(f"[X] {file_path} validated successfully")
+```
+
+## Checklist Examples by Domain
+
+### Ticket Rules
+
+```markdown
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] Output matches templar structure (sections: Objective, Criteria, Complexity)
+- [ ] Complexity track specified with rationale
+- [ ] Timeline entry added with timestamp
+- [ ] Only governed files modified (plan.md, timeline.md)
+```
+
+### Migration Rules
+
+```markdown
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Source system references included with file paths
+- [ ] Database table names validated against schema
+- [ ] Business logic preservation verified (no behavioral changes)
+- [ ] Specification format follows templar.migration-spec.v1
+- [ ] No assumptions or placeholders (all data complete)
+```
+
+### Code Generation Rules
+
+```markdown
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Generated code compiles without errors
+- [ ] All imports/dependencies present
+- [ ] Code follows project style guide (linter passes)
+- [ ] No placeholder or TODO comments
+- [ ] Test coverage meets minimum threshold (80%)
+```
+
+### Documentation Rules
+
+```markdown
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All code examples are syntactically valid
+- [ ] All cross-references point to existing sections/files
+- [ ] No broken links (internal or external)
+- [ ] Markdown formatting valid (no unclosed blocks)
+- [ ] Provenance footer present with rule ID and timestamp
+```
+
+## Testing Checklists
+
+### Golden Output Testing
+
+1. Create golden (expected) output for a rule
+2. Run rule with same inputs
+3. Compare output to golden
+4. Validate all checklist items pass
+
+**Example**:
+```python
+def test_plan_rule_golden():
+    inputs = {"ticket_id": "TEST-123", "objective": "Test objective"}
+    output = execute_rule("rule.ticket.plan.update.v1", inputs)
+    golden = read_file("tests/golden/plan-TEST-123.md")
+    
+    # Validate output matches golden (ignoring timestamps)
+    assert normalize(output) == normalize(golden)
+    
+    # Validate checklist items
+    assert validate_plan(output), "Checklist validation failed"
+```
+
+### Negative Testing
+
+Test that checklist catches violations:
+
+```python
+def test_plan_rule_opsec_violation():
+    inputs = {"ticket_id": "TEST-123", "objective": "password=secret123"}
+    output = execute_rule("rule.ticket.plan.update.v1", inputs)
+    
+    # Should fail OPSEC check
+    with pytest.raises(AssertionError, match="OPSEC violation"):
+        validate_plan(output)
+```
+
+## Checklist Maintenance
+
+### Review Frequency
+
+- **Quarterly**: Review all checklists for effectiveness
+- **After incidents**: Update checklist if violation occurred
+- **Version updates**: Review when rule version changes
+
+### Effectiveness Metrics
+
+Track:
+- **Violations caught**: How many issues checklist prevented
+- **False positives**: How many false alarms
+- **Missed issues**: Problems that passed checklist but were actually wrong
+
+Adjust checklist based on metrics.
+
+### Evolution
+
+Checklists should evolve:
+
+**Version 1.0.0**:
+```markdown
+- [ ] OPSEC clean
+- [ ] Structure valid
+```
+
+**Version 1.2.0** (after incident):
+```markdown
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] Structure valid (sections: Objective, Criteria, Complexity)
+- [ ] No exemplar content copied (new requirement after leak incident)
+```
+
+## Related Rules
+
+- `rule.authoring.file-structure.v1` - Checklist as final section
+- `rule.authoring.contracts-and-scope.v1` - Contract validation in checklist
+- `rule.authoring.templars-and-exemplars.v1` - Preventing exemplar leaks via checklist
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Checklist section present with heading "## FINAL MUST-PASS CHECKLIST"
+- [ ] Checklist is last section in rule file
+- [ ] Checklist has 3-7 items (no more, no less)
+- [ ] All checklist items are binary (clear pass/fail)
+- [ ] Checklist covers OPSEC, structure, and contract compliance
+- [ ] No subjective or compound items
+- [ ] Validation approach documented (manual, automated, or hybrid)

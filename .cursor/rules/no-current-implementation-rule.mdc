@@ -1,0 +1,68 @@
+---
+id: rule.general.no-current-impl.v1
+kind: rule
+version: 1.0.0
+description: Prevents showing current implementation unless requested
+globs: "**/*"
+governs: ""
+implements: communication.conciseness
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# No Current Implementation Rule
+
+## Purpose & Scope
+
+This rule instructs the AI not to show or discuss the current implementation code unless specifically requested by the user, to keep responses concise.
+
+**Applies to**: All code-related responses.
+
+## Inputs (Contract)
+
+- User request
+- Current code context
+
+## Outputs (Contract)
+
+- Response focusing on *changes* or *new code*
+- Omission of "Here is the current code:" blocks
+
+## Deterministic Steps
+
+1. Analyze user request.
+2. If request is "show me X", show it.
+3. If request is "change X", show the *diff* or the *new* version.
+4. Do not paste large blocks of existing code just for context, unless necessary for clarity.
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.no-summaries.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Current implementation not shown unless requested
+- [ ] Focus is on changes/results
+- [ ] Response is concise

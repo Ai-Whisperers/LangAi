@@ -1,0 +1,522 @@
+---
+id: rule.authoring.cross-references.v1
+kind: rule
+version: 1.0.1
+description: Defines stable ID system and patterns for referencing rules, templars, and exemplars
+globs: **/*-rule.mdc, **/rules/**/*.mdc, **/templars/**/*.md, **/exemplars/**/*.md
+governs: **/*-rule.mdc, **/rules/**/*.mdc, **/templars/**/*.md, **/exemplars/**/*.md
+implements: rule.authoring.cross-references
+requires:
+  - rule.authoring.file-structure.v1
+  - rule.authoring.naming-conventions.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ai, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Rule Cross-References
+
+## Purpose & Scope
+
+This rule defines how to create stable, version-safe references between rules, templars, and exemplars. Proper cross-referencing enables dependency tracking, automated loading, safe upgrades, and prevents broken references during refactoring.
+
+**Applies to**: All rule files, templars, exemplars, and any documentation that references them.
+
+**Does not apply to**: Code files, user documentation, or informal notes (though they benefit from ID-based references).
+
+## Inputs (Contract)
+
+- Rule, templar, or exemplar file being authored
+- Knowledge of dependencies (other rules/templars/exemplars needed)
+- Understanding of what action/capability the file implements or illustrates
+- Existing rule registry or index (if available)
+
+## Outputs (Contract)
+
+Rule file containing:
+- Unique, stable ID in front-matter
+- `implements` field declaring provided capability
+- `requires` array listing all dependencies by ID
+- `illustrates` or `example_of` field (for exemplars)
+- Related Rules section with ID-based references
+- No path-based or name-based references to other rules
+
+## The Cross-Reference Problem
+
+### Why Path References Fail
+
+[X] **Bad** - Path-based reference:
+```markdown
+See `rules/ticket/plan-rule.mdc` for details.
+```
+
+**Problems**:
+- Breaks when file moves
+- Breaks when file renames
+- No version tracking
+- Can't detect circular dependencies
+- Tools can't auto-resolve
+
+### Why ID References Work
+
+[X] **Good** - ID-based reference:
+```yaml
+requires:
+  - rule.ticket.plan.update.v1
+```
+
+**Benefits**:
+- Survives file moves/renames
+- Version-aware
+- Tool-resolvable
+- Dependency graph buildable
+- Circular dependency detection
+- Automated loading possible
+
+## ID-Based Reference System
+
+### Front-Matter Fields for References
+
+Every rule file must include these front-matter fields:
+
+```yaml
+id: rule.ticket.plan.update.v1       # Unique identifier
+implements: plan.update               # What capability this provides
+requires:                             # What this needs
+  - templar.plan.v1
+  - rule.ticket.opsec.redact.v1
+```
+
+### The `id` Field
+
+**Format**: `[kind].[domain].[action].v[major]`
+
+**Examples**:
+- `rule.ticket.plan.update.v1`
+- `templar.plan.v2`
+- `exemplar.plan.good.v1`
+- `rule.authoring.cross-references.v1`
+
+**Rules**:
+1. Must be globally unique across entire project
+2. Must never change (file can move, ID stays same)
+3. Major version in ID (`v1`, `v2`) not full semver
+4. Domain should reflect area (ticket, migration, authoring, etc.)
+5. Action should be verb or noun describing what it does
+
+### The `implements` Field
+
+**Purpose**: Declares what abstract capability or action this rule provides
+
+**Format**: `[domain].[action]` or `[action]` (shorter scope)
+
+**Examples**:
+```yaml
+implements: plan.update           # Rule that updates plan.md
+implements: progress.validate     # Rule that validates progress.md
+implements: opsec.redact          # Rule that redacts sensitive data
+```
+
+**Rules**:
+1. Should be reusable across versions (v1 and v2 can implement same action)
+2. Used for conceptual grouping
+3. Can have multiple rules implementing same action (different approaches)
+4. Must be unique within the file's `kind` + `implements` combo
+
+**Usage**: Other rules can require by implementation capability:
+```yaml
+requires:
+  - rule.ticket.opsec.redact.v1  # Specific version of opsec.redact implementation
+```
+
+### The `requires` Field
+
+**Purpose**: Lists all dependencies by stable ID
+
+**Format**: YAML array of stable IDs
+
+**Examples**:
+```yaml
+requires:
+  - templar.plan.v1
+  - rule.ticket.opsec.redact.v1
+  - rule.authoring.validation.v1
+```
+
+**Rules**:
+1. Must reference by full ID including version
+2. Order doesn't matter (tools sort by dependency)
+3. Empty array if no dependencies: `requires: []`
+4. Transitive dependencies don't need listing (auto-resolved)
+5. Circular dependencies are invalid (tools must detect)
+
+**Example with no dependencies**:
+```yaml
+requires: []
+```
+
+### The `illustrates` or `example_of` Field (Exemplars Only)
+
+**Purpose**: Links exemplar to the rule or action it demonstrates
+
+**Format**: Reference by `implements` value or full ID
+
+**Examples**:
+```yaml
+kind: exemplar
+illustrates: plan.update       # Shows pattern for plan.update action
+```
+
+Or more specific:
+```yaml
+kind: exemplar
+example_of: rule.ticket.plan.update.v1   # Shows pattern for specific rule
+```
+
+**Rules**:
+1. Only used in exemplar files
+2. Must reference either an `implements` value or a specific rule ID
+3. Should match the domain of the illustrated rule
+
+## Reference Patterns
+
+### Referencing a Templar
+
+In a rule that uses a template:
+
+```yaml
+id: rule.ticket.plan.update.v1
+implements: plan.update
+requires:
+  - templar.plan.v1      # Reference by ID
+```
+
+In the body:
+```markdown
+## Formatting Requirements
+
+Output must follow structure defined in `templar.plan.v1`:
+- Section "## Objective" (required)
+- Section "## Acceptance Criteria" (required)
+- Section "## Complexity" (optional)
+```
+
+### Referencing Another Rule
+
+For dependencies:
+
+```yaml
+requires:
+  - rule.ticket.opsec.redact.v1
+```
+
+In the body:
+```markdown
+## OPSEC and Leak Control
+
+All output must pass redaction rules defined in `rule.ticket.opsec.redact.v1`:
+- No secrets, tokens, or credentials
+- No internal URLs
+- No email addresses
+```
+
+### Referencing an Exemplar
+
+In a rule that has example patterns:
+
+```markdown
+## Related Exemplars
+
+- `exemplar.plan.good.v1` - Good plan.md example
+- `exemplar.plan.bad.v1` - Common anti-patterns
+
+Note: Exemplars are for learning patterns only. NEVER copy exemplar content to production outputs.
+```
+
+In the exemplar itself:
+```yaml
+kind: exemplar
+illustrates: plan.update
+use: critic-only
+```
+
+### Cross-Referencing Related Rules
+
+At the end of every rule, include a "Related Rules" section:
+
+```markdown
+## Related Rules
+
+- `rule.authoring.file-structure.v1` - Overall rule structure
+- `rule.authoring.contracts.v1` - Writing contracts and scope
+- `rule.authoring.validation.v1` - Checklist patterns
+- `rule.ticket.opsec.redact.v1` - OPSEC enforcement
+```
+
+**Format**:
+- Bullet list
+- Each item: backtick-quoted ID, dash, brief description
+- Sorted by relevance or alphabetically
+
+## Versioning References
+
+### Major Version in ID
+
+The ID contains only the major version:
+```yaml
+id: rule.ticket.plan.update.v1
+version: 1.2.3
+```
+
+**Rationale**:
+- Breaking changes -> new major -> new ID (`v2`)
+- Non-breaking changes -> same ID, bump minor/patch
+- References stay stable for compatible updates
+
+### When to Create New Version ID
+
+**Bump major version (new ID)** when:
+- Contract changes (different inputs/outputs)
+- Behavior changes incompatibly
+- File governance changes (different `governs` patterns)
+
+**Keep same ID (bump minor/patch)** when:
+- Clarifying documentation
+- Adding examples
+- Fixing typos
+- Adding optional outputs
+- Improving checklist wording
+
+### Pinning Dependencies
+
+Always pin to specific major version:
+
+[X] **Good**:
+```yaml
+requires:
+  - rule.ticket.plan.update.v1
+```
+
+[X] **Bad**:
+```yaml
+requires:
+  - rule.ticket.plan.update   # Missing version
+```
+
+[X] **Bad**:
+```yaml
+requires:
+  - rule.ticket.plan.update.v1.2.3   # Too specific, minor changes break
+```
+
+## Rule Manifest / Index
+
+For larger projects, maintain a central `rule-index.yml` mapping IDs to file paths:
+
+```yaml
+# .cursor/rules/rule-index.yml
+rules:
+  rule.ticket.plan.update.v1: .cursor/rules/ticket/plan-rule.mdc
+  rule.ticket.progress.update.v1: .cursor/rules/ticket/progress-rule.mdc
+  rule.authoring.file-structure.v1: .cursor/rules/rule-authoring/rule-file-structure.mdc
+
+templars:
+  templar.plan.v1: .cursor/templars/ticket/plan-template.md
+  templar.progress.v1: .cursor/templars/ticket/progress-template.md
+
+exemplars:
+  exemplar.plan.good.v1: .cursor/exemplars/ticket/plan-good.md
+  exemplar.plan.bad.v1: .cursor/exemplars/ticket/plan-bad.md
+```
+
+### Manifest Benefits
+
+1. **Fast lookup**: Tools resolve ID -> path instantly
+2. **Move detection**: Path changes -> manifest update, references unchanged
+3. **Duplicate detection**: Two files claiming same ID -> error
+4. **Dependency graph**: Parse all `requires` -> build graph -> detect cycles
+5. **Coverage analysis**: Find unreferenced rules or missing dependencies
+
+### Manifest Maintenance
+
+- Update manually when creating/moving/deleting rules
+- Or generate automatically: scan all rule files, extract IDs and paths
+- Validate on commit: ensure all `requires` IDs exist in manifest
+
+## Dependency Resolution
+
+### Loading Order
+
+Tools should:
+1. Read rule-index.yml (if exists)
+2. Load requested rule by ID
+3. Parse its `requires` array
+4. Recursively load all required rules
+5. Build dependency graph
+6. Topological sort for execution order
+7. Detect cycles -> error
+
+### Circular Dependency Detection
+
+Example circular dependency:
+
+```yaml
+# rule A
+id: rule.a.v1
+requires:
+  - rule.b.v1
+
+# rule B
+id: rule.b.v1
+requires:
+  - rule.a.v1
+```
+
+**Detection**: Build directed graph, run cycle detection algorithm (DFS with recursion stack).
+
+**Resolution**: Refactor to remove cycle, usually by extracting common dependency.
+
+## Anti-Patterns
+
+### 1. Path-Based References
+
+[X] **Bad**:
+```markdown
+See rules/ticket/plan-rule.mdc for details.
+```
+
+[X] **Good**:
+```markdown
+See `rule.ticket.plan.update.v1` for details.
+```
+
+### 2. Ambiguous References
+
+[X] **Bad**:
+```markdown
+Requires the OPSEC rule.
+```
+
+[X] **Good**:
+```yaml
+requires:
+  - rule.ticket.opsec.redact.v1
+```
+
+### 3. Missing Version
+
+[X] **Bad**:
+```yaml
+requires:
+  - rule.ticket.plan.update
+```
+
+[X] **Good**:
+```yaml
+requires:
+  - rule.ticket.plan.update.v1
+```
+
+### 4. Over-Specific Version
+
+[X] **Bad**:
+```yaml
+requires:
+  - rule.ticket.plan.update.v1.2.3
+```
+
+[X] **Good**:
+```yaml
+requires:
+  - rule.ticket.plan.update.v1
+```
+
+### 5. Inline URL/Path in ID
+
+[X] **Bad**:
+```yaml
+id: .cursor/rules/ticket/plan-rule.v1
+```
+
+[X] **Good**:
+```yaml
+id: rule.ticket.plan.update.v1
+```
+
+## Validation Checklist for References
+
+A well-referenced rule file must:
+
+1. [X] Have unique `id` field following naming convention
+2. [X] Have `implements` field declaring capability
+3. [X] Have `requires` array (empty if no dependencies)
+4. [X] All items in `requires` are valid IDs of other rules/templars
+5. [X] No circular dependencies
+6. [X] "Related Rules" section uses ID-based references
+7. [X] No path-based references in body text
+8. [X] Version in ID matches major version only
+
+## Example: Well-Referenced Rule
+
+```yaml
+---
+id: rule.ticket.plan.update.v1
+kind: rule
+version: 1.2.3
+description: Updates plan.md with structured sections
+globs: **/plan.md
+governs: **/plan.md
+implements: plan.update
+requires:
+  - templar.plan.v1
+  - rule.ticket.opsec.redact.v1
+  - rule.authoring.validation.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+---
+
+# Plan Update Rule
+
+## Purpose & Scope
+
+Updates or creates plan.md files following template structure defined in `templar.plan.v1`.
+
+...
+
+## OPSEC and Leak Control
+
+All output must comply with `rule.ticket.opsec.redact.v1`.
+
+...
+
+## Related Rules
+
+- `rule.authoring.file-structure.v1` - Rule structure requirements
+- `rule.authoring.validation.v1` - Checklist enforcement
+- `rule.ticket.opsec.redact.v1` - Sensitive data handling
+- `templar.plan.v1` - Output structure template
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] ID is unique and follows naming convention
+- [ ] All required dependencies listed with full IDs
+- [ ] References use IDs, not paths
+- [ ] No circular dependencies
+```
+
+## Related Rules
+
+- `rule.authoring.file-structure.v1` - Rule structure including front-matter
+- `rule.authoring.naming-conventions.v1` - ID naming patterns
+- `rule.authoring.provenance-and-versioning.v1` - Version management
+- `rule.authoring.contracts-and-scope.v1` - Declaring what rule governs
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] File has unique `id` field in front-matter
+- [ ] File has `implements` field declaring capability
+- [ ] File has `requires` array (empty array if no dependencies)
+- [ ] All `requires` entries are full IDs with version (e.g., `rule.x.y.v1`)
+- [ ] All in-body references use IDs, not file paths
+- [ ] "Related Rules" section lists relevant rules by ID
+- [ ] No circular dependencies in requires chain

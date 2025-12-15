@@ -1,0 +1,385 @@
+---
+id: rule.technical-specifications.enumeration.v1
+kind: rule
+version: 1.0.1
+description: Documents C++ enumeration types with exact numeric values, business meanings, and usage patterns for migration
+globs: **/docs/technical/**/enumerations/*.md, **/docs/technical/**/*-enum.md
+governs: **/docs/technical/**/enumerations/*-enum.md
+implements: enumeration.documentation
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+# Enumeration Documentation Rule
+
+## Purpose & Scope
+
+This rule defines how to create enumeration specification files that document enum types with their values, business meanings, and usage patterns for technical migration projects.
+
+**Applies to**: C++ enumeration types (typedef enum or enum class) with specific numeric values defined in source code. One enumeration file per C++ enum within `docs/technical/[domain]/domain/enumerations/` folder. ONLY applies to actual C++ enum declarations, NOT database field values, ISO standards, or lookup tables.
+
+**Does not apply to**: Database field classifications (document in domain-object), international standards like ISO codes (document in integration-points), configuration lookup tables (document in database schema), status flags (document in domain-object), or reference data maintained externally.
+
+## Inputs (Contract)
+
+- C++ enum declaration located in source code (typedef enum or enum class)
+- Complete enum value list with exact numeric values from C++ source
+- Business meanings and usage contexts for each enum value
+- Real-world usage examples from C++ business logic (switch statements, etc.)
+- Understanding of where enum is used in business rules and validation
+
+## Outputs (Contract)
+
+Enumeration specification file containing:
+- File named `[enum-name]-enum.md` in `docs/technical/[domain]/domain/enumerations/`
+- **MANDATORY**: Source C++ enum reference (file path and line number)
+- Complete value list with exact numeric codes matching C++ source 100%
+- Business descriptions and usage patterns for each value
+- Validation logic and business rules using this enum
+- Migration preservation requirements
+- NO database field values, ISO standards, or lookup tables (see qualification criteria)
+
+## Purpose (Original)
+
+This rule defines how to create enumeration specification files that document enum types with their values, business meanings, and usage patterns for technical migration projects.
+
+## C++ Enumeration Qualification Criteria
+
+### **Before Creating an Enumeration File, Verify ALL of the Following**
+
+**MANDATORY VERIFICATION CHECKLIST**:
+- ✅ **C++ Source Declaration**: Can you locate `typedef enum` or `enum class` in C++ source code?
+- ✅ **Defined Numeric Values**: Does it have specific values defined in C++ source (not just database field values)?
+- ✅ **Business Logic Usage**: Is it used in C++ switch statements or business logic?
+- ✅ **Codebase Ownership**: Is it maintained as part of the C++ codebase (not external standards)?
+
+**If ANY answer is "no"** → Do NOT create an enumeration file. Document elsewhere per Alternative Documentation Guidance below.
+
+### **What is NOT an Enumeration**
+
+**EXPLICIT EXCLUSIONS** - Do not create enumeration files for:
+
+- **Database Field Classifications** (e.g., `D_MARKETPARTY.ISME` with 0/1 values for entity classification)
+- **International Standards** (e.g., ISO 3166-1 country codes, ISO currency codes)
+- **Configuration Lookup Tables** (e.g., master data tables with codes and descriptions)
+- **Status Flags** (e.g., boolean or simple integer flags in database fields)
+- **Reference Data** (e.g., externally maintained standards, regulatory code lists)
+- **Database Constants** (e.g., hardcoded values stored in database tables)
+
+**Key Test**: If it's not declared as `typedef enum` or `enum class` in C++ source code with specific numeric values, it's not an enumeration for this rule.
+
+### **Alternative Documentation Guidance**
+
+**If Not a C++ Enumeration, Document In**:
+
+- **Database field values/classifications** → **Domain Object** field specifications and usage patterns
+- **International standards (ISO codes, etc.)** → **Database Schema** reference data or **Integration Points** external standards
+- **Lookup tables and master data** → **Database Schema** documentation
+- **Configuration data and constants** → **Business Rules** or **Integration Points**
+- **Status flags and simple classifications** → **Domain Object** field usage documentation
+
+**Remember**: Information is not lost - it goes to the correct layer in the documentation architecture where it belongs.
+
+## Document Structure
+
+### **Overview Section**
+- **Purpose Statement**: What this enumeration represents and why it exists
+- **Source C++ Enum Reference**: **REQUIRED** - Must include reference to source C++ enum
+- **Scope**: Which business domain or functional area uses this enumeration
+- **Usage Context**: Where and how this enumeration is used in the system
+- **Business Value**: Why these specific values matter to the business
+
+### **Enumeration Values Section**
+- **Complete Value List**: Every enumeration value with exact numeric codes
+- **Business Descriptions**: What each value means from business perspective
+- **Usage Examples**: Real-world scenarios where each value is used
+- **Value Relationships**: How different values relate to each other
+
+### **Usage Patterns Section**
+- **Primary Applications**: Main use cases and business scenarios
+- **Business Rules**: Rules governing when each value is appropriate
+- **Validation Logic**: How enum values are validated in business processes
+- **Default Behaviors**: Default values and fallback logic
+
+### **Migration Requirements Section**
+- **Value Preservation**: Requirements to maintain exact enum values
+- **Business Logic Impact**: How enum values affect business calculations
+- **Integration Dependencies**: External systems that depend on these values
+- **Backward Compatibility**: Requirements for maintaining compatibility
+
+## Content Guidelines
+
+### **Accuracy Requirements**
+- Enumeration names must match source system exactly
+- Numeric values must be identical to source implementation
+- Business descriptions must reflect actual usage, not assumptions
+- All possible values must be documented, including special cases
+
+### **What to Include**
+- **Exact Numeric Values**: Include the specific numbers used in source system
+- **Business Context**: Why each value exists and when it's used
+- **Real Usage Examples**: Actual scenarios where each value appears
+- **Validation Rules**: Business rules that govern value selection
+- **Integration Impact**: How external systems use or depend on these values
+
+### **What to Avoid**
+- **Generic Descriptions**: Don't use standard enum descriptions without verification
+- **Missing Values**: Ensure all possible values from source system are included
+- **Assumed Logic**: Only document verified business rules and usage patterns
+- **Implementation Details**: Focus on business meaning, not technical implementation
+
+### **File Location and Naming Convention**
+- File location: `docs/technical/[domain]/domain/enumerations/[enum-name]-enum.md`
+- Include "enum" in filename for clarity (e.g., `calculation-type-enum.md`)
+- Use descriptive names that indicate the business domain
+- Maintain consistency with related specification files
+- Follow established project naming patterns
+
+### **Folder Structure Integration**
+Enumeration files are part of the layered architecture:
+```text
+docs/technical/[domain]/
+├── database/                                      # Database layer (3-file pattern)
+│   ├── [domain]-database-schema.md
+│   ├── [domain]-database-constraints.md
+│   └── [domain]-database-analysis.md
+└── domain/                                        # Domain layer (DDD pattern)
+    ├── domain-objects/                           # Rich domain models
+    │   └── [entity-name]-domain-object.md
+    └── enumerations/                             # Business enumerations
+        ├── [enum-name]-enum.md                  # THIS RULE APPLIES HERE
+        └── [another-enum]-enum.md
+```
+
+### **File Naming Examples**
+- `docs/technical/calendars/domain/enumerations/calendar-type-enum.md`
+- `docs/technical/tariffs/domain/enumerations/tariff-calculation-type-enum.md`
+- `docs/technical/markets/domain/enumerations/market-role-type-enum.md`
+
+## Quality Standards
+
+### **Completeness Requirements**
+- Every enumeration value from source system documented
+- All business meanings and usage patterns captured
+- All validation rules and constraints identified
+- All integration dependencies noted
+
+### **Accuracy Standards**
+- Numeric values identical to source system
+- Enumeration names match source exactly
+- Business descriptions reflect actual usage
+- Usage examples are realistic and verified
+
+### **Clarity Standards**
+- Business language used for value descriptions
+- Technical details included only when necessary for clarity
+- Consistent terminology throughout document
+- Clear distinction between current behavior and migration requirements
+
+## Enumeration Documentation Template
+
+### **Standard Structure**
+```markdown
+# [EnumerationType] Enumeration
+
+## Overview
+
+[Description of what this enumeration represents and its business purpose]
+
+**Source C++ Enum**: `[C++ClassName]::[EnumName]` (located in `[source-file-path]`)
+
+## Enumeration Values
+
+| Value | C++ Enum Name | Description | Business Purpose | Usage Context |
+|-------|---------------|-------------|------------------|---------------|
+| **[NumericValue]** | [C++EnumName] | [Brief Description] | [Business Role/Purpose] | [When/Where Used] |
+| **[NumericValue]** | [C++EnumName] | [Brief Description] | [Business Role/Purpose] | [When/Where Used] |
+| **[NumericValue]** | [C++EnumName] | [Brief Description] | [Business Role/Purpose] | [When/Where Used] |
+
+**Note**: Table should be ordered by numeric value for systematic reference.
+
+## Usage Patterns
+
+### **[BusinessScenario]**
+
+- **[ValueName]**: [When and why this value is used]
+- **[ValueName]**: [When and why this value is used]
+
+## Business Rules
+
+- [Rule about when values are appropriate]
+- [Rule about value validation]
+- [Rule about default behaviors]
+
+## Migration Requirements
+
+[Requirements for preserving enum behavior in C# implementation]
+```
+
+### **Value Documentation Format**
+```markdown
+| Value | C++ Enum Name | Description | Business Purpose | Usage Context |
+|-------|---------------|-------------|------------------|---------------|
+| **[NumericValue]** | [C++EnumName] | [Brief Description] | [Business Role] | [Usage Context] |
+```
+
+**Table Guidelines**:
+- **Value**: Exact numeric value from C++ source (bold formatting)
+- **C++ Enum Name**: Exact name from typedef enum declaration
+- **Description**: Concise business description of what this value represents
+- **Business Purpose**: Why this value exists, its business role
+- **Usage Context**: When/where this value is used in practice
+
+## Special Considerations
+
+### **C++ Source System Integration**
+- **Numeric Value Preservation**: Exact numeric values must be maintained
+- **Type Safety**: Document how C++ enum usage translates to C# enum usage
+- **Switch Statement Logic**: Note where enums are used in decision logic
+- **Default Handling**: Document how unknown or invalid values are handled
+
+### **Business Logic Dependencies**
+- **Calculation Impact**: How enum values affect mathematical calculations
+- **Process Flow**: Where enum values drive business process decisions
+- **Validation Logic**: How enum values are validated in business rules
+- **Reporting Usage**: How enum values appear in business reports and analytics
+
+### **Integration Considerations**
+- **External System Dependencies**: Systems that receive or send these enum values
+- **API Contracts**: Where enum values appear in integration interfaces
+- **Data Exchange**: How enum values are transmitted and validated
+- **Backward Compatibility**: Requirements for maintaining enum value stability
+
+## Quality Assurance
+
+### **Pre-Creation Validation Checklist**
+**MANDATORY - Complete BEFORE creating any enumeration file**:
+- [ ] **C++ enum declaration located** (exact file path and line number documented)
+- [ ] **`typedef enum` or `enum class` verified** in C++ source code
+- [ ] **Numeric values confirmed** from C++ source (not database or assumptions)
+- [ ] **Business logic usage identified** (switch statements, method parameters, etc.)
+- [ ] **NOT database field classification** (verified this is not just database field values)
+- [ ] **NOT external standard** (verified this is not ISO codes, regulatory standards, etc.)
+
+### **Post-Creation Review Checklist**
+- [ ] **Source C++ enum reference included** (REQUIRED - exact file path and line number)
+- [ ] All enum values from source system documented
+- [ ] Numeric values match source system exactly
+- [ ] Business descriptions are accurate and clear
+- [ ] Usage patterns reflect real system behavior
+- [ ] Business rules are complete and verifiable
+- [ ] Migration requirements address all dependencies
+- [ ] Cross-references to related specifications included
+
+### **Common Issues to Avoid**
+- **Creating Non-Enum Files**: Most common error - creating files for database fields, ISO standards, or reference data
+- **Missing C++ Source Verification**: Creating files without confirming actual C++ enum declaration
+- **Database Field Confusion**: Mistaking database field values (like ISME 0/1) for C++ enum values
+- **International Standards Confusion**: Treating external standards (ISO codes) as internal C++ enumerations
+- **Missing Values**: Overlooking enum values that are rarely used
+- **Generic Descriptions**: Using standard descriptions that don't reflect actual usage
+- **Incorrect Numbers**: Using approximate or assumed numeric values
+- **Incomplete Usage**: Missing important usage patterns or business scenarios
+- **Missing Dependencies**: Overlooking external system dependencies
+
+### **Stakeholder Validation**
+- **Business Users**: Validate business meanings and usage scenarios
+- **Developers**: Confirm technical accuracy and completeness
+- **Integration Teams**: Verify external system dependencies
+- **Quality Assurance**: Validate enum usage in testing scenarios
+
+## Cross-Reference Integration
+
+### **Link Patterns**
+- Reference from domain object specifications: `(see [Enum Name](enum-file.md))`
+- Reference from business rules: `using [EnumType] values (see [Enum Specification](enum-file.md))`
+- Reference from integration specs: `enum values defined in [Enum Documentation](enum-file.md)`
+
+### **Related Documentation**
+- **Domain Objects**: Link to entities that use this enumeration
+- **Business Rules**: Link to rules that depend on enum values
+- **Integration Points**: Link to interfaces that expose enum values
+- **Overview Documents**: Ensure enum is referenced in domain overview
+
+## Maintenance Guidelines
+
+### **Keep Current**
+- Update when new enum values are added to source system
+- Maintain accuracy as business usage patterns evolve
+- Update migration considerations as C# design progresses
+- Keep cross-references current as related documents change
+
+### **Review Triggers**
+- Source system enum changes or additions
+- Business process changes that affect enum usage
+- Integration changes that impact enum dependencies
+- Migration design decisions that affect enum implementation
+
+## Deterministic Steps
+
+When creating an enumeration specification:
+
+1. **Verify C++ Enum**: Confirm typedef enum or enum class declaration exists in C++ source code
+2. **Complete Pre-Creation Checklist**: Verify ALL mandatory criteria (C++ enum exists, not database field, not ISO standard)
+3. **Extract Values**: Get exact numeric values from C++ enum declaration
+4. **Create File**: Create `[enum-name]-enum.md` in `docs/technical/[domain]/domain/enumerations/`
+5. **Add Source Reference**: Include C++ enum file path and line number (**MANDATORY**)
+6. **Document Values**: Create table with Value, C++ Enum Name, Description, Business Purpose, Usage Context
+7. **Add Usage Patterns**: Document real-world business scenarios where each value is used
+8. **Add Business Rules**: Document validation rules and decision logic using this enum
+9. **Add Migration Requirements**: Specify value preservation and compatibility needs
+10. **Validate**: Ensure numeric values match C++ source 100%, source reference present, no database fields documented
+
+## OPSEC and Leak Control
+
+Enumeration files must NOT contain:
+- **NO** internal server names, IP addresses, or URLs
+- **NO** credentials, tokens, API keys, or passwords
+- **NO** employee names or email addresses
+- **NO** confidential customer data or business-sensitive examples
+- **NO** proprietary vendor information
+- C++ source references by file name only (no absolute paths with server names)
+
+## Integration Points
+
+This rule works with:
+- **rule.technical-specifications.domain-object.v1**: Domain objects reference enumerations for field value constraints
+- **rule.technical-specifications.business-rules.v1**: Business rules use enum values in validation and decision logic
+- **rule.technical-specifications.hybrid-architecture.v1**: Defines domain/enumerations/ folder location
+- **rule.technical-specifications.integration-points.v1**: Integration points expose enum values to external systems
+
+## Failure Modes and Recovery
+
+**Failure**: File created for database field values (not C++ enum)
+- **Detection**: No typedef enum/enum class declaration in C++ source
+- **Recovery**: Delete enum file, document field values in domain-object file instead
+
+**Failure**: File created for ISO standard codes (not internal enum)
+- **Detection**: Values match ISO 3166, ISO 4217, or other external standards
+- **Recovery**: Delete enum file, document standards reference in integration-points file
+
+**Failure**: Missing source C++ enum reference
+- **Detection**: File lacks "Source C++ Enum" field with file path
+- **Recovery**: Add mandatory source reference with exact file path and line number from C++ source
+
+**Failure**: Numeric values don't match C++ source
+- **Detection**: Values differ from actual typedef enum declaration
+- **Recovery**: Correct all values to match C++ source exactly (100% accuracy required)
+
+## Related Rules
+
+- **rule.technical-specifications.domain-object.v1**: Domain objects reference (don't duplicate) enum values
+- **rule.technical-specifications.business-rules.v1**: Business rules use enums in validation
+- **rule.technical-specifications.hybrid-architecture.v1**: Defines enumerations/ folder structure
+- **rule.technical-specifications.integration-points.v1**: External systems use enum values
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no server names, IPs, credentials, emails, confidential data)
+- [ ] **MANDATORY**: Pre-creation verification completed (C++ enum exists, not database field, not ISO standard)
+- [ ] **MANDATORY**: Source C++ enum reference included (file path and line number)
+- [ ] File location correct: docs/technical/[domain]/domain/enumerations/[enum-name]-enum.md
+- [ ] ALL numeric values match C++ source exactly (100% accuracy)
+- [ ] Complete value table with Value, C++ Name, Description, Business Purpose, Usage Context
+- [ ] NOT documenting database fields, ISO standards, lookup tables, or status flags

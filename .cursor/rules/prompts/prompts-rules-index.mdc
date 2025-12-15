@@ -1,0 +1,459 @@
+---
+id: rule.prompts.index.v1
+kind: rule
+version: 1.1.0
+description: Navigation hub and overview for prompt management rule framework including Prompt Registry integration
+globs: ""
+governs: ""
+implements: prompts.index
+requires:
+  - rule.prompts.creation.v1
+  - rule.prompts.extraction.v1
+  - rule.prompts.registry-integration.v1
+  - rule.prompts.agent-application.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-prompts, last_review: 2025-12-08 }
+alwaysApply: false
+---
+
+# Prompts Rules Index
+
+Navigation hub and overview for prompt creation, extraction, and Prompt Registry integration rules.
+
+## Overview
+
+This rule framework governs the creation of effective, reusable prompts, extraction of prompt patterns from conversations, and integration with Prompt Registry for quick invocation via slash commands in Cursor. It ensures prompts are specific, actionable, version-controlled, and easily accessible.
+
+## Purpose
+
+- Define standards for creating high-quality prompts
+- Integrate prompts with Prompt Registry for `/` command workflows
+- Extract learnings from conversation transcripts
+- Identify successful and unsuccessful prompt patterns
+- Build reusable, Git-controlled prompt library
+- Enable team-wide prompt distribution via collections
+- Replace ad-hoc one-liners with standardized, testable prompts
+
+## Scope
+
+**Covers**:
+
+- Navigation and overview of prompt rules framework
+- Quick reference for all rules in this domain
+- Integration points with other systems
+- Workflow examples
+- Common patterns catalog
+
+**Does Not Cover**:
+
+- Detailed rule implementations (see individual rule files)
+- Specific prompt content (see prompt library)
+- Rule authoring standards (see `.cursor/rules/rule-authoring/`)
+
+## Rule Framework Structure
+
+```text
+.cursor/rules/prompts/
+├── agent-application-rule.mdc              # When and how to apply these rules
+├── prompt-creation-rule.mdc                # Standards for creating prompts
+├── prompt-extraction-rule.mdc              # Extracting from conversations
+├── prompt-registry-integration-rule.mdc    # Prompt Registry integration
+└── prompts-rules-index.mdc                 # This file (navigation hub)
+```
+
+**Prompt Library Structure**:
+
+```text
+.cursor/prompts/
+├── collections/                  # Collection manifests (.collection.yml)
+│   ├── core-workflows.collection.yml
+│   ├── ticket-management.collection.yml
+│   └── deep-research.collection.yml
+└── prompts/                     # Actual prompt files (.prompt.md)
+    ├── deep-research.prompt.md
+    ├── start-ticket.prompt.md
+    ├── generate-tests.prompt.md
+    └── ...
+```
+
+## Rules in This Domain
+
+| # | Rule ID | File | Version | Status |
+|---|---------|------|---------|--------|
+| 0 | `rule.prompts.agent-application.v1` | `agent-application-rule.mdc` | 1.0.0 | Active |
+| 1 | `rule.prompts.creation.v1` | `prompt-creation-rule.mdc` | 1.0.0 | Active |
+| 2 | `rule.prompts.extraction.v1` | `prompt-extraction-rule.mdc` | 1.0.0 | Active |
+| 3 | `rule.prompts.registry-integration.v1` | `prompt-registry-integration-rule.mdc` | 1.0.0 | Active |
+
+### 0. Agent Application Rule
+
+**File**: `agent-application-rule.mdc`  
+**ID**: `rule.prompts.agent-application.v1`  
+**Version**: 1.0.0  
+**Purpose**: Guide AI agent on when and how to apply prompt rules
+
+**Apply When**:
+
+- User requests prompt creation
+- User provides conversation for analysis
+- Improving existing prompts
+- Managing prompt library
+
+**Key Concepts**:
+
+- Trigger phrase identification
+- Domain category mapping
+- Response patterns
+- Quality verification
+
+### 1. Prompt Creation Rule
+
+**File**: `prompt-creation-rule.mdc`  
+**ID**: `rule.prompts.creation.v1`  
+**Version**: 1.0.0  
+**Purpose**: Define standards for creating effective, reusable prompts
+
+**Apply When**:
+
+- Creating new prompt files
+- Standardizing ad-hoc prompts
+- Improving existing prompts
+- Building prompt library
+
+**Key Concepts**:
+
+- Quality principles (specificity, context, outcomes, actions)
+- Prompt structure template (Templars)
+- Placeholder conventions & XML delimiters
+- Advanced effectiveness patterns (CoT, Few-Shot)
+- Anti-patterns to avoid
+- Category naming conventions
+
+**Core Patterns**:
+
+1. Constrained Generation
+2. Guided Analysis  
+3. Iterative Refinement
+4. Context Building
+5. Chain of Thought (Reasoning)
+6. Self-Correction
+
+### 2. Prompt Extraction Rule
+
+**File**: `prompt-extraction-rule.mdc`  
+**ID**: `rule.prompts.extraction.v1`  
+**Version**: 1.0.0  
+**Purpose**: Extract prompt patterns, templars, and exemplars from conversations
+
+**Apply When**:
+
+- Analyzing conversation transcripts
+- Learning from successful interactions
+- Identifying what went wrong in failed conversations
+- Building templar/exemplar library
+- Meta-analysis of interactions
+
+**Key Concepts**:
+
+- 6-phase extraction process
+- Effectiveness rating (1-5 stars)
+- Pattern identification (successful and anti-patterns)
+- Template generation (Templars)
+- Example generation (Exemplars)
+- Meta-analysis
+- Learning from failures
+
+**Extraction Phases**:
+
+1. Conversation Scan
+2. Prompt Cataloging
+3. Effectiveness Analysis
+4. Pattern Identification
+5. Template/Exemplar Generation
+6. Meta-Analysis
+
+### 3. Prompt Registry Integration Rule
+
+**File**: `prompt-registry-integration-rule.mdc`  
+**ID**: `rule.prompts.registry-integration.v1`  
+**Version**: 1.0.0  
+**Purpose**: Integration standards for Prompt Registry extension with Cursor
+
+**Apply When**:
+
+- Setting up prompt library for Prompt Registry
+- Creating `.prompt.md` files with YAML frontmatter
+- Organizing prompts into collections
+- Configuring slash command workflows
+- Converting ad-hoc prompts to reusable library
+
+**Key Concepts**:
+
+- `.prompt.md` file format (YAML frontmatter + body)
+- `.collection.yml` manifest structure
+- Prompt Registry extension setup
+- Slash command (`/`) invocation
+- Collection-based organization
+- Git-controlled prompt library
+- YAML format standards (aligns with EPP-192 fixes)
+
+**Core Features**:
+
+1. **Quick Invocation**: `/prompt-name` in chat
+2. **Fuzzy Search**: Auto-complete as you type
+3. **Version Control**: All prompts in Git
+4. **Team Distribution**: Shared collections
+5. **Native Integration**: Works with Cursor/Copilot Chat
+
+**Directory Structure**:
+
+- `.cursor/prompts/collections/` - Collection manifests
+- `.cursor/prompts/prompts/` - Prompt files
+
+**Required Frontmatter Fields**:
+
+- `name`: Slash command identifier
+- `description`: One-line purpose (quoted)
+- Optional: `agent`, `model`, `tools`, `argument-hint`, `category`, `tags`
+
+## Quick Reference
+
+### Creating a Prompt (with Prompt Registry)
+
+```text
+1. Apply: prompt-creation-rule.mdc (quality standards)
+2. Apply: prompt-registry-integration-rule.mdc (format)
+3. Create .prompt.md file with YAML frontmatter
+4. Add required fields: name, description
+5. Structure body: Goals, Process, Output, Validation
+6. Add standard placeholders with XML delimiters
+7. Test manually in Cursor chat
+8. Add to collection manifest (.collection.yml)
+9. Commit to Git
+10. Install/reinstall collection in Prompt Registry
+11. Use via /command-name
+```
+
+### Extracting from Conversation
+
+```text
+1. Apply: prompt-extraction-rule.mdc
+2. Read full conversation
+3. Extract all user prompts
+4. Rate effectiveness (1-5⭐)
+5. Identify patterns
+6. Create templates
+7. Generate full report
+8. Provide actionable outputs
+```
+
+### Improving Existing Prompt
+
+```text
+1. Apply prompt-creation-rule quality principles
+2. Check against anti-patterns
+3. Verify required sections
+4. Fix placeholder conventions
+5. Add missing validation
+6. Test instruction logic
+```
+
+## Integration Points
+
+### With Prompt Library (Prompt Registry)
+
+Rules govern content in:
+
+- `.cursor/prompts/prompts/` - Prompt files (`.prompt.md` format)
+- `.cursor/prompts/collections/` - Collection manifests (`.collection.yml`)
+- Prompt Registry extension - Distribution & invocation
+
+### With Conversation History
+
+Extraction sources:
+
+- `conversations/JP/` - Conversation transcripts
+- `conversations/JP/extracted/` - Extraction reports
+
+### With Other Rule Domains
+
+Prompts reference and apply:
+
+- `.cursor/rules/agile/` - For agile prompts
+- `.cursor/rules/ticket/` - For ticket prompts
+- `.cursor/rules/documentation/` - For doc prompts
+- `.cursor/rules/unit-testing/` - For test prompts
+- `.cursor/rules/database-standards/` - For SQL prompts
+- `.cursor/rules/git/` - For git prompts
+- All other rule domains
+
+## Workflow Examples
+
+### Example 1: Creating Prompt for Common Task (with Prompt Registry)
+
+```text
+User: "I keep asking you to analyze test coverage. Let's make a standard prompt."
+
+Agent: 
+1. Applies agent-application-rule → identifies "create prompt" trigger
+2. Applies prompt-creation-rule → quality standards
+3. Applies prompt-registry-integration-rule → .prompt.md format
+4. Creates: `.cursor/prompts/prompts/analyze-coverage.prompt.md`
+5. Adds YAML frontmatter: name, description, tools
+6. Structures body: Goals, Process, Output, Validation
+7. Adds to collection: `testing-quality.collection.yml`
+8. Commits to Git
+9. User installs collection in Prompt Registry
+10. Usage: `/analyze-coverage src/Domain/`
+```
+
+### Example 2: Learning from Failed Conversation
+
+```text
+User: "This conversation didn't work. Can you analyze why?" + [transcript]
+
+Agent:
+1. Applies agent-application-rule → identifies "extract prompts" trigger
+2. Applies prompt-extraction-rule → focuses on failure analysis
+3. Extracts all prompts with ratings
+4. Identifies anti-patterns in failed prompts
+5. Creates improved versions
+6. Generates templates for better approach
+7. Provides full extraction report
+8. Suggests specific fixes
+```
+
+### Example 3: Building from Successful Pattern
+
+```text
+User: "This worked really well: [shows prompt]. Save it for reuse."
+
+Agent:
+1. Applies extraction + creation + registry-integration rules
+2. Analyzes why it worked
+3. Extracts the pattern
+4. Generalizes to template with placeholders
+5. Creates .prompt.md file with frontmatter
+6. Adds to appropriate collection
+7. Tests via slash command
+8. Commits to Git
+```
+
+## Quality Standards
+
+### Prompt Quality (with Prompt Registry)
+
+All created prompts must have:
+
+- ✅ `.prompt.md` file extension
+- ✅ YAML frontmatter with required fields (name, description)
+- ✅ Clear, slash-command-friendly name
+- ✅ Quoted description for quick-pick
+- ✅ Numbered, actionable steps in body
+- ✅ Specified output format
+- ✅ Measurable success criteria
+- ✅ Validation checklist
+- ✅ Added to collection manifest
+- ✅ YAML format follows EPP-192 standards
+- ✅ Tested via slash command before committing
+
+### Extraction Quality
+
+All extractions must have:
+
+- ✅ All prompts cataloged
+- ✅ Effectiveness ratings
+- ✅ Pattern identification
+- ✅ Template generation
+- ✅ Meta-analysis
+- ✅ Failure analysis (if applicable)
+- ✅ Actionable recommendations
+- ✅ Honest assessment
+
+## Common Patterns
+
+### Successful Prompt Patterns
+
+1. **Explicit Context Pattern**: Specifies exact sources and references
+2. **Constrained Generation Pattern**: Lists explicit requirements and standards
+3. **Verification-Included Pattern**: Includes validation and proof requirements
+4. **Build-On-Previous Pattern**: References prior work for continuity
+5. **Exploration-Then-Action Pattern**: Gathers context before acting
+6. **Chain-of-Thought (CoT)**: Forces step-by-step reasoning
+7. **Few-Shot Exemplar**: Provides clear input/output examples
+
+### Anti-Patterns to Avoid
+
+1. **Vague Reference**: No clear reference to previous context
+2. **Assumed Context**: No specification of what/where/how
+3. **Multiple Combined Requests**: Too many tasks, unclear priority
+4. **No Success Criteria**: Subjective, unmeasurable goals
+5. **Missing Scope Boundaries**: No boundaries defined
+6. **Zero-Shot Complex Tasks**: Asking for complex outputs without examples
+
+## Statistics and Metrics
+
+Track for continuous improvement:
+
+- Prompt effectiveness ratings
+- Templar reuse rate
+- Exemplar effectiveness
+- Common failure modes
+- Category distribution
+- Average refinement cycles
+
+## References
+
+### Core Rules
+
+- `agent-application-rule.mdc` - Application guidance
+- `prompt-creation-rule.mdc` - Creation standards
+- `prompt-extraction-rule.mdc` - Extraction process
+- `prompt-registry-integration-rule.mdc` - Prompt Registry integration
+
+### Related Frameworks
+
+- `.cursor/rules/rule-authoring/` - Similar structure and concepts
+- `.cursor/rules/ticket/` - Workflow inspiration
+- `.cursor/rules/documentation/` - Quality standards inspiration
+
+### Artifacts
+
+- `.cursor/prompts/prompts/` - Prompt files (`.prompt.md`)
+- `.cursor/prompts/collections/` - Collection manifests (`.collection.yml`)
+- `.cursor/templars/prompts/` - Structural prompt templates
+- `.cursor/exemplars/prompts/` - Reference prompt examples
+- `conversations/JP/` - Conversation sources
+- `conversations/JP/extracted/` - Extraction reports
+
+### External Tools
+
+- **Prompt Registry Extension**: <https://github.com/AmadeusITGroup/prompt-registry>
+- **VS Code Copilot Prompt Files**: <https://code.visualstudio.com/docs/copilot/copilot-chat>
+
+---
+
+## FINAL MUST-PASS CHECKLIST
+
+### For Creating Prompts with Prompt Registry
+
+- [ ] `.prompt.md` file created with YAML frontmatter
+- [ ] Required frontmatter fields present: `name`, `description`
+- [ ] Name is short and slash-command friendly
+- [ ] Description is clear and quoted
+- [ ] YAML format follows EPP-192 standards (no JSON arrays)
+- [ ] Body follows prompt-creation-rule structure
+- [ ] Prompt tested manually before committing
+- [ ] Added to collection manifest
+- [ ] Collection installed in Prompt Registry
+- [ ] Slash command works in Cursor chat
+- [ ] Committed to Git
+
+---
+
+**Version History**:
+
+- 1.1.0 (2025-12-08): Added Prompt Registry integration rule, updated frontmatter format
+- 1.0.0 (2025-12-01): Initial prompt rules framework
+
+**Last Updated**: 2025-12-08

@@ -1,0 +1,68 @@
+---
+id: rule.general.single-chunk.v1
+kind: rule
+version: 1.0.0
+description: Requires AI to provide all edits in a single chunk per file
+globs: "**/*"
+governs: ""
+implements: coding.format
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# Single Chunk Edits Rule
+
+## Purpose & Scope
+
+This rule requires the AI to provide all edits for a single file in a single code block or tool call, avoiding fragmented updates.
+
+**Applies to**: All code modification responses.
+
+## Inputs (Contract)
+
+- User request requiring multiple changes in one file
+- Target file content
+
+## Outputs (Contract)
+
+- Single tool call or code block containing ALL changes for that file
+- No "apply this, then apply that" instructions for the same file
+
+## Deterministic Steps
+
+1. Identify all necessary changes for the target file.
+2. Combine changes into a single operation (e.g., one `write` or `search_replace` if applicable, though `search_replace` is often atomic).
+3. If using `write`, provide the full final content.
+4. If using `search_replace`, verify if multiple calls are needed (this rule prefers minimizing steps, but technical limits may apply). Ideally, present the *plan* as a single coherent update.
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.file-by-file.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All edits for the file are presented together
+- [ ] No piecemeal instructions for the same file
+- [ ] User doesn't need to assemble the file manually

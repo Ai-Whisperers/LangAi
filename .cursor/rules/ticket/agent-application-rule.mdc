@@ -1,0 +1,460 @@
+---
+id: rule.ticket.agent-application.v1
+kind: rule
+version: 1.0.1
+description: Agent guidance for when and how to apply ticket management rules. Use this when user requests involve starting/switching/completing tickets, ticket documentation (plan/context/progress/timeline), claims of "done", workflow coordination, or ticket-related validation.
+implements: ticket.agent-application
+requires:
+  - rule.ticket.overview.v1
+  - rule.ticket.workflow.v1
+  - rule.ticket.plan.v1
+  - rule.ticket.context.v1
+  - rule.ticket.progress.v1
+  - rule.ticket.timeline.v1
+  - rule.ticket.recap.v1
+  - rule.ticket.rca.v1
+  - rule.ticket.validation.v1
+  - rule.ticket.completion-discipline.v1
+  - rule.ticket.complexity-assessment.v1
+  - rule.ticket.switching-discipline.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Ticket Management - Agent Application Rule
+
+## Purpose & Scope
+
+This rule provides explicit agent guidance for when and how to apply ticket management rules. It bridges the gap between rule definitions and practical application by mapping file patterns, user requests, lifecycle phases, and behavioral triggers to specific rules.
+
+**Applies to**: AI agents working with ticket documentation in `tickets/` folder structure.
+
+**Does not apply to**: Human developers (use ticket-rules-index.mdc), non-ticket documentation, or production code.
+
+## Inputs (Contract)
+
+- User request or command related to ticket work
+- File path being created/edited in tickets/ folder
+- Current ticket lifecycle phase (planning, active work, completion, switching)
+- User behavioral cues (claiming "done", switching context, etc.)
+
+## Outputs (Contract)
+
+Agent decision on:
+- Which ticket rules to apply
+- In what order to apply multiple rules
+- Which behavioral disciplines to enforce
+- How to validate ticket state before transitions
+
+## File Pattern to Rule Mapping
+
+### Workspace State Files
+
+| File Path | Glob Pattern | Governing Rule | Purpose |
+|-----------|--------------|----------------|---------|
+| `tickets/current.md` | `**/tickets/current.md` | `rule.ticket.current.v1` | Track active ticket ID (local only, not committed) |
+
+**Apply When**: Creating workspace, switching tickets, starting/completing tickets
+
+### Core Ticket Files
+
+| File Path | Glob Pattern | Governing Rule | Purpose |
+|-----------|--------------|----------------|---------|
+| `tickets/TICKET-123/plan.md` | `**/tickets/**/plan.md` | `rule.ticket.plan.v1` | Define ticket objectives, requirements, complexity |
+| `tickets/TICKET-123/context.md` | `**/tickets/**/context.md` | `rule.ticket.context.v1` | Track current state, focus areas, next steps |
+| `tickets/TICKET-123/progress.md` | `**/tickets/**/progress.md` | `rule.ticket.progress.v1` | Chronological log (append-only) |
+| `tickets/TICKET-123/timeline.md` | `**/tickets/**/timeline.md` | `rule.ticket.timeline.v1` | Timestamp-focused tracking for hour reconstruction |
+| `tickets/TICKET-123/references.md` | `**/tickets/**/references.md` | `rule.ticket.references.v1` | Static file and conversation references |
+| `tickets/TICKET-123/recap.md` | `**/tickets/**/recap.md` | `rule.ticket.recap.v1` | Ticket outcome summary (at closure) |
+| `tickets/TICKET-123/rca.md` | `**/tickets/**/rca.md` | `rule.ticket.rca.v1` | Root cause analysis (defects only) |
+
+### Behavioral Triggers (No File Pattern)
+
+These rules apply based on **agent behavior** or **user cues**, not file patterns:
+
+| Context | Governing Rule | Trigger Condition |
+|---------|----------------|-------------------|
+| User claims "done", "complete", "finished" | `rule.ticket.completion-discipline.v1` | BEFORE accepting completion claim |
+| User requests ticket switch | `rule.ticket.switching-discipline.v1` | BEFORE switching tickets |
+| Before marking ticket complete | `rule.ticket.validation.v1` | BEFORE creating recap.md or final commit |
+| Creating plan.md | `rule.ticket.complexity-assessment.v1` | DURING plan creation (assess Simple Fix vs Complex) |
+| Following ticket lifecycle | `rule.ticket.workflow.v1` | Throughout entire ticket lifecycle |
+
+## Deterministic Steps
+
+### Step 1: Identify User Request Type
+
+When user provides request, categorize:
+
+1. **Start New Ticket**: "Start ticket PROJ-123" or "Work on PROJ-123"
+   - Execute Scenario A (Starting New Ticket)
+   
+2. **Switch Tickets**: "Switch to PROJ-456" or "Pause this and work on PROJ-456"
+   - Execute Scenario B (Switching Tickets)
+   
+3. **Update Ticket State**: "Update context" or "sync"
+   - Apply `rule.ticket.context.v1` + `rule.ticket.progress.v1` + `rule.ticket.timeline.v1`
+   
+4. **Complete Ticket**: "Ticket is done" or "Ready to close"
+   - Execute Scenario C (Completing Ticket) with validation discipline
+   
+5. **User Claims Work Complete**: "Done", "Finished", "Complete"
+   - **STOP - Execute Scenario D (Completion Discipline) BEFORE accepting**
+   
+6. **Create/Update Plan**: "Create plan" or "Update plan"
+   - Apply `rule.ticket.plan.v1` + `rule.ticket.complexity-assessment.v1`
+   
+7. **Root Cause Analysis**: "Create RCA" or "Analyze defect"
+   - Apply `rule.ticket.rca.v1`
+
+### Step 2: Lifecycle Phase Detection
+
+Detect current phase to determine applicable rules:
+
+**Phase 1: Ticket Initialization**
+- Files exist: None or partial
+- Apply: `rule.ticket.workflow.v1` - `rule.ticket.plan.v1` - `rule.ticket.complexity-assessment.v1` - `rule.ticket.context.v1`
+
+**Phase 2: Active Work**
+- Files exist: plan.md, context.md
+- Apply: `rule.ticket.progress.v1` + `rule.ticket.timeline.v1` (continuous)
+- Apply: `rule.ticket.context.v1` (updates)
+
+**Phase 3: Completion Claim**
+- User says "done" or claims completion
+- Apply: `rule.ticket.completion-discipline.v1` (behavioral check) - `rule.ticket.validation.v1` (comprehensive)
+
+**Phase 4: Ticket Closure**
+- Validation passed
+- Apply: `rule.ticket.recap.v1` - `rule.ticket.rca.v1` (if defect) - `rule.ticket.workflow.v1` (final commit)
+
+**Phase 5: Ticket Switch**
+- User requests context change
+- Apply: `rule.ticket.switching-discipline.v1` - Update `tickets/current.md`
+
+### Step 3: Complexity Assessment Gate
+
+When creating plan.md, **MUST apply complexity assessment**:
+
+**Decision Tree** per `rule.ticket.complexity-assessment.v1`:
+```
+Assess ticket against Simple Fix criteria:
+  - ALL criteria met? - Simple Fix Track
+      - Direct implementation, minimal planning
+  
+  - ANY criterion failed? - Complex Implementation Track
+      - Comprehensive planning required
+```
+
+**Simple Fix Criteria (ALL must be met)**:
+- Single, clear root cause identified
+- Solution affects <=3 files
+- Change impact <=10 lines of actual code
+- Low risk of side effects
+- Solution pattern is well-understood
+
+**Agent Action**:
+- Document complexity assessment in plan.md
+- Adjust planning depth based on track
+- Follow appropriate workflow path
+
+### Step 4: Behavioral Discipline Enforcement
+
+#### Completion Discipline (Critical)
+
+**Trigger**: User says "done", "complete", "finished", or any completion claim
+
+**Agent MUST**:
+1. **STOP immediately** - Do not accept completion claim yet
+2. Apply `rule.ticket.completion-discipline.v1` - Behavioral self-check
+3. Apply `rule.ticket.validation.v1` - ALL 4 validation levels:
+   - Level 1: File existence and structural validation
+   - Level 2: Ticket objectives and requirements fulfilled
+   - Level 3: Production readiness (linting, testing, documentation)
+   - Level 4: Traceability and commit discipline
+4. Document validation evidence in progress.md
+5. **Only then** accept completion and proceed to closure
+
+**Never Accept Without Validation**: This is a **responsible colleague** discipline, not junior developer eagerness.
+
+#### Switching Discipline
+
+**Trigger**: User requests ticket switch or context change
+
+**Agent MUST**:
+1. Apply `rule.ticket.switching-discipline.v1`
+2. Pause current ticket:
+   - Update context.md with PAUSED status and reason
+   - Log switch in progress.md
+   - Commit work-in-progress
+3. Update `tickets/current.md` with new ticket ID
+4. Resume target ticket:
+   - Read context.md for state reconstruction
+   - Log resumption in progress.md
+   - Continue work
+
+**Never Switch Without Logging**: Maintains audit trail and context continuity.
+
+## Common Scenarios
+
+### Scenario A: Starting New Ticket
+
+**User Request**: "Start ticket PROJ-123: Fix payment processing bug"
+
+**Agent Actions** (in order):
+1. Check if `tickets/PROJ-123/` exists
+2. If not, create folder structure
+3. Apply `rule.ticket.plan.v1`:
+   - Create `tickets/PROJ-123/plan.md`
+   - Document objective, description, acceptance criteria
+4. Apply `rule.ticket.complexity-assessment.v1`:
+   - Assess against Simple Fix criteria
+   - Document complexity assessment in plan.md
+   - Determine implementation track
+5. Apply `rule.ticket.context.v1`:
+   - Create `tickets/PROJ-123/context.md`
+   - Initialize with STATUS: ACTIVE, FOCUS: Initial analysis
+6. Apply `rule.ticket.progress.v1`:
+   - Create `tickets/PROJ-123/progress.md`
+   - First entry: Ticket started, plan created
+7. Apply `rule.ticket.timeline.v1`:
+   - Create `tickets/PROJ-123/timeline.md`
+   - First timestamp entry
+8. Update `tickets/current.md` with PROJ-123
+
+### Scenario B: Switching Tickets
+
+**User Request**: "Switch to PROJ-456"
+
+**Agent Actions** (in order):
+1. Apply `rule.ticket.switching-discipline.v1`
+2. Read `tickets/current.md` to identify current ticket (e.g., PROJ-123)
+3. Pause PROJ-123:
+   - Update `tickets/PROJ-123/context.md`:
+     - STATUS: PAUSED
+     - REASON: Switching to PROJ-456
+     - RESUME_POINT: Clear description of where to resume
+   - Append to `tickets/PROJ-123/progress.md`: "Paused work, switching to PROJ-456"
+   - Append to `tickets/PROJ-123/timeline.md`: Timestamp pause
+4. Commit work-in-progress for PROJ-123
+5. Update `tickets/current.md`: PROJ-456
+6. Check if PROJ-456 exists:
+   - If not, execute Scenario A (Starting New Ticket)
+   - If exists, resume:
+7. Resume PROJ-456:
+   - Read `tickets/PROJ-456/context.md` for state
+   - Update STATUS: ACTIVE (if was PAUSED)
+   - Append to `tickets/PROJ-456/progress.md`: "Resumed work from PROJ-123"
+   - Append to `tickets/PROJ-456/timeline.md`: Timestamp resume
+8. Proceed with PROJ-456 work
+
+### Scenario C: Completing Ticket
+
+**User Request**: "PROJ-123 is done"
+
+**Agent Actions** (in order):
+1. **CRITICAL**: Apply `rule.ticket.completion-discipline.v1` - Behavioral self-check
+2. Apply `rule.ticket.validation.v1` - Comprehensive validation:
+   - **Level 1**: File existence (`plan.md`, `context.md`, `progress.md`, `timeline.md` exist and complete)
+   - **Level 2**: Objectives fulfilled (all acceptance criteria in plan.md met)
+   - **Level 3**: Production readiness (no linting errors, tests pass, documentation updated)
+   - **Level 4**: Traceability (commits reference ticket ID, timeline accurate)
+3. Document validation evidence in `tickets/PROJ-123/progress.md`
+4. If validation fails:
+   - **STOP - Do NOT proceed to closure**
+   - Inform user of specific validation failures
+   - Wait for issues to be resolved
+5. If validation passes:
+   - Proceed to closure steps below
+6. Apply `rule.ticket.recap.v1`:
+   - Create `tickets/PROJ-123/recap.md`
+   - Summarize outcomes, learnings, follow-ups
+7. If defect ticket, apply `rule.ticket.rca.v1`:
+   - Create `tickets/PROJ-123/rca.md`
+   - Document root cause, prevention strategies
+8. Apply `rule.ticket.workflow.v1` - Final commit:
+   - Commit message: "PROJ-123: [summary] - Ticket complete"
+   - Include all ticket files
+9. Update `tickets/PROJ-123/context.md`:
+   - STATUS: COMPLETED
+10. Clear `tickets/current.md` (no active ticket)
+
+### Scenario D: User Claims "Done" (Completion Discipline)
+
+**User Says**: "Done" or "Finished" or "Complete"
+
+**Agent Actions** (MANDATORY):
+1. **STOP - Do NOT accept completion yet**
+2. Apply `rule.ticket.completion-discipline.v1`:
+   - Act as responsible colleague, not eager junior
+   - Question: Is this actually complete?
+   - Self-check behavioral discipline
+3. Apply `rule.ticket.validation.v1` - ALL 4 levels (see Scenario C)
+4. If ANY validation fails:
+   - **Inform user specifically what's incomplete**
+   - Example: "Before claiming done, we need to verify all tests pass (Level 3 validation)"
+   - **Do NOT proceed until resolved**
+5. If ALL validations pass:
+   - Proceed to Scenario C (Completing Ticket)
+
+**Never Accept "Done" Without Validation**: This is a core agent discipline.
+
+### Scenario E: Creating Plan
+
+**User Request**: "Create plan for PROJ-789"
+
+**Agent Actions** (in order):
+1. Apply `rule.ticket.plan.v1`:
+   - Create `tickets/PROJ-789/plan.md`
+   - Include sections: Objective, Description, Acceptance Criteria, Approach, Dependencies, Risks
+2. Apply `rule.ticket.complexity-assessment.v1`:
+   - Assess against Simple Fix criteria
+   - Document assessment in plan.md "## Complexity Assessment" section
+   - Determine track: Simple Fix or Complex Implementation
+   - Document justification for assessment
+3. Adjust plan depth based on complexity:
+   - Simple Fix: Lightweight planning
+   - Complex Implementation: Comprehensive planning with phases
+
+### Scenario F: Updating Context During Work
+
+**User Says**: "Update context" or "sync"
+
+**Agent Actions**:
+1. Apply `rule.ticket.context.v1`:
+   - Update `tickets/PROJ-123/context.md`
+   - Refresh FOCUS areas, NEXT STEPS, BLOCKERS
+   - Update STATUS if changed
+2. Apply `rule.ticket.progress.v1`:
+   - Append to `tickets/PROJ-123/progress.md`
+   - Log significant milestones, decisions, findings
+3. Apply `rule.ticket.timeline.v1`:
+   - Append to `tickets/PROJ-123/timeline.md`
+   - Add timestamp entries for session activity
+4. Optional: Apply `rule.ticket.references.v1`:
+   - Update `tickets/PROJ-123/references.md`
+   - Add new file references or conversation links
+
+## Behavioral Guidelines
+
+### Always Do
+
+[X] **Apply completion-discipline BEFORE accepting "done"** - Most critical behavioral rule
+[X] **Apply switching-discipline when changing tickets** - Maintain audit trail
+[X] **Apply complexity-assessment when creating plan** - Determines workflow track
+[X] **Apply validation comprehensively before closure** - All 4 levels mandatory
+[X] **Maintain append-only discipline for progress.md** - Never edit history
+[X] **Update timeline.md with verifiable timestamps** - Session reconstruction capability
+[X] **Reference ticket ID in all commits** - Traceability requirement
+
+### Never Do
+
+[X] **Accept "done" without comprehensive validation** - Violates completion-discipline
+[X] **Switch tickets without logging** - Breaks audit trail
+[X] **Skip complexity assessment** - Risk wrong implementation track
+[X] **Edit progress.md history** - Violates append-only discipline
+[X] **Create plan without acceptance criteria** - Incomplete plan
+[X] **Close ticket without recap.md** - Missing outcome documentation
+[X] **Commit without ticket ID reference** - Breaks traceability
+
+### When Unsure
+
+**If user claim seems premature**:
+- Apply `rule.ticket.completion-discipline.v1` - Behavioral self-check
+- Apply `rule.ticket.validation.v1` - Comprehensive validation
+- If validation fails, explain specifically what's incomplete
+
+**If ticket complexity unclear**:
+- Apply `rule.ticket.complexity-assessment.v1` criteria explicitly
+- Document assessment reasoning in plan.md
+- When in doubt, treat as Complex (better to over-plan than under-plan)
+
+**If switching is unclear**:
+- Apply `rule.ticket.switching-discipline.v1`
+- Log switch explicitly in both tickets
+- Maintain clear audit trail
+
+## Priority Order for Rule Application
+
+When multiple rules could apply, priority order:
+
+1. **Highest Priority**: `rule.ticket.completion-discipline.v1` - When user claims "done"
+2. **High Priority**: `rule.ticket.validation.v1` - Before any closure or completion acceptance
+3. **High Priority**: `rule.ticket.switching-discipline.v1` - When context switch requested
+4. **Medium Priority**: `rule.ticket.workflow.v1` - Overall lifecycle coordination
+5. **Medium Priority**: `rule.ticket.complexity-assessment.v1` - During plan creation
+6. **Medium Priority**: `rule.ticket.plan.v1`, `rule.ticket.context.v1` - Ticket initialization
+7. **Low Priority**: `rule.ticket.progress.v1`, `rule.ticket.timeline.v1` - Continuous updates
+8. **Low Priority**: `rule.ticket.recap.v1`, `rule.ticket.rca.v1` - Closure documentation
+
+**Completion-discipline and validation are highest priority** - Never skip these.
+
+## Integration Points
+
+This agent application rule coordinates with all ticket management rules:
+
+- **rule.ticket.overview.v1**: Provides rule catalog and philosophy
+- **rule.ticket.workflow.v1**: Orchestrates overall lifecycle
+- **rule.ticket.plan.v1**: Applied at ticket initialization
+- **rule.ticket.context.v1**: Applied for state tracking
+- **rule.ticket.progress.v1**: Applied for chronological logging
+- **rule.ticket.timeline.v1**: Applied for timestamp tracking
+- **rule.ticket.recap.v1**: Applied at closure
+- **rule.ticket.rca.v1**: Applied for defect analysis
+- **rule.ticket.validation.v1**: Applied before completion (mandatory)
+- **rule.ticket.completion-discipline.v1**: Applied on completion claims (mandatory)
+- **rule.ticket.complexity-assessment.v1**: Applied during planning (mandatory)
+- **rule.ticket.switching-discipline.v1**: Applied on context switches (mandatory)
+
+## Failure Modes and Recovery
+
+**Failure**: Agent accepts "done" without validation
+- **Detection**: User says "done", agent proceeds to closure without validation steps
+- **Recovery**: STOP, apply completion-discipline + validation, document evidence
+- **Prevention**: This agent-application rule enforces completion-discipline as highest priority
+
+**Failure**: Agent switches tickets without logging
+- **Detection**: Ticket switch occurs but no progress.md entries or context.md updates
+- **Recovery**: Retroactively log switch in both tickets, update context.md
+- **Prevention**: Always apply switching-discipline when user requests switch
+
+**Failure**: Agent creates plan without complexity assessment
+- **Detection**: plan.md exists but no "Complexity Assessment" section
+- **Recovery**: Add complexity assessment section, document track determination
+- **Prevention**: Complexity-assessment is mandatory part of plan creation
+
+**Failure**: Agent edits progress.md history (violates append-only)
+- **Detection**: Git history shows modification of existing progress.md lines
+- **Recovery**: Revert edit, add correction as new append entry
+- **Prevention**: Always append, never edit in progress.md
+
+## OPSEC and Leak Control
+
+This agent application rule enforces OPSEC across all ticket files:
+- **NO** confidential customer data or business-sensitive examples in tickets
+- **NO** passwords, tokens, API keys, or credentials in ticket documentation
+- **NO** internal server names, IP addresses, or infrastructure details
+- **NO** employee names or email addresses (except provenance)
+
+**Agent must validate** OPSEC compliance before any ticket file commit.
+
+## Related Rules
+
+- **rule.ticket.overview.v1**: Complete ticket rule framework
+- **rule.technical-specifications.agent-application.v1**: Sister agent rule for spec documentation
+- **rule.authoring.contracts-and-scope.v1**: Defines globs/governs intent
+
+## FINAL MUST-PASS CHECKLIST
+
+Before claiming ticket task complete:
+
+- [ ] Completion-discipline applied if user claimed "done"
+- [ ] Comprehensive validation performed (all 4 levels) before closure
+- [ ] Switching-discipline applied if ticket switch occurred
+- [ ] Complexity-assessment documented in plan.md
+- [ ] progress.md maintained as append-only (no history edits)
+- [ ] timeline.md has verifiable timestamps
+- [ ] All commits reference ticket ID
+- [ ] OPSEC clean (no credentials, confidential data, server names, emails)
+- [ ] Ticket files exist per lifecycle phase (plan, context, progress, timeline minimum)

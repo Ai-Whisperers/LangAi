@@ -1,0 +1,549 @@
+---
+id: rule.migration.spec-create.v1
+kind: rule
+version: 1.0.1
+description: "Transforms collected C++ system data into comprehensive, migration-ready technical specifications. Creates modular documentation with domain objects, enumerations, business rules, and integration specs. Enables C# implementation teams to work effectively."
+globs: docs/migration/phase-1/**/*.md, docs/technical/**/*.md, .cursor/rules/technical-specifications/**/*.mdc
+governs: docs/technical/**/*.md
+implements: migration.spec-create
+requires:
+  - rule.migration.overview.v1
+  - rule.migration.data-collection.v1
+  - rule.technical-spec.domain-overview.v1
+  - rule.technical-spec.entity-relationship.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Migration Phase 2: Technical Specifications Creation
+
+## Purpose & Scope
+
+This rule defines how to transform collected C++ system data into comprehensive, migration-ready technical specifications that enable C# implementation. Phase 2 converts raw Phase 1 findings into structured, modular documentation that development teams can directly use to build the target C# microservices while preserving 100% business logic fidelity.
+
+**Applies to**:
+- C++ to C# migration projects with completed Phase 1 data collection
+- Creation of technical specifications for implementation teams
+- Systems requiring modular, maintainable documentation
+- Projects following Domain-Driven Design principles
+
+**Does not apply to**:
+- Data collection activities (covered by Phase 1 rule)
+- Specification review process (covered by Phase 2b rule)
+- Implementation planning (covered by Phase 3 rule)
+- Direct C# code generation or implementation
+- Systems with pre-existing verified specifications
+
+## Inputs (Contract)
+
+- Complete Phase 1 data collection findings with sign-off and quality gate passed
+- Phase 1 source code analysis with file:line references for all components
+- Phase 1 business rule catalog with algorithms and formulas
+- Phase 1 integration point inventory with external interfaces
+- Phase 1 external interface catalog including script functions and APIs
+- Access to Phase 1 analysts for clarification of findings
+- Technical specification templates and patterns from `docs/technical/` reference
+- Documentation directory structure: `docs/technical/[domain]/`
+
+## Outputs (Contract)
+
+- Complete technical specification suite organized by domain/module
+- Domain overview files with architecture, entity hierarchies, and navigation
+- Entity relationship documentation with Mermaid ERDs and constraints
+- Domain object specifications with complete field definitions and business meanings
+- Enumeration files with all values, numeric mappings, and usage context
+- Business rules documentation with algorithms, validation logic, and decision criteria
+- Integration points specifications with API contracts, data flows, and automation interfaces
+- Performance documentation with caching requirements and optimization strategies
+- All specifications include provenance footers with Phase 1 source references
+- Cross-reference index linking all specification files
+- Phase 2 quality gate report with completeness validation
+
+## Specification Creation Strategy
+
+### **Modular Documentation Approach**
+- **Principle**: Each functional area gets dedicated specification files
+- **Benefits**:
+  - Easier maintenance and updates
+  - Clear separation of concerns
+  - Parallel development support
+  - Focused technical reviews
+- **Structure**: Follow proven patterns from `docs/technical/forecasts/` as reference model
+
+### **Document Types and Purposes**
+
+#### **Domain Overview File**
+- **Purpose**: Central navigation hub and system architecture overview
+- **Content**: Three-tier entity hierarchy, processing model, business rules summary
+- **Cross-references**: Links to all detailed specification files
+- **Target Audience**: All stakeholders needing system understanding
+
+#### **Entity Relationship Files**
+- **Purpose**: Database schema and entity relationships
+- **Content**: Mermaid ERDs, constraints, foreign keys, performance considerations
+- **Focus**: Data structure and relationships, not implementation details
+- **Target Audience**: Database designers and data architects
+
+#### **Domain Object Files**
+- **Purpose**: Detailed field specifications with business meaning
+- **Content**: Each field's type, purpose, business meaning, constraints, usage
+- **Rule**: One file per major domain object
+- **Sequence**: Create BEFORE enumeration files to establish context
+- **Target Audience**: Developers implementing domain entities
+
+#### **Enumeration Files**
+- **Purpose**: Complete enumeration definitions with numeric values
+- **Content**: All enum values, business applications, usage patterns
+- **Naming**: Include "enum" in filename for clarity
+- **Sequence**: Create AFTER domain object files to understand usage context
+- **Target Audience**: Developers implementing business logic
+
+#### **Business Rules Files**
+- **Purpose**: Complete business logic specifications
+- **Content**: Calculation algorithms, validation rules, decision logic
+- **Focus**: WHAT the system does, not HOW it's implemented
+- **Target Audience**: Business analysts and developers
+
+#### **Integration Points Files**
+- **Purpose**: External system interface specifications including automation interfaces and script functions
+- **Content**: Service contracts, data flows, integration patterns, script functions (DB*), external APIs, automation entry points
+- **Critical**: Must include ALL external interfaces and automation entry points discovered in Phase 1
+- **Target Audience**: Integration architects and API developers
+
+#### **Performance Files**
+- **Purpose**: Performance requirements and optimization strategies
+- **Content**: Caching requirements, performance benchmarks, scalability needs
+- **Target Audience**: Performance engineers and architects
+
+### **Index File Strategy**
+- **Purpose**: Each module needs an index/README file
+- **Content**: 
+  - System overview and purpose
+  - Navigation to all component files
+  - Reading paths for different audiences
+  - Getting started guidance
+- **References**: Extensive cross-referencing to avoid duplication
+
+### **Specification Creation Sequence**
+
+#### **Recommended Creation Order**
+1. **Domain Overview**: System architecture and entity relationships
+2. **Entity Relationships**: Database schema and relationship diagrams  
+3. **Domain Objects**: Detailed entity specifications with all fields
+4. **Enumerations**: Extract enums referenced by domain objects (with usage context)
+5. **Business Rules**: Algorithms and validation logic using the defined entities
+6. **Integration Points**: External interfaces using the established domain model
+7. **Performance**: Optimization requirements for the documented system
+
+#### **Sequence Rationale**
+- **Domain Objects First**: Establishes context for enumeration usage
+- **Enumerations Second**: Better understanding of business meaning after domain context
+- **Dependencies**: Later files can reference earlier ones with full context
+- **Reviews**: Stakeholders can validate incrementally with proper context
+
+#### **Enumeration Extraction Guidelines**
+- **Context-Driven**: Extract enumerations while analyzing domain objects that use them
+- **Usage Documentation**: Document how each enumeration is used within domain objects
+- **Business Meaning**: Enumeration values make more sense after understanding domain context
+- **Cross-References**: Link enumerations back to the domain objects that reference them
+
+## Content Creation Rules
+
+### **"WHAT" vs "HOW" Principle**
+- **Focus on WHAT**: Business requirements, current behavior, data structures
+- **Avoid HOW**: Implementation details, C++ code snippets, technical internals
+- **Exception**: HOW details only when essential for business logic understanding
+
+### **Accuracy Standards**
+- All content must be traceable to Phase 1 findings
+- No fabricated or assumed information
+- Clear source references for all technical claims
+- Distinguish between current state and migration requirements
+
+### **Reference-Driven Writing**
+- Use extensive cross-referencing between files
+- Keep individual files focused and concise
+- Link to related concepts in other files
+- Create clear reading paths for different use cases
+
+### **Business Context**
+- Each technical element must include business meaning
+- Explain WHY things exist, not just WHAT they are
+- Provide usage examples and business applications
+- Connect technical details to business outcomes
+
+## Document Quality Standards
+
+### **Structure Requirements**
+- Consistent heading hierarchy across all files
+- Clear purpose statement for each document
+- Executive summary for complex topics
+- Logical flow from overview to details
+
+### **Content Standards**
+- Complete coverage of all Phase 1 findings
+- No gaps in business logic documentation
+- Comprehensive field and parameter documentation
+- Clear constraint and validation specifications
+
+### **Cross-Reference Standards**
+- All related concepts linked between files
+- Consistent terminology across all documents
+- Clear navigation paths for different audiences
+- No orphaned or unreferenced content
+
+## Review and Validation Process
+
+### **Technical Accuracy Review**
+- All specifications validated against Phase 1 findings
+- Technical stakeholders verify completeness
+- Domain experts confirm business rule accuracy
+- Integration teams validate interface specifications
+
+### **Implementation Readiness Review**
+- Development teams assess implementability
+- Architecture teams review for consistency
+- Missing information identified and addressed
+- Implementation risks assessed and documented
+
+### **Documentation Quality Review**
+- Consistent formatting and structure
+- Clear and accessible language
+- Complete cross-referencing
+- Logical organization and flow
+
+## Success Criteria
+
+### **Completeness Indicators**
+- All Phase 1 findings translated to specifications
+- All domain objects completely specified BEFORE enumeration extraction
+- All enumerations extracted WITH usage context from domain objects  
+- All business rules documented and verified
+- All integration points specified
+- **All external interfaces and script functions documented**
+- **All automation entry points and API surfaces specified**
+- All performance requirements defined
+
+### **Quality Indicators**  
+- Development team can implement from specifications alone
+- No ambiguity in business rule definitions
+- Clear implementation guidance provided
+- All stakeholder questions answerable from documentation
+
+### **Maintainability Indicators**
+- Modular structure supports future updates
+- Cross-references enable efficient navigation
+- Consistent patterns across all files
+- Clear ownership and maintenance responsibilities
+
+## Handoff to Phase 2b
+
+### **Deliverables**
+- Complete specification suite with all document types
+- Cross-reference index for easy navigation
+- Initial technical review readiness assessment
+
+### **Quality Gates**
+- All Phase 1 findings translated to specifications
+- All business logic captured with source references
+- All technical requirements specified
+- All integration needs documented including external interfaces
+- All performance criteria established
+
+## Deterministic Steps
+
+Execute Phase 2 specification creation in this sequence:
+
+1. **Prepare Specification Environment**
+   - Verify Phase 1 quality gate passed with all sign-offs
+   - Review all Phase 1 findings for completeness
+   - Set up documentation directories: `docs/technical/[domain]/`
+   - Load technical specification templates and exemplars
+   - Identify domain boundaries and module structure
+
+2. **Create Domain Overview Files**
+   - Apply `rule.technical-spec.domain-overview.v1`
+   - Document three-tier entity hierarchies
+   - Create system architecture overview
+   - Establish navigation structure with links to detailed specs
+   - Include business context and processing models
+
+3. **Create Entity Relationship Documentation**
+   - Apply `rule.technical-spec.entity-relationship.v1`
+   - Build Mermaid ERD diagrams from Phase 1 database findings
+   - Document all constraints, foreign keys, and relationships
+   - Include cardinality and referential integrity rules
+   - Add performance considerations for data access
+
+4. **Create Domain Object Specifications**
+   - Apply `rule.technical-spec.domain-object.v1`
+   - Document each major entity with complete field specifications
+   - Include field types, purposes, business meanings, and constraints
+   - Add usage patterns and examples
+   - Create BEFORE enumeration files to establish context
+
+5. **Create Enumeration Specifications**
+   - Apply `rule.technical-spec.enumeration.v1`
+   - Extract enumerations WITH usage context from domain objects
+   - Document all enum values with exact numeric mappings from C++ source
+   - Include business meanings and application patterns
+   - Cross-reference back to domain objects that use them
+
+6. **Create Business Rules Documentation**
+   - Apply `rule.technical-spec.business-rules.v1`
+   - Transform Phase 1 algorithms into specification format
+   - Document calculation formulas with step-by-step logic
+   - Include validation rules, decision criteria, and condition evaluation
+   - Provide examples with input → output scenarios
+
+7. **Create Integration Points Documentation**
+   - Apply `rule.technical-spec.integration-points.v1`
+   - Specify all external interfaces including script functions and APIs
+   - Document API contracts, data formats, and protocols
+   - Include automation entry points and programmatic interfaces
+   - Map integration patterns and dependencies
+
+8. **Create Performance Documentation**
+   - Document caching requirements from Phase 1 analysis
+   - Specify performance benchmarks and targets
+   - Include scalability needs and optimization strategies
+   - Define monitoring and alerting requirements
+
+9. **Establish Cross-References**
+   - Link all related specifications
+   - Create navigation index for domain
+   - Validate all internal references resolve correctly
+   - Ensure consistent terminology across all files
+
+10. **Add Provenance and Traceability**
+    - Include provenance footer in all specification files
+    - Link specifications to Phase 1 source references
+    - Document creation date, author, review status
+    - Add quality gate status indicators
+
+11. **Validate Completeness**
+    - Cross-check all Phase 1 findings are addressed
+    - Verify no fabricated or assumed content
+    - Confirm all external interfaces documented
+    - Validate Phase 2 quality gate criteria
+
+12. **Prepare for Phase 2b Review**
+    - Package complete specification suite
+    - Create review distribution list
+    - Generate completeness report
+    - Schedule stakeholder review sessions
+
+## Formatting Requirements
+
+All Phase 2 specifications must follow these patterns:
+
+### Domain Overview Format
+Use pattern from `docs/technical/forecasts/README.md` as reference exemplar
+
+### Entity Relationship Format
+```markdown
+## Entity Relationship Diagram
+
+\`\`\`mermaid
+erDiagram
+    PARENT ||--o{ CHILD : contains
+\`\`\`
+
+### Relationships
+- **PARENT → CHILD**: [Cardinality and meaning]
+```
+
+### Domain Object Format
+```markdown
+# [Object Name]
+
+## Overview
+[Business purpose]
+
+## Fields
+### [FieldName]
+- **Type**: [Data type]
+- **Purpose**: [Business meaning]
+- **Constraints**: [Validation rules]
+- **Source**: [C++ file:line from Phase 1]
+```
+
+### Enumeration Format
+```markdown
+# [Enum Name]
+
+## Values
+| Value | Numeric | Business Meaning | Usage |
+|-------|---------|------------------|-------|
+| [Name]| [Int]   | [Meaning]        | [Context] |
+
+**Source**: [C++ file:line from Phase 1]
+```
+
+### Business Rule Format
+```markdown
+# [Rule Name]
+
+## Algorithm
+1. [Step 1]
+2. [Step 2]
+
+## Example
+**Input**: [Values]
+**Output**: [Result]
+**Source**: [C++ file:line from Phase 1]
+```
+
+## OPSEC and Leak Control
+
+During Phase 2 specification creation:
+
+- **NO internal file paths** beyond relative project paths
+- **NO developer names** from C++ code comments
+- **NO database credentials** or connection strings
+- **NO internal URLs** or IP addresses
+- **NO customer-specific data** in examples
+- **Redact proprietary identifiers** when creating templates
+- **Use generic names** for sensitive business terms where appropriate
+- **Review all specifications** before distribution for OPSEC compliance
+- **Do NOT copy-paste** from internal system documentation with sensitive context
+
+## Integration Points
+
+Phase 2 integrates with:
+
+- **`rule.migration.overview.v1`**: Follows overall migration process
+- **`rule.migration.data-collection.v1`**: Consumes Phase 1 findings as primary input
+- **`rule.migration.spec-review.v1`**: Provides specifications for Phase 2b review
+- **Technical Specification Rules**:
+  - `rule.technical-spec.domain-overview.v1`
+  - `rule.technical-spec.entity-relationship.v1`
+  - `rule.technical-spec.domain-object.v1`
+  - `rule.technical-spec.enumeration.v1`
+  - `rule.technical-spec.business-rules.v1`
+  - `rule.technical-spec.integration-points.v1`
+- **Documentation Tools**: Markdown editors, Mermaid diagram tools
+- **Version Control**: Git for specification versioning and change tracking
+
+## Failure Modes and Recovery
+
+### Failure Mode 1: Phase 1 Findings Incomplete
+
+**Detection**: Missing information needed for specifications, gaps in Phase 1 data
+
+**Impact**: Cannot create complete specifications, assumptions required, rework needed
+
+**Recovery**:
+1. Document specific gaps with examples of missing information
+2. Return to Phase 1 to collect missing data
+3. Do NOT fabricate or assume - halt specification work for that area
+4. Update Phase 1 findings and re-validate quality gate
+5. Resume Phase 2 once complete information available
+
+**Prevention**: Thorough Phase 1 quality gate validation, early gap identification
+
+### Failure Mode 2: Domain Objects Created After Enumerations
+
+**Detection**: Enumeration specifications lack usage context, unclear business meaning
+
+**Impact**: Poor quality enum documentation, unclear application, rework required
+
+**Recovery**:
+1. Pause enumeration creation immediately
+2. Complete domain object specifications first
+3. Revisit enumeration specifications with proper context
+4. Document enum usage patterns from domain objects
+5. Update cross-references between enums and domain objects
+
+**Prevention**: Follow recommended creation sequence (domain objects before enumerations)
+
+### Failure Mode 3: Specifications Contradict Each Other
+
+**Detection**: Different specifications provide conflicting information
+
+**Impact**: Implementation uncertainty, potential incorrect C# code, stakeholder confusion
+
+**Recovery**:
+1. Document all contradictions with specific references
+2. Trace back to Phase 1 findings for source of truth
+3. Consult subject matter experts to resolve conflicts
+4. Update all affected specifications consistently
+5. Add cross-validation step to prevent future contradictions
+
+**Prevention**: Consistent terminology glossary, regular cross-file validation, single source of truth principle
+
+### Failure Mode 4: External Interfaces Omitted
+
+**Detection**: Phase 2b review or implementation discovers missing API specifications
+
+**Impact**: Incomplete implementation planning, integration delays, rework
+
+**Recovery**:
+1. Return to Phase 1 to document missing interfaces
+2. Create integration point specifications for omitted interfaces
+3. Update domain documentation to reference new interfaces
+4. Re-validate completeness of external interface catalog
+5. Update Phase 2 quality gate report
+
+**Prevention**: Comprehensive external interface checklist from Phase 1, automation API inventory validation
+
+### Failure Mode 5: Specifications Too Implementation-Focused
+
+**Detection**: Specifications describe HOW (C++ implementation) instead of WHAT (business requirements)
+
+**Impact**: C# team constrained by C++ patterns, missed modernization opportunities
+
+**Recovery**:
+1. Review specifications for implementation details vs business logic
+2. Refactor to focus on WHAT system does, not HOW it's currently implemented
+3. Extract business rules from implementation details
+4. Preserve algorithms but abstract implementation specifics
+5. Review with business stakeholders to confirm business intent
+
+**Prevention**: Focus on business meaning during creation, "WHAT not HOW" reviews, business stakeholder involvement
+
+## Provenance Footer Specification
+
+All Phase 2 specification files must include:
+
+```markdown
+---
+**Migration Phase**: 2 - Specification Creation  
+**Generated by**: rule.migration.spec-create.v1  
+**Source System**: [C++ eBase System Name]  
+**Based on Phase 1**: [Phase 1 document references]  
+**Created**: [YYYY-MM-DD]  
+**Last Updated**: [YYYY-MM-DD]  
+**Author**: [Name/Role]  
+**Reviewed by**: [Reviewer Names]  
+**Status**: [Draft | In Review | Approved]  
+**Completeness**: [% estimated]  
+**Quality Gate**: [Not Started | Passed | Failed]
+```
+
+## Related Rules
+
+- `rule.migration.overview.v1` - Overall migration framework
+- `rule.migration.data-collection.v1` - Phase 1 providing inputs
+- `rule.migration.spec-review.v1` - Phase 2b consuming outputs
+- `rule.technical-spec.domain-overview.v1` - Domain documentation pattern
+- `rule.technical-spec.entity-relationship.v1` - ERD documentation pattern
+- `rule.technical-spec.domain-object.v1` - Entity specification pattern
+- `rule.technical-spec.enumeration.v1` - Enumeration documentation pattern
+- `rule.technical-spec.business-rules.v1` - Business logic documentation pattern
+- `rule.technical-spec.integration-points.v1` - Integration documentation pattern
+- `rule.technical-spec.specification-anti-duplication.v1` - Avoiding content duplication
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All Phase 1 findings translated to specifications with source references (no gaps)
+- [ ] Domain objects documented BEFORE enumeration extraction
+- [ ] All enumerations include usage context from domain objects
+- [ ] All external interfaces and automation entry points documented
+- [ ] All specifications follow WHAT (business logic) not HOW (C++ implementation)
+- [ ] No fabricated or assumed content (all traceable to Phase 1)
+- [ ] Cross-references complete between all specification files
+- [ ] OPSEC clean (no credentials, internal paths, developer names, sensitive data)
+- [ ] All specifications include provenance footer with Phase 1 source references
+- [ ] Phase 2 quality gate criteria validated and passed

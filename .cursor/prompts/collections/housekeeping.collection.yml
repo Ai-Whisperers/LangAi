@@ -1,0 +1,42 @@
+id: housekeeping-bundle
+name: "Housekeeping & Maintenance"
+description: "Periodic maintenance prompts for keeping artifacts organized, consistent, and high-quality"
+tags:
+  - housekeeping
+  - maintenance
+  - cleanup
+  - quality
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/housekeeping/extraction/extract-templar-exemplar.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/cleanup/consolidate-duplicates.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/maintenance/update-cross-references.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/cleanup/archive-obsolete-artifacts.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/sync/sync-improvements.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/maintenance/validate-prompt-collections.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/cleanup/find-dead-templars-exemplars.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/discovery/find-condense-candidates.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/discovery/find-script-extraction-candidates.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/extraction/extract-script-templars-exemplars.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/sync/add-support-scripts.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/discovery/find-workflow-candidates.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/discovery/workflow-link-prompt.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/discovery/find-recently-added-prompts.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/discovery/find-prompts-needing-review.prompt.md
+    kind: prompt
+

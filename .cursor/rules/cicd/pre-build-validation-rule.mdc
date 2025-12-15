@@ -1,0 +1,493 @@
+---
+id: rule.cicd.pre-build-validation.v1
+kind: rule
+version: 1.0.0
+description: Defines local validation steps using CI/CD scripts to detect and fix errors before pushing to build pipeline
+globs: **/*.cs, **/*.csproj, **/azure-pipelines.yml
+governs: 
+implements: pre-build-validation
+requires:
+  - rule.cicd.tag-based-versioning.v2
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-devops, last_review: 2025-12-07 }
+alwaysApply: false
+---
+
+# Pre-Build Validation Rule
+
+## Purpose & Scope
+
+Defines systematic local validation steps that mirror CI/CD pipeline checks to detect and fix errors before pushing code. This prevents build failures by catching formatting issues, documentation problems, and code quality violations locally using the same scripts that run in Azure Pipelines.
+
+**Applies to**: All code changes before commit, especially after CI/CD build failures.
+
+**Does not apply to**: Documentation-only changes, configuration files that don't affect build.
+
+## Inputs (Contract)
+
+- Modified code files (*.cs)
+- CI/CD scripts directory (`cicd/scripts/`)
+- Access to `dotnet` CLI
+- Current working directory is repository root
+- Understanding of what CI/CD validation failed (if fixing a build failure)
+
+## Outputs (Contract)
+
+- Validation report showing pass/fail status for each check
+- List of errors found with file locations and line numbers
+- Recommended fixes for each error type
+- Confirmation that code is ready for commit/push
+- Evidence of validation passing before build trigger
+
+## Deterministic Steps
+
+### Step 1: Identify What Failed in CI/CD (If Fixing Build Failure)
+
+**From Azure Pipelines error output, identify the stage:**
+
+1. **"Verify Code Formatting" failure** → Run `dotnet format` validation
+2. **"Validate Documentation" failure** → Run documentation validation
+3. **"Security Scan" failure** → Run vulnerability check
+4. **"Coverage Analysis" failure** → Run tests with coverage
+5. **Build errors** → Run `dotnet build` with warnings as errors
+
+**Common Error Patterns:**
+
+```
+IDE1006: Naming rule violation: Missing prefix: '_'
+→ Private fields need underscore prefix
+
+CS1591: Missing XML comment for publicly visible type or member
+→ Public APIs need XML documentation
+
+High severity vulnerability detected
+→ Package dependencies need updating
+```
+
+### Step 2: Run Code Formatting Validation
+
+**Purpose**: Catch naming conventions, style violations, formatting issues
+
+**Command**:
+```powershell
+dotnet format --verify-no-changes --severity warn
+```
+
+**What it checks**:
+- ✅ Naming conventions (private fields with `_` prefix)
+- ✅ Code style rules from `.editorconfig`
+- ✅ Consistent formatting (braces, spacing, indentation)
+- ✅ Analyzer warnings configured to error level
+
+**Exit Codes**:
+- `0` = All formatting correct, no changes needed
+- `2` = Formatting violations found
+
+**If failures found**:
+```powershell
+# See what would be changed
+dotnet format --verbosity diagnostic
+
+# Apply fixes automatically
+dotnet format
+
+# Verify fixes applied
+dotnet format --verify-no-changes --severity warn
+```
+
+**Common Fixes**:
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `IDE1006: Missing prefix: '_'` | Private field without underscore | Rename `fieldName` → `_fieldName` |
+| `IDE0005: Using directive unnecessary` | Unused imports | Remove unused `using` statements |
+| `IDE0055: Fix formatting` | Inconsistent formatting | Run `dotnet format` |
+
+### Step 3: Run Documentation Validation
+
+**Purpose**: Ensure XML documentation completeness before build
+
+**Script**: `cicd/scripts/validate-documentation.ps1`
+
+**Command**:
+```powershell
+cd e:\WPG\Git\E21\GitRepos\eneve.domain
+.\cicd\scripts\validate-documentation.ps1 -Configuration Release
+```
+
+**What it checks**:
+- ✅ XML documentation files generated
+- ✅ No CS1591 warnings (missing XML comments)
+- ✅ Public APIs documented
+- ✅ Parameters documented
+
+**Exit Codes**:
+- `0` = All documentation complete
+- `1` = Documentation warnings found
+
+**If failures found**:
+1. Review specific CS1591 warnings in output
+2. Add missing XML documentation to flagged members
+3. Re-run validation script
+4. Verify all warnings resolved
+
+**Example Fix**:
+
+```csharp
+// ❌ Before - Missing documentation
+private static readonly EntityKey TestId = new EntityKey(1);
+
+// ✅ After - Properly documented and named
+private static readonly EntityKey _testId = new EntityKey(1);
+```
+
+### Step 4: Run Build with Warnings as Errors
+
+**Purpose**: Catch compilation issues and enforced warnings
+
+**Command**:
+```powershell
+dotnet build --configuration Release /p:TreatWarningsAsErrors=true
+```
+
+**What it checks**:
+- ✅ Code compiles without errors
+- ✅ No analyzer warnings
+- ✅ All dependencies resolve
+- ✅ Project references valid
+
+**Exit Codes**:
+- `0` = Build successful
+- Non-zero = Build failed
+
+**If failures found**:
+1. Read error messages carefully
+2. Fix compilation errors first
+3. Fix analyzer warnings second
+4. Re-run build
+5. Verify clean build
+
+### Step 5: Run Unit Tests with Coverage
+
+**Purpose**: Ensure tests pass and coverage meets thresholds
+
+**Command**:
+```powershell
+dotnet test --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
+```
+
+**What it checks**:
+- ✅ All tests pass
+- ✅ No test failures
+- ✅ Coverage data collected
+
+**Exit Codes**:
+- `0` = All tests passed
+- Non-zero = Test failures
+
+**Coverage Analysis** (Optional):
+```powershell
+# Install ReportGenerator if not already installed
+dotnet tool install --global dotnet-reportgenerator-globaltool
+
+# Generate coverage report
+reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"CoverageReport" -reporttypes:Html
+
+# Open report
+start CoverageReport/index.html
+```
+
+### Step 6: Run Security Vulnerability Scan
+
+**Purpose**: Catch vulnerable package dependencies
+
+**Command**:
+```powershell
+dotnet restore
+dotnet list package --vulnerable --include-transitive
+```
+
+**What it checks**:
+- ✅ Known vulnerabilities in direct dependencies
+- ✅ Known vulnerabilities in transitive dependencies
+- ✅ Severity levels (Critical, High, Moderate, Low)
+
+**Exit Codes**:
+- `0` = No vulnerabilities found
+- Non-zero = Vulnerabilities detected
+
+**If Critical/High found**:
+1. Update affected packages to patched versions
+2. Review breaking changes in new versions
+3. Test thoroughly after updates
+4. Re-run vulnerability scan
+5. Verify no Critical/High remain
+
+### Step 7: Verify XML Files Generated
+
+**Purpose**: Ensure documentation generation is enabled
+
+**Script**: `cicd/scripts/verify-xml-files.ps1`
+
+**Command**:
+```powershell
+.\cicd\scripts\verify-xml-files.ps1 -Configuration Release
+```
+
+**What it checks**:
+- ✅ XML documentation files exist in bin/ output
+- ✅ XML files are not empty
+- ✅ All source projects have corresponding XML files
+
+**If failures found**:
+1. Check `.csproj` for `<GenerateDocumentationFile>true</GenerateDocumentationFile>`
+2. Rebuild project: `dotnet build --configuration Release`
+3. Re-run verification script
+4. Verify XML files now present
+
+## Formatting Requirements
+
+### Validation Execution Order
+
+**Critical Path** (Run these always):
+1. Code Formatting (`dotnet format`)
+2. Build (`dotnet build`)
+3. Tests (`dotnet test`)
+
+**Documentation Path** (Run before commits):
+4. Documentation Validation (`validate-documentation.ps1`)
+5. XML Files Verification (`verify-xml-files.ps1`)
+
+**Security Path** (Run before releases):
+6. Vulnerability Scan (`dotnet list package --vulnerable`)
+
+### Validation Report Format
+
+```markdown
+# Pre-Build Validation Report
+
+**Repository**: [repo name]
+**Date**: [YYYY-MM-DD HH:MM]
+**Validation Type**: [Full | Quick | Post-Failure]
+
+## Results
+
+### Code Formatting
+Status: [PASS | FAIL]
+Command: `dotnet format --verify-no-changes --severity warn`
+Exit Code: [0 | 2]
+Errors Found: [count]
+[Details if failed]
+
+### Documentation
+Status: [PASS | FAIL]
+Command: `.\cicd\scripts\validate-documentation.ps1`
+Exit Code: [0 | 1]
+Projects with Issues: [count]
+[Details if failed]
+
+### Build
+Status: [PASS | FAIL]
+Command: `dotnet build --configuration Release /p:TreatWarningsAsErrors=true`
+Exit Code: [0 | N]
+[Errors if failed]
+
+### Unit Tests
+Status: [PASS | FAIL]
+Command: `dotnet test --configuration Release`
+Exit Code: [0 | N]
+Failed Tests: [count]
+
+### Security Scan
+Status: [PASS | FAIL]
+Command: `dotnet list package --vulnerable`
+Critical/High: [count]
+[Details if found]
+
+## Ready for Commit?
+
+- [PASS] All validations passed - Safe to commit and push
+- [FAIL] Fix errors above before committing
+```
+
+## Quick Validation Commands
+
+### Full Validation (Before Important Commits)
+
+```powershell
+# Navigate to repository root
+cd e:\WPG\Git\E21\GitRepos\eneve.domain
+
+# Run all validations
+dotnet format --verify-no-changes --severity warn
+if ($LASTEXITCODE -ne 0) { Write-Host "Format check FAILED" -ForegroundColor Red; exit 1 }
+
+.\cicd\scripts\validate-documentation.ps1 -Configuration Release
+if ($LASTEXITCODE -ne 0) { Write-Host "Documentation check FAILED" -ForegroundColor Red; exit 1 }
+
+dotnet build --configuration Release /p:TreatWarningsAsErrors=true
+if ($LASTEXITCODE -ne 0) { Write-Host "Build FAILED" -ForegroundColor Red; exit 1 }
+
+dotnet test --configuration Release
+if ($LASTEXITCODE -ne 0) { Write-Host "Tests FAILED" -ForegroundColor Red; exit 1 }
+
+Write-Host "All validations PASSED - Ready to commit!" -ForegroundColor Green
+```
+
+### Quick Validation (After Fixing Specific Issue)
+
+**After fixing formatting issue:**
+```powershell
+dotnet format --verify-no-changes --severity warn
+```
+
+**After adding documentation:**
+```powershell
+.\cicd\scripts\validate-documentation.ps1 -Configuration Release
+```
+
+**After fixing build error:**
+```powershell
+dotnet build --configuration Release /p:TreatWarningsAsErrors=true
+```
+
+### Post-Failure Validation (After CI/CD Failure)
+
+**Sequence**:
+1. Pull CI/CD error log from Azure Pipelines
+2. Identify failing stage (Verify Code Formatting, Documentation, Security, etc.)
+3. Run corresponding local validation command
+4. Fix errors locally
+5. Re-run validation to confirm fixed
+6. Commit and push
+7. Monitor pipeline to confirm success
+
+## OPSEC and Leak Control
+
+When running validation locally:
+- ✅ All scripts run from repository root (no absolute paths needed)
+- ✅ Output contains only relative paths
+- ✅ No credentials required for local validation
+- ✅ No network calls for core validations (format, build, test)
+
+## Integration Points
+
+**Syncs with**:
+- Azure Pipelines `Verify Code Formatting` task → `dotnet format`
+- Azure Pipelines `Validate Documentation` task → `validate-documentation.ps1`
+- Azure Pipelines `Security Scan` stage → `dotnet list package --vulnerable`
+- Azure Pipelines `Build` stage → `dotnet build`
+- Azure Pipelines `Test` stage → `dotnet test`
+
+**Coordinates with**:
+- `rule.cicd.tag-based-versioning.v2` - Pipeline architecture
+- `rule.documentation.documentation-standards.v1` - Documentation requirements
+- `rule.ticket.validation-before-completion.v1` - Pre-commit validation discipline
+
+## Failure Modes and Recovery
+
+### Failure Mode 1: Format Validation Fails
+
+**Detection**: 
+```
+error IDE1006: Naming rule violation: Missing prefix: '_'
+```
+
+**Root Cause**: Private field without underscore prefix
+
+**Recovery**:
+1. Run `dotnet format` to auto-fix
+2. OR manually rename field (e.g., `TestId` → `_testId`)
+3. Update all references to the field
+4. Re-run `dotnet format --verify-no-changes`
+5. Verify exit code 0
+
+**Prevention**: Run `dotnet format` before every commit
+
+### Failure Mode 2: Documentation Validation Fails
+
+**Detection**:
+```
+warning CS1591: Missing XML comment for publicly visible type or member
+```
+
+**Root Cause**: Public API without XML documentation
+
+**Recovery**:
+1. Add XML comments to flagged members
+2. Use AI: "Add XML documentation to [ClassName] following our standards"
+3. Re-run `.\cicd\scripts\validate-documentation.ps1`
+4. Verify exit code 0
+
+**Prevention**: Enable documentation generation warnings in IDE
+
+### Failure Mode 3: Build Fails with Warnings as Errors
+
+**Detection**:
+```
+error CS0618: 'SomeMethod' is obsolete
+```
+
+**Root Cause**: Using deprecated APIs or analyzer rules violated
+
+**Recovery**:
+1. Fix the specific warning (update to new API, fix analyzer issue)
+2. Re-run build
+3. Verify clean build
+
+**Prevention**: Keep dependencies updated, follow analyzer suggestions
+
+### Failure Mode 4: Tests Fail Locally But Passed Before
+
+**Detection**: Tests that passed before now fail
+
+**Root Cause**: Recent code changes broke functionality
+
+**Recovery**:
+1. Read test failure messages
+2. Debug failing tests
+3. Fix code or update tests (if requirements changed)
+4. Re-run tests
+5. Verify all pass
+
+**Prevention**: Run tests after every logical change
+
+### Failure Mode 5: Security Vulnerabilities Detected
+
+**Detection**:
+```
+Critical severity vulnerability detected in Package.Name
+```
+
+**Root Cause**: Dependent package has known vulnerability
+
+**Recovery**:
+1. Update package to patched version
+2. Test for breaking changes
+3. Re-run vulnerability scan
+4. Verify no Critical/High remain
+
+**Prevention**: Regular dependency updates, enable Dependabot
+
+## Related Rules
+
+- `rule.cicd.tag-based-versioning.v2` - Pipeline architecture and stages
+- `rule.documentation.documentation-standards.v1` - Documentation requirements
+- `rule.ticket.validation-before-completion.v1` - General validation discipline
+- `rule.development-commit-message` - Commit standards
+
+## Related Prompts
+
+- `.cursor/prompts/git/pre-commit-validation.md` - Interactive validation prompt with 3 levels
+- `.cursor/prompts/ticket/validate-completion.md` - Completion validation checklist
+- `.cursor/prompts/git/prepare-commit.md` - Commit message preparation
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] `dotnet format --verify-no-changes` exits with code 0 (no formatting violations)
+- [ ] Documentation validation script exits with code 0 (all public APIs documented)
+- [ ] `dotnet build` with TreatWarningsAsErrors=true exits with code 0 (clean build)
+- [ ] `dotnet test` exits with code 0 (all tests pass)
+- [ ] All validation commands run from repository root (correct working directory)
+- [ ] Validation results documented before commit (if fixing build failure)
+- [ ] Same scripts/commands used locally as in CI/CD pipeline (consistency guaranteed)

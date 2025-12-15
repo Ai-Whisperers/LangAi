@@ -1,0 +1,733 @@
+---
+id: rule.git.branch-protection.v1
+kind: rule
+version: 1.0.0
+description: Defines branch protection rules, CI/CD integration patterns, and automation requirements for enforcing branching strategy through tooling.
+globs: ""
+governs: ""
+implements: git.branch-protection
+requires:
+  - rule.git.branch-structure.v1
+  - rule.git.branch-naming.v1
+  - rule.git.branch-lifecycle.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-platform, last_review: 2025-11-22 }
+alwaysApply: false
+---
+
+# Git Branch Protection Rule
+
+## Purpose
+
+This rule defines branch protection settings, CI/CD pipeline integration, and automation patterns to enforce the branching strategy through tooling rather than relying solely on developer discipline.
+
+## Branch Protection Requirements
+
+### Primary Branches Protection
+
+#### `main` Branch Protection
+
+**Critical Protection** (REQUIRED):
+
+| Setting | Value | Rationale |
+|---------|-------|-----------|
+| Require pull request before merging | ✓ Yes | Enforce code review and testing |
+| Required approvals | ≥ 1 | Minimum one reviewer |
+| Dismiss stale reviews on new push | ✓ Yes | Ensure reviews are current |
+| Require status checks | ✓ Yes | CI must pass |
+| Require branches up-to-date | ✓ Yes | Prevent outdated merges |
+| Include administrators | ✓ Yes | No exceptions for safety |
+| Allow force pushes | ✗ No | Preserve history |
+| Allow deletions | ✗ No | Permanent branch |
+| Require linear history | Optional | Team preference |
+| Require signed commits | Recommended | Enhanced security |
+
+**Status Checks Required**:
+- Build successful
+- All tests pass
+- Linting passes
+- Security scan passes
+- Code coverage meets threshold (optional)
+
+#### `develop` Branch Protection
+
+**Standard Protection** (REQUIRED):
+
+| Setting | Value | Rationale |
+|---------|-------|-----------|
+| Require pull request before merging | ✓ Yes | Enforce code review |
+| Required approvals | ≥ 1 | Minimum one reviewer |
+| Dismiss stale reviews on new push | ✓ Yes | Ensure reviews are current |
+| Require status checks | ✓ Yes | CI must pass |
+| Require branches up-to-date | ✓ Yes | Prevent outdated merges |
+| Include administrators | Recommended | Consistency |
+| Allow force pushes | ✗ No | Preserve history |
+| Allow deletions | ✗ No | Permanent branch |
+| Require linear history | Optional | Team preference |
+
+**Status Checks Required**:
+- Build successful
+- All tests pass
+- Linting passes
+
+### Supporting Branches Protection
+
+#### `release/*` Branches
+
+**Controlled Protection** (RECOMMENDED):
+
+| Setting | Value | Rationale |
+|---------|-------|-----------|
+| Require pull request before merging | Recommended | Review release changes |
+| Required approvals | ≥ 1 | Quality gate |
+| Require status checks | ✓ Yes | Stability critical |
+| Allow force pushes | ✗ No | Preserve release history |
+| Allow deletions | Caution | Only when version EOL |
+
+**Status Checks Required**:
+- Build successful
+- All tests pass
+- Integration tests pass
+- Linting passes
+- Security scan passes
+
+#### `rc/*` Branches
+
+**Testing Protection** (RECOMMENDED):
+
+| Setting | Value | Rationale |
+|---------|-------|-----------|
+| Require pull request before merging | Recommended | Final review |
+| Required approvals | ≥ 1 | Sign-off required |
+| Require status checks | ✓ Yes | Pre-production validation |
+| Allow force pushes | ✗ No | Preserve test history |
+| Allow deletions | ✓ Yes | Temporary branch |
+
+**Status Checks Required**:
+- Build successful
+- All tests pass
+- Integration tests pass
+- Performance tests pass (if applicable)
+
+#### `feature/*`, `fix/*`, `hotfix/*` Branches
+
+**Minimal Protection** (OPTIONAL):
+
+| Setting | Value | Rationale |
+|---------|-------|-----------|
+| Require pull request before merging | Optional | Team preference |
+| Require status checks | Recommended | Catch issues early |
+| Allow force pushes | ✓ Yes | Allow rewriting feature history |
+| Allow deletions | ✓ Yes | Cleanup after merge |
+
+**Status Checks Recommended**:
+- Build successful
+- Tests pass
+
+## CI/CD Pipeline Integration
+
+### Branch-Based Pipeline Triggers
+
+#### GitLab CI/CD Configuration
+
+`.gitlab-ci.yml`:
+
+```yaml
+# Define stages
+stages:
+  - validate
+  - build
+  - test
+  - security
+  - deploy
+
+# Branch name validation
+validate-branch-name:
+  stage: validate
+  script:
+    - |
+      if [[ "$CI_COMMIT_REF_NAME" == "main" ]] || [[ "$CI_COMMIT_REF_NAME" == "develop" ]]; then
+        echo "✓ Primary branch"
+        exit 0
+      fi
+      
+      if [[ $CI_COMMIT_REF_NAME =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
+         [[ $CI_COMMIT_REF_NAME =~ ^release/[0-9]+\.[0-9]+$ ]] || \
+         [[ $CI_COMMIT_REF_NAME =~ ^rc/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "✓ Valid branch name: $CI_COMMIT_REF_NAME"
+        exit 0
+      else
+        echo "✗ Invalid branch name: $CI_COMMIT_REF_NAME"
+        echo "See CONTRIBUTING.md for branching strategy"
+        exit 1
+      fi
+  only:
+    - branches
+  except:
+    - main
+    - develop
+
+# Build job
+build:
+  stage: build
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 hour
+  only:
+    - branches
+    - merge_requests
+
+# Test job
+test:
+  stage: test
+  script:
+    - npm ci
+    - npm run test:ci
+  coverage: '/^Statements\s+:\s+([^%]+)%/'
+  artifacts:
+    reports:
+      junit: junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+  only:
+    - branches
+    - merge_requests
+
+# Security scan
+security-scan:
+  stage: security
+  script:
+    - npm audit --audit-level=moderate
+    - npm run security-scan
+  only:
+    - main
+    - develop
+    - /^release\/.*/
+    - /^rc\/.*/
+    - /^hotfix\/.*/
+  allow_failure: false
+
+# Deploy to staging (from release or rc branches)
+deploy-staging:
+  stage: deploy
+  script:
+    - echo "Deploying to staging environment"
+    - npm run deploy:staging
+  environment:
+    name: staging
+    url: https://staging.example.com
+  only:
+    - /^release\/.*/
+    - /^rc\/.*/
+  when: manual
+
+# Deploy to production (from main only)
+deploy-production:
+  stage: deploy
+  script:
+    - echo "Deploying to production environment"
+    - npm run deploy:production
+  environment:
+    name: production
+    url: https://example.com
+  only:
+    - main
+  when: manual
+  allow_failure: false
+```
+
+#### GitHub Actions Configuration
+
+`.github/workflows/ci.yml`:
+
+```yaml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  validate-branch-name:
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop'
+    steps:
+      - name: Check branch name
+        run: |
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          
+          if [[ $BRANCH_NAME =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
+             [[ $BRANCH_NAME =~ ^release/[0-9]+\.[0-9]+$ ]] || \
+             [[ $BRANCH_NAME =~ ^rc/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "✓ Valid branch name: $BRANCH_NAME"
+            exit 0
+          else
+            echo "✗ Invalid branch name: $BRANCH_NAME"
+            echo "See CONTRIBUTING.md for branching strategy"
+            exit 1
+          fi
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist/
+          retention-days: 1
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests
+        run: npm run test:ci
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+
+  security-scan:
+    runs-on: ubuntu-latest
+    if: |
+      github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/develop' ||
+      startsWith(github.ref, 'refs/heads/release/') ||
+      startsWith(github.ref, 'refs/heads/rc/') ||
+      startsWith(github.ref, 'refs/heads/hotfix/')
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Security audit
+        run: npm audit --audit-level=moderate
+      
+      - name: Run security scan
+        run: npm run security-scan
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [build, test, security-scan]
+    if: |
+      startsWith(github.ref, 'refs/heads/release/') ||
+      startsWith(github.ref, 'refs/heads/rc/')
+    environment:
+      name: staging
+      url: https://staging.example.com
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist/
+      
+      - name: Deploy to staging
+        run: npm run deploy:staging
+        env:
+          DEPLOY_TOKEN: ${{ secrets.STAGING_DEPLOY_TOKEN }}
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [build, test, security-scan]
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://example.com
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist/
+      
+      - name: Deploy to production
+        run: npm run deploy:production
+        env:
+          DEPLOY_TOKEN: ${{ secrets.PRODUCTION_DEPLOY_TOKEN }}
+```
+
+## Automated Branch Management
+
+### Auto-Delete Merged Branches
+
+**GitLab**: Enable in Settings → Repository → Branch defaults → Auto-delete merged branches
+
+**GitHub**: Enable in Settings → Options → Automatically delete head branches
+
+### Branch Naming Enforcement
+
+#### Git Hook (Pre-push)
+
+Install in `.git/hooks/pre-push`:
+
+```bash
+#!/bin/bash
+
+# Get current branch
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Allow primary branches
+if [[ "$BRANCH" == "main" ]] || [[ "$BRANCH" == "develop" ]]; then
+    exit 0
+fi
+
+# Validate branch name
+if [[ $BRANCH =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
+   [[ $BRANCH =~ ^release/[0-9]+\.[0-9]+$ ]] || \
+   [[ $BRANCH =~ ^rc/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    exit 0
+else
+    echo "ERROR: Invalid branch name: $BRANCH"
+    echo ""
+    echo "Valid patterns:"
+    echo "  feature/PROJECT-123"
+    echo "  fix/PROJECT-123"
+    echo "  hotfix/PROJECT-123"
+    echo "  release/X.Y"
+    echo "  rc/X.Y.Z"
+    echo ""
+    echo "See CONTRIBUTING.md for details"
+    exit 1
+fi
+```
+
+Make executable and distribute:
+
+```bash
+chmod +x .git/hooks/pre-push
+
+# Add to project for team distribution
+mkdir -p .githooks
+cp .git/hooks/pre-push .githooks/pre-push
+
+# Configure Git to use project hooks
+git config core.hooksPath .githooks
+```
+
+### Status Badges
+
+Add to README.md:
+
+**GitLab**:
+```markdown
+[![Pipeline Status](https://gitlab.com/your-org/your-repo/badges/main/pipeline.svg)](https://gitlab.com/your-org/your-repo/-/commits/main)
+[![Coverage](https://gitlab.com/your-org/your-repo/badges/main/coverage.svg)](https://gitlab.com/your-org/your-repo/-/commits/main)
+```
+
+**GitHub**:
+```markdown
+[![CI/CD](https://github.com/your-org/your-repo/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/your-org/your-repo/actions)
+[![codecov](https://codecov.io/gh/your-org/your-repo/branch/main/graph/badge.svg)](https://codecov.io/gh/your-org/your-repo)
+```
+
+## Merge Request/Pull Request Templates
+
+### Merge Request Template
+
+`.gitlab/merge_request_templates/default.md`:
+
+```markdown
+## Description
+
+Jira Ticket: [PROJECT-XXX](https://jira.company.com/browse/PROJECT-XXX)
+
+Brief description of changes.
+
+## Type of Change
+
+- [ ] Feature (feature/PROJECT-XXX)
+- [ ] Bug Fix (fix/PROJECT-XXX)
+- [ ] Hotfix (hotfix/PROJECT-XXX)
+- [ ] Release (release/X.Y)
+
+## Testing
+
+- [ ] Unit tests added/updated
+- [ ] Integration tests added/updated
+- [ ] Manual testing completed
+
+## Checklist
+
+- [ ] Branch name follows naming convention
+- [ ] All tests pass locally
+- [ ] Code follows style guidelines
+- [ ] Commits reference Jira ticket
+- [ ] Documentation updated (if needed)
+- [ ] No merge conflicts
+- [ ] Reviewers assigned
+
+## Target Branch
+
+- [ ] Merging to `develop` (features/fixes)
+- [ ] Merging to `release/X.Y` (release fixes)
+- [ ] Merging to `main` (releases/hotfixes)
+
+## Deployment Notes
+
+Any special deployment considerations or migration steps.
+```
+
+### Pull Request Template
+
+`.github/PULL_REQUEST_TEMPLATE.md`:
+
+```markdown
+## Description
+
+Jira Ticket: [PROJECT-XXX](https://jira.company.com/browse/PROJECT-XXX)
+
+Brief description of changes.
+
+## Type of Change
+
+- [ ] Feature (`feature/PROJECT-XXX`)
+- [ ] Bug Fix (`fix/PROJECT-XXX`)
+- [ ] Hotfix (`hotfix/PROJECT-XXX`)
+- [ ] Release (`release/X.Y`)
+
+## Testing
+
+- [ ] Unit tests added/updated
+- [ ] Integration tests added/updated
+- [ ] Manual testing completed
+- [ ] All CI checks passing
+
+## Checklist
+
+- [ ] Branch name follows naming convention
+- [ ] All tests pass locally
+- [ ] Code follows style guidelines
+- [ ] Commits reference Jira ticket
+- [ ] Documentation updated (if needed)
+- [ ] No merge conflicts
+- [ ] Reviewers assigned
+
+## Screenshots (if applicable)
+
+Add screenshots for UI changes.
+
+## Deployment Notes
+
+Any special deployment considerations or migration steps.
+```
+
+## Jira Integration
+
+### Automated Ticket Updates
+
+**Smart Commits** (GitLab/GitHub + Jira):
+
+```bash
+# Transition ticket to "In Progress" on branch creation
+git commit -m "PROJECT-123 #in-progress Implement feature"
+
+# Add time spent
+git commit -m "PROJECT-123 #time 2h 30m Complete implementation"
+
+# Transition to "Done" and add comment
+git commit -m "PROJECT-123 #done Fixed validation issue"
+```
+
+### Branch Auto-Linking
+
+Configure Jira to automatically link branches:
+
+**Jira Settings**:
+1. Connect Git repository to Jira
+2. Enable branch detection
+3. Configure branch name pattern: `(feature|fix|hotfix)/([A-Z]+-\d+)`
+
+## Automation Scripts
+
+### Create Branch from Ticket
+
+`scripts/create-branch.sh`:
+
+```bash
+#!/bin/bash
+
+# Usage: ./create-branch.sh <type> <ticket>
+# Example: ./create-branch.sh feature EPP-157
+
+TYPE=$1
+TICKET=$2
+
+if [[ ! "$TYPE" =~ ^(feature|fix|hotfix)$ ]]; then
+    echo "Error: Type must be feature, fix, or hotfix"
+    exit 1
+fi
+
+if [[ ! "$TICKET" =~ ^[A-Z]+-[0-9]+$ ]]; then
+    echo "Error: Invalid ticket format (should be PROJECT-123)"
+    exit 1
+fi
+
+BRANCH="$TYPE/$TICKET"
+
+# Determine source branch
+if [[ "$TYPE" == "hotfix" ]]; then
+    SOURCE="main"
+else
+    SOURCE="develop"
+fi
+
+echo "Creating branch: $BRANCH from $SOURCE"
+
+git checkout "$SOURCE"
+git pull origin "$SOURCE"
+git checkout -b "$BRANCH"
+git push -u origin "$BRANCH"
+
+echo "✓ Branch created: $BRANCH"
+echo "✓ Now work on your changes and commit with: git commit -m \"$TICKET: Your message\""
+```
+
+Make executable:
+
+```bash
+chmod +x scripts/create-branch.sh
+```
+
+## Monitoring and Compliance
+
+### Branch Audit Script
+
+`scripts/audit-branches.sh`:
+
+```bash
+#!/bin/bash
+
+echo "=== Branch Audit ==="
+echo ""
+
+# List all remote branches
+BRANCHES=$(git branch -r | grep -v HEAD | sed 's/origin\///')
+
+echo "Analyzing branches..."
+echo ""
+
+VALID=0
+INVALID=0
+
+for BRANCH in $BRANCHES; do
+    # Skip main and develop
+    if [[ "$BRANCH" == "main" ]] || [[ "$BRANCH" == "develop" ]]; then
+        continue
+    fi
+    
+    # Check if valid
+    if [[ $BRANCH =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
+       [[ $BRANCH =~ ^release/[0-9]+\.[0-9]+$ ]] || \
+       [[ $BRANCH =~ ^rc/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        ((VALID++))
+    else
+        echo "⚠ Invalid branch: $BRANCH"
+        ((INVALID++))
+    fi
+done
+
+echo ""
+echo "=== Summary ==="
+echo "Valid branches: $VALID"
+echo "Invalid branches: $INVALID"
+
+if [[ $INVALID -gt 0 ]]; then
+    exit 1
+else
+    echo "✓ All branches follow naming convention"
+    exit 0
+fi
+```
+
+### Stale Branch Detection
+
+```bash
+#!/bin/bash
+
+# Find branches not updated in 30 days
+echo "=== Stale Branches (>30 days) ==="
+
+git for-each-ref --sort=-committerdate refs/remotes/origin/ \
+  --format='%(committerdate:short) %(refname:short)' |
+  while read date branch; do
+    # Skip main and develop
+    if [[ "$branch" == "origin/main" ]] || [[ "$branch" == "origin/develop" ]]; then
+      continue
+    fi
+    
+    # Check if older than 30 days
+    days_old=$(( ($(date +%s) - $(date -d "$date" +%s)) / 86400 ))
+    if [[ $days_old -gt 30 ]]; then
+      echo "$date ($days_old days) - $branch"
+    fi
+  done
+```
+
+## FINAL MUST-PASS CHECKLIST
+
+When setting up branch protection and CI/CD:
+
+- [ ] `main` branch has required protection (PR, reviews, status checks, no force-push)
+- [ ] `develop` branch has required protection (PR, reviews, status checks, no force-push)
+- [ ] Release branches (`release/*`) have recommended protection
+- [ ] CI/CD pipeline validates branch names
+- [ ] CI/CD pipeline runs tests on all branches
+- [ ] Security scans run on protected branches
+- [ ] Deployment jobs target correct environments (staging for release/rc, production for main)
+- [ ] Merged branches are auto-deleted
+- [ ] Jira integration configured (if applicable)
+- [ ] PR/MR templates enforce workflow
+- [ ] Monitoring/audit scripts in place
+
+---
+Generated by: rule.git.branch-protection.v1
+Last Updated: 2025-11-22

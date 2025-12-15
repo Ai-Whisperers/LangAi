@@ -1,0 +1,391 @@
+---
+id: rule.cicd.script-standards.v1
+kind: rule
+version: 1.0.0
+description: CI/CD-specific script standards that build upon general reusable script standards for PowerShell and Python automation scripts
+globs: cicd/scripts/**/*.ps1, cicd/scripts/**/*.py
+governs: cicd/scripts/**/*.ps1, cicd/scripts/**/*.py
+implements: cicd.script-standards
+requires:
+  - rule.scripts.agent-application.v1
+  - rule.scripts.core-principles.v1
+  - rule.scripts.powershell-standards.v1
+  - rule.scripts.python-standards.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance:
+  owner: team-devops
+  last_review: 2025-12-07
+  created: 2025-12-07
+alwaysApply: false
+---
+
+# CI/CD Script Standards
+
+## Purpose & Scope
+
+Defines **CI/CD-specific** standards for automation scripts in `cicd/scripts/` directory. These standards build upon the general reusable script framework and add CI/CD-specific requirements for Azure Pipelines integration, artifact handling, and build pipeline patterns.
+
+**Applies to**: All PowerShell (`.ps1`) and Python (`.py`) scripts in `cicd/scripts/` directory.
+
+**Does not apply to**: General-purpose scripts outside CI/CD context, one-off utility scripts, or scripts in other directories.
+
+## Inputs (Contract)
+
+- Existing CI/CD script or requirement for new automation script
+- General script standards already applied (see required rules)
+- Understanding of Azure Pipelines integration requirements
+- Knowledge of CI/CD-specific patterns (artifacts, variables, logging)
+
+## Outputs (Contract)
+
+CI/CD script with:
+- ✅ **All general standards** (see rule.scripts.core-principles.v1, powershell-standards.v1, python-standards.v1)
+- ✅ **Azure Pipelines integration** (variables, logging commands, artifacts)
+- ✅ **Artifact handling** (proper upload/download patterns)
+- ✅ **Environment detection** (CI/CD vs local execution)
+- ✅ **Build context awareness** (branch, tag, build number)
+
+## Deterministic Steps
+
+1. **Apply General Standards First**:
+   - Follow `rule.scripts.core-principles.v1` for portability, parameters, errors, config
+   - Follow language-specific standards (`powershell-standards.v1` or `python-standards.v1`)
+
+2. **Add Azure Pipelines Integration**:
+   - Detect Azure Pipelines environment using `$env:AGENT_TEMPDIRECTORY` (PowerShell) or `os.getenv('AGENT_TEMPDIRECTORY')` (Python)
+   - Use appropriate default paths for CI vs local
+   - Integrate Azure Pipelines logging commands for errors/warnings
+
+3. **Implement Artifact Handling**:
+   - Write artifacts to `$env:BUILD_ARTIFACTSTAGINGDIRECTORY` in CI
+   - Use logging command `##vso[artifact.upload]` when appropriate
+   - Provide local artifact path fallback
+
+4. **Add Build Context**:
+   - Access build variables (`$env:BUILD_BUILDNUMBER`, `$env:BUILD_SOURCEBRANCH`)
+   - Use git commands as fallback when local
+   - Validate tag format for versioning scripts
+
+5. **Ensure CI/CD Best Practices**:
+   - Scripts must work both in pipeline AND locally
+   - No hardcoded agent paths in parameters
+   - Clear separation of CI-specific and local-specific behavior
+
+## CI/CD-Specific Patterns
+
+### Azure Pipelines Environment Detection
+
+**PowerShell**:
+```powershell
+# Detect environment
+$isAzurePipeline = [bool]$env:AGENT_TEMPDIRECTORY
+
+if ($isAzurePipeline) {
+    Write-Host "Running in Azure Pipelines"
+    $defaultOutput = "$env:BUILD_ARTIFACTSTAGINGDIRECTORY/reports"
+} else {
+    Write-Host "Running locally"
+    $defaultOutput = "$env:TEMP/reports"
+}
+
+# Use detected default if no parameter provided
+if (-not $OutputPath) {
+    $OutputPath = $defaultOutput
+}
+```
+
+**Python**:
+```python
+import os
+
+# Detect environment
+is_azure_pipeline = bool(os.getenv('AGENT_TEMPDIRECTORY'))
+
+if is_azure_pipeline:
+    print("Running in Azure Pipelines")
+    default_output = os.getenv('BUILD_ARTIFACTSTAGINGDIRECTORY', '/tmp') + '/reports'
+else:
+    print("Running locally")
+    default_output = '/tmp/reports'
+
+# Use detected default
+output_path = args.output_path or default_output
+```
+
+### Azure Pipelines Logging Commands
+
+**PowerShell**:
+```powershell
+# Error logging
+if ($env:AGENT_TEMPDIRECTORY) {
+    Write-Host "##vso[task.logissue type=error]$errorMessage"
+} else {
+    Write-Host "ERROR: $errorMessage" -ForegroundColor Red
+}
+
+# Warning logging
+if ($env:AGENT_TEMPDIRECTORY) {
+    Write-Host "##vso[task.logissue type=warning]$warningMessage"
+} else {
+    Write-Host "WARNING: $warningMessage" -ForegroundColor Yellow
+}
+
+# Set variable for later tasks
+if ($env:AGENT_TEMPDIRECTORY) {
+    Write-Host "##vso[task.setvariable variable=CoveragePercent]$coveragePercent"
+}
+```
+
+**Python**:
+```python
+# Error logging
+if is_azure_pipeline:
+    print(f"##vso[task.logissue type=error]{error_message}")
+else:
+    print(f"ERROR: {error_message}", file=sys.stderr)
+
+# Warning logging  
+if is_azure_pipeline:
+    print(f"##vso[task.logissue type=warning]{warning_message}")
+else:
+    print(f"WARNING: {warning_message}")
+
+# Set variable
+if is_azure_pipeline:
+    print(f"##vso[task.setvariable variable=CoveragePercent]{coverage_percent}")
+```
+
+### Artifact Upload
+
+**PowerShell**:
+```powershell
+# Write to artifact staging directory
+$reportPath = Join-Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY "coverage-report.html"
+$summary | ConvertTo-Html | Out-File $reportPath
+
+# Upload as named artifact (optional, usually done by publish task)
+if ($env:AGENT_TEMPDIRECTORY) {
+    Write-Host "##vso[artifact.upload containerfolder=reports;artifactname=coverage-report]$reportPath"
+}
+```
+
+**Python**:
+```python
+# Write to artifact staging directory
+report_path = os.path.join(
+    os.getenv('BUILD_ARTIFACTSTAGINGDIRECTORY', '/tmp'),
+    'coverage-report.html'
+)
+with open(report_path, 'w') as f:
+    f.write(html_content)
+
+# Upload as named artifact
+if is_azure_pipeline:
+    print(f"##vso[artifact.upload containerfolder=reports;artifactname=coverage-report]{report_path}")
+```
+
+### Build Context Access
+
+**PowerShell**:
+```powershell
+# Get build information
+$buildNumber = $env:BUILD_BUILDNUMBER
+$sourceBranch = $env:BUILD_SOURCEBRANCH
+$commit = $env:BUILD_SOURCEVERSION
+
+# Fallback to git commands when local
+if (-not $buildNumber) {
+    $buildNumber = "local-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+}
+
+if (-not $sourceBranch) {
+    $sourceBranch = git branch --show-current 2>$null
+}
+
+if (-not $commit) {
+    $commit = git rev-parse --short HEAD 2>$null
+}
+```
+
+**Python**:
+```python
+# Get build information
+build_number = os.getenv('BUILD_BUILDNUMBER')
+source_branch = os.getenv('BUILD_SOURCEBRANCH')
+commit = os.getenv('BUILD_SOURCEVERSION')
+
+# Fallback to git commands when local
+if not build_number:
+    build_number = f"local-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+
+if not source_branch:
+    source_branch = subprocess.run(
+        ['git', 'branch', '--show-current'],
+        capture_output=True, text=True
+    ).stdout.strip()
+
+if not commit:
+    commit = subprocess.run(
+        ['git', 'rev-parse', '--short', 'HEAD'],
+        capture_output=True, text=True
+    ).stdout.strip()
+```
+
+## CI/CD Script Categories
+
+### 1. Validation Scripts
+**Purpose**: Validate code, documentation, tags, metadata before build proceeds
+
+**Examples**:
+- `validate-documentation.ps1` - XML documentation completeness
+- `validate-tag-context.ps1` - Tag format and versioning
+- `validate-package-metadata.ps1` - NuGet metadata validation
+
+**Requirements**:
+- Exit code 0 on success, 1 on failure
+- Clear error messages with Azure Pipelines logging
+- Work locally for pre-commit validation
+
+### 2. Analysis Scripts
+**Purpose**: Analyze code quality, coverage, performance
+
+**Examples**:
+- `enhanced-coverage-analysis.ps1` - Deep coverage analysis with thresholds
+- `calculate-code-metrics.ps1` - Code complexity and metrics
+- `scan-licenses.ps1` - License compliance
+
+**Requirements**:
+- Generate reports to artifact staging directory
+- Set pipeline variables for downstream tasks
+- Support threshold parameters with validation
+
+### 3. Generation Scripts
+**Purpose**: Generate reports, documentation, packages
+
+**Examples**:
+- `generate-doc-report.ps1` - Documentation coverage report
+- `generate-changelog.ps1` - Release notes from commits
+
+**Requirements**:
+- Output to artifact staging directory
+- Artifact upload commands
+- Timestamped output files
+
+### 4. Deployment Scripts
+**Purpose**: Publish packages, deploy artifacts
+
+**Examples**:
+- `publish-package.ps1` - NuGet package publishing
+- `upload-artifacts.ps1` - Artifact management
+
+**Requirements**:
+- Credential handling via service connections (never hardcoded)
+- Idempotent (safe to retry)
+- Clear success/failure reporting
+
+## Azure Pipelines Variables Reference
+
+**Common Build Variables**:
+- `BUILD_BUILDNUMBER` - Build number (e.g., `20251207.1`)
+- `BUILD_SOURCEBRANCH` - Source branch (e.g., `refs/heads/main`)
+- `BUILD_SOURCEVERSION` - Commit SHA
+- `BUILD_ARTIFACTSTAGINGDIRECTORY` - Artifact staging path
+- `AGENT_TEMPDIRECTORY` - Temp directory (CI detection)
+- `BUILD_REPOSITORY_NAME` - Repository name
+
+**Tag-Specific Variables** (when triggered by tag):
+- `BUILD_SOURCEBRANCH` - Tag ref (e.g., `refs/tags/release-1.2.0`)
+
+**Usage Pattern**:
+```powershell
+param(
+    [string]$BuildNumber = $env:BUILD_BUILDNUMBER,
+    [string]$SourceBranch = $env:BUILD_SOURCEBRANCH
+)
+
+# Always provide fallbacks for local execution
+if (-not $BuildNumber) {
+    $BuildNumber = "local-dev"
+}
+```
+
+## Script Naming Conventions for CI/CD
+
+**Validation Scripts**: `validate-*.ps1` or `validate_*.py`
+- Example: `validate-documentation.ps1`, `validate-tag-context.ps1`
+
+**Analysis Scripts**: `*-analysis.ps1` or `*_analysis.py`, `calculate-*.ps1`
+- Example: `enhanced-coverage-analysis.ps1`, `calculate-code-metrics.ps1`
+
+**Generation Scripts**: `generate-*.ps1` or `generate_*.py`
+- Example: `generate-doc-report.ps1`, `generate-changelog.ps1`
+
+**Scanning Scripts**: `scan-*.ps1` or `scan_*.py`
+- Example: `scan-licenses.ps1`, `scan-vulnerabilities.ps1`
+
+**Publishing Scripts**: `publish-*.ps1` or `publish_*.py`
+- Example: `publish-package.ps1`
+
+## Integration with General Script Rules
+
+This rule **requires and builds upon**:
+
+1. **rule.scripts.core-principles.v1**: 
+   - Portability (CI + local)
+   - Parameterization with defaults
+   - Error handling with try/catch
+   - Configuration file support
+   - Exit codes (0=success, 1=failure)
+
+2. **rule.scripts.powershell-standards.v1** (for `.ps1` files):
+   - Comment-based help
+   - Parameter validation
+   - Advanced features (parallel, progress, logging, caching, etc.)
+
+3. **rule.scripts.python-standards.v1** (for `.py` files):
+   - Module docstrings
+   - Type hints
+   - argparse CLI
+   - Advanced features (async, rich UI, etc.)
+
+**Relationship**: CI/CD scripts follow ALL general standards PLUS CI/CD-specific patterns above.
+
+## Testing CI/CD Scripts
+
+### Local Testing Checklist
+- [ ] Script runs locally without Azure Pipelines environment
+- [ ] Default parameter values work without CI variables
+- [ ] Output written to local fallback paths
+- [ ] Error messages clear without `##vso` commands
+
+### Pipeline Testing Checklist
+- [ ] Script detects Azure Pipelines environment
+- [ ] Uses `BUILD_ARTIFACTSTAGINGDIRECTORY` for artifacts
+- [ ] Logs errors with `##vso[task.logissue]`
+- [ ] Sets pipeline variables when needed
+- [ ] Respects all build context variables
+
+### Both Environments
+- [ ] Exit codes correct (0 success, 1 failure)
+- [ ] No hardcoded paths (agent-specific or local-specific)
+- [ ] Configuration parameters work in both contexts
+- [ ] Help documentation accurate
+
+## Related Rules
+
+- `rule.scripts.agent-application.v1` - When to apply script rules
+- `rule.scripts.core-principles.v1` - Language-agnostic principles
+- `rule.scripts.powershell-standards.v1` - PowerShell standards
+- `rule.scripts.python-standards.v1` - Python standards
+- `rule.cicd.tag-based-versioning.v2` - CI/CD pipeline context
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All general script standards applied (core-principles + language-specific)
+- [ ] Azure Pipelines environment detected using `$env:AGENT_TEMPDIRECTORY` (PS) or `os.getenv('AGENT_TEMPDIRECTORY')` (Python)
+- [ ] Portable defaults (CI path when in pipeline, local path otherwise)
+- [ ] Azure Pipelines logging commands used for errors/warnings (`##vso[task.logissue]`)
+- [ ] Artifacts written to `$env:BUILD_ARTIFACTSTAGINGDIRECTORY` when in pipeline
+- [ ] Script works in BOTH pipeline AND local environments
+- [ ] No hardcoded agent paths or local paths in parameters
+- [ ] Exit code 0 on success, 1 on failure

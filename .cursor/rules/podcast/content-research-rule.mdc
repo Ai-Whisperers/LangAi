@@ -1,0 +1,321 @@
+---
+rule_id: podcast.content-research-rule
+title: "Podcast Content Research Standards"
+description: "Systematic research methodology for cinema podcast episode development"
+version: 1.0.0
+created: 2025-12-13
+status: active
+kind: rule
+governs: **/prompts/podcast/plan-episode.prompt.md, **/prompts/podcast/collect-youtube-sources.prompt.md, **/prompts/podcast/collect-blog-critiques.prompt.md, **/prompts/podcast/analyze-cinema-content.prompt.md
+globs: **/prompts/podcast/plan-episode.prompt.md, **/prompts/podcast/collect-youtube-sources.prompt.md, **/prompts/podcast/collect-blog-critiques.prompt.md, **/prompts/podcast/analyze-cinema-content.prompt.md
+implements: podcast.content-research
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-podcast, last_review: 2025-12-13 }
+alwaysApply: false
+---
+
+# Podcast Content Research Standards
+
+## Purpose
+
+Establish systematic research methodology ensuring comprehensive, credible content foundation for cinema podcast episodes through multi-source analysis and critical evaluation.
+
+## Scope
+
+**Covers**:
+- Research planning and strategy development
+- Source collection from multiple media types
+- Content evaluation and credibility assessment
+- Cross-source analysis and synthesis
+- Research documentation and attribution standards
+
+**Does Not Cover**:
+- Personal opinion development (see `rule.podcast.authentic-voice-rule`)
+- Script writing and formatting (see `rule.podcast.script-formatting-rule`)
+- Recording and production techniques
+
+## When to Apply
+
+Apply when:
+- Planning new podcast episode research
+- Collecting sources from YouTube, blogs, or academic materials
+- Evaluating source credibility and relevance
+- Synthesizing multiple perspectives on cinema topics
+- Ensuring research comprehensiveness before content creation
+
+## Core Principles
+
+### 1. Multi-Source Verification
+**Never rely on single source** - Cross-reference information across at least 3 different sources before forming conclusions.
+
+### 2. Credibility Hierarchy
+**Prioritize expertise** - Weight sources by creator credibility, publication quality, and demonstrated expertise in cinema analysis.
+
+### 3. Perspective Diversity
+**Seek balanced viewpoints** - Include sources representing different critical perspectives, time periods, and analytical approaches.
+
+### 4. Attribution Transparency
+**Credit all sources** - Maintain clear documentation of source origins and properly attribute ideas during episode delivery.
+
+## Research Process Standards
+
+### Phase 1: Research Planning (Pre-Collection)
+
+#### Episode Research Scope Definition
+- **Topic Boundaries**: Clearly define film, director, genre, or concept scope
+- **Research Questions**: Identify 3-5 key questions episode must answer
+- **Source Type Requirements**: Specify minimum sources per category (YouTube, blogs, academic)
+- **Quality Thresholds**: Define minimum credibility standards per source type
+
+#### Research Timeline Planning
+- **Phase Duration**: Allocate realistic time for each research phase
+- **Milestone Deadlines**: Set intermediate deadlines for source collection completion
+- **Contingency Time**: Include buffer for unexpected research depth requirements
+
+### Phase 2: Source Collection (Active Research)
+
+#### YouTube Source Standards
+**Credibility Assessment**:
+- Channel subscriber count (>10K for established creators)
+- Content consistency and production quality
+- Creator credentials (film education, professional experience)
+- Citation practices and source attribution
+
+**Collection Strategy**:
+- Minimum 5-7 analysis videos per major topic
+- Mix of established creators and fresh perspectives
+- Include dissenting viewpoints when available
+- Document specific timestamps for key insights
+
+#### Written Source Standards
+**Publication Hierarchy**:
+- **Tier 1**: Academic journals, university publications, peer-reviewed analysis
+- **Tier 2**: Professional film criticism (New York Times, professional publications)
+- **Tier 3**: Specialized film blogs, technical analysis sites
+- **Tier 4**: General audience blogs, fan analysis (supplemental only)
+
+**Quality Criteria**:
+- Author credentials and expertise clearly stated
+- Publication date within last 10 years (unless historical analysis)
+- Clear methodology and evidence-based claims
+- Absence of promotional content or conflicts of interest
+
+#### Source Diversity Requirements
+- **Perspective Range**: Include at least 3 different analytical approaches
+- **Time Period Coverage**: Sources from different eras when relevant
+- **Cultural Context**: Include non-Western perspectives when applicable
+- **Critical Spectrum**: Balance positive, negative, and nuanced assessments
+
+### Phase 3: Content Analysis (Post-Collection)
+
+#### Cross-Source Synthesis
+**Pattern Identification**:
+- Common themes across multiple sources
+- Points of critical consensus and disagreement
+- Evolution of critical reception over time
+- Cultural impact indicators
+
+**Gap Analysis**:
+- Topics not adequately covered by collected sources
+- Contradictions requiring resolution
+- Areas needing additional research
+- Opportunities for original analysis
+
+#### Credibility Weighting
+**Source Authority Scoring**:
+- **High Authority**: Academic sources, established critics, primary sources
+- **Medium Authority**: Professional journalists, specialized analysts
+- **Low Authority**: General audience content, unverified claims
+
+**Consensus Building**:
+- Weight high-authority sources more heavily in final analysis
+- Note when consensus exists vs. active debate
+- Identify minority viewpoints warranting exploration
+
+### Phase 4: Research Documentation
+
+#### Source Inventory Requirements
+**Complete Metadata**:
+- Full source titles and creators/authors
+- Publication dates and platforms
+- Direct URLs or access information
+- Creator credentials and background
+- Key insights summary (3-5 bullet points per source)
+
+#### Attribution Standards
+**Citation Format**:
+- In-script attribution: "As film critic Roger Ebert noted..."
+- Source credibility context: "...in his review for the Chicago Sun-Times..."
+- Multiple perspective framing: "While some critics focus on..., others emphasize..."
+
+## Quality Assurance Checklist
+
+### Pre-Research Validation
+- [ ] Research scope clearly defined with boundaries
+- [ ] Key research questions articulated
+- [ ] Source type requirements specified
+- [ ] Quality thresholds established
+- [ ] Realistic timeline created
+
+### Source Collection Validation
+- [ ] Minimum source counts met per category
+- [ ] Credibility hierarchy followed
+- [ ] Perspective diversity achieved
+- [ ] Recent publication dates prioritized
+- [ ] Source metadata fully documented
+
+### Analysis Validation
+- [ ] Cross-source patterns identified
+- [ ] Research gaps documented
+- [ ] Credibility weighting applied
+- [ ] Attribution standards prepared
+- [ ] Original analysis opportunities noted
+
+## Anti-Patterns to Avoid
+
+### ❌ Research Shortcuts
+- **Single Source Reliance**: Never base episode on one video or article
+- **Recency Bias**: Don't prioritize recent content over established expertise
+- **Confirmation Bias**: Actively seek sources challenging your preconceptions
+
+### ❌ Credibility Compromises
+- **Authority Inflation**: Don't present fan analysis as expert opinion
+- **Context Omission**: Always provide source credibility context to listeners
+- **Bias Concealment**: Transparently note potential conflicts of interest
+
+### ❌ Attribution Failures
+- **Source Plagiarism**: Never present others' ideas as your own
+- **Vague Citations**: Always provide specific source context
+- **Over-Attribution**: Don't interrupt flow with excessive citation details
+
+## Success Metrics
+
+- **Source Diversity Score**: Percentage of different perspectives represented
+- **Authority Balance**: Ratio of high/medium/low credibility sources
+- **Research Depth**: Average insights per source (target: 3-5 key points)
+- **Gap Coverage**: Percentage of identified gaps addressed
+- **Attribution Clarity**: Listener understanding of source credibility
+
+## Integration with Other Rules
+
+**Works With**:
+- `rule.podcast.authentic-voice-rule` - Research informs but doesn't replace personal perspective
+- `rule.podcast.episode-structure-rule` - Research foundation supports episode organization
+- `rule.podcast.quality-assurance-rule` - Research quality validated before script creation
+
+**Enables**:
+- `rule.podcast.script-formatting-rule` - Provides content foundation for script development
+- `rule.podcast.spoken-word-optimization-rule` - Research depth informs delivery optimization
+
+## Inputs (Contract)
+
+- Episode topic and research scope requirements
+- Access to research sources (YouTube, blogs, academic materials)
+- Credibility assessment criteria and quality thresholds
+- Timeline constraints and research completion deadlines
+
+## Outputs (Contract)
+
+- Comprehensive source inventory with credibility assessments
+- Cross-source analysis identifying patterns and gaps
+- Research documentation with proper attribution standards
+- Episode content foundation with source integration strategy
+
+## Deterministic Steps
+
+1. **Define Research Scope**: Establish topic boundaries and source requirements
+2. **Collect Sources**: Gather materials from multiple media types and perspectives
+3. **Evaluate Credibility**: Assess source authority using established hierarchy
+4. **Analyze Cross-Source**: Identify consensus, disagreements, and gaps
+5. **Document Findings**: Create comprehensive source inventory with insights
+6. **Develop Attribution Strategy**: Prepare citation format for episode integration
+
+## Formatting Requirements
+
+Research documentation follows structured format:
+- Source inventory with standardized metadata fields
+- Credibility scoring with clear criteria
+- Cross-source analysis with pattern identification
+- Attribution templates for different source types
+
+## OPSEC and Leak Control
+
+- NO unauthorized access to paywalled academic content
+- NO reproduction of copyrighted material without permission
+- NO personal research notes containing sensitive information
+- NO internal methodology details that could compromise research integrity
+
+## Integration Points
+
+- Provides foundation for `rule.podcast.authentic-voice-rule` personal analysis
+- Works with `rule.podcast.script-formatting-rule` for content structuring
+- Works with `rule.podcast.quality-assurance-rule` for source validation
+
+## Failure Modes and Recovery
+
+**Insufficient Source Diversity**: Research relies on single perspective
+- **Detection**: Source inventory shows limited viewpoint range
+- **Recovery**: Extend search parameters, include additional source types
+
+**Credibility Gaps**: Low-quality sources undermine analysis foundation
+- **Detection**: Credibility scoring below established thresholds
+- **Recovery**: Replace weak sources, document credibility limitations
+
+**Attribution Failures**: Sources not properly credited in analysis
+- **Detection**: Missing citation information in source inventory
+- **Recovery**: Complete source metadata, implement attribution standards
+
+## Provenance Footer Specification
+
+Research documentation includes provenance for source tracking:
+
+```
+Produced-by: podcast.content-research-rule | sources={{count}} | credibility-checked=true | ts={{timestamp}}
+```
+
+## Tool Integration
+
+**Recommended Research Tools**:
+- YouTube search with advanced filters
+- Google Scholar for academic sources
+- JSTOR or academic databases
+- Film-specific databases (AFI Catalog, IMDb Pro)
+- Professional review archives
+
+**Documentation Tools**:
+- Source tracking spreadsheets
+- Digital annotation tools (Hypothesis, Diigo)
+- Reference management software
+- Episode planning documents
+
+## Exception Handling
+
+### Legitimate Research Limitations
+**Time Constraints**: When episode deadline requires abbreviated research
+**Topic Novelty**: When covering very recent releases with limited analysis available
+**Niche Topics**: When specific expertise is scarce
+
+**Exception Process**:
+1. Document limitation reason
+2. Implement mitigation strategy (extended personal analysis, future episode correction)
+3. Transparently disclose limitation to audience
+4. Plan follow-up research for future episodes
+
+## FINAL VALIDATION CHECKLIST
+
+Before proceeding to content synthesis:
+
+- [ ] Research scope fully defined with clear boundaries
+- [ ] Minimum source requirements met across all categories
+- [ ] Credibility hierarchy properly applied
+- [ ] Perspective diversity achieved (at least 3 viewpoints)
+- [ ] All sources fully documented with metadata
+- [ ] Cross-source analysis completed
+- [ ] Research gaps identified and addressed
+- [ ] Attribution strategy prepared for script integration
+- [ ] Quality assurance checklist fully validated
+
+---
+
+**TL;DR**: Comprehensive, multi-source research foundation ensuring credible, well-rounded cinema podcast content through systematic collection, evaluation, and synthesis of diverse perspectives.

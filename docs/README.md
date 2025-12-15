@@ -15,6 +15,8 @@ Comprehensive documentation for the AI-powered multi-agent company research syst
 | Configure the system | [Configuration Guide](06-configuration/README.md) |
 | Run research | [Scripts & CLI](09-scripts/README.md) |
 | Write tests | [Testing Guide](10-testing/README.md) |
+| Deploy the system | [Deployment](11-deployment/README.md) |
+| Call the API | [API Reference](12-api-reference/README.md) |
 | See future plans | [Roadmap](roadmap/) |
 
 ---
@@ -64,6 +66,8 @@ docs/
 │   └── QUALITY_LOGIC.md            # Scoring algorithms & detection
 ├── 09-scripts/                     # CLI tools
 ├── 10-testing/                     # Testing guide
+├── 11-deployment/                  # Deployment (Docker/K8s)
+├── 12-api-reference/               # REST/WebSocket API reference
 │
 ├── roadmap/                        # Future development
 │   ├── TECHNOLOGY_IMPROVEMENT_PLAN.md
@@ -116,11 +120,13 @@ docs/
 ```bash
 # Install
 pip install -r requirements.txt
-cp env.example .env
+cp env.example .env   # macOS/Linux
+# Windows PowerShell:
+#   Copy-Item env.example .env
 # Edit .env with API keys
 
 # Run research
-python run_research.py "Microsoft"
+python run_research.py --company "Microsoft"
 ```
 
 **Output:**

@@ -1,0 +1,606 @@
+---
+id: rule.ticket.validation.v1
+kind: rule
+version: 1.0.1
+description: Comprehensive validation requirements before claiming ticket completion - prevents premature "done" claims
+globs: **/tickets/**/*.md, **/*.cs, **/*.cpp, **/*.h, **/*.sql, **/*.js, **/*.ts, **/*.py
+governs: ""
+implements: ticket.validation
+requires:
+  - rule.ticket.plan.v1
+  - rule.ticket.progress.v1
+  - rule.ticket.context.v1
+  - rule.ticket.recap.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Validation Before Completion Rule
+
+## Purpose & Scope
+
+Defines mandatory validation steps that MUST be completed before claiming a ticket is done. This rule prevents premature completion claims and ensures thorough verification of implementation quality and completeness through actual testing, not assumptions.
+
+**Applies to**: All tickets before claiming completion, regardless of complexity or size.
+
+**Does not apply to**: Tickets explicitly marked as "spike" or "investigation only" with no deliverable implementation.
+
+## Inputs (Contract)
+
+- Ticket ID with complete plan.md containing acceptance criteria
+- Implementation code changes in source files
+- Linter tool available for checking code quality
+- Access to test environment or ability to execute code
+- Context.md showing work claimed as complete
+
+## Outputs (Contract)
+
+- Validation evidence documented in progress.md
+- All acceptance criteria verified as passing
+- Zero linter errors in modified files
+- Test results documented with pass/fail status
+- Edge cases and error scenarios tested and documented
+- Validation checklist completed with evidence
+- Context.md only marked complete after validation passes
+
+## Core Principle
+
+**NEVER claim work is complete until you have VERIFIED it works through actual validation, not assumptions.**
+
+## The Completion Trap
+
+### Common Premature Completion Patterns (AVOID THESE)
+[X] **"I wrote the code, so it's done"** - No validation performed
+[X] **"It compiles, so it works"** - Compilation ? Correctness
+[X] **"I implemented the function, done"** - Function exists but not tested
+[X] **"I added the feature, complete"** - Feature incomplete or non-functional
+[X] **"Stub created, moving on"** - Stub left as-is instead of implementing
+[X] **"Changed the code, should work"** - No verification of actual behavior
+[X] **"Looks good to me"** - Based on code reading, not execution
+[X] **"90% done"** - The last 10% takes 90% of the time
+
+### Reality Check Questions
+Before claiming completion, ask:
+1. **Did I actually RUN the code?** Not read it, RUN it
+2. **Did I test the happy path?** Did it work as expected?
+3. **Did I test error cases?** What happens when things go wrong?
+4. **Did I verify ALL acceptance criteria?** Not just some, ALL
+5. **Did I check integration points?** Does it work with other components?
+6. **Did I validate data correctness?** Is the output actually correct?
+7. **Did I test edge cases?** Boundary conditions, nulls, empty sets?
+8. **Would I deploy this to production?** Honestly?
+
+**If ANY answer is "No" -> NOT DONE**
+
+## Mandatory Validation Levels
+
+### Level 1: Code Completeness Validation (REQUIRED)
+**Before claiming "code complete":**
+
+- [ ] **No Stub Implementations**: All stub functions have real implementations
+  - Search for `return true;` stubs that should do real work
+  - Search for `return GEN_NO_ERROR;` with empty function bodies
+  - Search for `// TODO:` comments indicating incomplete work
+  - Verify each function actually implements its contract
+
+- [ ] **No Placeholder Code**: All `// TODO`, `// FIXME`, `// HACK` removed
+  - No temporary workarounds left in place
+  - No "will implement later" comments
+  - No disabled code waiting to be enabled
+
+- [ ] **Complete Error Handling**: All error paths implemented
+  - Null pointer checks where needed
+  - Boundary condition validation
+  - Resource cleanup in error cases
+  - Meaningful error messages, not generic placeholders
+
+- [ ] **All Required Functions Implemented**: Cross-check against requirements
+  - Compare implementation against acceptance criteria
+  - Verify all promised functionality exists
+  - Check that helper methods are actually used
+
+### Level 2: Functional Correctness Validation (REQUIRED)
+**Before claiming "functionally complete":**
+
+- [ ] **Happy Path Testing**: Main scenario works end-to-end
+  - Manually test or execute the primary use case
+  - Verify expected output matches actual output
+  - Check that data flows correctly through the system
+  - Validate that side effects occur as expected
+
+- [ ] **Acceptance Criteria Verification**: Each criterion tested and passes
+  - Create checklist from acceptance criteria
+  - Test each criterion individually
+  - Document test results for each criterion
+  - All criteria must pass, not just "most"
+
+- [ ] **Integration Point Validation**: Connections to other components work
+  - Test calls to external systems/databases
+  - Verify data format compatibility
+  - Check that dependencies are satisfied
+  - Validate that interfaces match expectations
+
+- [ ] **Data Correctness Validation**: Output data is accurate
+  - Spot-check calculated values
+  - Verify data transformations are correct
+  - Check that database updates are accurate
+  - Validate that queries return expected results
+
+### Level 3: Edge Case and Error Validation (REQUIRED)
+**Before claiming "robustly complete":**
+
+- [ ] **Boundary Conditions Tested**: Min, max, zero, empty
+  - Test with 0 items, 1 item, many items
+  - Test with minimum and maximum values
+  - Test with empty strings, null values
+  - Test with boundary dates, times
+
+- [ ] **Error Scenarios Tested**: System handles errors gracefully
+  - Test with invalid input
+  - Test with missing dependencies
+  - Test with database connection failures
+  - Test with insufficient permissions
+
+- [ ] **Resource Handling Validated**: No leaks, proper cleanup
+  - Verify resources are released
+  - Check for memory leaks
+  - Validate connection pooling
+  - Confirm transaction cleanup
+
+- [ ] **Concurrent Access Tested** (if applicable): Thread-safe behavior
+  - Test with multiple simultaneous users
+  - Verify locking behavior
+  - Check for race conditions
+  - Validate transaction isolation
+
+### Level 4: Quality and Standards Validation (REQUIRED)
+**Before claiming "quality complete":**
+
+- [ ] **Linter Errors**: Zero linter errors
+  - Run linter on all modified files
+  - Fix all errors, not just most
+  - No warnings for serious issues
+  - Code follows project standards
+
+- [ ] **Code Review Self-Check**: Would you approve your own code?
+  - Read code as if reviewing someone else's work
+  - Check for code smells
+  - Verify naming is clear and consistent
+  - Validate comments explain "why" not "what"
+
+- [ ] **Documentation Updated**: All relevant docs reflect changes
+  - Update technical specifications
+  - Update API documentation
+  - Update user-facing documentation
+  - Update inline code comments
+
+- [ ] **Backward Compatibility**: Existing functionality unaffected
+  - Test existing features still work
+  - Verify no regressions introduced
+  - Check that APIs remain compatible
+  - Validate data migrations work
+
+## Validation Strategies by Ticket Type
+
+### Bug Fix Validation
+- [ ] Original bug is actually fixed (test the exact scenario)
+- [ ] Fix doesn't introduce new bugs
+- [ ] Root cause is addressed, not just symptoms
+- [ ] Similar bugs in related code are checked
+- [ ] Regression tests added to prevent recurrence
+
+### Feature Implementation Validation
+- [ ] Feature works as specified in requirements
+- [ ] All acceptance criteria met and verified
+- [ ] Feature integrates with existing functionality
+- [ ] Edge cases and error scenarios handled
+- [ ] Performance is acceptable
+- [ ] User experience is smooth
+
+### Refactoring Validation
+- [ ] Behavior is identical before and after
+- [ ] All existing tests still pass
+- [ ] Performance is same or better
+- [ ] Code is actually improved (more maintainable)
+- [ ] No new bugs introduced
+
+### Technical Debt Resolution Validation
+- [ ] Debt item is actually eliminated
+- [ ] Code quality measurably improved
+- [ ] No new technical debt introduced
+- [ ] Team agrees improvement is significant
+- [ ] Future maintenance is easier
+
+## Real-World Validation Examples
+
+### Example 1: Function Implementation (What Went Wrong)
+**Claimed Done Early**:
+- [X] Created required functions
+- [X] Added helper methods
+- [X] Updated documentation
+
+**Actually NOT Done**:
+- [X] Functions were just stubs (returned default values)
+- [X] No actual business logic implemented
+- [X] No integration with calling code
+- [X] Couldn't actually perform intended operations
+
+**Proper Validation Would Have Caught**:
+- Review acceptance criteria against implementation
+- Test: Actually execute the functions - would fail
+- Verify: Check if expected data changes occur - would find nothing
+- Integration: Test calling code - would discover stubs
+
+**Time Cost**: Multiple rounds of rework to implement what was claimed done
+
+### Example 2: Feature Implementation (What Went Wrong)
+**Claimed Done Early**:
+- [X] Created feature function
+- [X] Mentioned in design documentation
+- [X] Added to codebase
+
+**Actually NOT Done**:
+- [X] Feature function was empty stub
+- [X] No actual functionality implemented
+- [X] No transaction management
+- [X] No error handling
+- [X] Entire feature "forgotten to be implemented"
+
+**Proper Validation Would Have Caught**:
+- Test the feature flow: Would discover nothing happens
+- Check data changes: Would find no changes
+- Review implementation: Would see empty function
+- Trace execution: Would find no actual work being done
+
+**Time Cost**: Had to restart implementation from scratch
+
+### Example 3: Code Modification (What Went Wrong)
+**Claimed Done Early**:
+- [X] Modified function behavior
+- [X] Added filtering logic
+- [X] Updated query
+
+**Actually NOT Done**:
+- [X] Broke existing functionality (filtering too aggressive)
+- [X] No testing of dependent features
+- [X] Didn't verify existing code paths still worked
+- [X] Introduced regression in critical functionality
+
+**Proper Validation Would Have Caught**:
+- Test existing functionality: Would fail in specific scenarios
+- Integration test: Would discover broken dependent features
+- Regression check: Would catch that existing behavior changed
+- Edge case test: Would find legitimate use cases broken
+
+**Time Cost**: Additional rounds to fix regressions
+
+## Validation Checklist Templates
+
+### Quick Validation Checklist (Minimum)
+Use this for every ticket before claiming complete:
+
+```markdown
+## Validation Completed
+
+### Code Completeness
+- [ ] No stub implementations remaining
+- [ ] No TODO/FIXME comments
+- [ ] All required functions implemented
+- [ ] Error handling complete
+
+### Functional Correctness
+- [ ] Happy path tested and works
+- [ ] All acceptance criteria verified
+- [ ] Integration points validated
+- [ ] Data correctness spot-checked
+
+### Quality
+- [ ] Zero linter errors
+- [ ] Code reviewed by self
+- [ ] Documentation updated
+- [ ] No regressions introduced
+
+### Evidence
+- Tested on: [date/time]
+- Test scenarios: [list key scenarios tested]
+- Results: [pass/fail for each]
+- Issues found and fixed: [list]
+```
+
+### Comprehensive Validation Checklist (Complex Tickets)
+Use for tickets marked "Complex Implementation":
+
+```markdown
+## Comprehensive Validation
+
+### Level 1: Code Completeness
+- [ ] All functions have real implementations (no stubs)
+- [ ] All placeholder code removed
+- [ ] Complete error handling throughout
+- [ ] All promised functionality exists
+- **Evidence**: [describe verification method]
+
+### Level 2: Functional Correctness
+- [ ] Happy path works end-to-end
+- [ ] Acceptance Criterion 1: [describe] - PASS/FAIL
+- [ ] Acceptance Criterion 2: [describe] - PASS/FAIL
+- [ ] Acceptance Criterion N: [describe] - PASS/FAIL
+- [ ] Integration points validated
+- [ ] Data correctness verified
+- **Evidence**: [test results, screenshots, logs]
+
+### Level 3: Edge Cases and Errors
+- [ ] Boundary conditions tested (0, 1, max, empty, null)
+- [ ] Error scenarios handled gracefully
+- [ ] Resource cleanup verified
+- [ ] Concurrent access tested (if applicable)
+- **Evidence**: [test scenarios and results]
+
+### Level 4: Quality and Standards
+- [ ] Zero linter errors
+- [ ] Code review self-check passed
+- [ ] Documentation updated
+- [ ] Backward compatibility verified
+- **Evidence**: [linter output, doc links]
+
+### Regression Testing
+- [ ] Existing feature 1 still works
+- [ ] Existing feature 2 still works
+- [ ] No performance degradation
+- [ ] No new bugs introduced
+- **Evidence**: [regression test results]
+
+### Definition of Done
+- [ ] All acceptance criteria met
+- [ ] Code quality standards met
+- [ ] Documentation complete
+- [ ] Ready for production deployment
+- **Evidence**: [final checklist review]
+```
+
+## Validation Anti-Patterns to Avoid
+
+### Anti-Pattern 1: "Trust Me" Validation
+[X] **Pattern**: "I know it works, trust me"
+[X] **Instead**: Show evidence - test results, logs, screenshots
+
+### Anti-Pattern 2: "It Compiles" Validation
+[X] **Pattern**: "No compiler errors, ship it"
+[X] **Instead**: Compilation is step 0, actual testing is step 1+
+
+### Anti-Pattern 3: "Read the Code" Validation
+[X] **Pattern**: "I reviewed the code, looks good"
+[X] **Instead**: Review is good, but must also EXECUTE the code
+
+### Anti-Pattern 4: "Most Criteria Met" Validation
+[X] **Pattern**: "9 out of 10 acceptance criteria pass, good enough"
+[X] **Instead**: ALL criteria must pass, no exceptions
+
+### Anti-Pattern 5: "Works on My Machine" Validation
+[X] **Pattern**: "Tested locally, works fine"
+[X] **Instead**: Test in environment matching production constraints
+
+### Anti-Pattern 6: "Happy Path Only" Validation
+[X] **Pattern**: "Main scenario works, done"
+[X] **Instead**: Test edge cases, errors, boundary conditions
+
+### Anti-Pattern 7: "Assumed Integration" Validation
+[X] **Pattern**: "My part works, integration will be fine"
+[X] **Instead**: Actually test integration points
+
+### Anti-Pattern 8: "Documentation Later" Validation
+[X] **Pattern**: "Code works, will document later"
+[X] **Instead**: Documentation is part of "done", not optional
+
+## When You Discover Incompleteness
+
+### If You Find Issues During Validation
+1. **Don't Ignore**: Never claim done with known issues
+2. **Fix Immediately**: Address issues before claiming complete
+3. **Re-Validate**: Test again after fixes
+4. **Document**: Note what was found and fixed in progress.md
+5. **Learn**: Update approach to catch similar issues earlier
+
+### If Issues Are Found After Claiming Done
+1. **Acknowledge Quickly**: "I claimed done prematurely"
+2. **Document Impact**: What broke? Who was affected?
+3. **Fix Thoroughly**: Don't just patch, fix properly
+4. **Add Validation**: What validation would have caught this?
+5. **Update Process**: How to prevent next time?
+
+## Integration with Workflow
+
+### In plan.md
+- Include validation strategy for ticket
+- Define acceptance criteria that are testable
+- Specify validation evidence required
+
+### In progress.md  
+- Document validation steps as they're completed
+- Record validation results (pass/fail)
+- Note issues found during validation
+- Timestamp when validation completed
+
+### In context.md
+- Update "Current Focus" only after validation passes
+- Mark items complete only after verification
+- List "Next Steps" based on validation results
+
+### In recap.md
+- Summarize validation approach used
+- Document validation results
+- Note lessons learned about validation
+
+## Success Criteria
+
+### Ticket is Properly Validated When
+[X] All acceptance criteria tested and passing
+[X] No stub implementations remaining
+[X] Edge cases and errors handled
+[X] Integration points verified working
+[X] Zero linter errors
+[X] Documentation updated
+[X] Regression testing passed
+[X] Evidence of validation documented
+[X] Honest assessment: "I would deploy this to production"
+
+### Warning Signs of Insufficient Validation
+[X] No evidence of actual testing
+[X] Claims of completion without running code
+[X] Stub functions still present
+[X] No edge case testing documented
+[X] "Assume it works" language
+[X] Incomplete acceptance criteria coverage
+[X] No integration testing
+[X] Linter errors remaining
+
+## Enforcement
+
+### AI Assistant Responsibilities
+When user claims ticket is complete, AI MUST:
+1. **Request Validation Evidence**: "How did you validate this works?"
+2. **Check for Stubs**: Search for stub implementations
+3. **Verify Acceptance Criteria**: Check each criterion was tested
+4. **Review Integration Points**: Ensure connections validated
+5. **Confirm Linter Clean**: No errors remaining
+6. **Question Premature Claims**: Push back if validation insufficient
+
+### Developer Responsibilities
+Before claiming complete, developer MUST:
+1. **Run the code**: Actually execute, not just read
+2. **Test scenarios**: Happy path, errors, edge cases
+3. **Verify data**: Check correctness of results
+4. **Document validation**: Record what was tested and results
+5. **Be honest**: If not fully validated, don't claim done
+
+### Team Responsibilities
+During review, team MUST:
+1. **Request evidence**: "Show me the test results"
+2. **Challenge assumptions**: "How do you know it works?"
+3. **Verify claims**: Don't accept "trust me"
+4. **Test independently**: Run code yourself
+5. **Hold standards**: Incomplete validation = incomplete work
+
+## Deterministic Steps
+
+Before claiming ticket complete, execute in order:
+
+1. Review plan.md and extract all acceptance criteria
+2. For each acceptance criterion:
+   a. Test the specific scenario
+   b. Verify expected output matches actual output
+   c. Document test results in progress.md
+   d. Mark criterion as PASS or FAIL
+3. Search all modified files for stub implementations (return true, return default, empty functions)
+4. Fix any stubs found, return to step 2
+5. Run linter on all modified files
+6. Fix all linter errors, return to step 5 if errors found
+7. Test happy path end-to-end
+8. Test at least 3 edge cases (empty, null, boundary values)
+9. Test at least 2 error scenarios (invalid input, missing dependencies)
+10. Verify no regressions by testing existing related features
+11. Document all validation evidence in progress.md
+12. Complete validation checklist with evidence references
+13. Only after ALL steps pass: Update context.md to mark complete
+
+## Formatting Requirements
+
+Validation evidence in progress.md should follow this format:
+
+```markdown
+## YYYY-MM-DD - Validation Complete
+
+**Validation Level**: [Simple Fix | Complex Implementation]
+
+### Level 1: Code Completeness
+- [ ] No stub implementations (searched with grep/find)
+- [ ] No TODO/FIXME/HACK comments
+- [ ] Complete error handling
+
+### Level 2: Functional Correctness
+- [ ] Happy path tested - PASS
+- [ ] Acceptance Criterion 1: [description] - PASS/FAIL
+- [ ] Acceptance Criterion 2: [description] - PASS/FAIL
+- [ ] Integration points validated - PASS
+
+### Level 3: Edge Cases
+- [ ] Boundary condition: [scenario] - PASS/FAIL
+- [ ] Error scenario: [scenario] - PASS/FAIL
+
+### Level 4: Quality
+- [ ] Linter errors: 0
+- [ ] Regression tests: PASS
+
+**Evidence**: [Specific test scenarios, commands run, outputs verified]
+```
+
+## OPSEC and Leak Control
+
+When documenting validation:
+- NO production URLs, API endpoints, or internal hostnames in test evidence
+- NO credentials, tokens, or API keys in test output
+- NO customer data or production identifiers in test scenarios
+- Redact sensitive error messages before logging
+- Use generic references: "database connection failed" not "postgres-prod-01.internal failed"
+
+## Integration Points
+
+- **Syncs with**: `rule.ticket.progress.v1` (validation evidence logged chronologically)
+- **Informs**: `rule.ticket.context.v1` (context only marked complete after validation)
+- **Requires**: `rule.ticket.plan.v1` (acceptance criteria must be defined)
+- **Triggers**: `rule.ticket.recap.v1` (validation success triggers recap creation)
+- **Referenced by**: `rule.ticket.completion-discipline.v1` (behavioral companion to this validation rule)
+- **Workflow**: Part of `rule.ticket.workflow.v1` closure process
+
+## Failure Modes and Recovery
+
+**Acceptance criterion fails validation**:
+- Detection: Test for criterion does not pass
+- Recovery: Fix implementation, re-test all criteria
+- Fallback: Do NOT proceed to completion, ticket remains in progress
+
+**Stub implementations discovered late**:
+- Detection: Search reveals return true/default in functions
+- Recovery: Implement real functionality, re-validate all criteria
+- Fallback: Do NOT claim complete with stubs present
+
+**Linter errors found**:
+- Detection: Linter tool reports errors
+- Recovery: Fix all errors, re-run linter until clean
+- Fallback: Do NOT proceed with linter errors present
+
+**Regression detected**:
+- Detection: Existing feature broken by changes
+- Recovery: Fix regression, re-validate both new and existing functionality
+- Fallback: Do NOT complete ticket with known regressions
+
+**No test environment available**:
+- Detection: Cannot execute code for validation
+- Recovery: Set up test environment or local execution capability
+- Fallback: Manual code review with explicit caveat "NOT FULLY VALIDATED - needs testing"
+
+## Provenance Footer Specification
+
+Not applicable - validation results documented in progress.md entries, not separate generated files.
+
+## Related Rules
+
+- `rule.ticket.complexity-assessment.v1` - Complex tickets need comprehensive validation (Level 1-4)
+- `rule.ticket.plan.v1` - Validation strategy and acceptance criteria defined in planning
+- `rule.ticket.progress.v1` - Validation evidence tracked chronologically
+- `rule.ticket.context.v1` - Validation status reflected in current state
+- `rule.ticket.recap.v1` - Validation approach summarized at completion
+- `rule.ticket.completion-discipline.v1` - Behavioral discipline for AI completion claims
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All acceptance criteria from plan.md tested and passing
+- [ ] No stub implementations remaining (searched and verified)
+- [ ] Zero linter errors in all modified files
+- [ ] Happy path tested end-to-end with evidence documented
+- [ ] At least 3 edge cases tested (empty, null, boundary values)
+- [ ] At least 2 error scenarios tested (invalid input, missing dependencies)
+- [ ] No regressions introduced (existing features still work)
+- [ ] Validation evidence documented in progress.md with specific test scenarios
+- [ ] Only after all above pass: context.md marked complete

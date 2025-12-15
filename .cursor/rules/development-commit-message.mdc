@@ -1,0 +1,98 @@
+---
+description: Enforces standards and required steps for clear, reliable commit messages and commits.
+globs: 
+alwaysApply: false
+---
+---
+# Commit Message Rule
+
+## Purpose
+To ensure all commit messages are clear, consistent, and meaningful, improving project history and collaboration.
+
+## Guidelines
+1. **Structure:**
+   - Use the format: `<type>(scope): short summary`
+   - Example: `feat(agent): add new time tracking feature`
+   - Types: feat, fix, chore, docs, refactor, test, style, perf, ci
+   - Scope (optional): the part of the codebase affected (e.g., agent, docs, cicd)
+2. **Summary:**
+   - Use the imperative mood ("add", not "added" or "adds")
+   - Keep it under 50 characters
+   - Be specific and concise
+3. **Body (optional):**
+   - Explain what and why, not how
+   - Wrap at 72 characters
+   - Use bullet points for multiple changes
+   - **End each sentence in the commit body (ending with a period) with a newline.**
+   - **Within bullet points, start each new sentence on a new line, and break long lines at natural places (such as after a period or clause).**
+   - **Indent continuation lines in bullets by 1-4 spaces for clarity.**
+   - Do not add extra blank lines between bullet points unless you intend a paragraph break.
+   - Break up long lines in the commit body to improve readability
+4. **Footer (optional):**
+   - Reference issues or tickets (e.g., `Closes #123`)
+5. **Comments/Description:**
+   - All commits must include a meaningful comment or description in the commit body (not just a subject line)
+   - The body should explain the reasoning, context, or impact of the change
+   - Use bullet points and paragraphs to clearly explain reasoning, context, and impact
+
+## Examples
+- `feat(agent): add support for recurring tasks`
+- `fix(cicd): correct deployment script path`
+- `docs(readme): update usage instructions`
+- `chore: update dependencies`
+
+## Bullet Point Wrapping Examples
+- Added explicit best practice: avoid unnecessary addition or removal of lines in files.
+  Prefer minimal, focused changes that only modify what is required.
+- Added rule: If a bullet point exceeds 72 characters, break it into multiple lines for readability.
+  Indent continuation lines by 1-4 spaces for clarity.
+- Added rule: End each sentence in the commit body (ending with a period) with a newline.
+  Within bullet points, start each new sentence on a new line.
+  Break long lines at natural places (such as after a period or clause).
+    Indent continuation lines in bullets by 1-4 spaces for clarity.
+
+## Bad Examples
+- `update stuff`
+- `fix bug`
+- `misc changes`
+- Bullet points with multiple sentences on one line.
+- Bullet points with long lines and no indentation for wrapped lines.
+
+## Additional Notes
+- For all commits, always create a message file with real line breaks and use `git commit -F <file>` to ensure all formatting is preserved, even for single-line messages. This guarantees consistent formatting and prevents issues with line breaks, bullet points, and indentation.
+- **PowerShell-safe example (splitting after periods and breaking long lines):**
+  ```powershell
+  Set-Content commitmsg.txt "docs(rules): add bullet point wrapping and sentence splitting rule"
+  Add-Content commitmsg.txt ""
+  Add-Content commitmsg.txt "- Added rule: End each sentence in the commit body (ending with a period) with a newline."
+  Add-Content commitmsg.txt "  Within bullet points, start each new sentence on a new line."
+  Add-Content commitmsg.txt "  Break long lines at natural places (such as after a period or clause)."
+  Add-Content commitmsg.txt "    Indent continuation lines in bullets by 1-4 spaces for clarity."
+  git commit -F commitmsg.txt
+  del commitmsg.txt
+  ```
+- Do not use manual editor mode for standard commits.
+- In PowerShell, run each command on its own line (do not chain with &&) when creating commit message files and committing with -F, to avoid errors.
+- In PowerShell, always wrap commit message lines in double quotes when using Set-Content or Add-Content, especially if the line contains parentheses or special characters. This prevents errors and ensures the message is written as intended.
+- In PowerShell, use `Add-Content commitmsg.txt ""` to add a blank line to a file, instead of `echo.` or `Out-File`. This prevents errors and encoding issues when scripting commit messages.
+
+## Commit Process Checklist
+- [ ] **Validate current ticket** against `tickets/current.md`
+- [ ] Stage the relevant files with `git add`.
+- [ ] Create a commit message file (e.g., `commitmsg.txt`) with the subject and body, following the rules above.
+- [ ] **Include ticket reference** in commit message when applicable
+- [ ] Run the commit command using the message file: `git commit -F commitmsg.txt`.
+- [ ] Verify that the commit was successful (check for confirmation in the output or use `git log -1`).
+- [ ] If the commit fails or is not executed, do not assume success—retry the commit or alert the user.
+- [ ] Never leave files staged but uncommitted at the end of the process.
+
+
+
+
+
+
+
+
+
+
+

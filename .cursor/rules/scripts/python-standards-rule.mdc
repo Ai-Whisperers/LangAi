@@ -1,0 +1,724 @@
+---
+id: rule.scripts.python-standards.v1
+kind: rule
+version: 1.0.0
+description: Python-specific standards for reusable scripts with advanced features
+globs: **/*.py
+governs: **/*.py
+implements: scripts.python-standards
+requires:
+  - rule.scripts.core-principles.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: 
+  owner: team-devops
+  last_review: 2025-12-07
+  created: 2025-12-07
+alwaysApply: false
+---
+
+# Reusable Scripts - Python Standards
+
+## Purpose & Scope
+
+Defines **Python-specific** standards for reusable scripts including module docstrings, type hints, async/await, and 15 advanced features. These standards build on core principles (see rule.scripts.core-principles.v1).
+
+**Applies to**: All Python scripts (*.py) in the repository.
+
+**Does not apply to**: One-off scripts, personal scripts outside version control, or non-Python scripts.
+
+## Inputs (Contract)
+
+- Existing Python script or requirement for new script
+- Core principles already applied (see rule.scripts.core-principles.v1)
+- Understanding of advanced features needed (async, multiprocessing, rich UI, etc.)
+
+## Outputs (Contract)
+
+Python script with:
+- **Module docstrings** (help() support)
+- **Type hints and validation** (Pydantic)
+- **argparse CLI** with comprehensive help
+- **Advanced features** as appropriate (async, multiprocessing, rich UI, caching, etc.)
+- **Unit tests** with pytest
+
+### Runtime Baseline (Recommendation)
+- Target Python 3.10+ for structural pattern matching and typing improvements; declare in shebang (`#!/usr/bin/env python3`) and in docs/requirements; prefer UTF-8 source and `python -m venv` + `requirements.txt`/`poetry.lock` for reproducibility.
+
+## Core Principles - Python
+
+### 1. Module-Level Documentation
+
+Python's equivalent to PowerShell's comment-based help.
+
+**Requirements**:
+- Module docstring at top of file (after shebang/encoding)
+- Includes: Description, Features, Usage examples, Requirements
+- Supports `help(module)` and `python script.py --help`
+- Follow Google or NumPy docstring style
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/logging.exemplar.md` for complete module documentation example.
+
+**Key Structure**:
+```python
+#!/usr/bin/env python3
+"""
+Script Title
+
+Description of what the script does.
+
+Features:
+    - Feature 1
+    - Feature 2
+
+Usage:
+    $ python script.py [options]
+
+Requirements:
+    - Python 3.9+
+    - Required packages
+"""
+```
+
+### 2. Type Hints with Pydantic Validation
+
+Strong typing with automatic validation prevents runtime errors.
+
+**Requirements**:
+- Type hints on all function signatures
+- Pydantic models for complex configuration
+- Validators for business logic constraints
+- Type checking with mypy (optional but recommended)
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/type-hints.exemplar.md` for complete examples.
+
+**Key Benefits**:
+- Catch errors at definition time, not runtime
+- Automatic validation of input data
+- Self-documenting code through type annotations
+- IDE autocomplete and type checking
+
+### 3. Structured Logging
+
+Professional logging with levels, formatters, and handlers.
+
+**Requirements**:
+- Use `logging` module (not `print()`)
+- Configure handlers (console, file, Azure Pipelines)
+- Structured format with timestamps and levels
+- Log levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/logging.exemplar.md` for setup patterns.
+
+**Azure Pipelines Integration**:
+- Custom handler for `##vso[task.logissue]` commands
+- Automatic error/warning detection in pipeline logs
+
+### 4. Retry Logic with Exponential Backoff
+
+Handle transient failures automatically.
+
+**Requirements**:
+- Decorator pattern for retry logic
+- Exponential backoff (delay × multiplier)
+- Configurable max attempts and exceptions
+- Logging of retry attempts
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/retry.exemplar.md` for decorator implementation.
+
+**Use Cases**:
+- External API calls
+- Network operations
+- Database connections
+- File I/O with potential locks
+
+### 5. Async/Await for I/O-Bound Operations
+
+Concurrent execution for I/O operations (3-10x faster).
+
+**Requirements**:
+- Use `asyncio` for I/O-bound work
+- `async def` functions with `await`
+- `asyncio.gather()` for concurrent execution
+- Synchronous wrapper for compatibility
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/async.exemplar.md` for complete patterns.
+
+**Best For**:
+- File reading/writing
+- API calls
+- Database queries
+- Network operations
+
+### 6. Multiprocessing for CPU-Bound Tasks
+
+Use all CPU cores for computational work.
+
+**Requirements**:
+- Use `multiprocessing.Pool` for parallel execution
+- `functools.partial` for passing extra arguments
+- Progress reporting across processes
+- Error handling per process
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/multiprocessing.exemplar.md` for complete examples.
+
+**Best For**:
+- Data processing
+- Image manipulation
+- Cryptographic operations
+- Complex calculations
+
+### 7. Rich Terminal UI
+
+Beautiful, user-friendly terminal output.
+
+**Requirements**:
+- Rich library for formatted output
+- Progress bars for long operations
+- Tables for structured data
+- Syntax highlighting for code
+- Color coding for status (success/warning/error)
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/rich-ui.exemplar.md` for implementation.
+
+**Features**:
+- Progress bars with ETA
+- Styled tables and trees
+- Markdown rendering
+- Syntax highlighting
+
+### 8. Context Managers for Resource Safety
+
+Automatic resource cleanup with `with` statements.
+
+**Requirements**:
+- Use context managers for files, connections, locks
+- Custom context managers with `__enter__`/`__exit__`
+- `contextlib` for simple cases
+- Ensure cleanup even on exceptions
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/context-managers.exemplar.md` for patterns.
+
+**Common Uses**:
+- File operations
+- Database connections
+- Lock management
+- Temporary state changes
+
+### 9. SQLite for Historical Tracking
+
+Local database for tracking script runs and trends.
+
+**Requirements**:
+- SQLite for persistent storage
+- Schema creation on first run
+- Parameterized queries (prevent SQL injection)
+- Context manager for connections
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/sqlite.exemplar.md` for database patterns.
+
+**Use Cases**:
+- Coverage trends
+- Performance metrics
+- Execution history
+- Failure tracking
+
+### 10. Caching with functools and File Hashing
+
+Avoid redundant expensive operations.
+
+**Requirements**:
+- `@functools.lru_cache` for function memoization
+- File hashing to detect changes
+- Cache invalidation strategy
+- Memory management for large caches
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/caching.exemplar.md` for implementation.
+
+**Benefits**:
+- Faster repeated operations
+- Reduced resource usage
+- Smart change detection
+
+### 11. Webhook Notifications
+
+HTTP notifications for important events.
+
+**Requirements**:
+- `requests` library for HTTP calls
+- Retry logic for reliability
+- Multiple webhook support (Teams, Slack)
+- Conditional sending (failures only, summary)
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/webhooks.exemplar.md` for complete examples.
+
+**Integration**:
+- Microsoft Teams
+- Slack
+- Custom webhooks
+- Azure DevOps
+
+### 12. Configuration with YAML and Validation
+
+External configuration with validation.
+
+**Requirements**:
+- YAML files for configuration
+- Pydantic models for validation
+- Config file discovery (current dir, ~/.config/, etc.)
+- Command-line override of config values
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/yaml-config.exemplar.md` for patterns.
+
+**Benefits**:
+- Separate config from code
+- Easy updates without code changes
+- Type-safe configuration
+- Default value management
+
+### 13. Custom Exception Hierarchy
+
+Clear, actionable error messages.
+
+**Requirements**:
+- Custom exception classes for different error types
+- Meaningful exception names
+- Error context in exception messages
+- Catch specific exceptions (not bare `except:`)
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/exceptions.exemplar.md` for hierarchy design.
+
+**Best Practices**:
+- Inherit from appropriate base exception
+- Include context data in exceptions
+- Document exceptions in docstrings
+- Use specific exception types
+
+### 14. Unit Testing with pytest
+
+Automated testing for reliability.
+
+**Requirements**:
+- pytest for test framework
+- Test file naming: `test_*.py` or `*_test.py`
+- Test function naming: `test_*`
+- Fixtures for setup/teardown
+- Assertions with helpful messages
+- Coverage measurement with pytest-cov
+
+**Pattern Examples**: See `.cursor/exemplars/script/python/pytest.exemplar.md` for test patterns.
+
+**Test Organization**:
+```
+src/
+  my_script.py
+tst/
+  test_my_script.py
+```
+
+### 15. Differential Coverage Analysis
+
+Track coverage changes for modified files only.
+
+**Requirements**:
+- Git diff to find changed files
+- Coverage calculation per file
+- Comparison with baseline
+- Report showing improvement/regression
+
+**Use Cases**:
+- Pull request validation
+- Incremental coverage tracking
+- Focus testing on changes
+
+---
+
+## Shared Modules (Best Practice)
+
+### Why Use Shared Modules?
+
+Extracting shared functions into Python modules promotes:
+- **DRY Principle**: Write once, use everywhere
+- **Centralized Fixes**: Bug fixes benefit all scripts
+- **Consistent Behavior**: Shared logic ensures uniformity
+- **Faster Development**: Reuse proven, tested functions
+
+### Module Organization
+
+```text
+repository/
+├── scripts/
+│   ├── validate-code-quality.py
+│   ├── generate-changelog.py
+│   └── modules/
+│       ├── __init__.py              # Empty (makes it a package)
+│       └── common.py                # Shared Python module
+```
+
+### Creating a Shared Module
+
+**Step 1: Create Module File** (`scripts/modules/common.py`)
+
+```python
+"""
+Common utility functions for scripts.
+
+This module provides shared utilities including Unicode detection,
+status formatting, and common helper functions used across multiple scripts.
+
+Functions:
+    supports_unicode() -> bool: Detect Unicode support in environment
+    get_status_emoji(status: str) -> str: Get status indicator
+"""
+
+import os
+import sys
+from typing import Literal
+
+StatusType = Literal['success', 'warning', 'error', 'info']
+
+
+def supports_unicode() -> bool:
+    """
+    Detect if the environment supports Unicode output.
+    
+    Checks Python version, Azure Pipelines environment, and stdout encoding
+    to determine if Unicode (emojis) can be safely displayed.
+    
+    Returns:
+        bool: True if Unicode is supported, False otherwise.
+    
+    Example:
+        >>> if supports_unicode():
+        ...     print("✅ Unicode supported")
+        ... else:
+        ...     print("[OK] ASCII fallback")
+    """
+    # PowerShell 7+ environments (check PSModulePath)
+    if sys.version_info >= (3, 9) and os.getenv('PSModulePath'):
+        return True
+    
+    # Azure Pipelines supports Unicode
+    if os.getenv('AGENT_TEMPDIRECTORY'):
+        return True
+    
+    # Check if stdout encoding is UTF-8
+    try:
+        encoding = sys.stdout.encoding.lower()
+        return encoding in ['utf-8', 'utf8']
+    except (AttributeError, TypeError):
+        return False
+
+
+def get_status_emoji(status: StatusType) -> str:
+    """
+    Get status indicator (emoji or ASCII fallback).
+    
+    Returns appropriate Unicode emoji or ASCII text based on environment
+    support detected by supports_unicode().
+    
+    Args:
+        status: Status type ('success', 'warning', 'error', 'info')
+    
+    Returns:
+        str: Emoji or ASCII representation of status.
+    
+    Example:
+        >>> checkmark = get_status_emoji('success')
+        >>> print(f"{checkmark} All tests passed!")
+        ✅ All tests passed!  # (or "[OK] All tests passed!" in ASCII mode)
+    
+    Raises:
+        ValueError: If status is not one of the valid types.
+    """
+    valid_statuses = {'success', 'warning', 'error', 'info'}
+    if status not in valid_statuses:
+        raise ValueError(f"Invalid status '{status}'. Must be one of {valid_statuses}")
+    
+    if supports_unicode():
+        emoji_map = {
+            'success': '✅',
+            'warning': '⚠️',
+            'error': '❌',
+            'info': 'ℹ️'
+        }
+    else:
+        emoji_map = {
+            'success': '[OK]',
+            'warning': '[WARN]',
+            'error': '[ERR]',
+            'info': '[INFO]'
+        }
+    
+    return emoji_map[status]
+
+
+# Public API
+__all__ = ['supports_unicode', 'get_status_emoji', 'StatusType']
+```
+
+**Step 2: Create Empty `__init__.py`** (`scripts/modules/__init__.py`)
+
+```python
+"""Shared utility modules for scripts."""
+# Empty file - makes 'modules' a Python package
+```
+
+**Step 3: Use Module in Scripts**
+
+```python
+#!/usr/bin/env python3
+"""
+Example script using shared module.
+
+This script demonstrates importing and using functions from the shared
+common module for consistent Unicode detection and status display.
+"""
+
+import sys
+from pathlib import Path
+
+# Add modules directory to path (relative import)
+modules_path = Path(__file__).parent / "modules"
+sys.path.insert(0, str(modules_path))
+
+from common import get_status_emoji
+
+
+def main() -> int:
+    """Main script logic."""
+    try:
+        checkmark = get_status_emoji('success')
+        warning = get_status_emoji('warning')
+        
+        print(f"{checkmark} Validation started")
+        
+        # Script logic here...
+        
+        print(f"{warning} Some issues found")
+        return 0
+        
+    except Exception as e:
+        error = get_status_emoji('error')
+        print(f"{error} Error: {e}", file=sys.stderr)
+        return 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+```
+
+### Module Best Practices
+
+**✅ DO:**
+- Place modules in `scripts/modules/` directory
+- Create empty `__init__.py` to make it a package
+- Use type hints for all function signatures
+- Document all public functions with docstrings (Google or NumPy style)
+- Use `__all__` to explicitly define public API
+- Use relative path insertion for imports (`sys.path.insert`)
+- Keep modules focused (e.g., `common.py`, `logging_utils.py`)
+
+**❌ DON'T:**
+- Put everything in one giant module
+- Expose internal helper functions in `__all__`
+- Use absolute imports that break portability
+- Forget to document module purpose and functions
+
+### When to Create a Shared Function
+
+**Create shared function when:**
+- ✅ Function is used in 2+ scripts
+- ✅ Function provides common utility (formatting, validation, logging)
+- ✅ Function implements consistent behavior across scripts
+
+**Keep in script when:**
+- ❌ Function is specific to one script's logic
+- ❌ Function is only used once
+- ❌ Function has complex dependencies unique to that script
+
+### Conditional Unicode Support
+
+Python's shared module pattern naturally supports conditional Unicode:
+
+```python
+# In common.py module
+def supports_unicode() -> bool:
+    """Detect Unicode support."""
+    return (
+        os.getenv('AGENT_TEMPDIRECTORY') is not None or
+        sys.stdout.encoding.lower() in ['utf-8', 'utf8']
+    )
+
+# In any script
+from common import get_status_emoji
+
+success = get_status_emoji('success')  # ✅ or [OK] automatically
+print(f"{success} Task completed!")
+```
+
+### Testing Shared Modules
+
+**Create unit tests** (`scripts/modules/test_common.py`):
+
+```python
+"""Unit tests for common module."""
+
+import pytest
+from common import supports_unicode, get_status_emoji
+
+
+def test_get_status_emoji_valid_statuses():
+    """Test that all valid statuses return a string."""
+    for status in ['success', 'warning', 'error', 'info']:
+        result = get_status_emoji(status)
+        assert isinstance(result, str)
+        assert len(result) > 0
+
+
+def test_get_status_emoji_invalid_status():
+    """Test that invalid status raises ValueError."""
+    with pytest.raises(ValueError, match="Invalid status"):
+        get_status_emoji('invalid')
+
+
+def test_supports_unicode():
+    """Test Unicode detection returns bool."""
+    result = supports_unicode()
+    assert isinstance(result, bool)
+```
+
+**Run tests:**
+```bash
+cd scripts/modules
+pytest test_common.py -v
+```
+
+### Detailed Examples
+
+See **[Shared Module Pattern Exemplar (Python)](../../exemplars/script/python/shared-module.exemplar.md)** for:
+- Complete module structure with multiple functions
+- Advanced type hints and validation
+- Module versioning and documentation
+- Testing strategies for modules
+
+### Migration Prompt
+
+To migrate existing scripts to use shared modules, use:
+**[Migrate to Shared Module Prompt](../../prompts/script/migrate-to-shared-module.prompt.md)**
+
+---
+
+## Template Structure
+
+**Minimal Script**: See `.cursor/templars/script/python-script-minimal.templar.py`
+- Basic structure with argparse
+- Simple logging setup
+- Main function pattern
+
+**Full-Featured Script**: See `.cursor/templars/script/python-script-full.templar.py`
+- Complete with all advanced features
+- Production-ready structure
+- Comprehensive error handling
+
+**Configuration File**: See `.cursor/templars/script/python-config-file.templar.yaml`
+- YAML configuration template
+- Common settings
+- Documentation comments
+
+## Quality Levels
+
+Scripts should target quality levels based on use case:
+
+**Basic (60/100)**: Core principles + argparse + basic logging
+**Standard (70/100)**: Add type hints + unit tests + error handling
+**Advanced (80/100)**: Add retry logic + caching + progress reporting
+**Production (90-100/100)**: Add async/parallel + webhooks + comprehensive testing
+
+See `rule.scripts.quality-levels.v1` for complete assessment criteria.
+
+## Quick Reference
+
+### Essential Patterns (Use in Most Scripts)
+
+1. **Module docstring** - Always document
+2. **Type hints** - Modern Python standard
+3. **argparse** - Clean CLI interface
+4. **Logging** - Better than print()
+5. **Error handling** - Try/except with specific exceptions
+
+### Advanced Patterns (Use When Appropriate)
+
+6. **Retry logic** - External dependencies
+7. **Async/await** - I/O-bound operations
+8. **Multiprocessing** - CPU-bound operations
+9. **Rich UI** - User-facing scripts
+10. **Context managers** - Resource management
+11. **SQLite** - Historical tracking
+12. **Caching** - Expensive operations
+13. **Webhooks** - Notifications
+14. **YAML config** - External configuration
+15. **pytest** - Automated testing
+
+## Script Creation Workflow
+
+1. **Start with Template**: Use `.cursor/templars/script/python-script-minimal.templar.py`
+2. **Add Required Features**: Based on use case
+3. **Reference Exemplars**: For implementation patterns
+4. **Write Unit Tests**: Use pytest
+5. **Validate Quality**: Use `prompts/validate-script-standards.prompt.md`
+6. **Document Usage**: Update module docstring
+
+## Common Enhancements
+
+**Add Structured Logging**: See `.cursor/prompts/script/add-structured-logging.prompt.md`
+**Add Retry Logic**: See `.cursor/prompts/script/add-retry-logic.prompt.md`
+**Add Parallel Processing**: See `.cursor/prompts/script/add-parallel-processing.prompt.md`
+**Add Unit Tests**: See `.cursor/prompts/script/add-unit-tests.prompt.md`
+**Add Caching**: See `.cursor/prompts/script/add-caching.prompt.md`
+**Add Webhook Notifications**: See `.cursor/prompts/script/add-webhook-notifications.prompt.md`
+**Add Config File Support**: See `.cursor/prompts/script/add-config-file-support.prompt.md`
+**Add Progress Reporting**: See `.cursor/prompts/script/add-progress-reporting.prompt.md`
+
+## Anti-Patterns to Avoid
+
+❌ **Using print() instead of logging** - Can't control verbosity or format
+❌ **No type hints** - Loses IDE support and type safety
+❌ **Bare except clauses** - Hides real errors
+❌ **Global variables** - Makes testing difficult
+❌ **No docstrings** - Makes code hard to understand
+❌ **Synchronous I/O** - Wastes time waiting
+❌ **No resource cleanup** - Causes leaks and locks
+❌ **Hardcoded configuration** - Requires code changes for config updates
+
+## Version Requirements
+
+- **Python 3.9+** (minimum)
+- **Python 3.11+** (recommended for performance)
+- **Required packages**: argparse (built-in), logging (built-in)
+- **Optional packages**: pydantic, rich, pytest, aiohttp, tenacity
+
+## Integration Points
+
+- **Core Principles**: Builds on `rule.scripts.core-principles.v1`
+- **Quality Levels**: Assessment via `rule.scripts.quality-levels.v1`
+- **Templars**: Structure from `.cursor/templars/script/python-*.templar.*`
+- **Exemplars**: Patterns from `.cursor/exemplars/script/python/*.exemplar.md`
+- **Prompts**: Guidance from `.cursor/prompts/script/*.prompt.md`
+
+## Related Rules
+
+- `rule.scripts.core-principles.v1` - Foundation standards
+- `rule.scripts.powershell-standards.v1` - PowerShell equivalents
+- `rule.scripts.quality-levels.v1` - Quality assessment framework
+- `rule.scripts.agent-application.v1` - When to apply script rules
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Module docstring present with description, usage, requirements
+- [ ] Type hints on all function signatures
+- [ ] argparse for CLI with comprehensive help
+- [ ] logging module used (not print statements)
+- [ ] Error handling with specific exception types
+- [ ] Advanced features applied as appropriate for use case
+- [ ] Unit tests present (pytest framework)
+- [ ] No anti-patterns present (bare except, global vars, print(), etc.)

@@ -1,0 +1,356 @@
+---
+id: rule.technical-specifications.integration-points.v1
+kind: rule
+version: 1.0.1
+description: Documents external system interfaces, data exchange patterns, and integration dependencies for C++ to C# migration
+globs: **/docs/technical/**/*-integration-points.md
+governs: **/docs/technical/**/*-integration-points.md
+implements: integration-points.documentation
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+# Integration Points Documentation Rule
+
+## Purpose & Scope
+
+This rule defines how to create integration points specification files that document external system interfaces, data exchange patterns, and integration requirements for C++ to C# migration projects.
+
+**Applies to**: Integration points files at `docs/technical/[domain]/[domain]-integration-points.md` documenting external system interfaces, APIs, script functions (DBCREATE*, DBGET*, DBSET*), data exchange patterns, and integration dependencies. Critical for preserving external system compatibility during migration.
+
+**Does not apply to**: Internal domain relationships (use domain-overview-rule), database schema (use entity-relationship-rule), business rules (use business-rules-rule), or C# implementation designs (belong in docs/implementation/).
+
+## Inputs (Contract)
+
+- C++ source code analysis identifying external system interfaces
+- Script function catalog (DBCREATE*, DBGET*, DBSET* patterns and automation APIs)
+- External system interface specifications and data formats
+- Integration protocols, frequencies, and communication patterns
+- External system dependencies and business process integration
+- Performance characteristics (response times, throughput, availability)
+
+## Outputs (Contract)
+
+Integration points specification file containing:
+- File at `docs/technical/[domain]/[domain]-integration-points.md`
+- Complete external system catalog with purposes and integration methods
+- Script function interfaces exposed for external automation
+- External API surface callable by external systems
+- Actual data formats and message schemas (not assumed)
+- Protocol details, security, and transport mechanisms
+- Migration compatibility preservation requirements
+- Script function modernization strategy (to REST/GraphQL APIs)
+
+## Purpose (Original)
+
+This rule defines how to create integration points specification files that document external system interfaces, data exchange patterns, and integration requirements for C++ to C# migration projects.
+
+## Document Structure
+
+### **Overview Section**
+- **Integration Scope**: Which external systems and interfaces are covered
+- **Business Context**: Why these integrations exist and their business value
+- **Integration Patterns**: Types of integration patterns used (API, messaging, file transfer)
+- **Migration Impact**: How migration affects external system relationships
+
+### **External System Catalog**
+- **System Identification**: Complete list of external systems and their purposes
+- **Integration Methods**: How each system connects (protocols, formats, frequencies)
+- **Data Exchange**: What data is sent and received from each system
+- **Business Dependencies**: Business processes that depend on each integration
+
+### **Interface Specifications**
+- **API Contracts**: Detailed interface definitions for service-based integrations
+- **Script Function Interfaces**: Programmatic functions exposed for external automation (DBCREATE*, DBGET*, DBSET* patterns)
+- **Data Formats**: Message formats, schemas, and data structure definitions
+- **Protocol Details**: Communication protocols, security, and transport mechanisms
+- **Batch Operation Interfaces**: Bulk processing functions used by external systems
+- **Error Handling**: How integration errors are detected, reported, and resolved
+
+### **Data Flow Documentation**
+- **Inbound Data**: External data entering the system and processing requirements
+- **Outbound Data**: System data sent to external systems and formatting requirements
+- **Transformation Rules**: Data mapping and transformation logic between systems
+- **Validation Requirements**: Data quality checks and validation rules for integrated data
+
+### **Migration Requirements**
+- **Compatibility Preservation**: Requirements to maintain external system compatibility
+- **Interface Migration**: How C++ interfaces will be replicated in C# implementation
+- **Script Function Replacement**: Modern API equivalents for programmatic interfaces (DBCREATE*, DBGET*, DBSET*)
+- **External API Migration**: How automation interfaces will be modernized (REST, GraphQL)
+- **Testing Strategy**: How integration functionality will be validated during migration
+- **Rollback Considerations**: How to handle integration issues during migration
+
+## Content Guidelines
+
+### **What to Document**
+- **Complete Interface Inventory**: Every external system interface and connection
+- **Script Function Catalog**: All programmatic interfaces (e.g., DB* functions, automation APIs)
+- **External API Surface**: Functions callable by external systems for integration/automation
+- **Actual Data Formats**: Real message schemas, not assumed or generic formats
+- **Business Process Integration**: How external systems fit into business workflows
+- **Automation Dependencies**: External systems that rely on script functions for operation
+- **Error Handling Patterns**: How integration failures are currently managed
+- **Performance Characteristics**: Response times, throughput, and availability requirements
+
+### **What to Avoid**
+- **Assumed Interfaces**: Only document verified external system connections
+- **Generic Patterns**: Avoid standard integration patterns without verification
+- **Implementation Details**: Focus on WHAT is integrated, not HOW it's coded in C++
+- **Obsolete Interfaces**: Distinguish between active and deprecated integrations
+
+### **Accuracy Requirements**
+- All interfaces must be traceable to actual system analysis
+- Data formats must reflect actual message structures
+- Integration patterns must match current system behavior
+- Business dependencies must be verified with stakeholders
+
+## Integration Documentation Patterns
+
+### **External System Format**
+```markdown
+### **[SystemName]**
+
+**Purpose**: [Business function this system provides]
+**Integration Method**: [API/Messaging/File Transfer/Database/etc.]
+**Business Criticality**: [Critical/Important/Nice-to-have]
+
+**Connection Details**:
+- **Protocol**: [HTTP/HTTPS/TCP/File System/Database/etc.]
+- **Frequency**: [Real-time/Batch/On-demand/Scheduled]
+- **Direction**: [Inbound/Outbound/Bidirectional]
+- **Security**: [Authentication/Authorization requirements]
+
+**Data Exchange**:
+- **Inbound**: [What data this system sends to us]
+- **Outbound**: [What data we send to this system]
+- **Format**: [JSON/XML/CSV/Fixed-width/etc.]
+
+**Business Impact**: [What business processes depend on this integration]
+```
+
+### **Interface Specification Format**
+```markdown
+### **[InterfaceName]**
+
+**Business Purpose**: [Why this interface exists]
+**Technical Implementation**: [How interface is currently implemented]
+
+**Request/Input Format**:
+```
+[Example request/input data structure]
+```
+
+**Response/Output Format**:
+```
+[Example response/output data structure]
+```
+
+**Error Conditions**:
+- [Error condition]: [How handled]
+- [Error condition]: [How handled]
+
+**Business Rules**: [Any business logic applied during integration]
+```
+
+### **Data Flow Documentation Format**
+```markdown
+### **[DataFlowName]**
+
+**Flow Direction**: [System A → System B]
+**Business Trigger**: [What initiates this data flow]
+**Data Content**: [What information is transferred]
+
+**Processing Steps**:
+1. [Step 1: Data preparation or extraction]
+2. [Step 2: Transformation or validation]
+3. [Step 3: Transmission or delivery]
+4. [Step 4: Confirmation or logging]
+
+**Error Handling**: [How failures are detected and managed]
+**Performance Requirements**: [Timing, volume, availability requirements]
+```
+
+## Quality Standards
+
+### **Completeness Requirements**
+- Every external system interface documented
+- All data exchange patterns captured
+- All error handling scenarios covered
+- All business dependencies identified
+
+### **Accuracy Standards**
+- Interface specifications match actual implementations
+- Data formats reflect real message structures
+- Error handling documents actual system behavior
+- Business dependencies are verified and current
+
+### **Clarity Standards**
+- Business language used for integration purposes
+- Technical details included for implementation clarity
+- Clear distinction between inbound and outbound data flows
+- Unambiguous interface definitions and requirements
+
+## Special Considerations
+
+### **C++ System Integration Characteristics**
+- **Legacy Protocols**: Document older integration protocols that may need modernization
+- **File-Based Integration**: Traditional file transfer patterns common in legacy systems
+- **Database Integration**: Direct database connections and shared database patterns
+- **Synchronous Processing**: Legacy systems often use synchronous integration patterns
+
+### **Migration-Specific Requirements**
+- **Interface Preservation**: External systems must not be affected by internal migration
+- **Protocol Compatibility**: Maintain existing communication protocols
+- **Data Format Stability**: Preserve existing data formats to avoid external system changes
+- **Error Response Consistency**: Maintain consistent error responses for external systems
+
+### **Testing Considerations**
+- **Integration Testing**: How to test external system connections during migration
+- **Mock Systems**: Requirements for test doubles and mock external systems
+- **Data Validation**: How to validate integration data during testing
+- **Rollback Testing**: How to test rollback scenarios with external systems
+
+### **Performance Requirements**
+- **Response Time**: Current response time characteristics that must be maintained
+- **Throughput**: Volume handling capabilities that must be preserved
+- **Availability**: Uptime requirements for integration interfaces
+- **Scalability**: Growth requirements for integration capacity
+
+## Migration-Specific Sections
+
+### **Compatibility Preservation**
+- **Interface Contracts**: External interface contracts that must remain unchanged
+- **Data Format Stability**: Message formats that cannot change without external system impact
+- **Protocol Maintenance**: Communication protocols that must be maintained
+- **Error Response Consistency**: Error handling that external systems depend on
+
+### **Migration Strategy**
+- **Phased Migration**: How integration points will be migrated incrementally
+- **Script Function Modernization**: Plan for replacing script-based automation with modern APIs
+- **External System Impact**: How interface changes affect external system operations
+- **Parallel Operation**: Running both C++ and C# systems simultaneously
+- **Cutover Planning**: How to switch external systems to C# implementation
+- **Automation Interface Transition**: How external systems will migrate from scripts to APIs
+- **Rollback Procedures**: How to revert external systems if migration issues occur
+
+### **Validation Approach**
+- **Integration Testing**: Comprehensive testing with actual external systems
+- **Data Validation**: Verification that data exchange remains accurate
+- **Performance Testing**: Validation that integration performance is maintained
+- **Error Scenario Testing**: Testing of error conditions and recovery procedures
+
+## Quality Assurance
+
+### **Review Process**
+- **Integration Architects**: Review technical accuracy and completeness
+- **Business Stakeholders**: Validate business dependencies and requirements
+- **External System Representatives**: Confirm interface specifications and requirements
+- **Migration Team**: Validate migration considerations and testing approach
+
+### **Common Issues to Avoid**
+- **Missing Interfaces**: Overlooking less-obvious or rarely-used integrations
+- **Incomplete Data Formats**: Missing fields or incomplete message schemas
+- **Assumed Dependencies**: Documenting assumed rather than verified business dependencies
+- **Migration Gaps**: Missing considerations for external system impact during migration
+
+### **Validation Criteria**
+- All external systems identified and documented
+- All interface specifications are complete and accurate
+- All business dependencies are verified with stakeholders
+- Migration strategy addresses all external system considerations
+
+## Cross-Reference Integration
+
+### **Link Patterns**
+- Reference from domain objects: `external data per [Integration Points](integration-file.md)`
+- Reference from business rules: `external validation via [Integration Points](integration-file.md)`
+- Reference from performance specs: `integration performance per [Integration Points](integration-file.md)`
+
+### **Related Documentation**
+- **Domain Objects**: Link to entities that are shared with external systems
+- **Business Rules**: Link to rules that govern external data validation
+- **Performance Specs**: Link to performance requirements for integrations
+- **Migration Plans**: Link to migration strategies affecting external systems
+
+## Maintenance Guidelines
+
+### **Keep Current**
+- Update when external system interfaces change
+- Maintain accuracy as integration patterns evolve
+- Update migration considerations as C# design progresses
+- Keep performance requirements current as business needs change
+
+### **Review Triggers**
+- Changes to external system interfaces or requirements
+- New external system integrations or connections
+- Performance requirement changes for integrations
+- Migration design decisions affecting external systems
+- Business process changes that affect external data dependencies
+
+## Deterministic Steps
+
+When documenting integration points:
+
+1. **Identify External Systems**: Catalog all systems that integrate with this domain
+2. **Create File**: Create `[domain]-integration-points.md` at `docs/technical/[domain]/` root
+3. **Document Each System**: For each external system, specify purpose, integration method, criticality, protocols, data exchange
+4. **Document Script Functions**: Catalog DBCREATE*, DBGET*, DBSET* and automation APIs exposed to external systems
+5. **Document Data Formats**: Include actual message schemas and data structures (not assumed formats)
+6. **Document Performance**: Specify response times, throughput, availability requirements
+7. **Document Migration Strategy**: Define compatibility preservation, script modernization, API migration approach
+8. **Validate Completeness**: Ensure all external interfaces documented, no assumed integrations
+
+## OPSEC and Leak Control
+
+Integration points files must NOT contain:
+- **NO** internal server names, IP addresses, or connection URLs
+- **NO** credentials, API keys, tokens, or passwords
+- **NO** employee names, email addresses, or personal information
+- **NO** confidential customer data or business-sensitive examples
+- **NO** production system identifiers or environment details
+- External system names and protocols only (no infrastructure details)
+
+## Integration Points
+
+This rule works with:
+- **rule.technical-specifications.domain-object.v1**: Domain objects include fields for external system data
+- **rule.technical-specifications.business-rules.v1**: Business rules validate external data
+- **rule.technical-specifications.hybrid-architecture.v1**: Defines integration points location at domain root
+- **rule.technical-specifications.enumeration.v1**: Enumerations may be exposed to external systems
+
+## Failure Modes and Recovery
+
+**Failure**: Missing integration interfaces
+- **Detection**: External systems documented but interfaces incomplete
+- **Recovery**: Catalog all script functions, APIs, and data exchange patterns
+
+**Failure**: Assumed data formats instead of actual
+- **Detection**: Generic JSON/XML schemas without actual field specifications
+- **Recovery**: Extract actual message schemas from C++ source or integration configurations
+
+**Failure**: Missing script function documentation
+- **Detection**: DBCREATE*/DBGET*/DBSET* functions used but not documented
+- **Recovery**: Catalog all programmatic interfaces, document parameters and return values
+
+**Failure**: Migration strategy missing for external systems
+- **Detection**: Interfaces documented but no compatibility preservation plan
+- **Recovery**: Add migration requirements, script modernization strategy, API migration approach
+
+## Related Rules
+
+- **rule.technical-specifications.domain-object.v1**: Domain objects integrate with external systems
+- **rule.technical-specifications.business-rules.v1**: Business rules apply to external data
+- **rule.technical-specifications.hybrid-architecture.v1**: Defines integration points file location
+- **rule.technical-specifications.architecture.v1**: Three-folder separation pattern
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no server names, IPs, credentials, URLs, emails, confidential data)
+- [ ] File at correct location: docs/technical/[domain]/[domain]-integration-points.md
+- [ ] ALL external systems cataloged with purposes and integration methods
+- [ ] Script functions documented (DBCREATE*, DBGET*, DBSET* and automation APIs)
+- [ ] Actual data formats included (not assumed or generic schemas)
+- [ ] Performance characteristics specified (response times, throughput, availability)
+- [ ] Migration strategy addresses compatibility preservation and API modernization

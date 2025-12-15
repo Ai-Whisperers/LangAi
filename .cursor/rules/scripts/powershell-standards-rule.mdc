@@ -1,0 +1,731 @@
+---
+id: rule.scripts.powershell-standards.v1
+kind: rule
+version: 2.0.0
+description: PowerShell-specific standards for reusable scripts with advanced features
+globs: **/*.ps1
+governs: **/*.ps1
+implements: scripts.powershell-standards
+requires:
+  - rule.scripts.core-principles.v1
+  - rule.scripts.quality-levels.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: 
+  owner: team-devops
+  last_review: 2025-12-07
+  created: 2025-12-07
+  refactored: 2025-12-07
+alwaysApply: false
+---
+
+# Reusable Scripts - PowerShell Standards
+
+## Purpose & Scope
+
+Defines **PowerShell-specific** standards for reusable scripts including comment-based help, pipeline support, parallel processing, and advanced features. These standards build on core principles and are organized by quality level.
+
+**Applies to**: All PowerShell scripts (`.ps1`) in the repository.
+
+**Does not apply to**: One-off scripts, personal scripts outside version control, or non-PowerShell scripts.
+
+## Inputs (Contract)
+
+- Existing PowerShell script or requirement for new script
+- Core principles already applied (see `rule.scripts.core-principles.v1`)
+- Target quality level (Basic, Standard, Advanced, Production)
+- Understanding of advanced features needed
+
+## Outputs (Contract)
+
+PowerShell script with:
+- **Comment-based help** (Get-Help support)
+- **Parameter validation attributes**
+- **Advanced features** as appropriate for target quality level
+- References to script templates and exemplars
+
+---
+
+## Standard Quality Level Requirements
+
+### 0. Runtime Baseline (Mandatory)
+
+- All Standard+ scripts MUST target PowerShell 7.2+ (Core).  
+- Add at top of every script and shared module:  
+  - `#Requires -Version 7.2`  
+  - `#Requires -PSEdition Core`
+
+### 1. Comment-Based Help (Mandatory)
+
+Every Standard-level script MUST have complete comment-based help.
+
+**Mandatory Sections**:
+- `.SYNOPSIS`: One-line description
+- `.DESCRIPTION`: Detailed explanation
+- `.PARAMETER`: For each parameter
+- `.EXAMPLE`: At least 2 examples
+- `.NOTES`: File info, prerequisites
+- `.LINK`: Documentation URL
+
+**Verification**: `Get-Help .\script-name.ps1 -Full` should display complete documentation.
+
+**Simple Example** (inline for reference):
+```powershell
+<#
+.SYNOPSIS
+    Analyze code coverage and enforce thresholds
+
+.DESCRIPTION
+    Runs coverage analysis on .NET projects and validates against thresholds.
+
+.PARAMETER Configuration
+    Build configuration (Debug or Release). Default: Release
+
+.EXAMPLE
+    .\analyze-coverage.ps1
+    Runs with default settings
+
+.NOTES
+    File Name      : analyze-coverage.ps1
+    Prerequisite   : .NET SDK 9.x
+#>
+```
+
+### 2. Parameter Validation (Mandatory)
+
+Parameters MUST be strongly typed with validation attributes.
+
+**Requirements**:
+- âœ… Strongly typed (`[string]`, `[int]`, `[switch]`)
+- âœ… Validation attributes (`ValidateSet`, `ValidateRange`, `ValidatePattern`)
+- âœ… Help messages
+- âœ… Portable defaults (no Azure Pipelines variables)
+
+**Detailed Examples**: See [Parameters Pattern Exemplar](../../exemplars/script/powershell/parameters.exemplar.md)
+
+Key validation attributes:
+- `ValidateSet("Debug", "Release")` - Limit choices
+- `ValidateRange(0, 100)` - Numeric bounds
+- `ValidatePattern("^[A-Z]{2,5}-\d{1,5}$")` - Regex matching
+- `ValidateScript({Test-Path $_})` - Custom validation
+
+### 3. Error Handling (Mandatory)
+
+Robust error handling with exit codes.
+
+**Requirements**:
+- âœ… `$ErrorActionPreference = "Stop"` at script start
+- âœ… try/catch/finally blocks
+- âœ… Check `$LASTEXITCODE` for external commands
+- âœ… Actionable error messages
+- âœ… Resource cleanup in finally
+
+**Detailed Examples**: See [Error Handling Pattern Exemplar](../../exemplars/script/powershell/error-handling.exemplar.md)
+
+### 4. Portability (Mandatory)
+
+Script works locally AND in CI/CD without modification.
+
+**Requirements**:
+- âœ… Environment detection (`$isAzurePipeline = [bool]$env:AGENT_TEMPDIRECTORY`)
+- âœ… Portable path defaults (use `$env:TEMP` locally, `$env:BUILD_ARTIFACTSTAGINGDIRECTORY` in CI/CD)
+- âœ… Script-relative paths (`$PSScriptRoot`)
+- âœ… No hardcoded paths or Azure Pipelines syntax
+
+**Detailed Examples**: See [Portability Pattern Exemplar](../../exemplars/script/powershell/portability.exemplar.md)
+
+### 5. Configuration File Support (Mandatory for 5+ parameters)
+
+Scripts with 5+ parameters MUST support external JSON config files.
+
+**Requirements**:
+- âœ… Optional config file (script works without it)
+- âœ… Command-line parameters override config values
+- âœ… JSON format
+
+**Template**: See `../../templars/script/powershell-config-file.templar.json`
+
+**Pattern**:
+```powershell
+param([string]$ConfigFile = "$PSScriptRoot/script-config.json")
+
+if (Test-Path $ConfigFile) {
+    $config = Get-Content $ConfigFile | ConvertFrom-Json
+    # Override parameters with config values if not explicitly set
+}
+```
+
+---
+
+## Shared Modules (Best Practice)
+
+Prefer extracting reusable helpers into `scripts/modules/*.psm1` when a function is used in 2+ scripts; import via `$PSScriptRoot`, use `-Force` for refresh, and export only intended functions.
+
+### Why Use Shared Modules?
+
+Extracting shared functions into PowerShell modules (`.psm1` files) provides:
+- **DRY Principle**: Write once, use everywhere
+- **Centralized Fixes**: Bug fixes benefit all scripts
+- **Consistent Behavior**: Shared logic ensures uniformity
+- **Faster Development**: Reuse proven, tested functions
+
+### Module Organization
+
+```text
+repository/
+├── scripts/
+│   ├── validate-code-quality.ps1
+│   ├── generate-changelog.ps1
+│   └── modules/
+│       └── Common.psm1              # Shared PowerShell module
+```
+
+### Creating a Shared Module
+
+**Step 1: Create Module File** (`scripts/modules/Common.psm1`)
+
+```powershell
+<#
+.SYNOPSIS
+    Common utility functions for scripts
+
+.DESCRIPTION
+    Shared module providing Unicode detection, formatting utilities,
+    and common helper functions used across multiple scripts.
+
+.NOTES
+    File Name   : Common.psm1
+    Location    : scripts/modules/
+#>
+
+# --- Public Functions ---
+
+function Test-Unicode {
+    <#
+    .SYNOPSIS
+        Detects if the environment supports Unicode output.
+    
+    .DESCRIPTION
+        Checks PowerShell version, Azure Pipelines environment, and
+        console encoding to determine Unicode support.
+    
+    .OUTPUTS
+        [bool] True if Unicode is supported, False otherwise.
+    
+    .EXAMPLE
+        if (Test-Unicode) {
+            Write-Host "✅ Unicode supported"
+        }
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+    
+    $psVersion = $PSVersionTable.PSVersion.Major
+    $inAzure = $env:AGENT_TEMPDIRECTORY -ne $null
+    $isUtf8Console = [Console]::OutputEncoding.CodePage -eq 65001
+    
+    return ($psVersion -ge 7) -or $inAzure -or $isUtf8Console
+}
+
+function Get-StatusEmoji {
+    <#
+    .SYNOPSIS
+        Gets status indicator emoji or ASCII fallback.
+    
+    .PARAMETER Status
+        Status type: 'success', 'warning', 'error', 'info'
+    
+    .OUTPUTS
+        [string] Emoji or ASCII representation of status.
+    
+    .EXAMPLE
+        $checkmark = Get-StatusEmoji 'success'
+        Write-Host "$checkmark All tests passed!" -ForegroundColor Green
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateSet('success', 'warning', 'error', 'info')]
+        [string]$Status
+    )
+    
+    if (Test-Unicode) {
+        $emojis = @{
+            'success' = '✅'
+            'warning' = '⚠️'
+            'error'   = '❌'
+            'info'    = 'ℹ️'
+        }
+    } else {
+        $emojis = @{
+            'success' = '[OK]'
+            'warning' = '[WARN]'
+            'error'   = '[ERR]'
+            'info'    = '[INFO]'
+        }
+    }
+    
+    return $emojis[$Status]
+}
+
+# --- Private Functions (Internal Use Only) ---
+
+function Write-InternalLog {
+    # Not exported - only used within module
+    param([string]$Message)
+    Write-Verbose "[Common Module] $Message"
+}
+
+# --- Export Public Functions ---
+Export-ModuleMember -Function Test-Unicode, Get-StatusEmoji
+```
+
+**Step 2: Use Module in Scripts**
+
+```powershell
+#!/usr/bin/env pwsh
+#Requires -Version 5.1
+
+<#
+.SYNOPSIS
+    Example script using shared module
+#>
+
+# Import shared module (relative path + -Force for fresh load)
+$ModulePath = Join-Path $PSScriptRoot "modules\Common.psm1"
+Import-Module $ModulePath -Force
+
+# Use shared functions
+$checkmark = Get-StatusEmoji 'success'
+$warning = Get-StatusEmoji 'warning'
+
+Write-Host "$checkmark Validation started" -ForegroundColor Green
+
+# Script logic here...
+
+Write-Host "$warning Some issues found" -ForegroundColor Yellow
+```
+
+### Module Best Practices
+
+**✅ DO:**
+- Place modules in `scripts/modules/` directory
+- Use `.psm1` extension for modules
+- Document all exported functions with comment-based help
+- Use `Export-ModuleMember` to explicitly export public functions
+- Import with `-Force` flag to ensure fresh load
+- Use relative paths (`$PSScriptRoot`) for portability
+- Keep modules focused (e.g., `Common.psm1`, `Logging.psm1`)
+
+**❌ DON'T:**
+- Put everything in one giant module
+- Export internal helper functions
+- Use absolute paths in imports
+- Forget to document module purpose
+
+### When to Create a Shared Function
+
+**Create shared function when:**
+- ✅ Function is used in 2+ scripts
+- ✅ Function provides common utility (formatting, validation, logging)
+- ✅ Function implements consistent behavior across scripts
+
+**Keep in script when:**
+- ❌ Function is specific to one script's logic
+- ❌ Function is only used once
+- ❌ Function has complex dependencies unique to that script
+
+### Detailed Examples
+
+See **[Shared Module Pattern Exemplar](../../exemplars/script/powershell/shared-module.exemplar.md)** for:
+- Complete module structure with multiple functions
+- Advanced parameter validation in modules
+- Module versioning and documentation
+- Testing strategies for modules
+
+### Migration Prompt
+
+To migrate existing scripts to use shared modules, use:
+**[Migrate to Shared Module Prompt](../../prompts/script/migrate-to-shared-module.prompt.md)**
+
+---
+
+## Conditional Unicode Support (Best Practice)
+
+### Why Conditional Unicode?
+
+PowerShell scripts run in diverse environments:
+- **PowerShell 7+**: Full Unicode support
+- **Windows PowerShell 5.1**: Limited Unicode (depends on console encoding)
+- **Azure Pipelines**: Full Unicode support
+- **Legacy consoles**: May not support Unicode
+
+Using emojis (✅ ❌ ⚠️) improves readability in modern environments, but ASCII fallbacks (`[OK]`, `[ERR]`, `[WARN]`) ensure compatibility.
+
+### Detection Pattern
+
+**Environment Detection Logic:**
+
+```powershell
+function Test-Unicode {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+    
+    # PowerShell 7+ always supports Unicode
+    $psVersion = $PSVersionTable.PSVersion.Major
+    if ($psVersion -ge 7) {
+        return $true
+    }
+    
+    # Azure Pipelines supports Unicode
+    if ($env:AGENT_TEMPDIRECTORY -ne $null) {
+        return $true
+    }
+    
+    # Check if console encoding is UTF-8
+    if ([Console]::OutputEncoding.CodePage -eq 65001) {
+        return $true
+    }
+    
+    # Fallback to ASCII
+    return $false
+}
+```
+
+### Usage Pattern
+
+**Inline Usage:**
+
+```powershell
+# Detect Unicode support once at script start
+$supportsUnicode = (
+    ($PSVersionTable.PSVersion.Major -ge 7) -or 
+    ($env:AGENT_TEMPDIRECTORY -ne $null) -or 
+    ([Console]::OutputEncoding.CodePage -eq 65001)
+)
+
+# Use conditional output
+if ($supportsUnicode) {
+    Write-Host "✅ Tests passed!" -ForegroundColor Green
+    Write-Host "⚠️ Warning: Coverage below 80%" -ForegroundColor Yellow
+    Write-Host "❌ Build failed!" -ForegroundColor Red
+} else {
+    Write-Host "[OK] Tests passed!" -ForegroundColor Green
+    Write-Host "[WARN] Warning: Coverage below 80%" -ForegroundColor Yellow
+    Write-Host "[ERR] Build failed!" -ForegroundColor Red
+}
+```
+
+**Module-Based Usage (Recommended):**
+
+```powershell
+# Import shared module with Unicode detection
+Import-Module "$PSScriptRoot/modules/Common.psm1" -Force
+
+# Use helper function
+$checkmark = Get-StatusEmoji 'success'
+$warning = Get-StatusEmoji 'warning'
+$error = Get-StatusEmoji 'error'
+
+Write-Host "$checkmark Tests passed!" -ForegroundColor Green
+Write-Host "$warning Coverage below 80%" -ForegroundColor Yellow
+Write-Host "$error Build failed!" -ForegroundColor Red
+```
+
+### Benefits
+
+**User Experience:**
+- ✅ Modern environments get beautiful emoji output
+- ✅ Legacy environments get clear ASCII indicators
+- ✅ No errors or garbled characters
+
+**Maintainability:**
+- ✅ Centralized detection logic (DRY principle)
+- ✅ Easy to update symbols globally
+- ✅ Consistent behavior across all scripts
+
+### Complete Example
+
+**Script with Conditional Unicode:**
+
+```powershell
+#!/usr/bin/env pwsh
+#Requires -Version 5.1
+
+param(
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("Debug", "Release")]
+    [string]$Configuration = "Release"
+)
+
+# Import shared module for Unicode detection
+$ModulePath = Join-Path $PSScriptRoot "modules\Common.psm1"
+Import-Module $ModulePath -Force
+
+# Main logic
+try {
+    $info = Get-StatusEmoji 'info'
+    Write-Host "$info Building project in $Configuration mode..." -ForegroundColor Cyan
+    
+    dotnet build --configuration $Configuration
+    
+    if ($LASTEXITCODE -ne 0) {
+        $error = Get-StatusEmoji 'error'
+        Write-Host "$error Build failed with exit code $LASTEXITCODE" -ForegroundColor Red
+        exit 1
+    }
+    
+    $success = Get-StatusEmoji 'success'
+    Write-Host "$success Build completed successfully!" -ForegroundColor Green
+    exit 0
+}
+catch {
+    $error = Get-StatusEmoji 'error'
+    Write-Host "$error Exception: $($_.Exception.Message)" -ForegroundColor Red
+    exit 1
+}
+```
+
+### Testing Conditional Unicode
+
+**Test in different environments:**
+
+```powershell
+# Test in PowerShell 7+
+pwsh -Command ".\your-script.ps1"
+
+# Test in Windows PowerShell 5.1
+powershell -Command ".\your-script.ps1"
+
+# Test in Azure Pipelines (set environment variable)
+$env:AGENT_TEMPDIRECTORY = "C:\temp"
+.\your-script.ps1
+
+# Test with UTF-8 console
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+.\your-script.ps1
+```
+
+---
+
+## Advanced Quality Level Features
+
+Choose 2+ features for Advanced quality level.
+
+### Parallel Processing (ForEach-Object -Parallel)
+
+Process multiple independent items concurrently (PowerShell 7+).
+
+**When to use**: 10+ independent items, each taking >1 second  
+**Performance**: 3-10x speedup  
+**Detailed Examples**: See [Parallel Processing Pattern Exemplar](../../exemplars/script/powershell/parallel.exemplar.md)
+
+**Key Pattern**:
+```powershell
+$results = $items | ForEach-Object -Parallel {
+    # Process item
+} -ThrottleLimit 10
+```
+
+### Progress Reporting (Write-Progress)
+
+Show progress bar for long-running operations.
+
+**When to use**: Operations >10 seconds  
+**Detailed Examples**: See [Progress Reporting Pattern Exemplar](../../exemplars/script/powershell/progress.exemplar.md)
+
+### Structured Logging (Write-Log)
+
+Logging with severity levels (INFO, WARN, ERROR, DEBUG, SUCCESS).
+
+**When to use**: Advanced+ quality level, production scripts  
+**Detailed Examples**: See [Logging Pattern Exemplar](../../exemplars/script/powershell/logging.exemplar.md)
+
+**Features**:
+- Timestamps on all messages
+- Color-coded by level
+- Azure Pipelines integration (`##vso[task.logissue]`)
+- Optional file logging
+
+### Smart Caching
+
+Skip analysis of unchanged items using file hashing.
+
+**When to use**: Repeated analysis, large datasets  
+**Performance**: 50-80% speedup on unchanged codebases  
+**Detailed Examples**: See [Caching Pattern Exemplar](../../exemplars/script/powershell/caching.exemplar.md)
+
+### Retry Logic
+
+Automatic retry with exponential backoff for transient failures.
+
+**When to use**: Network operations, API calls  
+**Detailed Examples**: See [Retry Logic Pattern Exemplar](../../exemplars/script/powershell/retry.exemplar.md)
+
+**Key Pattern**:
+```powershell
+Invoke-WithRetry {
+    # Operation that might fail transiently
+} -MaxRetries 3 -DelaySeconds 5
+```
+
+### Pipeline Support (ValueFromPipeline)
+
+Accept input from PowerShell pipeline.
+
+**When to use**: Reusable utilities, cmdlet-style scripts  
+**Detailed Examples**: See [Pipeline Support Pattern Exemplar](../../exemplars/script/powershell/pipeline.exemplar.md)
+
+---
+
+## Production Quality Level Features
+
+Choose 2+ features for Production quality level (in addition to Advanced features).
+
+### Webhook Notifications
+
+Send notifications to Microsoft Teams or Slack.
+
+**When to use**: Production scripts, critical automation  
+**Detailed Examples**: See [Webhooks Pattern Exemplar](../../exemplars/script/powershell/webhooks.exemplar.md)
+
+**Key Requirements**:
+- Webhook URL from environment variable (secure)
+- Graceful degradation if webhook fails
+- Color-coded by status (green/orange/red)
+
+### Historical Trend Tracking
+
+Store metrics over time for trend analysis.
+
+**When to use**: Performance tracking, quality metrics  
+**Pattern**: CSV or SQLite database for metrics storage
+
+### Performance Profiling
+
+Measure execution time per section.
+
+**Pattern**:
+```powershell
+$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+# ... work ...
+$stopwatch.Stop()
+Write-Log "Completed in $($stopwatch.Elapsed.TotalSeconds)s"
+```
+
+### WhatIf/Dry-Run Support
+
+Test script without side effects.
+
+**Pattern**:
+```powershell
+[CmdletBinding(SupportsShouldProcess=$true)]
+param()
+
+if ($PSCmdlet.ShouldProcess("Operation", "Perform action")) {
+    # Actual work
+}
+```
+
+---
+
+## Script Templates
+
+### Minimal Template
+
+For simple scripts with <5 parameters and basic logic.
+
+**Template**: `../../templars/script/powershell-script-minimal.templar.ps1`
+
+**Use when**:
+- Simple automation tasks
+- Few parameters
+- Linear logic flow
+
+### Full Template
+
+For complex scripts with 5+ parameters, config file support, and environment detection.
+
+**Template**: `../../templars/script/powershell-script-full.templar.ps1`
+
+**Use when**:
+- Complex automation
+- Many parameters
+- Environment-specific behavior
+- Config file needed
+
+**How to use templates**:
+1. Copy template to new file
+2. Replace all `{{PLACEHOLDER}}` values
+3. Implement logic in designated sections
+4. Validate with `validate-script-standards.prompt.md`
+
+---
+
+## Quick Reference
+
+### Standard Level Checklist
+- [ ] Comment-based help complete (Get-Help works)
+- [ ] Parameters strongly typed with validation
+- [ ] Error handling with try/catch and exit codes
+- [ ] Portability (environment detection, portable paths)
+- [ ] Config file support (if 5+ parameters)
+
+### Advanced Level Checklist (Standard +)
+- [ ] 2+ advanced features (parallel, progress, logging, caching, retry, pipeline)
+- [ ] Unit tests with Pester (50%+ coverage)
+- [ ] Performance optimized and measured
+
+### Production Level Checklist (Advanced +)
+- [ ] 2+ production features (webhooks, history, profiling, whatif)
+- [ ] 80%+ test coverage
+- [ ] Performance profiling
+- [ ] Operational documentation (runbook)
+
+---
+
+## Related Resources
+
+### Exemplars (Pattern Examples)
+- [Parameters](../../exemplars/script/powershell/parameters.exemplar.md)
+- [Error Handling](../../exemplars/script/powershell/error-handling.exemplar.md)
+- [Portability](../../exemplars/script/powershell/portability.exemplar.md)
+- [Parallel Processing](../../exemplars/script/powershell/parallel.exemplar.md)
+- [Progress Reporting](../../exemplars/script/powershell/progress.exemplar.md)
+- [Structured Logging](../../exemplars/script/powershell/logging.exemplar.md)
+- [Smart Caching](../../exemplars/script/powershell/caching.exemplar.md)
+- [Retry Logic](../../exemplars/script/powershell/retry.exemplar.md)
+- [Webhook Notifications](../../exemplars/script/powershell/webhooks.exemplar.md)
+- [Pipeline Support](../../exemplars/script/powershell/pipeline.exemplar.md)
+
+### Prompts (Task Instructions)
+- [Create PowerShell Script](../../prompts/script/create-powershell-script.prompt.md)
+- [Add Retry Logic](../../prompts/script/add-retry-logic.prompt.md)
+- [Add Parallel Processing](../../prompts/script/add-parallel-processing.prompt.md)
+- [Add Progress Reporting](../../prompts/script/add-progress-reporting.prompt.md)
+- [Add Structured Logging](../../prompts/script/add-structured-logging.prompt.md)
+- [Add Smart Caching](../../prompts/script/add-caching.prompt.md)
+- [Add Webhook Notifications](../../prompts/script/add-webhook-notifications.prompt.md)
+- [Add Unit Tests](../../prompts/script/add-unit-tests.prompt.md)
+- [Validate Script Standards](../../prompts/script/validate-script-standards.prompt.md)
+
+### Related Rules
+- `rule.scripts.core-principles.v1` - Foundation principles
+- `rule.scripts.quality-levels.v1` - Quality level definitions and assessment
+- `rule.scripts.python-standards.v1` - Python equivalents
+- `rule.scripts.agent-application.v1` - When to apply script rules
+
+---
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Comment-based help complete (testable with Get-Help)
+- [ ] All parameters properly typed with validation attributes
+- [ ] Script includes [CmdletBinding()] if using advanced features
+- [ ] Core principles applied (portability, error handling, exit codes)
+- [ ] Advanced features used appropriately for target quality level
+- [ ] Script tested locally and in CI/CD
+- [ ] No PSScriptAnalyzer warnings
+- [ ] Quality level documented in script header

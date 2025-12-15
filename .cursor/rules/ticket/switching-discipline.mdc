@@ -1,0 +1,225 @@
+﻿---
+id: rule.ticket.switching-discipline.v1
+kind: rule
+version: 1.0.1
+description: Rules for disciplined ticket switching and context management to prevent work misalignment
+globs: **/tickets/current.md, **/tickets/**/context.md, **/tickets/**/progress.md, **/tickets/**/timeline.md
+governs: **/tickets/current.md, **/tickets/**/context.md, **/tickets/**/progress.md
+implements: ticket.switch
+requires:
+  - rule.ticket.context.v1
+  - rule.ticket.progress.v1
+  - rule.ticket.timeline.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Ticket Switching Discipline
+
+## Purpose & Scope
+
+Ensures proper ticket context management and prevents work from being misaligned with the active ticket. Defines the disciplined approach to switching between tickets while preserving context, maintaining traceability, and preventing work attribution errors.
+
+**Applies to**: All ticket switches, context transitions, and work resumptions.
+
+**Does not apply to**: Single-ticket workflows with no context switching.
+
+## Inputs (Contract)
+
+- Current workspace state with `tickets/current.md` present
+- User instruction that may reference a ticket ID
+- Source ticket (if switching from another ticket) with context.md, progress.md
+- Target ticket ID and directory `tickets/TICKET-ID/`
+- Current timestamp for logging switch
+
+## Outputs (Contract)
+
+- Updates `tickets/current.md` with new active ticket ID (local file, not committed)
+- Updates source ticket `context.md` with PAUSED status and current state
+- Updates source ticket `progress.md` with switch-out entry and timestamp
+- Updates target ticket `context.md` with ACTIVE status
+- Updates target ticket `progress.md` with switch-in entry and timestamp
+- Updates both tickets' `timeline.md` with switch timestamps
+- Explicit acknowledgment to user confirming switch
+- No work attributed to wrong ticket
+
+## Deterministic Steps
+
+Execute in order when switching tickets:
+
+1. **Read** `tickets/current.md` to identify officially active ticket
+2. **Compare** current.md ticket with user's mentioned ticket
+3. **IF mismatch detected**:
+   - STOP all work immediately
+   - ASK user: "Should I switch from TICKET-X to TICKET-Y?"
+   - WAIT for explicit confirmation
+4. **IF confirmed** (or user explicitly requests switch):
+   - Log current timestamp
+5. **Pause Source Ticket** (if switching from another ticket):
+   - Read source ticket context.md
+   - Update source context.md: Set status to "PAUSED", note current state
+   - Append to source progress.md: "Paused work to switch to TICKET-Y: [reason]"
+   - Append to source timeline.md: "[TIMESTAMP] - Pause - Switched to TICKET-Y"
+6. **Activate Target Ticket**:
+   - Verify `tickets/TICKET-ID/` directory exists
+   - Read target context.md (if exists) to understand current state
+   - Update target context.md: Set status to "ACTIVE", load focus areas
+   - Append to target progress.md: "Resumed/Started work from TICKET-X: [reason]"
+   - Append to target timeline.md: "[TIMESTAMP] - Resume/Start - Switched from TICKET-X"
+7. **Update Current Tracker**:
+   - Write new ticket ID to `tickets/current.md`
+8. **Acknowledge to User**:
+   - Explicit message: "Switched to TICKET-Y, updated current.md"
+9. **Verify alignment** before proceeding with work
+
+## Core Principles
+
+- **Never assume ticket identity** from conversational context alone
+- **Always validate against tickets/current.md** before starting work
+- **Explicit confirmation required** for all ticket switches
+- **Complete context preservation** during transitions
+- **Clear audit trail** of switching decisions
+
+## During Context Switches
+
+### Source Ticket (Pausing)
+- **Update context.md** with "PAUSED" status and current state
+- **Log in progress.md**: "Paused work to switch to TICKET-Y: [reason]"
+- **Log in timeline.md**: Timestamp when work session ends
+- **Ensure all current findings** are captured before switching
+
+### Target Ticket (Resuming/Starting)
+- **Read existing context.md** to understand current state
+- **Log in progress.md**: "Resumed/Started work from TICKET-X: [reason]"
+- **Log in timeline.md**: Timestamp when work session begins
+- **Update context.md** with "ACTIVE" status and focus areas
+
+## Error Recovery Protocol
+
+### When Misalignment is Discovered
+1. **Acknowledge immediately**: "I notice a ticket misalignment..."
+2. **Clarify explicitly**: "Should current ticket be X or Y?"
+3. **Wait for confirmation** before proceeding
+4. **Update current.md** as directed
+5. **Document correction** in progress files
+
+### Recovery Actions
+- **Never assume** the correct ticket without user confirmation
+- **Document the error** in progress.md: "Corrected ticket misalignment: [details]"
+- **Update context.md** of correct ticket with current state
+- **Ensure no work is lost** during correction
+
+## Validation Checkpoints
+
+### Pre-Work Validation
+- [ ] Read 	ickets/current.md
+- [ ] Compare with user instructions
+- [ ] Resolve any mismatches before proceeding
+- [ ] Confirm active ticket explicitly
+
+### During Work Validation
+- [ ] Periodically verify ticket alignment
+- [ ] Update context.md with current state
+- [ ] Log significant decisions in progress.md
+- [ ] Maintain ticket focus throughout session
+
+### Post-Work Validation
+- [ ] Ensure all work is attributed to correct ticket
+- [ ] Update context.md with session outcomes
+- [ ] Log session summary in progress.md
+- [ ] Verify current.md reflects ending state
+
+## Formatting Requirements
+
+current.md format:
+```markdown
+TICKET-ID
+```
+(Single line with ticket ID only)
+
+context.md status markers:
+- `**Status**: ACTIVE` - Currently working on this ticket
+- `**Status**: PAUSED` - Temporarily paused, may resume later
+
+progress.md switch entries:
+```markdown
+## YYYY-MM-DD - Ticket Switch
+
+**Time**: YYYY-MM-DDTHH:MM:SSZ
+**Action**: Paused work to switch to TICKET-Y
+**Reason**: [Why switching]
+**Next Steps**: [What to do when resuming]
+```
+
+## OPSEC and Leak Control
+
+When logging ticket switches:
+- NO internal project names or client identifiers in switch reasons
+- Generic references: "switching to database optimization ticket" not "switching to ACME-Corp-Database-123"
+- NO sensitive rationale in switch logs
+- Focus on work type, not specific business context
+
+## Integration Points
+
+- **Syncs with**: `rule.ticket.context.v1` (context status updates)
+- **Updates**: `rule.ticket.progress.v1` (switch documented chronologically)
+- **Tracks**: `rule.ticket.timeline.v1` (switch timestamps logged)
+- **Referenced by**: `rule.ticket.workflow.v1` (switching protocol)
+- **Validates**: tickets/current.md as single source of truth for active ticket
+
+## Failure Modes and Recovery
+
+**Misalignment discovered mid-work**:
+
+- Detection: Work performed on wrong ticket
+- Recovery: Stop immediately, confirm correct ticket with user, attribute work to correct ticket
+- Fallback: Document misalignment in progress.md, request clarification
+
+**current.md missing or corrupted**:
+
+- Detection: tickets/current.md not found or unreadable
+- Recovery: Ask user which ticket to work on, recreate current.md
+- Fallback: Cannot proceed without knowing active ticket
+
+**Source ticket context.md not found**:
+
+- Detection: Trying to pause ticket but context.md doesn't exist
+- Recovery: Skip pause step, proceed with target activation
+- Fallback: Note in progress.md that source context wasn't preserved
+
+**User ambiguous about ticket switch**:
+
+- Detection: User mentions ticket but unclear if switch intended
+- Recovery: Clarify explicitly: "Should I switch to TICKET-X, or just reference it?"
+- Fallback: Do NOT switch without explicit confirmation
+
+**Multiple tickets mentioned simultaneously**:
+
+- Detection: User references TICKET-A and TICKET-B in same instruction
+- Recovery: Ask which ticket is active, which is just reference
+- Fallback: Default to current.md ticket unless explicitly told to switch
+
+## Provenance Footer Specification
+
+Not applicable - switching updates existing ticket files, doesn't generate new files.
+
+## Related Rules
+
+- `rule.ticket.context.v1` - Context updates with ACTIVE/PAUSED status
+- `rule.ticket.progress.v1` - Switch documented in progress chronology
+- `rule.ticket.timeline.v1` - Switch timestamps logged
+- `rule.ticket.workflow.v1` - Switching part of overall workflow
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] tickets/current.md read and validated before starting any work
+- [ ] User confirmation obtained if mismatch detected
+- [ ] Source ticket context.md updated with PAUSED status
+- [ ] Source ticket progress.md logged with switch-out entry
+- [ ] Target ticket context.md updated with ACTIVE status
+- [ ] Target ticket progress.md logged with switch-in entry
+- [ ] tickets/current.md updated with new active ticket ID
+- [ ] Explicit acknowledgment to user confirming switch
+- [ ] Timeline entries updated in both tickets with timestamps
+- [ ] No work attributed to wrong ticket

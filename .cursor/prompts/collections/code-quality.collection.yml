@@ -1,0 +1,28 @@
+id: code-quality-bundle
+name: "Code Quality"
+description: "Prompts for improving code quality, naming, and design"
+tags:
+  - quality
+  - refactoring
+  - design
+  - reviews
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/code-quality/architectural-question.prompt.md
+    kind: prompt
+  - path: prompts/code-quality/check-naming-conventions.prompt.md
+    kind: prompt
+  - path: prompts/code-quality/iterative-refinement.prompt.md
+    kind: prompt
+  - path: prompts/code-quality/refactor-for-clean-code.prompt.md
+    kind: prompt
+  - path: prompts/code-quality/report-errors.prompt.md
+    kind: prompt
+  - path: prompts/code-quality/request-feature.prompt.md
+    kind: prompt
+  - path: prompts/code-quality/review-code-quality.prompt.md
+    kind: prompt
+  - path: prompts/code-quality/fix-diag-warn-err.prompt.md
+    kind: prompt
+

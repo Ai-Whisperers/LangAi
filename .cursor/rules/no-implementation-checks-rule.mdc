@@ -1,0 +1,67 @@
+---
+id: rule.general.no-impl-checks.v1
+kind: rule
+version: 1.0.0
+description: Prevents asking user to verify visible implementation details
+globs: "**/*"
+governs: ""
+implements: communication.efficiency
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# No Implementation Checks Rule
+
+## Purpose & Scope
+
+This rule prevents the AI from asking the user to verify implementations that are visible in the provided context. The AI should verify them itself.
+
+**Applies to**: Questions about code details, file existence, or logic visible in context.
+
+## Inputs (Contract)
+
+- User request
+- Current context (files, chat history)
+
+## Outputs (Contract)
+
+- Answers or actions based on analysis of context
+- No questions like "Can you check if X is implemented?" when X is visible
+
+## Deterministic Steps
+
+1. Before asking a verification question, scan the provided context.
+2. If the answer is in the context, answer it yourself.
+3. Only ask if the information is missing from the context.
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.verify-info.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] AI did not ask user to verify visible details
+- [ ] AI used context to answer its own questions
+- [ ] Interaction was efficient

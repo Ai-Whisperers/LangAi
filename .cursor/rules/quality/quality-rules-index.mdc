@@ -1,0 +1,589 @@
+---
+id: rule.quality.index.v1
+kind: rule
+version: 1.0.0
+description: Navigation hub and overview for quality standards rule framework
+implements: quality.index
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: 
+  owner: quality-standards
+  last_review: 2025-12-07
+  context: Created to organize quality standards rules into cohesive framework
+  key_insight: Quality discipline requires both enforcement and helpful guidance
+alwaysApply: false
+---
+
+# Quality Standards Rules - Index
+
+## Purpose & Scope
+
+This document provides a comprehensive overview and navigation hub for the quality standards rule framework. It defines the philosophy, principles, and architecture for maintaining high code quality through zero-tolerance standards and excellent diagnostic messages.
+
+**Applies to**: All development work, validation scripts, error handling, and quality tooling.
+
+**Does not apply to**: End-user facing messages, business logic, or data validation (different contexts).
+
+## Quality System Philosophy
+
+### Core Concepts
+
+1. **Prevention over Remediation**: Catch issues before they enter version control
+2. **Zero Tolerance**: No warnings, no errors, no exceptions (unless documented)
+3. **Helpful Diagnostics**: Every error is a teaching moment
+4. **Fast Feedback**: Quality checks should be quick (<30s) to encourage frequent use
+5. **Clear Guidance**: Diagnostics should explain WHAT, WHY, and HOW
+
+### Key Principles
+
+1. **Discipline**: Quality gates enforced before every commit
+2. **Clarity**: Diagnostic messages must be actionable and specific
+3. **Automation**: Auto-fix where possible, clear manual steps otherwise
+4. **Education**: Great diagnostics teach developers best practices
+5. **Consistency**: Same quality standards across all projects and teams
+
+## Quality Rules Manifest
+
+### 🎯 Core Quality Rules
+
+#### `rule.quality.zero-warnings-errors.v1`
+**File**: `zero-warnings-zero-errors-rule.mdc`  
+**Purpose**: Enforces zero warnings and zero errors quality standard before commits  
+**Governs**: `**/*` (all files)  
+**Always Apply**: ✅ Yes  
+**Status**: ✅ Active
+
+**Key Features**:
+- Pre-commit validation workflow
+- Quality gate definitions (compile, lint, test, docs, format, security)
+- Implementation patterns (scripts, git hooks, IDE integration)
+- Exception handling process
+- Tool-specific guidance (.NET, Python, JavaScript/TypeScript)
+- Validation script template
+
+#### `rule.quality.diagnostic-messages.v1`
+**File**: `diagnostic-messages-rule.mdc`  
+**Purpose**: Standards for high-quality diagnostic messages with clear explanations and solutions  
+**Governs**: `**/*` (all files)  
+**Always Apply**: ✅ Yes  
+**Status**: ✅ Active
+
+**Key Features**:
+- Three-part message structure (WHAT + WHY + HOW)
+- Severity levels (ERROR, WARNING, INFO)
+- Message templates by type
+- Implementation patterns (scripts, exceptions, CLI tools)
+- Diagnostic message catalog
+- Output formatting standards
+- Quality validation checklist
+
+### 🤖 Agent Application Rules
+
+#### `rule.quality.agent-application.v1`
+**File**: `agent-application-rule.mdc`  
+**Purpose**: Agent guidance for when and how to apply quality standards rules  
+**Requires**: 
+  - `rule.quality.zero-warnings-errors.v1`
+  - `rule.quality.diagnostic-messages.v1`  
+**Always Apply**: ❌ No (on-demand)  
+**Status**: ✅ Active
+
+**Key Features**:
+- Explicit triggers and context clues
+- Common scenarios with agent actions
+- Integration with ticket, git, and CI/CD rules
+- Tool-specific guidance
+- Quality standards for agents
+
+#### `rule.quality.diagnostic-messages.agent-application.v1`
+**File**: `diagnostic-messages-agent-application-rule.mdc`
+**Purpose**: Agent guidance for applying diagnostic message quality standards
+**Requires**: `rule.quality.diagnostic-messages.v1`
+**Always Apply**: ❌ No (on-demand)
+**Status**: ✅ Active
+
+**Key Features**:
+- When to apply diagnostic message rules
+- Message templates by context (PowerShell, C#, Python, Bash)
+- Common scenarios for creating/improving diagnostics
+- Quality checklist for agents
+- Testing approach for diagnostic messages
+
+#### `rule.quality.code-quality-enforcement.v1`
+**File**: `code-quality-enforcement-rule.mdc`
+**Purpose**: Systematic code quality enforcement with graduated tightening, permanent temporary disablements management, and CI/CD integration
+**Requires**: []
+**Always Apply**: ❌ No (on-demand)
+**Status**: ✅ Active
+
+**Key Features**:
+- Phase-based enforcement (baseline → enforce → suppress → gradual → strict)
+- Permanent temporary fix prevention through expiration and review cycles
+- CI/CD integration with configurable quality gates
+- Suppression lifecycle management with automated cleanup
+- Gradual adoption schedules preventing team overwhelm
+- Quality metrics and reporting dashboards
+
+## Rule Dependencies Graph
+
+```
+rule.quality.index.v1 (This Document)
+  |
+  |--- rule.quality.zero-warnings-errors.v1 (Core Standard)
+  |     |--- Defines: Quality gates and validation workflow
+  |     |--- Used by: All development work
+  |     `--- Integration: Git, CI/CD, Ticket rules
+  |
+  |--- rule.quality.diagnostic-messages.v1 (Core Standard)
+  |     |--- Defines: Diagnostic message structure and quality
+  |     |--- Used by: Validation scripts, error handling, tools
+  |     `--- Integration: Zero-warnings-errors rule
+  |
+  |--- rule.quality.agent-application.v1 (Agent Guidance)
+  |     |--- requires: rule.quality.zero-warnings-errors.v1
+  |     |--- requires: rule.quality.diagnostic-messages.v1
+  |     `--- Guides: When/how agents apply quality rules
+  |
+  `--- rule.quality.diagnostic-messages.agent-application.v1 (Agent Guidance)
+        |--- requires: rule.quality.diagnostic-messages.v1
+        `--- Guides: Creating/improving diagnostic messages
+
+rule.quality.code-quality-enforcement.v1 (Systematic Enforcement)
+  |
+  |--- Defines: Graduated quality enforcement with CI/CD integration
+  |--- Addresses: Permanent temporary suppressions through lifecycle management
+  |--- Integrates: Phase-based quality gates (baseline → strict)
+  |--- Prevents: Quality debt through systematic suppression cleanup
+```
+
+## Quality Framework Architecture
+
+### Layer 1: Core Standards (Always Apply)
+
+**Zero Warnings/Errors Standard**
+- Enforces quality discipline
+- Defines validation workflow
+- Provides implementation patterns
+- Sets quality gates
+
+**Diagnostic Message Standard**
+- Defines message structure
+- Sets quality requirements
+- Provides templates
+- Ensures helpful output
+
+### Layer 2: Agent Guidance (On-Demand)
+
+**Quality Agent Application**
+- When to enforce standards
+- How to apply rules
+- Integration patterns
+- Tool-specific guidance
+
+**Diagnostic Message Agent Application**
+- When to apply message standards
+- How to structure diagnostics
+- Message templates by context
+- Quality validation
+
+### Layer 3: Integration Points
+
+**With Git Rules**
+- Pre-commit validation required
+- Quality gates before merge
+- Branch protection integration
+
+**With Ticket Rules**
+- Validation before completion
+- Quality evidence required
+- Clean state for closure
+
+**With CI/CD Rules**
+- Local validation mirrors remote
+- Build pipeline integration
+- Automated quality gates
+
+**With Documentation Rules**
+- Documentation completeness checks
+- XML doc validation
+- Quality standards for docs
+
+## Reading Paths by Role
+
+### Developer Working on Code
+
+**Goal**: Understand and follow quality standards
+
+**Path**:
+1. Read `rule.quality.zero-warnings-errors.v1` (15 min)
+   - Understand zero-tolerance principle
+   - Learn validation workflow
+   - Note tool-specific commands
+2. Reference `rule.quality.diagnostic-messages.v1` (10 min)
+   - Understand diagnostic message structure
+   - See examples of good vs bad messages
+   - Learn severity levels
+
+**Time**: 25 minutes initial reading, reference as needed
+
+**Key Takeaway**: Run validation before every commit, fix all issues, no exceptions.
+
+### Developer Writing Validation Scripts
+
+**Goal**: Create scripts with high-quality diagnostics
+
+**Path**:
+1. Read `rule.quality.diagnostic-messages.v1` (20 min)
+   - Learn message structure (WHAT + WHY + HOW)
+   - Study implementation patterns
+   - Review message catalog
+2. Read `rule.quality.zero-warnings-errors.v1` (15 min)
+   - Understand validation categories
+   - Learn script structure
+   - Review validation script template
+3. Reference `rule.quality.diagnostic-messages.agent-application.v1` (10 min)
+   - See message templates by language
+   - Review quality checklist
+   - Study before/after examples
+
+**Time**: 45 minutes initial reading, reference during implementation
+
+**Key Takeaway**: Every diagnostic should teach, not just tell. Provide WHAT + WHY + HOW.
+
+### AI Agent Working on Code
+
+**Goal**: Apply quality standards correctly
+
+**Must Read**:
+- `rule.quality.agent-application.v1` - When/how to apply quality rules
+- `rule.quality.diagnostic-messages.agent-application.v1` - Creating diagnostics
+
+**Reference as Needed**:
+- `rule.quality.zero-warnings-errors.v1` - Validation workflow details
+- `rule.quality.diagnostic-messages.v1` - Message structure details
+
+**Key Takeaway**: Enforce zero warnings/errors before commits. Create structured diagnostics with solutions.
+
+### Reviewer/Auditor
+
+**Goal**: Verify quality compliance
+
+**Path**:
+1. Check validation evidence
+   - Were validation scripts run?
+   - All warnings/errors fixed?
+   - Clean state confirmed?
+2. Review diagnostic messages (if new scripts created)
+   - Follow message structure?
+   - Include all required components?
+   - Actionable and clear?
+
+**Time**: 10-15 minutes per review
+
+**Key Takeaway**: Zero warnings/errors required. Diagnostics must be helpful.
+
+## Common Scenarios
+
+### Scenario 1: Developer Preparing to Commit
+
+**Workflow**:
+1. Make code changes
+2. Run validation: `./scripts/validate-pre-commit.{ps1|sh|py}`
+3. Review warnings/errors (structured diagnostics)
+4. Fix all issues (use auto-fix where available)
+5. Re-run validation (confirm clean state)
+6. Commit only after passing
+
+**Rules Applied**:
+- `rule.quality.zero-warnings-errors.v1` - Validation workflow
+- `rule.quality.diagnostic-messages.v1` - Error output structure
+
+### Scenario 2: Developer Encounters Build Error
+
+**Workflow**:
+1. Build fails with error message
+2. Read structured diagnostic:
+   - WHAT: Problem clearly identified
+   - WHY: Explanation of impact
+   - HOW: Specific fix steps
+   - WHERE: Exact location
+   - HELP: Link to docs/prompt
+3. Follow solution steps
+4. Re-build to confirm fix
+5. Continue development
+
+**Rules Applied**:
+- `rule.quality.diagnostic-messages.v1` - Message structure
+
+### Scenario 3: Creating Validation Script
+
+**Workflow**:
+1. Identify validation needs (linting, docs, tests, etc.)
+2. Structure script:
+   - Scanning phase (quiet)
+   - Issue collection and categorization
+   - Structured reporting (detailed)
+   - Auto-fix option
+3. For each diagnostic:
+   - Apply appropriate template (ERROR/WARNING/INFO)
+   - Include all required components
+   - Format with colors/emojis
+   - Provide exact fix steps
+4. Test with real developers for clarity
+5. Integrate with pre-commit workflow
+
+**Rules Applied**:
+- `rule.quality.zero-warnings-errors.v1` - Validation script template
+- `rule.quality.diagnostic-messages.v1` - Message structure
+- `rule.quality.diagnostic-messages.agent-application.v1` - Implementation patterns
+
+### Scenario 4: Improving Existing Error Messages
+
+**Workflow**:
+1. Identify vague/unhelpful error messages
+2. Analyze what's missing:
+   - No explanation?
+   - No solution?
+   - No location?
+   - No help link?
+3. Rewrite using diagnostic message template
+4. Add all required components
+5. Format properly
+6. Test for clarity
+7. Show before/after comparison
+
+**Rules Applied**:
+- `rule.quality.diagnostic-messages.v1` - Message quality standards
+- `rule.quality.diagnostic-messages.agent-application.v1` - Before/after examples
+
+### Scenario 5: Setting Up New Project
+
+**Workflow**:
+1. Create validation script using template
+2. Configure quality gates:
+   - Build/compile
+   - Linting
+   - Tests
+   - Documentation
+   - Formatting
+   - Security
+3. Set up git hooks (pre-commit)
+4. Configure IDE integration
+5. Document workflow in README
+6. Train team on zero-tolerance standard
+
+**Rules Applied**:
+- `rule.quality.zero-warnings-errors.v1` - Complete framework
+- `rule.quality.diagnostic-messages.v1` - Diagnostic standards
+
+## Quality Gate Categories
+
+### 1. Code Quality
+- **Compile/Build**: No compilation errors
+- **Linting**: No style violations
+- **Analysis**: No code analysis warnings
+- **Format**: Consistent code formatting
+
+**Tools**: Compiler, ESLint, Pylint, dotnet format, etc.
+
+### 2. Documentation
+- **Completeness**: All public APIs documented
+- **Quality**: Documentation meets standards
+- **Updates**: README/CHANGELOG current
+
+**Tools**: XML doc validators, doc generators
+
+### 3. Testing
+- **Pass Rate**: All tests pass
+- **Coverage**: New code has tests
+- **No Skips**: No skipped tests without justification
+
+**Tools**: Test runners (dotnet test, pytest, jest)
+
+### 4. Security
+- **No Secrets**: No exposed credentials
+- **Vulnerabilities**: No known security issues
+- **OPSEC**: Compliance with security standards
+
+**Tools**: Secret scanners, security analyzers
+
+### 5. Build
+- **Success**: Project builds successfully
+- **Dependencies**: All dependencies resolved
+- **Metadata**: Version info correct
+
+**Tools**: Build systems (dotnet build, npm build)
+
+## Diagnostic Message Severity Guide
+
+### 🔴 ERROR (Blocker)
+**When**: Prevents compilation, build, or execution  
+**Required**: WHAT + WHY + HOW + WHERE + HELP + EXAMPLE  
+**Action**: Must fix before commit
+
+**Example Categories**:
+- Compilation errors
+- Missing required dependencies
+- Test failures
+- Missing required documentation
+- Security vulnerabilities
+
+### 🟡 WARNING (Should Fix)
+**When**: Code works but violates standards  
+**Required**: WHAT + IMPACT + HOW + WHERE + HELP  
+**Action**: Should fix before commit (zero-tolerance)
+
+**Example Categories**:
+- Code style violations
+- Unused variables
+- Deprecated API usage
+- Incomplete documentation
+- Performance concerns
+
+### 🔵 INFO (FYI)
+**When**: Helpful context or suggestions  
+**Required**: WHAT + CONTEXT + optional ACTION  
+**Action**: Optional, informational only
+
+**Example Categories**:
+- Build optimization tips
+- Cache usage notifications
+- Suggestion for improvements
+- Status updates
+
+## Success Metrics
+
+### Quality Enforcement
+- **Commit Quality**: 100% of commits pass validation
+- **Build Stability**: Zero broken builds from quality issues
+- **Technical Debt**: No accumulation of warnings/errors
+
+### Developer Experience
+- **Time to Fix**: Reduced time from error to resolution
+- **Learning**: Developers understand problems quickly
+- **Autonomy**: Can fix issues without asking for help
+- **Confidence**: Trust in quality standards
+
+### Diagnostic Quality
+- **Clarity**: Developers understand problems immediately
+- **Actionability**: Solutions are specific and executable
+- **Completeness**: All required components present
+- **Helpfulness**: Diagnostics teach best practices
+
+## Integration with Other Rule Frameworks
+
+### Git Rules
+```yaml
+requires:
+  - rule.git.branch-lifecycle.v1
+  - rule.quality.zero-warnings-errors.v1
+```
+**Integration**: Pre-commit validation required before git commit
+
+### Ticket Rules
+```yaml
+requires:
+  - rule.ticket.validation-before-completion.v1
+  - rule.quality.zero-warnings-errors.v1
+```
+**Integration**: Ticket completion requires clean validation state
+
+### CI/CD Rules
+```yaml
+requires:
+  - rule.cicd.pre-build-validation.v1
+  - rule.quality.zero-warnings-errors.v1
+```
+**Integration**: Local validation mirrors remote CI/CD checks
+
+### Documentation Rules
+```yaml
+requires:
+  - rule.documentation.standards.v1
+  - rule.quality.diagnostic-messages.v1
+```
+**Integration**: Documentation validation uses structured diagnostics
+
+## Tool-Specific Quick Reference
+
+### .NET Projects
+```powershell
+# Validation sequence
+dotnet restore
+dotnet build /warnaserror
+dotnet format --verify-no-changes
+dotnet test --no-build
+
+# Common diagnostics
+# - Missing XML docs
+# - Style violations
+# - Test failures
+```
+
+### Python Projects
+```bash
+# Validation sequence
+flake8 .
+pylint src/
+mypy src/
+black --check .
+pytest
+
+# Common diagnostics
+# - Linting issues
+# - Type errors
+# - Format violations
+```
+
+### JavaScript/TypeScript Projects
+```bash
+# Validation sequence
+npm run lint
+npm run type-check
+npm run format:check
+npm test
+
+# Common diagnostics
+# - ESLint violations
+# - Type errors
+# - Format issues
+```
+
+## Anti-Patterns to Avoid
+
+### ❌ Quality Anti-Patterns
+- Committing with "TODO: fix warnings later"
+- Disabling warnings globally to pass checks
+- Commenting out failing tests
+- Skipping validation "just this once"
+- Accumulating technical debt intentionally
+
+### ❌ Diagnostic Anti-Patterns
+- Vague error messages ("Error occurred")
+- Missing solutions (just identifying problem)
+- Technical jargon without explanation
+- Blame/shame language ("You forgot to...")
+- Generic solutions ("Fix the code")
+- Wall-of-text errors (no structure)
+
+## FINAL MUST-PASS CHECKLIST
+
+### Quality Standards Compliance
+- [ ] Zero warnings in all validation checks
+- [ ] Zero errors in all validation checks
+- [ ] All quality gates passed (build, lint, test, docs, format, security)
+- [ ] Validation run immediately before commit
+- [ ] Any exceptions documented and approved
+
+### Diagnostic Message Quality
+- [ ] All error messages include WHAT + WHY + HOW + WHERE + HELP + EXAMPLE
+- [ ] All warning messages include WHAT + IMPACT + HOW + WHERE + HELP
+- [ ] All info messages include WHAT + CONTEXT + optional ACTION
+- [ ] Messages formatted with colors/emojis for readability
+- [ ] Solutions are specific and actionable
+- [ ] Locations are exact (file:line when possible)
+- [ ] Help links/commands actually exist and work
+
+---
+
+**TL;DR**: Zero warnings, zero errors before every commit. Every diagnostic should teach with WHAT + WHY + HOW. Quality is not negotiable.

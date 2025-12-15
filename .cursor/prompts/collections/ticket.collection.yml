@@ -1,0 +1,36 @@
+id: ticket-workflows-bundle
+name: "Ticket Workflows"
+description: "Prompts for starting, progressing, and completing tickets"
+tags:
+  - tickets
+  - workflow
+  - jira
+  - tracking
+version: 1.1.0
+owner: team-prompts
+items:
+  - path: prompts/ticket/activate-ticket.prompt.md
+    kind: prompt
+  - path: prompts/ticket/catchup-on-ticket.prompt.md
+    kind: prompt
+  - path: prompts/ticket/check-status.prompt.md
+    kind: prompt
+  - path: prompts/ticket/close-ticket.prompt.md
+    kind: prompt
+  - path: prompts/ticket/jira/create-jira-recap.prompt.md
+    kind: prompt
+  - path: prompts/ticket/resume-tracker-work.prompt.md
+    kind: prompt
+  - path: prompts/ticket/start-ticket.prompt.md
+    kind: prompt
+  - path: prompts/ticket/update-progress.prompt.md
+    kind: prompt
+  - path: prompts/ticket/validate-before-action.prompt.md
+    kind: prompt
+  - path: prompts/ticket/validate-completion.prompt.md
+    kind: prompt
+  - path: prompts/tracker/create-tracker.prompt.md
+    kind: prompt
+  - path: prompts/tracker/update-tracker.prompt.md
+    kind: prompt
+

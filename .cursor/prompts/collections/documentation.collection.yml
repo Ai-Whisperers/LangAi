@@ -1,0 +1,17 @@
+id: documentation-bundle
+name: "Documentation"
+description: "Prompts to check and improve documentation coverage and quality"
+tags:
+  - documentation
+  - quality
+  - validation
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/documentation/check-folder-documentation.prompt.md
+    kind: prompt
+  - path: prompts/documentation/generate-missing-docs.prompt.md
+    kind: prompt
+  - path: prompts/documentation/validate-documentation-quality.prompt.md
+    kind: prompt
+

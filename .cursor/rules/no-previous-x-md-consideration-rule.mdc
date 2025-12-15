@@ -1,0 +1,67 @@
+---
+id: rule.general.no-prev-context.v1
+kind: rule
+version: 1.0.0
+description: Prevents consideration of previous x.md files (fresh start principle)
+globs: "**/*"
+governs: ""
+implements: agent.memory
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# No Previous Context Consideration Rule
+
+## Purpose & Scope
+
+This rule instructs the AI not to consider any previous `x.md` files (or similar session memory artifacts) in its memory from prior runs, ensuring it treats each run independently unless explicitly instructed.
+
+**Applies to**: Context loading and memory management.
+
+## Inputs (Contract)
+
+- Current session context
+- Files in workspace
+
+## Outputs (Contract)
+
+- Analysis based on current session and files
+- No hallucinations based on "previous runs" or "cached memory"
+
+## Deterministic Steps
+
+1. Treat the current session as the only source of truth for conversation history.
+2. Treat the current file system as the source of truth for code.
+3. Ignore any "I remember from last time" unless it's documented in a persistent file (like `context.md` or `progress.md`).
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.ticket.context.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] No references to "previous run" memory
+- [ ] Truth comes from current files and chat
+- [ ] Fresh start principle maintained

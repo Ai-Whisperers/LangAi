@@ -1,0 +1,68 @@
+---
+id: rule.general.preserve-code.v1
+kind: rule
+version: 1.0.0
+description: Instructs AI to preserve existing code and functionality
+globs: "**/*"
+governs: ""
+implements: coding.safety
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# Preserve Existing Code Rule
+
+## Purpose & Scope
+
+This rule instructs the AI to preserve existing code and functionalities, avoiding unnecessary removal of code or breaking changes unless explicitly requested.
+
+**Applies to**: Refactoring, feature addition.
+
+## Inputs (Contract)
+
+- Target file
+- Requested changes
+
+## Outputs (Contract)
+
+- Modified file with new feature
+- Existing features intact (unless removal requested)
+
+## Deterministic Steps
+
+1. Identify code to change.
+2. Identify code to KEEP (everything else).
+3. Ensure the "keep" set is not deleted or broken.
+4. Apply changes carefully.
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.no-inventions.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Unrelated code preserved
+- [ ] Existing functionality intact
+- [ ] No accidental deletions

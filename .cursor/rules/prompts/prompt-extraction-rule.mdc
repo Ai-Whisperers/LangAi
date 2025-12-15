@@ -1,0 +1,549 @@
+---
+id: rule.prompts.extraction.v1
+kind: rule
+version: 1.0.0
+description: Process for extracting effective prompt patterns from conversation transcripts
+implements: prompts.extraction
+requires:
+  - rule.prompts.creation.v1
+provenance: { owner: team-prompts, last_review: 2025-12-06 }
+globs: "**/.cursor/prompts/**/*.md"
+governs: "**/.cursor/prompts/**/*.md"
+alwaysApply: false
+---
+
+# Prompt Extraction from Conversations
+
+## Purpose
+
+Define process for extracting effective prompt patterns from conversation transcripts, including learning from both successful and failed interactions.
+
+## Scope
+
+**Covers**:
+- Extracting prompts from conversation transcripts
+- Identifying successful patterns
+- Learning from failed prompts
+- Creating reusable templates
+- Pattern analysis and documentation
+
+**Does Not Cover**:
+- Creating prompts from scratch (see prompt-creation-rule)
+- Rule extraction (see rule-authoring/rule-extraction-from-practice)
+- Real-time conversation optimization
+
+## When to Apply
+
+Apply when:
+- User provides conversation transcript for analysis
+- User asks to extract prompts from conversations
+- Analyzing what made a conversation effective/ineffective
+- Building prompt library from practice
+- Learning from successful interactions
+- Identifying anti-patterns from failed conversations
+
+## Extraction Process
+
+### Phase 1: Conversation Scan
+
+1. **Read entire conversation** start to finish
+2. **Identify all user prompts** (not AI responses)
+3. **Mark conversation stages**:
+   - Setup/Context Building
+   - Initial Request
+   - Exploration/Discovery
+   - Implementation
+   - Refinement
+   - Validation
+   - Completion
+
+4. **Note critical transitions**: Where did conversation direction change?
+
+### Phase 2: Prompt Cataloging
+
+For EVERY user prompt, extract:
+
+```markdown
+### PROMPT-XXX: [Descriptive Title]
+
+**Type**: [Initial/Refinement/Exploration/Implementation/Validation/Documentation]
+**Stage**: [Early/Mid/Late conversation]
+**Effectiveness**: ⭐⭐⭐⭐⭐ (1-5 stars)
+
+**Original Text**:
+```
+[EXACT text as user wrote it]
+```
+
+**Context Before**:
+- [What was established before this]
+- [What AI had already done]
+- [What user knew at this point]
+
+**Intent**:
+[What user was trying to achieve]
+
+**Outcome**:
+[What actually happened - be honest]
+
+**Why Effective/Ineffective**:
+[Specific analysis of what worked or didn't]
+
+**Pattern Used**:
+[Name the technique/pattern]
+```
+
+### Phase 3: Effectiveness Analysis
+
+#### Rating Criteria
+
+⭐ **Failed** - Produced wrong result, needed complete restart
+- Analyze: What was unclear? What was missing?
+
+⭐⭐ **Poor** - Required major clarification, multiple retries
+- Analyze: What ambiguity caused confusion?
+
+⭐⭐⭐ **Good** - Worked but needed minor adjustment
+- Analyze: What could have prevented adjustment need?
+
+⭐⭐⭐⭐ **Excellent** - Produced correct result, minimal tweaking
+- Analyze: What made this work so well?
+
+⭐⭐⭐⭐⭐ **Perfect** - Exactly what was needed, first time
+- Analyze: What pattern should we extract and reuse?
+
+### Phase 4: Pattern Identification
+
+Look for these patterns:
+
+#### Successful Patterns
+
+**1. Explicit Context Pattern**
+```
+"Using the domain model in [FILE], implement [FEATURE] following 
+the pattern established in [REFERENCE_FILE]"
+```
+- ✅ Specifies exact source
+- ✅ References existing pattern
+- ✅ Clear scope
+
+**2. Constrained Generation Pattern**
+```
+"Create [ARTIFACT] with these requirements:
+- Requirement 1
+- Requirement 2
+Ensure it follows [STANDARD]"
+```
+- ✅ Lists explicit requirements
+- ✅ References standards
+- ✅ Bounded scope
+
+**3. Verification-Included Pattern**
+```
+"Implement [FEATURE] and verify:
+- [ ] Criterion 1
+- [ ] Criterion 2
+Show test results proving it works"
+```
+- ✅ Includes validation
+- ✅ Requires proof
+- ✅ Clear success criteria
+
+**4. Build-On-Previous Pattern**
+```
+"Now that we have [X], extend it to handle [Y] using the same 
+approach we used for [Z]"
+```
+- ✅ References prior work
+- ✅ Establishes continuity
+- ✅ Reuses established patterns
+
+**5. Exploration-Then-Action Pattern**
+```
+"First, show me how [CURRENT_SYSTEM] handles [SCENARIO].
+Then implement [NEW_FEATURE] following the same approach"
+```
+- ✅ Gathers context first
+- ✅ Then acts with knowledge
+- ✅ Ensures consistency
+
+**6. Chain-of-Thought (CoT) Pattern**
+```
+"Think step-by-step:
+1. Identify dependencies
+2. Map data flow
+3. Propose changes
+4. Implement"
+```
+- ✅ Forces reasoning before action
+- ✅ Reduces hallucination
+- ✅ Makes logic visible for review
+
+**7. Few-Shot Exemplar Pattern**
+```
+"Create a migration script following this example:
+Input: [Example Input]
+Output: [Example Output]
+
+Now do it for: [Real Target]"
+```
+- ✅ clear pattern to follow
+- ✅ Reduces ambiguity
+- ✅ "Show, don't just tell"
+
+**8. Self-Correction Pattern**
+```
+"After generating the code, review it for:
+- [ ] Memory leaks
+- [ ] Null safety
+Fix any issues before outputting."
+```
+- ✅ Forces second-pass review
+- ✅ Catches common errors
+- ✅ Higher quality first-try output
+
+#### Anti-Patterns (Learn from Failures)
+
+**❌ Vague Reference**
+```
+"Fix that thing we discussed"
+```
+**Problem**: No clear reference, relies on memory
+**Fix**: "Fix the validation logic in CalendarEntity.cs that we discussed earlier"
+
+**❌ Assumed Context**
+```
+"Add the validation"
+```
+**Problem**: No specification of what/where/how
+**Fix**: "Add validation to [CLASS] ensuring [CRITERIA] using [PATTERN]"
+
+**❌ Multiple Requests Combined**
+```
+"Create the entity, add tests, update docs, and fix the bug"
+```
+**Problem**: Too many tasks, unclear priority
+**Fix**: Break into separate focused prompts
+
+**❌ No Success Criteria**
+```
+"Make it better"
+```
+**Problem**: "Better" is subjective and unmeasurable
+**Fix**: "Refactor to: reduce complexity < 10, extract methods < 50 lines"
+
+**❌ Missing Scope Boundaries**
+```
+"Refactor the code"
+```
+**Problem**: No boundaries defined
+**Fix**: "Refactor [FILE/METHOD] to improve [SPECIFIC_ASPECT], preserve [BEHAVIOR]"
+
+### Phase 5: Template Generation
+
+From effective prompts, extract reusable templates:
+
+```markdown
+## Template: [Template Name]
+
+**Pattern Category**: [Category from patterns above]
+
+**Use When**: 
+[Specific scenario where this works]
+
+**Prerequisites**:
+- [What must exist/be known]
+- [What context is needed]
+
+**Template**:
+```
+[Prompt text with [PLACEHOLDERS]]
+```
+
+**Placeholders**:
+- `[PLACEHOLDER_1]`: [Description]
+- `[PLACEHOLDER_2]`: [Description]
+
+**Expected Outcome**:
+[What this should produce]
+
+**Success Rate**: 
+[If known from multiple uses]
+
+**Example Usage**:
+```
+[Real example with placeholders filled in]
+```
+
+**Variations**:
+[Alternative forms for different contexts]
+```
+
+### Phase 6: Meta-Analysis
+
+Analyze the conversation as a whole:
+
+```markdown
+## Conversation Meta-Analysis
+
+### Strategy Employed
+[What overall approach was used]
+
+### Turning Points
+1. **[Prompt ID]**: [What changed here and why]
+2. **[Prompt ID]**: [What changed here and why]
+
+### Most Effective Techniques
+1. [Technique name]: Used in [prompts], achieved [results]
+2. [Technique name]: Used in [prompts], achieved [results]
+
+### Struggles and Solutions
+| Issue | Prompt(s) | Root Cause | Solution Found |
+|-------|-----------|------------|----------------|
+| [Issue] | PROMPT-X | [Cause] | [Solution] |
+
+### Iteration Patterns
+[How prompts evolved through conversation]
+[What triggered refinements]
+
+### Context Building Approach
+[How context was established]
+[What was most helpful]
+
+### Recommendations for Similar Scenarios
+1. [Recommendation]
+2. [Recommendation]
+```
+
+## Learning from Failed Conversations
+
+### When Analyzing Failed/Problematic Conversations
+
+**Extract**:
+1. **What went wrong** - Be specific
+2. **Where it went wrong** - Which prompt
+3. **Why it went wrong** - Root cause
+4. **How to fix** - Better approach
+
+**Example**:
+
+```markdown
+### FAILURE ANALYSIS: PROMPT-023
+
+**What Went Wrong**:
+AI implemented wrong feature entirely
+
+**Original Prompt**:
+```
+"Add the calendar validation we discussed"
+```
+
+**Why It Failed**:
+- No reference to which discussion
+- No specification of validation rules
+- Assumed AI remembered context
+- No verification criteria
+
+**Better Approach**:
+```
+"Add validation to CalendarEntity ensuring:
+- Start date < End date
+- Name is not empty
+- Code matches format XXX-9999
+Follow validation pattern in ProfileEntity.
+Include unit tests proving each rule works."
+```
+
+**Pattern Learned**:
+Always provide explicit requirements, never assume memory of prior discussion
+
+**Reusable Fix Template**:
+```
+Add validation to [ENTITY] ensuring:
+- [Rule 1]
+- [Rule 2]
+Follow validation pattern in [REFERENCE].
+Include unit tests proving each rule works.
+```
+```
+
+### Failed Conversation Checklist
+
+When conversation goes wrong, document:
+
+- [ ] **Root cause identified** (vagueness, missing context, wrong assumptions)
+- [ ] **Specific prompt(s) that failed** extracted
+- [ ] **Why they failed** analyzed
+- [ ] **Better version** created
+- [ ] **General pattern** extracted for future avoidance
+- [ ] **Template created** for correct approach
+
+## Output Format
+
+### Full Extraction Report Structure
+
+```markdown
+# Prompt Extraction Report: [Conversation Name]
+
+**Source**: [Conversation file/source]
+**Date**: [Date]
+**Domain**: [What this covered]
+**Outcome**: [Successful/Partially Successful/Failed]
+
+## Executive Summary
+
+[2-3 sentences: what was accomplished, key patterns, main lessons]
+
+---
+
+## Conversation Flow
+
+### Stage 1: [Stage Name]
+**Prompts**: PROMPT-001 to PROMPT-005
+**Goal**: [What this stage tried to achieve]
+**Outcome**: [What actually happened]
+
+[Repeat for each stage]
+
+---
+
+## Extracted Prompts
+
+[All prompts following Phase 2 format]
+
+---
+
+## Pattern Analysis
+
+### Successful Patterns Found
+[List with examples]
+
+### Anti-Patterns Observed
+[List with fixes]
+
+### Novel Techniques
+[Any new patterns discovered]
+
+---
+
+## Extracted Templates
+
+[3-10 templates following Phase 5 format]
+
+---
+
+## Meta-Analysis
+
+[Following Phase 6 format]
+
+---
+
+## Recommendations
+
+### For This Type of Task
+1. [Specific recommendation]
+2. [Specific recommendation]
+
+### General Prompt Improvement
+1. [Broader lesson]
+2. [Broader lesson]
+
+### What to Avoid
+1. [Anti-pattern to avoid]
+2. [Anti-pattern to avoid]
+
+---
+
+## Statistics
+
+- Total prompts: [N]
+- Perfect (5⭐): [N] ([%])
+- Excellent (4⭐): [N] ([%])
+- Good (3⭐): [N] ([%])
+- Poor (2⭐): [N] ([%])
+- Failed (1⭐): [N] ([%])
+- Average effectiveness: [X.X⭐]
+- Most common type: [Type]
+- Most effective pattern: [Pattern name]
+
+---
+
+## Actionable Outputs
+
+### Prompts to Add to Library
+- [Prompt file name]: [from PROMPT-XXX]
+- [Prompt file name]: [from PROMPT-XXX]
+
+### Rules to Create/Update
+- [Rule name]: [based on pattern X]
+
+### Anti-Patterns to Document
+- [Anti-pattern name]: [observed in PROMPT-XXX]
+
+---
+
+**Next Steps**:
+1. [Action based on findings]
+2. [Action based on findings]
+```
+
+## Quality Checklist
+
+Extraction is complete when:
+
+- [ ] **All user prompts** identified and cataloged
+- [ ] **Every prompt rated** with star rating
+- [ ] **Effectiveness analyzed** for each prompt
+- [ ] **Patterns identified** (both good and bad)
+- [ ] **Templates created** (3-10 minimum)
+- [ ] **Meta-analysis** completed
+- [ ] **Recommendations** provided
+- [ ] **Statistics** calculated
+- [ ] **Failed prompts** analyzed for lessons
+- [ ] **Actionable outputs** specified
+- [ ] **Examples** included for patterns
+- [ ] **Honest assessment** - not sugar-coated
+
+## Integration with Prompt Library
+
+After extraction:
+
+1. **Create prompt files** from best templates
+2. **Update existing prompts** with better patterns
+3. **Document anti-patterns** in relevant rules
+4. **Update INDEX.md** with new prompts
+5. **Reference in conversations** folder
+
+## Special Cases
+
+### Extracting from Multi-Day Conversations
+
+- Track conversation date/time markers
+- Note context carried between sessions
+- Identify context rebuilding prompts
+- Document what was remembered vs restated
+
+### Extracting from Collaborative Conversations
+
+- Note multiple users if applicable
+- Track how different users' prompts differ
+- Identify most effective communicator patterns
+
+### Extracting from Exploratory Conversations
+
+- Focus on discovery prompts
+- Note how understanding evolved
+- Track hypothesis -> test -> learn cycles
+
+## References
+
+- `.cursor/rules/prompts/prompt-creation-rule.mdc` - Creating new prompts
+- `.cursor/rules/rule-authoring/rule-extraction-from-practice.mdc` - Similar extraction process
+- `conversations/JP/` - Source conversation transcripts
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Extracted prompt patterns documented
+- [ ] Failed conversations analyzed
+- [ ] Templates created from successful patterns
+- [ ] Meta-analysis completed
+- [ ] Actionable outputs listed

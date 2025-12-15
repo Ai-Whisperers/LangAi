@@ -1,0 +1,15 @@
+id: tracker-bundle
+name: "Ticket Tracker"
+description: "Prompts for creating and updating ticket trackers"
+tags:
+  - tracker
+  - ticket
+  - progress
+  - workflow
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/tracker/create-tracker.prompt.md
+    kind: prompt
+  - path: prompts/tracker/update-tracker.prompt.md
+    kind: prompt

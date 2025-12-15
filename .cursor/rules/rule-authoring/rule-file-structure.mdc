@@ -1,0 +1,358 @@
+---
+id: rule.authoring.file-structure.v1
+kind: rule
+version: 1.1.1
+description: Defines canonical structure, front-matter schema, and section ordering for all rule files
+globs: **/*-rule.mdc, **/rules/**/*.mdc
+governs: **/*-rule.mdc, **/rules/**/*.mdc
+implements: rule.authoring.structure
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ai, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Rule File Structure
+
+## Purpose & Scope
+
+This rule defines the canonical structure for all rule files in the project. Every rule, templar, or exemplar must follow this structure to ensure consistency, traceability, and tool compatibility.
+
+**Applies to**: All `.mdc` rule files, templars, and exemplars in the project.
+
+**Does not apply to**: Documentation files, code files, or non-rule content.
+
+## Inputs (Contract)
+
+- Rule concept or requirement to be formalized
+- Understanding of target files/actions the rule will govern
+- Dependencies on other rules, templars, or exemplars (if any)
+
+## Outputs (Contract)
+
+A properly structured rule file containing:
+- Complete YAML front-matter with all required fields
+- Ordered sections following the canonical pattern
+- Explicit contracts (inputs/outputs)
+- Deterministic steps
+- OPSEC constraints
+- Final must-pass checklist
+
+## Canonical Front-Matter Schema
+
+Every rule file MUST begin with a YAML-style front-matter block containing these fields.
+
+[!]? **CRITICAL WARNING**: Despite using YAML delimiters (`---`), the **`globs` and `governs` fields are NOT YAML arrays**! They use **Cursor's custom comma-delimited format**. Do NOT apply YAML syntax rules to these fields!
+
+### Single Pattern (Simple Rules)
+
+```text
+---
+id: rule.[domain].[action].v[major]
+kind: rule | templar | exemplar
+version: [semver]
+description: [One-sentence purpose/overview]
+globs: **/[pattern].md            # Cursor custom format - NO brackets, NO quotes
+governs: **/[pattern].md          # Cursor custom format - NO brackets, NO quotes
+implements: [action]              # Action/capability this provides
+requires: []                      # Array of rule/templar IDs needed
+model_hints: { temp: 0.2, top_p: 0.9 }  # Determinism controls
+provenance: { owner: [team/user], last_review: [YYYY-MM-DD] }
+alwaysApply: false                # Explicit invocation control (false = on-demand)
+---
+```
+
+### Multiple Patterns (Complex Rules)
+
+```text
+---
+id: rule.[domain].[action].v[major]
+kind: rule | templar | exemplar
+version: [semver]
+description: [One-sentence purpose/overview]
+globs: **/[pattern1].md, **/[pattern2].md, **/[pattern3].md    # Comma-separated string
+governs: **/[pattern1].md, **/[pattern2].md                     # Comma-separated string
+implements: [action]
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: [team/user], last_review: [YYYY-MM-DD] }
+alwaysApply: false
+---
+```
+
+### [X] WRONG Formats (DO NOT USE)
+
+```text
+---
+# [X] WRONG - JSON array syntax (globs/governs are NOT JSON!)
+globs: ["**/pattern.md"]
+governs: ["**/pattern.md"]
+
+# [X] WRONG - YAML block-style arrays (globs/governs are NOT YAML!)
+globs:
+  - **/pattern1.md
+  - **/pattern2.md
+governs:
+  - **/pattern1.md
+
+# [X] CORRECT - Cursor's comma-delimited format (plain string, NOT array)
+globs: **/pattern1.md, **/pattern2.md
+governs: **/pattern1.md
+---
+```
+
+**Why wrong**: The `globs` and `governs` fields use **Cursor's custom comma-delimited format** (plain string that Cursor splits on commas), NOT YAML array syntax or JSON array syntax. Using brackets `[]`, quotes `""`, or YAML block-style arrays (`-`) will cause Cursor to parse them incorrectly or see them as empty.
+
+**Format Rules for globs/governs**:
+- [X] Plain comma-separated string: `pattern1, pattern2, pattern3`
+- [X] Single space after each comma
+- [X] NO brackets: `[]` 
+- [X] NO quotes: `""`
+- [X] NO hyphens: `-`
+- [X] All patterns on ONE line
+
+### Required Fields (11 Total)
+
+1. **id**: Stable, unique identifier following pattern `rule.[domain].[action].v[major]`
+   - Example: `rule.ticket.plan.update.v1`
+   - Must be globally unique across the project
+   - Version in ID is major version only
+
+2. **kind**: One of three values
+   - `rule` - Operational rule defining behavior
+   - `templar` - Template defining output structure
+   - `exemplar` - Example pattern for learning/critique
+
+3. **version**: Semantic version following `MAJOR.MINOR.PATCH`
+   - MAJOR: Breaking changes to contract or behavior
+   - MINOR: Backward-compatible additions
+   - PATCH: Clarifications, typo fixes, non-behavioral changes
+
+4. **description**: One-sentence summary of purpose
+   - Must be clear and actionable
+   - Should explain WHAT, not HOW
+
+5. **globs**: Comma-separated string of glob patterns for files this rule can read
+   - Use standard glob syntax
+   - Be as specific as reasonable
+   - Format: `pattern1, pattern2` (NOT array)
+
+6. **governs**: Comma-separated string of glob patterns for files this rule can modify
+   - Must be explicit about what changes
+   - Empty string `governs: ""` if read-only rule
+   - Format: `pattern1, pattern2` (NOT array)
+
+7. **implements**: Short action identifier
+   - Used for cross-referencing
+   - Should be domain-scoped (e.g., `plan.update`, not just `update`)
+
+8. **requires**: Array of rule/templar/exemplar IDs this rule depends on
+   - Reference by stable ID with version
+   - Empty array if no dependencies
+
+9. **model_hints**: Optional but recommended for determinism
+   - `temp`: Temperature setting (0.0-1.0, recommend 0.2 for rules)
+   - `top_p`: Nucleus sampling (recommend 0.9 for rules)
+
+10. **provenance**: Ownership and review metadata
+    - `owner`: Team or individual responsible
+    - `last_review`: ISO date of last review (YYYY-MM-DD)
+
+11. **alwaysApply**: Explicit invocation control
+    - `false`: Rule triggers only on-demand (Strategy 1 & 2) - DEFAULT
+    - `true`: Rule auto-triggers on file match (Strategy 3 - RARE, read-only only)
+    - See `rule.authoring.invocation-strategies.v1` for details
+
+## Canonical Section Ordering
+
+After the front-matter, sections MUST appear in this order:
+
+### 1. Purpose & Scope
+- **Why this rule exists** (business/technical rationale)
+- **What it applies to** (file patterns, contexts)
+- **What it does NOT apply to** (explicit exclusions)
+
+### 2. Inputs (Contract)
+- What information/context is required
+- What files must be read
+- What state must exist
+- Format as bullet list
+
+### 3. Outputs (Contract)
+- What files will be created/modified
+- What sections/content will be present
+- What format constraints apply
+- Format as bullet list
+
+### 4. Deterministic Steps
+- Ordered, numbered list of actions
+- Each step must be verifiable
+- Each step must be automatable
+- No ambiguity or interpretation needed
+
+### 5. Formatting Requirements
+- Reference to templar if applicable
+- Specific markdown/structure constraints
+- Heading levels, bullet styles, etc.
+- Code block formatting rules
+
+### 6. OPSEC and Leak Control
+- What must NOT appear in output
+- Redaction requirements
+- Secret/token/URL handling
+- Exemplar content copying rules
+
+### 7. Integration Points
+- Other rules that must run before/after
+- External systems that sync with output
+- Workflow coordination requirements
+
+### 8. Failure Modes and Recovery
+- Known failure scenarios
+- How to detect each failure
+- Recovery actions for each
+- Fallback behaviors
+
+### 9. Provenance Footer Specification
+- Format for provenance footer in generated files
+- Required fields in footer
+- Template for footer content
+
+### 10. Final Must-Pass Checklist
+- **ALWAYS LAST SECTION**
+- 3-7 critical validation points
+- Each item must be binary (pass/fail)
+- Must cover OPSEC, format, contracts
+- Should be copy-pasteable for validation
+
+## Example Rule Structure
+
+```markdown
+---
+id: rule.example.action.v1
+kind: rule
+version: 1.0.0
+description: Example rule showing proper structure
+globs: **/example.md
+governs: **/example.md
+implements: example.action
+requires:
+  - templar.example.v1
+  - rule.authoring.opsec.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ai, last_review: 2025-11-04 }
+---
+
+# Example Rule Title
+
+## Purpose & Scope
+
+This rule demonstrates proper structure...
+
+**Applies to**: ...
+**Does not apply to**: ...
+
+## Inputs (Contract)
+
+- Input item 1
+- Input item 2
+
+## Outputs (Contract)
+
+- Output item 1
+- Output item 2
+
+## Deterministic Steps
+
+1. First action
+2. Second action
+3. Third action
+
+## Formatting Requirements
+
+Output must follow `templar.example.v1`:
+- Heading level 1 for title
+- Bullet lists for items
+- Code blocks with language tags
+
+## OPSEC and Leak Control
+
+- NO secrets, tokens, or credentials
+- NO internal URLs or paths
+- NO email addresses
+
+## Integration Points
+
+- Syncs with: `rule.example.other.v1`
+- Triggers: Timeline updates
+
+## Failure Modes and Recovery
+
+**Missing required field**:
+- Detection: Field X not present
+- Recovery: Use default value Y
+
+## Provenance Footer Specification
+
+Append to generated files:
+
+```
+Produced-by: {{rule_id}} | {{templar_id}} | model={{model}} | ts={{timestamp}} | hash={{input_hash}}
+```
+
+## Final Must-Pass Checklist
+
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] Output matches templar structure
+- [ ] All required fields present
+- [ ] Provenance footer appended
+- [ ] Only governed files modified
+```
+
+## Why This Ordering Matters
+
+**Primacy Effect**: LLMs and agents retain context presented first. Purpose and contracts anchor understanding.
+
+**Recency Effect**: LLMs and agents are most influenced by recent context. Placing formatting and checklist last maximizes compliance.
+
+**Middle Section**: Steps, OPSEC, and integration form the substantive "how" - neither anchoring nor enforcement, but essential procedural detail.
+
+## Common Violations and Fixes
+
+| Violation | Impact | Fix |
+|-----------|--------|-----|
+| Missing front-matter | Rule not discoverable/linkable | Add complete YAML block |
+| Checklist not last | Reduced compliance | Move to final section |
+| Ambiguous steps | Non-deterministic output | Make steps explicit, testable |
+| No governs field | Unclear mutation scope | Specify exact file patterns |
+| No version | Breaks cross-references | Add semantic version |
+| Vague description | Poor discoverability | Write clear one-sentence purpose |
+
+## Validation
+
+A well-structured rule file must:
+1. Parse as valid YAML front-matter + Markdown body
+2. Contain all 10 required front-matter fields
+3. Have all 10 canonical sections in correct order
+4. End with a checklist section
+5. Have unique ID across all project rules
+
+## Related Rules
+
+- `rule.authoring.naming-conventions.v1` - ID and file naming patterns
+- `rule.authoring.contracts.v1` - Writing effective contracts
+- `rule.authoring.cross-references.v1` - Linking rules together
+- `rule.authoring.validation.v1` - Checklist and enforcement patterns
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] YAML-style front-matter present with all 11 required fields (including alwaysApply)
+- [ ] ID follows pattern `rule.[domain].[action].v[major]`
+- [ ] globs/governs use Cursor's comma-delimited format on single line (NOT YAML arrays, NOT JSON arrays - plain string only!)
+- [ ] alwaysApply field present (false for Strategy 1/2, true for Strategy 3)
+- [ ] All 10 canonical sections present in correct order
+- [ ] Checklist section is last section
+- [ ] Description is one clear sentence
+- [ ] Governs field explicitly lists writable files
+- [ ] Version is valid semver (MAJOR.MINOR.PATCH)
+- [ ] Rule version bumped if content changed

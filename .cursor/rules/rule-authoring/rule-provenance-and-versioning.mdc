@@ -1,0 +1,583 @@
+---
+id: rule.authoring.provenance-and-versioning.v1
+kind: rule
+version: 1.0.2
+description: Defines versioning strategy and provenance tracking for rules and generated outputs
+globs: **/*-rule.mdc, **/rules/**/*.mdc, **/templars/**/*.md, **/exemplars/**/*.md
+governs: **/*-rule.mdc, **/rules/**/*.mdc, **/templars/**/*.md, **/exemplars/**/*.md
+implements: rule.authoring.provenance-versioning
+requires:
+  - rule.authoring.file-structure.v1
+  - rule.authoring.cross-references.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ai, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Rule Provenance and Versioning
+
+## Purpose & Scope
+
+This rule defines how to version rules, templars, and exemplars using semantic versioning, and how to track provenance in both rule files and generated outputs. Proper versioning enables safe upgrades, dependency management, and rollback. Provenance tracking ensures reproducibility, auditability, and debugging.
+
+**Applies to**: All rule files, templars, exemplars, and any files they generate.
+
+**Does not apply to**: User documentation, informal notes, or unmanaged code files.
+
+## Inputs (Contract)
+
+- Rule, templar, or exemplar file being versioned
+- Understanding of change impact (breaking vs compatible)
+- History of previous versions (if updating existing rule)
+- Requirements for traceability and auditability
+
+## Outputs (Contract)
+
+Files containing:
+- Semantic version in `version` field
+- Major version in `id` field
+- Provenance metadata in front-matter
+- Generated outputs with provenance footers
+- Clear version history and upgrade paths
+- Reproducible generation metadata
+
+## Semantic Versioning for Rules
+
+### Version Format
+
+Rules use semantic versioning: **MAJOR.MINOR.PATCH**
+
+```yaml
+version: 1.2.3
+```
+
+- **MAJOR**: Breaking changes to contract or behavior
+- **MINOR**: Backward-compatible additions or enhancements
+- **PATCH**: Bug fixes, clarifications, non-behavioral changes
+
+### When to Bump Each Level
+
+#### MAJOR (1.x.x -> 2.0.0)
+
+Increment when making **breaking changes**:
+
+- Input contract changes (different required inputs)
+- Output contract changes (different outputs or side effects)
+- Governed file patterns change (different files modified)
+- Behavior changes incompatibly (same input, different output)
+- Required dependencies change (new required rules)
+
+**Impact**: Dependent rules may break, need review.
+
+**ID Impact**: Create new ID with new major version (`v1` -> `v2`).
+
+**Example**:
+```yaml
+# Old version
+id: rule.ticket.plan.update.v1
+version: 1.5.2
+governs: **/plan.md
+
+# New version (breaking change: now also modifies timeline.md)
+id: rule.ticket.plan.update.v2
+version: 2.0.0
+governs: **/plan.md, **/timeline.md
+```
+
+#### MINOR (1.2.x -> 1.3.0)
+
+Increment when adding **backward-compatible features**:
+
+- Optional new outputs (doesn't break existing users)
+- New optional input parameters (defaults provided)
+- Additional validation or checks (non-breaking)
+- New sections in documentation
+- Enhanced error messages
+- Performance improvements
+
+**Impact**: Dependent rules continue working without changes.
+
+**ID Impact**: Keep same ID.
+
+**Example**:
+```yaml
+# Old version
+id: rule.ticket.plan.update.v1
+version: 1.2.3
+
+# New version (added optional "Risks" section to output)
+id: rule.ticket.plan.update.v1
+version: 1.3.0
+```
+
+#### PATCH (1.2.3 -> 1.2.4)
+
+Increment when making **non-behavioral fixes**:
+
+- Typo corrections
+- Documentation clarifications
+- Comment improvements
+- Example updates
+- Checklist wording improvements
+- Formatting consistency fixes
+- No change to actual behavior or contracts
+
+**Impact**: Zero impact on dependent rules or outputs.
+
+**ID Impact**: Keep same ID.
+
+**Example**:
+```yaml
+# Old version
+id: rule.ticket.plan.update.v1
+version: 1.2.3
+
+# New version (fixed typos in documentation)
+id: rule.ticket.plan.update.v1
+version: 1.2.4
+```
+
+### Major Version in ID
+
+The `id` field contains only the **major version**:
+
+```yaml
+id: rule.ticket.plan.update.v1
+version: 1.5.2
+```
+
+**Rationale**:
+- References stay stable across minor/patch updates
+- Breaking changes get new ID (`v2`)
+- Tools can auto-upgrade minor/patch versions safely
+
+### Version History
+
+When creating a new major version, document the change:
+
+```markdown
+## Version History
+
+### v2.0.0 (2025-11-04)
+- **BREAKING**: Now also updates timeline.md with plan change entries
+- Added `timeline.md` to governs field
+- Added timeline update step to deterministic steps
+
+### v1.5.2 (2025-10-15)
+- Fixed typo in checklist
+- Clarified OPSEC requirements
+
+### v1.0.0 (2025-09-01)
+- Initial release
+```
+
+Place this section near the end of the rule, before "Related Rules."
+
+## Provenance Metadata
+
+### Front-Matter Provenance
+
+Every rule file must include provenance in front-matter:
+
+```yaml
+provenance:
+  owner: team-ticket
+  last_review: 2025-11-04
+```
+
+#### Required Fields
+
+**owner**: Team or individual responsible for maintaining the rule
+- Examples: `team-ticket`, `team-migration`, `team-ai`, `john-doe`
+- Used for accountability and contact
+
+**last_review**: ISO date (YYYY-MM-DD) of last review
+- Must be updated when rule is reviewed (not just edited)
+- Helps identify stale rules
+- Triggers periodic review processes
+
+#### Optional Fields
+
+**created**: ISO date when rule was first created
+**deprecated**: ISO date when rule was deprecated (if applicable)
+**superseded_by**: ID of rule that replaces this one
+
+**Example with optional fields**:
+```yaml
+provenance:
+  owner: team-ticket
+  created: 2025-09-01
+  last_review: 2025-11-04
+```
+
+**Example of deprecated rule**:
+```yaml
+provenance:
+  owner: team-ticket
+  last_review: 2025-11-04
+  deprecated: 2025-11-04
+  superseded_by: rule.ticket.plan.update.v2
+```
+
+### Provenance in Generated Outputs
+
+Rules that generate or modify files must append a **provenance footer** to those files.
+
+#### Footer Format
+
+```
+---
+Produced-by: {{rule_id}} | {{templar_id}} | model={{model}} | ts={{timestamp}} | hash={{input_hash}}
+```
+
+#### Footer Fields
+
+**rule_id**: Full ID of rule that produced output
+- Example: `rule.ticket.plan.update.v1`
+
+**templar_id**: Full ID of templar used (if any)
+- Example: `templar.plan.v1`
+- Omit if no templar used
+
+**model**: Model identifier (if LLM-generated)
+- Example: `gpt-4`, `claude-3-opus`, `cursor-agent`
+- Omit if not LLM-generated
+
+**ts**: ISO 8601 timestamp (UTC)
+- Example: `2025-11-04T14:30:00Z`
+
+**hash**: Hash of input parameters (optional but recommended)
+- Example: `sha256:a3f5d9...`
+- Enables reproducibility verification
+
+#### Example Footer
+
+```
+---
+Produced-by: rule.ticket.plan.update.v1 | templar.plan.v1 | model=cursor-agent | ts=2025-11-04T14:30:00Z | hash=sha256:a3f5d9e2b8c1
+```
+
+#### Placement
+
+- **Markdown files**: Append at very end of file, after all content
+- **Separation**: Use horizontal rule `---` before footer
+- **Updates**: When regenerating, replace old footer with new one
+
+#### Example Generated File
+
+```markdown
+# TICKET-1234 Plan
+
+## Objective
+
+Implement user authentication system.
+
+## Acceptance Criteria
+
+- User can log in via OAuth
+- Session management works
+- Security audit passes
+
+---
+Produced-by: rule.ticket.plan.update.v1 | templar.plan.v1 | model=cursor-agent | ts=2025-11-04T14:30:00Z | hash=sha256:a3f5d9e2b8c1
+```
+
+### Updating Provenance on Modification
+
+When a rule modifies an existing file:
+
+1. Parse existing provenance footer
+2. Extract creation timestamp and original rule
+3. Update footer with current rule and timestamp
+4. Preserve creation info if valuable
+
+**Example updated footer**:
+```
+---
+Created: 2025-10-01T10:00:00Z by rule.ticket.plan.update.v1
+Updated: 2025-11-04T14:30:00Z by rule.ticket.plan.update.v1 | templar.plan.v1 | model=cursor-agent
+```
+
+## Versioning Workflow
+
+### Creating New Rule (v1.0.0)
+
+1. Assign ID with `v1`: `rule.ticket.plan.update.v1`
+2. Set version: `version: 1.0.0`
+3. Set provenance: `owner` and `last_review` (today's date)
+4. Document in version history
+
+### Making Compatible Change (Minor/Patch)
+
+1. Keep same ID
+2. Increment minor or patch version
+3. Update `last_review` date
+4. Document in version history
+5. Notify dependent rule maintainers (optional, for minor)
+
+### Making Breaking Change (Major)
+
+1. Create new ID with next major version: `v1` -> `v2`
+2. Set version: `2.0.0`
+3. Copy front-matter from v1, update ID and version
+4. Set `last_review` to today
+5. Document breaking change in version history
+6. In v1 file, add deprecation notice:
+
+```yaml
+provenance:
+  owner: team-ticket
+  last_review: 2025-11-04
+  deprecated: 2025-11-04
+  superseded_by: rule.ticket.plan.update.v2
+```
+
+7. Update all dependent rules to reference v2 (or leave on v1 if compatible)
+
+### Deprecating a Rule
+
+1. Add deprecation metadata:
+
+```yaml
+provenance:
+  deprecated: 2025-11-04
+  superseded_by: rule.ticket.new-approach.v1
+```
+
+2. Add prominent notice at top of file:
+
+```markdown
+# [!]? DEPRECATED
+
+This rule is deprecated as of 2025-11-04.
+
+Use `rule.ticket.new-approach.v1` instead.
+
+See [migration guide](#migration) below.
+```
+
+3. Keep file in repository for historical reference
+4. Update rule index to mark as deprecated
+5. Schedule removal after grace period (e.g., 6 months)
+
+## Reproducibility
+
+### The Reproducibility Contract
+
+Given:
+- Same rule version
+- Same templar version
+- Same input parameters
+- Same model (for LLM rules)
+
+Output should be **deterministic** or **functionally equivalent**.
+
+### Ensuring Reproducibility
+
+1. **Version pinning**: Reference rules/templars by exact ID
+2. **Model hints**: Set `temp: 0.2` or lower for deterministic generation
+3. **Input hashing**: Hash input parameters, store in provenance
+4. **Templar adherence**: Strictly follow templar structure
+5. **Randomness elimination**: Avoid timestamps in content (only in metadata)
+
+### Verifying Reproducibility
+
+```python
+def verify_reproducibility(rule_id, inputs):
+    # Run rule twice with same inputs
+    output1 = execute_rule(rule_id, inputs)
+    output2 = execute_rule(rule_id, inputs)
+    
+    # Extract provenance
+    prov1 = extract_provenance(output1)
+    prov2 = extract_provenance(output2)
+    
+    # Compare outputs (ignoring timestamps)
+    assert normalize(output1) == normalize(output2), "Not reproducible"
+    
+    # Verify input hashes match
+    assert prov1['hash'] == prov2['hash'], "Input hash mismatch"
+```
+
+## Auditability
+
+### Audit Trails
+
+Provenance enables audit trails:
+
+1. **File history**: What rule produced this file?
+2. **Version tracking**: What version of the rule was used?
+3. **Change tracking**: When was this file last updated?
+4. **Dependency mapping**: What templars/models were involved?
+5. **Reproducibility**: Can we regenerate this exact output?
+
+### Audit Queries
+
+**"What files did rule X produce?"**
+```bash
+grep -r "Produced-by: rule.ticket.plan.update.v1" tickets/
+```
+
+**"When was this file last generated?"**
+```bash
+grep "ts=" tickets/T-123/plan.md
+```
+
+**"What version of plan rule was used?"**
+```bash
+grep "Produced-by: rule.ticket.plan.update" tickets/T-123/plan.md
+```
+
+### Compliance and Traceability
+
+For regulated environments, provenance provides:
+- **Who**: Owner in rule provenance
+- **What**: Rule ID and version
+- **When**: Timestamp in footer
+- **How**: Templar and model used
+- **Why**: Rule description and version history
+
+## Version Compatibility Matrix
+
+Maintain a compatibility matrix for complex rule ecosystems:
+
+```yaml
+# compatibility-matrix.yml
+rule.ticket.plan.update.v1:
+  compatible_with:
+    - rule.ticket.context.update.v1
+    - rule.ticket.timeline.update.v1
+  incompatible_with:
+    - rule.ticket.progress.update.v2  # Breaking change in v2
+  requires:
+    - templar.plan.v1
+
+rule.ticket.plan.update.v2:
+  compatible_with:
+    - rule.ticket.context.update.v1
+    - rule.ticket.timeline.update.v2  # Updated for v2
+  requires:
+    - templar.plan.v2
+```
+
+## Anti-Patterns
+
+### 1. Missing Version
+
+[X] **Bad**:
+```yaml
+id: rule.ticket.plan.update.v1
+# Missing version field
+```
+
+[X] **Good**:
+```yaml
+id: rule.ticket.plan.update.v1
+version: 1.0.0
+```
+
+### 2. Version Mismatch
+
+[X] **Bad**:
+```yaml
+id: rule.ticket.plan.update.v1
+version: 2.3.1  # Mismatch: v1 in ID, major=2 in version
+```
+
+[X] **Good**:
+```yaml
+id: rule.ticket.plan.update.v2
+version: 2.3.1
+```
+
+### 3. No Provenance in Generated Output
+
+[X] **Bad** (generated file):
+```markdown
+# TICKET-1234 Plan
+
+## Objective
+...
+```
+
+[X] **Good**:
+```markdown
+# TICKET-1234 Plan
+
+## Objective
+...
+
+---
+Produced-by: rule.ticket.plan.update.v1 | templar.plan.v1 | ts=2025-11-04T14:30:00Z
+```
+
+### 4. Breaking Change Without Major Bump
+
+[X] **Bad**:
+```yaml
+# Old
+id: rule.ticket.plan.update.v1
+version: 1.2.0
+governs: **/plan.md
+
+# New (breaking change but only minor bump)
+id: rule.ticket.plan.update.v1
+version: 1.3.0
+governs: **/plan.md, **/timeline.md  # BREAKING
+```
+
+[X] **Good**:
+```yaml
+# New (breaking change with major bump)
+id: rule.ticket.plan.update.v2
+version: 2.0.0
+governs: **/plan.md, **/timeline.md
+```
+
+### 5. Stale Last Review Date
+
+[X] **Bad**:
+```yaml
+provenance:
+  owner: team-ticket
+  last_review: 2024-01-15  # Over a year old
+```
+
+[X] **Good**:
+```yaml
+provenance:
+  owner: team-ticket
+  last_review: 2025-11-04  # Recently reviewed
+```
+
+## Version Review Checklist
+
+When reviewing a version change:
+
+- [ ] Version bump follows semantic versioning rules
+- [ ] ID updated if major version changed
+- [ ] `last_review` date updated to today
+- [ ] Version history section updated with change notes
+- [ ] Breaking changes clearly documented
+- [ ] Dependent rules identified and notified
+- [ ] Provenance footer format remains valid
+- [ ] Compatibility matrix updated (if applicable)
+- [ ] Deprecated rules marked properly
+
+## Related Rules
+
+- `rule.authoring.file-structure.v1` - Front-matter structure including version
+- `rule.authoring.cross-references.v1` - Referencing versioned rules
+- `rule.authoring.naming-conventions.v1` - ID naming with major version
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Front-matter has `version` field with valid semver (MAJOR.MINOR.PATCH)
+- [ ] Front-matter `id` major version matches `version` major version
+- [ ] Front-matter has `provenance` with `owner` and `last_review` (YYYY-MM-DD)
+- [ ] Rule specifies provenance footer format for generated outputs
+- [ ] Breaking changes get new major version and new ID
+- [ ] Compatible changes keep same ID, bump minor/patch only
+- [ ] Version history documented for major changes
+- [ ] Deprecated rules have deprecation metadata and notice
+- [ ] Rule version bumped if content changed (patch/minor/major)

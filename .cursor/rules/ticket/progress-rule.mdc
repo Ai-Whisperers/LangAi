@@ -1,0 +1,147 @@
+---
+id: rule.ticket.progress.v1
+kind: rule
+version: 1.0.1
+description: Rules for progress.md - chronological log of actions, decisions, and milestones with append-only discipline
+globs: **/tickets/**/progress.md, **/tickets/**/timeline.md
+governs: **/tickets/**/progress.md
+implements: progress.append
+requires:
+  - rule.ticket.timeline.v1
+  - templar.progress.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Progress Rule
+
+## Purpose & Scope
+
+The progress.md file maintains the ticket's chronological history. It serves as the ticket's "mid term memory" - preserving a complete record of actions, decisions, and milestones in temporal order. Works in conjunction with timeline.md for comprehensive time tracking (timeline provides timestamps, progress provides context).
+
+**Applies to**: All `progress.md` files in `tickets/**/` directories.
+
+**Does not apply to**: Template files (`templates/`), archived tickets (`archives/`), or completed tickets no longer being worked on.
+
+## Inputs (Contract)
+
+- Ticket ID in format `PROJECT-NUMBER`
+- Directory `tickets/TICKET-ID/` must exist
+- Action, decision, or milestone to log provided by user or system
+- Current timestamp in ISO 8601 format (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ)
+- Optional: Commit hash, file references, or conversation links
+
+## Outputs (Contract)
+
+- Creates `tickets/TICKET-ID/progress.md` if missing
+- Appends new entry at bottom with timestamp and content
+- Entry format: `## YYYY-MM-DD - [Summary]` followed by details
+- Preserves all existing content (append-only, no modifications to past entries)
+- Structure follows `templar.progress.v1`
+- Updates `tickets/TICKET-ID/timeline.md` with entry if major milestone
+- Each entry includes: date/time, summary, details, links, outcome, next steps (optional)
+
+## Deterministic Steps
+
+1. Validate ticket ID format matches `PROJECT-NUMBER` pattern
+2. Verify `tickets/TICKET-ID/` directory exists
+3. Create `progress.md` if missing (use `templar.progress.v1` for initial structure)
+4. Read existing `progress.md` content completely
+5. Get current timestamp in ISO 8601 format
+6. Format new entry:
+   ```markdown
+   ## YYYY-MM-DD - [Summary]
+   **Time**: [Timestamp]
+   **Action/Decision/Milestone**: [Description]
+   **Details**: [Specifics]
+   **Links**: [Commits, files, conversations]
+   **Outcome**: [Result]
+   **Next Steps**: [What comes next]
+   ```
+7. Append new entry to end of progress.md
+8. Write updated progress.md to disk
+9. If entry is major milestone, update timeline.md with reference
+
+## Formatting Requirements
+
+Progress.md must follow `templar.progress.v1` structure:
+
+- **Heading Level 1**: File title (optional, "# Progress Log" or "# TICKET-ID Progress")
+- **Heading Level 2**: Dated entries in ISO 8601 format
+  - Format: `## YYYY-MM-DD - [Summary]` or `## YYYY-MM-DDTHH:MM:SSZ - [Summary]`
+  - Entries ordered chronologically (oldest first, newest last)
+- **Entry Content** (within each H2 section):
+  - `**Time**:` - Specific timestamp if available
+  - `**Action/Decision/Milestone**:` - Type and description
+  - `**Details**:` - Specific actions, findings, or changes
+  - `**Links**:` - References to commits, files, conversations
+  - `**Outcome**:` - Result of the action or decision
+  - `**Next Steps**:` (optional) - What should happen next
+- **Session Boundaries**: Clearly mark session starts/ends with headers or separators
+- **Bullet Lists**: Use for multiple items within a category
+- **Code References**: Use inline code for file names, commit hashes, function names
+
+## OPSEC and Leak Control
+
+- NO internal system paths or server names (use generic references)
+- NO credentials, tokens, or API keys in progress logs
+- NO email addresses or personal identifiable information
+- NO customer data or production identifiers
+- NO sensitive URLs or internal hostnames
+- Redact specific error messages that might reveal system architecture
+- When logging problems, describe symptoms without revealing infrastructure details
+
+## Integration Points
+
+- **Syncs with**: `rule.ticket.timeline.v1` (major milestones cross-referenced)
+- **Triggers**: Context switches, major decisions, milestone achievements trigger progress entries
+- **Referenced by**: `rule.ticket.workflow.v1` for session tracking
+- **Updates**: timeline.md for major milestones
+- **Commit Tracking**: Links to relevant code commits via git hash
+- **JIRA Sync**: Progress entries can sync to JIRA for reporting
+- **Session Management**: Enables work resumption and handovers
+
+## Failure Modes and Recovery
+
+**Missing ticket directory**:
+- Detection: `tickets/TICKET-ID/` does not exist
+- Recovery: Create directory before proceeding
+- Fallback: Abort and request user create ticket directory structure
+
+**Missing timestamp**:
+- Detection: No timestamp available
+- Recovery: Use date-only format (YYYY-MM-DD)
+- Fallback: Mark entry with "~" to indicate approximate timing
+
+**Append fails (file locked)**:
+- Detection: Cannot write to progress.md
+- Recovery: Retry after brief delay (100ms)
+- Fallback: Log to temporary file, merge manually later
+
+**Timeline update fails**:
+- Detection: Cannot write to timeline.md
+- Recovery: Continue with progress.md update, log warning
+- Fallback: Progress entry succeeds but timeline not updated
+
+## Provenance Footer Specification
+
+Not applicable - progress.md is append-only log, not generated output. Provenance tracked via each entry's timestamp and content.
+
+## Related Rules
+
+- `rule.ticket.timeline.v1` - Timestamp-focused tracking (progress provides context)
+- `rule.ticket.context.v1` - Major context changes trigger progress entries
+- `rule.ticket.workflow.v1` - Progress updated during workflow steps
+- `rule.ticket.recap.v1` - Progress log feeds into final recap
+- `templar.progress.v1` - Structure template for progress.md
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no internal paths, credentials, emails, sensitive URLs)
+- [ ] Entries appended at bottom (chronological order preserved)
+- [ ] Each entry has ISO 8601 timestamp (YYYY-MM-DD minimum)
+- [ ] Entry format follows templar.progress.v1 structure
+- [ ] Only progress.md modified (governs compliance)
+- [ ] No modifications to existing entries (append-only discipline)
+- [ ] Session boundaries clearly marked for major work periods

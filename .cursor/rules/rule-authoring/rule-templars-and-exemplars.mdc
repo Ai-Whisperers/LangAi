@@ -1,0 +1,657 @@
+---
+id: rule.authoring.templars-and-exemplars.v1
+kind: rule
+version: 1.0.2
+description: Defines separation between templars (output shapes) and exemplars (patterns) and their usage
+globs: **/templars/**/*.md, **/exemplars/**/*.md, **/*-rule.mdc
+governs: **/templars/**/*.md, **/exemplars/**/*.md
+implements: rule.authoring.templars-exemplars
+requires:
+  - rule.authoring.file-structure.v1
+  - rule.authoring.cross-references.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ai, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Rule Templars and Exemplars
+
+## Purpose & Scope
+
+This rule defines the critical separation between **templars** (templates defining output structure) and **exemplars** (examples showing patterns). Proper separation prevents example content from leaking into production outputs while enabling pattern-based learning.
+
+**Applies to**: All template files, example files, and rules that reference them.
+
+**Does not apply to**: Generated output files, user documentation, or code templates.
+
+## Inputs (Contract)
+
+- Understanding of what output structure needs to be templated
+- Knowledge of what patterns or anti-patterns need illustration
+- Awareness of rule workflow phases (planning vs writing vs critique)
+- Existing templars and exemplars (for consistency)
+
+## Outputs (Contract)
+
+Files containing:
+- Templars with proper structure and `implements` field
+- Exemplars with `use:` flags and leak prevention warnings
+- Rules properly referencing templars for structure
+- Rules properly isolating exemplars for pattern extraction only
+- No exemplar content copied into production outputs
+
+## The Critical Distinction
+
+### Templars: Output Shapes
+
+**Purpose**: Define the STRUCTURE of production output
+
+**Usage**: Loaded during write phase, directly shapes output
+
+**Content**: Empty/placeholder sections showing required structure
+
+**Kind**: `templar`
+
+### Exemplars: Pattern Libraries
+
+**Purpose**: Illustrate PATTERNS and ANTI-PATTERNS for learning
+
+**Usage**: Loaded during planning/critique phase only, NEVER during write
+
+**Content**: Real examples (good and bad) with full content
+
+**Kind**: `exemplar`
+
+## Why This Matters
+
+### The Leak Problem
+
+Without separation, LLMs and agents copy exemplar content verbatim into production outputs:
+
+[X] **Example leak**:
+```markdown
+# My Ticket Plan
+
+## Objective
+Implement user authentication system
+
+## Background
+The system currently lacks...
+```
+
+Turns into (with leaked exemplar):
+```markdown
+# My Ticket Plan
+
+## Objective
+[From exemplar] Fix the login button bug by updating CSS
+```
+
+**Problem**: Example content about "login button" leaked into unrelated ticket about "authentication system."
+
+### The Solution: Strict Separation
+
+[X] **Templars provide structure**:
+```markdown
+# {{TICKET_ID}} Plan
+
+## Objective
+{{objective_content}}
+
+## Acceptance Criteria
+{{criteria_list}}
+```
+
+[X] **Exemplars stay out of write phase**:
+```yaml
+use: critic-only    # Flag: don't load during write
+```
+
+## Templar Files
+
+### Templar Front-Matter
+
+```yaml
+---
+id: templar.plan.v1
+kind: templar
+version: 1.0.0
+description: Structure template for plan.md files
+implements: plan.update
+globs: ""
+governs: ""
+requires: []
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+---
+```
+
+### Required Fields for Templars
+
+1. **id**: `templar.[target].[v{major}]`
+2. **kind**: Must be `templar`
+3. **implements**: What action/output this templates
+4. **version**: Semantic version
+5. **globs/governs**: Usually empty string `""` (templars don't modify files themselves)
+6. **requires**: Dependencies (rare for templars)
+
+### Templar Structure: Placeholders
+
+Use clear placeholder syntax to show what goes where:
+
+**Option 1: Mustache-style**
+```markdown
+# {{ticket_id}} Plan
+
+## Objective
+{{objective_description}}
+
+## Acceptance Criteria
+{{criteria_bullet_list}}
+```
+
+**Option 2: ALL_CAPS**
+```markdown
+# TICKET_ID Plan
+
+## Objective
+OBJECTIVE_DESCRIPTION
+
+## Acceptance Criteria
+- CRITERION_1
+- CRITERION_2
+```
+
+**Option 3: Comments**
+```markdown
+# Plan
+
+## Objective
+<!-- Insert objective description here -->
+
+## Acceptance Criteria
+<!-- Bullet list of criteria -->
+```
+
+**Recommendation**: Use mustache-style for clarity and tool compatibility.
+
+### Templar Example: plan-template.md
+
+```yaml
+---
+id: templar.plan.v1
+kind: templar
+version: 1.0.0
+description: Structure template for plan.md files
+implements: plan.update
+globs: ""
+governs: ""
+requires: []
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+---
+
+# {{ticket_id}} Plan
+
+## Objective
+
+{{objective_statement}}
+
+## Background
+
+{{background_context}}
+
+## Acceptance Criteria
+
+- {{criterion_1}}
+- {{criterion_2}}
+- {{criterion_n}}
+
+## Complexity Assessment
+
+**Track**: {{simple_fix | complex_implementation}}
+
+**Rationale**: {{complexity_rationale}}
+
+## Dependencies
+
+{{list_of_dependencies_or_none}}
+
+## Risks
+
+{{list_of_risks_or_none}}
+
+---
+*Plan created: {{timestamp}}*
+```
+
+### Templar Usage in Rules
+
+Rules reference templars in `requires` and describe structure:
+
+```yaml
+requires:
+  - templar.plan.v1
+```
+
+```markdown
+## Formatting Requirements
+
+Output must follow structure defined in `templar.plan.v1`:
+- Top-level H1: "# {{ticket_id}} Plan"
+- Required sections: Objective, Acceptance Criteria, Complexity
+- Optional sections: Background, Dependencies, Risks
+- Footer with timestamp
+```
+
+## Exemplar Files
+
+### Exemplar Front-Matter
+
+```yaml
+---
+id: exemplar.plan.good.v1
+kind: exemplar
+version: 1.0.0
+description: Well-structured plan.md example showing best practices
+illustrates: plan.update
+use: critic-only
+notes: "Pattern extraction only. NEVER copy content to production outputs."
+globs: ""
+governs: ""
+requires: []
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+---
+```
+
+### Required Fields for Exemplars
+
+1. **id**: `exemplar.[target].[qualifier].v[major]`
+   - Qualifier: `good`, `bad`, `edge-case`, etc.
+2. **kind**: Must be `exemplar`
+3. **illustrates**: What action/rule this demonstrates (links to `implements`)
+4. **use**: Phase restriction (`critic-only`, `plan-only`, `review-only`)
+5. **notes**: Warning about not copying content
+6. **version**: Semantic version
+7. **globs/governs**: Usually empty string `""`
+
+### The `use:` Field
+
+**Purpose**: Restricts when exemplar can be loaded
+
+**Values**:
+- `critic-only`: Load only during review/critique phase
+- `plan-only`: Load only during planning phase
+- `review-only`: Load only during post-execution review
+- `never-in-write`: Explicit block during write phase
+
+**Enforcement**: Tools and agents must respect this flag and refuse to load exemplars during write phase.
+
+### Exemplar Content: Real Examples
+
+Exemplars contain REAL, COMPLETE examples (not placeholders):
+
+```markdown
+---
+id: exemplar.plan.good.v1
+kind: exemplar
+illustrates: plan.update
+use: critic-only
+notes: "Pattern extraction only. NEVER copy content to production."
+---
+
+# TICKET-1234 Plan
+
+## Objective
+
+Implement user authentication system using OAuth 2.0 to enable secure third-party login via Google and GitHub providers.
+
+## Background
+
+Current system requires manual username/password registration. Users have requested social login for convenience. Security audit recommends OAuth 2.0 over custom implementation.
+
+## Acceptance Criteria
+
+- User can log in via Google OAuth 2.0
+- User can log in via GitHub OAuth 2.0
+- User profile created/updated from OAuth provider data
+- Existing username/password login remains functional
+- Session management works identically for both auth methods
+- Failed OAuth attempts show clear error messages
+
+## Complexity Assessment
+
+**Track**: Complex Implementation
+
+**Rationale**: Requires integration with two external OAuth providers, new session management logic, database schema changes for OAuth tokens, and extensive security testing.
+
+## Dependencies
+
+- OAuth 2.0 client library selection (evaluate 3 options)
+- Google Developer Console project setup
+- GitHub OAuth App registration
+- Database migration for oauth_tokens table
+
+## Risks
+
+- OAuth provider downtime impacts login availability (mitigation: keep password login)
+- Token refresh logic complexity (mitigation: use battle-tested library)
+- CSRF vulnerability if not implemented correctly (mitigation: security review)
+
+---
+*Plan created: 2025-11-04 10:30 UTC*
+```
+
+### Good vs Bad Exemplars
+
+Create pairs showing contrasts:
+
+**exemplar.plan.good.v1**:
+- Clear, specific objective
+- Measurable acceptance criteria
+- Thoughtful complexity reasoning
+- Realistic dependencies and risks
+
+**exemplar.plan.bad.v1**:
+- Vague objective ("make login better")
+- Untestable criteria ("should be secure")
+- No complexity justification
+- Missing dependencies and risks
+
+### Exemplar Usage in Rules
+
+Rules reference exemplars for learning, NOT for copying:
+
+```markdown
+## Related Exemplars
+
+- `exemplar.plan.good.v1` - Well-structured plan showing clear objectives and criteria
+- `exemplar.plan.bad.v1` - Common anti-patterns to avoid
+
+**CRITICAL**: Exemplars are for pattern extraction only. Extract style, structure, level of detail---but NEVER copy exemplar content into production outputs.
+```
+
+## Preventing Exemplar Leaks
+
+### Strategy 1: Phase Separation
+
+Load templars and exemplars at different workflow stages:
+
+1. **Planning Phase**: Load exemplars to understand patterns
+2. **Writing Phase**: Load ONLY templars, NO exemplars
+3. **Critique Phase**: Load exemplars again to compare output quality
+
+### Strategy 2: Explicit Warnings
+
+Every exemplar must have prominent warnings:
+
+```yaml
+notes: "Pattern extraction only. NEVER copy content to production."
+```
+
+And in the body:
+```markdown
+---
+[!]? WARNING: This is an EXEMPLAR for pattern learning.
+NEVER copy this content to production outputs.
+Extract patterns and style, synthesize new content.
+---
+```
+
+### Strategy 3: Use Flag Enforcement
+
+Tools must check `use:` flag:
+
+```python
+def load_file(file_id, current_phase):
+    metadata = parse_front_matter(file_id)
+    
+    if metadata['kind'] == 'exemplar':
+        use_flag = metadata.get('use', '')
+        
+        if current_phase == 'write' and 'write' not in use_flag:
+            raise Exception(f"Cannot load exemplar {file_id} during write phase")
+        
+        if use_flag == 'critic-only' and current_phase != 'critic':
+            raise Exception(f"Exemplar {file_id} restricted to critic phase")
+    
+    return load_content(file_id)
+```
+
+### Strategy 4: Content Fingerprinting
+
+For critical applications, fingerprint exemplar content and check outputs:
+
+```python
+exemplar_fingerprints = {
+    "Implement user authentication system using OAuth 2.0": "exemplar.plan.good.v1",
+    "make login better": "exemplar.plan.bad.v1"
+}
+
+def check_for_leaks(output_content):
+    for phrase, exemplar_id in exemplar_fingerprints.items():
+        if phrase.lower() in output_content.lower():
+            raise Exception(f"LEAK DETECTED: Exemplar content from {exemplar_id} found in output")
+```
+
+## File Organization
+
+### Recommended Structure
+
+```
+.cursor/
+  rules/
+    ticket/
+      plan-rule.mdc
+      progress-rule.mdc
+  templars/
+    ticket/
+      plan-template.md
+      progress-template.md
+  exemplars/
+    ticket/
+      plan-good.md
+      plan-bad.md
+      progress-good.md
+      progress-bad.md
+```
+
+### Naming Conventions
+
+**Templars**: `[target]-template.md`
+- `plan-template.md`
+- `progress-template.md`
+
+**Exemplars**: `[target]-[qualifier].md`
+- `plan-good.md`
+- `plan-bad.md`
+- `plan-edge-case.md`
+
+## Anti-Patterns
+
+### 1. Templar with Full Content
+
+[X] **Bad** (templar with exemplar content):
+```markdown
+---
+kind: templar
+---
+
+# TICKET-1234 Plan
+
+## Objective
+Implement user authentication using OAuth 2.0...
+```
+
+**Problem**: This is an exemplar, not a templar.
+
+[X] **Good** (templar with structure):
+```markdown
+---
+kind: templar
+---
+
+# {{ticket_id}} Plan
+
+## Objective
+{{objective_description}}
+```
+
+### 2. Exemplar Loaded During Write
+
+[X] **Bad**:
+```python
+def write_plan(ticket_id):
+    templar = load("templar.plan.v1")
+    exemplar = load("exemplar.plan.good.v1")  # LEAK RISK!
+    output = generate(templar, exemplar)
+```
+
+[X] **Good**:
+```python
+def write_plan(ticket_id):
+    templar = load("templar.plan.v1")  # Only templar
+    output = generate(templar)
+```
+
+### 3. Missing Use Flag
+
+[X] **Bad**:
+```yaml
+kind: exemplar
+illustrates: plan.update
+# Missing use: flag
+```
+
+[X] **Good**:
+```yaml
+kind: exemplar
+illustrates: plan.update
+use: critic-only
+```
+
+### 4. Exemplar Referenced in Requires
+
+[X] **Bad**:
+```yaml
+id: rule.ticket.plan.update.v1
+requires:
+  - exemplar.plan.good.v1  # Don't require exemplars!
+```
+
+[X] **Good**:
+```yaml
+id: rule.ticket.plan.update.v1
+requires:
+  - templar.plan.v1  # Require templars
+```
+
+Exemplars go in "Related Exemplars" section, not `requires`.
+
+### 5. Ambiguous Kind
+
+[X] **Bad**:
+```yaml
+kind: template  # Wrong, should be "templar"
+```
+
+[X] **Bad**:
+```yaml
+kind: example  # Wrong, should be "exemplar"
+```
+
+[X] **Good**:
+```yaml
+kind: templar  # Correct
+```
+
+[X] **Good**:
+```yaml
+kind: exemplar  # Correct
+```
+
+## Validation Checklist
+
+### For Templars
+
+- [ ] `kind: templar` in front-matter
+- [ ] `implements` field present
+- [ ] Content uses placeholders, not real data
+- [ ] Structure is clear and complete
+- [ ] No exemplar content mixed in
+
+### For Exemplars
+
+- [ ] `kind: exemplar` in front-matter
+- [ ] `illustrates` field present
+- [ ] `use:` flag present and appropriate
+- [ ] Warning about not copying content
+- [ ] Content is complete, realistic example
+- [ ] No placeholders (real example data)
+
+### For Rules Using Them
+
+- [ ] Templars in `requires` array
+- [ ] Exemplars in "Related Exemplars" section (not `requires`)
+- [ ] Rule explains how to use templar structure
+- [ ] Rule warns against copying exemplar content
+- [ ] Load strategy respects `use:` flags
+
+## Example: Complete Set
+
+### plan-rule.mdc
+```yaml
+---
+id: rule.ticket.plan.update.v1
+requires:
+  - templar.plan.v1
+---
+
+## Formatting Requirements
+Follow `templar.plan.v1` structure.
+
+## Related Exemplars
+- `exemplar.plan.good.v1` - Pattern extraction only, never copy
+```
+
+### plan-template.md
+```yaml
+---
+id: templar.plan.v1
+kind: templar
+implements: plan.update
+---
+
+# {{ticket_id}} Plan
+## Objective
+{{objective}}
+```
+
+### plan-good.md
+```yaml
+---
+id: exemplar.plan.good.v1
+kind: exemplar
+illustrates: plan.update
+use: critic-only
+notes: "Pattern extraction only."
+---
+
+# TICKET-1234 Plan
+## Objective
+Implement OAuth 2.0 authentication...
+```
+
+## Related Rules
+
+- `rule.authoring.file-structure.v1` - Front-matter and structure
+- `rule.authoring.cross-references.v1` - How to reference templars/exemplars
+- `rule.authoring.naming-conventions.v1` - Naming patterns for templars/exemplars
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Templars have `kind: templar` and use placeholders
+- [ ] Exemplars have `kind: exemplar` and `use:` flag
+- [ ] Exemplars contain warning about not copying content
+- [ ] Rules reference templars in `requires`, exemplars in "Related" section
+- [ ] No exemplar content copied into production outputs
+- [ ] `implements` (templar) matches `illustrates` (exemplar)
+- [ ] File organization separates templars/ and exemplars/ directories

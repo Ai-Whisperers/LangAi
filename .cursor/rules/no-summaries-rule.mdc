@@ -1,0 +1,66 @@
+---
+id: rule.general.no-summaries.v1
+kind: rule
+version: 1.0.0
+description: Prevents unnecessary summarization of changes
+globs: "**/*"
+governs: ""
+implements: communication.conciseness
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# No Summaries Rule
+
+## Purpose & Scope
+
+This rule instructs the AI not to provide verbose summaries of changes made, as the user can see the changes in the diff/tool output.
+
+**Applies to**: Post-action responses.
+
+## Inputs (Contract)
+
+- Action performed (write, search_replace)
+
+## Outputs (Contract)
+
+- Brief confirmation (e.g., "Updated file.")
+- No bulleted list of "I changed X, then Y, then Z" unless requested
+
+## Deterministic Steps
+
+1. Perform action.
+2. Confirm completion concisely.
+3. Omit "Here is a summary of what I did" sections.
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.no-apologies.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Response is concise
+- [ ] No redundant summary of visible changes
+- [ ] Focus on "what's next" or "done"

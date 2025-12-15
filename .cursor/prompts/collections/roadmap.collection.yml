@@ -1,0 +1,15 @@
+id: roadmap-bundle
+name: "Roadmap Management"
+description: "Prompts for creating and cataloging project roadmaps"
+tags:
+  - roadmap
+  - planning
+  - strategy
+  - documentation
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/roadmap/catalog-roadmaps.prompt.md
+    kind: prompt
+  - path: prompts/roadmap/create-update-roadmap.prompt.md
+    kind: prompt

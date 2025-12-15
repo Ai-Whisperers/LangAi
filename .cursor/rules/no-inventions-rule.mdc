@@ -1,0 +1,68 @@
+---
+id: rule.general.no-inventions.v1
+kind: rule
+version: 1.0.0
+description: Restricts AI from inventing changes beyond explicit requests
+globs: "**/*"
+governs: ""
+implements: coding.discipline
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# No Inventions Rule
+
+## Purpose & Scope
+
+This rule restricts the AI from inventing changes or adding features that were not explicitly requested by the user.
+
+**Applies to**: All code generation and modification tasks.
+
+## Inputs (Contract)
+
+- User request defining scope of change
+- Existing code context
+
+## Outputs (Contract)
+
+- Code changes limited strictly to the requested scope
+- No unrequested refactoring, formatting, or "improvements"
+
+## Deterministic Steps
+
+1. Analyze user request to identify explicit scope.
+2. Identify minimal changes required to fulfill request.
+3. Reject any changes that fall outside this scope (unless necessary for correctness).
+4. Apply changes.
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.single-chunk.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Changes are limited to user request
+- [ ] No "while I was at it" improvements
+- [ ] Existing code structure preserved

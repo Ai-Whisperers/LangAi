@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "{{SCRIPT_NAME}} Configuration",
+  "description": "Configuration file for {{SCRIPT_NAME}}.ps1",
+  "type": "object",
+  "properties": {
+    "Configuration": {
+      "type": "string",
+      "enum": ["Debug", "Release"],
+      "default": "Release",
+      "description": "Build configuration to use"
+    },
+    "OutputPath": {
+      "type": "string",
+      "description": "Directory to write output files"
+    },
+    "{{PARAMETER_NAME}}": {
+      "type": "{{PARAMETER_TYPE}}",
+      "minimum": {{MIN_VALUE}},
+      "maximum": {{MAX_VALUE}},
+      "default": {{DEFAULT_VALUE}},
+      "description": "{{PARAMETER_DESCRIPTION}}"
+    },
+    "ExcludedItems": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "List of items to exclude from processing"
+    },
+    "EnableFeature": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable optional feature"
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}
+

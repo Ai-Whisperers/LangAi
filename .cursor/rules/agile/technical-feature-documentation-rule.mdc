@@ -1,0 +1,193 @@
+---
+id: rule.agile.technical-feature-documentation.v1
+kind: rule
+version: 1.0.1
+description: Define structure and content requirements for Technical Feature documentation in agile development
+globs: **/features/technical/**/*.md, **/docs/agile/technical-features/**/*.md, **/agile/technical/**/*.md
+governs: **/features/technical/**/*.md, **/docs/agile/technical-features/**/*.md, **/agile/technical/**/*.md
+implements: agile.technical-feature-documentation
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-engineering, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Technical Feature Documentation Rule
+
+## Purpose & Scope
+
+This rule defines the canonical structure and content requirements for Technical Feature documentation in agile development. A Technical Feature is a specific technical capability or component that supports business features. It focuses on the technical implementation details, architecture, and development approach needed to deliver business value through infrastructure, architecture, or platform improvements.
+
+**Applies to**: All Technical Feature documentation files in `features/technical/` directories or designated technical documentation locations where the focus is on technical capabilities, infrastructure, architecture, or platform work.
+
+**Does not apply to**: Epic-level documentation, Business Feature documentation (user-facing value), User Story documentation, or simple bug fixes and maintenance tasks.
+
+## Inputs (Contract)
+
+- Technical requirement or capability definition
+- Parent Business Feature ID or Epic context
+- Technical problem statement
+- Architecture or infrastructure needs
+- Performance or scalability requirements
+- Technology stack constraints
+- Existing technical feature file (if updating)
+
+## Outputs (Contract)
+
+- Creates or updates Technical Feature documentation file at designated path
+- Ensures all 8 required sections present: Header, Technical Context, User Stories, Technical Requirements, Architecture and Design, Implementation Details, Testing Strategy, Deployment and Operations
+- Validates technical user stories include technical roles and capabilities
+- Includes architecture diagrams or references
+- Specifies testing strategy for all layers
+- Defines deployment and operational requirements
+- Appends provenance footer with timestamp and rule ID
+- Preserves existing content when updating
+
+## Deterministic Steps
+
+1. Read technical requirements and business context
+2. Identify parent Business Feature or Epic and establish link
+3. Create Feature Header with ID, Title, Business Feature reference, Epic reference, Status, Priority, Technical Complexity, Created Date, Last Updated
+4. Document Technical Context: Technical Problem, Business Impact, Technical Value, Success Metrics
+5. Define Technical User Stories: Primary User Story (main technical capability), Secondary User Stories (additional capabilities), format using "As a [technical role], I want [technical capability] so that [technical benefit]"
+6. Document Technical Requirements: Functional Requirements, Non-Functional Requirements, Integration Requirements, Data Requirements
+7. Document Architecture and Design: Architecture Impact, Design Patterns, Technology Stack, Component Design
+8. Document Implementation Details: Implementation Approach, Code Structure, Dependencies, Configuration
+9. Define Testing Strategy: Unit Testing, Integration Testing, Performance Testing, Security Testing
+10. Document Deployment and Operations: Deployment Requirements, Monitoring and Logging, Error Handling, Performance Considerations
+11. Validate all required sections are complete and technical specifications are actionable
+12. Append provenance footer with timestamp and rule ID
+13. Save to designated path
+
+## Formatting Requirements
+
+### Structure
+
+- Use markdown format
+- Top-level H1: "# [Feature ID]: [Feature Title]"
+- Use H2 for major sections (## Technical Context, ## Architecture and Design, etc.)
+- Use H3 for subsections within major sections
+
+### Technical User Story Format
+
+- Follow pattern: "As a [technical role], I want [technical capability] so that [technical benefit]"
+- Use specific technical roles (Developer, DevOps Engineer, System Architect, Security Engineer)
+- State clear technical capability and benefit to system/team
+
+### Architecture Diagrams
+
+- Include or reference architecture diagrams using Mermaid, PlantUML, or image links
+- Show component relationships and data flow
+- Indicate integration points and boundaries
+- Label technologies and protocols
+
+### Code Examples and Specifications
+
+- Include code snippets for complex algorithms or patterns
+- Use proper syntax highlighting with language tags
+- Provide configuration examples where relevant
+- Include API specifications or interface definitions
+
+### Links and References
+
+- Link to parent Business Feature or Epic
+- Reference related technical features
+- Link to architecture documentation and design documents
+- Include links to technology documentation and RFCs
+
+## OPSEC and Leak Control
+
+- NO production server URLs, IP addresses, or hostnames
+- NO database connection strings or credentials
+- NO API keys, tokens, or access credentials
+- NO environment-specific configurations (use placeholders)
+- NO internal network topology details
+- NO vendor-specific pricing or licensing details
+- NO employee names (use roles: "Lead Architect", "DevOps Team")
+- Redact organization-specific infrastructure names if sensitive
+- Use generic examples for security-sensitive configurations
+
+## Integration Points
+
+### Related Rules
+
+- `rule.agile.business-feature-documentation.v1` - Technical Features support Business Features
+- `rule.agile.epic-documentation.v1` - May trace to Epic for large technical initiatives
+- `rule.agile.user-story-documentation.v1` - Implementation tasks expanded as stories
+- `rule.migration.spec.create.v1` - Technical features may align with migration work
+
+### Workflow Integration
+
+- Technical Feature creation may require architecture review approval
+- Technical Feature completion triggers Business Feature unblocking
+- Performance testing results feed back into feature validation
+- Deployment documentation informs release planning
+
+## Failure Modes and Recovery
+
+**Missing Architecture Impact Assessment**:
+
+- Detection: Architecture Impact section empty or generic
+- Recovery: Flag for architecture review, request impact analysis
+
+**Undefined Testing Strategy**:
+
+- Detection: Testing sections empty or lacking specifics
+- Recovery: Add testing templates, flag for QA/DevOps review
+
+**Vague Technical Requirements**:
+
+- Detection: Requirements lack measurable criteria (performance numbers, resource limits)
+- Recovery: Flag for technical lead review, provide examples of quantifiable requirements
+
+**Missing Deployment Requirements**:
+
+- Detection: Deployment section empty for infrastructure changes
+- Recovery: Add deployment checklist template, flag for DevOps review
+
+**No Monitoring/Observability Plan**:
+
+- Detection: Monitoring section empty for new services/components
+- Recovery: Add observability template, flag for SRE review
+
+## Provenance Footer Specification
+
+Append to all generated or updated Technical Feature files:
+
+```markdown
+---
+Produced-by: rule.agile.technical-feature-documentation.v1 | ts={{timestamp}} | status={{status}}
+```
+
+Example:
+
+```markdown
+---
+Produced-by: rule.agile.technical-feature-documentation.v1 | ts=2025-11-04T14:30:00Z | status=created
+```
+
+For updates, preserve creation info:
+
+```markdown
+---
+Created: 2025-10-01T10:00:00Z by rule.agile.technical-feature-documentation.v1
+Updated: 2025-11-04T14:30:00Z by rule.agile.technical-feature-documentation.v1
+```
+
+## Related Exemplar
+
+**Exemplar**: `technical-feature-example.md` - Full example showing well-structured technical feature documentation
+
+**Usage Note**: Use exemplar for pattern extraction only. NEVER copy exemplar content into production technical feature documentation. Extract structure, technical detail level, and documentation patterns, but synthesize new content based on actual technical requirements.
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All 8 required sections present: Header, Technical Context, User Stories, Technical Requirements, Architecture and Design, Implementation Details, Testing Strategy, Deployment and Operations
+- [ ] Technical user stories follow "As a [technical role], I want [technical capability] so that [technical benefit]" format
+- [ ] Architecture impact assessed with diagrams or references
+- [ ] Technical requirements include measurable criteria (performance numbers, resource limits)
+- [ ] Testing strategy covers unit, integration, performance, and security testing
+- [ ] Deployment and operations section includes monitoring and error handling
+- [ ] Parent Business Feature or Epic referenced with valid ID
+- [ ] No OPSEC violations (production URLs, credentials, internal infrastructure details)
+- [ ] Provenance footer appended with timestamp

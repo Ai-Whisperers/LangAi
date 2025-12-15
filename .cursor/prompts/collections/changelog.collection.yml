@@ -1,0 +1,17 @@
+id: changelog-bundle
+name: "Changelog Management"
+description: "Prompts to generate and maintain changelog entries"
+tags:
+  - changelog
+  - release-notes
+  - documentation
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/changelog/agent-application-rule.prompt.md
+    kind: prompt
+  - path: prompts/changelog/generate-changelog-from-git.prompt.md
+    kind: prompt
+  - path: prompts/changelog/quick-changelog-update.prompt.md
+    kind: prompt
+

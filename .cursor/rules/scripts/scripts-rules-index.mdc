@@ -1,0 +1,495 @@
+---
+id: rule.scripts.index.v1
+kind: index
+version: 1.0.0
+description: Navigation hub and overview for reusable script standards framework
+globs: ""
+governs: ""
+implements: scripts.navigation
+requires: []
+provenance: 
+  owner: team-devops
+  last_review: 2025-12-07
+  created: 2025-12-07
+alwaysApply: false
+---
+
+# Reusable Scripts Standards - Index
+
+## Purpose & Scope
+
+This document provides a comprehensive overview and navigation hub for the reusable script standards framework. It defines the philosophy, principles, and architecture for creating consistent, maintainable, and high-quality PowerShell and Python scripts.
+
+**Applies to**: Anyone creating, modifying, or reviewing PowerShell or Python scripts in the repository.
+
+**Does not apply to**: Other scripting languages (Bash, Ruby, etc.) or compiled code.
+
+## Framework Philosophy
+
+### Core Concept
+
+Reusable scripts should be:
+- **Portable**: Work in CI/CD and locally without modification
+- **Documented**: Self-documenting with language-appropriate help systems
+- **Robust**: Proper error handling with meaningful messages
+- **Validated**: Strongly-typed parameters with validation
+- **Configurable**: Support external configuration for complex scenarios
+- **Maintainable**: Follow language-specific best practices
+
+### Modular Architecture
+
+The framework is split into 5 focused rules:
+
+1. **Agent Application** - Coordination and decision-making
+2. **Core Principles** - Language-agnostic standards
+3. **PowerShell Standards** - PowerShell-specific patterns
+4. **Python Standards** - Python-specific patterns
+5. **Quality Levels** - Assessment and progression framework
+
+This modular design:
+- ✅ Easier to maintain (each file ~200-450 lines vs 2640 line monolith)
+- ✅ Easier to update language-specific sections independently
+- ✅ Better agent performance (load only what's needed)
+- ✅ Follows single-responsibility principle
+- ✅ Enables language-specific evolution
+- ✅ Provides clear quality targets and progression paths
+
+## Rules Manifest
+
+### 📋 Coordination Rule
+
+#### `rule.scripts.agent-application.v1`
+**File**: `agent-application-rule.mdc`  
+**Purpose**: Agent guidance for when and how to apply script standards  
+**Kind**: Meta-rule (description-triggered, no globs/governs)  
+**Triggers**: User requests involving scripts, "create script", "PowerShell", "Python"  
+**Status**: ✅ Active
+
+### 🌍 Core Principles Rule
+
+#### `rule.scripts.core-principles.v1`
+**File**: `core-principles-rule.mdc`  
+**Purpose**: Language-agnostic core principles (portability, parameterization, error handling, configuration, reusability through modules)  
+**Governs**: `**/*.ps1`, `**/*.py`  
+**Applies to**: ALL scripts regardless of language  
+**Status**: ✅ Active  
+**Updated**: 2025-12-07 - Added Core Principle 7: Reusability Through Modules
+
+### 🔷 PowerShell Standards Rule
+
+#### `rule.scripts.powershell-standards.v1`
+**File**: `powershell-standards-rule.mdc`  
+**Purpose**: PowerShell-specific standards and advanced features  
+**Governs**: `**/*.ps1`  
+**Requires**: `rule.scripts.core-principles.v1`  
+**Status**: ✅ Active  
+**Updated**: 2025-12-07 - Added Shared Modules and Conditional Unicode sections
+
+**Covers**:
+- Comment-based help (Get-Help support)
+- Parameter validation attributes
+- **Shared modules (.psm1 files)** - NEW
+- **Conditional Unicode detection** - NEW
+- Pipeline support (ValueFromPipeline)
+- Parallel processing (PowerShell 7+)
+- Progress reporting
+- Performance profiling
+- Smart caching
+- Retry logic
+- Historical tracking
+- Differential coverage
+- Webhook notifications
+- Advanced error handling
+- Configuration schema validation
+- WhatIf/Confirm support
+- Templates (minimal & full)
+
+### 🐍 Python Standards Rule
+
+#### `rule.scripts.python-standards.v1`
+**File**: `python-standards-rule.mdc`  
+**Purpose**: Python-specific standards and advanced features  
+**Governs**: `**/*.py`  
+**Requires**: `rule.scripts.core-principles.v1`  
+**Status**: ✅ Active  
+**Updated**: 2025-12-07 - Added Shared Modules section
+
+**Covers**:
+- Module docstrings (help() support)
+- Type hints with Pydantic validation
+- Argparse for CLI
+- **Shared modules (Python packages)** - NEW
+- **Conditional Unicode detection** - NEW
+- Structured logging
+- Retry decorator with exponential backoff
+- Async/await for I/O operations
+- Multiprocessing for CPU operations
+- Rich terminal UI
+- Context managers
+- SQLite for historical tracking
+- Smart caching with functools
+- Differential coverage
+- Webhook notifications
+- Configuration with YAML validation
+- Custom exception hierarchy
+- Unit testing with pytest
+- Templates and exemplars (references external files)
+
+### 📊 Quality Levels Rule
+
+#### `rule.scripts.quality-levels.v1`
+**File**: `script-quality-levels-rule.mdc`  
+**Purpose**: Quality assessment framework with 4 levels and measurable criteria  
+**Governs**: `` (assessment only, no file writes)  
+**Requires**: `rule.scripts.core-principles.v1`  
+**Status**: ✅ Active  
+**Updated**: 2025-12-07 - Added shared modules and conditional Unicode to Standard Level requirements
+
+**Covers**:
+- **Basic (60/100)**: Core principles + argparse + basic logging
+- **Standard (70/100)**: Add type hints + unit tests + error handling + **shared modules** + **conditional Unicode**
+- **Advanced (80/100)**: Add retry logic + caching + progress reporting  
+- **Production (90-100/100)**: Add async/parallel + webhooks + comprehensive testing
+- Assessment checklists for each level
+- Progression paths from basic to production
+- Quality scoring methodology
+
+## Rule Dependencies Graph
+
+```
+rule.scripts.agent-application.v1 (Meta-Rule Coordinator)
+  |
+  |--- Directs to: rule.scripts.core-principles.v1 (Always applies first)
+  |                |
+  |                |--- Base for: rule.scripts.powershell-standards.v1 (PowerShell)
+  |                |
+  |                `--- Base for: rule.scripts.python-standards.v1 (Python)
+  |
+  |--- Assesses with: rule.scripts.quality-levels.v1 (Quality assessment)
+  |                   |
+  |                   `--- Requires: rule.scripts.core-principles.v1
+  |
+  `--- No file dependencies (coordination only)
+```
+
+## Reading Paths by Role
+
+### New Script Author
+
+**Goal**: Create first reusable script
+
+**Path**:
+1. Start: `rule.scripts.agent-application.v1` (overview)
+2. Read: `rule.scripts.core-principles.v1` (portability, params, errors)
+3. Determine target quality: `rule.scripts.quality-levels.v1` (choose level based on use case)
+4. Read language-specific:
+   - PowerShell: `rule.scripts.powershell-standards.v1`
+   - Python: `rule.scripts.python-standards.v1`
+5. Use template from language rule
+6. Apply features for target quality level
+7. Validate against checklist
+
+**Time**: 45-60 minutes initial reading
+
+### Experienced Script Author
+
+**Goal**: Refresh or look up specific patterns
+
+**Path**:
+1. Jump to `rule.scripts.agent-application.v1` for quick navigation
+2. Reference specific language rule as needed
+3. Check examples in language rule
+
+**Time**: 5-15 minutes
+
+### Script Reviewer
+
+**Goal**: Review script for quality
+
+**Path**:
+1. Assess quality level: `rule.scripts.quality-levels.v1` (determine current level and score)
+2. Check against `rule.scripts.core-principles.v1` (portability, errors, docs)
+3. Check against language-specific rule (PowerShell or Python)
+4. Verify checklist compliance for assessed level
+5. Provide progression path to next quality level
+
+**Time**: 15-25 minutes per script
+
+### AI Assistant
+
+**Goal**: Help user with script
+
+**Must Read**:
+- `rule.scripts.agent-application.v1` - Decision-making
+- `rule.scripts.core-principles.v1` - Apply to all scripts
+
+**Load as Needed**:
+- `rule.scripts.quality-levels.v1` - When assessing quality or planning improvements
+- `rule.scripts.powershell-standards.v1` - When working with .ps1
+- `rule.scripts.python-standards.v1` - When working with .py
+
+## Common Scenarios
+
+### Scenario 1: Creating New PowerShell Script
+
+**User request**: "Create PowerShell script to analyze coverage"
+
+**Agent workflow**:
+1. Load `rule.scripts.agent-application.v1` (recognizes PowerShell)
+2. Load `rule.scripts.core-principles.v1` (apply core principles)
+3. Load `rule.scripts.powershell-standards.v1` (apply PS specifics)
+4. Generate script with:
+   - Comment-based help
+   - Typed parameters with validation
+   - Portable defaults
+   - Error handling with try/catch/finally
+   - Exit codes
+
+**Result**: Production-ready PowerShell script
+
+### Scenario 2: Improving Existing Python Script
+
+**User request**: "Improve this Python script for reusability"
+
+**Agent workflow**:
+1. Load `rule.scripts.agent-application.v1` (recognizes Python)
+2. Analyze against `rule.scripts.core-principles.v1` (identify core gaps)
+3. Analyze against `rule.scripts.python-standards.v1` (identify Python gaps)
+4. Prioritize improvements:
+   - Critical: Add type hints, fix error handling
+   - Important: Add docstrings, improve CLI
+   - Nice-to-have: Add async support, Rich UI
+
+**Result**: Enhanced Python script following standards
+
+### Scenario 3: Script Quality Review
+
+**User request**: "Review this script for quality"
+
+**Agent workflow**:
+1. Load `rule.scripts.agent-application.v1` (coordinate review)
+2. Load `rule.scripts.quality-levels.v1` (assess current quality level)
+3. Check `rule.scripts.core-principles.v1` checklist
+4. Check language-specific rule checklist
+5. Calculate quality score and determine level achieved
+6. Provide structured feedback with references
+7. Suggest progression path to next quality level
+
+**Result**: Detailed quality assessment with score, level, and improvement roadmap
+
+## Quality Levels (Framework Overview)
+
+The quality levels framework provides systematic assessment and progression paths for scripts. See `rule.scripts.quality-levels.v1` for complete details.
+
+### Basic (60/100)
+
+**Target Use Case**: One-off scripts, personal utilities, prototypes
+
+**Key Features**:
+- ✅ Core principles (portability, params, error handling)
+- ✅ Basic CLI (argparse or parameters)
+- ✅ Basic logging
+- ✅ Documentation (help/docstring)
+
+**Time to achieve**: 1-2 hours for new script
+
+### Standard (70/100)
+
+**Target Use Case**: Team tools, shared utilities, moderate complexity
+
+**Key Features**:
+- ✅ All Basic features
+- ✅ Type hints (Python) or validation attributes (PowerShell)
+- ✅ Unit tests (basic coverage)
+- ✅ Comprehensive error handling with exit codes
+- ✅ Config file support (if 5+ params)
+- ✅ **Shared modules** (extract reusable functions)
+- ✅ **Conditional Unicode** (emojis vs ASCII based on environment)
+
+**Time to achieve**: 3-4 hours for new script
+
+### Advanced (80/100)
+
+**Target Use Case**: CI/CD scripts, automation workflows, production tools
+
+**Key Features**:
+- ✅ All Standard features
+- ✅ Performance optimization (async/parallel)
+- ✅ Retry logic with exponential backoff
+- ✅ Progress reporting
+- ✅ Smart caching
+- ✅ Structured logging with levels
+
+**Time to achieve**: 1-2 days for complex script
+
+### Production (90-100/100)
+
+**Target Use Case**: Business-critical automation, high-availability systems
+
+**Key Features**:
+- ✅ All Advanced features
+- ✅ Comprehensive unit tests (80%+ coverage)
+- ✅ Webhook notifications
+- ✅ Historical tracking and trends
+- ✅ Differential analysis
+- ✅ Performance profiling
+- ✅ Security hardening
+
+**Time to achieve**: 2-3 days for production-critical script
+
+**Assessment**: Use `rule.scripts.quality-levels.v1` assessment checklist to determine current level and plan improvements.
+
+## Migration from Old Structure
+
+### Previous Structure (Deprecated)
+
+❌ **Old monolithic rule**:
+- `cicd/reusable-script-standards-rule.mdc` (2640 lines)
+- Single file with all content
+- Harder to maintain
+- Slower agent loading
+
+### New Modular Structure (Current)
+
+✅ **New modular rules**:
+- `.cursor/rules/scripts/agent-application-rule.mdc` (~250 lines)
+- `.cursor/rules/scripts/core-principles-rule.mdc` (~400 lines)
+- `.cursor/rules/scripts/powershell-standards-rule.mdc` (~370 lines, 64% reduction)
+- `.cursor/rules/scripts/python-standards-rule.mdc` (~443 lines, 67% reduction)
+- `.cursor/rules/scripts/script-quality-levels-rule.mdc` (~300 lines)
+- `.cursor/exemplars/script/` (23 exemplar files: 10 PowerShell + 13 Python)
+- `.cursor/templars/script/` (5 template files)
+- `.cursor/prompts/script/` (12 prompt files)
+
+**Migration Status**: ✅ Complete
+- [✅] Agent application rule created and updated with quality levels
+- [✅] Core principles rule created
+- [✅] PowerShell standards rule refactored (74% size reduction)
+- [✅] Python standards rule refactored (67% size reduction)
+- [✅] Quality levels rule created
+- [✅] 23 exemplars created (good/bad pattern examples)
+- [✅] 5 templars created (script templates)
+- [✅] 12 prompts created (task-oriented guidance)
+- [✅] Scripts-rules-index updated with quality integration
+- [⏳] Old rule to be deprecated after validation
+
+## Domain-Specific Extensions
+
+### CI/CD Scripts
+
+For scripts specifically in CI/CD pipelines (`cicd/scripts/`), see:
+- **`rule.cicd.script-standards.v1`** - CI/CD-specific script standards
+  - **File**: `.cursor/rules/cicd/cicd-script-standards-rule.mdc`
+  - **Builds upon**: All general script rules (core-principles, powershell-standards, python-standards)
+  - **Adds**: Azure Pipelines integration patterns, artifact handling, build pipeline best practices
+  - **Applies to**: `cicd/scripts/**/*.ps1`, `cicd/scripts/**/*.py`
+
+## Quick Reference Card
+
+### "I need to create a PowerShell script"
+
+```
+Apply Rules:
+1. rule.scripts.core-principles.v1 (portability, params, errors, config)
+2. rule.scripts.powershell-standards.v1 (comment-based help, advanced features)
+
+Template: Use minimal or full template from PowerShell rule
+Time: 1-4 hours depending on complexity
+```
+
+### "I need to create a Python script"
+
+```
+Apply Rules:
+1. rule.scripts.core-principles.v1 (portability, params, errors, config)
+2. rule.scripts.python-standards.v1 (docstrings, type hints, advanced features)
+
+Template: Use template from Python rule
+Time: 1-4 hours depending on complexity
+```
+
+### "I need to review a script"
+
+```
+Check Against:
+1. rule.scripts.core-principles.v1 checklist (portable? docs? errors?)
+2. Language-specific rule checklist (language best practices?)
+
+Time: 10-20 minutes per script
+```
+
+## File Locations
+
+### Rule Files
+```
+.cursor/rules/scripts/
+  ├── agent-application-rule.mdc
+  ├── core-principles-rule.mdc
+  ├── powershell-standards-rule.mdc
+  ├── python-standards-rule.mdc
+  ├── script-quality-levels-rule.mdc
+  └── scripts-rules-index.mdc (this file)
+
+.cursor/exemplars/script/
+  ├── powershell/ (11 exemplars)
+  │   ├── shared-module.exemplar.md (NEW - demonstrates module pattern)
+  │   └── ... (10 existing exemplars)
+  └── python/ (13 exemplars)
+
+.cursor/templars/script/ (5 templates)
+  ├── powershell-script-minimal.templar.ps1
+  ├── powershell-script-full.templar.ps1
+  ├── powershell-config-file.templar.json
+  ├── python-script-full.templar.py
+  └── python-config-file.templar.yaml
+
+.cursor/prompts/script/ (13 prompts)
+  ├── create-powershell-script.prompt.md
+  ├── create-python-script.prompt.md
+  ├── migrate-to-shared-module.prompt.md (NEW - extract functions to modules)
+  ├── add-*.prompt.md (various enhancements)
+  └── validate-script-standards.prompt.md
+```
+
+### Script Locations (Examples)
+```
+cicd/scripts/          # CI/CD automation scripts
+scripts/               # General utility scripts
+build/                 # Build scripts
+deploy/                # Deployment scripts
+```
+
+## Related Rules
+
+- `rule.cicd.tag-based-versioning.v2` - Pipeline integration
+- `rule.cicd.pre-build-validation.v1` - Local script execution
+- `rule.development-commit-message` - Commit standards
+
+## Version History
+
+### v1.0.0 (2025-12-07)
+- Created modular script standards framework
+- Split from monolithic `cicd/reusable-script-standards-rule.mdc` (2640 lines)
+- Created 4 focused rules: agent-application, core-principles, powershell, python
+- Established index for navigation
+
+### v1.1.0 (2025-12-07)
+- **Added Core Principle 7**: Reusability Through Modules (DRY principle)
+- **PowerShell Standards**: Added Shared Modules section (.psm1 pattern)
+- **PowerShell Standards**: Added Conditional Unicode Detection section
+- **Python Standards**: Added Shared Modules section (package pattern)
+- **Quality Levels**: Updated Standard Level to require shared modules and conditional Unicode
+- **New Exemplar**: `shared-module.exemplar.md` - Complete module pattern for PowerShell
+- **New Prompt**: `migrate-to-shared-module.prompt.md` - Migration guide for extracting shared functions
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All 5 script rules listed in manifest with stable IDs
+- [ ] Quality levels framework integrated into overview
+- [ ] Dependency graph accurately reflects relationships (including quality-levels rule)
+- [ ] Reading paths defined for different roles (author, reviewer, AI) including quality assessment
+- [ ] Common scenarios documented with workflows (including quality review scenario)
+- [ ] Quality levels defined with clear requirements (Basic, Standard, Advanced, Production)
+- [ ] Migration status tracked from old to new structure (with refactoring metrics)
+- [ ] Quick reference card provides fast navigation
+- [ ] Exemplars, templars, and prompts catalogued with locations

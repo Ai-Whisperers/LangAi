@@ -1,0 +1,58 @@
+---
+id: rule.python.agent-application.v1
+kind: rule
+version: 1.0.0
+description: Agent guidance for when and how to apply Python-specific rules in this repository (formatting, linting, typing, testing). Use this when user requests involve changing Python code, adding new modules, debugging Python behavior, or writing pytest tests.
+implements: python.agent-application
+requires:
+  - rule.python.code-style.v1
+  - rule.python.testing.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-python, last_review: 2025-12-15 }
+alwaysApply: false
+---
+
+# Python - Agent Application Rule
+
+## Purpose & Scope
+
+This rule helps the agent decide which **Python-specific** standards to apply when working in this repository.
+
+**Applies to**: Any work that modifies `**/*.py` or `tests/**/*.py`.
+
+**Does not apply to**: Non-Python domains (e.g., database SQL scripts, docs-only edits) unless Python changes are also involved.
+
+## Inputs (Contract)
+
+- A user request that involves Python code changes, new Python files, or test updates
+- The target module(s) and any relevant tests
+- Any constraints from `pyproject.toml` (ruff/black/mypy/pytest)
+
+## Outputs (Contract)
+
+- Decision to apply:
+  - `rule.python.code-style.v1` for implementation changes
+  - `rule.python.testing.v1` for tests/fixtures/markers
+- A short checklist of what to validate (format, lint, tests) before considering work complete
+
+## User Request Pattern to Rule Mapping
+
+| User Request Pattern | Primary Rule |
+|---------------------|--------------|
+| \"Add a new feature\" (Python) | `rule.python.code-style.v1` + `rule.python.testing.v1` |
+| \"Fix this bug\" (Python) | `rule.python.code-style.v1` + `rule.python.testing.v1` |
+| \"Write tests\" / \"Improve coverage\" | `rule.python.testing.v1` |
+| \"Refactor\" / \"Clean up\" (Python) | `rule.python.code-style.v1` |
+
+## Practical defaults for this repo
+
+- Prefer existing conventions in the touched module; avoid style churn.
+- Prefer `src/` for implementation and `tests/` for tests.
+- Prefer structured diagnostics (WHAT/WHY/HOW) for errors and validation output.
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Python changes follow `rule.python.code-style.v1`
+- [ ] Any new/changed behavior is covered by tests per `rule.python.testing.v1`
+- [ ] No secrets added (especially `.env`, API keys, tokens)
+

@@ -1,0 +1,660 @@
+---
+id: rule.quality.diagnostic-messages.v1
+kind: rule
+version: 1.0.0
+description: Standards for high-quality diagnostic messages (errors/warnings) that provide clear explanations and actionable solutions
+globs: "**/*"
+governs: "**/*"
+implements: diagnostic-message-quality
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: 
+  owner: quality-standards
+  last_review: 2025-12-07
+  context: Extracted from zero-warnings-zero-errors rule to focus on diagnostic message quality
+  key_insight: Great diagnostics transform debugging from frustration to learning
+alwaysApply: true
+---
+
+# Diagnostic Message Quality Rule
+
+## Purpose
+
+Enforce high-quality diagnostic messages (errors and warnings) that help developers understand problems quickly and fix them efficiently. Every diagnostic should explain **what** went wrong, **why** it matters, and **how** to fix it.
+
+## Core Principle
+
+**Diagnostics are teaching moments** - great error/warning messages transform debugging from frustration into learning.
+
+## Diagnostic Message Structure
+
+### Three-Part Pattern
+
+Every diagnostic message should contain:
+
+1. **WHAT**: Clear identification of the problem
+2. **WHY**: Explanation of why it's an issue (for errors/critical warnings)
+3. **HOW**: Actionable solution or guidance
+
+### Error Message Template
+
+```text
+❌ ERROR: [Clear problem statement]
+
+Explanation: [Why this is an error and its impact]
+
+Solution: [Specific steps to fix]
+
+Location: [File:Line or specific context]
+
+Help: [Link to docs/prompt or command to run]
+```
+
+### Warning Message Template
+
+```text
+⚠ WARNING: [Clear problem statement]
+
+Impact: [What could go wrong if not fixed]
+
+Solution: [Specific steps to fix]
+
+Location: [File:Line or specific context]
+
+Help: [Link to docs/prompt or command to run]
+```
+
+### Informational Message Template
+
+```text
+ℹ INFO: [Helpful information]
+
+Context: [Why this is being shown]
+
+Action (optional): [What to do if this matters]
+```
+
+## Severity Levels
+
+### 🔴 ERRORS (Blockers)
+**Criteria**: Prevents successful compilation, build, or execution
+
+**Message Requirements**:
+- ✅ Full explanation (WHAT + WHY + HOW)
+- ✅ Specific location (file, line, column if possible)
+- ✅ Exact fix steps or auto-fix command
+- ✅ Link to documentation or fix prompt
+- ✅ Example of correct implementation
+
+**Example**:
+```text
+❌ ERROR: Missing required XML documentation for public method 'ProcessPayment'
+
+Explanation: All public APIs must have XML documentation to enable IntelliSense,
+generate API docs, and maintain code quality standards. Missing documentation
+blocks the build when warnings-as-errors is enabled.
+
+Solution:
+1. Add XML doc comment above the method:
+   /// <summary>
+   /// Processes a payment transaction for the specified amount
+   /// </summary>
+   /// <param name="amount">The payment amount to process</param>
+   /// <returns>Transaction result with status and reference number</returns>
+
+2. Or run auto-fix: @prompts/cicd/fix-missing-documentation.md
+
+Location: PaymentService.cs:45:public void ProcessPayment(decimal amount)
+
+Help: See https://docs.microsoft.com/en-us/dotnet/csharp/codedoc
+```
+
+### 🟡 WARNINGS (Should Fix)
+**Criteria**: Code works but violates best practices, style, or quality standards
+
+**Message Requirements**:
+- ✅ Clear problem statement (WHAT)
+- ✅ Impact explanation (what could go wrong)
+- ✅ Specific fix steps or auto-fix command
+- ✅ Link to documentation or fix prompt
+- ⚠️ Explanation can be briefer than errors
+
+**Example**:
+```text
+⚠ WARNING: Unused variable 'tempResult' detected
+
+Impact: Unused variables clutter code, confuse maintainers, and may indicate
+logic errors where the variable should have been used.
+
+Solution:
+1. Remove the variable if truly unused: Remove line 23
+2. Or use the variable in your logic if it was forgotten
+
+Location: OrderProcessor.cs:23:var tempResult = CalculateTotal();
+
+Help: Run auto-fix: dotnet format (will remove unused variables)
+```
+
+### 🔵 INFORMATIONAL (FYI)
+**Criteria**: Helpful context, suggestions, or non-critical notices
+
+**Message Requirements**:
+- ✅ Brief, clear statement
+- ✅ Context (why shown)
+- ⚠️ Action only if relevant
+- ❌ No explanation needed
+
+**Example**:
+```text
+ℹ INFO: Using cached NuGet packages from local cache
+
+Context: Restoring packages from C:\Users\dev\.nuget\packages
+Speeds up build by 15-30 seconds.
+
+Action: Run 'dotnet nuget locals all --clear' to clear cache if issues arise.
+```
+
+## Message Quality Standards
+
+### ✅ DO
+
+1. **Be Specific**
+   - ❌ "Invalid input"
+   - ✅ "Parameter 'email' must be a valid email address format (user@domain.com)"
+
+2. **Provide Context**
+   - ❌ "Build failed"
+   - ✅ "Build failed in Project.Tests: 3 unit tests failed (TestLogin, TestLogout, TestRefresh)"
+
+3. **Give Exact Locations**
+   - ❌ "Error in PaymentService"
+   - ✅ "Error in PaymentService.cs:45:12 (method ProcessPayment, line 'return null;')"
+
+4. **Offer Solutions**
+   - ❌ "Missing configuration"
+   - ✅ "Missing configuration 'ApiKey' in appsettings.json. Add: { \"ApiKey\": \"your-key-here\" }"
+
+5. **Include Examples**
+   - ❌ "Use correct format"
+   - ✅ "Use ISO 8601 format. Example: '2025-12-07T10:30:00Z' instead of '12/7/2025'"
+
+6. **Link to Help**
+   - ✅ "See @prompts/cicd/fix-missing-documentation.md for auto-fix"
+   - ✅ "See https://docs.microsoft.com/... for details"
+   - ✅ "Run: ./scripts/fix-linting-issues.ps1"
+
+7. **Use Clear Language**
+   - ❌ "Null reference exception in unhandled async continuation"
+   - ✅ "Object 'user' is null at line 45. Check if user exists before accessing properties."
+
+### ❌ DON'T
+
+1. **Vague Messages**
+   - ❌ "Something went wrong"
+   - ❌ "Error occurred"
+   - ❌ "Invalid input"
+
+2. **Technical Jargon Without Context**
+   - ❌ "Segmentation fault (core dumped)"
+   - ✅ "Memory access error: Attempted to read from invalid memory address. Likely cause: accessing array beyond bounds at line 45."
+
+3. **Missing Solutions**
+   - ❌ "Build failed" [with no guidance]
+
+4. **Blame or Shame**
+   - ❌ "You forgot to close the connection"
+   - ✅ "Database connection not closed. Add 'using' statement or call .Dispose()"
+
+5. **Redundant Information**
+   - ❌ "ERROR: Error occurred during error handling"
+
+6. **Stack Dumps Without Context**
+   - ❌ [50 lines of stack trace with no explanation]
+   - ✅ [Summary + key error + "Full trace available with --verbose flag"]
+
+## Implementation Patterns
+
+### Pattern 1: Validation Script Messages
+
+```powershell
+# validate-code-quality.ps1
+
+# ❌ BAD: Vague message
+if ($missingDocs.Count -gt 0) {
+    Write-Host "Documentation errors found"
+    exit 1
+}
+
+# ✅ GOOD: Structured diagnostic
+if ($missingDocs.Count -gt 0) {
+    Write-Host "`n❌ ERROR: Missing XML documentation detected" -ForegroundColor Red
+    Write-Host "`nExplanation: $($missingDocs.Count) public members lack XML documentation." -ForegroundColor Yellow
+    Write-Host "This violates code quality standards and blocks IntelliSense generation.`n"
+    
+    Write-Host "Affected files:" -ForegroundColor Cyan
+    $missingDocs | ForEach-Object {
+        Write-Host "  • $($_.File):$($_.Line) - $($_.Member)" -ForegroundColor Gray
+    }
+    
+    Write-Host "`nSolution:" -ForegroundColor Green
+    Write-Host "  1. Run auto-fix: @prompts/cicd/fix-missing-documentation.md"
+    Write-Host "  2. Or manually add XML comments to each member"
+    Write-Host "  3. Then re-run: .\validate-code-quality.ps1`n"
+    
+    Write-Host "Help: See .cursor/rules/documentation/documentation-standards-rule.mdc`n"
+    
+    exit 1
+}
+```
+
+### Pattern 2: Linter Configuration Messages
+
+```javascript
+// .eslintrc.js
+
+module.exports = {
+  rules: {
+    'no-unused-vars': ['error', { 
+      args: 'none',
+      // Custom message with explanation and solution
+      message: 'Unused variable detected. Remove it or prefix with underscore (_var) if intentionally unused for future use.'
+    }],
+    'no-console': ['warn', {
+      // Helpful warning with context
+      message: 'Console statements found. Use proper logging framework (logger.info/warn/error) for production code. Console is OK for debugging.'
+    }]
+  }
+};
+```
+
+### Pattern 3: Build Script Messages
+
+```bash
+#!/bin/bash
+# build.sh
+
+echo "🔍 Running pre-build validation..."
+
+if ! dotnet build --no-restore > /dev/null 2>&1; then
+    echo ""
+    echo "❌ ERROR: Build failed"
+    echo ""
+    echo "Explanation: Project compilation failed. Check the errors below."
+    echo ""
+    
+    # Show actual build output
+    dotnet build --no-restore
+    
+    echo ""
+    echo "Solution:"
+    echo "  1. Review compiler errors above"
+    echo "  2. Fix syntax/type errors in source code"
+    echo "  3. Ensure all NuGet packages restored: dotnet restore"
+    echo "  4. Re-run: ./build.sh"
+    echo ""
+    echo "Help: For common build errors, see docs/troubleshooting.md"
+    echo ""
+    exit 1
+fi
+
+echo "✅ Build successful"
+```
+
+### Pattern 4: Git Hook Messages
+
+```bash
+#!/bin/bash
+# .git/hooks/pre-commit
+
+# Run validation
+./scripts/validate-pre-commit.sh
+VALIDATION_RESULT=$?
+
+if [ $VALIDATION_RESULT -ne 0 ]; then
+    echo ""
+    echo "❌ ERROR: Pre-commit validation failed"
+    echo ""
+    echo "Explanation: Code quality checks found issues that must be fixed before committing."
+    echo "This ensures all committed code meets quality standards."
+    echo ""
+    echo "Solution:"
+    echo "  1. Review the validation errors above"
+    echo "  2. Run auto-fix: ./scripts/validate-pre-commit.sh --auto-fix"
+    echo "  3. Fix any remaining issues manually"
+    echo "  4. Re-run validation: ./scripts/validate-pre-commit.sh"
+    echo "  5. Then commit: git commit"
+    echo ""
+    echo "Help: See .cursor/rules/quality/zero-warnings-zero-errors-rule.mdc"
+    echo ""
+    exit 1
+fi
+```
+
+### Pattern 5: Exception Messages in Code
+
+```csharp
+// ❌ BAD: Unhelpful exception
+if (user == null)
+{
+    throw new Exception("Invalid user");
+}
+
+// ✅ GOOD: Informative exception with context
+if (user == null)
+{
+    throw new ArgumentNullException(
+        nameof(user),
+        "User object cannot be null when processing payment. " +
+        "Ensure user is authenticated before calling ProcessPayment(). " +
+        "Call AuthService.GetCurrentUser() to retrieve user context."
+    );
+}
+
+// ✅ BETTER: Custom exception with structured information
+if (user == null)
+{
+    throw new UserContextException(
+        "User authentication required",
+        "ProcessPayment requires an authenticated user context. The current request does not have valid user credentials.",
+        suggestedFix: "Call AuthService.GetCurrentUser() before invoking ProcessPayment()",
+        helpLink: "https://docs.internal.com/auth/user-context"
+    );
+}
+```
+
+## Diagnostic Message Catalog
+
+### Common Error Categories
+
+#### 1. **Missing Documentation**
+```text
+❌ ERROR: Missing XML documentation for [member type] '[member name]'
+
+Explanation: All public APIs require XML documentation for IntelliSense and API docs.
+[member type] must have <summary>, <param>, <returns> tags as applicable.
+
+Solution: Add XML comment above member:
+[Example of correct documentation]
+
+Help: @prompts/cicd/fix-missing-documentation.md or see docs/xml-documentation.md
+```
+
+#### 2. **Linting Issues**
+```text
+⚠ WARNING: Code style violation - [specific rule]
+
+Impact: Inconsistent code style reduces readability and maintainability.
+
+Solution: Run auto-fix: [command]
+Or manually: [specific fix]
+
+Help: See .editorconfig or [linter docs]
+```
+
+#### 3. **Test Failures**
+```text
+❌ ERROR: [N] test(s) failed
+
+Failed tests:
+  • [TestName1]: [Brief reason]
+  • [TestName2]: [Brief reason]
+
+Solution:
+1. Run tests individually: dotnet test --filter [TestName]
+2. Review test output for assertion failures
+3. Fix implementation or update test expectations
+4. Re-run: dotnet test
+
+Help: See test output above for detailed stack traces
+```
+
+#### 4. **Build Errors**
+```text
+❌ ERROR: Compilation failed in [Project]
+
+Compiler errors:
+  • [File:Line] - [Error message]
+  [Additional context]
+
+Solution:
+1. Fix syntax/type errors shown above
+2. Ensure dependencies restored: dotnet restore
+3. Check for missing using statements
+4. Re-build: dotnet build
+
+Help: For compiler error codes, see https://docs.microsoft.com/...
+```
+
+#### 5. **Dependency Issues**
+```text
+❌ ERROR: Missing dependency '[PackageName]'
+
+Explanation: Project references package '[PackageName]' but it's not installed.
+This blocks compilation and runtime execution.
+
+Solution:
+1. Restore packages: dotnet restore (or npm install, pip install)
+2. If still missing, add explicitly:
+   dotnet add package [PackageName] --version [Version]
+3. Re-build: dotnet build
+
+Help: Check [PackageName] availability at nuget.org/packages/[PackageName]
+```
+
+#### 6. **Configuration Errors**
+```text
+❌ ERROR: Missing configuration '[ConfigKey]'
+
+Explanation: Application requires '[ConfigKey]' in configuration but it's not found.
+Check appsettings.json, environment variables, or secrets.
+
+Solution:
+1. Add to appsettings.json:
+   {
+     "[ConfigKey]": "[example-value]"
+   }
+2. Or set environment variable: export [ConfigKey]="[value]"
+3. For secrets, use: dotnet user-secrets set "[ConfigKey]" "[value]"
+
+Help: See docs/configuration.md for required settings
+```
+
+## Diagnostic Output Formatting
+
+### Console Output Standards
+
+```text
+[Emoji] [LEVEL]: [Problem statement]
+[Empty line]
+[Explanation section with label]
+[Details or list]
+[Empty line]
+[Solution section with label]
+[Numbered steps or bullet points]
+[Empty line]
+[Help/Reference section]
+[Empty line]
+```
+
+### Color Coding (Terminal)
+
+- 🔴 **Red**: Errors, critical problems
+- 🟡 **Yellow**: Warnings, important notices
+- 🟢 **Green**: Solutions, success messages
+- 🔵 **Cyan**: Section headers, categories
+- ⚪ **Gray**: Details, secondary information
+
+### Emoji Usage
+
+- ❌ **Errors**: Cross mark
+- ⚠️ **Warnings**: Warning sign
+- ℹ️ **Info**: Information
+- ✅ **Success**: Check mark
+- 🔍 **Scanning**: Magnifying glass
+- 🔧 **Fixing**: Wrench
+- 📝 **Documentation**: Memo
+- 🚀 **Deployment**: Rocket
+
+## Validation Checklist
+
+### Error Message Quality
+
+- [ ] **WHAT**: Problem clearly identified
+- [ ] **WHY**: Explanation provided (why it's an error)
+- [ ] **HOW**: Specific fix steps provided
+- [ ] **WHERE**: Exact location (file:line)
+- [ ] **HELP**: Link to docs, prompt, or command
+- [ ] **EXAMPLE**: Correct implementation shown
+- [ ] **CONTEXT**: Relevant details included
+- [ ] **CLARITY**: No jargon without explanation
+
+### Warning Message Quality
+
+- [ ] **WHAT**: Problem clearly identified
+- [ ] **IMPACT**: Consequence explained
+- [ ] **HOW**: Specific fix steps provided
+- [ ] **WHERE**: Exact location (file:line)
+- [ ] **HELP**: Link to docs, prompt, or command
+- [ ] **BREVITY**: Concise but complete
+
+### Informational Message Quality
+
+- [ ] **WHAT**: Information clearly stated
+- [ ] **CONTEXT**: Why it's being shown
+- [ ] **ACTION**: Optional action if relevant
+- [ ] **BREVITY**: Brief and to the point
+
+## Integration with Validation Scripts
+
+### Script Structure
+
+Every validation script should:
+
+1. **Scan** for issues silently
+2. **Categorize** issues by severity
+3. **Report** with structured diagnostics
+4. **Provide** auto-fix option (if possible)
+5. **Exit** with appropriate code (0 = success, 1 = failure)
+
+### Script Template
+
+```powershell
+# validate-quality.ps1
+[CmdletBinding()]
+param(
+    [switch]$AutoFix,
+    [switch]$Verbose
+)
+
+$ErrorActionPreference = 'Stop'
+$errors = @()
+$warnings = @()
+
+# Scanning phase (quiet)
+Write-Host "🔍 Scanning for quality issues..." -ForegroundColor Cyan
+
+# Collect issues
+$issues = Get-QualityIssues
+
+# Categorize
+foreach ($issue in $issues) {
+    if ($issue.Severity -eq 'Error') { $errors += $issue }
+    else { $warnings += $issue }
+}
+
+# Report phase (detailed)
+if ($errors.Count -gt 0) {
+    Write-Host "`n❌ ERRORS FOUND: $($errors.Count)" -ForegroundColor Red
+    
+    foreach ($error in $errors) {
+        Write-Host "`n$($error.Title)" -ForegroundColor Red
+        Write-Host "`nExplanation: $($error.Explanation)" -ForegroundColor Yellow
+        Write-Host "`nLocation: $($error.Location)" -ForegroundColor Gray
+        Write-Host "`nSolution:" -ForegroundColor Green
+        $error.Solution | ForEach-Object { Write-Host "  $_" -ForegroundColor Green }
+        Write-Host "`nHelp: $($error.HelpLink)" -ForegroundColor Cyan
+    }
+    
+    exit 1
+}
+
+if ($warnings.Count -gt 0) {
+    Write-Host "`n⚠ WARNINGS FOUND: $($warnings.Count)" -ForegroundColor Yellow
+    
+    foreach ($warning in $warnings) {
+        Write-Host "`n$($warning.Title)" -ForegroundColor Yellow
+        Write-Host "`nImpact: $($warning.Impact)" -ForegroundColor Gray
+        Write-Host "`nSolution:" -ForegroundColor Green
+        $warning.Solution | ForEach-Object { Write-Host "  $_" -ForegroundColor Green }
+        Write-Host "`nHelp: $($warning.HelpLink)" -ForegroundColor Cyan
+    }
+    
+    if (-not $AutoFix) {
+        Write-Host "`nRun with -AutoFix to attempt automatic fixes" -ForegroundColor Cyan
+    }
+    
+    exit 1
+}
+
+Write-Host "`n✅ No quality issues found!" -ForegroundColor Green
+exit 0
+```
+
+## Anti-Patterns
+
+### ❌ Bad Diagnostic Messages
+
+```text
+Error: Build failed
+Error: Test error
+Error: Invalid input
+Error: Exception occurred
+Warning: Fix this
+```
+
+**Problems**: Vague, no context, no solution, not helpful
+
+### ✅ Good Diagnostic Messages
+
+```text
+❌ ERROR: Build failed in PaymentService.cs
+
+Explanation: Compilation error at line 45 - method 'ProcessPayment' 
+returns void but 'return result;' statement found.
+
+Solution:
+1. Change return type: public PaymentResult ProcessPayment(...)
+2. Or remove return statement if no value needed
+3. Re-build: dotnet build
+
+Location: PaymentService.cs:45:12
+
+Help: See docs/common-build-errors.md#return-type-mismatch
+```
+
+## Success Metrics
+
+- **Developer velocity**: Time from error to fix decreases
+- **Learning**: Developers understand problems quickly
+- **Quality**: Fewer repeated mistakes
+- **Experience**: Reduced frustration, increased confidence
+- **Autonomy**: Developers can fix issues without asking for help
+
+## FINAL MUST-PASS CHECKLIST
+
+Before releasing any diagnostic message:
+
+- [ ] Error messages include WHAT + WHY + HOW
+- [ ] Warning messages include WHAT + IMPACT + HOW
+- [ ] Exact location provided (file:line if applicable)
+- [ ] Specific fix steps or auto-fix command provided
+- [ ] Link to documentation, prompt, or help provided
+- [ ] Example of correct implementation (for errors)
+- [ ] Clear, jargon-free language used
+- [ ] Formatted with colors/emojis for readability
+- [ ] Tested with real developers for clarity
+- [ ] No blame/shame language
+
+---
+
+**TL;DR**: Every diagnostic message should teach, not just tell. Provide WHAT (problem), WHY (explanation for errors), and HOW (solution) with exact locations and links to help.

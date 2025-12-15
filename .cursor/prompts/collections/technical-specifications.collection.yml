@@ -1,0 +1,15 @@
+id: technical-specifications-bundle
+name: "Technical Specifications"
+description: "Prompts for documenting domain objects and enumerations"
+tags:
+  - specifications
+  - documentation
+  - domain
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/technical-specifications/document-domain-object.prompt.md
+    kind: prompt
+  - path: prompts/technical-specifications/document-enumeration.prompt.md
+    kind: prompt
+

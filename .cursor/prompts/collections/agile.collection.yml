@@ -1,0 +1,22 @@
+id: agile-prompts-bundle
+name: "Agile Prompts"
+description: "Prompts for creating and refining agile artifacts"
+tags:
+  - agile
+  - planning
+  - backlog
+  - stories
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/agile/create-business-feature.prompt.md
+    kind: prompt
+  - path: prompts/agile/create-epic.prompt.md
+    kind: prompt
+  - path: prompts/agile/create-technical-feature.prompt.md
+    kind: prompt
+  - path: prompts/agile/create-user-story.prompt.md
+    kind: prompt
+  - path: prompts/agile/split-user-story.prompt.md
+    kind: prompt
+

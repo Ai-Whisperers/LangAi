@@ -1,0 +1,92 @@
+# Timeline Workflow Integration
+
+## Purpose
+Integration of timeline.md with ticket workflow, focusing on hours.md generation for billing and project tracking.
+
+## Workflow Integration
+
+### During Work
+1. **Log Key Events**: Update timeline.md with timestamps as work happens
+2. **Commit Normally**: Use standard commit messages, log commits in timeline.md
+3. **Mark Sessions**: Clear start/complete boundaries for work sessions
+
+### Ticket Closure
+- **Complete timeline.md**: Finalize all events and timing
+- **Generate hours.md**: Extract billing hours on request
+- **Git Validation**: Cross-check for missed commits
+
+## Hours.md Generation
+
+### When to Generate
+- **Ticket closure**: Before final documentation commit
+- **Billing needs**: When accurate time tracking required for invoicing
+- **Project analysis**: For retrospective or estimation purposes
+
+### Generation Process
+1. **Extract from timeline.md**: Parse work sessions from start/complete pairs
+2. **Calculate durations**: Time between session boundaries
+3. **Round up to 15-minute increments**: Standard billing units (unless excessive 10m)
+4. **Validate with git**: Cross-check timeline commits against actual git commits
+5. **Generate hours.md**: Formatted billing document
+
+### Session Calculation Rules
+- **Work Session**: Continuous work with <30min gaps between events
+- **Total Time**: Sum of all work sessions  
+- **Billing Time**: Rounded up to 15-minute increments (unless excessive 10m)
+- **Calendar Time**: Include documented breaks for context
+
+## Git Validation for Hours.md
+
+### Cross-checking Process
+```bash
+# Get all ticket commits for validation
+git log --grep="EBASE-XXXX" --pretty=format:"%h %ad %s" --date=iso
+
+# Compare with timeline.md commit events
+# Identify any missing commit entries in timeline
+```
+
+### Validation Points
+- Cross-check timeline commits against actual git commits
+- Identify any missed commit events in timeline
+- Validate work session timing against commit timestamps
+- Ensure billing accuracy with git evidence
+
+## Integration with Other Files
+
+For detailed integration guidelines between timeline.md and other ticket files, see `@/ticket/timeline-tracking-rule.mdc`.
+
+## File Relationships
+
+### timeline.md (Active During Work)
+- **Purpose**: Real-time event logging as work happens
+- **Updates**: Throughout work sessions, commit events, breaks
+- **Content**: Sequential timestamp log with brief descriptions
+
+### hours.md (Generated On Request)
+- **Purpose**: Billing and project time analysis
+- **Source**: Extracted and calculated from timeline.md
+- **Content**: Sessions rounded up to billing increments, total hours, billing breakdown
+- **Validation**: Cross-checked against git commits
+
+### Integration Benefits
+1. **Simple Tracking**: Manual timeline logging as work happens
+2. **Billing Ready**: Clean hours.md generation when needed
+3. **Git Validation**: Verify timeline completeness for accuracy
+4. **Workflow Integration**: Fits naturally with existing ticket process
+
+---
+id: rule.ticket.timeline-workflow.v1
+kind: rule
+version: 1.0.1
+description: Integration of timeline tracking with ticket workflow for hours.md generation
+globs: **/tickets/**/timeline.md, **/tickets/**/hours.md
+governs: **/tickets/**/timeline.md, **/tickets/**/hours.md
+implements: timeline.workflow
+requires:
+  - rule.ticket.timeline.v1
+  - rule.ticket.workflow.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---

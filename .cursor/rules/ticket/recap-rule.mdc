@@ -1,0 +1,170 @@
+---
+id: rule.ticket.recap.v1
+kind: rule
+version: 1.0.1
+description: Rules for recap.md - summarizes ticket outcomes, key learnings, and follow-up actions for closure
+globs: **/tickets/**/recap.md, **/tickets/**/plan.md, **/tickets/**/progress.md, **/tickets/**/timeline.md
+governs: **/tickets/**/recap.md
+implements: recap.create
+requires:
+  - rule.ticket.plan.v1
+  - rule.ticket.progress.v1
+  - rule.ticket.timeline.v1
+  - templar.recap.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Recap Rule
+
+## Purpose & Scope
+
+The recap.md file summarizes the ticket's final outcomes and learnings. It serves as the ticket's "conclusion" - capturing what was achieved, what was learned, and what comes next. Created at ticket completion or substantial milestone completion.
+
+**Applies to**: All `recap.md` files in `tickets/**/` directories when tickets are complete or substantially complete.
+
+**Does not apply to**: Template files (`templates/`), tickets still in active development, or spike/investigation tickets with no deliverable outcomes.
+
+## Inputs (Contract)
+
+- Ticket ID in format `PROJECT-NUMBER`
+- Directory `tickets/TICKET-ID/` must exist
+- `plan.md` exists with original objectives and acceptance criteria
+- `progress.md` exists with chronological history of work
+- `timeline.md` exists with time tracking data
+- Ticket work is substantially complete or at major milestone
+- Current timestamp for recap creation
+
+## Outputs (Contract)
+
+- Creates `tickets/TICKET-ID/recap.md`
+- Ensures sections present: `## Summary`, `## What Was Accomplished`, `## How It Was Accomplished`, `## Key Learnings`, `## What's Next`, `## Value Delivered`, `## Success Criteria Assessment`
+- Structure follows `templar.recap.v1`
+- Summarizes outcomes from plan.md acceptance criteria
+- Distills learnings from progress.md chronology
+- Incorporates time investment from timeline.md
+- Updates timeline.md with entry: `[TIMESTAMP] - Recap - Ticket recap created`
+- Stakeholder-friendly language (no excessive technical jargon)
+
+## Deterministic Steps
+
+Execute in order when creating recap.md:
+
+1. Validate ticket ID format matches `PROJECT-NUMBER` pattern
+2. Verify `tickets/TICKET-ID/` directory exists
+3. Verify prerequisite files exist (plan.md, progress.md)
+4. Load `templar.recap.v1` for structure reference
+5. Read plan.md and extract:
+   - Original objectives
+   - Acceptance criteria
+   - Success metrics
+6. Read progress.md and identify:
+   - Key accomplishments
+   - Major decisions
+   - Approaches used
+   - Problems encountered and solved
+7. Read timeline.md and extract:
+   - Total time invested
+   - Session count
+   - Work distribution over time
+8. Generate `## Summary` section - High-level outcome statement (2-3 sentences)
+9. Generate `## What Was Accomplished` section - Specific deliverables list
+10. Generate `## How It Was Accomplished` section - Key approaches and methods
+11. Generate `## Key Learnings` section - Insights and knowledge gained
+12. Generate `## What's Next` section - Follow-up actions and recommendations
+13. Generate `## Value Delivered` section - Business and technical impact
+14. Generate `## Success Criteria Assessment` section - Check each acceptance criterion
+15. Write recap.md to disk
+16. Append entry to timeline.md: `[TIMESTAMP] - Recap - Ticket recap created`
+
+## Formatting Requirements
+
+Recap.md must follow `templar.recap.v1` structure:
+
+- **Heading Level 1**: File title (optional, "# Recap" or "# TICKET-ID Recap")
+- **Heading Level 2**: Required sections in order:
+  1. `## Summary` - 2-3 sentence high-level outcome
+  2. `## What Was Accomplished` - Bullet list of deliverables
+  3. `## How It Was Accomplished` - Bullet list of approaches/methods
+  4. `## Key Learnings` - Bullet list of insights
+  5. `## What's Next` - Bullet list of follow-up actions
+  6. `## Value Delivered` - Business Impact and Technical Impact subsections
+  7. `## Success Criteria Assessment` - Checklist against plan.md criteria
+  8. `## Recommendations` (optional) - Suggestions for future work
+- **Stakeholder Language**: Minimize jargon, explain technical concepts
+- **Concrete Examples**: Specific metrics, numbers, outcomes
+- **Future-Focused**: Clear next steps and recommendations
+
+## OPSEC and Leak Control
+
+When writing recap:
+- NO internal system paths or server names
+- NO credentials, tokens, or API keys
+- NO email addresses or personal identifiable information
+- NO customer data or production identifiers
+- NO sensitive URLs or internal hostnames
+- Redact specific system names; use generic references
+- Focus on patterns and outcomes, not deployment-specific details
+- Business impact should not reveal competitive intelligence
+
+## Integration Points
+
+- **Syncs with**: `rule.ticket.plan.v1` (success criteria assessment)
+- **Informed by**: `rule.ticket.progress.v1` (accomplishments and learnings)
+- **Incorporates**: `rule.ticket.timeline.v1` (time investment data)
+- **Referenced by**: `rule.ticket.workflow.v1` for closure process
+- **JIRA Sync**: Recap syncs back to JIRA for tracking and reporting
+- **Knowledge Management**: Learnings captured for organizational knowledge base
+- **Stakeholder Communication**: Summary used for management reporting
+
+## Failure Modes and Recovery
+
+**Missing prerequisite files**:
+
+- Detection: plan.md, progress.md, or timeline.md not found
+- Recovery: Create recap with available information, note missing data
+- Fallback: Minimal recap from available sources
+
+**Empty or minimal progress**:
+
+- Detection: progress.md has few entries, limited detail
+- Recovery: Focus on deliverables from code changes, test results
+- Fallback: Note limited traceability, recommend better progress tracking
+
+**Unclear success criteria**:
+
+- Detection: plan.md has vague or missing acceptance criteria
+- Recovery: Define criteria post-hoc based on actual work completed
+- Fallback: Note that criteria were not well-defined upfront
+
+**Timeline.md update fails**:
+
+- Detection: Cannot write to timeline.md
+- Recovery: Continue with recap.md creation, log warning
+- Fallback: Recap created but timeline not updated
+
+## Provenance Footer Specification
+
+Not applicable - recap.md is human-written summary, not generated output. Provenance tracked via timeline.md entry.
+
+## Related Rules
+
+- `rule.ticket.plan.v1` - Success criteria assessment references plan objectives
+- `rule.ticket.progress.v1` - Accomplishments and learnings sourced from progress
+- `rule.ticket.timeline.v1` - Time investment data incorporated
+- `rule.ticket.workflow.v1` - Recap triggers ticket closure
+- `rule.ticket.validation.v1` - Validation results summarized in recap
+- `templar.recap.v1` - Structure template for recap.md
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no internal paths, credentials, emails, PII)
+- [ ] recap.md contains all required sections
+- [ ] Summary is concise and stakeholder-friendly (2-3 sentences)
+- [ ] What Was Accomplished lists specific deliverables
+- [ ] Key Learnings captured from progress.md
+- [ ] What's Next identifies clear follow-up actions
+- [ ] Success Criteria Assessment checks all plan.md criteria
+- [ ] Only recap.md modified (governs compliance)
+- [ ] timeline.md updated with recap creation entry

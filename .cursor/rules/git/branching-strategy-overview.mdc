@@ -1,0 +1,333 @@
+---
+id: rule.git.branching-strategy-overview.v1
+kind: rule
+version: 1.1.0
+description: Central navigation hub and comprehensive overview of Git branching strategy using main/develop model with structured supporting branches for features, fixes, releases, and two-stage RC workflow.
+implements: git.branching-strategy-overview
+requires:
+  - rule.git.branch-structure.v1
+  - rule.git.branch-naming.v1
+  - rule.git.branch-lifecycle.v1
+  - rule.git.branch-protection.v1
+  - rule.cicd.tag-based-versioning.v2
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-platform, last_review: 2025-12-05 }
+alwaysApply: false
+---
+
+# Git Branching Strategy - Overview
+
+## Purpose
+
+This rule provides a comprehensive overview of the Git branching strategy designed to bring clarity, traceability, and stability to repository management. It serves as the central navigation hub for understanding how branches are structured, named, and managed throughout the development lifecycle.
+
+## Current Situation (Problem Statement)
+
+### Before This Strategy
+
+The repository previously relied on:
+- Multiple versioned branches (release/9.x, next/9.x, etc.) without clear purpose separation
+- No clear main integration branch
+- Default HEAD pointing to outdated branches (e.g., `origin/HEAD -> origin/release/9.2`)
+- Confusion around where to branch from, where to merge to, and how to prepare releases
+- Inconsistent branch naming without traceability to work items
+
+### Problems This Solves
+
+- **Lack of Clarity**: Developers unsure which branch to use as base
+- **Poor Traceability**: Branch names don't map to Jira tickets
+- **Unstable Releases**: No controlled promotion path from development to production
+- **Scalability Issues**: Difficult to maintain multiple active versions
+- **Automation Gaps**: CI/CD pipelines can't reliably identify branch purposes
+
+## Branching Strategy Overview
+
+### Core Principles
+
+1. **Clear Base and Destination**: Every branch type has defined source and target branches
+2. **Direct Traceability**: All work branches map to Jira tickets
+3. **Controlled Promotion**: Code flows through defined stages: develop → release → main
+4. **Version Isolation**: Multiple active versions supported through isolated release lines
+5. **Automation-Friendly**: Consistent patterns enable CI/CD and protection rules
+
+### Visual Model
+
+```
+main (production)
+  ├── hotfix/EBASE-127 ──┐
+  │                       └──> main (merge + tag) ──> develop (forward-merge)
+  │
+  └── release/9.10 ────────> rc/9.10.0 (optional) ──> main (merge + tag) ──> develop
+      │
+      └── fix/EBASE-123
+
+develop (integration)
+  ├── feature/EPP-157
+  ├── feature/EPP-158
+  └── feature/EPP-159
+```
+
+## Branch Structure Summary
+
+### Primary Branches
+
+| Branch | Purpose | Lifespan | Protected |
+|--------|---------|----------|-----------|
+| `main` | Production-ready code | Permanent | Yes |
+| `develop` | Integration branch for ongoing development | Permanent | Yes |
+
+### Supporting Branches
+
+| Branch Pattern | Purpose | Source | Target | Lifespan |
+|----------------|---------|--------|--------|----------|
+| `feature/<JIRA-CODE>` | New features and epics | `develop` | `develop` | Temporary |
+| `fix/<JIRA-CODE>` | Bug fixes for active versions | `develop` or `release/x.x` | Same as source | Temporary |
+| `hotfix/<JIRA-CODE>` | Urgent production fixes | `main` | `main` → `develop` | Temporary |
+| `release/x.x` | Version stabilization and QA | `develop` | `main` | Long-lived |
+| `rc/x.x.x` | Pre-production testing (optional) | `release/x.x` | `main` | Temporary |
+
+**See**: `rule.git.branch-structure.v1` for complete details.
+
+## Branch Naming Rules
+
+### Pattern Enforcement
+
+All work branches (feature, fix, hotfix) MUST follow this pattern:
+
+```regex
+^(feature|fix|hotfix)\/[A-Z]+-\d+$
+```
+
+### Valid Examples
+
+- `feature/EPP-157` ✓
+- `fix/EBASE-123` ✓
+- `hotfix/EBASE-127` ✓
+
+### Invalid Examples
+
+- `my-feature-branch` ✗ (no prefix, no Jira code)
+- `feature/new-dashboard` ✗ (no Jira code)
+- `feature/epp-157` ✗ (lowercase project code)
+- `feature/EPP-157-add-dashboard` ✗ (extra description not allowed)
+
+**See**: `rule.git.branch-naming.v1` for validation rules and enforcement.
+
+## Branch Lifecycle Summary
+
+### Development Phase
+
+1. Create feature branch from `develop`
+2. Commit work with proper commit messages
+3. Merge back to `develop` when complete
+4. Delete feature branch
+
+### Release Preparation Phase (Two-Stage RC)
+
+1. Create `release/x.x` from `develop`
+2. Only bug fixes and stabilization allowed
+3. **Internal RC Testing**: Tag `test-X.Y.Z-rcN` → publishes to TEST feed
+4. After internal QA passes: **External RC Testing**: Tag `release-X.Y.Z-rcN` → publishes to PROD feed (NuGet prerelease)
+5. Consumers test with `--prerelease` flag
+
+### Deployment Phase
+
+**For Current Release Line (main tracks this major version):**
+1. Merge release/X.Y to `main`
+2. Tag `release-X.Y.Z` (GA) on `main` → publishes to PROD feed (stable)
+3. Merge `main` back to `develop` (forward-merge)
+4. Keep release branch for maintenance
+
+**For Maintenance/Older Release Line (main is on newer major version):**
+1. Tag `release-X.Y.Z` directly on `release/X.Y` (NO merge to main)
+2. CI/CD publishes to PROD feed
+3. Cherry-pick fixes to develop if applicable
+
+### Hotfix Phase
+
+1. Create `hotfix/<JIRA>` from `main`
+2. Fix critical issue
+3. Merge to `main` and tag
+4. Merge `main` to `develop`
+5. Consider cherry-pick to active release branches
+
+**See**: `rule.git.branch-lifecycle.v1` for detailed workflows and commands.
+
+## Benefits
+
+### Clarity
+
+- **Clear Purpose**: Each branch type has a well-defined role
+- **Obvious Workflow**: Developers know where to branch from and merge to
+- **Reduced Confusion**: No ambiguity about which branch represents production
+
+### Traceability
+
+- **Jira Integration**: Direct mapping between branches and work items
+- **Audit Trail**: Easy to track what work went into each release
+- **Issue Linkage**: Branch name immediately identifies the ticket
+
+### Stability
+
+- **Controlled Promotion**: Code progresses through defined quality gates
+- **Protected Production**: `main` only receives tested, approved code
+- **Isolation**: Development doesn't disrupt release preparation
+
+### Scalability
+
+- **Multiple Versions**: Support concurrent work on different versions
+- **Parallel Development**: Multiple features can progress simultaneously
+- **Flexible Releases**: Can prepare next release while maintaining current
+
+### Automation
+
+- **CI/CD Integration**: Pipelines can trigger on branch patterns
+- **Protection Rules**: Automated enforcement of merge requirements
+- **Status Checks**: Branch-specific test and validation requirements
+- **Auto-Labeling**: Issues and PRs automatically tagged by branch type
+
+## Rule Navigation
+
+### For Creating Branches
+
+→ `rule.git.branch-naming.v1` - Validate and format branch names
+→ `rule.git.branch-structure.v1` - Understand branch types and purposes
+
+### For Merging/Promoting Branches
+
+→ `rule.git.branch-lifecycle.v1` - Understand complete workflows
+→ `rule.git.branch-structure.v1` - Confirm source and target branches
+
+### For Setting Up Automation
+
+→ `rule.git.branch-protection.v1` - Configure protection and CI/CD rules
+→ `rule.git.branch-naming.v1` - Get regex patterns for automation
+
+### For Complete Strategy
+
+→ `rule.git.agent-application.v1` - Agent guidance for applying rules
+→ All rules in `git` domain
+
+## Implementation Checklist
+
+When adopting this branching strategy:
+
+- [ ] Create `main` and `develop` branches if they don't exist
+- [ ] Set `origin/HEAD` to point to `main`
+- [ ] Configure branch protection rules for `main` and `develop`
+- [ ] Update CI/CD pipelines to recognize new branch patterns
+- [ ] Document workflow in `CONTRIBUTING.md`
+- [ ] Train team on new branching conventions
+- [ ] Clean up or archive legacy branches (`next/*`, inactive `release/*`)
+- [ ] Configure Jira integration if available
+- [ ] Set up branch naming validation (pre-push hooks or server-side)
+- [ ] Update merge request/pull request templates
+
+**See**: `rule.git.branch-protection.v1` for automation and protection details.
+
+## Integration Points
+
+### With Ticket System
+
+```yaml
+# Extract current ticket for branch naming
+requires:
+  - rule.ticket.current.v1
+  - rule.git.branch-naming.v1
+```
+
+### With Commit Messages
+
+```yaml
+# Ensure commits reference Jira tickets
+requires:
+  - rule.development.commit-message.v1
+  - rule.git.branch-naming.v1
+```
+
+### With Documentation
+
+```yaml
+# Document branching strategy
+requires:
+  - rule.git.branching-strategy-overview.v1
+  - rule.git.branch-lifecycle.v1
+```
+
+## Quick Reference Commands
+
+### Start New Feature
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feature/EPP-157
+```
+
+### Start Release
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b release/9.10
+```
+
+### Start Hotfix
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b hotfix/EBASE-127
+```
+
+### Complete Feature
+
+```bash
+git checkout develop
+git merge --no-ff feature/EPP-157
+git push origin develop
+git branch -d feature/EPP-157
+```
+
+### Deploy Release (Two-Stage RC Workflow)
+
+```bash
+# Stage 1: Internal RC (TEST feed)
+git checkout release/9.10
+git tag -a test-9.10.0-rc1 -m "Internal RC1 for 9.10.0"
+git push origin test-9.10.0-rc1
+# Wait for internal QA to pass...
+
+# Stage 2: External RC (PROD feed as NuGet prerelease)
+git tag -a release-9.10.0-rc1 -m "Pre-prod RC1 for 9.10.0"
+git push origin release-9.10.0-rc1
+# Wait for consumers to test with --prerelease...
+
+# Stage 3: GA Release (PROD feed as stable)
+git checkout main
+git merge --no-ff release/9.10
+git tag -a release-9.10.0 -m "Production release 9.10.0"
+git push origin main release-9.10.0
+
+# Forward-merge to develop
+git checkout develop
+git merge --no-ff main
+git push origin develop
+```
+
+## FINAL MUST-PASS CHECKLIST
+
+When implementing or documenting this branching strategy:
+
+- [ ] Primary branches (`main`, `develop`) are identified and protected
+- [ ] Supporting branch types are clearly defined with source and target
+- [ ] Branch naming regex pattern is documented and enforceable
+- [ ] Branch lifecycle workflows are explained with commands
+- [ ] Benefits (clarity, traceability, stability, scalability, automation) are communicated
+- [ ] Implementation checklist addresses repository setup and team training
+- [ ] Integration with ticket system and CI/CD is planned
+- [ ] Legacy branch cleanup strategy is defined
+
+---
+Generated by: rule.git.branching-strategy-overview.v1
+Last Updated: 2025-11-22

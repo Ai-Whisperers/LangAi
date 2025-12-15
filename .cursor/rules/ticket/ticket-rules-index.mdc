@@ -1,0 +1,374 @@
+---
+id: rule.ticket.overview.v1
+kind: rule
+version: 1.0.1
+description: Navigation hub and overview for ticket management rule framework
+globs: **/tickets/**/*.md, **/*-rule.mdc
+governs: ""
+implements: ticket.overview
+requires:
+  - rule.ticket.workflow.v1
+  - rule.ticket.coding-and-folder-structure.v1
+  - rule.ticket.plan.v1
+  - rule.ticket.context.v1
+  - rule.ticket.progress.v1
+  - rule.ticket.timeline.v1
+  - rule.ticket.recap.v1
+  - rule.ticket.rca.v1
+  - rule.ticket.validation.v1
+  - rule.ticket.completion-discipline.v1
+  - rule.ticket.complexity-assessment.v1
+  - rule.ticket.switching-discipline.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Ticket Management Rules - Index
+
+## Purpose & Scope
+
+This document provides a comprehensive overview and navigation hub for the ticket management rule framework. It defines the philosophy, principles, and architecture for managing work tickets with structured documentation and traceability.
+
+**Applies to**: Anyone working with ticket documentation or implementing ticket workflows.
+
+**Does not apply to**: General documentation or non-ticket work management.
+
+## Ticket System Philosophy
+
+### Core Concept
+A ticket is a **small, short-lived AI entity** that knows its plan, history, and context. It maintains structured documentation throughout its lifecycle to enable:
+
+- **Complete Audit Trail**: Clear record of planning, state, and completed work
+- **Context Continuity**: Support for context switches and work resumption
+- **Team Communication**: Facilitate reviews, handovers, and knowledge transfer
+- **JIRA Integration**: Enable robust synchronization with external tracking systems
+
+### Key Principles
+
+1. **Separation of Concerns**: Each file has a focused, single purpose
+2. **Traceability**: Chronological history preserved for audit
+3. **Flexibility**: Current state tracked separately from history
+4. **Discipline**: Structured workflows prevent premature completion
+5. **Adaptive Strategy**: Simple fixes vs complex implementations
+
+## Ticket Rules Manifest
+
+### ?? Core Framework Rules
+
+#### `rule.ticket.workflow.v1`
+**File**: `ticket-workflow-rule.mdc`  
+**Purpose**: Standard workflow for ticket documentation and traceability with adaptive implementation strategy  
+**Governs**: Overall ticket lifecycle and commit strategy  
+**Status**: [X] Active
+
+#### `rule.ticket.current.v1`
+**File**: `current-rule.mdc`  
+**Purpose**: Active ticket identifier (located at `tickets/current.md`)  
+**Governs**: `**/tickets/current.md`  
+**Status**: [X] Active
+
+### ? Documentation File Rules
+
+#### `rule.ticket.plan.v1`
+**File**: `plan-rule.mdc`  
+**Purpose**: Defines ticket objectives, requirements, and implementation strategy with complexity assessment  
+**Governs**: `**/tickets/**/plan.md`  
+**Requires**: `rule.ticket.complexity-assessment.v1`, `templar.plan.v1`  
+**Status**: [X] Active
+
+#### `rule.ticket.context.v1`
+**File**: `context-rule.mdc`  
+**Purpose**: Maintains current technical state, focus areas, and immediate next steps  
+**Governs**: `**/tickets/**/context.md`  
+**Requires**: `templar.context.v1`  
+**Status**: [X] Active
+
+#### `rule.ticket.progress.v1`
+**File**: `progress-rule.mdc`  
+**Purpose**: Chronological log of actions, decisions, and milestones with append-only discipline  
+**Governs**: `**/tickets/**/progress.md`  
+**Requires**: `rule.ticket.timeline.v1`, `templar.progress.v1`  
+**Status**: [X] Active
+
+#### `rule.ticket.timeline.v1`
+**File**: `timeline-tracking-rule.mdc`  
+**Purpose**: Timestamp-focused timeline tracking with session reconstruction capability  
+**Governs**: `**/tickets/**/timeline.md`  
+**Requires**: `templar.timeline.v1`  
+**Status**: [X] Active
+
+#### `rule.ticket.recap.v1`
+**File**: `recap-rule.mdc`  
+**Purpose**: Summarizes ticket outcomes, key learnings, and follow-up actions for closure  
+**Governs**: `**/tickets/**/recap.md`  
+**Requires**: `templar.recap.v1`  
+**Status**: [X] Active
+
+#### `rule.ticket.rca.v1`
+**File**: `rca-rule.mdc`  
+**Purpose**: Root Cause Analysis for defects and issues with prevention strategies  
+**Governs**: `**/tickets/**/rca.md`  
+**Requires**: `templar.rca.v1`  
+**Status**: [X] Active
+
+#### `rule.ticket.references.v1`
+**File**: `references-rule.mdc`  
+**Purpose**: Static file and conversation references  
+**Governs**: `**/tickets/**/references.md`  
+**Requires**: `templar.references.v1`  
+**Status**: [X] Active
+
+### ? Process & Discipline Rules
+
+#### `rule.ticket.coding-and-folder-structure.v1`
+**File**: `ticket-coding-and-folder-structure-rule.mdc`  
+**Purpose**: Defines ticket ID coding conventions, folder structure with numbered sub-tickets, and cleanup policies  
+**Governs**: `tickets/**/` (folder structure and organization)  
+**Status**: [X] Active
+
+#### `rule.ticket.complexity-assessment.v1`
+**File**: `complexity-assessment-rule.mdc`  
+**Purpose**: Framework for assessing ticket complexity and determining implementation strategy  
+**Governs**: `**/tickets/**/plan.md` (Complexity Assessment section)  
+**Status**: [X] Active
+
+#### `rule.ticket.validation.v1`
+**File**: `validation-before-completion-rule.mdc`  
+**Purpose**: Comprehensive validation requirements before claiming ticket completion  
+**Governs**: All ticket files (validation only)  
+**Status**: [X] Active
+
+#### `rule.ticket.completion-discipline.v1`
+**File**: `ai-completion-discipline.mdc`  
+**Purpose**: AI behavior and discipline when claiming work is complete  
+**Kind**: `guideline` (behavioral, not file-generating)  
+**Governs**: "" (behavioral rule)  
+**Status**: [X] Active
+
+#### `rule.ticket.switching-discipline.v1`
+**File**: `switching-discipline.mdc`  
+**Purpose**: Rules for disciplined ticket switching and context management  
+**Governs**: `**/tickets/current.md`, `**/tickets/**/context.md`, `**/tickets/**/progress.md`  
+**Requires**: `rule.ticket.current.v1`, `rule.ticket.context.v1`, `rule.ticket.progress.v1`  
+**Status**: [X] Active
+
+#### `rule.ticket.timeline-workflow-integration.v1`
+**File**: `timeline-workflow-integration.mdc`  
+**Purpose**: Integration of timeline tracking with ticket workflow  
+**Governs**: `**/tickets/**/timeline.md`, `**/tickets/**/hours.md`  
+**Requires**: `rule.ticket.timeline.v1`, `rule.ticket.workflow.v1`  
+**Status**: [X] Active
+
+## Rule Dependencies Graph
+
+```
+rule.ticket.workflow.v1 (Hub)
+  |--- requires: rule.ticket.coding-and-folder-structure.v1
+  |--- requires: rule.ticket.current.v1
+  |--- requires: rule.ticket.plan.v1
+  |   `--- requires: rule.ticket.complexity-assessment.v1
+  |   `--- requires: templar.plan.v1
+  |--- requires: rule.ticket.context.v1
+  |   `--- requires: templar.context.v1
+  |--- requires: rule.ticket.progress.v1
+  |   `--- requires: rule.ticket.timeline.v1
+  |   `--- requires: templar.progress.v1
+  |--- requires: rule.ticket.timeline.v1
+  |   `--- requires: templar.timeline.v1
+  |--- requires: rule.ticket.recap.v1
+  |   `--- requires: templar.recap.v1
+  |--- requires: rule.ticket.rca.v1
+  |   `--- requires: templar.rca.v1
+  |--- requires: rule.ticket.validation.v1
+  |--- requires: rule.ticket.completion-discipline.v1
+  `--- requires: rule.ticket.switching-discipline.v1
+```
+
+## Implementation Tracks
+
+### Simple Fix Track (Direct Implementation)
+**Criteria - ALL must be met:**
+- Single, clear root cause identified
+- Solution affects <=3 files
+- Change impact <=10 lines of actual code
+- Low risk of side effects
+- Solution pattern is well-understood
+
+**Rules involved:**
+- `rule.ticket.complexity-assessment.v1`
+- `rule.ticket.workflow.v1`
+- `rule.ticket.validation.v1`
+
+### Complex Implementation Track (Phased Approach)
+**Criteria - ANY indicates complexity:**
+- Multiple interconnected root causes
+- Solution affects >3 files or >10 lines
+- Architectural changes required
+- High risk of unintended consequences
+- Unclear solution patterns
+
+**Rules involved:**
+- `rule.ticket.complexity-assessment.v1`
+- `rule.ticket.workflow.v1`
+- `rule.ticket.plan.v1` (comprehensive planning)
+- `rule.ticket.validation.v1` (comprehensive validation)
+
+## Ticket File Structure
+
+### Core Ticket Files (Root Directory)
+```
+tickets/TICKET-ID/
+  plan.md           <- rule.ticket.plan.v1
+  context.md        <- rule.ticket.context.v1
+  progress.md       <- rule.ticket.progress.v1
+  timeline.md       <- rule.ticket.timeline.v1
+  references.md     <- rule.ticket.references.v1
+  recap.md          <- rule.ticket.recap.v1
+  rca.md            <- rule.ticket.rca.v1 (if needed)
+  hours.md          <- Generated from timeline.md
+```
+
+### Supporting Directories
+```
+tickets/TICKET-ID/
+  data/             <- External JIRA data (not committed)
+  logs/             <- External JIRA logs (not committed)
+  work/             <- Working documents, analysis (not committed)
+```
+
+### Workspace State
+```
+tickets/
+  current.md        <- rule.ticket.current.v1 (local only)
+```
+
+## Reading Paths by Role
+
+### Developer Starting New Ticket
+
+**Goal**: Set up and work on a ticket properly
+
+**Path**:
+1. Read `rule.ticket.workflow.v1` (overview)
+2. Read `rule.ticket.coding-and-folder-structure.v1` (folder organization)
+3. Read `rule.ticket.plan.v1` (create plan)
+4. Read `rule.ticket.complexity-assessment.v1` (assess complexity)
+5. Read `rule.ticket.context.v1` (track current state)
+6. Read `rule.ticket.progress.v1` (log work)
+7. Read `rule.ticket.validation.v1` (before claiming done)
+
+**Time**: 30-45 minutes initial reading, reference as needed
+
+### AI Assistant Working on Ticket
+
+**Goal**: Follow proper ticket discipline
+
+**Must Read**:
+- `rule.ticket.completion-discipline.v1` - Behavioral guidelines
+- `rule.ticket.validation.v1` - Validation before completion
+- `rule.ticket.workflow.v1` - Overall workflow
+
+**Reference as Needed**:
+- Specific file rules when updating those files
+
+### Reviewer/Auditor
+
+**Goal**: Verify ticket work quality
+
+**Path**:
+1. Check folder structure against `rule.ticket.coding-and-folder-structure.v1`
+2. Check `plan.md` against `rule.ticket.plan.v1`
+3. Check `progress.md` against `rule.ticket.progress.v1`
+4. Review validation evidence against `rule.ticket.validation.v1`
+5. Verify commit discipline per `rule.ticket.workflow.v1`
+
+**Time**: 15-30 minutes per ticket
+
+## Common Scenarios
+
+### Scenario 1: Starting a New Ticket
+1. User provides ticket ID and description
+2. Execute `rule.ticket.coding-and-folder-structure.v1` -> creates folder structure
+3. Execute `rule.ticket.plan.v1` -> creates plan.md
+4. Execute `rule.ticket.complexity-assessment.v1` -> determines track
+5. Execute `rule.ticket.context.v1` -> initializes context.md
+6. Execute `rule.ticket.progress.v1` -> first entry
+7. Update `tickets/current.md` with ticket ID
+
+### Scenario 2: Switching Tickets
+1. Execute `rule.ticket.switching-discipline.v1`
+2. Pause current ticket (update context.md with PAUSED)
+3. Log switch in progress.md of both tickets
+4. Update `tickets/current.md`
+5. Resume target ticket (read context.md for state)
+
+### Scenario 3: Completing a Ticket
+1. Execute `rule.ticket.validation.v1` (comprehensive checks)
+2. Execute `rule.ticket.recap.v1` -> creates recap.md
+3. Execute `rule.ticket.rca.v1` if defect -> creates rca.md
+4. Execute `rule.ticket.workflow.v1` closure commit
+5. Update `tickets/current.md` (clear active ticket)
+
+### Scenario 4: Claiming Work is Complete
+1. Execute `rule.ticket.completion-discipline.v1` self-check
+2. Execute `rule.ticket.validation.v1` all 4 levels
+3. Document validation evidence in progress.md
+4. Only then update context.md to mark complete
+5. Proceed to Scenario 3 (completing ticket)
+
+## Command Shortcuts
+
+### `sync` Command
+Triggers: Update context.md, progress.md, references.md, timeline.md with latest session findings
+
+### `recap` Command
+Triggers: `rule.ticket.recap.v1` execution
+
+### `rca` Command
+Triggers: `rule.ticket.rca.v1` execution
+
+## Templar Dependencies
+
+All ticket rules depend on templars for consistent structure:
+
+- `templar.plan.v1` -> `tickets/templates/plan-template.md`
+- `templar.context.v1` -> `tickets/templates/context-template.md`
+- `templar.progress.v1` -> `tickets/templates/progress-template.md`
+- `templar.timeline.v1` -> `tickets/templates/timeline-template.md`
+- `templar.references.v1` -> `tickets/templates/references-template.md`
+- `templar.recap.v1` -> `tickets/templates/recap-template.md`
+- `templar.rca.v1` -> `tickets/templates/rca-template.md`
+
+**Status**: [!]? Templars need to be created with proper front-matter
+
+## Migration Status
+
+### Current State
+- [X] Well-designed operational rules extracted from practice
+- [X] Missing complete front-matter with stable IDs
+- [X] Missing explicit input/output contracts
+- [X] Missing some canonical sections (OPSEC, Failure Modes, etc.)
+- [X] Path-based references instead of ID-based
+
+### Migration Plan
+1. **Phase 1**: Add front-matter to all rules <- IN PROGRESS
+2. **Phase 2**: Add contracts and deterministic steps
+3. **Phase 3**: Create templars for all templates
+4. **Phase 4**: Convert cross-references to stable IDs
+
+## Related Rules
+
+- `rule.authoring.overview.v1` - Rule authoring framework
+- `rule.authoring.file-structure.v1` - Canonical rule structure
+- `rule.authoring.contracts-and-scope.v1` - Contract requirements
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All ticket rules listed in manifest with stable IDs
+- [ ] Dependency graph accurately reflects requires relationships
+- [ ] Reading paths defined for different roles
+- [ ] Common scenarios documented with rule sequences
+- [ ] Templar dependencies identified
+- [ ] Migration status tracked
+- [ ] This index references all ticket rules by stable ID

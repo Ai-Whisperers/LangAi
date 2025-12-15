@@ -1,0 +1,418 @@
+---
+id: rule.prompts.agent-application.v1
+kind: rule
+version: 1.1.0
+description: Agent Guidance for Prompt Rules including Prompt Registry integration
+implements: prompts.agent-application
+requires:
+  - rule.prompts.creation.v1
+  - rule.prompts.extraction.v1
+  - rule.prompts.registry-integration.v1
+provenance: { owner: team-prompts, last_review: 2025-12-08 }
+alwaysApply: false
+---
+
+# Agent Guidance for Prompt Rules
+
+## Purpose
+
+Guide the AI agent on when and how to apply prompt-related rules for creating, extracting, and integrating prompts with Prompt Registry for slash-command workflows.
+
+## Scope
+
+**Covers**:
+
+- Identifying when to apply prompt-related rules
+- Guiding AI agent through prompt creation workflow
+- Mapping user requests to appropriate rule categories
+- Quality verification before delivering prompts
+- Integration patterns with rules system
+
+**Does Not Cover**:
+
+- Detailed prompt content standards (see `prompt-creation-rule.mdc`)
+- Prompt Registry file format (see `prompt-registry-integration-rule.mdc`)
+- Extraction methodology (see `prompt-extraction-rule.mdc`)
+- Direct prompt execution
+
+## Inputs (Contract)
+
+- User request containing trigger phrases
+- Context about current work (ticket, code, domain)
+- Access to `.cursor/prompts/` library
+- Access to `.cursor/templars/prompts/` and `.cursor/exemplars/prompts/`
+
+## Outputs (Contract)
+
+- Prompt file(s) created in `.cursor/prompts/prompts/`
+- Collection manifest updated (`.collection.yml`)
+- Quality checklist validated
+- File paths suggested for prompt location
+- Slash command usage instructions
+
+## When to Apply Prompt Rules
+
+### Trigger Phrases
+
+Apply prompt rules when user request includes:
+
+**Creation Triggers**:
+
+- "create a prompt"
+- "make a prompt"
+- "write a prompt for"
+- "need a prompt to"
+- "prompt template for"
+- "standard prompt"
+
+**Extraction Triggers**:
+
+- "extract prompts from"
+- "analyze this conversation"
+- "what prompts were used"
+- "learn from this conversation"
+- "get prompts out of"
+- "conversation analysis"
+- "prompt patterns in"
+
+**Library Management Triggers**:
+
+- "add to prompt library"
+- "update prompt"
+- "organize prompts"
+- "prompt catalog"
+
+## Rule Application Strategy
+
+### Creating New Prompts
+
+**User Request**: "Create a prompt to [do something]"
+
+**Apply**: `rule.prompts.creation.v1`
+
+**Process**:
+
+1. Clarify the prompt's purpose
+2. Identify target domain/category
+3. **Check for Templars**: Use standard templates in `.cursor/templars/prompts/` if available.
+4. **Check for Exemplars**: Look at `.cursor/exemplars/prompts/` for high-quality examples.
+5. Apply `rule.prompts.creation.v1` (quality standards)
+6. Apply `rule.prompts.registry-integration.v1` (format)
+7. Create `.prompt.md` file with YAML frontmatter (name, description)
+8. Structure body: Goals, Process, Output, Validation
+9. Add placeholders with XML delimiters
+10. Add to collection manifest (`.collection.yml`)
+11. Suggest testing via `/command-name`
+12. Suggest file path in `.cursor/prompts/prompts/`.
+
+**Example Response Pattern**:
+
+```markdown
+Creating prompt for [purpose]...
+
+---
+name: [command-name]
+description: "[One-line purpose]"
+agent: cursor-agent
+model: GPT-4
+tools:
+  - [tool1]
+  - [tool2]
+---
+
+# [Prompt Title]
+
+[Follow prompt-creation-rule structure]
+
+**Reasoning Process**:
+[Explain why this structure was chosen]
+
+**Save to**: `.cursor/prompts/prompts/[name].prompt.md`
+**Add to Collection**: `.cursor/prompts/collections/[category].collection.yml`
+**Usage**: `/[command-name] [arguments]`
+```
+
+### Extracting from Conversations
+
+**User Request**: "Extract prompts from this conversation" + [transcript]
+
+**Apply**: `rule.prompts.extraction.v1`
+
+**Process**:
+
+1. Read entire conversation
+2. Extract all user prompts
+3. Rate effectiveness (1-5 stars)
+4. Identify advanced patterns (CoT, Few-Shot, Self-Correction).
+5. Create templates (Templars) from success patterns.
+6. Create examples (Exemplars) from perfect interactions.
+7. Analyze failures.
+8. Generate report.
+
+**Example Response Pattern**:
+
+```markdown
+Analyzing conversation for prompt patterns...
+
+[Full extraction report following prompt-extraction-rule format]
+
+**Recommended Actions**:
+1. **Create Templar**: [name] (Reusable structure)
+2. **Create Exemplar**: [name] (Perfect example)
+3. **Update Prompts**: [list]
+```
+
+### Improving Existing Prompts
+
+**User Request**: "This prompt isn't working well" + [prompt]
+
+**Apply**: `rule.prompts.creation.v1` (Quality Principles section)
+
+**Process**:
+
+1. Analyze against **Advanced Patterns** (CoT, Delimiters, Few-Shot).
+2. Check if it lacks **Reasoning** steps.
+3. Compare against known **Exemplars**.
+4. Refactor using **Templars**.
+5. Test logic of instructions.
+
+## Domain Categories
+
+Match request to appropriate category:
+
+| User Need | Category | Rules Apply |
+|-----------|----------|-------------|
+| "prompt for creating agile stories" | `agile/` | Also apply agile rules |
+| "prompt for SQL review" | `database-standards/` | Also apply DB rules |
+| "prompt for testing" | `unit-testing/` | Also apply test rules |
+| "prompt for ticket workflow" | `ticket/` | Also apply ticket rules |
+| "prompt for documentation" | `documentation/` | Also apply doc rules |
+| "prompt for code review" | `code-quality/` | Also apply quality rules |
+| "prompt for git operations" | `git/` | Also apply git rules |
+| "prompt for spec writing" | `technical-specifications/` | Also apply spec rules |
+| "prompt for migration analysis" | `migration/` | Also apply migration rules |
+| "prompt for rule creation" | `rule-authoring/` | Also apply rule-authoring rules |
+
+## Quality Verification
+
+Before delivering a prompt, verify:
+
+### Completeness Checklist
+
+- [ ] Title is clear and descriptive
+- [ ] Purpose stated in 1-2 sentences
+- [ ] Required context identified with placeholders
+- [ ] Process steps are numbered and actionable
+- [ ] Expected output format specified
+- [ ] Success criteria defined
+- [ ] Examples provided (if applicable)
+- [ ] Validation checklist included
+- [ ] Related resources linked
+- [ ] Saved to appropriate category folder
+
+### Effectiveness Checklist
+
+- [ ] **Specific, not vague**
+- [ ] **Advanced Patterns Used** (CoT, Few-Shot)
+- [ ] **XML Delimiters** for inputs
+- [ ] **Actionable instructions**
+- [ ] **Clear success criteria**
+- [ ] **No assumed context**
+- [ ] **Proper placeholder conventions**
+- [ ] **Includes validation**
+- [ ] **Follows proven pattern**
+- [ ] **Avoids known anti-patterns**
+
+## Integration Patterns
+
+### With Rules System
+
+When creating prompts that enforce rules:
+
+```markdown
+**Applies Rules**:
+- `.cursor/rules/[category]/[rule].mdc`
+
+**Validates Against**:
+- [Standard name]
+
+**Produces Output Compliant With**:
+- [Rule requirements]
+```
+
+### With Templars and Exemplars
+
+When creating prompts, explicitly reference or create these artifacts:
+
+```markdown
+**Based on Templar**:
+- `.cursor/templars/prompts/[templar-name].md`
+
+**Verified by Exemplar**:
+- `.cursor/exemplars/prompts/[exemplar-name].md`
+```
+
+### With Workflow
+
+When prompt is part of workflow:
+
+```markdown
+**Prerequisites**:
+- Complete: [Previous step]
+- Have available: [Required context]
+
+**Next Steps**:
+- After completion: [Next step]
+```
+
+## Common Scenarios
+
+### Scenario 1: User Has Failed Conversation
+
+**User**: "This conversation didn't go well, can you help?"
+
+**Action**:
+
+1. Apply `rule.prompts.extraction.v1`
+2. Focus on failure analysis sections
+3. Extract anti-patterns
+4. Create improved versions
+5. Suggest reusable fixes
+
+### Scenario 2: User Wants Reusable Prompt
+
+**User**: "I do this task often, create a prompt for it"
+
+**Action**:
+
+1. Apply `rule.prompts.creation.v1`
+2. Make it highly parameterized
+3. Add comprehensive placeholders
+4. Include variations section
+5. Test logic mentally
+
+### Scenario 3: User Shows Successful Pattern
+
+**User**: "This worked really well: [prompt], let's save it"
+
+**Action**:
+
+1. Apply both rules
+2. Extract the pattern
+3. Generalize to template
+4. Add to prompt library
+5. Document why it works
+
+### Scenario 4: Improving Prompt Library
+
+**User**: "Review our prompt library"
+
+**Action**:
+
+1. Scan `.cursor/prompts/`
+2. Apply quality checklists
+3. Identify improvements
+4. Suggest updates
+5. Check for duplication
+
+## Response Patterns
+
+### Creating Prompt - Response Template
+
+```markdown
+# [Prompt Title]
+
+[Complete prompt following structure]
+
+---
+
+**Analysis**:
+- Category: [category]
+- Pattern Used: [pattern name]
+- Effectiveness Expected: [rating/reasoning]
+
+**File Location**: `.cursor/prompts/[category]/[filename].md`
+
+**INDEX Entry**:
+| [Prompt Name] | [Description] | `[category]/[filename].md` |
+
+**Related Prompts**:
+- [Related prompt 1]
+- [Related prompt 2]
+```
+
+### Extracting Prompts - Response Template
+
+```markdown
+# Prompt Extraction Report
+
+[Full report following extraction rule]
+
+---
+
+**Actionable Recommendations**:
+
+1. **Create These Prompts**:
+   - [Prompt 1]: from PROMPT-XXX pattern
+   - [Prompt 2]: from PROMPT-YYY pattern
+
+2. **Update These Existing Prompts**:
+   - [Existing prompt]: add [improvement]
+
+3. **Document These Anti-Patterns**:
+   - [Anti-pattern]: observed [where], fix [how]
+
+4. **Save Report To**:
+   `conversations/JP/extracted/[name]-prompt-extraction.md`
+```
+
+## Avoid These Mistakes
+
+### ❌ Don't Create Ad-Hoc Prompts
+
+When user needs a prompt, don't just write conversational instructions.
+Apply the formal prompt-creation-rule structure.
+
+### ❌ Don't Skip Quality Checks
+
+Always verify against checklists before delivering.
+
+### ❌ Don't Ignore Anti-Patterns
+
+If you see an anti-pattern in extraction or creation, call it out and fix it.
+
+### ❌ Don't Create Overly Generic Prompts
+
+"Do the thing" is not a prompt. Be specific, actionable, measurable.
+
+### ❌ Don't Forget Placeholders
+
+Replace specific values with standard placeholders so prompt is reusable.
+
+## Success Indicators
+
+You're applying prompt rules correctly when:
+
+- ✅ Prompts follow consistent structure
+- ✅ Placeholders use conventions
+- ✅ Success criteria are measurable
+- ✅ Anti-patterns are avoided
+- ✅ Quality checklists pass
+- ✅ Prompts are organized by category
+- ✅ Extraction reports are comprehensive
+- ✅ Both successes and failures are learned from
+- ✅ Templates are reusable
+- ✅ Patterns are identified and named
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Identified prompt trigger type (Creation/Extraction/Management)
+- [ ] Selected correct operational rules (`creation` + `registry-integration` or `extraction`)
+- [ ] Checked for existing Templars/Exemplars before creating new
+- [ ] Created `.prompt.md` file with YAML frontmatter (if creating)
+- [ ] Added required fields: `name`, `description`
+- [ ] YAML format follows EPP-192 standards (no JSON arrays)
+- [ ] Verified prompt quality against checklists
+- [ ] Proposed correct file location in `.cursor/prompts/prompts/`
+- [ ] Added to appropriate collection manifest
+- [ ] Maintained collaborative, polite tone in generated prompts

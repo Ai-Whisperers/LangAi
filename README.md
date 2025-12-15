@@ -34,7 +34,7 @@ The Company Researcher automatically researches companies using web search and A
 **Average Cost**: $0.08 per research
 **Target**: 85%+ quality score
 
-See [outputs/logs/PHASE4_VALIDATION_SUMMARY.md](outputs/logs/PHASE4_VALIDATION_SUMMARY.md) for detailed results.
+For real examples of generated reports, see [`outputs/`](outputs/).
 
 ---
 
@@ -67,24 +67,26 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Configure environment
-cp env.example .env
+cp env.example .env   # macOS/Linux
+# Windows PowerShell:
+#   Copy-Item env.example .env
 # Edit .env and add your API keys:
 #   ANTHROPIC_API_KEY=your_key_here
 #   TAVILY_API_KEY=your_key_here
 ```
 
-See [INSTALLATION.md](INSTALLATION.md) for detailed setup instructions.
+See [`docs/01-overview/INSTALLATION.md`](docs/01-overview/INSTALLATION.md) for detailed setup instructions.
 
 ### Run Your First Research
 
 ```bash
 # Research a company
-python hello_research.py "Microsoft"
+python run_research.py --company "Microsoft"
 ```
 
-**Output**: Markdown report saved to `outputs/reports/microsoft_report.md`
+**Output**: Reports are saved under `outputs/research/<company>/` (see docs for details).
 
-See [QUICK_START.md](QUICK_START.md) for a complete walkthrough.
+See [`docs/01-overview/QUICKSTART.md`](docs/01-overview/QUICKSTART.md) for a complete walkthrough.
 
 ---
 
@@ -157,24 +159,23 @@ See a real research report: [outputs/reports/microsoft_report.md](outputs/report
 ## Documentation
 
 ### Getting Started
-- [Installation Guide](INSTALLATION.md) - Setup instructions
-- [Quick Start](QUICK_START.md) - Your first research
-- [User Guide](docs/company-researcher/USER_GUIDE.md) - How to use the system
+- [Documentation Index](docs/README.md)
+- [Installation Guide](docs/01-overview/INSTALLATION.md)
+- [Quick Start](docs/01-overview/QUICKSTART.md)
 
 ### Technical Documentation
-- [Architecture](docs/company-researcher/ARCHITECTURE.md) - System design and Phase 4 architecture
-- [Implementation](docs/company-researcher/IMPLEMENTATION.md) - How the code works
-- [Agent Development](docs/company-researcher/AGENT_DEVELOPMENT.md) - Creating new agents
-- [API Reference](docs/company-researcher/API_REFERENCE.md) - Function signatures and schemas
+- [Architecture](docs/02-architecture/README.md)
+- [Agents](docs/03-agents/README.md)
+- [Workflows](docs/04-workflows/README.md)
+- [Scripts & CLI](docs/09-scripts/README.md)
+- [Deployment](docs/11-deployment/README.md)
+- [API Reference](docs/12-api-reference/README.md)
 
 ### Project History
-- [Phase Evolution](docs/company-researcher/PHASE_EVOLUTION.md) - Journey from Phase 0 to Phase 4
-- [Phase 4 Validation](outputs/logs/PHASE4_VALIDATION_SUMMARY.md) - Test results and analysis
-- [Phase 3 Validation](outputs/logs/PHASE3_VALIDATION_SUMMARY.md) - Previous phase results
+- Example outputs: [`outputs/`](outputs/)
 
 ### Planning & Roadmap
-- [Master 20-Phase Plan](docs/planning/MASTER_20_PHASE_PLAN.md) - Future implementation roadmap
-- [External Ideas](docs/planning/external-ideas/README.md) - 159 features for future phases
+- [Roadmap](docs/roadmap/)
 
 ---
 
@@ -241,7 +242,7 @@ See a real research report: [outputs/reports/microsoft_report.md](outputs/report
 
 ### Future Phases
 
-See [docs/planning/MASTER_20_PHASE_PLAN.md](docs/planning/MASTER_20_PHASE_PLAN.md) for complete roadmap (20 phases, 40+ features).
+See [`docs/roadmap/IMPLEMENTATION_STATUS.md`](docs/roadmap/IMPLEMENTATION_STATUS.md) for what’s complete vs planned.
 
 **Highlights**:
 - **Phases 5-6**: Observability + Quality foundation
@@ -259,9 +260,9 @@ See [docs/planning/MASTER_20_PHASE_PLAN.md](docs/planning/MASTER_20_PHASE_PLAN.m
 
 ```bash
 # Research a single company
-python hello_research.py "Tesla"
+python examples/hello_research.py "Tesla"
 
-# Output saved to: outputs/reports/tesla_report.md
+# Output saved under: outputs/<company_slug>/
 ```
 
 ### Understanding Results
@@ -299,14 +300,14 @@ echo "TAVILY_API_KEY=your_key_here" >> .env
 **Quality score too low (<85%)**
 - Normal for some companies (67% success rate)
 - System will iterate up to 2 times automatically
-- Check `outputs/logs/` for detailed analysis
+- Check `outputs/` for example reports and metrics
 
 **Cost higher than expected**
 - Average: $0.08 per research
 - Can vary based on company complexity
 - Future phases will add caching for cost reduction
 
-See [docs/company-researcher/TROUBLESHOOTING.md](docs/company-researcher/TROUBLESHOOTING.md) for more solutions.
+See [`docs/10-testing/README.md`](docs/10-testing/README.md) for troubleshooting and validation guidance.
 
 ---
 
@@ -322,7 +323,7 @@ This is currently a learning/development project. Future phases will add:
 
 ## License
 
-[License TBD]
+MIT License. See [`LICENSE`](LICENSE).
 
 ---
 
@@ -341,12 +342,12 @@ This is currently a learning/development project. Future phases will add:
 
 ## Support
 
-- **Documentation**: [docs/company-researcher/](docs/company-researcher/)
-- **Validation Reports**: [outputs/logs/](outputs/logs/)
-- **Planning Docs**: [docs/planning/](docs/planning/)
+- **Documentation**: [`docs/`](docs/)
+- **Outputs**: [`outputs/`](outputs/)
+- **Roadmap**: [`docs/roadmap/`](docs/roadmap/)
 
 ---
 
 **Current Status**: Phase 4 complete with 67% success rate. Ready for Phase 5+ enhancements.
 
-See [docs/planning/MASTER_20_PHASE_PLAN.md](docs/planning/MASTER_20_PHASE_PLAN.md) for the complete roadmap to production.
+See [`docs/roadmap/`](docs/roadmap/) for the roadmap to production.

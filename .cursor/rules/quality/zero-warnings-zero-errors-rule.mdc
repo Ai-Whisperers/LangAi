@@ -1,0 +1,347 @@
+---
+id: rule.quality.zero-warnings-errors.v1
+kind: rule
+version: 1.0.0
+description: Enforces zero warnings and zero errors quality standard before commits
+globs: "**/*"
+governs: "**/*"
+implements: pre-commit-validation
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: 
+  owner: quality-standards
+  last_review: 2025-12-07
+  extraction_source: .cursor/prompts/cicd/zero-warnings-zero-errors.md
+  extraction_date: 2025-12-07
+  context: Transformed from CI/CD prompt to generic quality rule
+  key_insight: Quality gates must be enforced before commits, not after
+alwaysApply: true
+---
+
+# Zero Warnings, Zero Errors Rule
+
+## Purpose
+
+Enforce absolute quality discipline: **zero warnings, zero errors before every commit**.
+
+This rule prevents quality debt from accumulating by requiring all validation checks to pass before code enters version control.
+
+## Core Principle
+
+**Prevention over remediation** - catch and fix issues locally before they reach the repository.
+
+## Inputs (Contract)
+
+- Working directory with modified files ready for commit
+- Access to validation scripts/tools in the codebase
+- Linter/compiler/validation tools configured for the project
+
+## Outputs (Contract)
+
+- All validation checks pass with zero warnings and zero errors
+- Clean commit-ready state
+- Validation report (if applicable)
+
+## Rule Definition
+
+### Before Every Commit
+
+```text
+1. Run validation/pre-commit checks
+2. Review all warnings and errors
+3. Fix ALL issues (zero tolerance)
+4. Re-run validation to confirm clean state
+5. Only then: commit
+```
+
+### Workflow Pattern
+
+```text
+[Edit Code] → [Validate] → [Fix Issues] → [Re-validate] → [Commit]
+                   ↑                            ↓
+                   └──────── Loop until clean ──┘
+```
+
+### Quality Gates
+
+| Gate | Requirement | Action on Failure |
+|------|-------------|-------------------|
+| **Compile/Parse** | Zero errors | Fix immediately |
+| **Linter** | Zero warnings | Fix immediately |
+| **Tests** | All pass | Fix or update tests |
+| **Documentation** | Complete and valid | Add/fix documentation |
+| **Format** | Consistent style | Auto-fix if available |
+| **Security** | No vulnerabilities | Fix or document waiver |
+
+## Implementation Patterns
+
+### Pattern 1: Automated Pre-Commit Script
+
+```text
+# Generic validation command pattern
+./scripts/validate-pre-commit.{ps1|sh|py} --auto-fix
+
+# If issues remain:
+./scripts/validate-pre-commit.{ps1|sh|py} --report
+
+# Fix manually, then:
+./scripts/validate-pre-commit.{ps1|sh|py}  # Confirm clean
+
+# Only after passing:
+git commit
+```
+
+### Pattern 2: Git Hooks Integration
+
+```text
+# .git/hooks/pre-commit
+#!/bin/bash
+./scripts/validate-pre-commit.sh
+if [ $? -ne 0 ]; then
+  echo "❌ Validation failed. Fix issues before committing."
+  exit 1
+fi
+```
+
+### Pattern 3: IDE Integration
+
+```text
+# Configure IDE to run validation:
+- On save (optional, for immediate feedback)
+- Before commit (mandatory, blocks commit on failure)
+- Show warnings/errors inline
+```
+
+## Validation Categories
+
+### 1. Code Quality
+- No compiler/interpreter errors
+- No linter warnings
+- No code analysis issues
+- Consistent formatting
+
+### 2. Documentation
+- All public APIs documented
+- XML docs complete (for .NET)
+- README/CHANGELOG updated
+- Inline comments for complex logic
+
+### 3. Tests
+- All unit tests pass
+- No skipped tests without justification
+- New code has test coverage
+- Integration tests pass (if applicable)
+
+### 4. Security
+- No exposed secrets/credentials
+- No known vulnerabilities
+- Security scanner passes
+- OPSEC compliance
+
+### 5. Build
+- Project builds successfully
+- No missing dependencies
+- Version metadata correct
+- Package restoration works
+
+## Handling Warnings/Errors
+
+### Step 1: Identify
+```text
+Run validation → Review output → Categorize issues
+```
+
+### Step 2: Prioritize
+1. **Errors** (blocks functionality) - fix first
+2. **Critical warnings** (security, data loss) - fix immediately  
+3. **Standard warnings** (style, best practices) - fix before commit
+4. **Informational** (suggestions) - fix if time permits
+
+### Step 3: Fix
+- Use auto-fix tools where available
+- Apply documented fix patterns
+- Consult project-specific guidance
+- Ask for help if stuck (don't ignore)
+
+### Step 4: Verify
+```text
+Re-run validation → Confirm zero warnings/errors → Proceed to commit
+```
+
+## Exception Handling
+
+### Legitimate Exceptions (Rare)
+- **External library warnings** - document and suppress with justification
+- **Legacy code limitations** - document technical debt, plan remediation
+- **Third-party tool false positives** - document and suppress
+
+### Exception Process
+```text
+1. Document why exception is needed
+2. Get peer/lead approval
+3. Add suppression with comment explaining why
+4. Create follow-up ticket for remediation
+5. Never silently ignore
+```
+
+## Anti-Patterns
+
+❌ **DON'T:**
+- Commit with "TODO: fix warnings later"
+- Disable warnings globally to make checks pass
+- Comment out failing tests
+- Skip validation "just this once"
+- Accumulate technical debt intentionally
+
+✅ **DO:**
+- Fix issues immediately when they appear
+- Use auto-fix tools proactively
+- Keep validation fast so it's not burdensome
+- Improve validation scripts when they're wrong
+- Document legitimate exceptions transparently
+
+## Success Metrics
+
+- **Commit quality**: 100% of commits pass all validation
+- **Build stability**: Zero broken builds from validation failures
+- **Technical debt**: No accumulation of warnings/errors
+- **Developer experience**: Fast feedback loop, clear error messages
+- **Automation rate**: High % of issues auto-fixed
+
+## Integration with Other Rules
+
+This rule works with:
+- `rule.git.branch-lifecycle.*` - Validates before commit/push
+- `rule.ticket.validation-before-completion.*` - Ticket completion requires clean state
+- `rule.cicd.*` - CI/CD pipelines enforce same standards remotely
+- `rule.development.commit-message.*` - Both ensure quality commits
+
+## Tool-Specific Guidance
+
+### .NET Projects
+```powershell
+# Build with warnings as errors
+dotnet build /warnaserror
+
+# Format check
+dotnet format --verify-no-changes
+
+# Analyzers
+dotnet build /p:EnforceCodeStyleInBuild=true
+```
+
+### Python Projects
+```bash
+# Linting
+flake8 .
+pylint src/
+
+# Type checking
+mypy src/
+
+# Format
+black --check .
+```
+
+### JavaScript/TypeScript Projects
+```bash
+# Linting
+npm run lint
+
+# Type checking
+npm run type-check
+
+# Format
+npm run format:check
+```
+
+## FINAL MUST-PASS CHECKLIST
+
+Before claiming this rule is satisfied:
+
+- [ ] All validation scripts/tools have been run
+- [ ] Zero errors reported
+- [ ] Zero warnings reported
+- [ ] All tests pass
+- [ ] Documentation is complete
+- [ ] Code is properly formatted
+- [ ] Security checks pass
+- [ ] Build succeeds
+- [ ] Any exceptions are documented and approved
+- [ ] Validation confirms clean state immediately before commit
+
+## Validation Script Template
+
+```powershell
+# validate-pre-commit.ps1
+[CmdletBinding()]
+param(
+    [switch]$AutoFix,
+    [switch]$Report
+)
+
+$ErrorActionPreference = 'Stop'
+$warnings = @()
+$errors = @()
+
+# Run validation checks
+Write-Host "🔍 Running pre-commit validation..." -ForegroundColor Cyan
+
+# 1. Build check
+Write-Host "  • Building..." -NoNewline
+$buildResult = dotnet build --no-restore 2>&1
+if ($LASTEXITCODE -ne 0) { $errors += "Build failed" }
+else { Write-Host " ✓" -ForegroundColor Green }
+
+# 2. Linter check
+Write-Host "  • Linting..." -NoNewline
+$lintResult = dotnet format --verify-no-changes 2>&1
+if ($LASTEXITCODE -ne 0) { 
+    if ($AutoFix) {
+        dotnet format
+        Write-Host " ⚠ Auto-fixed" -ForegroundColor Yellow
+    } else {
+        $warnings += "Format issues found"
+    }
+} else { Write-Host " ✓" -ForegroundColor Green }
+
+# 3. Test check
+Write-Host "  • Testing..." -NoNewline
+$testResult = dotnet test --no-build --verbosity quiet 2>&1
+if ($LASTEXITCODE -ne 0) { $errors += "Tests failed" }
+else { Write-Host " ✓" -ForegroundColor Green }
+
+# 4. Documentation check
+# Add project-specific checks here
+
+# Report results
+if ($errors.Count -gt 0) {
+    Write-Host "`n❌ ERRORS FOUND:" -ForegroundColor Red
+    $errors | ForEach-Object { Write-Host "  • $_" -ForegroundColor Red }
+    exit 1
+}
+
+if ($warnings.Count -gt 0) {
+    Write-Host "`n⚠ WARNINGS FOUND:" -ForegroundColor Yellow
+    $warnings | ForEach-Object { Write-Host "  • $_" -ForegroundColor Yellow }
+    if (-not $AutoFix) {
+        Write-Host "`nRun with -AutoFix to attempt automatic fixes" -ForegroundColor Yellow
+    }
+    exit 1
+}
+
+Write-Host "`n✅ All validation checks passed!" -ForegroundColor Green
+exit 0
+```
+
+## Notes
+
+- **Discipline over convenience**: This rule is strict by design
+- **Fast feedback**: Keep validation fast (<30s ideal) so developers run it frequently  
+- **Clear errors**: Validation output should clearly explain what's wrong and how to fix it
+- **Progressive enhancement**: Start with basic checks, add more over time
+- **Project-specific**: Adapt validation checks to project needs, but keep zero-tolerance principle
+
+---
+
+**TL;DR**: Run validation before every commit. Fix all warnings and errors. Zero tolerance. No exceptions without documentation.

@@ -1,0 +1,17 @@
+---
+description: Lists best practices for agent development, including code quality, testing, security, and maintenance.
+globs: 
+alwaysApply: false
+---
+# Best Practices
+
+## Purpose
+To ensure all development follows high standards for code quality, maintainability, and collaboration across the agentic ecosystem.
+
+- Follow established coding standards and guidelines.
+- Maintain clean, readable, and well-documented code.
+- Implement comprehensive testing for all agents.
+- Prioritize security and performance in all designs.
+- Ensure clear communication and standardized interfaces.
+- Schedule regular maintenance and updates.
+- Avoid unnecessary addition or removal of lines in files. Prefer minimal, focused changes that only modify what is required. 

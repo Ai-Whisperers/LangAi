@@ -1,0 +1,492 @@
+---
+id: rule.ticket.timeline.v1
+kind: rule
+version: 1.0.1
+description: Timestamp-focused timeline tracking with session reconstruction capability using verifiable sources to prevent timestamp hallucination
+globs: **/tickets/**/timeline.md, **/tickets/**/progress.md, **/tickets/**/references.md, **/.git/logs/**, **/conversations/**/*.md
+governs: **/tickets/**/timeline.md
+implements: timeline.track
+requires:
+  - templar.timeline.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Timeline Tracking Rule
+
+## Purpose & Scope
+
+Maintains an accurate chronological log of timestamped work events in timeline.md for precise time tracking. Uses verifiable sources (conversation files, git commits, progress logs) to prevent timestamp hallucination. Enables session reconstruction for hours.md generation and accurate billing/analysis.
+
+**Applies to**: All `timeline.md` files in `tickets/**/` directories for active or completed tickets.
+
+**Does not apply to**: Template files (`templates/`), or tickets without any time tracking needs.
+
+## Inputs (Contract)
+
+- Ticket ID in format `PROJECT-NUMBER`
+- Directory `tickets/TICKET-ID/` must exist
+- At least one verifiable timestamp source available:
+  - Conversation files in `conversations/[USER_INITIALS]/` with timestamps in filenames
+  - Git commit history accessible via `git log --grep="TICKET-ID"`
+  - Progress.md with ISO 8601 timestamps
+  - References.md with conversation references (optional)
+- Current timestamp for new entries
+
+## Outputs (Contract)
+
+- Creates or updates `tickets/TICKET-ID/timeline.md`
+- Four required sections populated:
+  1. Conversation Timeline - List of conversations with timestamps and descriptions
+  2. Git Commit Timeline - List of commits with hashes and timestamps
+  3. Daily Event Timeline - Chronological events grouped by date
+  4. Daily Summary - Per-day summaries with event counts and work hours
+- Structure follows `templar.timeline.v1`
+- All timestamps from verifiable sources (no hallucination)
+- Source attribution for every entry
+- Approximate timestamps marked with `~` prefix
+- Session boundaries identified via >30min gaps
+
+## Critical Anti-Hallucination Guidelines ⚠️
+
+### NEVER Invent Timestamps
+- **ONLY use timestamps from verifiable sources**
+- **NEVER estimate or guess at dates/times**
+- **If exact timing unknown, use approximate timing or date ranges**
+- **Mark uncertain timing explicitly** with `~` (approximate) or date ranges
+
+### Work Logs Preceding Ticket Start
+- **Take with heavy skepticism** - Work logs that clearly precede the ticket start should be carefully verified
+- **Verify ticket creation date** - Ensure timeline entries are actually related to the ticket work
+- **Cross-reference** with actual ticket documentation to confirm relevance
+
+## Deterministic Steps
+
+Execute in order when creating or updating timeline.md:
+
+1. Validate ticket ID format matches `PROJECT-NUMBER` pattern
+2. Verify `tickets/TICKET-ID/` directory exists
+3. Create `timeline.md` if missing (use `templar.timeline.v1` for structure)
+4. **Step 1: Collect Conversation Timestamps** (Primary Source)
+   - Check `tickets/TICKET-ID/references.md` for conversation references
+   - Find conversations by ticket ID: `grep -l "[TICKET-ID]" conversations/[USER_INITIALS]/*.md`
+   - Extract timestamps from filenames: `YYYY-MM-DD_HH-MMZ-description.md`
+   - Scan file content for inline timestamps: `grep -H -A 2 -B 2 "\*\*[0-9][0-9]:[0-9][0-9]Z\*\*" [FILE]`
+   - Document conversation type (Investigation, Debug, Architecture, etc.)
+5. **Step 2: Collect Git Commit Timestamps** (Secondary Source)
+   - Execute: `git log --grep="TICKET-ID" --pretty=format:"%h %ad %s" --date=iso`
+   - Convert timestamps to UTC if needed
+   - Extract commit hash, timestamp, and message
+   - Cross-reference with conversation timing for validation
+6. **Step 3: Collect Progress Timestamps** (Tertiary Source)
+   - Execute: `grep "20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]" tickets/TICKET-ID/progress.md`
+   - Extract dated entries with timestamps
+   - Use ONLY where gaps exist between conversations/git data
+   - Mark progress-derived entries with source attribution
+7. **Step 4: Merge and Synthesize Timeline**
+   - Merge all sources chronologically (earliest to latest)
+   - Group events by date (YYYY-MM-DD)
+   - Identify session boundaries (>30min gaps between events)
+   - Calculate work durations per session
+8. **Step 5: Populate Timeline Sections**
+   - Write Conversation Timeline section with all conversations
+   - Write Git Commit Timeline section with all commits
+   - Write Daily Event Timeline grouped by date
+   - Write Daily Summary with event counts and work hours
+9. **Step 6: Quality Check**
+   - Verify all timestamps have source attribution
+   - Check chronological consistency
+   - Mark approximate timestamps with `~` prefix
+   - Note any timing gaps or conflicts
+10. Write updated timeline.md to disk
+11. If major milestone, update progress.md with timeline completion entry
+
+## Formatting Requirements
+
+Timeline.md must follow `templar.timeline.v1` structure with four required sections:
+
+### Required Structure
+1. **Conversation Timeline** - Conversation files with descriptions (most useful context)
+2. **Git Commit Timeline** - Commit history with exact timestamps
+3. **Daily Event Timeline** - Per-day chronological entries
+4. **Daily Summary** - Summary by day with verified event counts and work hours
+
+### Timestamp Logging Strategy
+- **Log START moments primarily** - Focus on when work begins
+- **End times only if known** - Don't estimate end times unless verified
+- **Separate entries for end** - If end time is known, make it a separate timeline entry
+- **Start-focused approach** - Session reconstruction will determine durations later
+
+### Complete Timeline Example
+```markdown
+## Conversation Timeline
+- **2025-07-15_09-52Z**: debugging-api-call-parameters.md - **COMPREHENSIVE FIX** - Complete debugging session with exact API call parameters
+- **2025-07-15_11-01Z**: clarifying-unit-factor-calculation-logic.md - **ARCHITECTURAL CLARIFICATION** - Deep understanding of unit factor design
+
+## Git Commit Timeline
+- **2025-07-15 10:59Z**: `38bdd12` - **Comprehensive fix for critical bugs in unit conversion logic**
+- **2025-07-15 12:44Z**: `ad14082` - Refine unit conversion logic and enhance documentation
+
+## Daily Event Timeline
+
+### 2025-07-15
+**09:52Z** - **Start** - Debugging API call parameters (conversation: debugging-api-call-parameters.md)
+**11:01Z** - **Start** - Unit factor design clarification (conversation: clarifying-unit-factor-calculation-logic.md)
+**12:44Z** - **Commit** - Applied bug fix (`ad14082`)
+
+## Daily Summary
+
+### 2025-07-15 (Development Day)
+**Total Verified Events**: 2 git commits + 2 conversations
+**Work Hours**: 09:52Z to 12:44Z (3-hour session)
+**Key Milestones**:
+- **09:52Z**: Comprehensive debugging session
+- **11:01Z**: Architectural clarification
+```
+
+### When Exact Times Unknown
+```markdown
+### 2025-01-15 (Date confirmed, times approximate)
+**~Morning** - **Development** - Major bug fix implementation phase
+**~Afternoon** - **Testing** - Unit test validation and fixes
+**~Evening** - **Documentation** - Created comprehensive recap
+
+### 2025-01-15 to 2025-01-17 (Multi-day period)
+**Period** - **Investigation** - Root cause analysis and documentation phase
+```
+
+## Primary Information Sources
+
+### 1. Conversation References 
+**Sources**: 
+- `tickets/TICKET-ID/references.md` - Pre-documented conversation references
+- `conversations/[USER INITIALS]/YYYY-MM-DD_HH-MMZ-description.md` - Direct filename scan
+
+**Timeline Extraction**:
+```markdown
+### 2025-07-15
+**09:52Z** - **Start** - Debugging API call parameters (conversation: debugging-api-call-parameters.md)
+**11:01Z** - **Decision** - Clarified unit factor calculation logic (conversation: clarifying-unit-factor-calculation-logic.md)
+```
+
+**From References.md**:
+```markdown
+## Conversation References
+- **conversations/JP/2025-07-15_09-52Z-debugging-api-call-parameters.md** - Comprehensive debugging session
+- **conversations/JP/2025-07-15_11-01Z-clarifying-unit-factor-calculation-logic.md** - Unit factor design clarification
+```
+
+### GREP Workflow: Find Conversations by Ticket ID, Then Extract Timestamps
+
+**Step-by-Step GREP Workflow**:
+```bash
+# 1. Find conversations containing ticket ID
+grep -l "[TICKET-ID]" conversations/[USER_INITIALS]/*.md
+
+# Output example:
+# conversations/[USER_INITIALS]/2025-07-15_09-52Z-debugging-api-call-parameters.md
+# conversations/[USER_INITIALS]/2025-07-15_11-01Z-clarifying-unit-factor-calculation-logic.md
+
+# 2. Extract timestamps with context from each identified file
+grep -A 1 -B 1 "\*\*[0-9][0-9]:[0-9][0-9]Z\*\*" conversations/[USER_INITIALS]/[CONVERSATION_FILE]
+
+```
+
+**Example GREP Output with Context**:
+```bash
+$ grep -A 1 -B 1 "**[0-9][0-9]:[0-9][0-9]Z**" conversations/[USER_INITIALS]/[CONVERSATION_FILE]
+
+After extensive debugging of the API call parameters, we identified the root cause.
+**10:15Z** - **Breakthrough** - Root cause identified in MeasurementUnitConversionService.cs
+The issue was in the interval calculation logic where we were using destination instead of source.
+
+Applied the fix with proper unit conversion handling.
+**10:45Z** - **Commit** - Fix applied with commit abc1234
+All three critical bugs have been resolved and validated.
+
+Session completed with all objectives achieved.
+**11:30Z** - **Complete** - Debugging session finished
+Ready for production testing and validation.
+```
+
+**Timeline Assembly with Context**:
+```markdown
+# From conversations found by ticket ID:
+**09:52Z** - **Start** - Debugging session start (filename)
+**10:15Z** - **Breakthrough** - Root cause identified in MeasurementUnitConversionService.cs (content)  
+**10:45Z** - **Commit** - Fix applied with commit abc1234 (content)
+**11:30Z** - **Complete** - Debugging session finished, ready for production (content)
+```
+
+### 2. SpecStory History Files
+**Pattern**: `.specstory/history/YYYY-MM-DD_HH-MMZ-description.md`
+
+**Integration**:
+```markdown
+### 2025-07-15
+**09:52Z** - **Start** - Debugging session (original: .specstory/history/, migrated: conversations/[USER INITIALS]/)
+```
+
+### 3. Git Commit History
+**Extraction Commands**:
+```bash
+# Get commits with timestamps for timeline
+git log --grep="EBASE-XXXX" --pretty=format:"%ad - %h - %s" --date=iso-strict
+
+# Example output:
+# 2025-07-14T23:18:42+00:00 - de88741 - Fix [TICKET-ID]: Start investigating unit conversion bug
+# 2025-07-14T23:47:15+00:00 - ff6ecbb - Doc [TICKET-ID]: Document initial API issue
+```
+
+**Timeline Integration**:
+```markdown
+### 2025-07-14
+**23:18Z** - **Start** - Investigating unit conversion bug (`de88741`)
+**23:47Z** - **Commit** - Documented initial API issue (`ff6ecbb`)
+```
+
+### 4. Progress Documentation Mining
+**Extract Explicit Timestamps**:
+```markdown
+# From progress.md entries like:
+"## 2025-01-17 - **BUG IDENTIFIED**: Exact Root Cause Located"
+"**Time**: 2025-07-16 01:29Z"
+"**Conversation**: debugging session conversation (timestamp)"
+
+# Convert to timeline:
+### 2025-01-17
+**~Daytime** - **Breakthrough** - Root cause identified (exact time from progress notes)
+
+### 2025-07-16
+**01:29Z** - **Debug** - Unit test failures investigation
+```
+
+## Event Types for Timestamps
+
+### Core Event Types
+- **Start** - Work session begin
+- **Resume** - Work session resume after break
+- **Commit** - Code changes committed (with hash)
+- **Conversation** - Major technical discussion begins
+- **Decision** - Technical decision made
+- **Breakthrough** - Major discovery or insight
+- **Milestone** - Significant achievement
+- **Break** - Extended pause (>30 min)
+- **Blocker** - Issue encountered
+- **Resolve** - Issue resolved
+- **Complete** - Work session end
+
+### Activity Indicators
+- **Dev** - Development/coding work
+- **Debug** - Debugging and troubleshooting
+- **Test** - Testing and validation
+- **Doc** - Documentation work
+- **Plan** - Planning and strategy
+- **Review** - Code or design review
+
+## Detailed Extraction Guidelines
+
+### From Conversation Files
+```markdown
+# Filename: conversations/[USER INITIALS]/2025-07-15_09-52Z-debugging-api-call-parameters.md
+### 2025-07-15
+**09:52Z** - **Start** - Debugging API call parameters (conversation)
+
+# If conversation shows multiple phases:
+**09:52Z** - **Start** - Debugging API call parameters 
+**~10:30Z** - **Breakthrough** - Identified three critical bugs
+**~11:45Z** - **Complete** - Debugging session end
+```
+
+### From Git History
+```markdown
+# Git commits:
+2025-07-14T23:18:42+00:00 - de88741 - Fix [TICKET-ID]: Start investigating
+2025-07-14T23:47:15+00:00 - ff6ecbb - Doc [TICKET-ID]: Document initial issue
+
+# Timeline entries:
+### 2025-07-14
+**23:18Z** - **Start** - Investigating unit conversion bug (`de88741`)
+**23:47Z** - **Commit** - Document initial issue (`ff6ecbb`)
+**23:47Z** - **Complete** - Investigation session end [inferred from commit gap]
+```
+
+### From Progress Documentation
+```markdown
+# Progress entry: "## 2025-01-15 - Initial Ticket Setup"
+### 2025-01-15
+**~Morning** - **Start** - Initial ticket setup and problem identification
+**~Afternoon** - **Milestone** - Complete problem documentation created
+
+# Progress entry: "### Session 1: 2025-01-15 (Initial Setup)"
+### 2025-01-15
+**~09:00Z** - **Start** - Initial setup session [estimated from session notes]
+**~11:00Z** - **Complete** - Setup session end [estimated ~2 hours noted]
+```
+
+## Timeline Quality Guidelines
+
+### Data Completeness Priority
+1. **Conversations + Git**: Complete picture for recent development
+2. **Progress Enhancement**: Fill gaps where primary sources are missing
+3. **Clear Attribution**: Mark source of each timeline entry
+
+### Handling Missing Information
+```markdown
+# When only date known (from progress):
+### 2025-01-15 (Date from progress.md, times unknown)
+**~Daytime** - **Development** - Major bug fix implementation (from progress.md)
+
+# When progress provides approximate timing:
+### 2025-01-17
+**~Morning** - **Start** - Debug analysis session (from progress.md)
+**09:52Z** - **Start** - Debugging session (conversation: debugging-api-call-parameters.md)
+**10:59Z** - **Commit** - Applied bug fix (`38bdd12`)
+
+# Multi-day periods from progress:
+### 2025-01-15 to 2025-01-17 (Multi-day period from progress.md)
+**Period** - **Development** - Three critical bugs identified and fixed
+```
+
+## Hours.md Reconstruction Strategy
+
+### Session Reconstruction from Timeline
+```markdown
+# Timeline entries:
+**09:52Z** - **Start** - Debugging session
+**11:01Z** - **Decision** - Major breakthrough  
+**12:44Z** - **Complete** - Session end
+
+# Reconstructed session for hours.md:
+Session: 2025-07-15 09:52Z - 12:44Z
+Duration: 2 hours 52 minutes → 3 hours (rounded)
+Type: Development
+```
+
+### Session Boundary Detection
+- **30+ minute gaps** between timeline entries indicate session breaks
+- **Start/Complete markers** explicitly define session boundaries
+- **Break/Resume markers** split sessions with documented pauses
+- **Different activity types** may indicate context switches
+
+## Timeline Update Triggers
+
+### During Active Work
+- **Start of work** - Log session begin with timestamp source
+- **Major commits** - Log with commit hash and brief description
+- **Breakthroughs/decisions** - Log with context and approximate time
+- **Extended breaks** - Log break start, resume when returning
+- **End of work** - Log session completion
+
+### Timestamp Source Documentation
+```markdown
+# Always note source of timestamp:
+**09:52Z** - **Start** - Debugging session (from conversation filename)
+**11:01Z** - **Commit** - Fix applied (`abc1234` from git log)
+**~12:30Z** - **Complete** - Session end (estimated from work scope)
+```
+
+### At Ticket Closure
+- **Complete timeline reconstruction** from all available sources
+- **Verify all timestamps** against source files
+- **Mark all approximations** clearly
+- **Prepare for hours.md generation** with session boundary clarity
+
+## Final Timeline Creation
+
+### Timeline Assembly Process
+1. **Merge chronologically** - Combine conversations, git, and progress data by date/time
+2. **Source attribution** - Each entry shows its source (conversation, git commit, progress.md)
+3. **Gap identification** - Note periods where no data exists
+4. **Session boundaries** - Use natural breaks (>30min gaps) to define work sessions
+
+### Timeline Quality Check
+- **Source attribution** for every entry
+- **Chronological consistency** 
+- **Reasonable work patterns**
+- **Clear marking** of approximate vs exact timestamps
+
+## OPSEC and Leak Control
+
+When collecting and documenting timestamps:
+- NO internal system paths or server names in timeline entries
+- NO credentials, tokens, or API keys in conversation descriptions
+- NO email addresses or personal identifiable information
+- NO customer data or production identifiers in event descriptions
+- Redact sensitive conversation titles; use generic descriptions
+- Focus on work activity types, not specific technical details that could reveal infrastructure
+- Conversation descriptions should be high-level (e.g., "Debugging session" not "Fixed auth bug in prod-db-01")
+
+## Integration Points
+
+- **Syncs with**: `rule.ticket.progress.v1` (major milestones cross-referenced)
+- **Referenced by**: `rule.ticket.workflow.v1` for time tracking
+- **Enables**: hours.md generation for billing/analysis
+- **Sources**:
+  - Conversation files (primary timestamp source)
+  - Git commit history (secondary source)
+  - Progress.md (tertiary, gap-filling source)
+- **Session Reconstruction**: Timeline enables hours.md generation by identifying session boundaries
+- **Quality Assurance**: Anti-hallucination guidelines prevent invented timestamps
+
+## Failure Modes and Recovery
+
+**No verifiable timestamp sources available**:
+
+- Detection: No conversation files, git commits, or progress entries found
+- Recovery: Use current date with "~" approximate marker, note lack of detailed timing
+- Fallback: Create minimal timeline with date ranges only
+
+**Timestamp conflicts between sources**:
+
+- Detection: Conversation timestamp doesn't align with git commit timestamp
+- Recovery: Use conversation timestamp (most reliable), note discrepancy in timeline
+- Fallback: Include both timestamps with source attribution
+
+**Missing conversation files referenced in references.md**:
+
+- Detection: references.md lists conversation but file not found
+- Recovery: Search alternate locations, use filename timestamp only if found
+- Fallback: Note missing conversation in timeline with approximate timing
+
+**Git log command fails**:
+
+- Detection: git log returns error or no results
+- Recovery: Continue with conversation and progress sources only
+- Fallback: Timeline generated without git commit section
+
+**Progress.md has no timestamps**:
+
+- Detection: grep finds no ISO 8601 timestamps in progress.md
+- Recovery: Use section dates only (YYYY-MM-DD level granularity)
+- Fallback: Mark all progress-derived entries as approximate
+
+**Hallucination risk detected**:
+
+- Detection: Timestamp appears but no verifiable source
+- Recovery: Remove invented timestamp, mark as approximate or date-only
+- Fallback: Do NOT include entries without verifiable sources
+
+## Provenance Footer Specification
+
+Not applicable - timeline.md is assembled from verifiable sources, not generated. Provenance tracked via source attribution for each entry.
+
+## Related Rules
+
+- `rule.ticket.progress.v1` - Progress entries provide tertiary timestamp source
+- `rule.ticket.workflow.v1` - Timeline updated during workflow steps
+- `rule.ticket.recap.v1` - Timeline feeds into recap work hour calculations
+- `templar.timeline.v1` - Structure template for timeline.md
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no internal paths, credentials, emails, PII in event descriptions)
+- [ ] All timestamps from verifiable sources (no hallucinated dates/times)
+- [ ] Four required sections present (Conversation, Git Commit, Daily Event, Daily Summary)
+- [ ] Structure follows templar.timeline.v1
+- [ ] Source attribution for every timestamp entry
+- [ ] Approximate timestamps marked with `~` prefix
+- [ ] Session boundaries identified (>30min gaps)
+- [ ] Chronological consistency verified
+- [ ] Only timeline.md modified (governs compliance)

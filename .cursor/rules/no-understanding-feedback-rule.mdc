@@ -1,0 +1,66 @@
+---
+id: rule.general.no-feedback.v1
+kind: rule
+version: 1.0.0
+description: Avoids giving feedback about understanding in comments
+globs: "**/*"
+governs: ""
+implements: coding.comments
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# No Understanding Feedback Rule
+
+## Purpose & Scope
+
+This rule instructs the AI to avoid giving feedback about its understanding (e.g., "I understand", "I see") in comments or documentation.
+
+**Applies to**: Code comments, documentation generation.
+
+## Inputs (Contract)
+
+- Code or documentation to generate
+
+## Outputs (Contract)
+
+- Clean code/docs
+- No meta-commentary like `// I understand this function does X`
+
+## Deterministic Steps
+
+1. Generate code/docs.
+2. Review for meta-commentary about "understanding".
+3. Remove it. Comments should describe the *code*, not the *agent's mental state*.
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.no-apologies.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] No "I understand" or "I see" in comments/docs
+- [ ] Comments focus on code logic/intent
+- [ ] Professional tone maintained

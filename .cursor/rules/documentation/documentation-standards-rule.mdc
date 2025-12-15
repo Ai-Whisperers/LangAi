@@ -1,0 +1,236 @@
+---
+id: rule.documentation.standards.v1
+kind: rule
+version: 1.0.0
+description: Defines comprehensive XML documentation standards for .NET projects including project settings, XML comment requirements, quality standards, and best practices
+globs: **/*.cs, **/*.csproj
+governs: **/*.cs, **/*.csproj
+implements: documentation.standards
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-platform, last_review: 2025-11-25 }
+alwaysApply: false
+---
+
+# Documentation Standards Rule
+
+## Purpose & Scope
+
+This rule defines comprehensive XML documentation standards for .NET projects, covering project configuration, XML comment requirements, quality standards, and best practices. It references the master documentation guide in `docs/DOCUMENTATION-STANDARDS.md`.
+
+**Applies to**: All C# source files (*.cs) and project files (*.csproj) requiring XML documentation.
+
+**Does not apply to**: Generated code, third-party libraries, or test files (covered by separate testing rule).
+
+## Inputs (Contract)
+
+- C# source file (*.cs) requiring documentation
+- OR project file (*.csproj) requiring documentation configuration
+- User request to add/improve documentation
+- Access to `docs/DOCUMENTATION-STANDARDS.md` for complete standards reference
+
+## Outputs (Contract)
+
+For *.cs files:
+- Comprehensive XML documentation for all public members
+- XML documentation for protected and private members (implementation details)
+- All parameters documented with `<param>`
+- All return values documented with `<returns>`
+- All exceptions documented with `<exception>`
+- Complex behavior documented with `<remarks>`
+- Examples provided for complex APIs with `<example>`
+- Thread-safety and performance notes where relevant
+
+For *.csproj files:
+- `<GenerateDocumentationFile>true</GenerateDocumentationFile>` enabled
+- Code analysis settings configured
+- NuGet package metadata (if applicable)
+- XML documentation included in package output
+
+## Deterministic Steps
+
+### For C# Source Files (*.cs)
+
+1. Read existing file and identify all members
+2. For EACH public member:
+   - Add `<summary>` with meaningful description (minimum 20 characters)
+   - Add `<param>` for all parameters with constraints/formats
+   - Add `<returns>` for non-void methods with return behavior
+   - Add `<exception>` for all thrown exceptions with conditions
+   - Add `<remarks>` for complex behavior, performance notes, thread-safety
+   - Add `<example>` for complex or commonly misused members
+3. For EACH protected member:
+   - Add `<summary>` with purpose and usage in inheritance
+   - Document parameters, returns, exceptions as above
+4. For EACH private member with complex logic:
+   - Add `<summary>` explaining implementation purpose
+   - Document key algorithm details in `<remarks>`
+5. Validate against quality standards:
+   - No redundant descriptions (e.g., "Gets or sets X" for property X)
+   - Minimum 20 character summaries
+   - No TODO/FIXME placeholders
+   - Proper use of `<see>` for cross-references
+   - Use `<see langword="null"/>` not plain "null"
+6. Write updated file
+
+### For Project Files (*.csproj)
+
+1. Read existing project file
+2. Locate `<PropertyGroup>` section (or create if missing)
+3. Add/update documentation settings:
+   ```xml
+   <GenerateDocumentationFile>true</GenerateDocumentationFile>
+   <EnableNETAnalyzers>true</EnableNETAnalyzers>
+   <AnalysisLevel>latest</AnalysisLevel>
+   ```
+4. For NuGet packages, add:
+   ```xml
+   <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+   <IncludeSymbols>true</IncludeSymbols>
+   ```
+5. Validate settings completeness
+6. Write updated file
+
+## Formatting Requirements
+
+### XML Documentation Tags
+
+**Required for all public members**:
+- `<summary>` - Clear, concise purpose (not redundant with signature)
+- `<param name="...">` - All parameters with constraints
+- `<returns>` - Return value with special cases (null, default, etc.)
+- `<exception cref="...">` - All thrown exceptions with triggering conditions
+
+**Recommended for complex members**:
+- `<remarks>` - Usage guidance, performance implications, threading notes
+- `<example>` - Code examples with expected output
+- `<seealso cref="...">` - Related members or types
+- `<typeparam name="...">` - Generic type parameter constraints
+
+### Documentation Patterns
+
+**For Classes**:
+```csharp
+/// <summary>
+/// Represents [what this class models]. Provides [key capabilities].
+/// </summary>
+/// <remarks>
+/// [Usage context and guidelines]
+/// <para>
+/// [Threading/performance/lifecycle notes if applicable]
+/// </para>
+/// </remarks>
+public class MyClass
+```
+
+**For Methods**:
+```csharp
+/// <summary>
+/// [Action verb] the [object/concept]. [Additional context].
+/// </summary>
+/// <param name="param1">The [description]. Must be [constraint].</param>
+/// <returns>
+/// A [type] containing [what]. Returns <see langword="null"/> if [condition].
+/// </returns>
+/// <exception cref="ArgumentNullException">
+/// Thrown when <paramref name="param1"/> is <see langword="null"/>.
+/// </exception>
+/// <remarks>
+/// [Behavior details, algorithm, performance, thread-safety]
+/// </remarks>
+public ReturnType MyMethod(string param1)
+```
+
+**For Properties**:
+```csharp
+/// <summary>
+/// Gets or sets [what this property represents with business meaning].
+/// </summary>
+/// <value>
+/// A [type] that [describes the value]. Default is [default value].
+/// </value>
+/// <remarks>
+/// [Validation rules, side effects, constraints]
+/// </remarks>
+/// <exception cref="ArgumentException">
+/// Thrown when setting a value that [invalid condition].
+/// </exception>
+public string MyProperty { get; set; }
+```
+
+### Anti-Patterns to Avoid
+
+❌ **Redundant with signature**:
+```csharp
+/// <summary>
+/// Gets or sets the name.
+/// </summary>
+public string Name { get; set; }
+```
+
+✅ **Adds semantic meaning**:
+```csharp
+/// <summary>
+/// Gets or sets the display name of the user as shown in the UI. Maximum 100 characters.
+/// </summary>
+public string Name { get; set; }
+```
+
+## OPSEC and Leak Control
+
+When writing documentation examples:
+- NO internal system paths or server names
+- NO credentials, tokens, or API keys
+- NO email addresses or personal identifiable information
+- NO customer data or production identifiers
+- NO sensitive URLs (use generic examples like "https://api.example.com")
+- Use placeholder data: "https://api.example.com" not "https://prod-api.contoso.com"
+
+## Integration Points
+
+- **Master Reference**: `docs/DOCUMENTATION-STANDARDS.md` contains comprehensive standards, prompts, examples
+- **Testing**: `rule.documentation.testing.v1` validates documentation completeness
+- **Code Analysis**: EnableNETAnalyzers enforces documentation warnings
+- **NuGet Packaging**: XML documentation included in packages for consumer IntelliSense
+
+## Failure Modes and Recovery
+
+**Missing parameters in documentation**:
+- Detection: Parameter exists in signature but no `<param>` tag
+- Recovery: Add `<param>` tag with meaningful description
+- Prevention: Validate all parameters documented before completion
+
+**Vague or redundant descriptions**:
+- Detection: Summary is < 20 characters or repeats signature
+- Recovery: Expand summary with business context and usage
+- Prevention: Review against quality standards
+
+**TODO/FIXME placeholders**:
+- Detection: Documentation contains TODO, FIXME, or similar markers
+- Recovery: Replace placeholders with actual documentation
+- Prevention: Complete documentation before marking done
+
+**.csproj documentation not enabled**:
+- Detection: Build doesn't generate XML documentation file
+- Recovery: Add `<GenerateDocumentationFile>true</GenerateDocumentationFile>`
+- Prevention: Check for XML output after configuration changes
+
+## Related Rules
+
+- `rule.documentation.testing.v1` - Testing framework for documentation validation
+- `rule.documentation.agent-application.v1` - Agent coordination for documentation tasks
+- Master standards document: `docs/DOCUMENTATION-STANDARDS.md`
+- Existing rules:
+  - `csharp-xml-docs-rule.mdc` - Original XML docs guidance (to be updated)
+  - `unit-test-documentation-rule.mdc` - Test-specific documentation
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All public members have `<summary>` (minimum 20 characters, not redundant)
+- [ ] All parameters documented with `<param>` including constraints
+- [ ] All non-void returns documented with `<returns>` including special cases
+- [ ] All exceptions documented with `<exception>` including trigger conditions
+- [ ] No TODO/FIXME/placeholder text in documentation
+- [ ] OPSEC clean (no secrets, internal paths, emails, customer data in examples)
+- [ ] Project files have `<GenerateDocumentationFile>true</GenerateDocumentationFile>` if applicable
+- [ ] Documentation adds semantic value (not just repeating obvious facts)

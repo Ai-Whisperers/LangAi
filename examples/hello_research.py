@@ -8,8 +8,8 @@ This is the simplest possible version to validate:
 3. Can we get a summary of a company? ✓
 
 Usage:
-    python hello_research.py "Tesla"
-    python hello_research.py "OpenAI"
+    python examples/hello_research.py "Tesla"
+    python examples/hello_research.py "OpenAI"
 """
 
 import os
@@ -219,11 +219,11 @@ def main():
 
     # Check arguments
     if len(sys.argv) < 2:
-        print("Usage: python hello_research.py <company_name>")
+        print("Usage: python examples/hello_research.py <company_name>")
         print("\nExamples:")
-        print("  python hello_research.py Tesla")
-        print("  python hello_research.py OpenAI")
-        print("  python hello_research.py 'Stripe Inc'")
+        print("  python examples/hello_research.py Tesla")
+        print("  python examples/hello_research.py OpenAI")
+        print("  python examples/hello_research.py 'Stripe Inc'")
         sys.exit(1)
 
     company_name = " ".join(sys.argv[1:])

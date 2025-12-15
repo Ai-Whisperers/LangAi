@@ -1,0 +1,82 @@
+---
+id: rule.ticket.concept.v1
+kind: rule
+version: 1.0.1
+description: Conceptual overview of ticket system as small, short-lived AI entities
+globs: tickets/*.md
+governs: ""
+implements: ticket.concept
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+# Ticket Rule
+
+## What is a Ticket?
+
+A **ticket** is a small, short-lived AI entity that embodies a focused work package. It represents a self-contained unit of work with clear boundaries, objectives, and lifecycle management.
+
+## Key Characteristics
+
+### 1. **Autonomous Knowledge**
+- **Knows what needs to be done** - Has a clear plan with objectives, requirements, and implementation steps
+- **Knows its history** - Maintains a chronological record of all actions, decisions, and progress
+- **Knows its current context** - Understands the technical state, focus areas, and immediate next steps
+
+### 2. **Self-Documenting**
+- **Logs everything as it goes** - Every action, decision, and milestone is recorded
+- **Maintains traceability** - Clear audit trail from conception to completion
+- **Preserves knowledge** - Ensures no context is lost between sessions or handovers
+
+### 3. **Focused Scope**
+- **Single responsibility** - Each ticket addresses one specific problem or requirement
+- **Clear boundaries** - Well-defined start and end conditions
+- **Measurable outcomes** - Success criteria are explicit and verifiable
+
+### 4. **Lifecycle Management**
+- **Adaptive complexity** - Can follow simple or complex implementation tracks based on scope
+- **Context switching** - Can pause and resume work without losing state
+- **Closure discipline** - Has defined completion criteria and wrap-up procedures
+
+## Ticket Components
+
+A ticket consists of structured documentation files that capture different aspects of its knowledge:
+
+- **Plan** - What needs to be done (objectives, requirements, implementation steps)
+- **Context** - Current technical state and focus areas
+- **Progress** - Chronological log of actions and decisions
+- **Timeline** - Timestamped work events and session boundaries
+- **Recap** - Summary of outcomes and key learnings
+- **RCA** - Root cause analysis for defects/issues
+- **References** - Traceability links to related resources
+
+## Related Rules
+
+For detailed specifications of each ticket component, refer to:
+- `@/ticket/plan-rule.mdc` - Planning and objectives
+- `@/ticket/context-rule.mdc` - Technical context management
+- `@/ticket/progress-rule.mdc` - Progress logging
+- `@/ticket/timeline-tracking-rule.mdc` - Timestamped event tracking
+- `@/ticket/timeline-workflow-integration.mdc` - Timeline workflow and hours generation
+- `@/ticket/recap-rule.mdc` - Outcome summarization
+- `@/ticket/rca-rule.mdc` - Root cause analysis
+- `@/ticket/references-rule.mdc` - Reference management
+- `@/ticket/ticket-workflow-rule.mdc` - Complete workflow processes
+
+## Benefits of the Ticket Model
+
+1. **Cognitive Load Reduction** - Each ticket is a focused AI that doesn't need to understand the entire system
+2. **Knowledge Preservation** - All context is explicitly captured and maintained
+3. **Parallel Processing** - Multiple tickets can work independently without interference
+4. **Quality Assurance** - Structured approach ensures consistent documentation and traceability
+5. **Team Collaboration** - Clear handover points and shared understanding of work state
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Ticket concept understood as "small, short-lived AI entity"
+- [ ] All 8 components (files) identified correctly
+- [ ] Lifecycle includes adaptive complexity assessment
+- [ ] Separation of concerns maintained (plan vs context vs progress)
+- [ ] Rules referenced by stable ID
+- [ ] Benefits clear (traceability, cognitive load reduction)

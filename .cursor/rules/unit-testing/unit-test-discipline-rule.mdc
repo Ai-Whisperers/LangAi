@@ -1,0 +1,106 @@
+---
+id: rule.unit-testing.discipline.v1
+kind: rule
+version: 1.0.0
+description: Enforces strict discipline for unit test maintenance and quality
+globs: "**/*.Tests.cs, **/*.Specs.cs"
+governs: "**/*.Tests.cs, **/*.Specs.cs"
+implements: unit-testing.discipline
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-testing, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# Unit Testing Discipline Rule
+
+## Purpose & Scope
+
+This rule enforces strict discipline regarding unit test maintenance, error handling, and test consolidation. It prevents the degradation of the test suite by prohibiting setting changes and unauthorized deletions.
+
+**Applies to**: All unit testing activities, fixes, and refactoring.
+
+## Inputs (Contract)
+
+- Existing unit tests
+- Build/Test execution results
+- User request to fix or modify tests
+
+## Outputs (Contract)
+
+- Fixed or consolidated unit tests
+- Zero regressions in test configuration
+- Zero ignored errors
+
+## Critical Discipline Rules
+
+### 1. Zero Settings Changes
+- **NEVER** disable settings, warnings, or strict mode to make a test pass.
+- **NEVER** lower thresholds (coverage, performance) temporarily.
+- **NEVER** modify global test configuration (`.runsettings`, etc.) to suppress errors.
+- Fix the code or the test logic, not the measuring stick.
+
+### 2. Zero Errors Policy
+- Assume we started with **0 errors**.
+- **ALWAYS** fix errors introduced during work.
+- **NEVER** leave a test in a failing state.
+- **NEVER** comment out a failing test to "fix it later".
+
+### 3. Permission for Removal
+- **NEVER** remove a test case without explicit user permission.
+- **ASK** before deleting obsolete tests.
+- **EXCEPTION**: Consolidation (see below).
+
+### 4. Consolidation Strategy
+- **ALLOWED**: Consolidating duplicate or overlapping tests into a single, better parameterized test.
+- **CONDITION**: The overall coverage and quality must improve or stay neutral.
+- **GOAL**: Prevent duplicate tests and reduce maintenance burden.
+
+## Deterministic Steps
+
+### Fixing a Failing Test
+1. Analyze the failure message and stack trace.
+2. Identify if the defect is in the production code or the test code.
+3. Fix the logic flaw.
+4. Verify the fix runs green.
+5. **Validation**: Check that no settings were relaxed.
+
+### Refactoring/Consolidating Tests
+1. Identify duplicate scenarios (e.g., three tests checking the same boundary with different hardcoded values).
+2. Propose a consolidated test (e.g., `[Theory]` or `[TestCase]`).
+3. Verify the new test covers all original scenarios.
+4. Replace the old tests with the new one.
+
+## Formatting Requirements
+
+- Follow project naming conventions for tests.
+- Use Arrange-Act-Assert structure.
+
+## OPSEC and Leak Control
+
+- Ensure test data does not contain real PII or secrets.
+
+## Integration Points
+
+- CI/CD pipeline (must pass).
+
+## Failure Modes and Recovery
+
+- **Test still fails**: Re-analyze logic. Do not disable the test.
+- **Consolidation reduces coverage**: Revert and add missing cases to the parameterized test.
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.preserve-code.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] No settings/config disabled or relaxed
+- [ ] All errors fixed (0 errors)
+- [ ] No tests removed without permission (except consolidation)
+- [ ] Consolidation improves quality/reduces duplication
+- [ ] Test logic fixed, not suppressed

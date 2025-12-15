@@ -1,0 +1,1211 @@
+---
+id: rule.cicd.tag-based-versioning.v2
+kind: rule
+version: 2.3.0
+description: Defines tag-based versioning strategy with two-stage RC workflow, automated publishing, maintenance release support, and optimized changelog workflow to consolidate build triggers
+globs: cicd/azure-pipelines.yml, cicd/scripts/*.ps1, cicd/docs/*.md
+governs: cicd/azure-pipelines.yml, cicd/scripts/*.ps1, cicd/docs/*.md
+implements: cicd.versioning
+requires:
+  - rule.git.branch-naming.v1
+  - rule.git.branch-lifecycle.v1
+  - rule.documentation.standards.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: foundation-team, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# Tag-Based Versioning CI/CD Rule
+
+## Purpose & Scope
+
+This rule defines best practices for implementing tag-based versioning in Azure DevOps CI/CD pipelines with Release Candidate (RC) workflow support.
+
+**Applies to**: All .NET repository CI/CD pipelines using Azure DevOps with NuGet package publishing
+
+**Does not apply to**: Docker-only deployments, non-.NET projects, manual release processes
+
+**Reference Implementation**: eneve.domain (100/100 - Gold Standard Plus)
+
+---
+
+## ⚠️ Current Implementation Status
+
+This rule documents the **GOLD STANDARD PLUS IMPLEMENTATION** (100/100) currently deployed in eneve.domain.
+
+### What This Rule Produces
+
+**Core Implementation (60/60) - MINIMUM FOR PRODUCTION:**
+- ✅ Tag parsing and version extraction
+- ✅ Package creation with tag-based versions
+- ✅ Full 5-stage pipeline
+- ✅ Security scanning (fail on Critical/High)
+- ✅ Branch-specific coverage thresholds (70%/75%/80%)
+- ✅ SBOM generation (CycloneDX)
+- ✅ Automated Publishing to NuGet feeds
+
+**Enhanced Quality Gates (80/100) - RECOMMENDED:**
+- ✅ Enhanced coverage analysis (Stage 6)
+- ✅ Breaking change detection
+- ✅ License compliance scanning
+- ✅ Package metadata validation
+- ✅ Release notes validation
+
+**Enterprise Grade (100/100) - BEST PRACTICE:**
+- ✅ Performance benchmarking
+- ✅ Mutation testing
+- ✅ Code metrics tracking
+- ✅ Historical trend analysis
+
+### Configuration Required
+
+**For Level 2 (60/60) - Minimum:**
+1. Configure feed names in `azure-pipelines.yml`
+2. Follow pattern: `NuGet Packages/{RepositoryName}`
+3. Test with RC tag → production tag workflow
+
+**For Level 3+ (80-100/100) - Optional:**
+4. Add enhanced-coverage-analysis.ps1 script
+5. Add quality gate scripts (breaking-changes, licenses, etc.)
+6. Configure performance benchmarking (if needed)
+7. Configure mutation testing (if needed)
+
+---
+
+## Inputs (Contract)
+
+- Existing Azure DevOps pipeline (or blank slate for new pipeline)
+- Git repository with branch strategy (main, develop, feature/*)
+- .NET SDK version (preferably 9.x)
+- Test projects with code coverage capability
+- **Optional:** NuGet feed configuration (for automated publishing)
+
+---
+
+## Outputs (Contract)
+
+**Core Outputs (60/60):**
+- ✅ Tag-triggered CD pipeline with version parsing
+- ✅ Branch-triggered CI pipeline for fast feedback
+- ✅ Two-stage RC workflow framework (test→release)
+- ✅ Automated security scanning and SBOM generation
+- ✅ Branch-specific quality gate enforcement (70%/75%/80%)
+- ✅ NuGet packages with automated publishing
+- ✅ Complete script library (validate-documentation.ps1, etc.)
+
+**Enhanced Outputs (80-100/100) - Optional:**
+- ? Enhanced coverage analysis with trends
+- ? API breaking change detection
+- ? License compliance reports
+- ? Code metrics and maintainability analysis
+- ? Performance benchmark results
+- ? Mutation test coverage reports
+
+---
+
+## Core Principles
+
+### 1. **Tags Drive Versions**
+
+Git tags are the single source of truth for package versions.
+
+**Tag Format:**
+```
+[type]-[version]-[suffix]
+```
+
+**Components:**
+- `type`: `release` | `test` | `coverage`
+- `version`: `X.Y.Z` (Semantic Versioning)
+- `suffix` (optional): `rc1`, `rc2`, `beta`, `alpha`
+
+**Examples:**
+```bash
+test-1.0.0-rc1      # Internal RC1 (TEST feed) - internal QA only
+test-1.0.0-rc2      # Internal RC2 after fixes (TEST feed)
+release-1.0.0-rc1   # External RC1 (PROD feed, NuGet prerelease) - consumers opt-in
+release-1.0.0-rc2   # External RC2 after fixes (PROD feed, NuGet prerelease)
+release-1.0.0       # Production GA (PROD feed, stable) - SAME CODE as last release RC
+coverage-1.0.0      # Coverage analysis only (no publishing)
+```
+
+### 2. **Separation of CI and CD**
+
+**Branch Triggers (CI):**
+- Purpose: Fast feedback for developers
+- Stages: Build → Security → Coverage → Package (Artifact only)
+- **No publishing** to feeds (Packages created for validation/artifact only)
+- Runs on: main, develop, feature/*, hotfix/*
+
+**Tag Triggers (CD):**
+- Purpose: Versioned releases
+- Stages: All 5 stages (Build → Security → Coverage → Package → Documentation)
+- Packages created and **published** to feeds
+- Runs on: release-*, test-*, coverage-* tags
+
+### 3. **RC Workflow is Mandatory (Two-Stage)**
+
+Never deploy directly to production without testing via RC tags in both stages.
+
+**Optimized Workflow with Changelog:**
+```
+feature → develop → release/X.Y branch →
+    → Generate CHANGELOG (auto-version detection) → Commit & Push (Build #1) →
+    → test-X.Y.Z-rc1 → TEST feed → Internal QA →
+    → test-X.Y.Z-rcN (if issues) → Internal QA passes →
+    → release-X.Y.Z-rc1 → PROD feed (NuGet prerelease) → Consumer/Staging testing →
+    → release-X.Y.Z-rcN (if issues) → All consumers report OK →
+    → release-X.Y.Z → PROD feed (stable) → Production GA
+```
+
+**Build Optimization**:
+- Changelog generated BEFORE RC tags (not after merge, not after RC)
+- This consolidates build triggers: **1 build instead of 2**
+- Old: Merge→Build, Changelog→Build, Tag
+- New: Merge→Changelog→Build, Tag
+
+**How It Works:**
+1. **test-* RCs for internal QA**: Published to TEST feed for internal validation
+2. **release-* RCs for external testing**: Published to PROD feed as NuGet prerelease
+3. **Consumers opt-in to test**: `dotnet add package MyPackage --prerelease`
+4. **When all report success**: Tag `release-X.Y.Z` (no suffix) on SAME commit
+5. **GA tag triggers stable publish**: Same build, now as stable version `1.2.0`
+
+**Critical Rules:**
+1. **Every `release-X.Y.Z` MUST have a preceding `release-X.Y.Z-rcN`** that passed consumer testing
+2. **Every `release-X.Y.Z-rcN` MUST have a preceding `test-X.Y.Z-rcN`** that passed internal QA
+3. **Code MUST be identical** between stage transitions (last passing test RC → first release RC, last passing release RC → GA)
+4. **Code changes allowed** only within the same stage (between test RCs or between release RCs)
+5. **NuGet prerelease protects consumers**: They won't accidentally get RC versions
+
+### 4. **Security-First**
+
+Security scanning is non-negotiable:
+- ✅ Automated vulnerability scanning (dotnet list package --vulnerable)
+- ✅ Fail build on Critical/High severity
+- ✅ SBOM generation (CycloneDX format)
+- ✅ Supply chain transparency
+
+### 5. **Quality Gates are Enforced**
+
+Branch-specific coverage thresholds:
+- **main / release-*** (stable): 80% line coverage required
+- **develop**: 75% line coverage required
+- **feature/* / test-*** (internal RC): 70% line coverage required
+
+### 6. **Semantic Versioning Discipline**
+
+Version numbers communicate change impact using strict semantic versioning rules.
+
+**MAJOR.MINOR.PATCH**:
+- **MAJOR**: Breaking changes (consumers MUST update code)
+- **MINOR**: New features (consumers CAN upgrade safely)
+- **PATCH**: Bug fixes (consumers SHOULD upgrade)
+
+**Release Branch Strategy**:
+- Branch: `release/X.Y` (MAJOR.MINOR only)
+- Tags: `test-X.Y.Z-rcN` (internal), `release-X.Y.Z-rcN` (prerelease), `release-X.Y.Z` (stable)
+- One branch supports all patch releases (1.2.0, 1.2.1, 1.2.2)
+
+**Version Progression**:
+```
+develop → release/1.2 → test-1.2.0-rc1 → release-1.2.0-rc1 → release-1.2.0 (main)
+                      → test-1.2.1-rc1 → release-1.2.1-rc1 → release-1.2.1 (main)
+                      → test-1.2.2-rc1 → release-1.2.2-rc1 → release-1.2.2 (main)
+```
+
+---
+
+## Semantic Versioning Rules
+
+### MAJOR Version (X.0.0) - Breaking Changes
+
+**Increment when**:
+- Breaking API changes to public interfaces
+- Removal of deprecated features
+- Incompatible dependency updates
+- Major architectural changes requiring consumer updates
+- Changes that force consumers to modify code
+
+**Examples**:
+- `1.5.2` → `2.0.0`
+- Public method signature changed
+- Required configuration format changed
+
+**Impact**: Consumers **MUST** review and update code
+
+**Branch Strategy**: Create new `release/X.0` branch
+
+### MINOR Version (X.Y.0) - New Features
+
+**Increment when**:
+- New features added (backward compatible)
+- New public methods/classes added
+- Enhancements to existing features (non-breaking)
+- New optional dependencies
+- Deprecation notices (not removal)
+
+**Examples**:
+- `1.2.3` → `1.3.0`
+- New optional parameter added
+- New utility class added
+
+**Impact**: Consumers **CAN** upgrade without code changes
+
+**Branch Strategy**: Create new `release/X.Y` branch
+
+### PATCH Version (X.Y.Z) - Bug Fixes
+
+**Increment when**:
+- Bug fixes (no feature changes)
+- Security patches
+- Performance improvements (no API changes)
+- Documentation updates
+- Internal refactoring (no external impact)
+
+**Examples**:
+- `1.2.0` → `1.2.1`
+- Fixed calculation error
+- Patched security vulnerability
+
+**Impact**: Consumers **SHOULD** upgrade (fixes only)
+
+**Branch Strategy**: Reuse existing `release/X.Y` branch
+
+---
+
+## Release Branch Strategy
+
+### Branch Naming Convention
+
+**Format**: `release/MAJOR.MINOR`
+
+**Examples**:
+- `release/1.0` - First major release
+- `release/1.2` - Minor version with new features
+- `release/2.0` - Major version with breaking changes
+
+**Important**: Branch name uses only MAJOR.MINOR (no PATCH)
+
+### When to Create Release Branch
+
+**Create new `release/X.Y`** for:
+- ✅ New MAJOR version (X.0.0)
+- ✅ New MINOR version (X.Y.0) with features
+- ✅ Starting RC testing for version X.Y.0
+
+**Reuse existing `release/X.Y`** for:
+- ✅ PATCH releases (X.Y.1, X.Y.2, X.Y.3, ...)
+- ✅ Hotfixes not changing MINOR version
+- ✅ Multiple patches on same release line
+
+**Never create**:
+- ❌ `release/1.0.1` (use existing `release/1.0`)
+- ❌ `release/1.2.0` (use `release/1.2`)
+
+### Release Branch Lifecycle
+
+**For Current/Latest Release Line:**
+```
+1. Create:    release/1.2 from develop (for 1.2.0)
+2. RC Test:   test-1.2.0-rc1, test-1.2.0-rc2 (on release/1.2)
+3. Release:   Merge to main → tag release-1.2.0 (on main)
+4. Maintain:  Patches 1.2.1, 1.2.2, ... (merge to main, tag on main)
+5. Keep:      Branch remains for long-term support
+```
+
+**For Maintenance/Older Release Line (when main progresses to newer major):**
+```
+1. Branch:    release/1.2 already exists (was current, now maintenance)
+2. Hotfix:    Create hotfix branch from release/1.2
+3. RC Test:   test-1.2.3-rc1 (on release/1.2)
+4. Release:   Tag release-1.2.3 directly on release/1.2 (NO merge to main)
+5. Publish:   CI/CD publishes from release-* tag on release/1.2
+```
+
+**Key Principle**: Release branches are long-lived maintenance branches. When main progresses to a new major version, older release branches become the authoritative release point for their version line.
+
+### Tag Naming on Release Branches
+
+**RC Tags**: `test-X.Y.Z-rcN`
+```bash
+# On release/1.2
+git tag -a test-1.2.0-rc1 -m "RC1 for version 1.2.0"  # Initial RC
+git tag -a test-1.2.0-rc2 -m "RC2 after fixes"        # After fixes
+git tag -a test-1.2.1-rc1 -m "RC1 for patch 1.2.1"    # Patch RC
+```
+
+**Production Tags**: `release-X.Y.Z` - Where they go depends on the release line:
+
+| Scenario | Tag Location | When |
+|----------|--------------|------|
+| **Current/Latest Release Line** | `main` | When this release line IS the latest (main tracks this version) |
+| **Maintenance/Older Release Line** | `release/X.Y` | When main has progressed to a newer major version |
+
+**Current Release Line** (main tracks this version):
+```bash
+# On main (after merging release/1.2)
+git tag -a release-1.2.0 -m "Production release 1.2.0"  # GA release
+git tag -a release-1.2.1 -m "Patch release 1.2.1"       # Patch release
+```
+
+**Maintenance Release Line** (main is on newer major version):
+```bash
+# Scenario: main is on 2.3.x, but you need to patch 1.2.x for customers still on v1
+# On release/1.2 directly (NOT merged to main)
+git tag -a release-1.2.1 -m "Maintenance patch 1.2.1"   # Patch for older version
+git tag -a release-1.2.2 -m "Security fix for 1.2.x"    # Another patch
+```
+
+**Critical Rule**: NEVER merge an older major version into a main that has progressed to a newer major version. This would cause version regression and break the release line.
+
+### Branch Protection Rules
+
+**main branch**:
+- ✅ Allow: `release-*` tags
+- ❌ Block: `test-*`, `coverage-*` tags
+- Requires: PR approval, CI passing
+
+**release/* branches**:
+- ✅ Allow: `test-*`, `coverage-*` tags
+- ❌ Block: `release-*` tags (only on main)
+- Direct commits: Allowed for fixes
+
+**develop branch**:
+- ❌ Block: All tags (no tagging on develop)
+- Requires: PR approval
+
+---
+
+## Pipeline Architecture
+
+### 5-Stage Pattern
+
+**Stage 1: Build & Validate**
+```yaml
+- Build with TreatWarningsAsErrors=true
+- Verify XML documentation files generated
+- Run unit tests with XPlat Code Coverage
+- Validate documentation completeness
+- Publish raw coverage results
+```
+
+**Stage 2: Security Scan**
+```yaml
+- Restore all packages (including transitive)
+- Run dotnet list package --vulnerable --include-transitive
+- Parse results for Critical/High/Moderate/Low
+- Fail build if Critical or High found
+- Warn if Moderate or Low found
+```
+
+**Stage 3: Coverage Analysis**
+```yaml
+- Install ReportGenerator global tool
+- Generate HTML coverage reports
+- Parse coverage percentage from Cobertura.xml
+- Compare against branch-specific threshold
+- Fail if below threshold
+- Publish HTML report as artifact
+```
+
+**Stage 4: Package & SBOM**
+```yaml
+- Parse version tag (if tag build)
+- Pack NuGet Packages:
+  - Branch build: Versioning scheme off (default)
+  - Tag build: PackageVersion=$(fullVersion)
+- Generate CycloneDX SBOM
+- Conditional publish (Tag build only):
+  - test-* → Internal test feed
+  - release-* → Production feed
+  - coverage-* → No publish
+- Publish packages and SBOM as artifacts
+```
+
+**Stage 5: Documentation Report**
+```yaml
+- Generate documentation coverage report
+- Publish as pipeline artifact
+```
+
+### Optional Enhancement Stages (Gold Standard Plus)
+
+Beyond the core 5-stage pattern, production-proven enhancements from eneve.domain:
+
+**Stage 6: Enhanced Coverage Analysis** (Optional but Recommended)
+```yaml
+Purpose: Deep coverage analysis beyond basic threshold checks
+Trigger: Tag builds only
+Script: cicd/scripts/enhanced-coverage-analysis.ps1
+
+Provides:
+- Line, branch, and method coverage breakdown
+- Coverage trends over time
+- Uncovered code hotspots identification
+- HTML report with drill-down capability
+
+When to include: Projects requiring >80% coverage or regulatory compliance
+```
+
+**Stage 7: Advanced Quality Gates** (Optional)
+```yaml
+Purpose: Comprehensive quality checks
+Scripts:
+- check-breaking-changes.ps1 - API compatibility analysis
+- scan-licenses.ps1 - License compliance checking
+- calculate-code-metrics.ps1 - Complexity, maintainability metrics
+- validate-package-metadata.ps1 - NuGet package quality validation
+- validate-release-notes.ps1 - Release notes quality check
+
+When to include: Public NuGet packages or enterprise libraries
+```
+
+**Stage 8: Performance & Mutation Testing** (Advanced)
+```yaml
+Purpose: Performance benchmarks and mutation test analysis
+Scripts:
+- run-benchmarks.ps1 - Performance regression detection
+- run-mutation-tests.ps1 - Test suite quality validation
+
+When to include: Performance-critical libraries or high-reliability systems
+```
+
+### Implementation Maturity Levels
+
+**Level 1: Basic CI/CD (40/60)**
+- ✅ Build and test automation
+- ✅ Basic artifact publishing (manual)
+- ❌ No security scanning
+- ❌ No coverage enforcement
+
+**Level 2: Gold Standard (60/60) - MINIMUM FOR PRODUCTION**
+- ✅ Full 5-stage pipeline
+- ✅ Automated publishing (test/release feeds)
+- ✅ Security scanning (fail on Critical/High)
+- ✅ Coverage thresholds enforced (70%/75%/80%)
+- ✅ SBOM generation
+
+**Level 3: Gold Standard Plus (80/60)**
+- ✅ Everything in Level 2
+- ✅ Enhanced coverage analysis (Stage 6)
+- ✅ Breaking change detection
+- ✅ License compliance scanning
+- ✅ Package metadata validation
+
+**Level 4: Enterprise Grade (100/60)**
+- ✅ Everything in Level 3
+- ✅ Performance benchmarking
+- ✅ Mutation testing
+- ✅ Code metrics tracking
+- ✅ Automated quality gates with historical trends
+
+**Current State**: `eneve.domain` is at **Level 4 (100/60)** ✅
+
+---
+
+## Tag Parsing Logic
+
+### PowerShell Implementation
+
+```powershell
+$tagName = "test-1.0.0-rc2"
+$parts = $tagName.Split("-")
+
+# Validate minimum parts
+if ($parts.Length -lt 2) {
+    Write-Error "Invalid tag format"
+    exit 1
+}
+
+$type = $parts[0]           # test
+$version = $parts[1]        # 1.0.0
+$suffix = ""
+if ($parts.Length -gt 2) {
+    $suffix = $parts[2]     # rc2
+}
+
+# Validate type
+$validTypes = @("release", "test", "coverage")
+if ($type -notin $validTypes) {
+    Write-Error "Invalid type: $type"
+    exit 1
+}
+
+# Validate version format (X.Y.Z)
+if ($version -notmatch '^\d+\.\d+\.\d+$') {
+    Write-Error "Invalid version format: $version"
+    exit 1
+}
+
+# Compute full version
+$fullVersion = if ($suffix) { "$version-$suffix" } else { $version }
+
+# Output for Azure DevOps
+Write-Host "##vso[task.setvariable variable=releaseType;isoutput=true]$type"
+Write-Host "##vso[task.setvariable variable=fullPackageVersion;isoutput=true]$fullVersion"
+```
+
+---
+
+## Configuration Guidelines
+
+### Variables
+
+```yaml
+variables:
+  buildConfiguration: 'Release'
+  dotnetVersion: '9.x'
+  solution: '**/*.sln'
+  
+  # Dynamic coverage threshold
+  ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/tags/release-')) }}:
+    coverageThreshold: 80
+  ${{ elseif eq(variables['Build.SourceBranch'], 'refs/heads/develop') }}:
+    coverageThreshold: 75
+  ${{ else }}:
+    coverageThreshold: 70
+```
+
+### Triggers
+
+```yaml
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - feature/*
+      - hotfix/*
+  tags:
+    include:
+      - release-*
+      - test-*
+      - coverage-*
+  paths:
+    include:
+      - src/**
+      - tst/**
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+```
+
+### Conditional Publishing
+
+**Upgrade to 60/60 (With Feed Configuration):**
+
+```yaml
+# TEST feed publish - Internal QA only (test-* tags)
+- task: NuGetCommand@2
+  displayName: 'Publish to Test Feed'
+  condition: and(succeeded(), eq(variables['parseVersion.releaseType'], 'test'))
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'YourTestFeedName'  # Configure this
+
+# PROD feed publish - ALL release-* tags (RC and GA)
+- task: NuGetCommand@2
+  displayName: 'Publish to Production Feed'
+  condition: and(succeeded(), eq(variables['parseVersion.releaseType'], 'release'))
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'external'  # or 'internal' for Azure Artifacts
+    publishFeedCredentials: 'NuGet-Prod-Connection'  # Configure this
+
+# Publishing Summary:
+# - test-1.2.0-rc1    → TEST feed (1.2.0-rc1) - internal QA only
+# - release-1.2.0-rc1 → PROD feed (1.2.0-rc1, NuGet prerelease) - consumers opt-in
+# - release-1.2.0     → PROD feed (1.2.0, NuGet stable) - GA release
+```
+
+### Feed Naming Conventions
+
+**Recommended Pattern for Azure Artifacts**:
+
+```yaml
+publishVstsFeed: 'NuGet Packages/{RepositoryName}'
+```
+
+**Examples from Production**:
+- `NuGet Packages/Eneve.Domain` (TEST and PROD feed)
+- `NuGet Packages/Eneve.eBase.Foundation`
+- `NuGet Packages/Eneve.eBase.DataMigrator`
+
+**Rationale**:
+- ✅ Consistent namespace organization
+- ✅ Clear package source identification
+- ✅ Azure DevOps artifact feed hierarchy support
+- ✅ Easier feed permission management
+- ✅ Single feed can handle both TEST and PROD with version suffix differentiation
+
+**Feed Architecture**:
+```
+Azure DevOps Feeds:
+├── NuGet Packages (Feed Collection)
+│   ├── Eneve.Domain (Package Feed)
+│   │   ├── 1.2.0-rc1 (test-* tag → prerelease)
+│   │   └── 1.2.0 (release-* tag → stable)
+│   ├── Eneve.eBase.Foundation
+│   └── Eneve.eBase.DataMigrator
+```
+
+**Implementation**:
+
+```yaml
+# Both TEST and PROD can use same feed
+# NuGet automatically differentiates based on version suffix
+- task: NuGetCommand@2
+  displayName: 'Publish to Test Feed (Internal QA)'
+  condition: and(succeeded(), eq(variables['parseVersion.releaseType'], 'test'))
+  inputs:
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'NuGet Packages/Eneve.Domain'
+    allowPackageConflicts: false
+
+- task: NuGetCommand@2
+  displayName: 'Publish to Production Feed (RC or GA)'
+  condition: and(succeeded(), eq(variables['parseVersion.releaseType'], 'release'))
+  inputs:
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'NuGet Packages/Eneve.Domain'
+    allowPackageConflicts: false
+```
+
+**Note**: NuGet handles prerelease vs stable automatically:
+- Version with suffix (`1.2.0-rc1`) = prerelease
+- Version without suffix (`1.2.0`) = stable
+- Consumers use `--prerelease` flag to opt-in to RC versions
+
+---
+
+## Script Library (cicd/scripts/)
+
+### Core Scripts (Required - Level 2: 60/60)
+
+**Documentation Validation:**
+- `validate-documentation.ps1` - XML documentation completeness with dynamic framework detection
+- `verify-xml-files.ps1` - Documentation file existence verification  
+- `generate-doc-report.ps1` - Documentation coverage reporting with metrics
+
+**Pipeline Support:**
+- `validate-tag-context.ps1` - Tag format validation and parsing
+
+### Enhanced Scripts (Recommended - Level 3: 80/100)
+
+**Quality Gates:**
+- `enhanced-coverage-analysis.ps1` - Deep coverage analysis with trends and hotspots
+- `check-breaking-changes.ps1` - API compatibility analysis for breaking changes
+- `scan-licenses.ps1` - License compliance checking across dependencies
+- `validate-package-metadata.ps1` - NuGet package metadata quality validation
+- `validate-release-notes.ps1` - Release notes completeness and format checking
+
+### Advanced Scripts (Optional - Level 4: 100/100)
+
+**Performance & Reliability:**
+- `run-benchmarks.ps1` - Performance regression detection
+- `run-mutation-tests.ps1` - Test suite quality validation via mutation analysis
+- `calculate-code-metrics.ps1` - Complexity and maintainability metrics
+
+### Script Implementation Standards
+
+All scripts should:
+- ✅ Use PowerShell (not pwsh) for Azure DevOps compatibility
+- ✅ Accept `-Configuration` parameter for build configuration
+- ✅ Exit with proper codes (0 = success, 1 = failure)
+- ✅ Provide colored output (Green = pass, Red = fail, Yellow = warnings)
+- ✅ Generate reports in `$(Build.ArtifactStagingDirectory)`
+- ✅ Include descriptive error messages with remediation steps
+
+**Reference Implementation**: All scripts available in `eneve.domain/cicd/scripts/`
+
+---
+
+## Standard Operating Procedure (SOP)
+
+### Complete Release Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PHASE 1: DEVELOPMENT                                                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 1. Feature branches → merge to develop                                      │
+│ 2. CI runs on every push (Build, Test, Security, Coverage)                  │
+│ 3. NO tags on develop or feature branches                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PHASE 1.5: CHANGELOG GENERATION (BEFORE RC TAGGING)                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 1. Create release/X.Y branch from develop (or checkout existing)            │
+│ 2. Generate CHANGELOG.md:                                                   │
+│    - Auto-extract last release version from release-* tags                  │
+│    - Determine new version from branch name (release/1.2 → 1.2.0 or 1.2.1)  │
+│    - Analyze commits since last release                                     │
+│ 3. Commit and push CHANGELOG.md → Triggers BUILD #1 (single build)          │
+│ 4. **Optimization**: This consolidates what used to be 2 separate builds    │
+│    - Old: Merge→Build #1, Changelog→Build #2, Tag RC                        │
+│    - New: Merge→Changelog→Build #1, Tag RC                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PHASE 2: INTERNAL TESTING (test-* tags)                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 1. Changelog is already committed and pushed (from Phase 1.5)               │
+│ 2. Tag: test-X.Y.Z-rc1 on release/X.Y                                      │
+│ 3. CI/CD: Builds package 1.2.0-rc1, publishes to TEST feed                 │
+│ 4. QA: Internal testing in test environment                                 │
+│ 5. If issues: fix → tag test-X.Y.Z-rc2, rc3... → repeat                    │
+│ 6. Forward-merge fixes to develop                                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PHASE 3: PRE-PRODUCTION TESTING (release-*-rcN tags)                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ After test-* RC passes internal QA:                                         │
+│                                                                             │
+│ 1. Tag: release-X.Y.Z-rc1 (same commit as last passing test-X.Y.Z-rcN)     │
+│ 2. CI/CD: Builds package 1.2.0-rc1, publishes to PROD feed (as prerelease) │
+│ 3. Testing: Pre-production/staging environment OR beta customers            │
+│ 4. If issues: fix → tag release-X.Y.Z-rc2, rc3... → repeat                 │
+│                                                                             │
+│ NuGet treats -rcN versions as prerelease (not installed by default)        │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PHASE 4: PRODUCTION RELEASE (release-* tags, no suffix)                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ SAME COMMIT as last passing release-X.Y.Z-rcN - NO CODE CHANGES!            │
+│                                                                             │
+│ Current Release Line (main tracks this major version):                      │
+│   1. Merge release/X.Y → main                                               │
+│   2. Tag: release-X.Y.Z on main (NO -rcN suffix = stable release)          │
+│   3. CI/CD: Builds package 1.2.0, publishes to PROD feed (as stable)       │
+│   4. Forward-merge main → develop                                           │
+│                                                                             │
+│ Maintenance Release Line (main is on newer major version):                  │
+│   1. Tag: release-X.Y.Z directly on release/X.Y (NO merge to main)         │
+│   2. CI/CD: Publishes to PRODUCTION feed                                    │
+│   3. Cherry-pick fixes to develop if applicable                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Two-Stage RC Process
+
+**Why two stages of RC testing?**
+
+| Stage | Tag Pattern | Feed | Audience | Purpose |
+|-------|-------------|------|----------|---------|
+| Internal RC | `test-X.Y.Z-rcN` | TEST feed | QA team | Internal validation |
+| Pre-Prod RC | `release-X.Y.Z-rcN` | PROD feed (prerelease) | Staging/Beta users | Final validation before GA |
+| Production | `release-X.Y.Z` | PROD feed (stable) | All consumers | General availability |
+
+**Flow Example:**
+```
+test-1.2.0-rc1     → TEST feed    → Internal QA finds bug
+test-1.2.0-rc2     → TEST feed    → Internal QA passes ✓
+release-1.2.0-rc1  → PROD feed    → Staging test finds edge case
+release-1.2.0-rc2  → PROD feed    → Staging passes ✓
+release-1.2.0      → PROD feed    → GA release (stable)
+```
+
+**NuGet Prerelease Behavior:**
+- Package `1.2.0-rc1` is a prerelease version
+- `dotnet add package MyPackage` installs latest **stable** (e.g., `1.1.0`)
+- `dotnet add package MyPackage --prerelease` installs `1.2.0-rc1`
+- This protects consumers from accidentally using RC versions
+
+### When to Use Each Tag Type
+
+| Tag Type | When to Use | What Happens | Code Changes? |
+|----------|-------------|--------------|---------------|
+| `test-X.Y.Z-rcN` | Ready for internal QA testing | Publishes to TEST feed | YES (between test RCs) |
+| `release-X.Y.Z-rcN` | Internal QA passed, ready for pre-prod | Publishes to PROD feed (prerelease) | YES (between release RCs) |
+| `release-X.Y.Z` | Pre-prod RC passed, ready for GA | Publishes to PROD feed (stable) | NO (same as last release RC) |
+| `coverage-X.Y.Z` | Coverage analysis only | No publishing | N/A |
+
+### Mandatory RC Requirement
+
+**Rule: Every production release MUST have preceding passing RCs in both stages.**
+
+```
+✅ CORRECT (full flow):
+   test-1.2.0-rc1 → PASS → release-1.2.0-rc1 → PASS → release-1.2.0
+
+✅ CORRECT (with iterations):
+   test-1.2.0-rc1 → FAIL → test-1.2.0-rc2 → PASS →
+   release-1.2.0-rc1 → FAIL → release-1.2.0-rc2 → PASS → release-1.2.0
+
+✅ CORRECT (minimal - single RC each stage):
+   test-1.2.0-rc1 → PASS → release-1.2.0-rc1 → PASS → release-1.2.0
+
+❌ WRONG (no test RC):
+   release-1.2.0-rc1 → release-1.2.0  (skipped internal testing!)
+
+❌ WRONG (no release RC):
+   test-1.2.0-rc1 → release-1.2.0  (skipped pre-prod validation!)
+
+❌ WRONG (no RCs at all):
+   release-1.2.0  (completely untested!)
+```
+
+### Code Immutability Between Stages
+
+**Rule: When transitioning between stages, no code changes allowed.**
+
+| Transition | Same Commit Required? |
+|------------|----------------------|
+| `test-X.Y.Z-rc1` → `test-X.Y.Z-rc2` | NO - fixes allowed between test RCs |
+| Last passing `test-X.Y.Z-rcN` → `release-X.Y.Z-rc1` | YES - same commit |
+| `release-X.Y.Z-rc1` → `release-X.Y.Z-rc2` | NO - fixes allowed between release RCs |
+| Last passing `release-X.Y.Z-rcN` → `release-X.Y.Z` | YES - same commit |
+
+```bash
+# After release-1.2.0-rc2 passes pre-prod testing:
+
+# ✅ CORRECT: Tag same commit for GA release
+git checkout release/1.2
+git log --oneline -1          # Verify this is the rc2 commit
+git tag -a release-1.2.0 -m "Release 1.2.0"
+
+# ❌ WRONG: Making changes before GA tag
+git checkout release/1.2
+git commit -m "last minute fix"   # NEVER do this!
+git tag -a release-1.2.0          # This is NOT the tested code!
+# If you need a fix, tag release-1.2.0-rc3 and test again!
+```
+
+**Why?** The RC tag tested specific code. Changing code after RC testing means you're releasing untested code.
+
+### RC Tag Progression
+
+```bash
+# Version 1.2.0 release cycle (full example):
+
+# Stage 1: Internal Testing (TEST feed)
+test-1.2.0-rc1      # First internal RC
+test-1.2.0-rc2      # Fix found in rc1
+test-1.2.0-rc3      # Internal QA passes ✓
+
+# Stage 2: Pre-Production (PROD feed as prerelease)
+release-1.2.0-rc1   # Same commit as test-1.2.0-rc3
+release-1.2.0-rc2   # Edge case found in pre-prod
+release-1.2.0-rc3   # Pre-prod passes ✓
+
+# Stage 3: GA Release (PROD feed as stable)
+release-1.2.0       # Same commit as release-1.2.0-rc3
+
+# Version 1.2.1 patch release cycle (minimal):
+test-1.2.1-rc1      # Internal QA passes first time ✓
+release-1.2.1-rc1   # Pre-prod passes first time ✓
+release-1.2.1       # GA release
+```
+
+---
+
+## RC Workflow Best Practices
+
+### 1. Create Release Branch First
+
+```bash
+# ✅ Good: Create release branch for new MINOR/MAJOR
+git checkout develop
+git checkout -b release/1.2
+git push origin release/1.2
+
+# Tag RC on release branch
+git tag -a test-1.2.0-rc1 -m "RC1 for version 1.2.0"
+git push origin test-1.2.0-rc1
+
+# ❌ Bad: Tag on develop
+git checkout develop
+git tag test-1.2.0-rc1  # Wrong branch!
+```
+
+### 2. Fix Issues on Release Branch
+
+```bash
+# ✅ Good: Fix on release branch, then tag RC2
+git checkout release/1.2
+git commit -m "fix: critical bug found in RC1"
+git push origin release/1.2
+git tag -a test-1.2.0-rc2 -m "RC2: Fixed critical bug"
+git push origin test-1.2.0-rc2
+
+# Merge fix back to develop
+git checkout develop
+git merge release/1.2 --no-ff
+git push origin develop
+
+# ❌ Bad: Fix on develop and retag
+git checkout develop
+git commit -m "fix"
+git tag -f test-1.2.0-rc1  # Never reuse tag names!
+```
+
+### 3. Transition from Internal to Pre-Prod RC
+
+```bash
+# After test-1.2.0-rc2 passes internal QA:
+
+# ✅ Good: Tag release RC on SAME commit as passing test RC
+git checkout release/1.2
+git log --oneline -1                # Verify this is the test-rc2 commit
+git tag -a release-1.2.0-rc1 -m "Pre-prod RC1 for version 1.2.0"
+git push origin release-1.2.0-rc1
+
+# ❌ Bad: Making changes between test and release RC
+git commit -m "one more tweak"      # NO! This is untested code!
+git tag -a release-1.2.0-rc1        # Would release untested changes
+```
+
+### 4. Promote to Production (GA Release)
+
+**After release-X.Y.Z-rcN passes pre-prod testing:**
+
+**For Current/Latest Release Line (main tracks this version):**
+```bash
+# ✅ Good: Merge release branch to main, then tag GA (same commit as last release RC)
+git checkout main
+git merge release/1.2 --no-ff -m "Release 1.2.0"
+git push origin main
+git tag -a release-1.2.0 -m "Production release 1.2.0 (GA)"
+git push origin release-1.2.0
+
+# Forward-merge main back to develop
+git checkout develop
+git merge main --no-ff
+git push origin develop
+```
+
+**For Maintenance/Older Release Line (main has progressed to newer major):**
+```bash
+# Scenario: main is on 2.3.x, customer needs patch for 1.2.x
+# ✅ Correct: Tag GA directly on release branch (NO merge to main)
+git checkout release/1.2
+git tag -a release-1.2.1 -m "Maintenance patch 1.2.1 (GA)"
+git push origin release-1.2.1
+
+# ❌ Wrong: Merging old major version to newer main
+git checkout main  # Already on 2.3.x
+git merge release/1.2  # NEVER do this! Would break version progression
+```
+
+**Decision Flow:**
+```
+Is main on the same MAJOR version as release/X.Y?
+├─ YES → Merge to main, tag GA on main
+└─ NO  → Tag GA directly on release/X.Y, DO NOT merge to main
+```
+
+### 5. Reuse Release Branch for Patches
+
+```bash
+# ✅ Good: Patch on existing release/1.2 branch with full two-stage RC
+
+# Stage 1: Internal testing
+git checkout release/1.2
+git commit -m "fix: patch for production issue"
+git tag -a test-1.2.1-rc1 -m "Internal RC1 for patch 1.2.1"
+git push origin test-1.2.1-rc1
+# Wait for internal QA to pass...
+
+# Stage 2: Pre-prod testing (same commit as passing test RC)
+git tag -a release-1.2.1-rc1 -m "Pre-prod RC1 for patch 1.2.1"
+git push origin release-1.2.1-rc1
+# Wait for pre-prod testing to pass...
+
+# Stage 3: GA release (same commit as passing release RC)
+git checkout main
+git merge release/1.2 --no-ff -m "Patch release 1.2.1"
+git tag -a release-1.2.1 -m "Patch 1.2.1 (GA)"
+git push origin main release-1.2.1
+
+# ❌ Bad: Create release/1.2.1 branch
+git checkout -b release/1.2.1  # Don't do this!
+
+# ❌ Bad: Skip stages
+git tag -a release-1.2.1  # Skipped both RC stages!
+```
+
+### 6. Use Annotated Tags Always
+
+```bash
+# ✅ Good: Annotated tags with metadata
+git tag -a test-1.2.0-rc1 -m "Internal RC1 for v1.2.0"
+git tag -a release-1.2.0-rc1 -m "Pre-prod RC1 for v1.2.0"
+git tag -a release-1.2.0 -m "Production release 1.2.0 (GA)"
+
+# ❌ Bad: Lightweight tags lack context
+git tag test-1.2.0-rc1
+git tag release-1.2.0
+```
+
+### 7. Document Changes in Tag Messages
+
+```bash
+# ✅ Good: Descriptive tag messages
+git tag -a test-1.2.0-rc2 -m "Internal RC2: Fixed critical bug in calculation engine (EPP-123)"
+git tag -a release-1.2.0-rc1 -m "Pre-prod RC1: Same as test-1.2.0-rc2 (passed internal QA)"
+git tag -a release-1.2.1 -m "GA Patch: Security fix for CVE-2025-1234"
+
+# ❌ Bad: Generic messages
+git tag -a test-1.2.0-rc2 -m "RC2"
+git tag -a release-1.2.1 -m "Patch"
+```
+
+---
+
+## Anti-Patterns to Avoid
+
+### ❌ Manual Version Management
+
+**Problem:** Manual version bumps in .csproj, easy to forget
+
+**Solution:** Tags drive versions automatically via pipeline
+
+### ❌ Branch-Based Publishing
+
+**Problem:** Every push to main publishes a package, version conflicts
+
+**Solution:** Only tags trigger package publishing
+
+### ❌ No Pre-Production Testing
+
+**Problem:** Bugs discovered in production
+
+**Solution:** RC workflow tests in production-like environment first
+
+### ❌ Reusing Tag Names
+
+**Problem:** `git tag -d` + recreate breaks immutability, causes confusion
+
+**Solution:** Increment RC number instead of deleting/recreating
+
+### ❌ Skipping Security Scans
+
+**Problem:** Vulnerable packages deployed to production
+
+**Solution:** Security scan is mandatory stage, fails build
+
+---
+
+## Validation Checklist
+
+### For 60/60 (Gold Standard Implementation) 🎯
+
+**Pipeline Configuration:**
+- [ ] Tag triggers configured for `release-*`, `test-*`, `coverage-*`
+- [ ] Branch triggers configured for CI (main, develop, feature/*, release/*)
+- [ ] Tag parsing script validates format and extracts version
+- [ ] Security scan stage present with vulnerability checking
+- [ ] Coverage threshold enforcement with branch-specific thresholds (70%/75%/80%)
+- [ ] SBOM generation configured (CycloneDX)
+- [ ] **NuGetCommand tasks configured for Test and Production feeds**
+- [ ] Documentation validation present
+- [ ] HTML coverage reports generated
+- [ ] All artifacts published to Azure DevOps (packages, SBOM, reports)
+
+**Infrastructure:**
+- [ ] Pipeline running in Azure DevOps
+- [ ] .NET 9.x SDK available
+- [ ] **Internal Test Feed created**
+- [ ] **Production Feed created**
+- [ ] **Service Connections configured (if using external feeds)**
+
+**Documentation:**
+- [ ] BRANCHING-GUIDE.md present
+- [ ] TAGGING-GUIDE.md present with RC workflow
+- [ ] QUICK-REFERENCE.md present
+- [ ] PIPELINE-STATUS.md documenting 60/60 status
+- [ ] README.md with documentation index
+
+**Score:** 60/60 (A+) - Fully automated publishing operational
+
+---
+
+## Integration Points
+
+- **Git Workflow:** Integrates with GitFlow or trunk-based development
+- **NuGet Feeds:** Requires internal test feed and external production feed
+- **Azure DevOps:** Service connections for feed publishing
+- **Security Tools:** dotnet CLI vulnerability scanning, CycloneDX SBOM
+- **Coverage Tools:** XPlat Code Coverage, ReportGenerator
+
+---
+
+## Related Rules
+
+- `rule.git.branch-naming-rule.v1` - Branch naming standards
+- `rule.git.branch-lifecycle-rule.v1` - Branch workflows
+- `rule.documentation.documentation-standards-rule.v1` - Documentation validation
+
+---
+
+## Two-Tier Implementation Strategy
+
+This rule supports a **phased approach**:
+
+### Tier 1: Framework Ready (59/60) - REFERENCE IMPLEMENTATION
+- **Goal:** Operational pipeline with manual publishing option
+- **Time:** 2-3 hours initial setup
+- **Benefits:**
+  - Full quality gates operational
+  - RC workflow validated
+  - Package artifacts available for manual distribution
+  - Team can learn tagging workflow
+  - No dependency on feed configuration decisions
+- **When:** Initial implementation, proof of concept, or when feed configuration is delayed
+
+### Tier 2: Full Automation (60/60) - UPGRADE PATH
+- **Goal:** Automated publishing to feeds
+- **Time:** 1-2 hours additional (feed configuration + YAML updates)
+- **Benefits:**
+  - End-to-end automation
+  - No manual download/upload steps
+  - True CI/CD workflow
+- **When:** Feeds configured, team trained, ready for production use
+
+**Recommendation:** Start with Tier 1 (this rule), upgrade to Tier 2 when ready.
+
+---
+
+## References
+
+**Generated Documentation (in cicd/docs/):**
+- `README.md` - Documentation index
+- `BRANCHING-GUIDE.md` - Git workflow
+- `TAGGING-GUIDE.md` - Tag-based versioning and RC workflow
+- `QUICK-REFERENCE.md` - Daily commands
+- `PIPELINE-STATUS.md` - Current capabilities and upgrade path
+
+**Template and Exemplars:**
+- `.cursor/templars/cicd/azure-pipelines-unified-template.yml` - Pipeline template (59/60 state)
+- `.cursor/exemplars/cicd/tag-based-versioning-exemplar.md` - Complete example
+- `.cursor/prompts/cicd/implement-tag-based-cicd.md` - Implementation guide
+
+**Related Rules:**
+- `.cursor/rules/git/branch-structure-rule.mdc` - Branch strategy
+- `.cursor/rules/git/branch-lifecycle-rule.mdc` - Branch workflows  
+- `.cursor/rules/git/branch-naming-rule.mdc` - Naming conventions
+- `.cursor/rules/documentation/documentation-standards-rule.mdc` - Documentation validation
+
+## FINAL MUST-PASS CHECKLIST
+
+When implementing or validating tag-based versioning:
+
+- [ ] **Changelog generated and committed BEFORE RC tags** (optimizes build triggers: 1 build instead of 2)
+- [ ] Version auto-detected: last from `release-*` tags, new from branch name (`release/X.Y`)
+- [ ] Two-stage RC workflow followed: `test-X.Y.Z-rcN` (internal) → `release-X.Y.Z-rcN` (prerelease) → `release-X.Y.Z` (GA)
+- [ ] Code immutability enforced: same commit between last passing test RC → first release RC → GA release
+- [ ] Tag location correct: current release line tags on `main`, maintenance release line tags on `release/X.Y`
+- [ ] NuGet prerelease behavior utilized: `-rcN` suffix makes package prerelease (consumers must opt-in)
+- [ ] Pipeline publishes to correct feed: `test-*` → TEST feed, `release-*` → PROD feed
+- [ ] No direct `release-X.Y.Z` tags without preceding `release-X.Y.Z-rcN` that passed testing
+- [ ] Maintenance releases for older versions never merged to `main` (tag directly on release branch)

@@ -1,0 +1,67 @@
+---
+id: rule.general.no-updates.v1
+kind: rule
+version: 1.0.0
+description: Prevents suggesting updates when no modifications are needed
+globs: "**/*"
+governs: ""
+implements: coding.efficiency
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# No Unnecessary Updates Rule
+
+## Purpose & Scope
+
+This rule instructs the AI not to suggest updates or changes to files when there are no actual modifications needed (e.g., whitespace only, or identical content).
+
+**Applies to**: Code review, refactoring suggestions.
+
+## Inputs (Contract)
+
+- Target file
+- Proposed content
+
+## Outputs (Contract)
+
+- No action if content is identical
+- No "I updated the file" if nothing changed
+
+## Deterministic Steps
+
+1. Compare proposed content with existing content.
+2. If identical (ignoring benign whitespace), do nothing.
+3. Report "No changes needed."
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.no-whitespace.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] No updates suggested for identical content
+- [ ] No "fake" updates (touching file without change)
+- [ ] Efficiency preserved

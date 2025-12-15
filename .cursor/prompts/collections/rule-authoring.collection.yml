@@ -1,0 +1,13 @@
+id: rule-authoring-workflows-bundle
+name: "Rule Authoring Workflows"
+description: "Complete rule authoring workflow prompts for creating, maintaining, and improving rules"
+tags: [rules, rule-authoring, framework, quality, maintenance]
+version: 1.0.0
+owner: team-ai
+items:
+  - path: prompts/rule-authoring/create-new-rule.prompt.md
+    kind: prompt
+  - path: prompts/rule-authoring/find-recently-added-rules.prompt.md
+    kind: prompt
+  - path: prompts/rule-authoring/find-rules-needing-review.prompt.md
+    kind: prompt

@@ -1,0 +1,148 @@
+# Tracking and Documentation Standards
+
+## Excel Tracking Sheet
+
+### Location and Purpose
+- Excel tracking sheet is located in the Doc folder
+- Used to document all changes across releases
+- Serves as a central repository for change history
+- Facilitates cross-module impact analysis
+- Supports automation requirements
+
+### Required Fields
+- Script name and path
+- Script version (YYYYMMDD format)
+- Scriptset version
+- Module dependencies
+- Change description
+- Affected modules
+- Cross-module impacts
+- Automation requirements
+- Developer and reviewer information
+- Date of change
+
+### Update Process
+- Update Excel sheet with every change
+- Include all affected scripts
+- Document dependencies
+- Note cross-module impacts
+- Specify automation requirements
+- Validate completeness before submission
+
+### Automation Integration
+- Excel sheet should be updated as part of CI/CD pipeline
+- Automated validation of required fields
+- Integration with version control system
+- Automated dependency checking
+- Cross-reference with script versions
+
+## Version Tracking
+
+### Script Version Format
+- Follow YYYYMMDD format (e.g., 20250106)
+- Update in script header
+- Update in Begin_Release file
+- Consistent across all related scripts
+
+### Version Update Requirements
+- Always update scriptversion in header
+- Add comment line describing changes
+- Update scriptsetversion in Begin_Release file
+- Update Begin_Release file even if only subfiles change
+- Ensure version consistency across modules
+- For individual script execution, increment DBVERSION_NR for each script (e.g., 9700001, 9700002, 9700003)
+- Set V_DBVERSION_REQ to the previous script's V_DBVERSION_NR before each script execution
+
+### Dependency Version Requirements
+- Document required dependent DBVERSION (e.g., 9500001)
+- Set dependent module prefix (e.g., NLALL2_3)
+- Validate dependency versions before execution
+- Document version dependencies in Excel sheet
+
+## Documentation Requirements
+
+### Script Documentation
+- Standard header format
+- Purpose and scope
+- Dependencies
+- Rollback procedures
+- Testing notes
+- Version information
+
+### Project Documentation
+- README.md in each product folder
+- Version history
+- Known issues
+- Deployment notes
+- Excel tracking sheet
+
+### Cross-Module Documentation
+- Document dependencies between modules
+- Note version requirements
+- Specify execution order
+- Document potential impacts
+- Include in Excel tracking sheet
+
+## Automation Requirements
+
+### Version Tracking Automation
+- Automate script version updates
+- Automate scriptsetversion updates
+- Automate Excel tracking sheet updates
+- Validate version consistency
+
+### Dependency Validation Automation
+- Automate dependency checks
+- Validate module dependencies
+- Check version requirements
+- Document dependency relationships
+
+### Documentation Update Automation
+- Automate documentation updates
+- Update Excel tracking sheet
+- Maintain version history
+- Track cross-module impacts
+
+## Script Execution Standards
+
+### Individual Script Execution
+- Execute each script individually rather than bundling multiple scripts
+- Use V_RUN_SCRIPT variable for each script execution
+- Maintain consistent error handling for each script
+- Log execution of each individual script
+- Set V_TASKID consistently for related scripts
+
+### Granular Versioning
+- Increment DBVERSION_NR for each individual script execution
+- Set V_DBVERSION_REQ to the previous script's V_DBVERSION_NR
+- Document version changes in script headers
+- Maintain version consistency across related scripts
+
+### Error Handling
+- Implement consistent error handling for each script
+- Log errors with appropriate detail
+- Include error level information in logs
+- Provide clear error messages for troubleshooting
+
+## Best Practices
+
+### Tracking
+- Update Excel sheet with every change
+- Include all affected scripts
+- Document dependencies
+- Note cross-module impacts
+- Specify automation requirements
+
+### Documentation
+- Keep documentation up-to-date
+- Include version information
+- Document dependencies
+- Note potential impacts
+- Maintain Excel tracking sheet
+
+### Automation
+- Integrate with CI/CD pipeline
+- Validate required fields
+- Check version consistency
+- Verify dependencies
+- Update documentation automatically 

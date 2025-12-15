@@ -1,3 +1,34 @@
+# Cursor indexing ignore file
+#
+# Files/directories listed here are excluded from Cursor's **indexing/search**,
+# but can still be read if you explicitly open/attach them.
+#
+# Use this for large generated outputs, caches, and other noisy folders.
+
+# Python caches / build artifacts
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+
+# Generated outputs / logs (huge)
+outputs/
+logs/
+test_reports/
+
+# Archives / legacy dumps (if present)
+.archive/
+
 
 # Don't index SpecStory auto-save files, but allow explicit context inclusion via @ references
 .specstory/**

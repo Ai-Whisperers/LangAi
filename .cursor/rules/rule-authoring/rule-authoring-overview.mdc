@@ -1,0 +1,721 @@
+---
+id: rule.authoring.overview.v1
+kind: rule
+version: 1.0.1
+description: Navigation hub and overview for rule authoring framework
+globs: **/*-rule.mdc, **/rules/**/*.mdc, **/templars/**/*.md, **/exemplars/**/*.md
+governs: ""
+implements: rule.authoring.overview
+requires:
+  - rule.authoring.extraction-from-practice.v1
+  - rule.authoring.file-structure.v1
+  - rule.authoring.naming-conventions.v1
+  - rule.authoring.invocation-strategies.v1
+  - rule.authoring.contracts-and-scope.v1
+  - rule.authoring.cross-references.v1
+  - rule.authoring.templars-and-exemplars.v1
+  - rule.authoring.provenance-and-versioning.v1
+  - rule.authoring.validation-and-checklists.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ai, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Rule Authoring Framework
+
+## Purpose & Scope
+
+This document provides a comprehensive overview and navigation hub for the rule authoring framework. It defines the philosophy, principles, and architecture for creating consistent, maintainable, and automatable rules.
+
+**Applies to**: Anyone creating, modifying, or reviewing rule files.
+
+**Does not apply to**: End users of rules or generated outputs (unless they want to understand how rules work).
+
+## What is the Rule Authoring Framework?
+
+The rule authoring framework is a systematic approach to creating rules that govern workflows, file generation, and validation. It ensures:
+
+- **Consistency**: All rules follow the same structure and patterns
+- **Traceability**: Every rule and output is traceable to its source
+- **Automation**: Rules can be validated and executed by tools
+- **Maintainability**: Rules can be updated without breaking dependencies
+- **Safety**: Rules prevent data leaks and enforce constraints
+
+## Framework Philosophy
+
+### 1. Rules as Code
+
+Rules are treated like code:
+- Version controlled
+- Semantically versioned
+- Tested (manually or automated)
+- Reviewed before merge
+- Documented with contracts
+
+### 2. Explicit Over Implicit
+
+Every rule declares:
+- What it reads (`globs`)
+- What it writes (`governs`)
+- What it needs (`requires`)
+- What it provides (`implements`)
+
+No hidden dependencies or side effects.
+
+### 3. Stability Through IDs
+
+Rules reference each other by stable IDs, not file paths:
+- IDs never change
+- Files can move freely
+- Dependencies always resolve
+- Tools can build dependency graphs
+
+### 4. Separation of Concerns
+
+Clear boundaries:
+- **Rules**: Define behavior and validation
+- **Templars**: Define output structure
+- **Exemplars**: Show patterns (never copied to output)
+
+### 5. Primacy and Recency
+
+Section ordering matters:
+- **Primacy**: Purpose and contracts first (anchor understanding)
+- **Recency**: Checklist last (maximize compliance)
+
+### 6. Must-Pass Checklists
+
+Every rule ends with binary validation criteria:
+- 3-7 items
+- Clear pass/fail
+- Covers OPSEC, structure, contracts
+
+## The Nine Core Rules
+
+The rule authoring framework consists of nine core rules:
+
+### 0. [Extraction from Practice](rule-extraction-from-practice.mdc) - **START HERE**
+**ID**: `rule.authoring.extraction-from-practice.v1`  
+**File**: `rule-extraction-from-practice.mdc`
+
+**What it defines**:
+- **The PRIMARY recommended approach**: Extract rules from real conversations and work
+- Refinement cycle (2-3 iterations to stability)
+- The dogfooding principle (AI adjusts its own rules)
+- When to extract, how to distill, how to evolve
+
+**When to read**: **FIRST** - This is how you should create rules.
+
+**Key takeaway**: Do not design rules from scratch. Do real work, notice patterns, extract rules, refine over 2-3 uses.
+
+### 1. File Structure
+
+**ID**: `rule.authoring.file-structure.v1`  
+**File**: `file-structure-rule.mdc`
+
+**What it defines**:
+- YAML front-matter schema (10 required fields)
+- Canonical section ordering (10 sections)
+- Why ordering matters (primacy/recency)
+- Complete rule template
+
+**When to read**: First. This is the foundation.
+
+**Key takeaway**: Every rule must have complete front-matter and follow the 10-section structure with checklist last.
+
+### 2. Naming Conventions
+
+**ID**: `rule.authoring.naming-conventions.v1`  
+**File**: `naming-conventions-rule.mdc`
+
+**What it defines**:
+- ID pattern: `[kind].[domain].[action].v[major]`
+- File name pattern: `[domain]-[action]-[kind].[ext]`
+- Domain and action naming guidelines
+- Directory structure conventions
+
+**When to read**: When creating a new rule (need to name it).
+
+**Key takeaway**: Use lowercase, dots in IDs, hyphens in file names. ID format is `rule.ticket.plan.update.v1`.
+
+### 3. Invocation Strategies - **CRITICAL ARCHITECTURAL DECISION**
+
+**ID**: `rule.authoring.invocation-strategies.v1`  
+**File**: `rule-invocation-strategies.mdc`
+
+**What it defines**:
+- **When to use file-mask triggering** (globs/governs) - 80%+ of rules
+- **When to use description-triggered agentic** (agent-application rules) - 1 per domain
+- **When to use always-apply** (rare, dangerous)
+- **The agent-application meta-rule pattern**
+
+**When to read**: **SECOND** - Before creating any rule, decide invocation strategy.
+
+**Key takeaway**: Most operational rules use file-mask (Strategy 1). One agent-application rule per domain coordinates them (Strategy 2). Never use always-apply with file writes.
+
+### 4. Contracts and Scope
+
+**ID**: `rule.authoring.contracts-and-scope.v1`  
+**File**: `contracts-and-scope-rule.mdc`
+
+**What it defines**:
+- How to write explicit input contracts
+- How to write explicit output contracts
+- How to define `governs` and `globs` fields
+- Purpose & Scope section patterns
+
+**When to read**: When defining what a rule needs and produces.
+
+**Key takeaway**: Contracts must be explicit, testable, and complete. No ambiguity.
+
+### 5. Cross-References
+
+**ID**: `rule.authoring.cross-references.v1`  
+**File**: `cross-references-rule.mdc`
+
+**What it defines**:
+- ID-based reference system
+- `requires`, `implements`, `illustrates` fields
+- Version pinning strategies
+- Rule manifest/index patterns
+
+**When to read**: When a rule depends on other rules or templars.
+
+**Key takeaway**: Always reference by stable ID, never by file path. Pins major version only.
+
+### 6. Templars and Exemplars
+
+**ID**: `rule.authoring.templars-and-exemplars.v1`  
+**File**: `templars-and-exemplars-rule.mdc`
+
+**What it defines**:
+- Distinction between templars (structure) and exemplars (patterns)
+- Preventing exemplar content leaks
+- `use:` flags for phase control
+- Loading strategies
+
+**When to read**: When creating templates or examples for rules.
+
+**Key takeaway**: Templars define structure (placeholders), exemplars show patterns (real content). Never load exemplars during write phase.
+
+### 7. Provenance and Versioning
+
+**ID**: `rule.authoring.provenance-and-versioning.v1`  
+**File**: `provenance-and-versioning-rule.mdc`
+
+**What it defines**:
+- Semantic versioning for rules (MAJOR.MINOR.PATCH)
+- When to bump each version level
+- Provenance metadata in front-matter
+- Provenance footers in generated outputs
+
+**When to read**: When creating a new rule or updating an existing one.
+
+**Key takeaway**: Breaking changes = new major version = new ID. Track provenance for auditability.
+
+### 8. Validation and Checklists
+
+**ID**: `rule.authoring.validation-and-checklists.v1`  
+**File**: `validation-and-checklists-rule.mdc`
+
+**What it defines**:
+- Must-pass checklist patterns
+- Validation approaches (manual, automated, hybrid)
+- Checklist content categories (OPSEC, structure, contracts)
+- Testing strategies
+
+**When to read**: When writing the final checklist for a rule.
+
+**Key takeaway**: Checklist must be last section, 3-7 items, binary pass/fail, covers critical validations.
+
+## Quick Start: Two Approaches
+
+### ? Primary Approach: Extract from Practice (Recommended)
+
+**Use this 90% of the time** - See `rule.authoring.extraction-from-practice.v1` for details.
+
+**Quick version**:
+1. **Do real work** - Solve a problem, complete a task, have a conversation
+2. **Notice pattern** - Did you make same decision 2-3 times?
+3. **Collect evidence** - What inputs did you need? What outputs did you produce? What steps did you follow?
+4. **Extract rule** - Write down what you actually did (not what you think should happen)
+5. **Formalize** - Apply framework structure (front-matter, sections, checklist)
+6. **Refine** - Use rule on next 2-3 similar tasks, improve each time
+7. **Stabilize** - After 3 uses, rule is production-ready
+
+**Time to good rule**: 3 real uses (~1-2 weeks) - robust, battle-tested rule
+
+### ? Alternative Approach: Design from Scratch
+
+**Use this rarely** - When no practice exists yet or implementing external standards.
+
+### Step 1: Choose ID and File Name
+
+Using `rule.authoring.naming-conventions.v1`:
+
+```yaml
+id: rule.myapp.feature.create.v1
+# File name: feature-create-rule.mdc
+```
+
+### Step 2: Create Front-Matter
+
+Using `rule.authoring.file-structure.v1`:
+
+```yaml
+---
+id: rule.myapp.feature.create.v1
+kind: rule
+version: 1.0.0
+description: Creates feature.md files with required sections
+globs: **/feature.md
+governs: **/feature.md
+implements: feature.create
+requires:
+  - templar.feature.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-myapp, last_review: 2025-11-04 }
+---
+```
+
+### Step 3: Write Purpose and Contracts
+
+Using `rule.authoring.contracts-and-scope.v1`:
+
+```markdown
+## Purpose & Scope
+
+Creates feature.md files with required sections for feature specifications.
+
+**Applies to**: All feature.md files in features/ directory.
+**Does not apply to**: Template files or archives.
+
+## Inputs (Contract)
+
+- Feature name provided by user
+- Feature description provided by user
+- Directory features/ exists
+
+## Outputs (Contract)
+
+- Creates features/[name]/feature.md
+- Contains sections: Name, Description, Requirements, Status
+- Includes provenance footer
+```
+
+### Step 4: Write Deterministic Steps
+
+```markdown
+## Deterministic Steps
+
+1. Validate feature name (alphanumeric, hyphens only)
+2. Create directory features/[name]/ if missing
+3. Load templar.feature.v1 for structure
+4. Generate feature.md with provided name and description
+5. Append provenance footer with rule ID and timestamp
+6. Update features/index.md to include new feature
+```
+
+### Step 5: Add Remaining Sections
+
+Follow the 10-section structure from `rule.authoring.file-structure.v1`:
+
+- Formatting Requirements
+- OPSEC and Leak Control
+- Integration Points
+- Failure Modes and Recovery
+- Provenance Footer Specification
+- Related Rules
+
+### Step 6: Write Final Checklist
+
+Using `rule.authoring.validation-and-checklists.v1`:
+
+```markdown
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] Output matches templar.feature.v1 structure
+- [ ] Feature name is valid (alphanumeric, hyphens)
+- [ ] Provenance footer present
+- [ ] features/index.md updated
+```
+
+### Step 7: Validate
+
+Run through validation checklist from `rule.authoring.validation-and-checklists.v1`:
+
+- [ ] Front-matter complete (10 fields)
+- [ ] ID follows naming convention
+- [ ] All 10 sections present in order
+- [ ] Checklist is last section (3-7 items)
+- [ ] Contracts are explicit
+
+## Reading Paths by Role
+
+### New Rule Author
+
+**Goal**: Create your first rule
+
+**Recommended Path** (Extraction):
+1. Read `rule.authoring.overview.v1` (this document) - Get overview
+2. Read `rule.authoring.extraction-from-practice.v1` - Learn extraction approach
+3. **Do real work** - Solve 2-3 similar problems
+4. Extract rule from what you actually did
+5. Reference structure/naming rules as needed when formalizing
+
+**Time**: Spread over 2-3 real tasks (~1-2 weeks), 30-60 min total rule writing
+
+**Alternative Path** (Design-first, rarely):
+1. Read overview, file-structure, and invocation-strategies
+2. Follow design-from-scratch quick start
+3. Test against real scenarios
+
+**Time**: 30-60 minutes up front, but rule may need significant revision
+
+### Experienced Rule Author
+
+**Goal**: Refresh knowledge or look up specific patterns
+
+**Path**:
+1. Use this overview as navigation
+2. Jump to specific rule for detailed guidance
+3. Check examples in related rules
+
+**Time**: 5-15 minutes
+
+### Rule Reviewer
+
+**Goal**: Review a rule for correctness
+
+**Path**:
+1. Check front-matter against `rule.authoring.file-structure.v1`
+2. Validate naming against `rule.authoring.naming-conventions.v1`
+3. Check contracts against `rule.authoring.contracts-and-scope.v1`
+4. Verify checklist against `rule.authoring.validation-and-checklists.v1`
+
+**Time**: 10-20 minutes per rule
+
+### Framework Maintainer
+
+**Goal**: Update or extend framework
+
+**Path**:
+1. Read all seven core rules in order
+2. Understand dependencies and relationships
+3. Make changes following versioning rules
+4. Update this overview if adding new core rule
+
+**Time**: 2-4 hours for full understanding
+
+## Common Scenarios
+
+### Scenario 1: Rule Depends on Another Rule
+
+Use `rule.authoring.cross-references.v1`:
+
+```yaml
+requires:
+  - rule.ticket.opsec.redact.v1
+```
+
+Reference in body:
+```markdown
+## OPSEC and Leak Control
+
+All output must pass `rule.ticket.opsec.redact.v1`.
+```
+
+### Scenario 2: Rule Uses a Template
+
+Use `rule.authoring.templars-and-exemplars.v1`:
+
+```yaml
+requires:
+  - templar.plan.v1
+```
+
+Reference in body:
+```markdown
+## Formatting Requirements
+
+Output must follow `templar.plan.v1` structure:
+- Section "## Objective"
+- Section "## Acceptance Criteria"
+```
+
+### Scenario 3: Breaking Change to Existing Rule
+
+Use `rule.authoring.provenance-and-versioning.v1`:
+
+1. Create new ID with v2: `rule.ticket.plan.update.v2`
+2. Set version to 2.0.0
+3. Document breaking change in version history
+4. Deprecate v1 with superseded_by reference
+
+### Scenario 4: Preventing Data Leaks
+
+Use `rule.authoring.validation-and-checklists.v1`:
+
+In checklist:
+```markdown
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] No exemplar content copied
+- [ ] No internal system paths
+```
+
+Consider automated validation:
+```python
+def validate_opsec(content):
+    # Check for secrets, emails, URLs
+    # Raise exception if found
+```
+
+### Scenario 5: Creating a Templar
+
+Use `rule.authoring.templars-and-exemplars.v1` and `rule.authoring.naming-conventions.v1`:
+
+```yaml
+---
+id: templar.myfile.v1
+kind: templar
+version: 1.0.0
+implements: myfile.create
+---
+
+# {{title}}
+
+## {{section_name}}
+
+{{content}}
+```
+
+File name: `myfile-template.md`
+
+### Scenario 6: Creating an Exemplar
+
+Use `rule.authoring.templars-and-exemplars.v1`:
+
+```yaml
+---
+id: exemplar.myfile.good.v1
+kind: exemplar
+version: 1.0.0
+illustrates: myfile.create
+use: critic-only
+notes: "Pattern extraction only. NEVER copy content."
+---
+
+# Real Example Title
+
+## Real Section Name
+
+Real content showing pattern...
+```
+
+File name: `myfile-good.md`
+
+## Architecture Diagram
+
+```
+,-----------------------------------------------------------------.
+| Rule Authoring Framework                                     |
+|                                                              |
+|  ,--------------------.  ,--------------------.  ,-------------------. |
+|  | File Structure |  | Naming         |  | Contracts &   | |
+|  | (Foundation)   |  | Conventions    |  | Scope         | |
+|  `--------------------'  `--------------------'  `-------------------' |
+|           |                   |                   |          |
+|           `---------------------+---------------------'          |
+|                               |                              |
+|  ,--------------------.  ,----------?---------.  ,-------------------. |
+|  | Cross-         |  | Templars &     |  | Provenance &  | |
+|  | References     |  | Exemplars      |  | Versioning    | |
+|  `--------------------'  `--------------------'  `-------------------' |
+|           |                   |                   |          |
+|           `---------------------+---------------------'          |
+|                               |                              |
+|                      ,----------?---------.                      |
+|                      | Validation &   |                      |
+|                      | Checklists     |                      |
+|                      `--------------------'                      |
+`-----------------------------------------------------------------'
+```
+
+## File Organization
+
+```
+.cursor/
+  rules/
+    rule-authoring/
+      rule-authoring-overview.mdc          # This file (hub)
+      file-structure-rule.mdc              # Core rule 1
+      naming-conventions-rule.mdc          # Core rule 2
+      contracts-and-scope-rule.mdc         # Core rule 3
+      cross-references-rule.mdc            # Core rule 4
+      templars-and-exemplars-rule.mdc      # Core rule 5
+      provenance-and-versioning-rule.mdc   # Core rule 6
+      validation-and-checklists-rule.mdc   # Core rule 7
+    ticket/
+      [ticket rules...]
+    migration/
+      [migration rules...]
+  templars/
+    rule-authoring/
+      [templars for rule authoring if needed]
+  exemplars/
+    rule-authoring/
+      [exemplars for rule authoring if needed]
+```
+
+## Rule Dependency Graph
+
+```
+rule.authoring.overview.v1
+  |--- requires: rule.authoring.file-structure.v1
+  |             |--- foundation for all rules
+  |             `--- no dependencies
+  |--- requires: rule.authoring.naming-conventions.v1
+  |             `--- depends on: file-structure.v1
+  |--- requires: rule.authoring.contracts-and-scope.v1
+  |             `--- depends on: file-structure.v1
+  |--- requires: rule.authoring.cross-references.v1
+  |             `--- depends on: file-structure.v1, naming-conventions.v1
+  |--- requires: rule.authoring.templars-and-exemplars.v1
+  |             `--- depends on: file-structure.v1, cross-references.v1
+  |--- requires: rule.authoring.provenance-and-versioning.v1
+  |             `--- depends on: file-structure.v1, cross-references.v1
+  `--- requires: rule.authoring.validation-and-checklists.v1
+                `--- depends on: file-structure.v1, contracts-and-scope.v1
+```
+
+## Quick Reference Card
+
+### Front-Matter Template
+
+```yaml
+---
+id: rule.[domain].[action].v[major]
+kind: rule
+version: [semver]
+description: [one sentence]
+globs: **/[pattern]
+governs: **/[pattern]
+implements: [action]
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: [team], last_review: [date] }
+---
+```
+
+### Section Order
+
+1. Purpose & Scope
+2. Inputs (Contract)
+3. Outputs (Contract)
+4. Deterministic Steps
+5. Formatting Requirements
+6. OPSEC and Leak Control
+7. Integration Points
+8. Failure Modes and Recovery
+9. Provenance Footer Specification
+10. Related Rules
+11. **FINAL MUST-PASS CHECKLIST** (always last)
+
+### ID Patterns
+
+- **Rule**: `rule.ticket.plan.update.v1`
+- **Templar**: `templar.plan.v1`
+- **Exemplar**: `exemplar.plan.good.v1`
+
+### File Name Patterns
+
+- **Rule**: `plan-rule.mdc`
+- **Templar**: `plan-template.md`
+- **Exemplar**: `plan-good.md`
+
+### Checklist Template
+
+```markdown
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no secrets/tokens/URLs/emails)
+- [ ] Output matches templar structure
+- [ ] All required fields present
+- [ ] Provenance footer present
+- [ ] Only governed files modified
+```
+
+## Versioning Quick Reference
+
+| Change Type | Version Bump | ID Change | Example |
+|-------------|--------------|-----------|---------|
+| Typo fix | PATCH | No | 1.0.0 -> 1.0.1 |
+| New optional output | MINOR | No | 1.0.1 -> 1.1.0 |
+| Breaking change | MAJOR | Yes | 1.1.0 -> 2.0.0, v1 -> v2 |
+
+## Validation Quick Reference
+
+| Validation Type | When | How |
+|----------------|------|-----|
+| Manual | Low volume, high stakes | Human reviews checklist |
+| Automated | High volume, clear criteria | Script validates |
+| Hybrid | Mixed requirements | Script + human review |
+
+## Getting Help
+
+### Questions About
+
+**Structure or sections**: Read `rule.authoring.file-structure.v1`
+
+**Naming**: Read `rule.authoring.naming-conventions.v1`
+
+**Dependencies**: Read `rule.authoring.cross-references.v1`
+
+**Templates**: Read `rule.authoring.templars-and-exemplars.v1`
+
+**Versions**: Read `rule.authoring.provenance-and-versioning.v1`
+
+**Checklists**: Read `rule.authoring.validation-and-checklists.v1`
+
+### Still Stuck?
+
+1. Look at existing rules in your domain for examples
+2. Check this overview for common scenarios
+3. Review the specific core rule in detail
+4. Consult with framework maintainer
+
+## Framework Evolution
+
+This framework is version 1.0.0. As we learn and improve:
+
+- **Minor updates**: Add examples, clarify wording
+- **Major updates**: Change structure or requirements (rare)
+
+All changes follow the versioning rules defined in `rule.authoring.provenance-and-versioning.v1`.
+
+## Related Rules
+
+All core rules in this framework:
+
+- `rule.authoring.extraction-from-practice.v1` - PRIMARY: Extract rules from work
+- `rule.authoring.file-structure.v1` - Foundation structure
+- `rule.authoring.naming-conventions.v1` - ID and file naming
+- `rule.authoring.invocation-strategies.v1` - CRITICAL: When to use globs vs agentic vs always
+- `rule.authoring.contracts-and-scope.v1` - Input/output contracts
+- `rule.authoring.cross-references.v1` - Stable ID references
+- `rule.authoring.templars-and-exemplars.v1` - Templates and examples
+- `rule.authoring.provenance-and-versioning.v1` - Versioning and traceability
+- `rule.authoring.validation-and-checklists.v1` - Checklists and validation
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All nine core rule files exist and are complete
+- [ ] This overview references all core rules by ID
+- [ ] Extraction approach is clearly marked as PRIMARY recommended approach
+- [ ] Invocation strategies rule is marked as CRITICAL architectural decision
+- [ ] Quick start guide covers both extraction and design approaches
+- [ ] Reading paths defined for different roles
+- [ ] Common scenarios documented with solutions
+- [ ] Quick reference card is accurate
+- [ ] File organization section matches actual structure

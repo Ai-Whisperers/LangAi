@@ -1,0 +1,172 @@
+---
+id: rule.agile.business-feature-documentation.v1
+kind: rule
+version: 1.0.1
+description: Define structure and content requirements for Business Feature documentation in agile development
+globs: **/features/**/*.md, **/docs/agile/features/**/*.md, **/agile/features/**/*.md
+governs: **/features/**/*.md, **/docs/agile/features/**/*.md, **/agile/features/**/*.md
+implements: agile.business-feature-documentation
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-agile, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Business Feature Documentation Rule
+
+## Purpose & Scope
+
+This rule defines the canonical structure and content requirements for Business Feature documentation in agile development. A Business Feature is a cohesive piece of functionality that delivers value to end users or stakeholders. It represents a complete user capability that can be developed and delivered independently within an Epic.
+
+**Applies to**: All Business Feature documentation files in `features/` directories or designated agile documentation locations where the focus is on user-facing value and business capabilities.
+
+**Does not apply to**: Epic-level documentation, Technical Feature documentation (infrastructure/architecture focused), User Story documentation, or technical specifications without direct user value.
+
+## Inputs (Contract)
+
+- Feature requirement or user capability definition
+- Parent Epic ID and context
+- Business problem statement or user need
+- Target user persona(s) or stakeholder roles
+- Business value proposition
+- Success criteria or acceptance thresholds
+- Existing feature file (if updating)
+
+## Outputs (Contract)
+
+- Creates or updates Business Feature documentation file at designated path
+- Ensures all 8 required sections present: Header, Business Context, User Stories, Functional Requirements, Non-Functional Requirements, Scope and Boundaries, Technical Considerations, Acceptance Criteria
+- Validates user stories follow "As a [user], I want [functionality] so that [benefit]" format
+- Validates acceptance criteria are testable and specific
+- Links to parent Epic
+- Appends provenance footer with timestamp and rule ID
+- Preserves existing content when updating
+
+## Deterministic Steps
+
+1. Read feature requirements and business context
+2. Identify parent Epic and establish link
+3. Create Feature Header with ID, Title, Epic reference, Status, Priority, Business Value, Created Date, Last Updated
+4. Document Business Context: Business Problem, User Need, Business Value, Success Metrics
+5. Define User Stories: Primary User Story (core functionality), Secondary User Stories (edge cases/variations), format using "As a [user], I want [functionality] so that [benefit]"
+6. Document Functional Requirements: Core Functionality, User Interface Requirements, Data Requirements, Integration Requirements
+7. Document Non-Functional Requirements: Performance Requirements, Security Requirements, Usability Requirements, Compliance Requirements
+8. Define Scope and Boundaries: In Scope, Out of Scope, Dependencies, Assumptions
+9. Document Technical Considerations: Technical Approach, Architecture Impact, Data Model Changes, Integration Points
+10. Define Acceptance Criteria: Feature Acceptance Criteria, User Story Acceptance Criteria, Definition of Done (use Given-When-Then format where appropriate)
+11. Validate all required sections are complete and acceptance criteria are testable
+12. Append provenance footer with timestamp and rule ID
+13. Save to designated path
+
+## Formatting Requirements
+
+### Structure
+- Use markdown format
+- Top-level H1: "# [Feature ID]: [Feature Title]"
+- Use H2 for major sections (## Business Context, ## User Stories, etc.)
+- Use H3 for subsections within major sections
+
+### User Story Format
+- Follow pattern: "As a [user], I want [functionality] so that [benefit]"
+- Use specific user roles (not generic "user")
+- State clear functionality and business benefit
+
+### Acceptance Criteria Format
+- Use "Given-When-Then" format for scenario-based criteria:
+  - Given [initial context]
+  - When [action occurs]
+  - Then [expected outcome]
+- Use bullet lists with checkboxes for requirement-based criteria
+- Ensure criteria are testable and measurable
+
+### Links and References
+- Link to parent Epic using format: `Parent Epic: [EPIC-ID](path/to/epic.md)`
+- Reference related features using standard ID format
+- Link to mockups, wireframes, and prototypes
+- Include links to user research or personas
+
+## OPSEC and Leak Control
+
+- NO internal system URLs or network paths
+- NO employee email addresses or personal contact information (use roles: "Product Manager", "UX Designer")
+- NO credentials, API keys, or access tokens
+- NO customer-specific data or personally identifiable information
+- NO third-party vendor names if under NDA
+- Redact organization-specific system names if sensitive
+- Use generic placeholders for environment-specific configurations
+- NO financial data beyond high-level business value estimates
+
+## Integration Points
+
+### Related Rules
+- `rule.agile.epic-documentation.v1` - Business Features must reference parent Epic
+- `rule.agile.technical-feature-documentation.v1` - May spawn related Technical Features
+- `rule.agile.user-story-documentation.v1` - User Stories detailed here, expanded in separate docs
+- `rule.agile.story-splitting.v1` - Complex features may require story splitting
+
+### Workflow Integration
+- Feature creation requires valid parent Epic
+- Feature status updates may trigger Epic progress updates
+- Feature completion requires all user stories completed
+- Feature acceptance criteria form basis for testing plans
+
+## Failure Modes and Recovery
+
+**Missing Parent Epic Reference**:
+- Detection: Epic field empty or invalid Epic ID
+- Recovery: Prompt for Epic ID, validate Epic exists
+
+**Vague User Stories**:
+- Detection: User story missing "As a", "I want", or "so that" components
+- Recovery: Flag for product owner review, provide format guidance
+
+**Untestable Acceptance Criteria**:
+- Detection: Criteria use vague terms ("should be good", "fast enough")
+- Recovery: Flag for QA review, provide examples of measurable criteria
+
+**Missing Non-Functional Requirements**:
+- Detection: Performance, Security, or Compliance sections empty for sensitive features
+- Recovery: Add placeholder, flag for technical review
+
+**Undefined Scope**:
+- Detection: "In Scope" or "Out of Scope" sections empty
+- Recovery: Flag for product owner review, add template guidance
+
+## Provenance Footer Specification
+
+Append to all generated or updated Business Feature files:
+
+```
+---
+Produced-by: rule.agile.business-feature-documentation.v1 | ts={{timestamp}} | status={{status}}
+```
+
+Example:
+```
+---
+Produced-by: rule.agile.business-feature-documentation.v1 | ts=2025-11-04T14:30:00Z | status=created
+```
+
+For updates, preserve creation info:
+```
+---
+Created: 2025-10-01T10:00:00Z by rule.agile.business-feature-documentation.v1
+Updated: 2025-11-04T14:30:00Z by rule.agile.business-feature-documentation.v1
+```
+
+## Related Exemplar
+
+**Exemplar**: `business-feature-example.md` - Full example showing well-structured business feature documentation
+
+**Usage Note**: Use exemplar for pattern extraction only. NEVER copy exemplar content into production feature documentation. Extract structure, user story format, and level of detail, but synthesize new content based on actual feature requirements.
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All 8 required sections present: Header, Business Context, User Stories, Functional Requirements, Non-Functional Requirements, Scope, Technical Considerations, Acceptance Criteria
+- [ ] User stories follow "As a [user], I want [functionality] so that [benefit]" format
+- [ ] Acceptance criteria are testable and measurable (no vague terms)
+- [ ] Parent Epic referenced with valid Epic ID
+- [ ] Business value clearly stated and quantified
+- [ ] Scope boundaries defined with explicit In/Out of Scope lists
+- [ ] No OPSEC violations (internal URLs, credentials, personal data)
+- [ ] Provenance footer appended with timestamp 

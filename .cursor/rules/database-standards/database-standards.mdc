@@ -1,0 +1,153 @@
+# Database-Specific Standards
+
+## MSSQL Standards
+
+### Data Types
+- Use `datetime2(0)` instead of `datetime`
+- Use `nvarchar` for Unicode text
+- Use appropriate string lengths
+- Avoid deprecated types
+
+### Indexing
+- Create indexes for foreign keys
+- Use appropriate index types
+- Consider index impact
+- Monitor index usage
+
+### Constraints
+- Use appropriate constraint types
+- Name constraints consistently
+- Document constraint purposes
+- Plan for constraint maintenance
+
+### Performance
+- Use set-based operations
+- Avoid cursors
+- Include appropriate hints
+- Monitor query performance
+
+### Module Dependencies
+- Implement dependency checks
+- Example: NLALL2.3CON depends on NLALL2.3
+- Example: NLALL2.3 depends on eBase-Core
+- Validate dependencies before execution
+- Document dependency relationships
+- Set dependent module prefix (e.g., NLALL2_3)
+- Set required dependent DBVERSION (e.g., 9500001)
+
+### Version Control
+- Use DBVERSION and VERSION tables per module
+- Prevent double executions
+- Prevent version gaps
+- Track module versions independently
+- Document version dependencies
+- Update scriptversion in header
+- Update scriptsetversion in Begin_Release file
+- Follow version format: YYYYMMDD (e.g., 20250106)
+
+## Oracle Phase-Out Guidelines
+
+### Current Status
+- Oracle support being phased out
+- New development in MSSQL only
+- Existing Oracle code maintenance only
+- No new Oracle features
+
+### Migration Process
+1. Identify Oracle dependencies
+2. Plan MSSQL migration
+3. Test thoroughly
+4. Deploy carefully
+
+### Maintenance
+- Critical fixes only
+- No new features
+- Document all changes
+- Plan for eventual removal
+
+## Migration Considerations
+
+### Data Migration
+- Plan data transfer
+- Validate data integrity
+- Handle data types
+- Test thoroughly
+
+### Code Migration
+- Follow MSSQL standards
+- Use appropriate templates
+- Document changes
+- Test thoroughly
+- Validate module dependencies
+- Update version tracking
+
+### Performance
+- Optimize for MSSQL
+- Monitor performance
+- Address issues
+- Document improvements
+
+## Module Naming and Structure
+
+### Module Codes
+- Typically three letters (e.g., EBASE)
+- Some modules have longer codes
+- Used as prefixes in table names
+- Follow consistent naming conventions
+
+### Table Prefixes
+- eBase-Core (EBASE) uses prefixes:
+  - D: Schema-specific tables
+  - S: Security-related tables (used across schemas)
+  - E: Messaging-related tables (used across schemas)
+- Document prefix usage
+- Follow consistent naming patterns
+
+## Script Versioning
+
+### Version Updates
+- Always update scriptversion in header
+- Add comment line describing changes
+- Update scriptsetversion in Begin_Release file
+- Update Begin_Release file even if only subfiles change
+- Follow version format: YYYYMMDD (e.g., 20250106)
+
+### Dependency Documentation
+- Document module dependencies in Begin_Release file
+- Set dependent module prefix (e.g., NLALL2_3)
+- Set required dependent DBVERSION (e.g., 9500001)
+- Include dependency check scripts
+- Validate dependencies before execution
+
+### Change Tracking
+- Update Excel tracking sheet with all changes
+- Include script versions and dependencies
+- Document affected modules and files
+- Note any cross-module impacts
+- Include automation requirements
+
+## Best Practices
+
+### Development
+- Use MSSQL features
+- Follow standards
+- Document changes
+- Test thoroughly
+- Validate module dependencies
+- Update version tracking
+
+### Deployment
+- Plan carefully
+- Execute methodically
+- Verify thoroughly
+- Monitor continuously
+- Use appropriate deployment scripts
+- Update documentation
+
+### Maintenance
+- Regular reviews
+- Update documentation
+- Track technical debt
+- Plan migrations
+- Monitor module dependencies
+- Maintain Excel tracking sheet 

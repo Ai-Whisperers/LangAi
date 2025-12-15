@@ -1,0 +1,81 @@
+---
+id: rule.documentation.readme-structure.v1
+kind: rule
+version: 1.0.0
+description: Defines the standard structure for README files
+globs: "**/README.md"
+governs: "**/README.md"
+implements: documentation.readme
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-documentation, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# README Structure Rule
+
+## Purpose & Scope
+
+This rule defines the standard structure for README.md files to ensure consistency and completeness across projects.
+
+**Applies to**: Root `README.md` and module-level `README.md`.
+
+## Inputs (Contract)
+
+- Project/Module Name
+- Description
+- Setup/Usage instructions
+
+## Outputs (Contract)
+
+- Well-structured `README.md`
+
+## Deterministic Steps
+
+1. Create/Update `README.md`.
+2. Ensure required sections exist:
+   - Title
+   - Description
+   - Installation/Setup
+   - Usage
+   - Contribution
+   - Link back to root README when this is a module-level README
+3. Use clear markdown formatting.
+4. Scope placement:
+   - Exactly one README at the project root.
+   - Add module-level READMEs only when the module/package is an entry point or is consumed independently.
+   - Keep module-level READMEs concise and point back to the root README for shared information.
+
+## Formatting Requirements
+
+- Top-level H1 for Title
+- H2 for main sections
+- Badges (optional) at top
+
+## OPSEC and Leak Control
+
+- No internal secrets in README.
+
+## Integration Points
+
+- Enforced by repo validation (lint/CI/pre-commit) to fail when governed roots/modules are missing a README.md or required sections.
+- For Visual Studio solutions, root README may be included as a Solution Item; avoid duplicating content—use CI/pre-commit to enforce instead.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.authoring.file-structure.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Title and Description present
+- [ ] Installation/Usage instructions present
+- [ ] Consistent markdown structure
+- [ ] Root README present; module README present only for independently consumed modules and links back to root

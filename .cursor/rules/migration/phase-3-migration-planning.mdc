@@ -1,0 +1,531 @@
+---
+id: rule.migration.planning.v1
+kind: rule
+version: 1.0.1
+description: "Transforms technical specifications into actionable C# implementation plans. Designs target microservice architecture with Domain-Driven Design, defines data persistence strategies, specifies integration patterns, and creates detailed implementation roadmaps."
+globs: docs/technical/**/*.md, docs/migration/**/*.md, docs/architecture/**/*.md
+governs: docs/migration/phase-3/**/*.md, docs/architecture/**/*.md
+implements: migration.planning
+requires:
+  - rule.migration.overview.v1
+  - rule.migration.spec-review.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Migration Phase 3: Migration Planning
+
+## Purpose & Scope
+
+This rule defines how to transform complete technical specifications into actionable migration plans that guide the implementation of C# microservices from C++ eBase systems. Phase 3 designs the target architecture, creates detailed implementation roadmaps, assesses risks, and establishes the execution strategy for delivering the C# system.
+
+**Applies to**:
+- C++ to C# migration projects with Phase 2b-approved specifications
+- Target C# architecture design and implementation planning
+- Creation of detailed implementation roadmaps and timelines
+- Risk assessment and mitigation planning for migration execution
+
+**Does not apply to**:
+- Data collection or specification creation (covered by Phases 1 and 2)
+- Specification review process (covered by Phase 2b)
+- Actual C# code implementation or development
+- Day-to-day project management during implementation
+- Post-migration operational support planning
+
+## Inputs (Contract)
+
+- Approved Phase 2b technical specification suite with all stakeholder sign-offs
+- Phase 2b risk register with identified risks and preliminary mitigation strategies
+- Phase 2b quality gate report showing "PASSED" status
+- Target C# technology stack definition (frameworks, tools, platforms)
+- Resource availability and team composition information
+- Project budget and timeline constraints
+- Executive sponsorship commitment and approval authority
+- Access to architecture and infrastructure experts
+
+## Outputs (Contract)
+
+- Target C# microservice architecture design with Domain-Driven Design structure
+- Service boundary definitions with clear responsibilities and interfaces
+- Data persistence strategy (database schemas, repository patterns, ORM selection)
+- Integration architecture with API contracts, messaging patterns, and external interfaces
+- Caching and performance optimization strategy
+- Detailed implementation roadmap with phases, milestones, and dependencies
+- Resource allocation plan with team assignments and skillsets
+- Comprehensive risk management plan with mitigation strategies
+- Testing strategy (unit, integration, performance, migration validation)
+- Rollout plan with deployment approach and rollback procedures
+- Phase 3 quality gate report with approval readiness validation
+- Project governance structure with decision-making processes
+
+## Planning Strategy
+
+### **Architecture Design**
+- **Objective**: Design target C# microservice architecture
+- **Activities**:
+  - Define domain-driven design structure
+  - Plan microservice boundaries and responsibilities
+  - Design data persistence strategies
+  - Specify integration patterns and APIs
+  - Plan caching and performance optimizations
+- **Inputs**: Complete Phase 2 specifications
+- **Outputs**: Target architecture documents, service contracts, data models
+
+### **Implementation Roadmap**
+- **Objective**: Create step-by-step implementation plan
+- **Activities**:
+  - Prioritize features by business value and risk
+  - Define implementation milestones and dependencies
+  - Plan parallel development streams
+  - Establish testing and validation checkpoints
+  - Create rollback and risk mitigation strategies
+- **Outputs**: Project timeline, resource allocation, milestone definitions
+
+### **Risk Assessment and Mitigation**
+- **Objective**: Identify and plan for migration risks
+- **Activities**:
+  - Assess technical complexity and unknowns
+  - Identify business continuity risks
+  - Plan data migration and validation strategies
+  - Design rollback procedures
+  - Establish monitoring and quality gates
+- **Outputs**: Risk register, mitigation plans, contingency procedures
+
+## Architecture Planning Principles
+
+### **Domain-Driven Design**
+- **Approach**: Organize microservices around business domains
+- **Benefits**: Clear boundaries, independent deployment, team autonomy
+- **Application**: Use Phase 2 domain objects as foundation for service boundaries
+- **Considerations**: Maintain transaction consistency, minimize cross-service dependencies
+
+### **Business Logic Preservation**
+- **Requirement**: All C++ algorithms must be exactly replicated
+- **Strategy**: Direct translation of calculation engines and business rules
+- **Validation**: Comprehensive testing against current system outputs
+- **Quality Gate**: Mathematical identical results for all test scenarios
+
+### **Performance Compatibility**
+- **Requirement**: Meet or exceed current system performance
+- **Strategy**: Implement equivalent caching strategies in C#
+- **Focus Areas**: High-volume calculation scenarios, complex condition evaluation
+- **Monitoring**: Establish performance benchmarks and monitoring
+
+### **Integration Continuity**
+- **Requirement**: Maintain existing integration interfaces
+- **Strategy**: Preserve API contracts while modernizing implementation
+- **Approach**: Gradual migration with parallel system operation
+- **Testing**: Comprehensive integration testing with all dependent systems
+
+## Implementation Planning Framework
+
+### **Feature Prioritization**
+- **High Priority**: Core business logic, critical integrations, data integrity
+- **Medium Priority**: Performance optimizations, advanced features, reporting
+- **Low Priority**: Nice-to-have features, future enhancements, optimizations
+
+### **Development Phases**
+- **Phase 1**: Core domain objects and basic business logic
+- **Phase 2**: Calculation engines and condition evaluation
+- **Phase 3**: Integration interfaces and data persistence
+- **Phase 4**: Caching, performance optimization, monitoring
+- **Phase 5**: Advanced features, reporting, analytics
+
+### **Parallel Development Streams**
+- **Stream 1**: Domain model and business logic implementation
+- **Stream 2**: Data persistence and repository patterns
+- **Stream 3**: Integration interfaces and API development
+- **Stream 4**: Performance optimization and caching
+- **Stream 5**: Testing, monitoring, and deployment automation
+
+## Quality Assurance Planning
+
+### **Testing Strategy**
+- **Unit Testing**: All business logic covered with comprehensive test suites
+- **Integration Testing**: All external system interfaces validated
+- **Performance Testing**: Load testing against current system benchmarks
+- **Migration Testing**: Data migration validation and rollback procedures
+- **User Acceptance Testing**: Business stakeholder validation of functionality
+
+### **Validation Approach**
+- **Parallel Operation**: Run both systems simultaneously during transition
+- **Result Comparison**: Automated comparison of calculation outputs
+- **Data Integrity**: Comprehensive data validation at each migration step
+- **Business Validation**: Stakeholder sign-off on functional equivalence
+
+### **Rollback Planning**
+- **Trigger Conditions**: Performance degradation, data integrity issues, business impact
+- **Rollback Procedures**: Automated rollback to previous system state
+- **Data Recovery**: Point-in-time data recovery capabilities
+- **Communication Plans**: Stakeholder notification and status communication
+
+## Resource Planning
+
+### **Team Structure**
+- **Development Teams**: Domain specialists, integration specialists, performance engineers
+- **Quality Assurance**: Testing specialists, business analysts, validation teams
+- **Infrastructure**: DevOps engineers, database administrators, monitoring specialists
+- **Business**: Product owners, subject matter experts, user representatives
+
+### **Timeline Estimation**
+- **Planning Phase**: Architecture design, detailed planning, team preparation
+- **Development Phase**: Iterative development with regular milestone reviews
+- **Testing Phase**: Comprehensive testing, validation, and performance tuning
+- **Migration Phase**: Gradual rollout with monitoring and validation
+- **Stabilization Phase**: Performance tuning, bug fixes, optimization
+
+### **Risk Mitigation Resources**
+- **Technical Experts**: C++ system specialists for complex issue resolution
+- **Business Continuity**: Plans for maintaining operations during migration
+- **Emergency Response**: Rapid response team for critical issues
+- **Vendor Support**: External expertise for specialized technical challenges
+
+## Success Metrics and Monitoring
+
+### **Technical Metrics**
+- **Functionality**: 100% feature parity with current system
+- **Performance**: Meet or exceed current system performance benchmarks
+- **Reliability**: Achieve target uptime and error rate objectives
+- **Data Integrity**: Zero data loss or corruption during migration
+
+### **Business Metrics**
+- **User Satisfaction**: Maintain or improve user experience scores
+- **Business Operations**: No disruption to critical business processes
+- **Cost Efficiency**: Achieve projected cost savings and operational improvements
+- **Time to Market**: Meet migration timeline and milestone commitments
+
+### **Quality Metrics**
+- **Code Quality**: Meet or exceed established code quality standards
+- **Test Coverage**: Achieve comprehensive test coverage across all functionality
+- **Documentation**: Complete and accurate documentation for long-term maintenance
+- **Knowledge Transfer**: Successful knowledge transfer to maintenance teams
+
+## Handoff to Implementation
+
+### **Deliverables**
+- **Architecture Documents**: Complete target system architecture with all specifications
+- **Implementation Plan**: Detailed roadmap with timelines, resources, and dependencies
+- **Risk Management Plan**: Comprehensive risk assessment with mitigation strategies
+- **Quality Assurance Plan**: Testing strategy, validation procedures, success criteria
+
+### **Approval Gates**
+- **Technical Leadership**: Architecture and implementation plan approval
+- **Business Leadership**: Business case, timeline, and resource approval  
+- **Quality Assurance**: Testing strategy and validation approach approval
+- **Operations**: Infrastructure readiness and support capability approval
+
+### **Readiness Criteria**
+- **Team Preparation**: All team members trained and ready for implementation
+- **Infrastructure**: Development, testing, and production environments ready
+- **Processes**: Development, testing, and deployment processes established
+- **Governance**: Project governance, reporting, and decision-making processes in place
+
+## Deterministic Steps
+
+Execute Phase 3 migration planning in this sequence:
+
+1. **Review and Validate Inputs**
+   - Verify Phase 2b specifications approved with all sign-offs
+   - Review Phase 2b risk register for known issues
+   - Confirm Phase 2b quality gate passed
+   - Validate target C# technology stack defined
+   - Assess resource availability and constraints
+
+2. **Design Target Architecture**
+   - Apply Domain-Driven Design principles to define bounded contexts
+   - Map specifications to microservice boundaries
+   - Design service interfaces and contracts
+   - Define data ownership and service responsibilities
+   - Create architecture diagrams and documentation
+
+3. **Design Data Persistence Strategy**
+   - Map entity relationships to database schemas
+   - Select ORM technology (Entity Framework Core, Dapper, etc.)
+   - Design repository patterns and data access layers
+   - Plan database migration strategy from C++ implementation
+   - Define data integrity and transaction management approach
+
+4. **Design Integration Architecture**
+   - Specify API contracts for all external interfaces
+   - Define messaging patterns for asynchronous communication
+   - Design adapter layers for external system integration
+   - Plan authentication and authorization strategy
+   - Document integration testing approach
+
+5. **Design Performance Strategy**
+   - Translate Phase 1/2 performance requirements to C# approach
+   - Design caching strategy (in-memory, distributed, layered)
+   - Plan optimization approaches for calculation-intensive operations
+   - Define performance monitoring and alerting
+   - Establish performance testing methodology
+
+6. **Create Implementation Roadmap**
+   - Prioritize features by business value, risk, and dependencies
+   - Define implementation phases with clear milestones
+   - Identify parallel development streams
+   - Create critical path analysis
+   - Establish testing and validation checkpoints
+
+7. **Assess and Plan for Risks**
+   - Review Phase 2b risk register
+   - Identify new risks specific to implementation
+   - Categorize risks by impact and probability
+   - Define mitigation strategies for each risk
+   - Create contingency plans for high-impact risks
+
+8. **Design Testing Strategy**
+   - Define unit testing approach and coverage targets
+   - Plan integration testing with external systems
+   - Design performance testing methodology
+   - Create migration validation approach (parallel operation, result comparison)
+   - Establish user acceptance testing process
+
+9. **Create Rollout Plan**
+   - Define deployment approach (big bang, phased, parallel operation)
+   - Plan data migration timing and approach
+   - Design rollback procedures and triggers
+   - Create cutover checklist and validation criteria
+   - Establish post-migration monitoring plan
+
+10. **Plan Resources and Timeline**
+    - Define team structure and roles
+    - Assign domain specialists to microservices
+    - Estimate effort for each implementation phase
+    - Create project timeline with dependencies
+    - Identify skill gaps and training needs
+
+11. **Establish Governance Structure**
+    - Define decision-making authority and escalation paths
+    - Create change management process
+    - Establish reporting cadence and formats
+    - Define quality gates for implementation phases
+    - Create issue management and resolution process
+
+12. **Validate and Obtain Approvals**
+    - Review complete Phase 3 planning package
+    - Present to technical leadership for architecture approval
+    - Present to business leadership for budget and timeline approval
+    - Obtain infrastructure and operations approval
+    - Generate Phase 3 quality gate report
+
+## Formatting Requirements
+
+Phase 3 planning documentation must follow these formats:
+
+### Architecture Design Document Format
+```markdown
+# [System Name] C# Architecture
+
+## Architecture Overview
+[High-level description]
+
+## Bounded Contexts
+### [Context Name]
+- **Responsibilities**: [What this context owns]
+- **Domain Model**: [Key entities]
+- **Interfaces**: [APIs exposed]
+- **Dependencies**: [External dependencies]
+
+## Service Boundaries
+[Diagram and descriptions]
+
+## Data Strategy
+[Persistence approach]
+
+## Integration Patterns
+[How services communicate]
+```
+
+### Implementation Roadmap Format
+```markdown
+# Implementation Roadmap
+
+## Phase [N]: [Phase Name]
+**Duration**: [Timeframe]  
+**Goal**: [Phase objective]
+
+### Milestones
+1. [Milestone] - [Target Date]
+2. [Milestone] - [Target Date]
+
+### Deliverables
+- [Deliverable with acceptance criteria]
+
+### Dependencies
+- [Dependency description]
+
+### Risks
+- [Risk and mitigation]
+```
+
+### Risk Management Plan Format
+```markdown
+## Risk #[Number]: [Risk Name]
+
+**Category**: [Technical | Business | Resource | Schedule | Integration]  
+**Probability**: [Low | Medium | High]  
+**Impact**: [Low | Medium | High]  
+**Priority**: [P1 | P2 | P3]
+
+**Description**: [What could go wrong]
+
+**Mitigation Strategy**:
+1. [Proactive step]
+2. [Proactive step]
+
+**Contingency Plan**:
+1. [Reactive step if risk occurs]
+2. [Reactive step if risk occurs]
+
+**Owner**: [Name/Role]  
+**Status**: [Monitored | Active | Mitigated]
+```
+
+## OPSEC and Leak Control
+
+During Phase 3 migration planning:
+
+- **NO specific budget amounts** or financial details in shared planning documents
+- **NO individual salary information** or personnel costs
+- **NO vendor pricing** or commercial terms in architecture documents
+- **NO internal team names** or organizational structure details in external-facing docs
+- **Redact customer-specific requirements** if planning involves external consultants
+- **Use generic resource titles** instead of specific employee names where appropriate
+- **Protect competitive advantage** information about unique approaches or innovations
+- **Review architecture diagrams** for sensitive infrastructure details before sharing
+
+## Integration Points
+
+Phase 3 integrates with:
+
+- **`rule.migration.overview.v1`**: Follows overall migration framework
+- **`rule.migration.spec-review.v1`**: Consumes Phase 2b approved specifications
+- **Architecture Teams**: Enterprise architects, solution architects, infrastructure architects
+- **Development Teams**: Team leads, senior developers for feasibility validation
+- **Project Management**: PMO for timeline and resource planning
+- **Finance**: Budget approval and resource allocation
+- **Infrastructure**: Environment provisioning and tooling setup
+- **Operations**: Support model and operational readiness
+
+## Failure Modes and Recovery
+
+### Failure Mode 1: Architecture Does Not Support Business Logic Preservation
+
+**Detection**: Technical analysis reveals C# architecture cannot replicate C++ behavior exactly
+
+**Impact**: Cannot meet migration requirement for 100% business logic preservation, major rework
+
+**Recovery**:
+1. Identify specific business logic preservation failures
+2. Conduct technical spike to explore alternative architectures
+3. Engage C# experts and architects for creative solutions
+4. Consider hybrid approaches or adapter patterns
+5. If unresolvable, escalate to executive for scope decision
+
+**Prevention**: Early prototyping of complex algorithms, C# proof-of-concept, expert consultation
+
+### Failure Mode 2: Performance Requirements Cannot Be Met
+
+**Detection**: Architecture analysis shows C# approach will not meet performance targets
+
+**Impact**: Cannot deploy to production, performance optimization required, delays
+
+**Recovery**:
+1. Conduct detailed performance profiling of critical paths
+2. Explore aggressive caching and optimization strategies
+3. Consider architectural changes (e.g., CQRS, event sourcing)
+4. Evaluate hardware scaling options
+5. Re-baseline performance requirements with business stakeholders if necessary
+
+**Prevention**: Early performance prototyping, benchmark C# algorithms, load testing planning
+
+### Failure Mode 3: Timeline or Budget Exceeds Constraints
+
+**Detection**: Resource planning reveals project cannot be completed within constraints
+
+**Impact**: Project approval at risk, scope reduction required, timeline extension needed
+
+**Recovery**:
+1. Identify scope reduction opportunities without losing critical functionality
+2. Explore phased delivery to spread timeline
+3. Assess team augmentation options (contractors, vendors)
+4. Present trade-off analysis to executive sponsors
+5. Obtain revised project approval with updated constraints
+
+**Prevention**: Early rough-order-magnitude estimates, phased approach planning, realistic buffer inclusion
+
+### Failure Mode 4: Critical Skills Unavailable
+
+**Detection**: Team lacks essential C# expertise or domain knowledge
+
+**Impact**: Quality risks, timeline delays, potential implementation errors
+
+**Recovery**:
+1. Assess specific skill gaps with impact analysis
+2. Explore training programs for existing team
+3. Engage contractors or consultants for specialized skills
+4. Adjust timeline to account for learning curve
+5. Implement mentoring and knowledge transfer processes
+
+**Prevention**: Skills assessment before Phase 3, early training programs, expert hiring
+
+### Failure Mode 5: External System Integration Constraints
+
+**Detection**: External systems cannot support planned integration approach
+
+**Impact**: Integration architecture must be redesigned, coordination required
+
+**Recovery**:
+1. Engage external system owners immediately
+2. Design adapter or translation layer
+3. Explore alternative integration patterns
+4. Plan coordinated changes if necessary
+5. Update integration architecture and revalidate
+
+**Prevention**: External system validation during Phase 2, early coordination, API compatibility testing
+
+## Provenance Footer Specification
+
+All Phase 3 planning documents must include:
+
+```markdown
+---
+**Migration Phase**: 3 - Migration Planning  
+**Generated by**: rule.migration.planning.v1  
+**Project**: [Project Name]  
+**Based on Specifications**: [Phase 2b approval date]  
+**Architecture Version**: [Version]  
+**Planning Period**: [Start YYYY-MM-DD] to [End YYYY-MM-DD]  
+**Lead Architect**: [Name/Role]  
+**Project Manager**: [Name/Role]  
+**Approved by**: [Technical Lead, Business Lead, Operations Lead]  
+**Status**: [Draft | In Review | Approved]  
+**Quality Gate**: [Not Started | Passed | Failed]  
+**Implementation Start**: [Target YYYY-MM-DD]
+```
+
+## Related Rules
+
+- `rule.migration.overview.v1` - Overall migration framework
+- `rule.migration.spec-review.v1` - Phase 2b providing approved specifications
+- `rule.migration.data-collection.v1` - Phase 1 source system understanding
+- `rule.migration.spec-create.v1` - Phase 2 specifications being implemented
+- `rule.authoring.file-structure.v1` - Documentation structure standards
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Target C# architecture designed with Domain-Driven Design bounded contexts
+- [ ] Service boundaries defined with clear responsibilities and dependencies
+- [ ] Data persistence strategy complete (schemas, ORM, repositories, migrations)
+- [ ] Integration architecture specified (APIs, messaging, external interfaces)
+- [ ] Performance strategy defined (caching, optimization, monitoring)
+- [ ] Implementation roadmap created with phases, milestones, and dependencies
+- [ ] Risk management plan complete with mitigation strategies for all identified risks
+- [ ] Testing strategy defined (unit, integration, performance, migration validation)
+- [ ] Rollout plan created with deployment approach and rollback procedures
+- [ ] Resource allocation plan complete with team structure and skillsets
+- [ ] OPSEC clean (no financial details, personnel costs, vendor pricing, or sensitive infrastructure)
+- [ ] Formal approvals obtained (technical leadership, business leadership, operations)
+- [ ] Phase 3 quality gate validated and passed
+- [ ] Implementation kickoff scheduled with all teams ready

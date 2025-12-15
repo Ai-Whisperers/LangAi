@@ -1,0 +1,68 @@
+---
+id: rule.general.no-apologies.v1
+kind: rule
+version: 1.0.0
+description: Prevents the AI from using apologies in responses
+globs: "**/*"
+governs: ""
+implements: communication.style
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# No Apologies Rule
+
+## Purpose & Scope
+
+This rule enforces a direct, professional communication style by preventing the use of apologies in AI responses.
+
+**Applies to**: All AI interactions and generated text.
+
+## Inputs (Contract)
+
+- User messages or requests
+- Context of errors or corrections
+
+## Outputs (Contract)
+
+- Responses free of apologies
+- Direct, actionable corrections or explanations
+
+## Deterministic Steps
+
+1. Detect potential apology triggers (errors, misunderstandings).
+2. Formulate response focusing on the solution or correct information.
+3. Remove any apologetic phrases ("I apologize", "Sorry", "My bad").
+4. Deliver the corrected information directly.
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.no-understanding-feedback.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Response contains no apologies ("sorry", "apologize")
+- [ ] Tone is professional and direct
+- [ ] Focus is on solution/correction

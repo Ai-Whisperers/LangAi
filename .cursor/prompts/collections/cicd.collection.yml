@@ -1,0 +1,28 @@
+id: cicd-prompts-bundle
+name: "CI/CD Prompts"
+description: "Prompts for CI/CD setup, fixes, and validation"
+tags:
+  - cicd
+  - pipelines
+  - automation
+  - documentation
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/cicd/collect-local-metrics.prompt.md
+    kind: prompt
+  - path: prompts/cicd/fix-incomplete-metadata.prompt.md
+    kind: prompt
+  - path: prompts/cicd/fix-missing-changelog.prompt.md
+    kind: prompt
+  - path: prompts/cicd/fix-missing-documentation.prompt.md
+    kind: prompt
+  - path: prompts/cicd/implement-tag-based-cicd.prompt.md
+    kind: prompt
+  - path: prompts/cicd/setup-documentation-pipeline.prompt.md
+    kind: prompt
+  - path: prompts/cicd/setup-project-documentation.prompt.md
+    kind: prompt
+  - path: prompts/cicd/validate-documentation-setup.prompt.md
+    kind: prompt
+

@@ -1,0 +1,289 @@
+---
+id: rule.technical-specifications.entity-relationship.v1
+kind: rule
+version: 1.0.1
+description: Documents complete database schema and entity relationships with 100% source accuracy for C++ to C# migration
+globs: **/docs/technical/**/database/*-database-schema.md, **/docs/technical/**/database/*-database-constraints.md, **/docs/technical/**/database/*-database-analysis.md
+governs: **/docs/technical/**/database/*-database-schema.md, **/docs/technical/**/database/*-database-constraints.md
+implements: entity-relationship.documentation
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+# Entity Relationship Documentation Rule
+
+## Purpose & Scope
+
+This rule defines how to create entity relationship files that document database schema, entity relationships, and data structure specifications for technical migration projects.
+
+**Applies to**: Database layer documentation within `docs/technical/[domain]/database/` folder using 3-file pattern (schema.md, constraints.md, analysis.md). Documents Oracle/MSSQL database tables, relationships, constraints, and indexes based on actual database configuration files.
+
+**Does not apply to**: Domain object documentation (use domain-object-rule), business rules documentation (use business-rules-rule), implementation guides (belong in docs/implementation/), or in-memory object models without database persistence.
+
+## Inputs (Contract)
+
+- Database configuration files from C++ source system (Oracle/MSSQL schemas)
+- Complete table structures with field names, types, constraints
+- Foreign key relationships and referential integrity rules
+- Index definitions and performance optimization strategies
+- Phase 1 data collection findings for database schema
+
+## Outputs (Contract)
+
+Database layer documentation containing:
+- `[domain]-database-schema.md` with complete CREATE TABLE statements and field specifications
+- `[domain]-database-constraints.md` with foreign keys, unique constraints, relationships
+- `[domain]-database-analysis.md` with business context and migration considerations
+- Mermaid ERD showing entity relationships with business labels
+- 100% accuracy to source database configuration
+- Oracle and MSSQL compatibility notes where applicable
+
+## Purpose (Original)
+
+This rule defines how to create entity relationship files that document database schema, entity relationships, and data structure specifications for technical migration projects.
+
+**IMPORTANT**: This rule applies to database layer documentation within the hybrid architecture. Entity relationships are documented as part of the 3-file database pattern.
+
+## File Location
+
+Entity relationship files are part of the database layer:
+```text
+docs/technical/[domain]/
+└── database/                                      # Database layer (3-file pattern)
+    ├── [domain]-database-schema.md               # Complete table structures (primary file)
+    ├── [domain]-database-constraints.md          # Relationships and constraints
+    └── [domain]-database-analysis.md             # Business context and analysis
+```
+
+**This rule primarily applies to the schema and constraints files within the database layer.**
+
+## Document Structure
+
+### **Overview Section**
+- **Purpose Statement**: What entities and relationships this document covers
+- **Scope**: Which part of the system's data model is documented
+- **Cross-References**: Links to detailed field specifications and domain overview
+- **Schema Context**: Whether database-driven or in-memory object model
+
+### **Entity Relationship Diagram**
+- **Mermaid ERD**: Visual representation of all entities and relationships
+- **Complete Coverage**: All entities, foreign keys, and relationship types
+- **Accurate Field Names**: Use actual field names from source system
+- **Data Types**: Include appropriate data types (int, string, decimal, enum)
+- **Relationship Labels**: Descriptive relationship names (e.g., "contains_ordered", "references")
+
+### **Key Relationships Section**
+- **Detailed Descriptions**: Each major relationship explained in detail
+- **Cardinality**: One-to-one, one-to-many, many-to-many specifications
+- **Foreign Keys**: Exact foreign key field names and target references
+- **Business Meaning**: Why relationships exist and what they represent
+
+### **Database Constraints Section**
+- **Primary Keys**: All primary key definitions
+- **Foreign Keys**: All foreign key constraints with exact field mappings
+- **Unique Constraints**: All unique constraints and their business purpose
+- **Data Types**: Precise data type specifications with size/precision requirements
+- **Nullable Fields**: Which fields can be null and business reasons why
+
+### **Performance Considerations**
+- **Indexing Strategy**: Required indexes for optimal performance
+- **Caching Requirements**: What needs to be cached and why
+- **Query Patterns**: Common access patterns that drive design decisions
+- **Scalability Notes**: Considerations for high-volume scenarios
+
+## Content Guidelines
+
+### **Accuracy Requirements**
+- All entity and field names must match source system exactly
+- Relationships must reflect actual system behavior, not assumed patterns
+- Data types must be precise and verified against actual implementations
+- Constraints must be based on actual system analysis, not generic best practices
+
+### **What to Include**
+- **Entity Relationship Overview**: How entities connect to each other
+- **All Relationships**: Every foreign key and logical relationship
+- **Relationship Business Context**: Why relationships exist and what they enable
+- **Database Schema Structure**: Table structure and constraints
+- **Migration Considerations**: Special requirements for C++ to C# conversion
+
+### **What to Avoid**  
+- **Detailed Field Specifications**: Individual field meanings belong in separate domain object files
+- **Domain Object Business Rules**: Entity-specific rules belong in domain object files
+- **Generic Schemas**: Don't create typical/expected schemas without verification
+- **Assumed Relationships**: Only document verified relationships from source analysis
+
+### **Scope Boundary with Domain Objects**
+- **Entity-Relationships Focus**: Document how entities relate, not what they contain
+- **Field Names for Relationships**: Include field names only for foreign keys and relationships
+- **Cross-Reference to Domain Objects**: Link to individual domain object files for field details
+- **Relationship Business Rules**: Include only rules that govern relationships between entities
+
+### **Cross-Reference Strategy**
+- Link to domain object specifications for detailed field meanings
+- Reference business rules that drive constraint requirements
+- Connect to performance specifications for caching and indexing rationale
+- Link to integration specifications for external key relationships
+
+## Quality Standards
+
+### **Verification Requirements**
+- All entities verified against source system analysis
+- All relationships confirmed through code or configuration analysis  
+- All field names and types validated against actual system
+- All constraints based on observed system behavior
+
+### **Completeness Standards**
+- Every data-holding entity documented
+- Every foreign key relationship specified
+- Every unique constraint identified
+- Every performance-critical relationship noted
+
+### **Accuracy Standards**
+- Entity names match source system exactly
+- Field names are identical to source implementation
+- Data types reflect actual storage requirements
+- Relationships represent actual system dependencies
+
+## Special Considerations
+
+### **C++ to C# Migration Context**
+- **Memory vs Database**: Distinguish between in-memory objects and persistent storage
+- **Field Access Patterns**: Note position-based vs named field access in C++
+- **Caching Strategies**: Document sophisticated caching patterns that must be preserved
+- **Performance Implications**: Identify critical performance patterns to maintain
+
+### **Object Model vs Database Schema**
+- **In-Memory Systems**: Some C++ systems use minimal database with rich object models
+- **Position-Based Access**: C++ may use field positions rather than names
+- **Collection Management**: Document TList and similar collection patterns
+- **Memory Management**: Note manual memory management patterns affecting relationships
+
+### **Migration Planning Support**
+- **Constraint Migration**: Which constraints translate directly to C#
+- **Relationship Patterns**: How C++ object relationships map to C# domain objects
+- **Performance Preservation**: Critical relationships that affect performance
+- **Data Migration**: Constraints that affect data migration strategies
+
+## Template Structure
+
+### **Standard Sections**
+1. **Overview** - Purpose and scope with cross-references
+2. **Entity Relationship Diagram** - Complete Mermaid ERD
+3. **Key Relationships** - Detailed relationship explanations
+4. **Database Constraints** - All constraints and their purposes
+5. **Performance Considerations** - Indexing and caching requirements
+6. **Detailed Specifications** - Links to related documentation
+
+### **ERD Best Practices**
+```mermaid
+erDiagram
+    ParentEntity ||--o{ ChildEntity : "descriptive_relationship_name"
+    ChildEntity {
+        int Id PK
+        int ParentId FK
+        string Description UK "unique_constraint"
+        decimal Value "nullable"
+        enum Status "with_enum_name"
+    }
+```
+
+### **Relationship Documentation Pattern**
+```markdown
+### **ParentEntity → ChildEntity (One-to-Many)**
+
+- Each parent can have multiple child records
+- Children cannot exist without parent (cascade delete)
+- Foreign key: `ChildEntity.ParentId → ParentEntity.Id` (required)
+- Business purpose: [specific business reason]
+```
+
+## Quality Assurance
+
+### **Review Checklist**
+- [ ] All entity names verified against source system
+- [ ] All field names match source implementation exactly
+- [ ] All relationships confirmed through source analysis
+- [ ] All data types accurate and appropriate for C# implementation
+- [ ] All constraints have clear business justification
+- [ ] Performance considerations reflect actual system requirements
+- [ ] Cross-references are complete and functional
+
+### **Common Issues to Avoid**
+- **Fabricated Schemas**: Creating logical but unverified database structures
+- **Generic Field Names**: Using standard names instead of actual system field names
+- **Assumed Relationships**: Documenting expected but unverified relationships
+- **Missing Constraints**: Overlooking business-critical constraints
+- **Performance Gaps**: Missing critical caching or indexing requirements
+
+### **Stakeholder Validation**
+- **Database Architects**: Validate schema accuracy and performance considerations
+- **Domain Experts**: Confirm business meaning of relationships and constraints
+- **Migration Team**: Verify migration considerations are complete and accurate
+- **Performance Engineers**: Validate caching and indexing requirements
+
+## Deterministic Steps
+
+When documenting database schema:
+
+1. **Extract Schema Files**: Locate Oracle/MSSQL configuration files from C++ source
+2. **Create Database Folder**: Create `docs/technical/[domain]/database/` folder
+3. **Create Schema File**: Create `[domain]-database-schema.md` with CREATE TABLE statements
+4. **Create Constraints File**: Create `[domain]-database-constraints.md` with foreign keys and relationships
+5. **Create Analysis File**: Create `[domain]-database-analysis.md` with business context
+6. **Add Mermaid ERD**: Create entity relationship diagram with accurate field names and relationships
+7. **Document Indexes**: Include all indexes with performance rationale
+8. **Validate Accuracy**: Verify 100% match to source database configuration files
+
+## OPSEC and Leak Control
+
+Database schema files must NOT contain:
+- **NO** internal server names, database hostnames, or connection strings
+- **NO** credentials, usernames, passwords, or access tokens
+- **NO** production database names or instance identifiers
+- **NO** employee information or customer data examples
+- **NO** actual data values (only schema structure)
+- Table and field names only (infrastructure details excluded)
+
+## Integration Points
+
+This rule works with:
+- **rule.technical-specifications.hybrid-architecture.v1**: Defines database/ folder location in layered structure
+- **rule.technical-specifications.domain-object.v1**: Domain objects reference (don't duplicate) database schema
+- **rule.technical-specifications.anti-duplication.v1**: Prevents schema duplication in domain object files
+- **rule.technical-specifications.domain-overview.v1**: Overview links to database layer files
+
+## Failure Modes and Recovery
+
+**Failure**: Schema doesn't match source database
+- **Detection**: Field names or types differ from actual database
+- **Recovery**: Re-extract from source configuration, correct all discrepancies
+
+**Failure**: Missing foreign key relationships
+- **Detection**: Relationships exist in database but not documented
+- **Recovery**: Review all foreign key constraints, add missing relationships to constraints file
+
+**Failure**: ERD inconsistent with schema documentation
+- **Detection**: Mermaid diagram shows relationships not in constraints file
+- **Recovery**: Update ERD to match documented constraints exactly
+
+**Failure**: Fabricated or assumed schema structures
+- **Detection**: Schema includes "logical" structures not in source database
+- **Recovery**: Remove all unverified content, document only actual database configuration
+
+## Related Rules
+
+- **rule.technical-specifications.hybrid-architecture.v1**: Defines 3-file database pattern
+- **rule.technical-specifications.domain-object.v1**: References database schema
+- **rule.technical-specifications.anti-duplication.v1**: Prevents SQL duplication
+- **rule.technical-specifications.domain-overview.v1**: Provides navigation to database layer
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no server names, credentials, database instances, connection strings)
+- [ ] 3-file pattern complete: schema.md, constraints.md, analysis.md in database/ folder
+- [ ] All table structures based on actual source database configuration (100% accurate)
+- [ ] Mermaid ERD matches documented tables and relationships exactly
+- [ ] All foreign keys and constraints documented in constraints file
+- [ ] Oracle and MSSQL compatibility noted where applicable
+- [ ] NO fabricated or assumed structures (all verified against source system)

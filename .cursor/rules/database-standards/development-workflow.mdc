@@ -1,0 +1,214 @@
+# Development Workflow Standards
+
+## Version Control Process
+
+### Branch Management
+- Main branch: `main`
+- Development branch: `develop`
+- Feature branches: `feature/[TaskID]-[Description]`
+- Release branches: `release/R970`
+
+### Commit Guidelines
+- Format: `[TaskID]: [Brief description]`
+- Include ticket reference
+- Keep commits focused and atomic
+- Follow conventional commit types
+
+## Development Process
+
+### 1. Task Planning
+- Create task in tracking system
+- Assign TaskID
+- Define scope and requirements
+- Identify affected products
+- Document changes in Excel tracking sheet
+
+### 2. Development Setup
+- Create feature branch
+- Copy appropriate templates
+- Set up local development environment
+- Review existing code
+
+### 3. Implementation
+- Follow SQL coding standards
+- Use appropriate templates
+- Document changes
+- Test locally
+- Update script versions
+
+### 4. Code Review
+- Self-review checklist
+- Peer review requirements
+- Address feedback
+- Update documentation
+
+## Version Tracking Requirements
+
+### Script Version Updates
+- Always update scriptversion in the header
+- Add a comment line describing the change
+- Update scriptsetversion in Begin_Release file
+- Update Begin_Release file even if only subfiles change
+- Follow version format: YYYYMMDD (e.g., 20250106)
+
+### Dependency Management
+- Document module dependencies in Begin_Release file
+- Set dependent module prefix (e.g., NLALL2_3)
+- Set required dependent DBVERSION (e.g., 9500001)
+- Include dependency check scripts
+- Validate dependencies before execution
+
+### Change Documentation
+- Update Excel tracking sheet with all changes
+- Include script versions and dependencies
+- Document affected modules and files
+- Note any cross-module impacts
+- Include automation requirements
+
+## Testing Requirements
+
+### Pre-deployment Testing
+- Schema validation
+- Data integrity checks
+- Performance testing
+- Error handling verification
+- Module dependency validation
+
+### Post-deployment Testing
+- Version verification
+- Data validation
+- Constraint checks
+- Performance monitoring
+- Module dependency verification
+
+## Deployment Procedures
+
+### 1. Preparation
+- Backup database
+- Review deployment plan
+- Check dependencies
+- Verify rollback procedures
+- Validate module dependencies
+- Update Excel tracking sheet
+
+### 2. Execution
+- Follow deployment checklist
+- Execute in correct order
+- Monitor progress
+- Log all steps
+- Use Begin_Upgrade.cmd script
+- Execute each script individually rather than bundling multiple scripts
+- Use V_RUN_SCRIPT variable for each script execution
+- Increment DBVERSION_NR for each individual script execution
+- Set V_DBVERSION_REQ to the previous script's V_DBVERSION_NR
+- Maintain consistent error handling for each script
+- Log execution of each individual script
+
+### 3. Verification
+- Check version updates
+- Validate data changes
+- Verify constraints
+- Monitor performance
+- Confirm module dependencies
+
+### 4. Rollback
+- Follow rollback procedures
+- Restore from backup if needed
+- Document issues
+- Update deployment notes
+
+## CI/CD Pipeline
+
+### Archive Creation
+- Automated zip archive creation
+- Includes all release scripts
+- Validates script integrity
+- Checks for missing dependencies
+- Updates Excel tracking sheet
+
+### Release Process
+- Separate pipeline for releasing archives
+- Automated testing and validation
+- Version verification
+- Deployment to target environments
+- Automated documentation updates
+
+## Solution Scripts (SOL)
+
+### Purpose
+- Cross-release fixes
+- Originate in Solution repository
+- Applied across multiple releases
+- Included with normal release scripts
+
+### Implementation
+- Follow standard deployment process
+- Validate compatibility
+- Document cross-release impact
+- Test thoroughly
+- Update version tracking
+
+## Code Review Guidelines
+
+### Review Checklist
+- Standards compliance
+- Template usage
+- Error handling
+- Performance impact
+- Documentation
+- Testing coverage
+- Module dependency validation
+- Version updates
+
+### Review Process
+1. Self-review
+2. Peer review
+3. Technical lead review
+4. Final approval
+
+## Documentation Requirements
+
+### Code Documentation
+- Standard headers
+- Inline comments
+- Business logic explanation
+- Technical notes
+- Module dependencies
+- Version information
+
+### Project Documentation
+- README updates
+- Version history
+- Deployment notes
+- Known issues
+- Cross-release impact
+- Excel tracking sheet
+
+## Best Practices
+
+### Development
+- Follow standards
+- Use templates
+- Document changes
+- Test thoroughly
+- Validate module dependencies
+- Update version tracking
+
+### Deployment
+- Plan carefully
+- Execute methodically
+- Verify thoroughly
+- Monitor continuously
+- Use appropriate deployment scripts
+- Update documentation
+- Execute each script individually
+- Use consistent error handling
+- Implement granular versioning
+
+### Maintenance
+- Regular reviews
+- Update documentation
+- Track technical debt
+- Plan migrations
+- Monitor module dependencies
+- Maintain Excel tracking sheet 

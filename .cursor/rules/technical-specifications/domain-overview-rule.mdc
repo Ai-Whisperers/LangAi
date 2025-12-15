@@ -1,0 +1,289 @@
+---
+id: rule.technical-specifications.domain-overview.v1
+kind: rule
+version: 1.0.1
+description: Creates central navigation hubs with comprehensive domain architecture documentation for C++ to C# migration
+globs: **/docs/technical/**/*-domain-overview.md
+governs: **/docs/technical/**/*-domain-overview.md
+implements: domain-overview.documentation
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+# Domain Overview Documentation Rule
+
+## Purpose & Scope
+
+This rule defines how to create domain overview files that serve as central navigation hubs and comprehensive system architecture documentation for technical specifications.
+
+**Applies to**: Domain overview files at `docs/technical/[domain]/[domain]-domain-overview.md` serving as navigation hubs for all domain documentation including database layer, domain layer, business rules, and integration points.
+
+**Does not apply to**: Individual entity documentation (use domain-object-rule), database schema documentation (use entity-relationship-rule), business rules files (use business-rules-rule), or README files outside technical specifications.
+
+## Inputs (Contract)
+
+- Domain name identified for C++ to C# migration
+- Phase 1 data collection findings for this domain
+- List of entities, enumerations, business rules, and integration points in domain
+- Understanding of domain architecture and entity relationships
+- Entity relationship diagram (Mermaid ERD) ready for inclusion
+
+## Outputs (Contract)
+
+Domain overview file containing:
+- File at `docs/technical/[domain]/[domain]-domain-overview.md`
+- Purpose statement explaining domain's business value and scope
+- Entity hierarchy showing main entities and relationships
+- Mermaid ERD with business-meaningful labels
+- Cross-reference navigation to database layer, domain layer, business rules, integration points
+- Stakeholder-specific reading paths (developers, DBAs, architects, business analysts)
+- Layered architecture navigation template linking to all domain documentation
+
+## Purpose (Original)
+
+This rule defines how to create domain overview files that serve as central navigation hubs and comprehensive system architecture documentation for technical specifications.
+
+**IMPORTANT**: Domain overview files are the main navigation entry point for each domain's complete layered architecture documentation.
+
+## File Location
+
+Domain overview files are located at the root of each domain:
+```text
+docs/technical/[domain]/
+├── [domain]-domain-overview.md                   # THIS RULE APPLIES HERE (navigation hub)
+├── [domain]-business-rules.md                    # Domain logic & algorithms
+├── [domain]-integration-points.md                # External system interfaces
+├── database/                                     # Database layer (3-file pattern)
+│   ├── [domain]-database-schema.md
+│   ├── [domain]-database-constraints.md
+│   └── [domain]-database-analysis.md
+└── domain/                                       # Domain layer (DDD pattern)
+    ├── domain-objects/                          # Rich domain models
+    └── enumerations/                            # Business enumerations
+```
+
+The domain overview provides navigation to all layers and cross-references all documentation within the domain.
+
+## Document Structure
+
+### **Overview Section**
+- **Purpose Statement**: Clear description of what the domain does and its business value
+- **Scope Definition**: Boundaries of the domain and what it encompasses
+- **Key Concepts**: Essential terminology and concepts needed to understand the domain
+- **Architecture Summary**: High-level view of domain structure and relationships
+
+### **Domain Architecture Section**
+- **Entity Hierarchy**: Visual and textual representation of main entities and relationships
+- **Core Components**: Primary functional areas within the domain
+- **Data Flow**: How information moves through the domain
+- **Processing Model**: Key business processes and workflow patterns
+
+### **Entity Relationship Diagram**
+- **Mermaid ERD**: Conceptual representation of main entities and relationships
+- **Focus**: Business relationships, not implementation details
+- **Labels**: Clear, business-meaningful entity and field names
+- **Relationships**: One-to-many, many-to-many with descriptive labels
+
+### **Cross-Reference Navigation**
+- **Database Layer Navigation**: Links to database schema, constraints, and analysis files
+- **Domain Layer Navigation**: Links to domain objects and enumerations folders
+- **Business Context Navigation**: Links to business rules and integration points
+- **Reading Paths**: Guided navigation for different stakeholder types (developers, DBAs, architects)
+- **Related Domains**: References to other domains and their relationships
+- **Getting Started**: Clear entry points for different use cases
+
+### **Layered Architecture Navigation Template**
+```markdown
+## Architecture Layers
+
+### Database Layer
+- [Database Schema](database/[domain]-database-schema.md) - Complete table structures
+- [Database Constraints](database/[domain]-database-constraints.md) - Relationships and integrity
+- [Database Analysis](database/[domain]-database-analysis.md) - Business context and migration
+
+### Domain Layer  
+- [Domain Objects](domain/domain-objects/) - Rich business models
+- [Enumerations](domain/enumerations/) - Business value objects
+
+### Business Context
+- [Business Rules]([domain]-business-rules.md) - Domain logic and algorithms
+- [Integration Points]([domain]-integration-points.md) - External system interfaces
+```
+
+## Content Guidelines
+
+### **What to Include**
+- **Business Context**: Why this domain exists and its business value
+- **Functional Overview**: What the domain does at a high level
+- **Key Processes**: Main business processes and workflows
+- **Integration Points**: How this domain connects to others
+- **Core Entities**: Primary data structures and their purposes
+- **Business Rules Summary**: High-level business constraints and logic
+
+### **What to Avoid**
+- **Implementation Details**: Specific code patterns or technical internals
+- **Duplicate Content**: Information that's detailed in other specification files
+- **Technology Specifics**: Database types, programming languages, frameworks
+- **Operational Details**: Deployment, monitoring, infrastructure specifics
+
+### **Reference Strategy**
+- **Extensive Linking**: Link to every related specification file
+- **Context Setting**: Briefly introduce linked content without duplicating it
+- **Audience Targeting**: Provide different reading paths for different roles
+- **Maintenance Links**: Keep links current as specifications evolve
+
+## Quality Standards
+
+### **Completeness Requirements**
+- All major domain entities referenced and linked
+- All business processes at least mentioned
+- All integration points identified
+- All detailed specifications linked
+- Complete navigation provided for all stakeholder types
+
+### **Accuracy Standards**
+- All content must be verifiable against detailed specifications
+- Business context must be accurate and current
+- Entity relationships must match detailed entity documentation
+- Process descriptions must align with business rules documentation
+
+### **Usability Standards**
+- Document serves as effective entry point for new team members
+- Navigation enables efficient access to detailed information
+- Different stakeholder types can find relevant information quickly
+- Document structure supports both overview reading and detailed research
+
+## Stakeholder-Specific Guidance
+
+### **For Business Analysts**
+- Start with overview and business context sections
+- Use entity relationship diagram to understand data structures  
+- Follow business rules links for detailed logic
+- Review integration points for external dependencies
+
+### **For Solution Architects**
+- Focus on architecture section and entity relationships
+- Review integration points and data flow patterns
+- Use cross-references to understand detailed technical requirements
+- Validate architecture against detailed specifications
+
+### **For Developers**
+- Use entity relationship diagram as starting point
+- Follow links to detailed domain object specifications
+- Review business rules for implementation requirements
+- Use navigation to find relevant enumeration and algorithm specifications
+
+### **For Integration Specialists**
+- Focus on integration points and data flow sections
+- Follow links to detailed integration specifications
+- Review entity relationships for data structure understanding
+- Use cross-references to understand business context
+
+## Template Structure
+
+### **Standard Sections**
+1. **Purpose** - Why this domain exists
+2. **Domain Architecture** - How the domain is structured
+3. **Entity Relationships** - Core data relationships with Mermaid ERD
+4. **Processing Model** - Key business processes
+5. **Business Rules** - High-level business constraints
+6. **Algorithm Categories** - Types of calculations and operations
+7. **Integration Points** - External system connections
+8. **Migration Considerations** - Special requirements for C++ to C# migration
+
+### **Cross-Reference Patterns**
+- Link to entity specifications: `[Entity Name](entity-specification-file.md)`
+- Link to business rules: `[Business Rules](business-rules-file.md)`
+- Link to integration specs: `[Integration Points](integration-specification-file.md)`
+- Link to enumerations: `[Enum Name](enum-specification-file.md)`
+
+## Maintenance Requirements
+
+### **Keep Current**
+- Update links when specification files are renamed or reorganized
+- Maintain accuracy as detailed specifications evolve
+- Add new entities and relationships as domain expands
+- Update business context as requirements change
+
+### **Review Triggers**
+- New specification files added to domain
+- Major changes to entity relationships
+- Business process changes or additions
+- Integration point modifications
+- Architecture changes or refactoring
+
+### **Quality Checks**
+- All links functional and point to current files
+- Entity relationship diagram matches detailed specifications
+- Business context remains accurate and current
+- Navigation serves all stakeholder types effectively
+- Document length remains manageable while comprehensive
+
+## Deterministic Steps
+
+When creating a domain overview file:
+
+1. **Create File**: Create `[domain]-domain-overview.md` at `docs/technical/[domain]/` root
+2. **Add Purpose**: Explain domain's business value, scope, key concepts
+3. **Add Entity Hierarchy**: List main entities with brief descriptions
+4. **Add Mermaid ERD**: Create entity relationship diagram with business labels
+5. **Add Architecture Layers Navigation**: Link to database/, domain/, business rules, integration points
+6. **Add Stakeholder Paths**: Provide reading guidance for developers, DBAs, architects, analysts
+7. **Add Processing Model**: Describe key business processes and workflows
+8. **Validate Links**: Ensure all cross-references point to existing files
+
+## OPSEC and Leak Control
+
+Domain overview files must NOT contain:
+- **NO** internal server names, IP addresses, or URLs
+- **NO** credentials, tokens, API keys, or passwords
+- **NO** employee email addresses or personal information
+- **NO** confidential customer data or business-sensitive information
+- **NO** proprietary vendor details
+- Entity names and business processes only (no infrastructure details)
+
+## Integration Points
+
+This rule works with:
+- **rule.technical-specifications.hybrid-architecture.v1**: Defines domain root location for overview files
+- **rule.technical-specifications.entity-relationship.v1**: Overview links to database schema files
+- **rule.technical-specifications.domain-object.v1**: Overview links to domain object files
+- **rule.technical-specifications.business-rules.v1**: Overview links to business rules file
+- **rule.technical-specifications.integration-points.v1**: Overview links to integration points file
+
+## Failure Modes and Recovery
+
+**Failure**: Broken links to specification files
+- **Detection**: Dead links in navigation sections
+- **Recovery**: Update file paths, validate all cross-references
+
+**Failure**: ERD doesn't match actual entity relationships
+- **Detection**: Mismatch between diagram and entity specification files
+- **Recovery**: Update ERD to match current entity relationships from specifications
+
+**Failure**: Missing navigation to key documentation
+- **Detection**: Specification files exist but not linked from overview
+- **Recovery**: Add missing cross-references to all specification types
+
+**Failure**: Overview too detailed (duplicating content)
+- **Detection**: Extensive field details or business rules in overview
+- **Recovery**: Move detailed content to appropriate specification files, keep only navigation and high-level architecture in overview
+
+## Related Rules
+
+- **rule.technical-specifications.hybrid-architecture.v1**: Defines layered folder structure
+- **rule.technical-specifications.entity-relationship.v1**: Database schema documentation
+- **rule.technical-specifications.domain-object.v1**: Domain entity documentation
+- **rule.technical-specifications.business-rules.v1**: Business logic documentation
+- **rule.technical-specifications.integration-points.v1**: Integration documentation
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no server names, IPs, credentials, emails, confidential data)
+- [ ] File at correct location: docs/technical/[domain]/[domain]-domain-overview.md
+- [ ] Mermaid ERD present with business-meaningful entity names and relationships
+- [ ] Navigation links to database layer (database-schema, database-constraints, database-analysis)
+- [ ] Navigation links to domain layer (domain-objects/, enumerations/ folders)
+- [ ] Navigation links to business rules and integration points at domain root
+- [ ] Stakeholder-specific reading paths provided (developers, DBAs, architects, analysts)

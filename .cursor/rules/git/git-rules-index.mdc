@@ -1,0 +1,456 @@
+---
+id: rule.git.rules-index.v1
+kind: rule
+version: 1.0.0
+description: Navigation hub and overview for Git branching strategy rule framework
+implements: git.rules-index
+requires:
+  - rule.git.agent-application.v1
+  - rule.git.branching-strategy-overview.v1
+  - rule.git.branch-structure.v1
+  - rule.git.branch-naming.v1
+  - rule.git.branch-lifecycle.v1
+  - rule.git.branch-protection.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-platform, last_review: 2025-11-22 }
+alwaysApply: false
+---
+
+# Git Branching Strategy - Rules Index
+
+## Purpose
+
+This index provides centralized navigation for the Git branching strategy rule framework. Use this to understand the complete rule system and quickly find the specific rule you need.
+
+## Rule System Overview
+
+The Git branching strategy is documented through a set of interconnected rules that define:
+
+- **When and how** to apply Git rules (agent guidance)
+- **What** branch structure to use (primary and supporting branches)
+- **How** to name branches (conventions and validation)
+- **What workflow** to follow (lifecycle from creation to deployment)
+- **How to enforce** strategy through automation (protection and CI/CD)
+
+## Rule Structure
+
+```
+git/
+├── agent-application-rule.mdc        # When and how to apply git rules
+├── branching-strategy-overview.mdc   # High-level strategy overview
+├── branch-structure-rule.mdc         # Branch types and purposes
+├── branch-naming-rule.mdc            # Naming conventions and validation
+├── branch-lifecycle-rule.mdc         # Workflows and promotion paths
+├── branch-protection-rule.mdc        # Protection rules and automation
+└── git-rules-index.mdc              # This file
+```
+
+## Complete Rule Catalog
+
+### 1. Agent Application Rule
+
+**ID**: `rule.git.agent-application.v1`
+
+**File**: `agent-application-rule.mdc`
+
+**Purpose**: Guides AI agents on when and how to apply Git branching strategy rules
+
+**Use When**:
+- Creating new branches
+- Validating branch names
+- Planning merge/promotion workflows
+- Setting up branch protection
+- Configuring CI/CD integration
+- Documenting Git workflow
+- Migrating from legacy branching models
+
+**Key Sections**:
+- Explicit triggers and context clues
+- How to assess requests and load required rules
+- Common scenarios with example workflows
+- Integration with ticket and documentation rules
+
+### 2. Branching Strategy Overview
+
+**ID**: `rule.git.branching-strategy-overview.v1`
+
+**File**: `branching-strategy-overview.mdc`
+
+**Purpose**: Central navigation hub and comprehensive overview of Git branching strategy
+
+**Use When**:
+- Learning about the branching strategy
+- Understanding the complete system
+- Navigating to specific rules
+- Documenting overall approach
+- Explaining benefits and principles
+
+**Key Sections**:
+- Problem statement (why this strategy exists)
+- Core principles (clarity, traceability, stability, scalability, automation)
+- Visual model of branch flow
+- Branch structure summary
+- Branch lifecycle summary
+- Implementation checklist
+- Quick reference commands
+
+### 3. Branch Structure Rule
+
+**ID**: `rule.git.branch-structure.v1`
+
+**File**: `branch-structure-rule.mdc`
+
+**Purpose**: Defines primary and supporting branch types with purposes, sources, targets, and lifespans
+
+**Use When**:
+- Understanding branch types and purposes
+- Determining which branch to create
+- Identifying source and target branches
+- Planning branch protection
+- Documenting branch architecture
+
+**Key Sections**:
+- Primary branches (`main`, `develop`)
+- Supporting branches (`feature`, `fix`, `hotfix`, `release`, `rc`)
+- Lifecycle for each branch type
+- Branch selection decision tree
+- Rules for each branch type
+
+### 4. Branch Naming Rule
+
+**ID**: `rule.git.branch-naming.v1`
+
+**File**: `branch-naming-rule.mdc`
+
+**Purpose**: Defines and enforces branch naming conventions using regex patterns
+
+**Use When**:
+- Creating new branches
+- Validating branch names
+- Setting up naming enforcement (hooks, CI/CD)
+- Extracting Jira tickets from branch names
+- Implementing automation based on branch patterns
+
+**Key Sections**:
+- Regex patterns for all branch types
+- Valid and invalid examples
+- Validation implementations (JavaScript, Python, Bash)
+- Git hooks for pre-push validation
+- Server-side enforcement (GitLab CI, GitHub Actions)
+- Branch name construction and extraction functions
+
+**Critical Pattern**:
+```regex
+^(feature|fix|hotfix)\/[A-Z]+-\d+$
+```
+
+### 5. Branch Lifecycle Rule
+
+**ID**: `rule.git.branch-lifecycle.v1`
+
+**File**: `branch-lifecycle-rule.mdc`
+
+**Purpose**: Defines complete workflows for branch creation, merging, promotion, and deletion
+
+**Use When**:
+- Creating any type of branch
+- Merging or promoting code
+- Deploying releases
+- Executing hotfixes
+- Resolving merge conflicts
+- Understanding promotion paths
+
+**Key Sections**:
+- Development phase workflows (feature, fix)
+- Release preparation phase (release, RC)
+- Deployment phase (merge to main, tagging)
+- Hotfix phase (emergency fixes)
+- Maintenance phase (multiple versions)
+- Common scenarios with step-by-step commands
+- Quality gates for each phase
+
+**Core Principle**: Controlled promotion
+```
+develop → release/x.x → rc/x.x.x (optional) → main → tag → develop (forward-merge)
+```
+
+### 6. Branch Protection Rule
+
+**ID**: `rule.git.branch-protection.v1`
+
+**File**: `branch-protection-rule.mdc`
+
+**Purpose**: Defines branch protection settings, CI/CD integration, and automation patterns
+
+**Use When**:
+- Setting up new repository
+- Configuring branch protection rules
+- Implementing CI/CD pipelines
+- Creating Git hooks
+- Setting up Jira integration
+- Implementing automated branch management
+- Monitoring compliance
+
+**Key Sections**:
+- Protection requirements for each branch type
+- CI/CD pipeline configurations (GitLab, GitHub)
+- Automated branch management (auto-delete, naming enforcement)
+- Merge request/pull request templates
+- Jira integration patterns
+- Automation scripts (branch creation, auditing, stale detection)
+- Monitoring and compliance
+
+## Quick Navigation Guide
+
+### "I need to..."
+
+#### "...understand the overall strategy"
+→ Start with: `branching-strategy-overview.mdc`
+
+#### "...know which branch type to create"
+→ Use: `branch-structure-rule.mdc` (see decision tree)
+
+#### "...validate a branch name"
+→ Use: `branch-naming-rule.mdc`
+
+#### "...create a feature branch"
+→ Use: `branch-lifecycle-rule.mdc` (Development Phase)
+
+#### "...prepare a release"
+→ Use: `branch-lifecycle-rule.mdc` (Release Preparation Phase)
+
+#### "...deploy to production"
+→ Use: `branch-lifecycle-rule.mdc` (Deployment Phase)
+
+#### "...fix a production bug"
+→ Use: `branch-lifecycle-rule.mdc` (Hotfix Phase)
+
+#### "...set up branch protection"
+→ Use: `branch-protection-rule.mdc`
+
+#### "...configure CI/CD"
+→ Use: `branch-protection-rule.mdc` (CI/CD Integration section)
+
+#### "...understand when AI should apply these rules"
+→ Use: `agent-application-rule.mdc`
+
+## Rule Dependencies
+
+### Dependency Graph
+
+```
+agent-application-rule.mdc
+  ├── branching-strategy-overview.mdc
+  ├── branch-structure-rule.mdc
+  ├── branch-naming-rule.mdc
+  ├── branch-lifecycle-rule.mdc
+  └── branch-protection-rule.mdc
+
+branch-lifecycle-rule.mdc
+  ├── branch-structure-rule.mdc
+  └── branch-naming-rule.mdc
+
+branch-protection-rule.mdc
+  ├── branch-structure-rule.mdc
+  ├── branch-naming-rule.mdc
+  └── branch-lifecycle-rule.mdc
+
+branching-strategy-overview.mdc
+  ├── branch-structure-rule.mdc
+  ├── branch-naming-rule.mdc
+  ├── branch-lifecycle-rule.mdc
+  └── branch-protection-rule.mdc
+```
+
+### Cross-Domain Dependencies
+
+These git rules can integrate with:
+
+```yaml
+# Ticket system integration
+requires:
+  - rule.ticket.current.v1  # Get active ticket for branch naming
+
+# Commit message standards
+requires:
+  - rule.development.commit-message.v1  # Enforce commit conventions
+
+# Documentation
+requires:
+  - rule.documentation.architecture.v1  # Document branching strategy
+```
+
+## Common Workflows and Rule Combinations
+
+### Workflow 1: Start New Feature
+
+**Rules Needed**:
+1. `branch-naming-rule.mdc` - Validate ticket and construct name
+2. `branch-structure-rule.mdc` - Confirm source is `develop`
+3. `branch-lifecycle-rule.mdc` - Follow creation workflow
+
+**Commands**:
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feature/EPP-157
+```
+
+### Workflow 2: Complete Feature
+
+**Rules Needed**:
+1. `branch-lifecycle-rule.mdc` - Follow completion workflow
+2. `branch-protection-rule.mdc` - Ensure tests pass
+
+**Commands**:
+```bash
+git checkout develop
+git merge --no-ff feature/EPP-157
+git push origin develop
+git branch -d feature/EPP-157
+```
+
+### Workflow 3: Prepare Release
+
+**Rules Needed**:
+1. `branch-naming-rule.mdc` - Format version number
+2. `branch-lifecycle-rule.mdc` - Follow release workflow
+3. `branch-protection-rule.mdc` - Apply protection rules
+
+**Commands**:
+```bash
+git checkout develop
+git checkout -b release/9.10
+```
+
+### Workflow 4: Deploy to Production
+
+**Rules Needed**:
+1. `branch-lifecycle-rule.mdc` - Follow deployment workflow
+2. `branch-protection-rule.mdc` - Trigger CI/CD
+
+**Commands**:
+```bash
+git checkout main
+git merge --no-ff release/9.10
+git tag -a v9.10.0 -m "Release 9.10.0"
+git push origin main --tags
+git checkout develop
+git merge --no-ff main
+git push origin develop
+```
+
+### Workflow 5: Emergency Hotfix
+
+**Rules Needed**:
+1. `branch-naming-rule.mdc` - Validate hotfix name
+2. `branch-structure-rule.mdc` - Confirm source is `main`
+3. `branch-lifecycle-rule.mdc` - Follow hotfix workflow
+
+**Commands**:
+```bash
+git checkout main
+git checkout -b hotfix/EBASE-127
+# ... make fix ...
+git checkout main
+git merge --no-ff hotfix/EBASE-127
+git tag -a v9.9.1 -m "Hotfix 9.9.1"
+git push origin main --tags
+git checkout develop
+git merge --no-ff main
+git push origin develop
+```
+
+## Rule Authoring Standards
+
+All rules in this framework follow the rule-authoring standards:
+
+- **ID Format**: `rule.git.[action].v[major]`
+- **File Structure**: YAML front-matter + canonical sections
+- **Versioning**: Semantic versioning (MAJOR.MINOR.PATCH)
+- **Provenance**: Owner and last review date
+- **Cross-References**: ID-based dependencies
+- **Validation**: Must-pass checklists
+
+**See**: `rule.authoring.*` for complete authoring standards.
+
+## Implementation Checklist
+
+When adopting this branching strategy in a repository:
+
+- [ ] Read `branching-strategy-overview.mdc` to understand overall approach
+- [ ] Create `main` and `develop` branches
+- [ ] Configure branch protection per `branch-protection-rule.mdc`
+- [ ] Set up CI/CD pipeline per `branch-protection-rule.mdc`
+- [ ] Install Git hooks for branch name validation
+- [ ] Create PR/MR templates
+- [ ] Document in `CONTRIBUTING.md`
+- [ ] Train team on branching conventions
+- [ ] Clean up legacy branches
+- [ ] Configure Jira integration (if applicable)
+
+## Getting Started
+
+### For Developers
+
+1. **Learn the strategy**: Read `branching-strategy-overview.mdc`
+2. **Understand branch types**: Review `branch-structure-rule.mdc`
+3. **Learn naming rules**: Study `branch-naming-rule.mdc`
+4. **Follow workflows**: Bookmark `branch-lifecycle-rule.mdc`
+
+### For Platform/DevOps Engineers
+
+1. **Understand requirements**: Read `branch-protection-rule.mdc`
+2. **Configure protection**: Follow protection settings tables
+3. **Set up CI/CD**: Use provided pipeline examples
+4. **Enable automation**: Install hooks and scripts
+
+### For AI Agents
+
+1. **Understand triggers**: Read `agent-application-rule.mdc`
+2. **Load dependencies**: Follow `requires` chains
+3. **Apply rules**: Use scenarios and checklists
+4. **Validate output**: Check against must-pass criteria
+
+## Support and Maintenance
+
+### Rule Ownership
+
+- **Owner**: team-platform
+- **Last Review**: 2025-11-22
+- **Next Review**: 2026-05-22 (6 months)
+
+### Updating Rules
+
+When updating any rule in this framework:
+
+1. Update version number (semantic versioning)
+2. Update `last_review` date in provenance
+3. Update cross-references if IDs change
+4. Update this index if new rules added
+5. Document breaking changes in rule itself
+
+### Feedback and Issues
+
+For questions, issues, or improvements:
+
+1. Create ticket in project management system
+2. Tag with `branching-strategy` and `git-rules`
+3. Reference specific rule ID in description
+
+## FINAL MUST-PASS CHECKLIST
+
+When using or maintaining this rule framework:
+
+- [ ] All 6 core rules are present and accessible
+- [ ] Rule IDs follow naming convention: `rule.git.[action].v[major]`
+- [ ] Dependencies are correctly specified in `requires` fields
+- [ ] Each rule has clear purpose and use cases
+- [ ] Workflows reference specific rule sections
+- [ ] Cross-domain integrations are documented
+- [ ] Implementation checklist is complete
+- [ ] Navigation paths are clear and logical
+
+---
+Generated by: rule.git.rules-index.v1
+Last Updated: 2025-11-22

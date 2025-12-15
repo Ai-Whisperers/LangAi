@@ -1,0 +1,32 @@
+id: podcast-scripting-workflow
+name: "Podcast Script Writing"
+description: "Complete workflow for researching, analyzing, and scripting cinema podcast episodes"
+tags:
+  - podcast
+  - cinema
+  - script
+  - research
+  - analysis
+version: 1.0.0
+owner: team-content
+items:
+  - path: prompts/podcast/plan-episode.prompt.md
+    kind: prompt
+  - path: prompts/podcast/collect-youtube-sources.prompt.md
+    kind: prompt
+  - path: prompts/podcast/collect-blog-critiques.prompt.md
+    kind: prompt
+  - path: prompts/podcast/analyze-cinema-content.prompt.md
+    kind: prompt
+  - path: prompts/podcast/write-cinema-opinion.prompt.md
+    kind: prompt
+  - path: prompts/podcast/synthesize-episode-content.prompt.md
+    kind: prompt
+  - path: prompts/podcast/create-episode-essay.prompt.md
+    kind: prompt
+  - path: prompts/podcast/convert-essay-to-script.prompt.md
+    kind: prompt
+  - path: prompts/podcast/optimize-script-flow.prompt.md
+    kind: prompt
+  - path: prompts/podcast/validate-script-quality.prompt.md
+    kind: prompt

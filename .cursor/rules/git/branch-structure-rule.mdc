@@ -1,0 +1,390 @@
+---
+id: rule.git.branch-structure.v1
+kind: rule
+version: 1.0.0
+description: Defines primary branches (main, develop) and supporting branch types (release, rc, feature, fix, hotfix) with their purposes, sources, targets, and lifespans.
+globs: ""
+governs: ""
+implements: git.branch-structure
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-platform, last_review: 2025-11-22 }
+alwaysApply: false
+---
+
+# Git Branch Structure Rule
+
+## Purpose
+
+This rule defines the complete branch structure for repositories using the main/develop branching model. It specifies the purpose, source, target, and lifespan of each branch type to ensure consistent usage across the development team.
+
+## Branch Categories
+
+### Primary Branches (Permanent)
+
+These branches exist for the lifetime of the repository and are never deleted.
+
+#### `main`
+
+- **Purpose**: Represents production-ready code
+- **Contains**: Only thoroughly tested, approved code ready for deployment
+- **Source**: N/A (created at repository initialization)
+- **Target**: N/A (permanent branch)
+- **Protection**: REQUIRED - see `rule.git.branch-protection.v1`
+- **Receives From**: `release/x.x`, `rc/x.x.x`, `hotfix/<JIRA-CODE>`
+- **Merges To**: `develop` (forward-merge after deployment)
+
+**Rules**:
+- Direct commits are FORBIDDEN
+- All merges require pull request/merge request review
+- All merges must be fast-forward or no-fast-forward with merge commit
+- Every merge should be tagged with version number
+
+**Tags**:
+```bash
+# After merging release to main
+git tag -a v9.10.0 -m "Release version 9.10.0"
+git push origin v9.10.0
+```
+
+#### `develop`
+
+- **Purpose**: Integration branch for ongoing development
+- **Contains**: Latest delivered development changes for next release
+- **Source**: N/A (created at repository initialization)
+- **Target**: N/A (permanent branch)
+- **Protection**: REQUIRED - see `rule.git.branch-protection.v1`
+- **Receives From**: `feature/<JIRA-CODE>`, `fix/<JIRA-CODE>`, `main` (after releases)
+- **Merges To**: `release/x.x` (when preparing release)
+
+**Rules**:
+- Direct commits should be AVOIDED (use feature branches)
+- All merges require pull request/merge request review
+- Must remain stable and buildable at all times
+- Automated tests must pass before merge
+
+### Supporting Branches (Temporary/Long-lived)
+
+These branches have specific purposes and limited lifespans.
+
+#### `feature/<JIRA-CODE>`
+
+- **Purpose**: Develop new features, enhancements, or epics
+- **Contains**: New functionality or significant changes
+- **Source**: `develop`
+- **Target**: `develop`
+- **Lifespan**: Temporary (delete after merge)
+- **Protection**: Optional (team preference)
+- **Naming**: MUST follow pattern `feature/[A-Z]+-\d+` (see `rule.git.branch-naming.v1`)
+
+**Lifecycle**:
+```bash
+# Create
+git checkout develop
+git pull origin develop
+git checkout -b feature/EPP-157
+
+# Work
+git add .
+git commit -m "EPP-157: Implement new dashboard"
+
+# Complete
+git checkout develop
+git merge --no-ff feature/EPP-157
+git push origin develop
+git branch -d feature/EPP-157
+git push origin --delete feature/EPP-157
+```
+
+**Rules**:
+- MUST branch from `develop`
+- MUST merge back to `develop`
+- Should be relatively short-lived (< 2 weeks ideal)
+- Must reference Jira ticket in all commits
+- Delete after successful merge
+
+#### `fix/<JIRA-CODE>`
+
+- **Purpose**: Fix bugs in active development or release branches
+- **Contains**: Bug fixes and corrections
+- **Source**: `develop` OR `release/x.x` (depending on where bug exists)
+- **Target**: Same branch as source
+- **Lifespan**: Temporary (delete after merge)
+- **Protection**: Optional (team preference)
+- **Naming**: MUST follow pattern `fix/[A-Z]+-\d+` (see `rule.git.branch-naming.v1`)
+
+**Lifecycle (Fix in Development)**:
+```bash
+# Create from develop
+git checkout develop
+git pull origin develop
+git checkout -b fix/EBASE-123
+
+# Work
+git add .
+git commit -m "EBASE-123: Fix validation error"
+
+# Complete
+git checkout develop
+git merge --no-ff fix/EBASE-123
+git push origin develop
+git branch -d fix/EBASE-123
+```
+
+**Lifecycle (Fix in Release)**:
+```bash
+# Create from release branch
+git checkout release/9.10
+git pull origin release/9.10
+git checkout -b fix/EBASE-124
+
+# Work
+git add .
+git commit -m "EBASE-124: Fix QA issue"
+
+# Complete
+git checkout release/9.10
+git merge --no-ff fix/EBASE-124
+git push origin release/9.10
+git branch -d fix/EBASE-124
+
+# May need to merge or cherry-pick to develop
+git checkout develop
+git merge --no-ff release/9.10
+# OR
+git cherry-pick <commit-hash>
+```
+
+**Rules**:
+- MUST branch from `develop` or `release/x.x`
+- MUST merge back to same source branch
+- Should be cherry-picked or merged to newer branches if applicable
+- Delete after successful merge
+
+#### `hotfix/<JIRA-CODE>`
+
+- **Purpose**: Fix critical bugs in production immediately
+- **Contains**: Urgent fixes for production issues
+- **Source**: `main`
+- **Target**: `main` → tag → forward-merge to `develop`
+- **Lifespan**: Temporary (delete after complete workflow)
+- **Protection**: Optional (team preference)
+- **Naming**: MUST follow pattern `hotfix/[A-Z]+-\d+` (see `rule.git.branch-naming.v1`)
+
+**Lifecycle**:
+```bash
+# Create from main
+git checkout main
+git pull origin main
+git checkout -b hotfix/EBASE-127
+
+# Work
+git add .
+git commit -m "EBASE-127: Fix critical security issue"
+
+# Merge to main
+git checkout main
+git merge --no-ff hotfix/EBASE-127
+git tag -a v9.9.1 -m "Hotfix 9.9.1"
+git push origin main --tags
+
+# Forward-merge to develop
+git checkout develop
+git merge --no-ff main
+git push origin develop
+
+# Clean up
+git branch -d hotfix/EBASE-127
+git push origin --delete hotfix/EBASE-127
+```
+
+**Additional Consideration**:
+```bash
+# May need to cherry-pick to active release branches
+git checkout release/9.10
+git cherry-pick <hotfix-commit-hash>
+git push origin release/9.10
+```
+
+**Rules**:
+- MUST branch from `main`
+- MUST merge to `main` first
+- MUST be tagged with patch version
+- MUST forward-merge to `develop`
+- MAY need cherry-pick to active release branches
+- Bypass normal release cycle only for critical issues
+- Delete after complete workflow
+
+#### `release/x.x`
+
+- **Purpose**: Stabilize and prepare specific version for production
+- **Contains**: Feature-complete code for version x.x
+- **Source**: `develop`
+- **Target**: `main` (via direct merge or through `rc/x.x.x`)
+- **Lifespan**: Long-lived (maintained for version support)
+- **Protection**: RECOMMENDED - see `rule.git.branch-protection.v1`
+- **Naming**: MUST follow pattern `release/[major].[minor]`
+
+**Lifecycle**:
+```bash
+# Create when ready for QA
+git checkout develop
+git pull origin develop
+git checkout -b release/9.10
+
+# Only bug fixes and stabilization allowed
+# (use fix branches)
+
+# Option 1: Direct to main
+git checkout main
+git merge --no-ff release/9.10
+git tag -a v9.10.0 -m "Release 9.10.0"
+git push origin main --tags
+
+# Option 2: Through RC branch
+git checkout release/9.10
+git checkout -b rc/9.10.0
+# ... test ...
+git checkout main
+git merge --no-ff rc/9.10.0
+git tag -a v9.10.0 -m "Release 9.10.0"
+git push origin main --tags
+
+# Forward-merge to develop
+git checkout develop
+git merge --no-ff main
+git push origin develop
+
+# Keep release branch for maintenance
+git push origin release/9.10
+```
+
+**Rules**:
+- MUST branch from `develop` when feature-complete
+- ONLY bug fixes and stabilization changes allowed (no new features)
+- MAY remain active for ongoing maintenance
+- SHOULD merge to `main` when ready for production
+- After deployment, merge `main` back to `develop`
+- Version number in branch name is [major].[minor] only (no patch)
+
+#### `rc/x.x.x` (Release Candidate)
+
+- **Purpose**: Final pre-production testing and validation
+- **Contains**: Release candidate requiring final approval
+- **Source**: `release/x.x`
+- **Target**: `main`
+- **Lifespan**: Temporary (delete after deployment or abandon)
+- **Protection**: RECOMMENDED - see `rule.git.branch-protection.v1`
+- **Naming**: MUST follow pattern `rc/[major].[minor].[patch]`
+
+**Lifecycle**:
+```bash
+# Create from release branch for final validation
+git checkout release/9.10
+git pull origin release/9.10
+git checkout -b rc/9.10.0
+
+# Deploy to staging/pre-prod for final testing
+# No code changes on RC branch itself
+
+# If approved: Merge to main
+git checkout main
+git merge --no-ff rc/9.10.0
+git tag -a v9.10.0 -m "Release 9.10.0"
+git push origin main --tags
+
+# Forward-merge to develop
+git checkout develop
+git merge --no-ff main
+git push origin develop
+
+# Clean up
+git branch -d rc/9.10.0
+git push origin --delete rc/9.10.0
+
+# If rejected: Abandon and fix on release branch
+git branch -d rc/9.10.0
+```
+
+**Rules**:
+- MUST branch from `release/x.x` (not from develop or main)
+- NO code changes on RC branch (fixes go to release branch, then create new RC)
+- OPTIONAL - teams may merge release directly to main instead
+- Used for final validation in pre-production environment
+- Version number includes [major].[minor].[patch]
+- Delete after successful deployment or abandonment
+
+## Branch Selection Decision Tree
+
+### "I need to..."
+
+#### "...develop a new feature"
+→ Create `feature/<JIRA-CODE>` from `develop`
+
+#### "...fix a bug found during development"
+→ Create `fix/<JIRA-CODE>` from `develop`
+
+#### "...fix a bug found during QA/testing"
+→ Create `fix/<JIRA-CODE>` from `release/x.x`
+
+#### "...fix a critical production bug"
+→ Create `hotfix/<JIRA-CODE>` from `main`
+
+#### "...prepare a release for QA"
+→ Create `release/x.x` from `develop`
+
+#### "...deploy to staging for final approval"
+→ Create `rc/x.x.x` from `release/x.x` (optional)
+
+#### "...deploy to production"
+→ Merge `release/x.x` or `rc/x.x.x` to `main`, tag, forward-merge to `develop`
+
+## Branch Protection Summary
+
+See `rule.git.branch-protection.v1` for complete details.
+
+**Minimum Protection**:
+
+| Branch | Require PR | Require Reviews | Require Tests | Allow Force Push |
+|--------|------------|-----------------|---------------|------------------|
+| `main` | ✓ Yes | ✓ Yes (≥1) | ✓ Yes | ✗ No |
+| `develop` | ✓ Yes | ✓ Yes (≥1) | ✓ Yes | ✗ No |
+| `release/*` | Recommended | Recommended | ✓ Yes | ✗ No |
+| `rc/*` | Recommended | Recommended | ✓ Yes | ✗ No |
+
+## Integration with Other Rules
+
+```yaml
+# Validate branch names
+requires:
+  - rule.git.branch-naming.v1
+
+# Understand branch lifecycle
+requires:
+  - rule.git.branch-lifecycle.v1
+
+# Set up protection rules
+requires:
+  - rule.git.branch-protection.v1
+
+# Get Jira ticket for branch name
+requires:
+  - rule.ticket.current.v1  # If using ticket system
+```
+
+## FINAL MUST-PASS CHECKLIST
+
+When creating or documenting branch structure:
+
+- [ ] Primary branches (`main`, `develop`) are permanent and protected
+- [ ] Supporting branch types have clear source and target branches
+- [ ] Branch purposes are distinct and non-overlapping
+- [ ] Naming patterns are specified for each branch type
+- [ ] Lifecycle (temporary vs. long-lived) is defined
+- [ ] Merge destinations are unambiguous
+- [ ] Deletion rules are clear (when to keep vs. delete)
+- [ ] Decision tree helps users select correct branch type
+
+---
+Generated by: rule.git.branch-structure.v1
+Last Updated: 2025-11-22

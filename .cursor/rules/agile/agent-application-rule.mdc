@@ -1,0 +1,425 @@
+---
+id: rule.agile.agent-application.v1
+kind: rule
+version: 1.0.1
+description: Agent guidance for when and how to apply agile documentation rules. Use this when user requests involve creating/documenting Epics, Business Features, Technical Features, User Stories, splitting stories, or structuring agile artifacts for development planning.
+implements: agile.agent-application
+requires:
+  - rule.agile.epic-documentation.v1
+  - rule.agile.business-feature-documentation.v1
+  - rule.agile.technical-feature-documentation.v1
+  - rule.agile.user-story-documentation.v1
+  - rule.agile.story-splitting.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-agile, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Agile Documentation - Agent Application Rule
+
+## Purpose & Scope
+
+This rule provides explicit agent guidance for when and how to apply agile documentation rules. It helps agents decide between Epic, Business Feature, Technical Feature, User Story documentation, and when to apply story splitting guidance.
+
+**Applies to**: AI agents creating or updating agile development artifacts (Epics, Features, Stories).
+
+**Does not apply to**: Human developers (use agile/README.md), technical specifications (use technical-specifications rules), ticket documentation (use ticket rules).
+
+## Inputs (Contract)
+
+- User request involving agile artifact creation/update
+- Work scope and complexity indication
+- Timeline indication (sprint, multiple sprints, release)
+- Value delivery context (user-facing, technical capability, enablement)
+
+## Outputs (Contract)
+
+Agent decision on:
+- Which agile documentation rule to apply
+- Whether story splitting is needed
+- Correct agile artifact hierarchy
+- Appropriate level of documentation detail
+
+## User Request Pattern to Rule Mapping
+
+### Epic Creation/Documentation
+
+| User Request Pattern | Primary Rule | When to Apply |
+|---------------------|--------------|---------------|
+| "Create epic for [large initiative]" | `rule.agile.epic-documentation.v1` | Multi-sprint body of work |
+| "Document [system/capability] epic" | `rule.agile.epic-documentation.v1` | Large-scale strategic initiative |
+| "Break down [major project]" | `rule.agile.epic-documentation.v1` | Requires decomposition into features |
+
+**Qualification Criteria**:
+- ✅ Spans multiple sprints (typically 2+ sprints)
+- ✅ Contains multiple features or capabilities
+- ✅ Strategic business initiative
+- ✅ Requires high-level planning and roadmap
+
+### Business Feature Creation/Documentation
+
+| User Request Pattern | Primary Rule | When to Apply |
+|---------------------|--------------|---------------|
+| "Create feature for [user capability]" | `rule.agile.business-feature-documentation.v1` | User-facing functionality |
+| "Document [functionality] feature" | `rule.agile.business-feature-documentation.v1` | Delivers direct user value |
+| "Plan [business capability]" | `rule.agile.business-feature-documentation.v1` | Cohesive user-facing functionality |
+
+**Qualification Criteria**:
+- ✅ Delivers value to end users or stakeholders
+- ✅ User-facing functionality
+- ✅ Cohesive, standalone capability
+- ✅ Contains multiple user stories
+- ✅ Can be demonstrated to stakeholders
+
+### Technical Feature Creation/Documentation
+
+| User Request Pattern | Primary Rule | When to Apply |
+|---------------------|--------------|---------------|
+| "Create technical feature for [infrastructure]" | `rule.agile.technical-feature-documentation.v1` | Technical enablement |
+| "Document [architecture/platform] work" | `rule.agile.technical-feature-documentation.v1` | Internal capability |
+| "Plan [refactoring/optimization]" | `rule.agile.technical-feature-documentation.v1` | Technical improvement |
+
+**Qualification Criteria**:
+- ✅ Delivers technical capability (not direct user value)
+- ✅ Supports other features or system health
+- ✅ Infrastructure, architecture, or platform work
+- ✅ Performance, security, maintainability improvements
+- ✅ Not directly visible to end users
+
+### User Story Creation/Documentation
+
+| User Request Pattern | Primary Rule | When to Apply |
+|---------------------|--------------|---------------|
+| "Create story for [specific task]" | `rule.agile.user-story-documentation.v1` | Sprint-sized work |
+| "Document [task] as story" | `rule.agile.user-story-documentation.v1` | Specific, completable work |
+| "Write story for [feature detail]" | `rule.agile.user-story-documentation.v1` | Part of feature |
+
+**Qualification Criteria**:
+- ✅ Completable within single sprint (1-2 weeks)
+- ✅ Specific, focused work item
+- ✅ Clear acceptance criteria
+- ✅ Part of a feature or standalone task
+- ✅ Testable and demonstrable
+
+### Story Splitting
+
+| User Request Pattern | Primary Rule | When to Apply |
+|---------------------|--------------|---------------|
+| "Split story [ID]" | `rule.agile.story-splitting.v1` | Story too large |
+| "Story is too big" | `rule.agile.story-splitting.v1` | Cannot complete in sprint |
+| "Break down story [ID]" | `rule.agile.story-splitting.v1` | Needs decomposition |
+
+**Qualification Criteria (ANY indicates need to split)**:
+- ❌ Cannot complete in single sprint
+- ❌ Multiple acceptance criteria spanning different capabilities
+- ❌ Multiple technical components involved
+- ❌ High uncertainty or complexity
+- ❌ Team cannot estimate confidently
+
+## Deterministic Steps
+
+### Step 1: Identify Request Type
+
+When user requests agile documentation, categorize:
+
+1. **Epic Request**: "Create epic", "large initiative", "multi-sprint project", "strategic capability"
+   - → Execute Scenario A (Epic Documentation)
+   
+2. **Business Feature Request**: "Create feature", "user functionality", "business capability", "user-facing"
+   - → Execute Scenario B (Business Feature Documentation)
+   
+3. **Technical Feature Request**: "Technical feature", "infrastructure", "refactoring", "platform", "architecture"
+   - → Execute Scenario C (Technical Feature Documentation)
+   
+4. **User Story Request**: "Create story", "task", "sprint work", "specific implementation"
+   - → Execute Scenario D (User Story Documentation)
+   
+5. **Story Too Large**: "Story is big", "cannot complete", "needs splitting", "break down story"
+   - → Execute Scenario E (Story Splitting)
+
+### Step 2: Apply Qualification Criteria
+
+For each artifact type, validate against qualification criteria:
+
+#### Epic Qualification:
+```
+Is work multi-sprint AND strategic AND contains multiple features?
+  ├─ YES → Apply rule.agile.epic-documentation.v1
+  │
+  └─ NO → Determine if Feature or Story instead
+```
+
+#### Feature vs Story Qualification:
+```
+Is work completable in single sprint?
+  ├─ YES → User Story (rule.agile.user-story-documentation.v1)
+  │
+  └─ NO → Feature (determine Business vs Technical)
+      ├─ User-facing? → Business Feature
+      └─ Technical enablement? → Technical Feature
+```
+
+#### Business vs Technical Feature:
+```
+Does work deliver direct user value?
+  ├─ YES → Business Feature (rule.agile.business-feature-documentation.v1)
+  │
+  └─ NO → Technical Feature (rule.agile.technical-feature-documentation.v1)
+```
+
+### Step 3: Apply Appropriate Rule
+
+Based on qualification:
+
+**For Epic**:
+1. Apply `rule.agile.epic-documentation.v1`
+2. Create sections: Header, Business Context, Scope, Requirements, Technical Overview, Risks, Timeline, Feature Breakdown
+3. Reference example: `epic-example.md`
+
+**For Business Feature**:
+1. Apply `rule.agile.business-feature-documentation.v1`
+2. Create sections: Header, Business Context, User Stories, Requirements, Scope, Technical Considerations, Dependencies, Acceptance Criteria
+3. Reference example: `business-feature-example.md`
+
+**For Technical Feature**:
+1. Apply `rule.agile.technical-feature-documentation.v1`
+2. Create sections: Header, Technical Context, User Stories, Technical Requirements, Architecture, Scope, Dependencies, Acceptance Criteria
+3. Reference example: `technical-feature-example.md`
+
+**For User Story**:
+1. Apply `rule.agile.user-story-documentation.v1`
+2. Create sections: Header, Story Description, Acceptance Criteria, Technical Notes, Dependencies, Definition of Done
+3. Reference example: `user-story-example.md`
+
+**For Story Splitting**:
+1. Apply `rule.agile.story-splitting.v1`
+2. Identify splitting patterns: workflow steps, acceptance criteria, CRUD operations, simple/complex paths, data variations
+3. Create multiple smaller stories from one large story
+
+## Common Scenarios
+
+### Scenario A: Creating Epic
+
+**User Request**: "Create epic for implementing Multi-Currency Support in payment system"
+
+**Agent Actions** (in order):
+1. Validate qualification:
+   - Multi-sprint? YES (estimate 3-4 sprints)
+   - Contains multiple features? YES (currency conversion, rate management, transaction handling)
+   - Strategic initiative? YES (expand to international markets)
+   - → Qualifies as Epic
+   
+2. Apply `rule.agile.epic-documentation.v1`:
+   - Create Epic Header: ID, Title, Status, Priority
+   - Document Business Context: Problem (limited to single currency), Value (international expansion), Success Metrics
+   - Define Scope and Boundaries: In Scope (currencies, rates, conversions), Out of Scope (tax handling)
+   - List High-Level Requirements: Functional (support 10+ currencies), Non-Functional (rate updates < 1min)
+   - Technical Overview: Architecture changes, Technology Stack additions
+   - Risk Assessment: Technical (rate API reliability), Business (compliance complexity)
+   - Timeline and Milestones: 4 sprints, 3 milestones
+   - Feature Breakdown: List features (Currency Management, Rate Service, Transaction Updates)
+   
+3. Reference `epic-example.md` for structure guidance
+
+### Scenario B: Creating Business Feature
+
+**User Request**: "Create feature for Currency Selection in payment form"
+
+**Agent Actions** (in order):
+1. Validate qualification:
+   - User-facing? YES (users select currency)
+   - Direct value delivery? YES (users can pay in preferred currency)
+   - Sprint-completable? NO (2-3 sprints estimated)
+   - → Qualifies as Business Feature
+   
+2. Apply `rule.agile.business-feature-documentation.v1`:
+   - Create Feature Header: ID, Title, Epic (Multi-Currency Support), Status, Priority
+   - Document Business Context: Problem (users forced to use default currency), User Need (pay in home currency), Business Value (reduced cart abandonment)
+   - Define User Stories: Primary (As user, select currency), Secondary (As user, see converted prices)
+   - List Requirements: Functional (dropdown, real-time conversion), Non-Functional (< 200ms display)
+   - Define Scope: In Scope (selection, display), Out of Scope (currency storage)
+   - Technical Considerations: API integration, state management
+   - Dependencies: Currency Rate Service (parallel feature)
+   - Acceptance Criteria: Currency selectable, prices convert immediately, selection persists
+   
+3. Reference `business-feature-example.md` for structure guidance
+
+### Scenario C: Creating Technical Feature
+
+**User Request**: "Create technical feature for Currency Rate Service"
+
+**Agent Actions** (in order):
+1. Validate qualification:
+   - User-facing? NO (backend service)
+   - Direct user value? NO (enables other features)
+   - Technical capability? YES (provides rate data)
+   - → Qualifies as Technical Feature
+   
+2. Apply `rule.agile.technical-feature-documentation.v1`:
+   - Create Feature Header: ID, Title, Epic (Multi-Currency Support), Status, Priority
+   - Document Technical Context: Problem (no rate data source), Technical Need (centralized rate service), Business Value (supports currency features)
+   - Define User Stories: As developer, query rates; As system, update rates automatically
+   - List Technical Requirements: API design, caching strategy, update frequency
+   - Architecture: Service layer, external API integration, cache layer
+   - Scope: In Scope (rate retrieval, caching), Out of Scope (rate prediction)
+   - Dependencies: External rate API (e.g., exchangerate-api.com)
+   - Acceptance Criteria: Rates queryable via API, updates every hour, 99.9% uptime
+   
+3. Reference `technical-feature-example.md` for structure guidance
+
+### Scenario D: Creating User Story
+
+**User Request**: "Create story for adding currency dropdown to checkout form"
+
+**Agent Actions** (in order):
+1. Validate qualification:
+   - Sprint-completable? YES (3-5 days estimated)
+   - Specific focused work? YES (single UI component)
+   - Clear acceptance criteria? YES (dropdown functional)
+   - → Qualifies as User Story
+   
+2. Apply `rule.agile.user-story-documentation.v1`:
+   - Create Story Header: ID, Title, Feature (Currency Selection), Status, Points
+   - Write Story: "As a user, I want to select my preferred currency from a dropdown in the checkout form so that I can see prices in my home currency"
+   - Define Acceptance Criteria:
+     - Dropdown displays 10+ supported currencies
+     - Selection triggers price conversion
+     - Selection persists through checkout
+     - Default currency is user's location-based
+   - Technical Notes: React component, Currency Rate Service API call, Redux state
+   - Dependencies: Currency Rate Service (TECH-456)
+   - Definition of Done: Unit tests pass, component renders, accessibility validated
+   
+3. Reference `user-story-example.md` for structure guidance
+
+### Scenario E: Splitting Large Story
+
+**User Request**: "Story US-789 'Implement Multi-Currency Payment Processing' is too large to complete in sprint"
+
+**Agent Actions** (in order):
+1. Apply `rule.agile.story-splitting.v1`:
+   - Identify original story scope:
+     - Currency selection UI
+     - Price conversion logic
+     - Payment gateway integration
+     - Transaction history updates
+     - Error handling for multiple currencies
+   
+2. Identify splitting pattern:
+   - **Pattern: Workflow Steps** (user journey stages)
+   
+3. Split into smaller stories:
+   - US-789A: "Display currency selector in checkout form" (UI only)
+   - US-789B: "Convert prices to selected currency" (conversion logic)
+   - US-789C: "Process payment in selected currency" (gateway integration)
+   - US-789D: "Store currency in transaction history" (persistence)
+   - US-789E: "Handle multi-currency errors" (error paths)
+   
+4. Ensure each story:
+   - Completable in 1-3 days
+   - Independently valuable (or part of clear sequence)
+   - Testable on its own
+   - Has clear acceptance criteria
+
+## Behavioral Guidelines
+
+### Always Do
+
+✅ **Validate qualification criteria before applying rule** - Ensure correct artifact type
+✅ **Reference example files for structure guidance** - Examples show expected quality
+✅ **Check for story splitting needs** - Large stories should be split proactively
+✅ **Maintain hierarchy** - Stories belong to Features, Features belong to Epics
+✅ **Write from user/stakeholder perspective** - Focus on value and outcome
+
+### Never Do
+
+❌ **Create Epic for single-sprint work** - Use Feature or Story instead
+❌ **Mix Business and Technical Feature criteria** - Choose correct type
+❌ **Create Story larger than sprint capacity** - Split first
+❌ **Skip acceptance criteria** - Required for all artifact types
+❌ **Write technical implementation details in Business Features** - Keep focused on user value
+
+### When Unsure
+
+**If work size is ambiguous**:
+- Ask about timeline: Single sprint → Story, Multiple sprints → Feature, Many sprints → Epic
+- Err on side of smaller artifact (easier to combine than split later)
+
+**If Business vs Technical Feature unclear**:
+- Ask: "Is this directly valuable to end users?" 
+  - YES → Business Feature
+  - NO → Technical Feature
+- When in doubt, if it has UI/UX, it's likely Business Feature
+
+**If Story seems too large**:
+- Apply `rule.agile.story-splitting.v1` proactively
+- Better to have smaller stories than one large blocked story
+
+## Hierarchy and Relationships
+
+**Standard Hierarchy**:
+```
+Epic (Multi-sprint initiative)
+├── Business Feature 1 (User-facing capability)
+│   ├── User Story 1a (Sprint work)
+│   ├── User Story 1b (Sprint work)
+│   └── User Story 1c (Sprint work)
+├── Business Feature 2 (User-facing capability)
+│   └── User Story 2a (Sprint work)
+└── Technical Feature 1 (Technical enablement)
+    ├── User Story T1a (Sprint work)
+    └── User Story T1b (Sprint work)
+```
+
+**Agent should maintain this hierarchy** when creating artifacts.
+
+## Integration Points
+
+This agent application rule coordinates with all agile documentation rules:
+
+- **rule.agile.epic-documentation.v1**: Applied for multi-sprint strategic initiatives
+- **rule.agile.business-feature-documentation.v1**: Applied for user-facing capabilities
+- **rule.agile.technical-feature-documentation.v1**: Applied for technical enablement
+- **rule.agile.user-story-documentation.v1**: Applied for sprint-sized work items
+- **rule.agile.story-splitting.v1**: Applied when stories too large
+
+## Failure Modes and Recovery
+
+**Failure**: Agent creates Epic for single-sprint work
+- **Detection**: Epic contains only 1-2 stories, completable in single sprint
+- **Recovery**: Downgrade to Feature, update artifact type
+- **Prevention**: Apply qualification criteria explicitly
+
+**Failure**: Agent creates Story that's actually a Feature
+- **Detection**: Story contains multiple acceptance criteria spanning different capabilities, estimated > 1 sprint
+- **Recovery**: Upgrade to Feature, break down into stories
+- **Prevention**: Check sprint-completeness criterion
+
+**Failure**: Agent mixes Business and Technical Feature characteristics
+- **Detection**: Feature has both user-facing UI and backend-only technical work
+- **Recovery**: Split into separate Business Feature (UI) and Technical Feature (backend)
+- **Prevention**: Apply "direct user value" test explicitly
+
+**Failure**: Agent doesn't split large story
+- **Detection**: Story estimated > 8 points or cannot complete in sprint
+- **Recovery**: Apply story-splitting rule, create multiple smaller stories
+- **Prevention**: Proactively check story size during creation
+
+## Related Rules
+
+- **rule.technical-specifications.agent-application.v1**: For migration/technical documentation (different from agile artifacts)
+- **rule.ticket.agent-application.v1**: For ticket/workflow documentation (different from agile planning)
+- **rule.authoring.agent-application.v1**: For creating/updating agile rules themselves
+
+## FINAL MUST-PASS CHECKLIST
+
+Before claiming agile documentation task complete:
+
+- [ ] Correct artifact type identified (Epic/Feature/Story) via qualification criteria
+- [ ] Appropriate rule applied (epic/business-feature/technical-feature/user-story/story-splitting)
+- [ ] Example file referenced for structure guidance
+- [ ] All required sections present per applicable rule
+- [ ] Acceptance criteria defined for all artifacts
+- [ ] Hierarchy maintained (Stories → Features → Epics)
+- [ ] Story size validated (split if needed)
+- [ ] User/stakeholder perspective maintained (not just technical implementation)

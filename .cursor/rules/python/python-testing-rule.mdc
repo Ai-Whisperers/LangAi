@@ -1,0 +1,49 @@
+---
+id: rule.python.testing.v1
+kind: rule
+version: 1.0.0
+description: Pytest testing standards for this repository (structure, fixtures, async tests, markers, and coverage discipline).
+globs: **/tests/**/*.py, **/test_*.py
+governs: ""
+implements: python.testing
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-python, last_review: 2025-12-15 }
+alwaysApply: false
+---
+
+# Python Testing Rule (pytest)
+
+## Purpose & Scope
+
+Ensure changes are covered by fast, reliable tests.
+
+**Applies to**: test code under `tests/` and any changes that require new/updated tests.
+
+## Inputs (Contract)
+
+- The behavior change or bug fix to validate
+- Relevant test files under `tests/`
+- Any required fixtures/mocks
+
+## Outputs (Contract)
+
+- Tests that:
+  - Clearly encode the intended behavior
+  - Cover important edge cases and failure modes
+  - Avoid external network calls unless explicitly marked/integration-tested
+
+## Standards
+
+- **Structure**: Prefer small tests with clear Arrange/Act/Assert sections.
+- **Fixtures**: Use fixtures for shared setup; keep fixture scopes minimal.
+- **Async**: Use `pytest-asyncio` patterns where needed; don’t mix sync/async incorrectly.
+- **Markers**: Use existing markers from pytest configuration (see `pyproject.toml` / `pytest.ini`).
+- **Mocking**: Mock external APIs/services; tests should be deterministic and fast.
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] New/changed behavior has corresponding tests
+- [ ] Tests are deterministic (no flaky time/network dependencies)
+- [ ] Tests follow existing repo structure and naming conventions
+

@@ -1,0 +1,25 @@
+id: prompt-patterns-bundle
+name: "Prompt Pattern Templars & Exemplars"
+description: "Extracted reusable patterns and reference examples from high-quality prompts"
+tags:
+  - prompt-engineering
+  - patterns
+  - templates
+  - best-practices
+  - quality-standards
+version: 1.0.0
+owner: prompt-quality-team
+items:
+  - path: templars/prompt/guided-creation-workflow-templar.md
+    kind: templar
+  - path: templars/prompt/multi-level-validation-templar.md
+    kind: templar
+  - path: templars/prompt/enhancement-workflow-templar.md
+    kind: templar
+  - path: templars/prompt/categorization-workflow-templar.md
+    kind: templar
+  - path: exemplars/prompt/guided-creation-workflow-exemplar.md
+    kind: exemplar
+  - path: exemplars/prompt/comprehensive-documentation-exemplar.md
+    kind: exemplar
+

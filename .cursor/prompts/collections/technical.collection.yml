@@ -1,0 +1,19 @@
+id: technical-docs-bundle
+name: "Technical Documentation"
+description: "Prompts for domain and integration technical documentation"
+tags:
+  - technical
+  - documentation
+  - architecture
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/technical/create-business-rules.prompt.md
+    kind: prompt
+  - path: prompts/technical/create-domain-overview.prompt.md
+    kind: prompt
+  - path: prompts/technical/create-entity-relationship.prompt.md
+    kind: prompt
+  - path: prompts/technical/create-integration-points.prompt.md
+    kind: prompt
+

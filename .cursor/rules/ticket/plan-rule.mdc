@@ -1,0 +1,136 @@
+---
+id: rule.ticket.plan.v1
+kind: rule
+version: 1.0.1
+description: Rules for plan.md - defines ticket objectives, requirements, and implementation strategy with complexity assessment
+globs: **/tickets/**/plan.md, **/tickets/**/context.md, **/tickets/**/timeline.md
+governs: **/tickets/**/plan.md
+implements: plan.update
+requires:
+  - rule.ticket.complexity-assessment.v1
+  - templar.plan.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Plan Rule
+
+## Purpose & Scope
+
+The plan.md file defines what needs to be done for a ticket. It serves as the ticket's "brain" - containing objectives, requirements, and implementation strategy. This rule ensures consistent plan structure and enables complexity-driven implementation strategy selection.
+
+**Applies to**: All `plan.md` files in `tickets/**/` directories.
+
+**Does not apply to**: Template files (`templates/`), archived tickets (`archives/`), or example tickets (`examples/`).
+
+## Inputs (Contract)
+
+- Ticket ID in format `PROJECT-NUMBER` (e.g., `EBASE-123`)
+- Directory `tickets/TICKET-ID/` must exist
+- Ticket objectives or user story description provided by user
+- Acceptance criteria provided by user or derived from requirements
+- Current timestamp available for provenance
+
+## Outputs (Contract)
+
+- Creates `tickets/TICKET-ID/plan.md` if missing, updates if present
+- Ensures sections present: `## Objective`, `## Requirements`, `## Acceptance Criteria`, `## Implementation Strategy`, `## Complexity Assessment`, `## Status`
+- Complexity assessment completed using `rule.ticket.complexity-assessment.v1`
+- Structure follows `templar.plan.v1`
+- Updates `tickets/TICKET-ID/timeline.md` with entry: `[TIMESTAMP] - Plan - Plan created/updated`
+- Preserves existing content in sections not explicitly modified
+
+## Deterministic Steps
+
+1. Validate ticket ID format matches `PROJECT-NUMBER` pattern
+2. Verify `tickets/TICKET-ID/` directory exists
+3. Load `templar.plan.v1` for structure reference
+4. Read existing `plan.md` content if present (preserve non-modified sections)
+5. Execute `rule.ticket.complexity-assessment.v1` to determine implementation track
+6. Generate/update `## Objective` section with provided ticket objectives
+7. Generate/update `## Requirements` section with detailed requirements
+8. Generate/update `## Acceptance Criteria` section with testable criteria
+9. Generate/update `## Implementation Strategy` section based on complexity assessment
+10. Generate/update `## Complexity Assessment` section with Simple Fix or Complex Implementation determination
+11. Update `## Status` section with current plan state
+12. Write updated `plan.md` to disk
+13. Append entry to `timeline.md`: `[TIMESTAMP] - Plan - Plan created/updated`
+
+## Formatting Requirements
+
+Plan.md must follow `templar.plan.v1` structure:
+
+- **Heading Level 1**: File title (optional, "# Plan" or "# TICKET-ID Plan")
+- **Heading Level 2**: Required sections in order:
+  1. `## Objective` - Clear goals statement
+  2. `## Requirements` - Bullet list of detailed requirements
+  3. `## Acceptance Criteria` - Bullet list with checkboxes `- [ ]`
+  4. `## Implementation Strategy` - Ordered or unordered list of approach
+  5. `## Complexity Assessment` - Simple Fix or Complex Implementation with rationale
+  6. `## Status` - Current state (Planning, Ready, In Progress, Complete)
+  7. `## Testing Strategy` (optional) - Test approach if relevant
+  8. `## Notes` (optional) - Constraints, assumptions, decisions
+
+## OPSEC and Leak Control
+
+- NO internal system paths or server names
+- NO credentials, tokens, or API keys
+- NO email addresses or personal identifiable information
+- NO customer data or production identifiers
+- Redact specific system names; use generic references (e.g., "payment service" not "stripe-prod.internal.company.com")
+
+## Integration Points
+
+- **Syncs with**: `rule.ticket.complexity-assessment.v1` (runs during plan creation)
+- **Updates**: `timeline.md` via timeline append
+- **Referenced by**: `rule.ticket.workflow.v1` as first step in ticket lifecycle
+- **JIRA Sync**: Plan content syncs to JIRA immediately for tracking and approval
+
+## Failure Modes and Recovery
+
+**Missing ticket directory**:
+
+- Detection: `tickets/TICKET-ID/` does not exist
+- Recovery: Create directory before proceeding
+- Fallback: Abort and request user create ticket directory structure
+
+**Invalid ticket ID format**:
+
+- Detection: Ticket ID does not match `PROJECT-NUMBER` pattern
+- Recovery: Request valid ticket ID from user
+- Fallback: None - cannot proceed without valid ID
+
+**Complexity assessment fails**:
+
+- Detection: `rule.ticket.complexity-assessment.v1` returns error
+- Recovery: Default to Complex Implementation track (safer)
+- Fallback: Log warning and note manual complexity review needed
+
+**Timeline.md update fails**:
+
+- Detection: Cannot write to timeline.md
+- Recovery: Continue with plan.md creation, log warning
+- Fallback: Plan creation succeeds but timeline not updated
+
+## Provenance Footer Specification
+
+Not applicable - plan.md is human-edited, not generated output. Provenance tracked via timeline.md entries.
+
+## Related Rules
+
+- `rule.ticket.complexity-assessment.v1` - Determines implementation track
+- `rule.ticket.workflow.v1` - Overall ticket lifecycle and plan's role
+- `rule.ticket.context.v1` - Plan informs current context
+- `rule.ticket.validation.v1` - Plan validation before completion
+- `templar.plan.v1` - Structure template for plan.md
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no internal paths, credentials, emails, PII)
+- [ ] plan.md contains all required sections (Objective, Requirements, Acceptance Criteria, Implementation Strategy, Complexity Assessment, Status)
+- [ ] Complexity assessment completed using `rule.ticket.complexity-assessment.v1`
+- [ ] Structure follows `templar.plan.v1`
+- [ ] Only plan.md modified (governs compliance)
+- [ ] timeline.md updated with plan creation/update entry
+- [ ] Acceptance criteria are testable (checkbox format)

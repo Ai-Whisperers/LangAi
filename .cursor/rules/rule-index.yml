@@ -1,0 +1,213 @@
+rules:
+  # Agile
+  rule.agile.agent-application.v1: agile/agent-application-rule.mdc
+  rule.agile.business-feature-documentation.v1: agile/business-feature-documentation-rule.mdc
+  rule.agile.epic-documentation.v1: agile/epic-documentation-rule.mdc
+  rule.agile.story-splitting.v1: agile/story-splitting-rule.mdc
+  rule.agile.technical-feature-documentation.v1: agile/technical-feature-documentation-rule.mdc
+  rule.agile.user-story-documentation.v1: agile/user-story-documentation-rule.mdc
+
+  # CICD
+  rule.cicd.tag-based-versioning.v2: cicd/tag-based-versioning-rule.mdc
+
+  # Database Standards
+  rule.database-standards.database-standards.v1: database-standards/database-standards.mdc
+  rule.database-standards.development-workflow.v1: database-standards/development-workflow.mdc
+  rule.database-standards.general-standards.v1: database-standards/general-standards.mdc
+  rule.database-standards.sql-coding-standards.v1: database-standards/sql-coding-standards.mdc
+  rule.database-standards.template-usage.v1: database-standards/template-usage.mdc
+  rule.database-standards.tracking-standards.v1: database-standards/tracking-standards.mdc
+
+  # Documentation
+  rule.documentation.agent-application.v1: documentation/agent-application-rule.mdc
+  rule.documentation.documentation-standards.v1: documentation/documentation-standards-rule.mdc
+  rule.documentation.documentation-testing.v1: documentation/documentation-testing-rule.mdc
+  rule.documentation.readme-structure.v1: readme-structure-rule.mdc
+  rule.documentation.standards.v1: documentation/documentation-standards-rule.mdc
+  rule.documentation.testing.v1: documentation/documentation-testing-rule.mdc
+  rule.documentation.unit-test-documentation.v1: documentation/unit-test-documentation-rule.mdc
+  rule.documentation.unit-tests.v1: documentation/unit-test-documentation-rule.mdc
+
+  # Python
+  rule.python.agent-application.v1: python/agent-application-rule.mdc
+  rule.python.code-style.v1: python/python-code-style-rule.mdc
+  rule.python.testing.v1: python/python-testing-rule.mdc
+
+  # Git
+  rule.git.agent-application.v1: git/agent-application-rule.mdc
+  rule.git.branch-lifecycle.v1: git/branch-lifecycle-rule.mdc
+  rule.git.branch-naming.v1: git/branch-naming-rule.mdc
+  rule.git.branch-protection.v1: git/branch-protection-rule.mdc
+  rule.git.branch-structure.v1: git/branch-structure-rule.mdc
+  rule.git.branching-strategy-overview.v1: git/branching-strategy-overview.mdc
+
+  # Migration
+  rule.migration.migration-overview.v1: migration/migration-overview.mdc
+  rule.migration.phase-1-data-collection.v1: migration/phase-1-data-collection.mdc
+  rule.migration.phase-2-specification-creation.v1: migration/phase-2-specification-creation.mdc
+  rule.migration.phase-2b-specification-review.v1: migration/phase-2b-specification-review.mdc
+  rule.migration.phase-3-migration-planning.v1: migration/phase-3-migration-planning.mdc
+
+  # Prompts
+  rule.prompts.agent-application.v1: prompts/agent-application-rule.mdc
+  rule.prompts.creation.v1: prompts/prompt-creation-rule.mdc
+  rule.prompts.extraction.v1: prompts/prompt-extraction-rule.mdc
+  rule.prompts.prompt-creation.v1: prompts/prompt-creation-rule.mdc
+  rule.prompts.prompt-extraction.v1: prompts/prompt-extraction-rule.mdc
+
+  # Rule Authoring
+  rule.authoring.agent-application.v1: rule-authoring/agent-application-rule.mdc
+  rule.authoring.contracts-and-scope.v1: rule-authoring/rule-contracts-and-scope.mdc
+  rule.authoring.cross-references.v1: rule-authoring/rule-cross-references.mdc
+  rule.authoring.extraction-from-practice.v1: rule-authoring/rule-extraction-from-practice.mdc
+  rule.authoring.file-structure.v1: rule-authoring/rule-file-structure.mdc
+  rule.authoring.invocation-strategies.v1: rule-authoring/rule-invocation-strategies.mdc
+  rule.authoring.naming-conventions.v1: rule-authoring/rule-naming-conventions.mdc
+  rule.authoring.overview.v1: rule-authoring/rule-authoring-overview.mdc
+  rule.authoring.provenance-and-versioning.v1: rule-authoring/rule-provenance-and-versioning.mdc
+  rule.authoring.rule-sync.v1: rule-authoring/rule-sync-rule.mdc
+  rule.authoring.sync.v1: rule-authoring/rule-sync-rule.mdc
+  rule.authoring.templars-and-exemplars.v1: rule-authoring/rule-templars-and-exemplars.mdc
+  rule.authoring.validation-and-checklists.v1: rule-authoring/rule-validation-and-checklists.mdc
+
+  # Setup
+  rule.setup.project-setup.v1: setup/project-setup-rule.mdc
+
+  # Technical Specifications
+  rule.technical-specifications.agent-application.v1: technical-specifications/agent-application-rule.mdc
+  rule.technical-specifications.anti-duplication.v1: technical-specifications/specification-anti-duplication-rule.mdc
+  rule.technical-specifications.architecture.v1: technical-specifications/documentation-architecture-rule.mdc
+  rule.technical-specifications.business-rules.v1: technical-specifications/business-rules-rule.mdc
+  rule.technical-specifications.documentation-architecture.v1: technical-specifications/documentation-architecture-rule.mdc
+  rule.technical-specifications.domain-object.v1: technical-specifications/domain-object-rule.mdc
+  rule.technical-specifications.domain-overview.v1: technical-specifications/domain-overview-rule.mdc
+  rule.technical-specifications.entity-relationship.v1: technical-specifications/entity-relationship-rule.mdc
+  rule.technical-specifications.enumeration.v1: technical-specifications/enumeration-rule.mdc
+  rule.technical-specifications.hybrid-architecture.v1: technical-specifications/hybrid-documentation-architecture-rule.mdc
+  rule.technical-specifications.hybrid-documentation-architecture.v1: technical-specifications/hybrid-documentation-architecture-rule.mdc
+  rule.technical-specifications.integration-points.v1: technical-specifications/integration-points-rule.mdc
+  rule.technical-specifications.specification-anti-duplication.v1: technical-specifications/specification-anti-duplication-rule.mdc
+
+  # Ticket
+  rule.ticket.agent-application.v1: ticket/agent-application-rule.mdc
+  rule.ticket.completion-discipline.v1: ticket/ai-completion-discipline.mdc
+  rule.ticket.complexity-assessment.v1: ticket/complexity-assessment-rule.mdc
+  rule.ticket.concept.v1: ticket/ticket-rule.mdc
+  rule.ticket.context.v1: ticket/context-rule.mdc
+  rule.ticket.current.v1: ticket/current-rule.mdc
+  rule.ticket.plan.v1: ticket/plan-rule.mdc
+  rule.ticket.progress.v1: ticket/progress-rule.mdc
+  rule.ticket.rca.v1: ticket/rca-rule.mdc
+  rule.ticket.recap.v1: ticket/recap-rule.mdc
+  rule.ticket.references.v1: ticket/references-rule.mdc
+  rule.ticket.switching-discipline.v1: ticket/switching-discipline.mdc
+  rule.ticket.ticket.v1: ticket/ticket-rule.mdc
+  rule.ticket.workflow.v1: ticket/ticket-workflow-rule.mdc
+  rule.ticket.timeline.v1: ticket/timeline-tracking-rule.mdc
+  rule.ticket.validation.v1: ticket/validation-before-completion-rule.mdc
+  rule.ticket.timeline-workflow-integration.v1: ticket/timeline-workflow-integration.mdc
+
+  # Unit Testing
+  rule.unit-testing.discipline.v1: unit-testing/unit-test-discipline-rule.mdc
+
+  # General Rules (Clean Code, Process, etc.)
+  rule.clean-code.v1: clean-code.mdc
+  rule.code-quality-and-best-practices.v1: code-quality-and-best-practices.mdc
+  rule.code-writing-standards.v1: code-writing-standards.mdc
+  rule.codequality.v1: codequality.mdc
+  rule.comment-usage.v1: comment-usage.mdc
+  rule.communication-and-problem-solving.v1: communication-and-problem-solving.mdc
+  rule.development-best-practices.v1: development-best-practices.mdc
+  rule.development-commit-message.v1: development-commit-message.mdc
+  rule.drill-sargeant.v1: drill-sargeant.mdc
+  rule.dry-principle.v1: dry-principle.mdc
+  rule.file-by-file-changes.v1: file-by-file-changes-rule.mdc
+  rule.function-length-and-responsibility.v1: function-length-and-responsibility.mdc
+  rule.general-code-style-and-readability.v1: general-code-style-and-readability.mdc
+  rule.general-coding-rules.v1: general-coding-rules.mdc
+  rule.naming-conventions.v1: naming-conventions.mdc
+  rule.general.file-by-file.v1: file-by-file-changes-rule.mdc
+  rule.general.no-apologies.v1: no-apologies-rule.mdc
+  rule.general.no-confirmations.v1: no-unnecessary-confirmations-rule.mdc
+  rule.general.no-current-impl.v1: no-current-implementation-rule.mdc
+  rule.general.no-feedback.v1: no-understanding-feedback-rule.mdc
+  rule.general.no-impl-checks.v1: no-implementation-checks-rule.mdc
+  rule.general.no-inventions.v1: no-inventions-rule.mdc
+  rule.general.no-prev-context.v1: no-previous-x-md-consideration-rule.mdc
+  rule.general.no-summaries.v1: no-summaries-rule.mdc
+  rule.general.no-updates.v1: no-unnecessary-updates-rule.mdc
+  rule.general.no-whitespace.v1: no-whitespace-suggestions-rule.mdc
+  rule.general.preserve-code.v1: preserve-existing-code-rule.mdc
+  rule.general.single-chunk.v1: single-chunk-edits-rule.mdc
+  rule.general.verify-info.v1: verify-information-rule.mdc
+  rule.no-apologies.v1: no-apologies-rule.mdc
+  rule.no-current-implementation.v1: no-current-implementation-rule.mdc
+  rule.no-implementation-checks.v1: no-implementation-checks-rule.mdc
+  rule.no-inventions.v1: no-inventions-rule.mdc
+  rule.no-previous-x-md-consideration.v1: no-previous-x-md-consideration-rule.mdc
+  rule.no-summaries.v1: no-summaries-rule.mdc
+  rule.no-understanding-feedback.v1: no-understanding-feedback-rule.mdc
+  rule.no-unnecessary-confirmations.v1: no-unnecessary-confirmations-rule.mdc
+  rule.no-unnecessary-updates.v1: no-unnecessary-updates-rule.mdc
+  rule.no-whitespace-suggestions.v1: no-whitespace-suggestions-rule.mdc
+  rule.preserve-existing-code.v1: preserve-existing-code-rule.mdc
+  rule.readme-structure.v1: readme-structure-rule.mdc
+  rule.single-chunk-edits.v1: single-chunk-edits-rule.mdc
+  rule.verify-information.v1: verify-information-rule.mdc
+
+templars:
+  templar.plan.v1: .cursor/templars/ticket/plan-template.md
+  templar.context.v1: .cursor/templars/ticket/context-template.md
+  templar.progress.v1: .cursor/templars/ticket/progress-template.md
+  templar.timeline.v1: .cursor/templars/ticket/timeline-template.md
+  templar.recap.v1: .cursor/templars/ticket/recap-template.md
+  templar.rca.v1: .cursor/templars/ticket/rca-template.md
+  templar.references.v1: .cursor/templars/ticket/references-template.md
+  templar.cicd.azure-pipelines-unified.v1: .cursor/templars/cicd/azure-pipelines-unified-template.yml
+  documentation.templar.index.v1: .cursor/templars/ticket/templar-index.md
+
+exemplars:
+  exemplar.cicd.tag-based-versioning.v2: .cursor/exemplars/cicd/tag-based-versioning-exemplar.md
+  exemplar.agile.business-feature.v1: .cursor/exemplars/agile/business-feature-exemplar.md
+  exemplar.agile.epic.v1: .cursor/exemplars/agile/epic-exemplar.md
+  exemplar.agile.technical-feature.v1: .cursor/exemplars/agile/technical-feature-exemplar.md
+  exemplar.agile.user-story.bad.v1: .cursor/exemplars/agile/user-story-bad-exemplar.md
+  exemplar.agile.user-story.good.v1: .cursor/exemplars/agile/user-story-exemplar.md
+  exemplar.technical-specifications.business-rules.v1: .cursor/exemplars/technical-specifications/business-rules-exemplar.md
+  exemplar.technical-specifications.domain-object.v1: .cursor/exemplars/technical-specifications/domain-object-exemplar.md
+  exemplar.technical-specifications.domain-overview.v1: .cursor/exemplars/technical-specifications/domain-overview-exemplar.md
+  exemplar.technical-specifications.entity-relationships.v1: .cursor/exemplars/technical-specifications/entity-relationships-exemplar.md
+  exemplar.technical-specifications.enumeration.v1: .cursor/exemplars/technical-specifications/enumeration-exemplar.md
+  exemplar.technical-specifications.integration-points.v1: .cursor/exemplars/technical-specifications/integration-points-exemplar.md
+  exemplar.ticket.plan.bad.v1: .cursor/exemplars/ticket/plan-bad-exemplar.md
+  exemplar.code-analysis.example.v1: .cursor/prompts/exemplars/code-analysis-example.md
+
+prompts:
+  # CICD
+  prompt.cicd.implement-tag-based-cicd.v4: .cursor/prompts/prompts/cicd/implement-tag-based-cicd.prompt.md
+  prompt.cicd.setup-documentation-pipeline.v1: .cursor/prompts/prompts/cicd/setup-documentation-pipeline.prompt.md
+  prompt.cicd.setup-project-documentation.v1: .cursor/prompts/prompts/cicd/setup-project-documentation.prompt.md
+  prompt.cicd.validate-documentation-setup.v1: .cursor/prompts/prompts/cicd/validate-documentation-setup.prompt.md
+
+  # Setup
+  prompt.setup.bootstrap-new-repo.v1: .cursor/prompts/prompts/setup/bootstrap-new-repo.prompt.md
+  prompt.setup.setup-project-standards.v1: .cursor/prompts/prompts/setup/setup-project-standards.prompt.md
+  prompt.setup.setup-repository-standards.v1: .cursor/prompts/prompts/setup/setup-repository-standards.prompt.md
+
+  # Git
+  prompt.git.create-branch.v1: .cursor/prompts/prompts/git/create-branch.prompt.md
+  prompt.git.prepare-commit.v1: .cursor/prompts/prompts/git/prepare-commit.prompt.md
+
+  # Rule Authoring
+  prompt.rule-authoring.create-new-rule.v1: .cursor/prompts/prompts/rule-authoring/create-new-rule.prompt.md
+  prompt.rule-authoring.extract-prompts-from-conversation.v1: .cursor/prompts/prompts/rule-authoring/extract-prompts-from-conversation.prompt.md
+  prompt.rule-authoring.sync-rules-between-repos.v1: .cursor/prompts/prompts/rule-authoring/sync-rules-between-repos.prompt.md
+  prompt.rule-authoring.validate-rule-compliance.v1: .cursor/prompts/prompts/rule-authoring/validate-rule-compliance.prompt.md
+
+  # Pattern Discovery & Library
+  prompt.pattern-discovery.how-to.v1: .cursor/prompts/HOW-TO-USE-PATTERN-DISCOVERY.md
+  prompt.pattern-discovery.quick-reference.v1: .cursor/prompts/PATTERN-QUICK-REFERENCE.md
+  prompt.library.readme.v1: .cursor/prompts/README.md
+  prompt.library.index.v1: .cursor/prompts/INDEX.md
+  prompt.templars.general-task-template.v1: .cursor/prompts/templars/general-task-template.md
+

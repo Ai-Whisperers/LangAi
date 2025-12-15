@@ -1,0 +1,270 @@
+---
+id: rule.scripts.agent-application.v1
+kind: rule
+version: 1.0.0
+description: Agent guidance for when and how to apply reusable script standards. Use this when user requests involve creating/improving PowerShell or Python scripts, script quality standards, or automation script development.
+implements: scripts.agent-application
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: 
+  owner: team-devops
+  last_review: 2025-12-07
+  created: 2025-12-07
+alwaysApply: false
+---
+
+# Reusable Scripts - Agent Application Rule
+
+## Purpose & Scope
+
+This meta-rule helps the agent decide when and how to apply reusable script standards. It coordinates between core principles and language-specific standards for PowerShell and Python scripts.
+
+**Applies to**: Agent decision-making when working with scripts.
+
+**Does not apply to**: The scripts themselves (operational rules handle that).
+
+## When to Apply Script Rules
+
+### Trigger Keywords in User Requests
+
+Apply script rules when user mentions:
+- "create script", "write script", "improve script"
+- "PowerShell", "Python", ".ps1", ".py"
+- "automation", "CI/CD script", "helper script"
+- "script quality", "script standards", "best practices"
+- "reusable", "maintainable script"
+
+### File Patterns
+
+Apply when working with:
+- Any `.ps1` file (PowerShell)
+- Any `.py` file (Python)
+- Files in `cicd/scripts/`, `scripts/`, or similar automation directories
+
+## Decision Tree
+
+```
+User request involves scripts?
+|
+|--- Creating NEW script
+|    |--- PowerShell (.ps1)?
+|    |    `--- Apply: rule.scripts.core-principles.v1 + rule.scripts.powershell-standards.v1
+|    |         Target quality level based on use case (see rule.scripts.quality-levels.v1)
+|    |
+|    `--- Python (.py)?
+|         `--- Apply: rule.scripts.core-principles.v1 + rule.scripts.python-standards.v1
+|              Target quality level based on use case (see rule.scripts.quality-levels.v1)
+|
+|--- Improving EXISTING script
+|    |--- PowerShell?
+|    |    `--- Apply: rule.scripts.core-principles.v1 + rule.scripts.powershell-standards.v1
+|    |         Assess current quality (rule.scripts.quality-levels.v1)
+|    |         Target next level improvement
+|    |
+|    `--- Python?
+|         `--- Apply: rule.scripts.core-principles.v1 + rule.scripts.python-standards.v1
+|              Assess current quality (rule.scripts.quality-levels.v1)
+|              Target next level improvement
+|
+|--- Assessing script quality
+|    `--- Apply: rule.scripts.quality-levels.v1 (systematic assessment)
+|         Determine current level and improvement path
+|
+|--- Reviewing script quality
+|    `--- Apply: rule.scripts.core-principles.v1 + rule.scripts.quality-levels.v1
+|         Validate against standards and quality criteria
+|
+`--- General script standards question
+     `--- Direct to: rule.scripts.core-principles.v1 (overview)
+          Or rule.scripts.quality-levels.v1 (assessment framework)
+```
+
+## Rule Coordination
+
+### Core Principles (Always Apply First)
+
+**Rule**: `rule.scripts.core-principles.v1`
+
+**When**: Every script, regardless of language
+
+**Covers**:
+- Portability (CI/CD and local execution)
+- Parameterization with validation
+- Error handling
+- Configuration file support
+- Documentation requirements
+
+### PowerShell Specifics
+
+**Rule**: `rule.scripts.powershell-standards.v1`
+
+**When**: Working with `.ps1` files
+
+**Covers**:
+- Comment-based help (Get-Help support)
+- Parameter validation attributes
+- Pipeline support (ValueFromPipeline)
+- Parallel processing (PowerShell 7+)
+- Advanced features (16 total)
+
+### Python Specifics
+
+**Rule**: `rule.scripts.python-standards.v1`
+
+**When**: Working with `.py` files
+
+**Covers**:
+- Module docstrings (help() support)
+- Type hints with Pydantic
+- Argparse for CLI
+- Async/await patterns
+- Advanced features (15 total)
+
+### Quality Assessment
+
+**Rule**: `rule.scripts.quality-levels.v1`
+
+**When**: Assessing script maturity or planning improvements
+
+**Covers**:
+- 4 quality levels (Basic, Standard, Advanced, Production)
+- Measurable criteria per level
+- Assessment checklists
+- Progression paths from basic to production-ready
+
+## Workflow
+
+### For New Script Creation
+
+1. **Understand requirements**
+   - Script purpose
+   - Input parameters
+   - Expected outputs
+   - Execution environment (CI/CD, local, both)
+   - Target quality level (Basic/Standard/Advanced/Production)
+
+2. **Determine target quality level**
+   - Use `rule.scripts.quality-levels.v1` to select appropriate level
+   - **One-off script**: Basic (60/100)
+   - **Team tool**: Standard (70/100)  
+   - **CI/CD script**: Advanced (80/100)
+   - **Production critical**: Production (90-100/100)
+
+3. **Apply core principles**
+   - Load `rule.scripts.core-principles.v1`
+   - Ensure portability design
+   - Plan error handling strategy
+   - Determine if config file needed (5+ parameters)
+
+4. **Apply language standards**
+   - PowerShell: Load `rule.scripts.powershell-standards.v1`
+   - Python: Load `rule.scripts.python-standards.v1`
+   - Follow language-specific patterns
+   - Apply features required for target quality level
+
+5. **Generate script**
+   - Use appropriate template (minimal or full)
+   - Implement core principles
+   - Apply language-specific best practices
+   - Include features for target quality level
+   - Add validation checklist
+
+### For Script Improvement
+
+1. **Assess current quality level**
+   - Use `rule.scripts.quality-levels.v1` assessment checklist
+   - Determine current level (Basic/Standard/Advanced/Production)
+   - Calculate quality score
+
+2. **Analyze existing script**
+   - Check against core principles
+   - Check against language standards
+   - Identify gaps and violations
+   - Compare against next quality level requirements
+
+3. **Determine target quality level**
+   - Based on script importance and use case
+   - Plan incremental improvement (e.g., Basic → Standard)
+
+4. **Prioritize improvements**
+   - Critical: Portability, error handling, OPSEC
+   - Important: Documentation, validation
+   - Nice-to-have: Advanced features
+   - **Focus on features needed for next quality level**
+
+5. **Apply improvements**
+   - Fix core principle violations first
+   - Then language-specific improvements
+   - Add features for target quality level
+   - Test in both local and CI/CD if applicable
+
+### For Script Review
+
+1. **Assess quality level**
+   - Use `rule.scripts.quality-levels.v1` assessment
+   - Determine current quality score
+   - Identify quality level achieved
+
+2. **Validate core principles**
+   - Run through core principles checklist
+   - Verify portability, error handling, docs
+
+3. **Validate language specifics**
+   - Run through language-specific checklist
+   - Check for language best practices
+
+4. **Provide feedback**
+   - Report assessed quality level and score
+   - List violations with references to rules
+   - Suggest improvements with examples (prioritize next level requirements)
+   - Provide progression path to next quality level
+   - Prioritize by impact
+
+## Quick Reference
+
+### "User wants to create a PowerShell script"
+
+```
+Apply:
+1. rule.scripts.core-principles.v1 (portability, params, errors, config)
+2. rule.scripts.powershell-standards.v1 (comment-based help, templates, advanced features)
+
+Result: Portable, well-documented PowerShell script
+```
+
+### "User wants to improve a Python script"
+
+```
+Apply:
+1. rule.scripts.core-principles.v1 (identify core gaps)
+2. rule.scripts.python-standards.v1 (add type hints, docstrings, validation)
+
+Result: Enhanced Python script following standards
+```
+
+### "User asks about script quality standards"
+
+```
+Apply:
+1. rule.scripts.core-principles.v1 (explain core concepts)
+2. Direct to language-specific rule for details
+
+Result: User understands standards framework
+```
+
+## Related Rules
+
+- `rule.scripts.core-principles.v1` - Language-agnostic principles
+- `rule.scripts.powershell-standards.v1` - PowerShell-specific standards
+- `rule.scripts.python-standards.v1` - Python-specific standards
+- `rule.scripts.quality-levels.v1` - Quality assessment framework
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Correct rule selected based on language (PowerShell or Python)
+- [ ] Core principles applied before language-specific features
+- [ ] Target quality level determined based on use case
+- [ ] Both portability requirements considered (CI/CD and local)
+- [ ] Script documentation approach matches language (comment-based help vs docstrings)
+- [ ] Validation checklist includes core, language-specific, and quality level items
+- [ ] Quality assessment performed for script improvements or reviews

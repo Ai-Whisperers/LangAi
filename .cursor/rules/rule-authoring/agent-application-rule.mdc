@@ -1,0 +1,524 @@
+---
+id: rule.authoring.agent-application.v1
+kind: rule
+version: 1.1.0
+description: Agent guidance for when and how to apply rule-authoring framework rules. Use this when user requests involve creating/updating/validating rule files, adding contracts/checklists to rules, extracting rules from practice, creating templars/exemplars, syncing rules between repositories, or ensuring rule compliance with authoring standards.
+implements: rule.authoring.agent-application
+requires:
+  - rule.authoring.overview.v1
+  - rule.authoring.file-structure.v1
+  - rule.authoring.naming-conventions.v1
+  - rule.authoring.invocation-strategies.v1
+  - rule.authoring.contracts-and-scope.v1
+  - rule.authoring.cross-references.v1
+  - rule.authoring.templars-and-exemplars.v1
+  - rule.authoring.provenance-and-versioning.v1
+  - rule.authoring.validation-and-checklists.v1
+  - rule.authoring.extraction-from-practice.v1
+  - rule.authoring.rule-sync.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ai, last_review: 2025-12-01 }
+alwaysApply: false
+---
+
+# Rule Authoring - Agent Application Rule
+
+## Purpose & Scope
+
+This rule provides explicit agent guidance for when and how to apply rule-authoring framework rules. It tells agents HOW to create, update, validate, and maintain rule files according to the rule-authoring standards.
+
+**Applies to**: AI agents creating or updating any rule files (*.mdc files in .cursor/rules/).
+
+**Does not apply to**: Human developers (use rule-authoring-overview.mdc), non-rule documentation, or production code.
+
+## Inputs (Contract)
+
+- User request to create, update, or validate rule files
+- File path pattern indicating rule file (`**/*-rule.mdc`, `**/rules/**/*.mdc`)
+- Rule concept or requirement to be formalized
+- Existing rule file requiring updates or validation
+
+## Outputs (Contract)
+
+Agent decision on:
+- Which rule-authoring rules to apply for the task
+- In what order to apply multiple rules
+- How to validate rule file compliance
+- Whether to extract from practice or design from scratch
+
+## File Pattern to Rule Mapping
+
+### Creating New Rules
+
+| User Request Pattern | Primary Rule | Supporting Rules |
+|---------------------|--------------|------------------|
+| "Create rule for [action]" | `rule.authoring.extraction-from-practice.v1` | `rule.authoring.file-structure.v1`, `rule.authoring.naming-conventions.v1` |
+| "Extract rule from [work/conversation]" | `rule.authoring.extraction-from-practice.v1` | All rule-authoring rules |
+| "Create templar for [output]" | `rule.authoring.templars-and-exemplars.v1` | `rule.authoring.file-structure.v1` |
+| "Create exemplar showing [pattern]" | `rule.authoring.templars-and-exemplars.v1` | `rule.authoring.file-structure.v1` |
+| "Sync rules from [source] to [target]" | `rule.authoring.rule-sync.v1` | `rule.authoring.provenance-and-versioning.v1`, `rule.authoring.validation-and-checklists.v1` |
+
+### Updating Existing Rules
+
+| User Request Pattern | Primary Rule | Supporting Rules |
+|---------------------|--------------|------------------|
+| "Update rule [rule-id]" | `rule.authoring.provenance-and-versioning.v1` | `rule.authoring.file-structure.v1` |
+| "Add contracts to [rule]" | `rule.authoring.contracts-and-scope.v1` | - |
+| "Add cross-references to [rule]" | `rule.authoring.cross-references.v1` | - |
+| "Version rule [rule-id]" | `rule.authoring.provenance-and-versioning.v1` | - |
+
+### Validating Rules
+
+| User Request Pattern | Primary Rule | Supporting Rules |
+|---------------------|--------------|------------------|
+| "Validate rule [rule-id]" | `rule.authoring.validation-and-checklists.v1` | All rule-authoring rules |
+| "Check rule compliance" | `rule.authoring.validation-and-checklists.v1` | `rule.authoring.file-structure.v1` |
+| "Review rule [rule-id]" | `rule.authoring.validation-and-checklists.v1` | All rule-authoring rules |
+
+### Always Apply When Working with Rules
+
+| Rule | When | Priority |
+|------|------|----------|
+| `rule.authoring.file-structure.v1` | Creating/updating ANY rule file | ALWAYS |
+| `rule.authoring.naming-conventions.v1` | Creating new rule or renaming | ALWAYS |
+| `rule.authoring.validation-and-checklists.v1` | Before completing rule file | ALWAYS |
+
+## Deterministic Steps
+
+### Step 1: Identify Rule Task Type
+
+When user requests rule-related work, categorize:
+
+1. **New Rule Creation**: "Create rule for [action]"
+   - → Execute Scenario A (Creating New Rule from Practice)
+   
+2. **Rule Update**: "Update [rule-id]" or "Add [section] to [rule]"
+   - → Execute Scenario B (Updating Existing Rule)
+   
+3. **Rule Validation**: "Validate [rule-id]" or "Check compliance"
+   - → Execute Scenario C (Validating Rule Compliance)
+   
+4. **Rule Extraction**: "Extract rule from [conversation/work]"
+   - → Execute Scenario A (preferred method per extraction-from-practice rule)
+   
+5. **Templar/Exemplar Creation**: "Create templar for [output]"
+   - → Execute Scenario D (Creating Templar/Exemplar)
+   
+6. **Rule Sync**: "Sync rules from [source] to [target]" or "Update [repo] with rules from [repo]"
+   - → Execute Scenario E (Syncing Rules Between Repositories)
+
+### Step 2: Extraction vs Design Decision
+
+**Preferred Method: Extraction from Practice** per `rule.authoring.extraction-from-practice.v1`
+
+**Decision Tree**:
+```
+Has real work/conversation been completed demonstrating pattern?
+  ├─ YES → Extract from practice (PREFERRED)
+  │   └─ Apply rule.authoring.extraction-from-practice.v1
+  │
+  └─ NO → Design from requirements (FALLBACK)
+      └─ Apply rule.authoring.file-structure.v1 + contracts-and-scope.v1
+```
+
+**Why Extraction is Preferred**:
+- Grounded in reality, not theory
+- Covers actual edge cases encountered
+- Includes constraints that really matter
+- Skips theoretical concerns that don't appear in practice
+
+**When to Design from Scratch**:
+- Framework/meta-rules (like rule-authoring rules themselves)
+- Rules mandated by external standards
+- No practical work exists yet to extract from
+
+### Step 3: Apply Rule-Authoring Rules in Order
+
+#### For New Rule Creation (from practice):
+
+1. Apply `rule.authoring.extraction-from-practice.v1`:
+   - Review conversation/work that demonstrates pattern
+   - Identify what actually worked
+   - Extract key constraints and steps
+   - Note edge cases encountered
+   
+2. Apply `rule.authoring.naming-conventions.v1`:
+   - Generate stable ID: `rule.[domain].[action].v1`
+   - Validate ID uniqueness
+   - Choose appropriate file name
+   
+3. Apply `rule.authoring.invocation-strategies.v1`:
+   - Determine invocation strategy (file-mask, agentic, or always-apply)
+   - For operational rules: Use Strategy 1 (file-mask with globs/governs)
+   - For meta-rules: Use Strategy 2 (description-triggered, omit globs/governs)
+   - Set alwaysApply: false (default)
+   
+4. Apply `rule.authoring.file-structure.v1`:
+   - Create complete 10-field front matter
+   - Add all canonical sections in order
+   - Ensure FINAL MUST-PASS CHECKLIST is last section
+   
+5. Apply `rule.authoring.contracts-and-scope.v1`:
+   - Write explicit input contract
+   - Write explicit output contract
+   - Define `globs` and `governs` appropriately (if Strategy 1)
+   - Add Purpose & Scope with "Applies to" / "Does not apply to"
+   
+6. Apply `rule.authoring.cross-references.v1`:
+   - Reference dependencies by stable ID
+   - Update related rules' references if needed
+   
+7. Apply `rule.authoring.validation-and-checklists.v1`:
+   - Add FINAL MUST-PASS CHECKLIST section (last)
+   - Validate against all rule-authoring standards
+   - Ensure 3-7 binary validation items
+
+#### For Rule Updates:
+
+1. Apply `rule.authoring.provenance-and-versioning.v1`:
+   - Determine version bump type (MAJOR/MINOR/PATCH)
+   - Update version field
+   - Update provenance.last_review date
+   
+2. Apply relevant rule-authoring rule for specific update:
+   - Adding contracts → `rule.authoring.contracts-and-scope.v1`
+   - Adding cross-refs → `rule.authoring.cross-references.v1`
+   - Restructuring → `rule.authoring.file-structure.v1`
+   
+3. Apply `rule.authoring.validation-and-checklists.v1`:
+   - Validate updated rule still compliant
+   - Update checklist if needed
+
+#### For Rule Validation:
+
+1. Apply `rule.authoring.validation-and-checklists.v1` as primary
+2. Validate against `rule.authoring.file-structure.v1`:
+   - 10-field front matter complete?
+   - All canonical sections present?
+   - Sections in correct order?
+   - FINAL MUST-PASS CHECKLIST is last section?
+3. Validate against `rule.authoring.naming-conventions.v1`:
+   - ID follows pattern?
+   - File name matches convention?
+   - Version in ID matches version field?
+4. Validate against `rule.authoring.contracts-and-scope.v1`:
+   - Inputs (Contract) present and explicit?
+   - Outputs (Contract) present and verifiable?
+   - globs/governs defined appropriately?
+   - Purpose & Scope has "Applies to" / "Does not apply to"?
+5. Validate against `rule.authoring.cross-references.v1`:
+   - Dependencies referenced by stable ID?
+   - IDs exist and are correct?
+6. Report validation results with specific non-compliance details
+
+## Common Scenarios
+
+### Scenario A: Creating New Rule (Extraction from Practice)
+
+**User Request**: "Create rule for documenting enumerations based on our Payment work"
+
+**Agent Actions** (in order):
+1. Apply `rule.authoring.extraction-from-practice.v1`:
+   - Review Payment enumeration documentation work
+   - Identify what worked (exact value preservation, business meaning, qualification criteria)
+   - Extract constraints encountered (don't document boolean flags as enums, etc.)
+   - Note edge cases (numeric values MUST be preserved, not assumed)
+   
+2. Apply `rule.authoring.naming-conventions.v1`:
+   - Generate ID: `rule.technical-specifications.enumeration.v1`
+   - File name: `enumeration-rule.mdc`
+   - Validate uniqueness
+   
+3. Apply `rule.authoring.file-structure.v1`:
+   - Create front matter with 10 fields:
+     - id, kind, version, description
+     - globs: `["**/docs/technical/**/*-enums.md"]`
+     - governs: `["**/docs/technical/**/*-enums.md"]`
+     - implements, requires, model_hints, provenance
+   - Add canonical sections in order:
+     - Purpose & Scope (with "Applies to" / "Does not apply to")
+     - Inputs (Contract)
+     - Outputs (Contract)
+     - Deterministic Steps
+     - OPSEC and Leak Control
+     - Integration Points
+     - Failure Modes and Recovery
+     - Related Rules
+     - FINAL MUST-PASS CHECKLIST (LAST)
+   
+5. Apply `rule.authoring.contracts-and-scope.v1`:
+   - Write explicit Inputs: C++ enum analysis, numeric values, usage patterns
+   - Write explicit Outputs: Enumeration file with exact values, business meanings
+   - Already defined globs/governs in step 4
+   - Purpose & Scope already added in step 4
+   
+6. Apply `rule.authoring.cross-references.v1`:
+   - Reference `rule.technical-specifications.anti-duplication.v1` in requires
+   - Add to related rules section
+   
+7. Apply `rule.authoring.validation-and-checklists.v1`:
+   - Create FINAL MUST-PASS CHECKLIST as last section
+   - Include 3-7 binary items
+   - Include OPSEC validation item
+   - Validate entire rule against all standards
+
+### Scenario B: Updating Existing Rule
+
+**User Request**: "Add contracts to domain-object-rule.mdc"
+
+**Agent Actions** (in order):
+1. Apply `rule.authoring.provenance-and-versioning.v1`:
+   - Determine version bump: MINOR (backward-compatible addition)
+   - Update version: 1.0.0 → 1.1.0
+   - Update provenance.last_review: [today's date]
+   
+2. Apply `rule.authoring.contracts-and-scope.v1`:
+   - Add "## Inputs (Contract)" section after "Purpose & Scope"
+   - Add "## Outputs (Contract)" section after "Inputs (Contract)"
+   - Ensure explicit, verifiable statements
+   
+3. Apply `rule.authoring.file-structure.v1`:
+   - Validate section ordering after addition
+   - Ensure canonical order maintained
+   
+4. Apply `rule.authoring.validation-and-checklists.v1`:
+   - Validate updated rule compliant
+   - Confirm FINAL MUST-PASS CHECKLIST still last section
+   - Update checklist if contract-related items needed
+
+### Scenario C: Validating Rule Compliance
+
+**User Request**: "Validate all technical specification rules against rule-authoring standards"
+
+**Agent Actions** (in order):
+1. Apply `rule.authoring.validation-and-checklists.v1` as primary validator
+2. For each rule file, check:
+   - **Front Matter** (rule.authoring.file-structure.v1):
+     - ✅/❌ 10 fields present: id, kind, version, description, globs, governs, implements, requires, model_hints, provenance
+     - ✅/❌ ID follows pattern: `rule.[domain].[action].v[major]`
+     - ✅/❌ Version field is semver
+   - **Structure** (rule.authoring.file-structure.v1):
+     - ✅/❌ All canonical sections present
+     - ✅/❌ Sections in correct order
+     - ✅/❌ FINAL MUST-PASS CHECKLIST is last section
+   - **Contracts** (rule.authoring.contracts-and-scope.v1):
+     - ✅/❌ "## Inputs (Contract)" section exists
+     - ✅/❌ "## Outputs (Contract)" section exists
+     - ✅/❌ Purpose & Scope has "Applies to" / "Does not apply to"
+   - **Naming** (rule.authoring.naming-conventions.v1):
+     - ✅/❌ File name matches convention
+     - ✅/❌ ID is globally unique
+     - ✅/❌ Version in ID matches version field
+   - **Cross-References** (rule.authoring.cross-references.v1):
+     - ✅/❌ Dependencies use stable IDs
+     - ✅/❌ Referenced IDs exist
+3. Create validation report with specific non-compliance details
+4. Provide remediation steps for each violation
+
+### Scenario D: Creating Templar/Exemplar
+
+**User Request**: "Create templar for plan.md structure"
+
+**Agent Actions** (in order):
+1. Apply `rule.authoring.templars-and-exemplars.v1`:
+   - Determine kind: `templar` (defines output shape)
+   - Create structural template showing required sections
+   - Document what belongs in each section
+   
+2. Apply `rule.authoring.naming-conventions.v1`:
+   - Generate ID: `templar.plan.v1`
+   - File name: `plan-templar.mdc`
+   - Validate uniqueness
+   
+3. Apply `rule.authoring.file-structure.v1`:
+   - Create front matter with kind: `templar`
+   - Add canonical sections (abbreviated for templars)
+   - Add FINAL MUST-PASS CHECKLIST
+   
+4. Apply `rule.authoring.validation-and-checklists.v1`:
+   - Validate templar structure
+   - Ensure checklist appropriate for templars
+
+### Scenario E: Syncing Rules Between Repositories
+
+**User Request**: "Sync rules from foundation to domain" or "Update domain repo with new ticket rules from foundation"
+
+**Agent Actions** (in order):
+1. Apply `rule.authoring.rule-sync.v1`:
+   - Identify source repository (e.g., eneve.ebase.foundation)
+   - Identify target repository (e.g., eneve.domain)
+   - Determine sync scope (all rules, domain-specific, or selective)
+   
+2. **Step 1: Discover Rules**:
+   - Scan source `.cursor/rules/` directory
+   - Scan target `.cursor/rules/` directory
+   - Parse front-matter from all rule files
+   - Build registries for both repos
+   
+3. **Step 2: Compare and Categorize**:
+   - Category A: Rules to Add (missing in target)
+   - Category B: Rules to Update (version differences)
+   - Category C: Rules to Review (conflicts)
+   - Category D: Rules in Sync (no action)
+   
+4. **Step 3: Generate Sync Analysis Report**:
+   - Show all four categories with counts
+   - List specific rules in each category
+   - Provide action recommendations
+   
+5. **Step 4: Present Report for Review**:
+   - Show report to user
+   - Wait for approval before executing
+   - Clarify any conflicts (Category C)
+   
+6. **Step 5: Execute Sync** (after approval):
+   - Apply `rule.authoring.validation-and-checklists.v1` on source rules
+   - Copy Category A rules to target
+   - Update Category B rules in target
+   - Handle Category C per user decision
+   - Sync dependencies (templars, exemplars)
+   
+7. **Step 6: Validate Sync**:
+   - Apply `rule.authoring.validation-and-checklists.v1` on synced rules in target
+   - Check for broken dependencies
+   - Verify all `requires` resolve
+   - Run OPSEC validation
+   
+8. **Step 7: Document Sync**:
+   - Create/append to sync log in target repo
+   - Record what was synced, when, and by whom
+   - Note validation status
+   - Recommend next sync date
+
+**Key Decisions**:
+- **Sync Strategy**: Full domain vs selective vs incremental
+- **Conflict Resolution**: Source wins vs newest wins vs manual merge
+- **Scope**: All rules vs specific domain vs specific rules
+- **Direction**: One-way (source → target) vs bidirectional
+
+## Behavioral Guidelines
+
+### Always Do
+
+✅ **Prefer extraction from practice over design from scratch** - Primary recommendation
+✅ **Apply file-structure.v1 when creating/updating ANY rule** - Core structure
+✅ **Apply validation-and-checklists.v1 before completing rule** - Quality gate
+✅ **Use stable IDs for all cross-references** - Never use file paths in requires
+✅ **Update provenance.last_review when modifying rules** - Traceability
+✅ **Ensure FINAL MUST-PASS CHECKLIST is last section** - Canonical ordering
+✅ **Write explicit, verifiable contracts** - No vague inputs/outputs
+
+### Never Do
+
+❌ **Design rules without practical validation** - Prefer extraction
+❌ **Skip front-matter fields** - All 10 required
+❌ **Use file paths in cross-references** - Use stable IDs only
+❌ **Skip validation before claiming rule complete** - Always validate
+❌ **Put FINAL MUST-PASS CHECKLIST anywhere but last** - Canonical order violation
+❌ **Create rules without "Applies to" / "Does not apply to"** - Scope clarity required
+❌ **Use vague contracts** - Must be explicit and verifiable
+
+### When Unsure
+
+**If user wants new rule but no practice exists**:
+- Ask if real work can be completed first to extract from
+- If not possible, use design-from-scratch fallback
+- Document in provenance that rule needs refinement after practical use
+
+**If validation shows non-compliance**:
+- Report specific violations with section/field details
+- Provide remediation steps
+- Don't claim rule complete until compliant
+
+**If unclear about version bump type**:
+- Breaking changes to contract or behavior → MAJOR
+- Backward-compatible additions → MINOR
+- Clarifications, typo fixes, non-behavioral → PATCH
+
+## Special Considerations for Agent-Application Rules
+
+**Agent-application rules like this one** have special characteristics:
+
+1. **Description-Triggered**: 
+   - NO globs field (not file-pattern based)
+   - NO governs field (don't write files directly - coordinate only)
+   - description: Rich, detailed description of WHEN to use this rule
+   - Agent reads description and decides if rule applies to current user request
+
+2. **Meta-Rule Nature**:
+   - Guide agent decision-making
+   - Don't modify files themselves
+   - Coordinate application of other rules
+
+3. **Semantic Matching**:
+   - Agent understands user request semantically
+   - Matches request intent against rule descriptions
+   - More flexible than file-pattern matching
+
+**When creating agent-application rules** (see `rule.authoring.invocation-strategies.v1` Strategy 2):
+- OMIT globs field entirely (not file-triggered)
+- OMIT governs field entirely (coordination only, no writing)
+- Write rich, detailed description with trigger keywords
+- Focus on WHEN/HOW to apply other rules
+- Include decision trees and scenarios
+- Map user request patterns to rules
+- Map file patterns to rules (in body, not globs)
+- Keep small and focused (agents read frequently)
+
+## Integration Points
+
+This agent application rule coordinates with all rule-authoring framework rules:
+
+- **rule.authoring.overview.v1**: Provides philosophy and principles
+- **rule.authoring.file-structure.v1**: Canonical structure (ALWAYS apply)
+- **rule.authoring.naming-conventions.v1**: ID and file naming (new rules)
+- **rule.authoring.invocation-strategies.v1**: Determines file-mask vs agentic triggering (CRITICAL)
+- **rule.authoring.contracts-and-scope.v1**: Explicit contracts (all rules)
+- **rule.authoring.cross-references.v1**: Stable ID references (all rules)
+- **rule.authoring.templars-and-exemplars.v1**: Creating templars/exemplars
+- **rule.authoring.provenance-and-versioning.v1**: Versioning and updates
+- **rule.authoring.validation-and-checklists.v1**: Validation (ALWAYS before complete)
+- **rule.authoring.extraction-from-practice.v1**: Preferred creation method
+- **rule.authoring.rule-sync.v1**: Syncing rules between repositories
+
+## Failure Modes and Recovery
+
+**Failure**: Agent designs rule without practical extraction
+- **Detection**: Rule created from requirements without real work demonstration
+- **Recovery**: Mark rule as "needs refinement after practical use" in provenance
+- **Prevention**: Always ask if practical work exists to extract from first
+
+**Failure**: Agent skips front-matter fields
+- **Detection**: Validation shows missing id, globs, governs, etc.
+- **Recovery**: Add missing fields per file-structure.v1
+- **Prevention**: Always apply file-structure.v1 when creating rules
+
+**Failure**: Agent uses file paths in cross-references
+- **Detection**: requires: ["path/to/rule.mdc"] instead of stable ID
+- **Recovery**: Replace with stable IDs
+- **Prevention**: Always use stable IDs per cross-references.v1
+
+**Failure**: Agent puts checklist in wrong location
+- **Detection**: FINAL MUST-PASS CHECKLIST not last section
+- **Recovery**: Move to last section per canonical ordering
+- **Prevention**: Always validate section order per file-structure.v1
+
+## Related Rules
+
+- **rule.authoring.overview.v1**: Complete rule-authoring framework
+- **rule.technical-specifications.agent-application.v1**: Sister agent rule for spec documentation
+- **rule.ticket.agent-application.v1**: Sister agent rule for ticket management
+
+## FINAL MUST-PASS CHECKLIST
+
+Before claiming rule-authoring task complete:
+
+- [ ] Extraction from practice attempted if practical work exists
+- [ ] invocation-strategies.v1 applied (correct strategy chosen: file-mask, agentic, or always)
+- [ ] file-structure.v1 applied (10-field front matter, canonical sections)
+- [ ] naming-conventions.v1 applied (stable ID, appropriate file name)
+- [ ] contracts-and-scope.v1 applied (explicit inputs/outputs, globs/governs, scope)
+- [ ] cross-references.v1 applied (stable IDs only, no file paths)
+- [ ] validation-and-checklists.v1 applied (rule validated before completion)
+- [ ] FINAL MUST-PASS CHECKLIST is last section in all rules
+- [ ] provenance.last_review updated if rule modified

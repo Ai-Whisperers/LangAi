@@ -1,0 +1,344 @@
+---
+id: rule.technical-specifications.architecture.v1
+kind: rule
+version: 1.0.1
+description: Defines three-folder documentation architecture for WHAT/HOW/FUTURE separation in C++ to C# migration projects
+globs: **/docs/**/*.md, **/.cursor/rules/technical-specifications/*.mdc
+governs: **/docs/technical/**/*.md, **/docs/implementation/**/*.md, **/docs/rfcs/**/*.md
+implements: documentation.architecture
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+# Documentation Architecture Rule
+
+## Purpose & Scope
+
+This rule defines the three-folder documentation architecture that ensures clean separation between current system analysis, future implementation design, and enhancement proposals during C++ to C# migration projects.
+
+**Applies to**: All documentation created during C++ to C# migration projects. Applies to technical specifications (current system), implementation designs (C# target), and future enhancement proposals (RFCs).
+
+**Does not apply to**: Non-migration documentation, code comments, API documentation, user manuals, or operational documentation outside the migration project scope.
+
+## Inputs (Contract)
+
+- Migration project context requiring structured documentation
+- Decision to create technical specification, implementation design, or RFC document
+- Understanding of whether content describes WHAT exists, HOW to build, or FUTURE possibilities
+- Phase of migration (Phase 1 = technical, Phase 3 = implementation, Future = RFCs)
+
+## Outputs (Contract)
+
+Documentation placed in correct folder:
+- **docs/technical/**: Current C++ system specifications (WHAT exists)
+- **docs/implementation/**: C# target designs and migration plans (HOW to build)
+- **docs/rfcs/**: Future enhancements and proposals (FUTURE ideas)
+- Clear separation preventing confusion between current analysis and future design
+- Cross-references maintained between related documents across folders
+
+## Purpose (Original)
+
+This rule defines the three-folder documentation architecture that ensures clean separation between current system analysis, future implementation design, and enhancement proposals during C++ to C# migration projects.
+
+## Documentation Architecture
+
+### **Three-Folder Separation Pattern**
+
+```text
+docs/
+├── technical/          # "WHAT" - Current System Specifications
+├── implementation/     # "HOW" - C# Target Design Documents  
+└── rfcs/              # "FUTURE" - Request for Comments & Proposals
+```
+
+### **Folder Purposes and Boundaries**
+
+#### **docs/technical/** - Current System Specifications ("WHAT")
+**Purpose**: Document the current C++ system as it exists today
+**Content Focus**: Business requirements, current behavior, data structures
+**Audience**: All stakeholders understanding current system
+
+**Contains**:
+- Domain overview files (navigation hubs)
+- Entity relationship specifications (database schema)
+- Domain object specifications (field meanings and business rules)
+- Enumeration definitions (algorithm types and business values)
+- Business rules documentation (mathematical algorithms and validation)
+- Integration points (external system interfaces)
+
+**Quality Standards**:
+- 100% accuracy based on actual C++ source code analysis
+- No fabricated or assumed content
+- Focus on business meaning and current behavior
+- Avoid implementation details and C++ code specifics
+
+#### **docs/implementation/** - C# Target Design ("HOW")
+**Purpose**: Design the target C# microservice architecture and implementation approach
+**Content Focus**: C# DDD patterns, microservice design, migration strategy
+**Audience**: Development teams, solution architects, migration specialists
+
+**Contains**:
+- C# domain model design (DDD patterns, aggregate roots, value objects)
+- Microservice architecture specifications
+- Calculation engine implementations
+- Integration pattern designs
+- Migration specification documents
+- Performance optimization strategies
+
+**Quality Standards**:
+- Based on technical specifications from docs/technical/
+- Uses modern C# patterns and best practices
+- Includes migration strategy and approach
+- Addresses performance and scalability requirements
+
+#### **docs/rfcs/** - Future Proposals ("FUTURE")  
+**Purpose**: Document future enhancements, wish list items, and improvement proposals
+**Content Focus**: Ideas for system improvement beyond basic migration
+**Audience**: Product owners, technical leads, future development teams
+
+**Contains**:
+- Enhancement proposals and feature requests
+- Technical debt documentation
+- Future architecture improvements
+- Modern technology integration ideas
+- Process improvement suggestions
+
+**Quality Standards**:
+- Clear distinction from current requirements
+- Realistic and actionable proposals
+- Proper RFC format with problem statement and solution
+- Consideration of implementation complexity and business value
+
+## Content Flow and Dependencies
+
+### **Information Flow Pattern**
+```text
+Phase 1 Data Collection
+        ↓
+docs/technical/ (Current System Analysis)
+        ↓
+docs/implementation/ (C# Design Based on Specifications)
+        ↓
+docs/rfcs/ (Future Enhancements Beyond Migration)
+```
+
+### **Cross-Folder Referencing**
+- **Implementation documents MUST reference** technical specifications
+- **RFCs MAY reference** both technical specifications and implementation design
+- **Technical specifications SHOULD NOT reference** implementation or RFC documents
+- **Clear separation** maintained between current analysis and future design
+
+## Folder Organization Patterns
+
+### **Within docs/technical/**
+```text
+docs/technical/[domain]/
+├── README.md                    # Domain overview (navigation hub)
+├── [domain]-entity-relationships.md
+├── [domain]-domain-overview.md  # Combined overview file
+├── [domain]-*-domain-object.md  # Individual entities
+├── [domain]-*-enum.md          # Enumeration specifications
+├── [domain]-business-rules.md   # Business logic
+└── [domain]-integration-points.md
+```
+
+### **Within docs/implementation/**
+```text
+docs/implementation/[domain]/
+├── README.md                    # Implementation navigation
+├── [domain]-architecture.md     # Overall C# architecture
+├── [domain]-domain-model.md     # C# DDD patterns
+├── [domain]-calculation-engine.md
+├── [domain]-integration-patterns.md
+└── [domain]-migration-specification.md
+```
+
+### **Within docs/rfcs/**
+```text
+docs/rfcs/
+├── README.md                    # RFC navigation and process
+├── [domain]/                    # Domain-specific proposals
+│   └── [proposal-name].md       # Individual RFC documents
+└── general/                     # Cross-cutting proposals
+    └── [proposal-name].md       # System-wide improvements
+```
+
+## Usage Guidelines
+
+### **When Creating New Documentation**
+
+#### **Use docs/technical/ when:**
+- Documenting current C++ system behavior
+- Analyzing existing business rules and algorithms
+- Specifying current database schema and entities
+- Capturing current integration patterns
+- Creating specifications for migration teams
+
+#### **Use docs/implementation/ when:**
+- Designing C# target architecture
+- Planning microservice structure
+- Specifying C# DDD patterns
+- Creating migration strategy documents
+- Designing performance optimizations
+
+#### **Use docs/rfcs/ when:**
+- Proposing future enhancements beyond basic migration
+- Suggesting process improvements
+- Documenting technical debt for future resolution
+- Proposing modern technology integrations
+- Creating wish list items for future development
+
+### **Quality Gate Questions**
+
+**Before placing in docs/technical/**:
+- Is this documenting current system behavior?
+- Is this based on actual C++ source code analysis?
+- Does this avoid implementation details and focus on business requirements?
+- Is this needed for understanding what to migrate?
+
+**Before placing in docs/implementation/**:
+- Is this designing future C# implementation?
+- Is this based on requirements from docs/technical/?
+- Does this specify HOW to implement in C#?
+- Is this needed for development teams?
+
+**Before placing in docs/rfcs/**:
+- Is this a future enhancement beyond basic migration?
+- Is this clearly separated from current requirements?
+- Does this have clear business value and implementation feasibility?
+- Is this appropriate for future consideration?
+
+## Cross-Folder Integration
+
+### **Reference Patterns**
+- **From Implementation to Technical**: "Based on [Current System Analysis](../../technical/domain/specification.md)"
+- **From RFC to Technical**: "Current system behavior documented in [Technical Specs](../../technical/domain/)"
+- **From RFC to Implementation**: "Building on proposed [Implementation Design](../../implementation/domain/)"
+
+### **Navigation Consistency**
+- Each folder's README.md should reference related folders appropriately
+- Domain overview files should link to implementation design when available
+- Implementation READMEs should clearly reference their technical specification foundation
+- RFC READMEs should explain relationship to current and implementation documentation
+
+## Migration Process Integration
+
+### **Phase Alignment**
+- **Phase 1 (Data Collection)**: Creates content for docs/technical/
+- **Phase 2 (Specification Creation)**: Organizes and refines docs/technical/
+- **Phase 3 (Migration Planning)**: Creates content for docs/implementation/
+- **Future Phases**: Creates content for docs/rfcs/
+
+### **Quality Gates**
+- **Technical Specifications**: Must be complete before implementation design begins
+- **Implementation Design**: Must be based on technical specifications
+- **RFCs**: Should consider both current system and proposed implementation
+
+## Maintenance Guidelines
+
+### **Folder Consistency**
+- Maintain clear boundaries between current analysis and future design
+- Keep cross-references accurate as documents evolve
+- Ensure implementation documents stay aligned with technical specifications
+- Regularly review RFC relevance against actual implementation progress
+
+### **Content Evolution**
+- Technical specifications should remain stable once validated
+- Implementation documents may evolve as C# design develops
+- RFCs should be updated based on implementation experience and changing requirements
+- Archive outdated RFCs when they become irrelevant
+
+### **Review Responsibilities**
+- **Technical Specifications**: Business analysts and domain experts
+- **Implementation Documents**: Solution architects and development leads  
+- **RFC Documents**: Product owners and technical leads
+
+## Success Criteria
+
+### **Architecture Quality**
+- Clear separation between current system analysis and future design
+- No confusion between WHAT exists and HOW to implement
+- Efficient navigation for all stakeholder types
+- Maintainable structure that supports project evolution
+
+### **Content Quality**
+- Technical specifications provide complete migration foundation
+- Implementation documents enable development team execution
+- RFCs provide clear roadmap for future enhancements
+- All content traceable to appropriate project phases
+
+### **Process Efficiency**
+- Teams can work on different documentation types in parallel
+- Changes isolated to appropriate documentation areas
+- Clear guidance for where new content belongs
+- Reduced confusion about documentation purpose and audience
+
+This architecture ensures clean separation of concerns while supporting efficient migration project execution and long-term system evolution.
+
+## Deterministic Steps
+
+When creating new documentation:
+
+1. **Identify Content Type**: Determine if documenting WHAT exists (current), HOW to build (implementation), or FUTURE ideas (RFC)
+2. **Select Target Folder**:
+   - Current C++ system behavior → `docs/technical/`
+   - C# design and migration plan → `docs/implementation/`
+   - Future enhancements → `docs/rfcs/`
+3. **Choose Appropriate Subdirectory**: Place in domain-specific subfolder if applicable
+4. **Create File**: Follow naming conventions for chosen folder
+5. **Add Cross-References**: Link to related documents in other folders using relative paths
+6. **Validate Placement**: Confirm document is in correct folder per quality gate questions
+
+## OPSEC and Leak Control
+
+Documentation files must NOT contain:
+- **NO** internal server names, IP addresses, or URLs
+- **NO** credentials, tokens, API keys, or passwords  
+- **NO** employee email addresses or personal information
+- **NO** confidential customer data or business-sensitive information
+- **NO** proprietary vendor details or licensing information
+- References to source systems should use generic terms (e.g., "source database" not specific server names)
+
+## Integration Points
+
+This rule provides foundation for:
+- **rule.technical-specifications.hybrid-architecture.v1**: Uses three-folder structure as base
+- All other technical specification rules: Document placement within docs/technical/
+- Implementation planning: Guides C# design documentation in docs/implementation/
+- Future planning: Structures enhancement proposals in docs/rfcs/
+
+## Failure Modes and Recovery
+
+**Failure**: Documents placed in wrong folder (e.g., C# design in docs/technical/)
+- **Detection**: Implementation details found in "WHAT exists" specifications
+- **Recovery**: Move document to correct folder, update cross-references
+
+**Failure**: Confusion between WHAT and HOW
+- **Detection**: Technical specifications include C# implementation instructions
+- **Recovery**: Split content - current behavior stays in technical/, implementation approach moves to implementation/
+
+**Failure**: Outdated RFCs not archived
+- **Detection**: Implemented features still appearing as "future" proposals
+- **Recovery**: Move implemented RFCs to archives/, update RFC index
+
+**Failure**: Missing cross-references between folders
+- **Detection**: Related documents exist but not linked
+- **Recovery**: Add cross-reference sections linking technical specs to implementation plans
+
+## Related Rules
+
+- **rule.technical-specifications.hybrid-architecture.v1**: Extends this architecture with layered domain structure
+- **rule.technical-specifications.domain-object.v1**: Places domain objects in docs/technical/
+- **rule.technical-specifications.business-rules.v1**: Places business rules in docs/technical/
+- All technical specification rules: Use docs/technical/ as base folder
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no server names, IPs, credentials, emails, confidential data)
+- [ ] Three folders exist: docs/technical/, docs/implementation/, docs/rfcs/
+- [ ] Document placed in correct folder based on WHAT/HOW/FUTURE classification
+- [ ] Current C++ system specs ONLY in docs/technical/ (no C# design details)
+- [ ] C# implementation designs ONLY in docs/implementation/ (no current system specs)
+- [ ] Future enhancements ONLY in docs/rfcs/ (not mixed with current requirements)
+- [ ] Cross-references between folders use correct relative paths

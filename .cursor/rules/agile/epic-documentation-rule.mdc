@@ -1,0 +1,164 @@
+---
+id: rule.agile.epic-documentation.v1
+kind: rule
+version: 1.0.1
+description: Define structure and content requirements for Epic documentation in agile development
+globs: **/epics/**/*.md, **/docs/agile/epics/**/*.md, **/agile/epics/**/*.md
+governs: **/epics/**/*.md, **/docs/agile/epics/**/*.md, **/agile/epics/**/*.md
+implements: agile.epic-documentation
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-agile, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Epic Documentation Rule
+
+## Purpose & Scope
+
+This rule defines the canonical structure and content requirements for Epic documentation in agile development. Epics represent large bodies of work that can be broken down into smaller, more manageable pieces (Features and Stories). Epics typically span multiple sprints and represent significant business value.
+
+**Applies to**: All Epic documentation files in `epics/` directories or designated agile documentation locations.
+
+**Does not apply to**: Feature-level documentation, User Story documentation, technical specifications, or general project documentation outside the agile workflow.
+
+## Inputs (Contract)
+
+- Epic initiative or large work requirement
+- Business problem statement or opportunity
+- Stakeholder list and roles
+- High-level scope definition
+- Success criteria or business outcomes
+- Existing epic file (if updating)
+
+## Outputs (Contract)
+
+- Creates or updates Epic documentation file at designated path
+- Ensures all 8 required sections present: Header, Business Context, Scope and Boundaries, High-Level Requirements, Technical Overview, Risk Assessment, Timeline and Milestones, Feature Breakdown
+- Validates success metrics are measurable and specific
+- Validates scope boundaries are clearly defined
+- Appends provenance footer with timestamp and rule ID
+- Preserves existing content when updating
+
+## Deterministic Steps
+
+1. Read epic initiative requirements and business context
+2. Create Epic Header with ID, Title, Status, Priority, Created Date, Last Updated
+3. Document Business Context: Problem Statement, Business Value, Success Metrics, Stakeholders
+4. Define Scope and Boundaries: In Scope, Out of Scope, Dependencies, Constraints
+5. Document High-Level Requirements: Functional Requirements, Non-Functional Requirements, Acceptance Criteria
+6. Create Technical Overview: Architecture Impact, Technology Stack, Integration Points, Data Requirements
+7. Perform Risk Assessment: Technical Risks, Business Risks, Mitigation Strategies
+8. Define Timeline and Milestones: Estimated Duration, Key Milestones, Timeline Dependencies
+9. Document Feature Breakdown: List of Features, Feature Dependencies, Priority Order
+10. Validate all required sections are complete and non-empty
+11. Append provenance footer with timestamp and rule ID
+12. Save to designated path
+
+## Formatting Requirements
+
+### Structure
+- Use markdown format
+- Top-level H1: "# [Epic ID]: [Epic Title]"
+- Use H2 for major sections (## Business Context, ## Scope and Boundaries, etc.)
+- Use H3 for subsections within major sections
+- Include table of contents for epics with >5 sections
+
+### Content Guidelines
+- Use clear, business-focused language
+- Include specific, measurable success criteria
+- Provide enough detail for feature breakdown
+- Keep technical details at a high level
+- Use bullet lists for enumerated items
+- Use tables for structured comparisons
+
+### Links and References
+- Include links to related documents
+- Reference features and stories using standard ID format
+- Link to architectural diagrams and mockups
+- Maintain bidirectional links (epic ↔ features)
+
+## OPSEC and Leak Control
+
+- NO internal system URLs or network paths
+- NO employee email addresses or personal contact information (use roles: "Product Owner", "Technical Lead")
+- NO credentials, API keys, or access tokens
+- NO customer-specific data or identifiers
+- NO financial details beyond high-level budget estimates
+- Redact organization-specific system names if sensitive
+- Use generic placeholders for environment-specific configurations
+
+## Integration Points
+
+### Related Rules
+- `rule.agile.business-feature-documentation.v1` - Features reference their parent Epic
+- `rule.agile.technical-feature-documentation.v1` - Technical features may trace to Epic
+- `rule.agile.story-splitting.v1` - Large epics may require splitting guidance
+- `rule.ticket.plan.update.v1` - Epic planning may integrate with ticket workflow
+
+### Workflow Integration
+- Epic creation triggers feature breakdown planning
+- Epic updates may trigger dependent feature updates
+- Epic status changes propagate to child features
+- Epic completion requires all child features complete
+
+## Failure Modes and Recovery
+
+**Missing Required Section**:
+- Detection: Section header not found in output
+- Recovery: Add section with placeholder content, flag for manual completion
+
+**Vague Success Metrics**:
+- Detection: Success metrics lack quantifiable measures
+- Recovery: Flag for product owner review, provide examples of measurable metrics
+
+**Undefined Scope Boundaries**:
+- Detection: "In Scope" or "Out of Scope" sections empty
+- Recovery: Flag for stakeholder review, add template guidance
+
+**No Feature Breakdown**:
+- Detection: Feature list empty or placeholder only
+- Recovery: Cannot complete, escalate to product owner for breakdown
+
+**Stale Last Updated Date**:
+- Detection: Last Updated > 30 days ago, Status not "Completed"
+- Recovery: Flag for review, prompt for status update
+
+## Provenance Footer Specification
+
+Append to all generated or updated Epic files:
+
+```
+---
+Produced-by: rule.agile.epic-documentation.v1 | ts={{timestamp}} | status={{status}}
+```
+
+Example:
+```
+---
+Produced-by: rule.agile.epic-documentation.v1 | ts=2025-11-04T14:30:00Z | status=created
+```
+
+For updates, preserve creation info:
+```
+---
+Created: 2025-10-01T10:00:00Z by rule.agile.epic-documentation.v1
+Updated: 2025-11-04T14:30:00Z by rule.agile.epic-documentation.v1
+```
+
+## Related Exemplar
+
+**Exemplar**: `epic-example.md` - Full example showing well-structured epic documentation
+
+**Usage Note**: Use exemplar for pattern extraction only. NEVER copy exemplar content into production epic documentation. Extract structure, style, and level of detail, but synthesize new content based on actual epic requirements.
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All 8 required sections present: Header, Business Context, Scope, Requirements, Technical Overview, Risk Assessment, Timeline, Feature Breakdown
+- [ ] Success metrics are measurable and specific (not vague)
+- [ ] Scope boundaries clearly defined with explicit In/Out of Scope lists
+- [ ] Feature breakdown present with at least 1 feature identified
+- [ ] Risk assessment includes mitigation strategies
+- [ ] No OPSEC violations (internal URLs, credentials, personal emails)
+- [ ] Provenance footer appended with timestamp
+- [ ] Markdown formatting follows structure requirements 

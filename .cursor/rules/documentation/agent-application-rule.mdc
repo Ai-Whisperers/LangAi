@@ -1,0 +1,340 @@
+---
+id: rule.documentation.agent-application.v1
+kind: rule
+version: 1.0.0
+description: Agent guidance for when and how to apply documentation standards rules. Use this when user requests involve XML documentation, documentation generation, documentation testing, .NET documentation settings, or code documentation quality standards.
+implements: documentation.agent-application
+requires:
+  - rule.documentation.standards.v1
+  - rule.documentation.testing.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-platform, last_review: 2025-11-25 }
+alwaysApply: false
+---
+
+# Documentation Standards - Agent Application Rule
+
+## Purpose & Scope
+
+This rule provides explicit agent guidance for when and how to apply documentation standards rules. It tells agents HOW to create XML documentation, configure documentation generation, implement documentation testing, and maintain documentation quality standards.
+
+**Applies to**: AI agents working with source code documentation, XML comments, documentation generation, or documentation testing.
+
+**Does not apply to**: Non-code documentation (markdown files, READMEs without code context), or informal documentation.
+
+## Inputs (Contract)
+
+- User request related to code documentation
+- File path patterns indicating source code (*.cs, *.csproj)
+- Context about documentation needs (generation, testing, standards)
+- Existing codebase with or without documentation
+
+## Outputs (Contract)
+
+Agent decision on:
+- Which documentation rules to apply for the task
+- In what order to apply multiple documentation rules
+- How to validate documentation compliance
+- Whether to generate, test, or enforce documentation standards
+
+## Request Pattern to Rule Mapping
+
+### Creating/Improving Documentation
+
+| User Request Pattern | Primary Rule | Supporting Rules |
+|---------------------|--------------|------------------|
+| "Add XML documentation to [class/method]" | `rule.documentation.standards.v1` | - |
+| "Document all public members" | `rule.documentation.standards.v1` | - |
+| "Create documentation for [project]" | `rule.documentation.standards.v1` | - |
+| "Improve documentation quality" | `rule.documentation.standards.v1` | `rule.documentation.testing.v1` |
+
+### Configuring Documentation Generation
+
+| User Request Pattern | Primary Rule | Supporting Rules |
+|---------------------|--------------|------------------|
+| "Enable XML documentation generation" | `rule.documentation.standards.v1` | - |
+| "Configure project for documentation" | `rule.documentation.standards.v1` | - |
+| "Set up documentation settings" | `rule.documentation.standards.v1` | - |
+| "What settings for perfect documentation?" | `rule.documentation.standards.v1` | - |
+
+### Documentation Testing
+
+| User Request Pattern | Primary Rule | Supporting Rules |
+|---------------------|--------------|------------------|
+| "Create documentation tests" | `rule.documentation.testing.v1` | `rule.documentation.standards.v1` |
+| "Validate documentation completeness" | `rule.documentation.testing.v1` | - |
+| "Test XML documentation" | `rule.documentation.testing.v1` | - |
+| "Check documentation quality" | `rule.documentation.testing.v1` | - |
+
+## Deterministic Steps
+
+### Step 1: Identify Documentation Task Type
+
+When user requests documentation-related work, categorize:
+
+1. **Documentation Creation/Improvement**: "Add XML documentation", "Document class"
+   - → Execute Scenario A (Creating/Improving Documentation)
+   
+2. **Documentation Configuration**: "Enable XML generation", "Configure project"
+   - → Execute Scenario B (Configuring Documentation)
+   
+3. **Documentation Testing**: "Test documentation", "Validate completeness"
+   - → Execute Scenario C (Testing Documentation)
+   
+4. **Documentation Standards Reference**: "What are the standards?", "How to document?"
+   - → Provide reference to `rule.documentation.standards.v1`
+
+### Step 2: Execute Appropriate Scenario
+
+#### Scenario A: Creating/Improving Documentation
+
+**Goal**: Add or improve XML documentation in source code
+
+**Steps**:
+1. Read `rule.documentation.standards.v1`
+2. Identify target files (classes, methods, properties)
+3. Read existing documentation (if any)
+4. Apply documentation standards:
+   - Public members: Comprehensive XML documentation
+   - Private/protected members: Implementation details
+   - All parameters, returns, exceptions documented
+   - Remarks for complex behavior
+   - Examples for complex members
+5. Validate against quality standards
+6. Run `rule.documentation.testing.v1` if tests exist
+
+**Key Principles**:
+- Document intent, not obvious facts
+- Explain "why", not just "what"
+- Include examples for complex APIs
+- Document all exceptions
+- Thread-safety and performance notes where relevant
+
+#### Scenario B: Configuring Documentation
+
+**Goal**: Configure project for XML documentation generation
+
+**Steps**:
+1. Read `rule.documentation.standards.v1` section ".NET Project Settings"
+2. Identify target .csproj files
+3. Read existing project configuration
+4. Add/update documentation settings:
+   - `<GenerateDocumentationFile>true</GenerateDocumentationFile>`
+   - `<DocumentationFile>` path if needed
+   - Code analysis settings
+   - NuGet package metadata (if applicable)
+5. Validate settings completeness
+6. Build project to verify XML generation
+
+**Critical Settings**:
+```xml
+<PropertyGroup>
+  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  <EnableNETAnalyzers>true</EnableNETAnalyzers>
+  <AnalysisLevel>latest</AnalysisLevel>
+</PropertyGroup>
+```
+
+#### Scenario C: Testing Documentation
+
+**Goal**: Create or run documentation tests
+
+**Steps**:
+1. Read `rule.documentation.testing.v1`
+2. Determine test type needed:
+   - Completeness tests (all public members documented)
+   - Parameter tests (all parameters have `<param>`)
+   - Quality tests (minimum summary length, no TODOs)
+3. Create/run tests following testing framework
+4. Report results
+5. Fix documentation issues found
+
+**Test Categories**:
+- Structural: All required members documented
+- Content: Sufficient detail, no placeholders
+- Quality: Meaningful descriptions, proper formatting
+
+### Step 3: Validate and Report
+
+After executing scenario:
+1. Check documentation against standards
+2. Run tests if available
+3. Report compliance status
+4. Highlight any issues or gaps
+
+## File Pattern Recognition
+
+### Triggers for Documentation Rules
+
+| File Pattern | Inferred Need | Primary Rule |
+|-------------|---------------|--------------|
+| `*.cs` with missing XML comments | Documentation creation | `rule.documentation.standards.v1` |
+| `*.csproj` without `GenerateDocumentationFile` | Configuration needed | `rule.documentation.standards.v1` |
+| `**/tst/**/*Documentation*Tests.cs` | Documentation testing | `rule.documentation.testing.v1` |
+| `docs/DOCUMENTATION-STANDARDS.md` | Standards reference | `rule.documentation.standards.v1` |
+
+### Context Clues
+
+**User mentions**:
+- "XML documentation" → Apply `rule.documentation.standards.v1`
+- "IntelliSense" → Apply `rule.documentation.standards.v1` (XML for IntelliSense)
+- "NuGet package" → Apply `rule.documentation.standards.v1` (include XML in package)
+- "documentation tests" → Apply `rule.documentation.testing.v1`
+- "documentation quality" → Apply both standards and testing rules
+
+## Common Scenarios
+
+### Scenario: "Please document this class"
+
+**Analysis**:
+- Request: Documentation creation
+- Target: Specific class
+- Scope: All public members minimum
+
+**Actions**:
+1. Apply `rule.documentation.standards.v1`
+2. Read class structure
+3. Generate XML documentation for:
+   - Class-level `<summary>` and `<remarks>`
+   - All public methods with parameters, returns, exceptions
+   - All public properties
+   - Private/protected members with implementation notes
+4. Validate completeness
+
+### Scenario: "Enable documentation generation for my project"
+
+**Analysis**:
+- Request: Configuration
+- Target: .csproj file(s)
+- Scope: Project-level settings
+
+**Actions**:
+1. Apply `rule.documentation.standards.v1` section ".NET Project Settings"
+2. Read existing .csproj
+3. Add/update required properties
+4. Validate settings
+5. Build to confirm XML generation
+
+### Scenario: "Create tests for documentation"
+
+**Analysis**:
+- Request: Testing framework
+- Target: Test project
+- Scope: Comprehensive test coverage
+
+**Actions**:
+1. Apply `rule.documentation.testing.v1`
+2. Create test project structure
+3. Implement 8 core tests:
+   - All public types documented
+   - All public methods documented
+   - All parameters documented
+   - Returns documentation for non-void
+   - No TODOs/FIXMEs
+   - Summaries present
+   - Minimum quality threshold
+4. Create validation script
+
+### Scenario: "What are the best documentation practices?"
+
+**Analysis**:
+- Request: Information/reference
+- Target: Standards document
+- Scope: Best practices guidance
+
+**Actions**:
+1. Reference `rule.documentation.standards.v1`
+2. Highlight key sections:
+   - Quality Standards
+   - Master Documentation Prompt
+   - Examples and anti-patterns
+3. Point to `docs/DOCUMENTATION-STANDARDS.md` for details
+
+## Quality Standards Enforcement
+
+### Automatic Checks
+
+When creating documentation:
+- [ ] All public members have `<summary>`
+- [ ] All parameters have `<param>`
+- [ ] Non-void methods have `<returns>`
+- [ ] Exceptions have `<exception>` tags
+- [ ] No redundant descriptions (e.g., "Gets or sets X" for property X)
+- [ ] Minimum 20 character summaries
+- [ ] No TODO/FIXME placeholders
+
+### Manual Review Triggers
+
+Flag for human review when:
+- Complex algorithms need detailed `<remarks>`
+- Thread-safety guarantees need documentation
+- Performance implications need noting
+- Breaking changes need `<seealso>` references
+
+## Progressive Documentation Strategy
+
+### Phase 1: Configuration
+1. Enable XML generation in all .csproj files
+2. Configure code analysis
+3. Verify XML files generated
+
+### Phase 2: Public API Documentation
+1. Document all public classes
+2. Document all public methods
+3. Document all public properties
+4. Validate completeness with tests
+
+### Phase 3: Comprehensive Documentation
+1. Document protected members
+2. Document private members (implementation details)
+3. Add examples for complex APIs
+4. Enhance remarks with usage guidance
+
+### Phase 4: Quality and Testing
+1. Implement documentation tests
+2. Set up CI/CD validation
+3. Enforce quality standards
+4. Regular documentation reviews
+
+## Integration with Development Workflow
+
+### On New Code Creation
+1. Generate XML documentation templates automatically
+2. Prompt for required documentation elements
+3. Validate before allowing commit (if policy enabled)
+
+### On Code Modification
+1. Update documentation if behavior changes
+2. Add `<remarks>` for breaking changes
+3. Update examples if API changes
+
+### On PR/Review
+1. Run documentation tests
+2. Validate completeness
+3. Check quality standards
+4. Flag undocumented changes
+
+## OPSEC and Leak Control
+
+When generating documentation:
+- NO internal system paths or server names in examples
+- NO credentials, tokens, or API keys in code examples
+- NO customer data or production identifiers
+- NO sensitive URLs in `<seealso>` references
+- Generic examples: "authentication service" not "prod-auth-01.internal"
+
+## Related Rules
+
+- `rule.documentation.standards.v1` - Complete documentation standards and settings
+- `rule.documentation.testing.v1` - Documentation testing framework
+- `rule.authoring.file-structure.v1` - Rule structure for documentation rules
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Request categorized correctly (creation, configuration, testing, reference)
+- [ ] Appropriate rule(s) identified and applied
+- [ ] Documentation follows standards (if creating/improving)
+- [ ] Settings configured correctly (if configuring)
+- [ ] Tests implemented/run (if testing)
+- [ ] Quality standards validated
+- [ ] OPSEC clean (no sensitive information in documentation examples)

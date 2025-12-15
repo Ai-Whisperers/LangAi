@@ -1,0 +1,655 @@
+---
+id: rule.prompts.creation.v1
+kind: rule
+version: 1.1.0
+description: Standards for creating effective, reusable prompts (content quality)
+implements: prompts.creation
+requires:
+  - rule.prompts.registry-integration.v1
+provenance: { owner: team-prompts, last_review: 2025-12-08 }
+globs: **/.cursor/prompts/**/*.md, **/.cursor/prompts/**/*.prompt.md
+governs: **/.cursor/prompts/**/*.md, **/.cursor/prompts/**/*.prompt.md
+alwaysApply: false
+---
+
+# Prompt Creation Standards
+
+## Purpose
+
+Define content quality standards for creating effective, reusable prompts that maximize AI agent effectiveness and minimize iteration cycles.
+
+**Note**: For file format and Prompt Registry integration (`.prompt.md` with YAML frontmatter, collection manifests, slash commands), see `rule.prompts.registry-integration.v1`. This rule focuses on prompt **content quality**.
+
+## Scope
+
+**Covers**:
+- Creating new prompt files in `.cursor/prompts/`
+- Structure and content of prompts
+- Clarity, specificity, and actionability requirements
+- Placeholder conventions
+- Context requirements
+
+**Does Not Cover**:
+- Ad-hoc conversational prompts (covered by usage patterns)
+- Rule extraction (see rule-authoring rules)
+- Template vs exemplar distinction (see rule-authoring)
+
+## When to Apply
+
+Apply when:
+- User requests creation of a new prompt file
+- Creating prompt templates for common tasks
+- Standardizing existing ad-hoc prompts
+- Adding prompts to `.cursor/prompts/` folder
+
+## Prompt Quality Principles
+
+### 1. Specificity Over Generality
+
+**Good**: 
+```
+Analyze XML documentation coverage in [FOLDER_PATH] and identify:
+- Classes without XML comments
+- Methods missing <summary> tags
+- Parameters without <param> tags
+```
+
+**Bad**:
+```
+Check the documentation
+```
+
+### 2. Explicit Context Requirements
+
+Always specify what information is needed:
+
+```markdown
+**Required Context**:
+- Target folder path
+- Current project structure
+- Existing documentation standards
+
+**Optional Context**:
+- Specific files to exclude
+- Coverage threshold requirements
+```
+
+### 3. Clear Expected Outcomes
+
+State what the prompt should produce:
+
+```markdown
+**Deliverables**:
+1. Coverage analysis report
+2. List of undocumented items
+3. Prioritized action plan
+4. Specific file paths needing attention
+```
+
+### 4. Actionable Instructions
+
+Use imperative verbs and numbered steps:
+
+```markdown
+1. **Scan** the folder structure
+2. **Identify** files matching pattern
+3. **Analyze** each file for criteria X
+4. **Report** findings in format Y
+5. **Recommend** specific actions
+```
+
+## Prompt Structure Template
+
+```markdown
+# [Prompt Title]
+
+[1-2 sentence description of what this prompt does]
+
+**[Required Context Section with Placeholders]**
+
+**[Optional Parameters Section]**
+
+## Reasoning Process
+1. **Analyze Request**: Understand the user's specific needs.
+2. **Identify Standards**: Locate relevant rules/patterns.
+3. **Formulate Plan**: "Think step-by-step" before generating code.
+
+## Process
+
+1. **[Step 1 Name]**: [Clear instruction]
+   - [Sub-point]
+   - [Sub-point]
+
+2. **[Step 2 Name]**: [Clear instruction]
+
+## Examples (Few-Shot)
+
+**Input**: 
+[Example Input]
+
+**Reasoning**:
+[Brief explanation of why the output is correct]
+
+**Output**:
+[Example Output]
+
+## Expected Output
+
+**Deliverables**:
+1. [Deliverable 1]
+2. [Deliverable 2]
+
+**Format**: [Specify exact format expected]
+
+## Quality Criteria
+
+- [ ] [Criterion 1]
+- [ ] [Criterion 2]
+
+---
+
+**Related**: [Link to related prompts/rules]
+**Save to**: [Where results should be saved]
+```
+
+## Placeholder Conventions
+
+### Standard Placeholders
+
+Use these consistent patterns:
+
+| Placeholder | Purpose | Example |
+|-------------|---------|---------|
+| `[FOLDER_PATH]` | Filesystem path | `src/Domain/` |
+| `[FILE_PATH]` | Specific file | `src/Domain/Entity.cs` |
+| `[PATTERN]` | Glob/regex pattern | `*.cs` |
+| `[TICKET_ID]` | Ticket identifier | `EPP-192` |
+| `[COMPONENT_NAME]` | Component/module | `Calendar` |
+| `[DESCRIPTION]` | Free text | `validation logic` |
+| `[URL]` | External reference | `https://...` |
+| `[DATE]` | Date value | `2025-12-01` |
+| `[VERSION]` | Version number | `1.0.0` |
+
+### Placeholder Guidelines
+
+1. **Use UPPER_CASE inside brackets**: `[LIKE_THIS]`
+2. **Be specific**: `[DATABASE_CONNECTION_STRING]` not `[VALUE]`
+3. **Provide examples** in comments: `[THRESHOLD] # e.g., 80%`
+4. **Use XML Delimiters for Robustness**: 
+   Wrap variable content in XML tags to prevent context bleeding.
+   ```markdown
+   Analyze the code:
+   <code_snippet>
+   [CODE_SNIPPET]
+   </code_snippet>
+   ```
+
+5. **Group related placeholders**:
+   ```markdown
+   **Target**:
+   - Folder: [FOLDER_PATH]
+   - Pattern: [FILE_PATTERN]
+   - Exclude: [EXCLUDE_PATTERN] # Optional
+   ```
+
+## Prompt Tone and Politeness
+
+### Use Polite, Collaborative Language
+
+Prompts should use courteous language to establish a collaborative tone with AI agents.
+
+**Best Practice**: Include "please" in imperative requests
+
+✅ **Good Examples**:
+```
+@TICKET-123 please start
+Please analyze the test coverage in [FOLDER]
+@spec.md please validate and execute
+```
+
+❌ **Avoid** (too abrupt):
+```
+@TICKET-123 start
+Analyze the test coverage
+@spec.md execute
+```
+
+**Rationale**:
+- Maintains collaborative, respectful tone
+- Models good communication practices
+- Consistent with observed effective prompt patterns
+- Makes prompts feel like requests, not commands
+
+**Exceptions**: 
+- Very short utility prompts where "please" is implicit (e.g., "continue")
+- Declarative statements providing information (not making requests)
+
+### Tone Guidelines
+
+**Collaborative** (preferred):
+- "Please review and suggest improvements"
+- "Let's continue with the remaining tasks"
+- "Could you validate this approach?"
+
+**Imperative** (use sparingly):
+- "Fix these errors" (when providing error list)
+- "Report status" (for status checks)
+
+**Avoid**:
+- Overly formal or verbose language
+- Apologetic language ("sorry to bother")
+- Uncertain language ("maybe try to...")
+
+## Prompt Effectiveness Patterns
+
+### Pattern 1: Constrained Generation
+
+When you want controlled output:
+
+```markdown
+Generate [ARTIFACT] following:
+
+**Constraints**:
+- Must include sections: [LIST]
+- Must follow format: [FORMAT]
+- Must reference: [REFERENCES]
+- Must not exceed: [LIMIT]
+
+**Validation**:
+- [ ] All constraints met
+- [ ] Format matches specification
+```
+
+### Pattern 2: Guided Analysis
+
+When you want structured analysis:
+
+```markdown
+Analyze [TARGET] for:
+
+1. **[Aspect 1]**:
+   - Look for: [CRITERIA]
+   - Report: [FORMAT]
+   
+2. **[Aspect 2]**:
+   - Look for: [CRITERIA]
+   - Report: [FORMAT]
+
+**Analysis Framework**: [SPECIFY FRAMEWORK/STANDARDS]
+```
+
+### Pattern 3: Iterative Refinement
+
+When task requires multiple passes:
+
+```markdown
+**Phase 1 - Discovery**:
+[Discovery steps]
+
+**Phase 2 - Analysis**:
+[Analysis steps]
+
+**Phase 3 - Recommendations**:
+[Recommendation steps]
+
+After each phase, confirm before proceeding.
+```
+
+### Pattern 4: Context Building
+
+When agent needs to gather information first:
+
+```markdown
+**Before proceeding**:
+1. Read: [FILES]
+2. Understand: [CONTEXT]
+3. Verify: [PRECONDITIONS]
+
+**Then execute**:
+[Main task steps]
+```
+
+### Pattern 5: Chain of Thought (CoT)
+
+For complex reasoning tasks, force the model to show its work:
+
+```markdown
+**Reasoning Process**:
+Before generating the final output, you must:
+1. Break down the user's request.
+2. Identify potential edge cases.
+3. Plan the solution step-by-step.
+4. Verify the plan against constraints.
+
+Output your reasoning in a `> Blockquote` before the final code.
+```
+
+### Pattern 6: Self-Correction (Metacognition)
+
+Require the model to critique its own work before finalizing:
+
+```markdown
+**Final Review**:
+Before outputting, ask yourself:
+- Did I handle the null case?
+- Is the syntax valid?
+- Did I follow all constraints?
+
+If any check fails, revise your answer.
+```
+
+## Common Anti-Patterns to Avoid
+
+### ❌ Anti-Pattern 1: Vague Instructions
+
+**Bad**:
+```
+Fix the code quality issues
+```
+
+**Good**:
+```
+Review code in [FOLDER] against:
+- Naming convention standards (link)
+- DRY principle violations
+- Method length > 50 lines
+- Missing error handling
+
+Provide specific file:line recommendations.
+```
+
+### ❌ Anti-Pattern 2: Missing Examples (Zero-Shot)
+
+**Bad**:
+```
+Create a technical spec for this feature.
+```
+
+**Good**:
+```
+Create a technical spec following this example:
+
+**Example Input**: "Login Feature"
+**Example Output**:
+## Feature: Login
+### Business Rules
+1. User must be active...
+2. Password must be hashed...
+
+Now create one for: [FEATURE_NAME]
+```
+
+### ❌ Anti-Pattern 3: Assumed Context
+
+**Bad**:
+```
+Update the documentation
+```
+
+**Good**:
+```
+Update documentation in [FILE_PATH] to:
+- Add missing XML comments
+- Align with standards in [STANDARDS_DOC]
+- Include examples for public methods
+
+Review existing content before making changes.
+```
+
+### ❌ Anti-Pattern 3: Ambiguous Success Criteria
+
+**Bad**:
+```
+Make it better
+```
+
+**Good**:
+```
+Refactor to meet criteria:
+- [ ] Cyclomatic complexity < 10
+- [ ] Method length < 50 lines
+- [ ] Clear single responsibility
+- [ ] All edge cases handled
+
+Verify each criterion before completion.
+```
+
+### ❌ Anti-Pattern 4: Missing Validation
+
+**Bad**:
+```
+Create the tests
+```
+
+**Good**:
+```
+Create unit tests ensuring:
+
+**Coverage**:
+- [ ] All public methods tested
+- [ ] Edge cases covered
+- [ ] Error paths verified
+
+**Quality**:
+- [ ] Follows AAA pattern
+- [ ] Uses FluentAssertions
+- [ ] Includes XML documentation
+
+Verify tests pass before completion.
+```
+
+## Prompt Categories and Conventions
+
+### Analysis Prompts
+
+**Prefix**: `analyze-*` or `check-*`
+**Focus**: Discovery and reporting
+**Output**: Reports, lists, assessments
+
+```markdown
+# Analyze [Target]
+
+Examine [TARGET] for [CRITERIA]
+
+**Analysis Scope**:
+[Define boundaries]
+
+**Report Format**:
+[Specify structure]
+
+**Actionable Outputs**:
+[What user can do with results]
+```
+
+### Generation Prompts
+
+**Prefix**: `create-*` or `generate-*`
+**Focus**: Creating new artifacts
+**Output**: Code, docs, configurations
+
+```markdown
+# Generate [Artifact]
+
+Create [ARTIFACT] with:
+
+**Requirements**:
+[Specific requirements]
+
+**Templates/Standards**:
+[Reference existing patterns]
+
+**Validation**:
+[How to verify correctness]
+```
+
+### Transformation Prompts
+
+**Prefix**: `refactor-*` or `transform-*`
+**Focus**: Modifying existing artifacts
+**Output**: Updated code/docs
+
+```markdown
+# Refactor [Target]
+
+Transform [TARGET] to meet:
+
+**Current State**:
+[What exists now]
+
+**Desired State**:
+[What should exist]
+
+**Constraints**:
+[What must be preserved]
+
+**Verification**:
+[How to confirm success]
+```
+
+### Validation Prompts
+
+**Prefix**: `validate-*` or `verify-*`
+**Focus**: Checking compliance
+**Output**: Pass/fail reports with details
+
+```markdown
+# Validate [Target]
+
+Verify [TARGET] against:
+
+**Standards**:
+[List standards/rules]
+
+**Check Items**:
+- [ ] [Item 1]
+- [ ] [Item 2]
+
+**Report**:
+- Violations found
+- Severity levels
+- Remediation steps
+```
+
+## Quality Checklist for Prompts
+
+When creating a prompt, verify:
+
+- [ ] **Clear purpose** stated in first 1-2 sentences
+- [ ] **All placeholders** follow naming conventions
+- [ ] **Required context** explicitly listed
+- [ ] **Reasoning process** (CoT) required for complex tasks
+- [ ] **Steps** are numbered and actionable
+- [ ] **Expected output** format specified
+- [ ] **Success criteria** defined
+- [ ] **Examples** (Few-Shot) provided to guide the model
+- [ ] **Related prompts** linked
+- [ ] **Validation checklist** included
+- [ ] **No assumed knowledge** - all context explicit
+- [ ] **Tested** - actually used to verify effectiveness
+
+## Prompt File Organization
+
+### Naming Convention
+
+```
+[action]-[target]-[qualifier].md
+
+Examples:
+- analyze-test-coverage.md
+- create-domain-entity.md
+- validate-documentation-quality.md
+- refactor-for-clean-code.md
+```
+
+### File Location
+
+```
+.cursor/prompts/
+├── [category]/           # Matches .cursor/rules/ categories
+│   ├── analyze-*.md     # Analysis prompts
+│   ├── create-*.md      # Generation prompts
+│   ├── validate-*.md    # Validation prompts
+│   └── refactor-*.md    # Transformation prompts
+
+.cursor/templars/prompts/ # Reusable Prompt Structure Templates
+└── [category]-templar.md
+
+.cursor/exemplars/prompts/ # High-Quality Prompt Examples
+└── [category]-exemplar.md
+```
+
+### Required Sections
+
+Every prompt file must have:
+
+1. **Title** (H1)
+2. **Description** (1-2 sentences)
+3. **Context/Parameters** section with placeholders
+4. **Reasoning Process** (for complex/generation tasks)
+5. **Process/Steps** section
+6. **Examples** (strongly recommended)
+7. **Expected Output** section
+8. **Validation/Quality** section
+
+Optional but recommended:
+- Examples
+- Related links
+- Common pitfalls
+- Estimated time/complexity
+
+## Integration with Rules
+
+Prompts should reference relevant rules:
+
+```markdown
+**Follows Standards From**:
+- `.cursor/rules/[category]/[rule-name].mdc`
+- `.cursor/rules/[category]/[rule-name].mdc`
+
+**Produces Output Compliant With**:
+- [Rule name]
+- [Standard name]
+```
+
+## Integration with Prompt Registry
+
+**This rule defines prompt content quality**. For file format and integration:
+- See `rule.prompts.registry-integration.v1` for:
+  - `.prompt.md` file format with YAML frontmatter
+  - Collection manifest structure (`.collection.yml`)
+  - Slash command workflows
+  - Prompt Registry extension setup
+
+**Combined Usage**:
+1. Apply THIS rule for: Content structure, quality standards, effectiveness patterns
+2. Apply `registry-integration` rule for: File format, frontmatter fields, collection setup
+
+## References
+
+- `rule.prompts.registry-integration.v1` - File format and Prompt Registry integration
+- `rule.prompts.extraction.v1` - Extracting prompts from conversations
+- `rule.prompts.agent-application.v1` - When to apply prompt rules
+- `.cursor/rules/rule-authoring/` - Rule creation standards
+- `.cursor/prompts/` - Prompt library location
+
+## FINAL MUST-PASS CHECKLIST
+
+### Content Quality (This Rule)
+
+- [ ] Clear title and 1-2 sentence description
+- [ ] Purpose/Goals section explains what prompt achieves
+- [ ] Process section with numbered, actionable steps
+- [ ] Output Format section specifies exact format
+- [ ] Validation checklist for quality criteria
+- [ ] Standard placeholders used (e.g., `[FOLDER_PATH]`)
+- [ ] XML delimiters for robust context separation
+- [ ] Advanced patterns applied where appropriate (CoT, Few-Shot)
+- [ ] No anti-patterns present (vague, ambiguous, untestable)
+- [ ] Success criteria are measurable and specific
+
+### File Format (See registry-integration-rule)
+
+- [ ] `.prompt.md` file extension
+- [ ] YAML frontmatter with required fields (name, description)
+- [ ] Added to collection manifest
+- [ ] Tested via slash command

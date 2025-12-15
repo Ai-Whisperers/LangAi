@@ -1,0 +1,13 @@
+id: package-bundle
+name: "Package Management"
+description: "Prompts for generating package metadata"
+tags:
+  - packaging
+  - metadata
+  - nuget
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/package/generate-package-metadata.prompt.md
+    kind: prompt
+

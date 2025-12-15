@@ -1,0 +1,669 @@
+---
+id: rule.scripts.core-principles.v1
+kind: rule
+version: 1.0.0
+description: Language-agnostic core principles for reusable scripts - portability, parameterization, error handling, and configuration
+globs: **/*.ps1, **/*.py
+governs: **/*.ps1, **/*.py
+implements: scripts.core-principles
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: 
+  owner: team-devops
+  last_review: 2025-12-07
+  created: 2025-12-07
+alwaysApply: false
+---
+
+# Reusable Scripts - Core Principles
+
+## Purpose & Scope
+
+Defines **language-agnostic** core principles for reusable scripts. These principles apply to both PowerShell and Python scripts and focus on portability, parameterization, error handling, and configuration management.
+
+**Applies to**: All `.ps1` and `.py` script files in the repository.
+
+**Does not apply to**: One-off utility scripts, personal scripts outside version control.
+
+## Inputs (Contract)
+
+- Existing script or requirement for new script
+- Understanding of script purpose and usage scenarios
+- Parameters the script needs to accept
+- Execution environment requirements (CI/CD, local, both)
+
+## Outputs (Contract)
+
+A script with:
+- ✅ **Portable defaults** (works in CI/CD and locally)
+- ✅ **Proper parameterization** with validation
+- ✅ **Robust error handling** with meaningful messages
+- ✅ **Configuration file support** (when needed)
+- ✅ **Clear documentation** (language-appropriate format)
+- ✅ **Meaningful exit codes** (0=success, 1+=failure)
+
+## Core Principle 1: Portability
+
+### The Portability Contract
+
+**Portable means**: Works in CI/CD **AND** locally without modification.
+
+### Portability Requirements
+
+1. **No hardcoded CI/CD variables**
+   - ❌ BAD: `$outputPath = "$env:BUILD_ARTIFACTSTAGINGDIRECTORY/report"`
+   - ✅ GOOD: `$outputPath = if ($env:BUILD_ARTIFACTSTAGINGDIRECTORY) { "$env:BUILD_ARTIFACTSTAGINGDIRECTORY/report" } else { "$env:TEMP/report" }`
+
+2. **Default parameter values work locally**
+   - Use `$env:TEMP` or `~/.cache`, not Azure-specific variables
+   - Provide sensible local defaults for all optional parameters
+
+3. **Environment detection**
+   - Auto-detect CI/CD vs local execution
+   - Adapt behavior appropriately (logging verbosity, output paths, etc.)
+
+4. **Relative paths**
+   - Use script-relative paths for resources
+   - PowerShell: `$PSScriptRoot`
+   - Python: `Path(__file__).parent`
+
+### Portable Pattern Example
+
+**PowerShell**:
+```powershell
+# Auto-detect environment
+$isAzurePipeline = [bool]$env:AGENT_TEMPDIRECTORY
+
+if ($isAzurePipeline) {
+    Write-Host "Running in Azure Pipelines"
+    $defaultOutput = "$env:AGENT_TEMPDIRECTORY/output"
+} else {
+    Write-Host "Running locally"
+    $defaultOutput = "$env:TEMP/output"
+}
+
+# Use detected default if no parameter provided
+if (-not $OutputPath) {
+    $OutputPath = $defaultOutput
+}
+```
+
+**Python**:
+```python
+import os
+from pathlib import Path
+
+# Auto-detect environment
+is_azure_pipeline = bool(os.getenv('AGENT_TEMPDIRECTORY'))
+
+if is_azure_pipeline:
+    print("Running in Azure Pipelines")
+    default_output = Path(os.getenv('AGENT_TEMPDIRECTORY')) / 'output'
+else:
+    print("Running locally")
+    default_output = Path.home() / '.cache' / 'script-output'
+
+# Use detected default
+output_path = output_path or default_output
+```
+
+### Portability Checklist
+
+- [ ] No hardcoded CI/CD variables in script body
+- [ ] Default parameter values work locally (use `$env:TEMP` or home directory)
+- [ ] Script detects environment and adapts
+- [ ] Paths are relative to script location where possible
+- [ ] Error messages are helpful in both environments
+
+## Core Principle 2: Parameterization
+
+### Requirements
+
+1. **Typed parameters**: Strong typing prevents errors
+2. **Default values**: Optional parameters have sensible defaults
+3. **Validation**: Use validation attributes/decorators
+4. **Documentation**: Each parameter documented
+5. **Portable defaults**: Defaults work in all environments
+
+### Good Parameterization Pattern
+
+**PowerShell**:
+```powershell
+param(
+    # Build configuration (Release or Debug)
+    [Parameter(Mandatory=$false, HelpMessage="Build configuration to use")]
+    [ValidateSet("Debug", "Release")]
+    [string]$Configuration = "Release",
+    
+    # Output directory (defaults to temp if not specified)
+    [Parameter(Mandatory=$false, HelpMessage="Directory to write output files")]
+    [string]$OutputPath = "$env:TEMP/script-output",
+    
+    # Minimum threshold
+    [Parameter(Mandatory=$false, HelpMessage="Minimum percentage required")]
+    [ValidateRange(0, 100)]
+    [int]$MinThreshold = 80,
+    
+    # Whether to fail on threshold violation
+    [Parameter(Mandatory=$false, HelpMessage="Fail script if threshold not met")]
+    [switch]$FailOnThreshold
+)
+```
+
+**Python**:
+```python
+import argparse
+from pathlib import Path
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description="Script description here"
+    )
+    
+    parser.add_argument(
+        '--configuration',
+        choices=['Debug', 'Release'],
+        default='Release',
+        help='Build configuration to use'
+    )
+    
+    parser.add_argument(
+        '--output-path',
+        type=Path,
+        default=Path.home() / '.cache' / 'script-output',
+        help='Directory to write output files'
+    )
+    
+    parser.add_argument(
+        '--min-threshold',
+        type=int,
+        default=80,
+        help='Minimum percentage required (0-100)'
+    )
+    
+    parser.add_argument(
+        '--fail-on-threshold',
+        action='store_true',
+        help='Fail script if threshold not met'
+    )
+    
+    return parser.parse_args()
+```
+
+### Parameterization Anti-Patterns
+
+❌ **Vague types**: `[string]$Config` instead of `[ValidateSet("Debug","Release")][string]$Config`
+
+❌ **No defaults**: Required parameters for values that have sensible defaults
+
+❌ **Hardcoded Azure vars**: `$Output = "$env:BUILD_ARTIFACTSTAGINGDIRECTORY/out"`
+
+❌ **No validation**: Integer parameters without range validation
+
+## Core Principle 3: Error Handling
+
+### Requirements
+
+1. **Fail fast**: Stop on first error
+2. **Meaningful messages**: Explain what went wrong and why
+3. **Exit codes**: Use meaningful exit codes (0=success, non-zero=failure)
+4. **CI/CD integration**: Use CI/CD logging commands where applicable
+5. **Cleanup**: Clean up temp resources on error
+
+### Error Handling Pattern
+
+**PowerShell**:
+```powershell
+$ErrorActionPreference = "Stop"
+
+try {
+    Write-Host "Running operation..."
+    
+    # External command execution
+    dotnet test --configuration $Configuration
+    
+    # Check exit code
+    if ($LASTEXITCODE -ne 0) {
+        throw "Tests failed with exit code $LASTEXITCODE"
+    }
+    
+    Write-Host "✅ Operation completed successfully!" -ForegroundColor Green
+    exit 0
+}
+catch {
+    # Azure Pipelines logging
+    if ($env:AGENT_TEMPDIRECTORY) {
+        Write-Host "##vso[task.logissue type=error]$($_.Exception.Message)"
+    }
+    
+    Write-Host "❌ Operation failed: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Check configuration and prerequisites." -ForegroundColor Yellow
+    exit 1
+}
+finally {
+    # Cleanup
+    Write-Verbose "Cleaning up temporary files..."
+    Remove-Item -Path "$env:TEMP/temp-*" -Force -ErrorAction SilentlyContinue
+}
+```
+
+**Python**:
+```python
+import sys
+import subprocess
+
+def main():
+    try:
+        print("Running operation...")
+        
+        # External command execution
+        result = subprocess.run(
+            ['dotnet', 'test', '--configuration', config.configuration],
+            capture_output=True,
+            text=True
+        )
+        
+        # Check exit code
+        if result.returncode != 0:
+            raise RuntimeError(f"Tests failed with exit code {result.returncode}")
+        
+        print("✅ Operation completed successfully!")
+        return 0
+        
+    except Exception as e:
+        # Azure Pipelines logging
+        if os.getenv('AGENT_TEMPDIRECTORY'):
+            print(f"##vso[task.logissue type=error]{str(e)}")
+        
+        print(f"❌ Operation failed: {str(e)}", file=sys.stderr)
+        print("Check configuration and prerequisites.")
+        return 1
+    
+    finally:
+        # Cleanup
+        cleanup_temp_files()
+
+if __name__ == '__main__':
+    sys.exit(main())
+```
+
+### Error Handling Checklist
+
+- [ ] Stop on first error (PowerShell: `$ErrorActionPreference = "Stop"`)
+- [ ] Check exit codes for external commands (`$LASTEXITCODE` or `result.returncode`)
+- [ ] Provide actionable error messages (what failed, why, how to fix)
+- [ ] Use CI/CD logging commands when applicable (`##vso[task.logissue]`)
+- [ ] Clean up temp resources in finally block
+- [ ] Meaningful exit codes (0=success, 1+=failure)
+
+## Core Principle 4: Configuration Files
+
+### When to Use Config Files
+
+Use external configuration files when:
+- ✅ Script has 5+ parameters
+- ✅ Configuration changes per environment (dev/staging/prod)
+- ✅ Complex nested settings required
+- ✅ Settings reused across multiple scripts
+
+### Recommended Formats
+
+- **JSON**: Simple, widely supported
+- **YAML**: Human-friendly, supports comments
+- **INI**: Legacy, simple key-value pairs
+
+### Configuration Pattern
+
+**PowerShell (JSON)**:
+```powershell
+param(
+    [string]$ConfigFile = "$PSScriptRoot/script-config.json"
+)
+
+# Load config if it exists
+if (Test-Path $ConfigFile) {
+    Write-Host "Loading configuration from: $ConfigFile"
+    $config = Get-Content $ConfigFile | ConvertFrom-Json
+    
+    # Override parameters with config values (if not explicitly set)
+    if (-not $PSBoundParameters.ContainsKey('MinThreshold')) {
+        $MinThreshold = $config.MinThreshold
+    }
+} else {
+    Write-Host "No config file found, using parameter defaults"
+}
+```
+
+**Python (YAML)**:
+```python
+import yaml
+from pathlib import Path
+
+def load_config(config_file: Path):
+    if not config_file.exists():
+        logger.info("No config file found, using defaults")
+        return {}
+    
+    try:
+        with open(config_file) as f:
+            config = yaml.safe_load(f)
+        logger.info(f"Loaded configuration from: {config_file}")
+        return config
+    except yaml.YAMLError as e:
+        logger.error(f"Invalid YAML in config file: {e}")
+        raise
+```
+
+**Config File Example (script-config.yaml)**:
+```yaml
+version: "1.0"
+configuration:
+  min_threshold: 80
+  max_complexity: 15
+  output_format: html
+  excluded_patterns:
+    - "*.Tests"
+    - "*.Benchmarks"
+```
+
+### Configuration Checklist
+
+- [ ] Config file path is parameterized (not hardcoded)
+- [ ] Script works with or without config file
+- [ ] Command-line parameters override config file values
+- [ ] Config file format is validated
+- [ ] Config file location is documented
+
+## Core Principle 5: Documentation
+
+### Requirements
+
+1. **Every script must have documentation**
+   - PowerShell: Comment-based help
+   - Python: Module docstring + argparse help
+
+2. **Documentation must include**:
+   - Purpose/description
+   - Parameter descriptions
+   - Usage examples (at least 2)
+   - Prerequisites
+   - Example CI/CD usage (if applicable)
+
+3. **Documentation must be accessible**:
+   - PowerShell: `Get-Help .\script.ps1`
+   - Python: `python script.py --help`
+
+### Documentation Patterns
+
+See language-specific rules for detailed documentation patterns:
+- PowerShell: `rule.scripts.powershell-standards.v1`
+- Python: `rule.scripts.python-standards.v1`
+
+## Core Principle 6: Exit Codes
+
+### Exit Code Standards
+
+- **0**: Success
+- **1**: General error
+- **2**: Configuration error
+- **3**: Dependency error (missing tools, libraries)
+- **4**: Validation error (input validation failed)
+- **5**: Runtime error (operation failed during execution)
+
+### Exit Code Pattern
+
+**PowerShell**:
+```powershell
+try {
+    # Script logic
+    exit 0  # Success
+}
+catch [ValidationException] {
+    Write-Error "Validation failed: $_"
+    exit 4
+}
+catch {
+    Write-Error "Script failed: $_"
+    exit 1
+}
+```
+
+**Python**:
+```python
+try:
+    # Script logic
+    return 0  # Success
+except ValidationError as e:
+    logger.error(f"Validation failed: {e}")
+    return 4
+except Exception as e:
+    logger.error(f"Script failed: {e}")
+    return 1
+```
+
+## Core Principle 7: Reusability Through Modules
+
+### Why Modules Matter
+
+Shared modules promote the DRY (Don't Repeat Yourself) principle by:
+- **Eliminating duplication**: Write once, use everywhere
+- **Centralizing fixes**: Fix a bug in one place, benefit all scripts
+- **Improving consistency**: Shared behavior across all scripts
+- **Accelerating development**: Reuse tested, proven functions
+
+### Module Organization Pattern
+
+```text
+repository/
+├── scripts/
+│   ├── validate-code-quality.ps1       # Uses shared functions
+│   ├── generate-changelog.ps1          # Uses shared functions
+│   └── modules/
+│       ├── Common.psm1                  # Shared PowerShell module
+│       └── common.py                    # Shared Python module
+```
+
+### PowerShell Module Pattern
+
+**Create Module**: `scripts/modules/Common.psm1`
+
+```powershell
+# Public functions (exported)
+function Test-Unicode {
+    <#
+    .SYNOPSIS
+    Detects if the environment supports Unicode output.
+    #>
+    $psVersion = $PSVersionTable.PSVersion.Major
+    $inAzure = $env:AGENT_TEMPDIRECTORY -ne $null
+    $isUtf8Console = [Console]::OutputEncoding.CodePage -eq 65001
+    
+    return ($psVersion -ge 7) -or $inAzure -or $isUtf8Console
+}
+
+function Get-StatusEmoji {
+    param([string]$Status)
+    
+    if (Test-Unicode) {
+        return @{
+            'success' = '✅'
+            'warning' = '⚠️'
+            'error'   = '❌'
+            'info'    = 'ℹ️'
+        }[$Status]
+    } else {
+        return @{
+            'success' = '[OK]'
+            'warning' = '[WARN]'
+            'error'   = '[ERR]'
+            'info'    = '[INFO]'
+        }[$Status]
+    }
+}
+
+# Export only public functions
+Export-ModuleMember -Function Test-Unicode, Get-StatusEmoji
+```
+
+**Use Module**: Any script in `scripts/`
+
+```powershell
+#!/usr/bin/env pwsh
+#Requires -Version 5.1
+
+# Import shared module with relative path
+$ModulePath = Join-Path $PSScriptRoot "modules\Common.psm1"
+Import-Module $ModulePath -Force
+
+# Use shared functions
+$checkmark = Get-StatusEmoji 'success'
+Write-Host "$checkmark Validation passed!" -ForegroundColor Green
+```
+
+### Python Module Pattern
+
+**Create Module**: `scripts/modules/common.py`
+
+```python
+"""Shared utility functions for scripts."""
+
+import os
+import sys
+
+def supports_unicode() -> bool:
+    """Detect if the environment supports Unicode output."""
+    # PowerShell 7+ always supports Unicode
+    if sys.version_info >= (3, 9) and os.getenv('PSModulePath'):
+        return True
+    
+    # Azure Pipelines supports Unicode
+    if os.getenv('AGENT_TEMPDIRECTORY'):
+        return True
+    
+    # Check console encoding
+    try:
+        return sys.stdout.encoding.lower() in ['utf-8', 'utf8']
+    except:
+        return False
+
+def get_status_emoji(status: str) -> str:
+    """Get status indicator (emoji or ASCII fallback)."""
+    if supports_unicode():
+        return {
+            'success': '✅',
+            'warning': '⚠️',
+            'error': '❌',
+            'info': 'ℹ️'
+        }.get(status, '•')
+    else:
+        return {
+            'success': '[OK]',
+            'warning': '[WARN]',
+            'error': '[ERR]',
+            'info': '[INFO]'
+        }.get(status, '[-]')
+```
+
+**Use Module**: Any script in `scripts/`
+
+```python
+#!/usr/bin/env python3
+"""Script using shared module."""
+
+import sys
+from pathlib import Path
+
+# Add modules directory to path (relative import)
+sys.path.insert(0, str(Path(__file__).parent / "modules"))
+
+from common import get_status_emoji
+
+def main():
+    checkmark = get_status_emoji('success')
+    print(f"{checkmark} Validation passed!")
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main())
+```
+
+### When to Create a Shared Module
+
+Create a shared module when:
+- ✅ Function is used in 2+ scripts
+- ✅ Function provides common utility (logging, formatting, validation)
+- ✅ Function implements consistent behavior (Unicode detection, error handling)
+- ✅ Function is likely to be reused in future scripts
+
+Keep functions in individual scripts when:
+- ❌ Function is highly specific to one script
+- ❌ Function is used only once
+- ❌ Function has complex dependencies unique to that script
+
+### Shared Module Anti-Patterns
+
+❌ **DON'T**: Put everything in shared module
+- Creates coupling and maintenance burden
+- Makes modules hard to understand
+
+❌ **DON'T**: Create too many tiny modules
+- Increases cognitive overhead
+- Makes imports complex
+
+❌ **DON'T**: Forget to export functions
+- PowerShell: Use `Export-ModuleMember`
+- Python: Use `__all__` for public API
+
+✅ **DO**: Keep modules focused and cohesive
+✅ **DO**: Document module purpose and exports
+✅ **DO**: Version modules when making breaking changes
+✅ **DO**: Use `-Force` flag when importing PowerShell modules (ensures fresh load)
+
+### Module Checklist
+
+- [ ] Module has clear purpose (described in header comment)
+- [ ] Only public functions are exported
+- [ ] Functions are documented (comment-based help or docstrings)
+- [ ] Module is located in `scripts/modules/` directory
+- [ ] Scripts import module with relative path
+- [ ] Module is tested (unit tests if complex)
+- [ ] Module follows language-specific conventions (see language-specific rules)
+
+**Language-Specific Details**:
+- PowerShell: `rule.scripts.powershell-standards.v1` - Section "Shared Modules for Reusable Functions"
+- Python: `rule.scripts.python-standards.v1` - Section "Shared Modules for Reusable Functions"
+
+## Validation Checklist Template
+
+Every reusable script should have a validation checklist. Customize this template:
+
+```markdown
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Portable (works in CI/CD and locally without modification)
+- [ ] Parameters properly typed and validated
+- [ ] Default parameter values work locally
+- [ ] Error handling with meaningful messages
+- [ ] Exit codes are meaningful (0=success, 1+=error)
+- [ ] Documentation complete and accessible
+- [ ] No hardcoded secrets or credentials
+- [ ] Configuration file support (if 5+ parameters)
+- [ ] Tested both locally and in CI/CD
+```
+
+## Related Rules
+
+- `rule.scripts.powershell-standards.v1` - PowerShell-specific standards
+- `rule.scripts.python-standards.v1` - Python-specific standards
+- `rule.scripts.agent-application.v1` - When to apply these rules
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Script is portable (works in CI/CD and locally)
+- [ ] Parameters are typed, validated, and have portable defaults
+- [ ] Error handling is robust with meaningful messages and exit codes
+- [ ] Documentation is complete and accessible (language-appropriate format)
+- [ ] Configuration file support considered (required if 5+ parameters)
+- [ ] No hardcoded secrets, credentials, or environment-specific paths
+- [ ] Shared functions extracted to modules (if used in 2+ scripts)
+- [ ] Script has been tested in both local and CI/CD environments

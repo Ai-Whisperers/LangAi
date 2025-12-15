@@ -1,0 +1,351 @@
+---
+id: rule.migration.overview.v1
+kind: rule
+version: 1.0.1
+description: "Framework for 4-phase migration process: Data Collection → Specification Creation → Specification Review → Migration Planning. Defines quality gates, key principles, and success criteria for systematic C++ to C# migration with complete business logic preservation."
+globs: docs/technical/**/*.md, .cursor/rules/migration/**/*.mdc
+governs: ""
+implements: migration.overview
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Migration Process Overview
+
+## Purpose & Scope
+
+This rule defines the overall migration process from C++ eBase systems to C# microservices. The migration follows a structured, four-phase approach that ensures complete business logic preservation and accurate system translation through systematic data collection, specification creation, multi-stakeholder review, and detailed migration planning.
+
+**Applies to**: All C++ eBase system migrations to C# microservices following the modernization initiative. Governs high-level process orchestration, phase transitions, and quality gates between phases.
+
+**Does not apply to**: 
+- New greenfield C# development without C++ legacy
+- Non-eBase C++ migrations with different architectural patterns
+- In-place C++ refactoring without platform change
+- Detailed technical implementation within phases (covered by phase-specific rules)
+- Day-to-day development practices outside migration context
+
+## Inputs (Contract)
+
+- C++ eBase system identified for migration with business justification
+- Executive sponsorship and budget approval for migration project
+- Access to C++ source code, database configurations, and system documentation
+- Availability of subject matter experts and technical specialists
+- Migration team assembled with appropriate skills (C++, C#, domain knowledge)
+- Target C# technology stack defined and approved
+
+## Outputs (Contract)
+
+- Complete 4-phase migration framework with clear phase definitions
+- Quality gates and success criteria for each phase transition
+- Key principles documented for business logic preservation and accuracy
+- Phase handoff requirements and deliverables specified
+- Risk mitigation strategies and governance processes defined
+- Success metrics established for overall migration validation
+
+## Migration Phases
+
+### **Phase 1: Original Data Collection**
+- **Goal**: Gather complete understanding of current C++ implementation
+- **Activities**:
+  - Source code analysis and reverse engineering
+  - Database schema extraction and verification
+  - Business rule identification from code
+  - Integration point mapping
+  - Performance characteristic analysis
+- **Outputs**: Raw technical findings, source code annotations, data flow diagrams
+- **Success Criteria**: 100% accurate representation of current system capabilities
+
+### **Phase 2: Technical Specifications Creation**
+- **Goal**: Transform findings into migration-ready specifications
+- **Activities**:
+  - Create modular specification documents
+  - Define domain objects and relationships
+  - Specify business rules and algorithms
+  - Document integration requirements
+  - Establish performance benchmarks
+- **Outputs**: Complete technical specification suite
+- **Success Criteria**: Specifications contain everything needed for C# implementation
+
+### **Phase 2b: Specification Review**
+- **Goal**: Validate specifications for completeness, accuracy, and implementation readiness
+- **Activities**:
+  - Multi-stakeholder technical and business review
+  - Implementation readiness assessment
+  - Integration impact validation
+  - Performance requirements verification
+  - Quality assurance and documentation standards compliance
+- **Outputs**: Reviewed and approved specification suite with stakeholder sign-offs
+- **Success Criteria**: All stakeholders confident in specification quality and completeness
+
+### **Phase 3: Migration Planning**
+- **Goal**: Design implementation strategy and execution plan
+- **Activities**:
+  - Architecture design for C# microservices
+  - Implementation roadmap creation
+  - Risk assessment and mitigation
+  - Testing strategy definition
+  - Rollout plan development
+- **Outputs**: Implementation plan, architecture documents, project timeline
+- **Success Criteria**: Clear path from current state to target C# system
+
+## Key Principles
+
+### **Business Logic Preservation**
+- All current functionality must be preserved exactly
+- Mathematical algorithms must maintain identical behavior
+- Business rules must produce same results
+- Performance characteristics must meet or exceed current system
+
+### **Documentation Accuracy**
+- No fabricated content or assumptions
+- All specifications based on actual source code analysis
+- Verifiable facts only, no speculation
+- Clear distinction between current state and future requirements
+
+### **Modular Approach**
+- Each system component gets dedicated specification files
+- Clear separation of concerns
+- Cross-referencing for relationships
+- Maintainable documentation structure
+
+## Quality Gates
+
+### **Phase 1 → Phase 2**
+- All source code analyzed and understood
+- Database relationships verified
+- Integration points mapped
+- Performance baselines established
+
+### **Phase 2 → Phase 2b**
+- Specifications complete and cross-referenced
+- Business rules fully documented
+- Domain model accurate and comprehensive
+- All specification files created and linked
+
+### **Phase 2b → Phase 3**  
+- Multi-stakeholder review completed
+- All critical issues resolved
+- Implementation readiness confirmed
+- Formal stakeholder sign-offs obtained
+
+### **Phase 3 → Implementation**
+- Architecture approved by technical leadership
+- Implementation plan validated
+- Resource allocation confirmed
+- Risk mitigation strategies in place
+
+## Success Metrics
+
+- **Completeness**: All current functionality captured in specifications
+- **Accuracy**: Specifications reflect actual system behavior
+- **Implementability**: Development team can build C# system from specs
+- **Maintainability**: Documentation supports long-term system evolution
+
+## Deterministic Steps
+
+When applying this migration overview rule:
+
+1. **Establish Migration Foundation**
+   - Secure executive sponsorship and budget approval
+   - Assemble migration team with C++, C#, and domain expertise
+   - Define target C# technology stack and architectural standards
+   - Set up project governance structure and communication channels
+
+2. **Execute Phase 1: Data Collection**
+   - Apply `rule.migration.data-collection.v1`
+   - Systematically analyze all C++ source code and database configurations
+   - Document all findings with source code references
+   - Complete Phase 1 quality gate validation before proceeding
+
+3. **Execute Phase 2: Specification Creation**
+   - Apply `rule.migration.spec-create.v1`
+   - Transform Phase 1 findings into migration-ready specifications
+   - Create modular documentation suite following established patterns
+   - Complete Phase 2 quality gate validation before proceeding
+
+4. **Execute Phase 2b: Specification Review**
+   - Apply `rule.migration.spec-review.v1`
+   - Conduct multi-stakeholder review process
+   - Resolve all critical and major issues identified
+   - Obtain formal sign-offs from all stakeholder categories
+
+5. **Execute Phase 3: Migration Planning**
+   - Apply `rule.migration.planning.v1`
+   - Design target C# architecture and implementation strategy
+   - Create detailed implementation roadmap with milestones
+   - Complete Phase 3 quality gate validation before implementation
+
+6. **Validate Phase Transitions**
+   - At each phase boundary, verify all quality gate criteria are met
+   - Ensure all required deliverables are complete and approved
+   - Confirm stakeholder sign-offs are obtained
+   - Document any risks or issues requiring ongoing attention
+
+7. **Maintain Process Integrity**
+   - Enforce no phase skipping - each phase must complete before next begins
+   - Require formal approvals at each quality gate
+   - Track and resolve all issues systematically
+   - Maintain complete traceability from source to specifications to implementation
+
+## Formatting Requirements
+
+This rule governs process orchestration and does not generate formatted output directly. However, phase-specific rules must follow these requirements:
+
+- **Phase Documentation**: Each phase produces structured documentation following project templates
+- **Quality Gate Reports**: Standardized format with pass/fail criteria, issues log, sign-offs
+- **Traceability**: All specifications must reference source code with file:line format
+- **Cross-References**: Use stable rule IDs when referencing other rules or phases
+- **Status Tracking**: Maintain clear status indicators (Not Started, In Progress, Review, Approved)
+
+## OPSEC and Leak Control
+
+When executing migration process:
+
+- **NO internal system paths** or hostnames in shared documentation
+- **NO developer names or email addresses** in formal specifications
+- **NO database connection strings** or credentials in any documentation
+- **NO internal URLs or IP addresses** exposed outside secure channels
+- **NO customer-specific data** or proprietary business information in examples
+- **Redact project-specific identifiers** when creating templates or exemplars
+- **Review all deliverables** for sensitive information before stakeholder distribution
+
+## Integration Points
+
+This rule orchestrates other rules and integrates with:
+
+- **Phase-Specific Rules**:
+  - `rule.migration.data-collection.v1` - Phase 1 execution
+  - `rule.migration.spec-create.v1` - Phase 2 execution
+  - `rule.migration.spec-review.v1` - Phase 2b execution
+  - `rule.migration.planning.v1` - Phase 3 execution
+
+- **Technical Specification Rules**:
+  - `rule.technical-spec.domain-overview.v1` - Domain documentation patterns
+  - `rule.technical-spec.entity-relationship.v1` - Database schema documentation
+  - `rule.technical-spec.business-rules.v1` - Business logic specification
+
+- **Project Management Systems**:
+  - JIRA or equivalent for issue tracking across phases
+  - Confluence or SharePoint for specification storage and versioning
+  - Version control (Git) for all specification documents
+
+- **Stakeholder Communication**:
+  - Regular status reporting to executive sponsors
+  - Technical review sessions with development teams
+  - Business validation sessions with subject matter experts
+
+## Failure Modes and Recovery
+
+### Failure Mode 1: Phase Quality Gate Not Met
+
+**Detection**: Quality gate criteria validation fails, critical issues unresolved
+
+**Impact**: Cannot proceed to next phase, project delays, potential scope gaps
+
+**Recovery**:
+1. Document all failing criteria and root causes
+2. Create action plan with specific remediation tasks
+3. Assign ownership and deadlines for each task
+4. Re-validate quality gate after remediation
+5. Escalate to steering committee if delays exceed tolerance
+
+**Prevention**: Early and continuous validation within each phase, proactive issue management
+
+### Failure Mode 2: Incomplete Data Collection
+
+**Detection**: Phase 2 specification creation identifies missing source information
+
+**Impact**: Specifications based on assumptions, incorrect C# implementation, rework required
+
+**Recovery**:
+1. Halt Phase 2 specification work immediately
+2. Return to Phase 1 with specific gap list
+3. Complete additional data collection for identified gaps
+4. Re-validate Phase 1 quality gate
+5. Resume Phase 2 with complete information
+
+**Prevention**: Comprehensive Phase 1 checklists, early stakeholder review of findings, pilot validation
+
+### Failure Mode 3: Stakeholder Disagreement During Review
+
+**Detection**: Phase 2b review reveals conflicting interpretations or requirements
+
+**Impact**: Specification approval blocked, timeline delays, scope uncertainty
+
+**Recovery**:
+1. Document all points of disagreement clearly
+2. Facilitate technical sessions to resolve with data/evidence
+3. Escalate unresolvable conflicts to steering committee
+4. Update specifications based on approved resolution
+5. Obtain renewed sign-offs from all parties
+
+**Prevention**: Early and frequent stakeholder engagement, clear scope boundaries, documented assumptions
+
+### Failure Mode 4: Technology Stack Incompatibility Discovered
+
+**Detection**: Phase 3 planning reveals C# technology cannot support required functionality
+
+**Impact**: Architecture redesign required, potential business logic compromises, major delays
+
+**Recovery**:
+1. Document specific incompatibility details and business impact
+2. Evaluate alternative technology approaches with trade-offs
+3. Conduct rapid prototyping to validate alternatives
+4. Update architecture plan with approved approach
+5. Reassess project timeline and budget
+
+**Prevention**: Technology validation early in process, proof-of-concept for high-risk areas, expert consultation
+
+### Failure Mode 5: Team Skill Gaps Identified
+
+**Detection**: Phase execution reveals team lacks required expertise
+
+**Impact**: Quality issues, timeline delays, potential rework
+
+**Recovery**:
+1. Assess specific skill gaps and impact on deliverables
+2. Provide targeted training or bring in external expertise
+3. Adjust team assignments to leverage existing strengths
+4. Revise timeline to accommodate learning curve
+5. Implement additional quality reviews for at-risk areas
+
+**Prevention**: Comprehensive skills assessment before project start, training plan, expert mentoring
+
+## Provenance Footer Specification
+
+Phase-specific documents should include provenance footer:
+
+```
+---
+**Migration Phase**: [1 | 2 | 2b | 3]  
+**Generated by**: [rule.migration.{phase}.v1]  
+**Source System**: [C++ eBase System Name]  
+**Target Platform**: C# Microservices  
+**Created**: [YYYY-MM-DD]  
+**Last Updated**: [YYYY-MM-DD]  
+**Reviewed by**: [Reviewer Names/Roles]  
+**Status**: [Draft | In Review | Approved]  
+**Quality Gate**: [Not Started | Passed | Failed - See Issues]
+```
+
+## Related Rules
+
+- `rule.migration.data-collection.v1` - Phase 1 detailed execution guidance
+- `rule.migration.spec-create.v1` - Phase 2 specification creation guidance
+- `rule.migration.spec-review.v1` - Phase 2b review process guidance
+- `rule.migration.planning.v1` - Phase 3 planning guidance
+- `rule.technical-spec.domain-overview.v1` - Domain documentation patterns
+- `rule.authoring.file-structure.v1` - Documentation structure standards
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All 4 phases defined with clear goals, activities, and outputs
+- [ ] Quality gates specified for each phase transition with pass/fail criteria
+- [ ] Key principles documented (business logic preservation, documentation accuracy, modular approach)
+- [ ] Phase handoff requirements explicitly defined with deliverables and approvals
+- [ ] Failure modes identified with detection and recovery procedures
+- [ ] OPSEC controls specified (no internal paths, credentials, or sensitive data)
+- [ ] Integration points documented for all phase-specific rules and external systems

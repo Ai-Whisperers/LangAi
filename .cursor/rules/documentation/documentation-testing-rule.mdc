@@ -1,0 +1,342 @@
+---
+id: rule.documentation.testing.v1
+kind: rule
+version: 1.0.0
+description: Defines documentation testing framework for validating XML documentation completeness, quality, and compliance with standards
+globs: **/*Documentation*Tests.cs, **/tst/**/*.cs
+governs: **/*Documentation*Tests.cs
+implements: documentation.testing
+requires:
+  - rule.documentation.standards.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-platform, last_review: 2025-11-25 }
+alwaysApply: false
+---
+
+# Documentation Testing Rule
+
+## Purpose & Scope
+
+This rule defines a comprehensive testing framework for validating XML documentation completeness and quality. It provides automated tests to ensure all public members are documented according to standards, parameters are explained, and documentation meets minimum quality thresholds.
+
+**Applies to**: Documentation test files (*Documentation*Tests.cs) in test projects.
+
+**Does not apply to**: Production code (use `rule.documentation.standards.v1`) or non-documentation tests.
+
+## Inputs (Contract)
+
+- Test project structure (typically `tst/ProjectName.Documentation.Tests/`)
+- Target assembly to test (e.g., `src/ProjectName/ProjectName.csproj`)
+- Access to generated XML documentation file
+- xUnit testing framework
+- `rule.documentation.standards.v1` for validation criteria
+
+## Outputs (Contract)
+
+Test project containing:
+- **Test project file** (*.csproj) with required packages
+- **8 core documentation tests**:
+  1. `AllPublicTypes_ShouldHave_XmlDocumentation`
+  2. `AllPublicMethods_ShouldHave_XmlDocumentation`
+  3. `AllPublicProperties_ShouldHave_XmlDocumentation`
+  4. `AllMethodParameters_ShouldHave_Documentation`
+  5. `Documentation_ShouldNot_ContainTodoOrFixme`
+  6. `Documentation_ShouldHave_Summaries`
+  7. `PublicMethods_WithReturnValues_ShouldHave_ReturnsDocumentation`
+  8. `Documentation_QualityCheck_MinimumSummaryLength`
+- **Validation script** (PowerShell) for CI/CD integration
+- **Test failures report** undocumented members
+
+## Deterministic Steps
+
+### Step 1: Create Test Project
+
+1. Create directory: `tst/ProjectName.Documentation.Tests/`
+2. Create project file with required packages:
+   ```xml
+   <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
+   <PackageReference Include="xunit" Version="2.9.0" />
+   <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+   ```
+3. Add project reference to target project
+4. Validate project structure
+
+### Step 2: Implement Core Tests
+
+For EACH of the 8 core tests:
+1. Create test class `DocumentationCompletenessTests`
+2. Implement test method with clear naming
+3. Load XML documentation file from target assembly output
+4. Use reflection to scan assembly members
+5. Validate against XML documentation
+6. Assert with clear failure messages listing undocumented members
+
+### Step 3: Create Validation Script
+
+1. Create `validate-documentation.ps1` in project root
+2. Implement build validation (fails on documentation warnings)
+3. Implement test execution
+4. Implement XML file verification
+5. Validate script functionality
+
+### Step 4: Document Test Project
+
+1. Add README explaining how to run tests
+2. Document each test's purpose
+3. Provide examples of fixing common failures
+
+## Formatting Requirements
+
+### Test Project Structure
+
+```
+tst/
+  ProjectName.Documentation.Tests/
+    DocumentationCompletenessTests.cs   # 8 core tests
+    ProjectName.Documentation.Tests.csproj
+    README.md
+```
+
+### Test Class Structure
+
+```csharp
+using System.Reflection;
+using System.Xml.Linq;
+using Xunit;
+
+namespace ProjectName.Documentation.Tests
+{
+    /// <summary>
+    /// Tests to verify XML documentation completeness and quality.
+    /// </summary>
+    public class DocumentationCompletenessTests
+    {
+        private const string XmlDocPath = "ProjectName.xml";
+
+        [Fact]
+        public void AllPublicTypes_ShouldHave_XmlDocumentation()
+        {
+            // Arrange
+            var assembly = typeof(TargetClass).Assembly;
+            var xmlDoc = LoadXmlDocumentation();
+            var undocumentedTypes = new List<string>();
+
+            // Act
+            var publicTypes = assembly.GetTypes().Where(t => t.IsPublic);
+
+            foreach (var type in publicTypes)
+            {
+                var memberName = $"T:{type.FullName}";
+                if (!HasDocumentation(xmlDoc, memberName))
+                {
+                    undocumentedTypes.Add(type.FullName ?? type.Name);
+                }
+            }
+
+            // Assert
+            Assert.Empty(undocumentedTypes);
+        }
+
+        // Additional 7 tests...
+
+        private XDocument LoadXmlDocumentation()
+        {
+            var assemblyLocation = typeof(TargetClass).Assembly.Location;
+            var directory = Path.GetDirectoryName(assemblyLocation);
+            var xmlPath = Path.Combine(directory ?? "", XmlDocPath);
+
+            if (!File.Exists(xmlPath))
+            {
+                throw new FileNotFoundException($"XML documentation file not found: {xmlPath}");
+            }
+
+            return XDocument.Load(xmlPath);
+        }
+
+        private bool HasDocumentation(XDocument xmlDoc, string memberName)
+        {
+            return xmlDoc.Descendants("member")
+                .Any(m => m.Attribute("name")?.Value == memberName);
+        }
+    }
+}
+```
+
+### PowerShell Validation Script
+
+```powershell
+# validate-documentation.ps1
+Write-Host "=== Documentation Validation ===" -ForegroundColor Cyan
+
+# Build with documentation generation
+Write-Host "`nBuilding projects..." -ForegroundColor Yellow
+dotnet build --configuration Release /p:TreatWarningsAsErrors=true
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Build failed with documentation warnings/errors" -ForegroundColor Red
+    exit 1
+}
+
+# Run documentation tests
+Write-Host "`nRunning documentation tests..." -ForegroundColor Yellow
+dotnet test tst/ProjectName.Documentation.Tests/
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Documentation tests failed" -ForegroundColor Red
+    exit 1
+}
+
+# Verify XML files exist
+Write-Host "`nVerifying XML documentation files..." -ForegroundColor Yellow
+$xmlFiles = @(
+    "src/ProjectName/bin/Release/net9.0/ProjectName.xml"
+)
+
+$allExist = $true
+foreach ($file in $xmlFiles) {
+    if (Test-Path $file) {
+        Write-Host "  ✓ $file" -ForegroundColor Green
+    } else {
+        Write-Host "  ✗ $file NOT FOUND" -ForegroundColor Red
+        $allExist = $false
+    }
+}
+
+if (-not $allExist) {
+    Write-Host "`nSome XML documentation files are missing!" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "`n=== Documentation Validation Complete ===" -ForegroundColor Green
+Write-Host "All checks passed!" -ForegroundColor Green
+```
+
+## The 8 Core Tests
+
+### Test 1: AllPublicTypes_ShouldHave_XmlDocumentation
+**Purpose**: Ensures all public classes, interfaces, structs, enums documented
+**Validates**: `<summary>` present for type definition
+**Reports**: List of undocumented public types
+
+### Test 2: AllPublicMethods_ShouldHave_XmlDocumentation
+**Purpose**: Ensures all public methods documented (excluding property accessors)
+**Validates**: `<summary>` present for method
+**Reports**: List of undocumented public methods
+
+### Test 3: AllPublicProperties_ShouldHave_XmlDocumentation
+**Purpose**: Ensures all public properties documented
+**Validates**: `<summary>` or `<value>` present
+**Reports**: List of undocumented public properties
+
+### Test 4: AllMethodParameters_ShouldHave_Documentation
+**Purpose**: Ensures all method parameters have `<param>` tags
+**Validates**: `<param name="...">` for each parameter
+**Reports**: List of methods with undocumented parameters
+
+### Test 5: Documentation_ShouldNot_ContainTodoOrFixme
+**Purpose**: Catches incomplete documentation with placeholders
+**Validates**: No TODO, FIXME, HACK, XXX in documentation
+**Reports**: List of members with placeholder documentation
+
+### Test 6: Documentation_ShouldHave_Summaries
+**Purpose**: Ensures documentation not empty
+**Validates**: `<summary>` element exists and non-empty
+**Reports**: List of members with missing or empty summaries
+
+### Test 7: PublicMethods_WithReturnValues_ShouldHave_ReturnsDocumentation
+**Purpose**: Ensures non-void methods explain return values
+**Validates**: `<returns>` present for non-void methods
+**Reports**: List of methods missing return documentation
+
+### Test 8: Documentation_QualityCheck_MinimumSummaryLength
+**Purpose**: Prevents trivial documentation (e.g., "Gets the value")
+**Validates**: Summaries have minimum 20 characters
+**Reports**: List of members with too-short summaries
+
+## Test Execution Workflow
+
+### Local Development
+```bash
+# Run tests
+dotnet test tst/ProjectName.Documentation.Tests/
+
+# Run with detailed output
+dotnet test tst/ProjectName.Documentation.Tests/ --logger "console;verbosity=detailed"
+```
+
+### CI/CD Integration
+```yaml
+# GitHub Actions example
+- name: Validate Documentation
+  run: pwsh ./validate-documentation.ps1
+```
+
+### Test-Driven Documentation
+1. Write code
+2. Run documentation tests (should fail)
+3. Add XML documentation
+4. Run tests again (should pass)
+5. Commit with documentation included
+
+## OPSEC and Leak Control
+
+Test code and validation scripts:
+- NO internal system paths in test assertions
+- NO credentials or tokens in test data
+- NO customer data in test examples
+- Generic test data only: "TestClass", "TestMethod", "example.com"
+
+## Integration Points
+
+- **Standards**: Tests validate against `rule.documentation.standards.v1` criteria
+- **CI/CD**: PowerShell script integrates with build pipelines
+- **Build Process**: `TreatWarningsAsErrors` enforces documentation warnings
+- **Code Coverage**: Tests ensure 100% documentation coverage for public API
+- **Quality Gates**: Tests must pass before merge/deployment
+
+## Failure Modes and Recovery
+
+**XML documentation file not found**:
+- Detection: `FileNotFoundException` in test
+- Recovery: Check project has `<GenerateDocumentationFile>true</GenerateDocumentationFile>`
+- Prevention: Run `rule.documentation.standards.v1` to configure project
+
+**Too many undocumented members**:
+- Detection: Test fails with large list of undocumented items
+- Recovery: Run `rule.documentation.standards.v1` on target files
+- Prevention: Add tests early in development cycle
+
+**Test project doesn't build**:
+- Detection: Build errors in test project
+- Recovery: Verify project references and package versions
+- Prevention: Use provided project template
+
+**False positives (generated code)**:
+- Detection: Tests fail on auto-generated code
+- Recovery: Exclude generated files from tests or mark with `[ExcludeFromCodeCoverage]`
+- Prevention: Configure test to skip generated code patterns
+
+## Quality Metrics
+
+Tests enable tracking:
+- **Documentation Coverage**: % of public API documented
+- **Quality Score**: % passing minimum summary length
+- **Completeness**: % with all required tags (param, returns, exception)
+- **Trend Analysis**: Coverage changes over time
+
+## Related Rules
+
+- `rule.documentation.standards.v1` - Standards these tests validate
+- `rule.documentation.agent-application.v1` - Agent coordination
+- Master test examples: `docs/DOCUMENTATION-STANDARDS.md` section "Documentation Testing"
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Test project created with xUnit and required packages
+- [ ] All 8 core tests implemented with clear assertions
+- [ ] Tests load XML documentation from correct output path
+- [ ] PowerShell validation script created and functional
+- [ ] Tests fail correctly when documentation missing
+- [ ] Tests pass when documentation complete
+- [ ] CI/CD integration documented
+- [ ] README provided explaining how to run and fix failures

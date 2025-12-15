@@ -1,0 +1,483 @@
+---
+id: rule.quality.diagnostic-messages.agent-application.v1
+kind: rule
+version: 1.0.0
+description: Agent guidance for when and how to apply diagnostic message quality standards. Use when creating validation scripts, error handling, or any code that generates warnings/errors for developers.
+implements: diagnostic-messages.agent-application
+requires:
+  - rule.quality.diagnostic-messages.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: quality-standards, last_review: 2025-12-07 }
+alwaysApply: false
+---
+
+# Diagnostic Message Quality - Agent Application Rule
+
+## Purpose
+
+This rule guides AI agents on when and how to apply diagnostic message quality standards when writing validation scripts, error handlers, or any code that generates diagnostics for developers.
+
+## When to Apply Diagnostic Message Rules
+
+### Explicit Triggers
+
+Apply diagnostic message rules when the user's request involves:
+
+- Writing validation scripts (pre-commit, build, quality checks)
+- Creating error handling code
+- Implementing linting rules or custom analyzers
+- Setting up logging or diagnostic output
+- Writing exception messages
+- Creating CLI tools with user-facing output
+- Building developer tools or scripts
+- Configuring CI/CD error reporting
+- Writing test output formatters
+
+### Context Clues
+
+Apply diagnostic message rules when you observe:
+
+- Code that throws exceptions or errors
+- Scripts that perform validation or checking
+- Output that reports problems to developers
+- Console.WriteLine, echo, Write-Host with error messages
+- Exit codes indicating failures
+- Logging statements for warnings or errors
+- User-facing error messages in tools or CLIs
+
+### DO NOT Apply When
+
+- Writing internal log messages (not user-facing)
+- Creating data/business-layer exception handling (not diagnostic messages)
+- Working on UI/UX error messages for end users (different audience)
+- Writing debug/trace logs (not diagnostic messages)
+
+## How to Apply Diagnostic Message Rules
+
+### 1. Assess the Message Type
+
+Determine severity and required components:
+
+- **ERROR** (Blocker): Needs WHAT + WHY + HOW + WHERE + HELP + EXAMPLE
+- **WARNING** (Should fix): Needs WHAT + IMPACT + HOW + WHERE + HELP
+- **INFO** (FYI): Needs WHAT + CONTEXT + optional ACTION
+
+### 2. Load Required Rules
+
+```yaml
+# For validation scripts
+requires:
+  - rule.quality.diagnostic-messages.v1
+
+# For error handling
+requires:
+  - rule.quality.diagnostic-messages.v1
+
+# For CLI tools
+requires:
+  - rule.quality.diagnostic-messages.v1
+```
+
+### 3. Execute with Structure
+
+When creating diagnostic messages:
+
+1. **Identify problem clearly** - WHAT is wrong
+2. **Explain impact** - WHY it matters (errors only)
+3. **Provide solution** - HOW to fix (specific steps)
+4. **Show location** - WHERE the problem is
+5. **Link to help** - Documentation, prompts, or commands
+6. **Include examples** - Correct implementation (errors)
+7. **Format properly** - Colors, emojis, clear structure
+
+### 4. Provide Contextual Examples
+
+Always show before/after examples:
+
+**Before (Bad)**:
+```powershell
+Write-Host "Error: Missing docs"
+exit 1
+```
+
+**After (Good)**:
+```powershell
+Write-Host "`n❌ ERROR: Missing XML documentation for 3 public methods" -ForegroundColor Red
+Write-Host "`nExplanation: Public APIs require XML documentation for IntelliSense." -ForegroundColor Yellow
+Write-Host "`nAffected methods:" -ForegroundColor Cyan
+# ... list methods with locations
+Write-Host "`nSolution:" -ForegroundColor Green
+Write-Host "  1. Run auto-fix: @prompts/cicd/fix-missing-documentation.md"
+Write-Host "  2. Or add XML comments manually"
+Write-Host "`nHelp: See .cursor/rules/documentation/documentation-standards-rule.mdc`n"
+exit 1
+```
+
+## Common Scenarios
+
+### Scenario 1: Writing Validation Script
+
+```
+User: "Create a script to validate code quality before commits"
+
+Agent Actions:
+1. Load rule.quality.diagnostic-messages.v1
+2. Structure script with:
+   - Scanning phase (quiet)
+   - Issue collection and categorization
+   - Structured reporting (detailed)
+   - Auto-fix option
+3. For each diagnostic:
+   - Apply ERROR or WARNING template
+   - Include WHAT + WHY/IMPACT + HOW + WHERE + HELP
+   - Use colors and emojis
+   - Provide exact fix steps
+4. Test output for clarity
+```
+
+### Scenario 2: Improving Existing Error Messages
+
+```
+User: "This error message isn't helpful: 'Build failed'"
+
+Agent Actions:
+1. Load rule.quality.diagnostic-messages.v1
+2. Analyze current message (too vague)
+3. Identify what's missing:
+   - No explanation
+   - No specific error
+   - No solution
+   - No location
+4. Rewrite with structure:
+   ❌ ERROR: Build failed in [Project]
+   Explanation: [Specific compiler error]
+   Solution: [Steps to fix]
+   Location: [File:Line]
+   Help: [Link or command]
+5. Show before/after comparison
+```
+
+### Scenario 3: Exception Message in Code
+
+```
+User: "Add error handling for null user"
+
+Agent Actions:
+1. Load rule.quality.diagnostic-messages.v1
+2. Don't just write: throw new Exception("Invalid user")
+3. Apply structured exception:
+   - Clear problem: "User object cannot be null"
+   - Context: "when processing payment"
+   - Guidance: "Ensure user authenticated before calling"
+   - Solution: "Call AuthService.GetCurrentUser()"
+4. Use ArgumentNullException with detailed message
+5. Consider custom exception if needed
+```
+
+### Scenario 4: CLI Tool Error Output
+
+```
+User: "Create CLI tool for database migrations"
+
+Agent Actions:
+1. Load rule.quality.diagnostic-messages.v1
+2. For each potential error:
+   - Connection failed
+   - Migration not found
+   - Schema mismatch
+3. Create structured error output:
+   - Use emoji and colors
+   - Explain what went wrong
+   - Provide specific fix steps
+   - Link to troubleshooting docs
+4. Ensure errors are actionable
+```
+
+## Message Templates by Context
+
+### PowerShell Validation Script
+
+```powershell
+function Write-QualityError {
+    param(
+        [string]$Title,
+        [string]$Explanation,
+        [string[]]$Locations,
+        [string[]]$Solutions,
+        [string]$HelpLink
+    )
+    
+    Write-Host "`n❌ ERROR: $Title" -ForegroundColor Red
+    Write-Host "`nExplanation: $Explanation" -ForegroundColor Yellow
+    
+    if ($Locations.Count -gt 0) {
+        Write-Host "`nLocations:" -ForegroundColor Cyan
+        $Locations | ForEach-Object { Write-Host "  • $_" -ForegroundColor Gray }
+    }
+    
+    Write-Host "`nSolution:" -ForegroundColor Green
+    for ($i = 0; $i -lt $Solutions.Count; $i++) {
+        Write-Host "  $($i + 1). $($Solutions[$i])" -ForegroundColor Green
+    }
+    
+    if ($HelpLink) {
+        Write-Host "`nHelp: $HelpLink" -ForegroundColor Cyan
+    }
+    Write-Host ""
+}
+
+# Usage
+Write-QualityError `
+    -Title "Missing XML documentation for 3 public methods" `
+    -Explanation "Public APIs require XML documentation for IntelliSense and API docs." `
+    -Locations @("PaymentService.cs:45 - ProcessPayment", "UserService.cs:23 - GetUser") `
+    -Solutions @(
+        "Run auto-fix: @prompts/cicd/fix-missing-documentation.md",
+        "Or add XML comments manually above each method",
+        "Re-run validation: .\validate-pre-commit.ps1"
+    ) `
+    -HelpLink ".cursor/rules/documentation/documentation-standards-rule.mdc"
+```
+
+### C# Exception Handling
+
+```csharp
+// ❌ BEFORE (Bad)
+if (user == null)
+{
+    throw new Exception("Invalid user");
+}
+
+// ✅ AFTER (Good) - Following diagnostic message rules
+if (user == null)
+{
+    throw new ArgumentNullException(
+        paramName: nameof(user),
+        message: 
+            "User object cannot be null when processing payment. " +
+            "Ensure user is authenticated before calling ProcessPayment(). " +
+            "Solution: Call AuthService.GetCurrentUser() to retrieve user context. " +
+            "See docs/authentication.md for details."
+    );
+}
+
+// ✅ BETTER - Custom exception with structure
+if (user == null)
+{
+    throw new UserContextException(
+        problem: "User authentication required for payment processing",
+        explanation: "ProcessPayment requires an authenticated user context. Current request lacks valid credentials.",
+        solution: "Call AuthService.GetCurrentUser() before invoking ProcessPayment()",
+        location: $"{nameof(PaymentService)}.{nameof(ProcessPayment)}",
+        helpLink: "https://docs.internal.com/auth/user-context"
+    );
+}
+```
+
+### Python CLI Tool
+
+```python
+# error_reporter.py
+
+class DiagnosticReporter:
+    @staticmethod
+    def error(title: str, explanation: str, solution: list[str], 
+              location: str = None, help_link: str = None):
+        """Report structured error message."""
+        print()
+        print(f"❌ ERROR: {title}", flush=True)
+        print()
+        print(f"Explanation: {explanation}")
+        
+        if location:
+            print()
+            print(f"Location: {location}")
+        
+        print()
+        print("Solution:")
+        for i, step in enumerate(solution, 1):
+            print(f"  {i}. {step}")
+        
+        if help_link:
+            print()
+            print(f"Help: {help_link}")
+        print()
+
+# Usage
+DiagnosticReporter.error(
+    title="Database connection failed",
+    explanation="Unable to connect to PostgreSQL database at localhost:5432. "
+                "Connection timeout after 30 seconds.",
+    solution=[
+        "Verify PostgreSQL is running: systemctl status postgresql",
+        "Check connection string in .env file",
+        "Ensure firewall allows port 5432",
+        "Test connection: psql -h localhost -U postgres"
+    ],
+    location="Database.connect() line 45",
+    help_link="docs/troubleshooting.md#database-connection"
+)
+```
+
+### Bash Script
+
+```bash
+#!/bin/bash
+# validation.sh
+
+function error_message() {
+    local title="$1"
+    local explanation="$2"
+    local solution="$3"
+    local help_link="$4"
+    
+    echo ""
+    echo "❌ ERROR: $title"
+    echo ""
+    echo "Explanation: $explanation"
+    echo ""
+    echo "Solution:"
+    echo "$solution"
+    echo ""
+    if [ -n "$help_link" ]; then
+        echo "Help: $help_link"
+        echo ""
+    fi
+}
+
+# Usage
+if [ ! -f "package.json" ]; then
+    error_message \
+        "Missing package.json file" \
+        "Node.js project requires package.json in root directory. This file defines dependencies and scripts." \
+        "  1. Initialize project: npm init -y
+  2. Install dependencies: npm install
+  3. Re-run validation: ./validate.sh" \
+        "docs/setup.md#npm-initialization"
+    exit 1
+fi
+```
+
+## Integration with Other Rules
+
+### With Zero Warnings/Errors Rule
+
+```yaml
+requires:
+  - rule.quality.zero-warnings-errors.v1
+  - rule.quality.diagnostic-messages.v1
+```
+
+**Integration**: When validation scripts enforce zero warnings/errors, the diagnostic messages must follow quality standards to help developers fix issues quickly.
+
+### With Documentation Rules
+
+```yaml
+requires:
+  - rule.documentation.standards.v1
+  - rule.quality.diagnostic-messages.v1
+```
+
+**Integration**: When reporting missing or invalid documentation, provide structured diagnostics with examples of correct documentation.
+
+### With CI/CD Rules
+
+```yaml
+requires:
+  - rule.cicd.pre-build-validation.v1
+  - rule.quality.diagnostic-messages.v1
+```
+
+**Integration**: CI/CD scripts should output structured diagnostics that help developers understand and fix issues before pushing.
+
+## Quality Standards for Agents
+
+### Always Provide
+
+- ✅ Structured error messages (WHAT + WHY + HOW + WHERE + HELP)
+- ✅ Specific locations (file:line when possible)
+- ✅ Actionable solutions (exact steps, not vague guidance)
+- ✅ Auto-fix commands or links to prompts
+- ✅ Examples of correct implementation (for errors)
+- ✅ Proper formatting (colors, emojis, clear structure)
+- ✅ Before/after examples when improving messages
+
+### Never Do
+
+- ❌ Create vague error messages ("Error occurred", "Invalid input")
+- ❌ Omit solutions (just identifying problem without fix)
+- ❌ Use technical jargon without explanation
+- ❌ Write blame/shame language ("You forgot to...")
+- ❌ Provide generic solutions ("Fix the code", "Check logs")
+- ❌ Skip location information when available
+- ❌ Create wall-of-text errors (use structure and whitespace)
+
+## Message Quality Checklist
+
+When creating any diagnostic message, verify:
+
+### For Errors (All Required)
+- [ ] Clear problem statement (WHAT)
+- [ ] Explanation of why it's an error (WHY)
+- [ ] Specific fix steps (HOW)
+- [ ] Exact location (WHERE)
+- [ ] Link to help or command (HELP)
+- [ ] Example of correct implementation
+- [ ] Proper formatting with colors/emojis
+- [ ] No jargon without explanation
+
+### For Warnings (All Required)
+- [ ] Clear problem statement (WHAT)
+- [ ] Impact explanation (what could go wrong)
+- [ ] Specific fix steps (HOW)
+- [ ] Exact location (WHERE)
+- [ ] Link to help or command (HELP)
+- [ ] Proper formatting with colors/emojis
+
+### For Info (Required)
+- [ ] Clear information statement (WHAT)
+- [ ] Context (why shown)
+- [ ] Optional action if relevant
+- [ ] Brief and concise
+
+## Testing Diagnostic Messages
+
+### Validation Approach
+
+1. **Show to Developer**: Would they understand the problem immediately?
+2. **Provide Solution**: Can they fix it without asking for help?
+3. **Check Completeness**: All required components present?
+4. **Test Formatting**: Easy to scan and read?
+5. **Verify Links**: Documentation/commands actually exist?
+
+### Example Testing
+
+```text
+❌ BAD: "Build failed"
+Test: Developer confused - what failed? where? how to fix?
+Result: FAIL - lacks all required components
+
+✅ GOOD: Full structured message with WHAT + WHY + HOW + WHERE + HELP
+Test: Developer knows exactly what's wrong and how to fix it
+Result: PASS - meets all quality standards
+```
+
+## FINAL MUST-PASS CHECKLIST
+
+When applying diagnostic message rules:
+
+- [ ] Message type identified (ERROR/WARNING/INFO)
+- [ ] Appropriate template applied
+- [ ] All required components present (WHAT + WHY/IMPACT + HOW + WHERE + HELP)
+- [ ] Specific locations provided (not vague)
+- [ ] Actionable solutions provided (not generic)
+- [ ] Auto-fix commands or prompts linked
+- [ ] Examples of correct implementation (for errors)
+- [ ] Proper formatting with colors and emojis
+- [ ] Clear, jargon-free language
+- [ ] Tested for clarity with target audience
+- [ ] Before/after example provided (when improving existing messages)
+
+---
+Generated by: rule.quality.diagnostic-messages.agent-application.v1  
+Last Updated: 2025-12-07

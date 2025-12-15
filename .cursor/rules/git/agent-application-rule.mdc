@@ -1,0 +1,229 @@
+---
+id: rule.git.agent-application.v1
+kind: rule
+version: 1.0.0
+description: Agent guidance for when and how to apply Git branching strategy rules. Use this when user requests involve branch creation, branch naming validation, merge/promotion workflows, branch protection setup, or Git workflow documentation.
+implements: git.agent-application
+requires:
+  - rule.git.branching-strategy-overview.v1
+  - rule.git.branch-structure.v1
+  - rule.git.branch-naming.v1
+  - rule.git.branch-lifecycle.v1
+  - rule.git.branch-protection.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-platform, last_review: 2025-11-22 }
+alwaysApply: false
+---
+
+# Git Branching Strategy - Agent Application Rule
+
+## Purpose
+
+This rule guides AI agents on when and how to apply the Git branching strategy rules for repositories using the main/develop model with structured supporting branches.
+
+## When to Apply Git Rules
+
+### Explicit Triggers
+
+Apply git rules when the user's request involves:
+
+- Creating new branches for features, fixes, or hotfixes
+- Validating branch names against naming conventions
+- Planning or executing merge/promotion workflows
+- Setting up branch protection rules
+- Configuring CI/CD pipeline integration with branching model
+- Documenting Git workflow in CONTRIBUTING.md or similar
+- Migrating from legacy branching models
+- Reviewing or enforcing branching strategy compliance
+
+### Context Clues
+
+Apply git rules when you observe:
+
+- User working with version control commands (git branch, git checkout, git merge)
+- Discussion of release preparation or deployment workflows
+- Questions about where to branch from or merge to
+- Issues with branch naming or organization
+- Setting up new repositories or standardizing existing ones
+- Jira ticket codes in context (EPP-157, EBASE-123, etc.)
+
+### DO NOT Apply When
+
+- User is only viewing Git history or logs (read-only operations)
+- Request is about Git configuration unrelated to branching (user.name, remote URLs)
+- Working with submodules, subtrees, or other Git advanced features not related to branching
+- Performing simple commits or pushes on already-created branches
+
+## How to Apply Git Rules
+
+### 1. Assess the Request
+
+Determine which aspect of the branching strategy is involved:
+
+- **Branch Structure**: Understanding or documenting primary/supporting branches → use `rule.git.branch-structure.v1`
+- **Branch Naming**: Validating or creating branch names → use `rule.git.branch-naming.v1`
+- **Branch Lifecycle**: Understanding merge/promotion paths → use `rule.git.branch-lifecycle.v1`
+- **Branch Protection**: Setting up automation or protection rules → use `rule.git.branch-protection.v1`
+- **Overall Strategy**: High-level questions or documentation → use `rule.git.branching-strategy-overview.v1`
+
+### 2. Load Required Rules
+
+```yaml
+# For branch creation
+requires:
+  - rule.git.branch-naming.v1
+  - rule.git.branch-structure.v1
+
+# For merge/promotion workflows
+requires:
+  - rule.git.branch-lifecycle.v1
+  - rule.git.branch-structure.v1
+
+# For complete workflow documentation
+requires:
+  - rule.git.branching-strategy-overview.v1
+  - rule.git.branch-structure.v1
+  - rule.git.branch-naming.v1
+  - rule.git.branch-lifecycle.v1
+  - rule.git.branch-protection.v1
+```
+
+### 3. Execute with Validation
+
+When creating or validating branches:
+
+1. **Verify branch type** against supported types (feature, fix, hotfix)
+2. **Validate naming** against regex pattern `^(feature|fix|hotfix)\/[A-Z]+-\d+$`
+3. **Confirm source branch** based on branch type and lifecycle rules
+4. **Check for Jira ticket reference** in branch name
+5. **Provide clear guidance** on merge destinations and promotion paths
+6. **ASK PERMISSION** before executing any commit, tag, or push operation.
+
+### 4. Provide Contextual Guidance
+
+Always explain:
+
+- **Why** a particular branch structure is recommended
+- **Where** to branch from and merge to
+- **When** to create different branch types
+- **How** the branch fits into the overall workflow
+
+## Common Scenarios
+
+### Scenario 1: Creating a Feature Branch
+
+```
+User: "I need to work on EPP-157"
+
+Agent Actions:
+1. Load rule.git.branch-naming.v1
+2. Load rule.git.branch-structure.v1
+3. Validate ticket code format (EPP-157 ✓)
+4. Recommend: git checkout develop && git checkout -b feature/EPP-157
+5. Explain: "Feature branches start from develop and merge back to develop"
+```
+
+### Scenario 2: Release Preparation
+
+```
+User: "We're ready to QA version 9.10"
+
+Agent Actions:
+1. Load rule.git.branch-lifecycle.v1
+2. Load rule.git.branch-structure.v1
+3. Recommend: git checkout develop && git checkout -b release/9.10
+4. Explain promotion path: release/9.10 → rc/9.10.0 (optional) → main → tag v9.10.0
+5. Remind: Only bug fixes allowed on release branch
+```
+
+### Scenario 3: Production Hotfix
+
+```
+User: "Critical bug EBASE-999 in production"
+
+Agent Actions:
+1. Load rule.git.branch-naming.v1
+2. Load rule.git.branch-lifecycle.v1
+3. Recommend: git checkout main && git checkout -b hotfix/EBASE-999
+4. Explain merge strategy: hotfix → main → tag → merge main to develop
+5. Warn: May need cherry-pick to active release branches
+```
+
+### Scenario 4: Branch Name Validation
+
+```
+User: "Is my-feature-branch a valid name?"
+
+Agent Actions:
+1. Load rule.git.branch-naming.v1
+2. Validate against regex: ^(feature|fix|hotfix)\/[A-Z]+-\d+$
+3. Result: INVALID (missing prefix and Jira code)
+4. Suggest: "Use feature/PROJ-123 format with your Jira ticket code"
+```
+
+## Integration with Other Rules
+
+### Ticket System Integration
+
+When both ticket and git rules apply:
+
+```yaml
+requires:
+  - rule.ticket.current.v1  # Get active ticket number
+  - rule.git.branch-naming.v1  # Format branch name
+  - rule.git.branch-structure.v1  # Determine branch type
+```
+
+Example: Extract ticket number from `tickets/current.md` to suggest branch name.
+
+### Documentation Rules
+
+When documenting Git workflow:
+
+```yaml
+requires:
+  - rule.git.branching-strategy-overview.v1
+  - rule.documentation.architecture.v1  # If documenting in docs/
+```
+
+### Development Workflow Rules
+
+When committing or preparing releases:
+
+```yaml
+requires:
+  - rule.git.branch-lifecycle.v1
+  - rule.development.commit-message.v1
+```
+
+## Quality Standards
+
+### Always Provide
+
+- ✅ Exact Git commands with correct branch names
+- ✅ Clear explanation of branch purpose and lifecycle
+- ✅ Validation feedback with specific reasons
+- ✅ Next steps after branch creation/merge
+
+### Never Do
+
+- ❌ Suggest branch names that violate regex pattern
+- ❌ Recommend merging to wrong destination branch
+- ❌ Create branches without explaining source branch choice
+- ❌ Bypass naming conventions "for simplicity"
+- ❌ **Execute commit, tag, or push operations without explicit user permission**
+
+## FINAL MUST-PASS CHECKLIST
+
+When applying git rules, verify:
+
+- [ ] Correct branch type identified (feature/fix/hotfix/release/rc)
+- [ ] Branch name matches regex pattern `^(feature|fix|hotfix)\/[A-Z]+-\d+$` (if applicable)
+- [ ] Source branch is correct for branch type (develop for features, main for hotfixes)
+- [ ] Merge/promotion path clearly explained
+- [ ] Jira ticket reference validated (format: PROJECT-NUMBER)
+- [ ] User understands why this branching strategy is recommended
+
+---
+Generated by: rule.git.agent-application.v1
+Last Updated: 2025-11-22

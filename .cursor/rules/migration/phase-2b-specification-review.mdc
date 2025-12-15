@@ -1,0 +1,575 @@
+---
+id: rule.migration.spec-review.v1
+kind: rule
+version: 1.0.1
+description: "Multi-stakeholder review process validating technical specifications for completeness, accuracy, and implementation readiness. Critical quality gate with technical, business, implementation, integration, and performance reviews. Prevents downstream migration issues."
+globs: docs/technical/**/*.md, docs/migration/**/*.md
+governs: docs/migration/phase-2b/**/*.md, docs/technical/**/*.md
+implements: migration.spec-review
+requires:
+  - rule.migration.overview.v1
+  - rule.migration.spec-create.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Migration Phase 2b: Specification Review
+
+## Purpose & Scope
+
+This rule defines the comprehensive review process that validates technical specifications for completeness, accuracy, and implementation readiness before proceeding to migration planning. Phase 2b is a critical quality gate that prevents downstream issues through multi-stakeholder validation, ensures business logic preservation, and confirms development team readiness for implementation.
+
+**Applies to**:
+- C++ to C# migration projects with completed Phase 2 technical specifications
+- Multi-stakeholder review and validation process
+- Quality gate validation before Phase 3 migration planning
+- Formal sign-off and approval process
+
+**Does not apply to**:
+- Initial specification creation (covered by Phase 2 rule)
+- Data collection activities (covered by Phase 1 rule)
+- Migration planning or implementation (covered by Phase 3 rule)
+- Day-to-day development code reviews
+- Post-implementation validation testing
+
+## Inputs (Contract)
+
+- Complete Phase 2 technical specification suite with all required documents
+- Phase 1 data collection findings for cross-reference validation
+- Phase 2 cross-reference index linking all specifications
+- Stakeholder review team assembled (technical, business, implementation, integration, performance, QA)
+- Review schedule with allocated time for each stakeholder category
+- Issue tracking system for documenting review findings
+- Phase 2 quality gate report indicating specification creation completion
+
+## Outputs (Contract)
+
+- Comprehensive review findings report with all issues categorized (Critical, Major, Minor)
+- Technical accuracy sign-off from senior developers and architects
+- Business accuracy confirmation from domain experts and business analysts
+- Implementation readiness assessment from development team leads
+- Integration compatibility validation from integration architects
+- Performance requirements approval from performance engineers
+- Documentation quality approval from QA specialists
+- Issue resolution log showing all findings addressed or accepted
+- Updated specifications incorporating all approved changes from review
+- Formal stakeholder sign-offs from all review categories
+- Phase 2b quality gate report with pass/fail status
+- Risk register identifying risks with mitigation strategies for Phase 3
+
+## Review Strategy
+
+### **Multi-Stakeholder Review Process**
+- **Technical Review**: Verify completeness and technical accuracy
+- **Business Review**: Validate business rules and requirements
+- **Implementation Review**: Assess implementation readiness
+- **Integration Review**: Verify external system compatibility
+- **Performance Review**: Validate performance requirements
+- **Quality Assurance Review**: Ensure documentation standards compliance
+
+### **Review Phases**
+- **Phase 1**: Individual stakeholder reviews (parallel execution)
+- **Phase 2**: Cross-functional review sessions (collaborative validation)
+- **Phase 3**: Issue resolution and specification updates
+- **Phase 4**: Final approval and sign-off
+
+## Technical Review Process
+
+### **Completeness Assessment**
+- **Objective**: Verify all current system functionality is captured
+- **Reviewers**: Senior developers, system architects, C++ specialists
+- **Activities**:
+  - Cross-reference specifications against Phase 1 findings
+  - Identify any missing business logic or algorithms
+  - Verify all integration points are documented
+  - Confirm all data structures and relationships are captured
+- **Success Criteria**: 100% coverage of current system capabilities
+
+### **Accuracy Validation**
+- **Objective**: Ensure specifications reflect actual system behavior
+- **Activities**:
+  - Validate business rules against source code analysis
+  - Verify enumeration values and algorithm specifications
+  - Confirm entity relationships match actual implementation
+  - Test specification clarity with implementation scenarios
+- **Deliverables**: Technical accuracy sign-off with any required corrections
+
+### **Implementation Readiness Assessment**
+- **Objective**: Verify development team can implement from specifications
+- **Reviewers**: Lead developers, domain specialists
+- **Activities**:
+  - Review specifications for implementation clarity
+  - Identify ambiguous or incomplete requirements
+  - Assess complexity and technical risks
+  - Validate migration considerations are complete
+- **Success Criteria**: Development team confidence in implementation readiness
+
+## Business Review Process
+
+### **Business Rule Validation**
+- **Objective**: Confirm all business rules are accurately captured
+- **Reviewers**: Business analysts, subject matter experts, process owners
+- **Activities**:
+  - Validate business logic specifications against real-world processes
+  - Confirm calculation algorithms match business requirements
+  - Verify condition evaluation logic reflects business intent
+  - Review integration requirements for business accuracy
+- **Deliverables**: Business accuracy confirmation with stakeholder sign-off
+
+### **Requirements Completeness Check**
+- **Objective**: Ensure all business requirements are addressed
+- **Activities**:
+  - Cross-reference specifications against original business requirements
+  - Identify any missing functionality or edge cases
+  - Validate performance requirements meet business needs
+  - Confirm integration requirements support business processes
+- **Success Criteria**: Complete business requirements coverage
+
+### **User Impact Assessment**
+- **Objective**: Evaluate impact on business users and processes
+- **Activities**:
+  - Review specifications for user experience implications
+  - Assess impact on existing business workflows
+  - Validate data migration requirements
+  - Confirm reporting and analytics capabilities
+- **Deliverables**: User impact analysis and mitigation strategies
+
+## Implementation Review Process
+
+### **Development Team Assessment**
+- **Objective**: Validate specifications support effective development
+- **Reviewers**: Development team leads, senior developers
+- **Activities**:
+  - Review specifications for development clarity and completeness
+  - Assess technical complexity and implementation risks
+  - Validate technology choices and architectural decisions
+  - Confirm testing strategies are feasible
+- **Success Criteria**: Development team commitment to deliver from specifications
+
+### **Architecture Review**
+- **Objective**: Ensure specifications support target architecture
+- **Reviewers**: Solution architects, enterprise architects
+- **Activities**:
+  - Validate specifications align with architectural standards
+  - Review integration patterns and service boundaries
+  - Assess scalability and performance implications
+  - Confirm security and compliance requirements
+- **Deliverables**: Architecture approval with any required modifications
+
+### **Technology Compatibility Check**
+- **Objective**: Verify specifications are compatible with target technology stack
+- **Activities**:
+  - Review C# implementation considerations
+  - Validate database and persistence requirements
+  - Assess integration technology compatibility
+  - Confirm monitoring and operational requirements
+- **Success Criteria**: Technology stack compatibility confirmed
+
+## Integration Review Process
+
+### **External System Impact Assessment**
+- **Objective**: Validate impact on external systems and interfaces
+- **Reviewers**: Integration architects, external system representatives
+- **Activities**:
+  - Review all external integration specifications
+  - Validate API contracts and data formats
+  - Assess backward compatibility requirements
+  - Confirm migration timing coordination with external systems
+- **Deliverables**: Integration impact analysis and coordination plan
+
+### **Data Migration Review**
+- **Objective**: Ensure data migration requirements are complete
+- **Activities**:
+  - Review data structure mappings and transformation requirements
+  - Validate data integrity and validation requirements
+  - Assess data migration timeline and dependencies
+  - Confirm rollback and recovery procedures
+- **Success Criteria**: Data migration strategy approved by all stakeholders
+
+## Performance Review Process
+
+### **Performance Requirements Validation**
+- **Objective**: Confirm performance requirements are realistic and complete
+- **Reviewers**: Performance engineers, system architects
+- **Activities**:
+  - Review performance benchmarks and targets
+  - Validate caching and optimization strategies
+  - Assess scalability requirements and growth projections
+  - Confirm monitoring and alerting requirements
+- **Deliverables**: Performance requirements approval with success criteria
+
+### **Capacity Planning Review**
+- **Objective**: Ensure infrastructure requirements are adequate
+- **Activities**:
+  - Review resource requirements and capacity needs
+  - Validate infrastructure scaling capabilities
+  - Assess disaster recovery and business continuity requirements
+  - Confirm operational monitoring and support capabilities
+- **Success Criteria**: Infrastructure readiness confirmed
+
+## Quality Assurance Review
+
+### **Documentation Standards Compliance**
+- **Objective**: Ensure specifications meet quality and maintainability standards
+- **Reviewers**: Technical writers, quality assurance specialists
+- **Activities**:
+  - Review documentation structure and organization
+  - Validate cross-references and navigation
+  - Assess completeness and clarity of content
+  - Confirm compliance with documentation standards
+- **Deliverables**: Documentation quality approval
+
+### **Traceability Validation**
+- **Objective**: Verify specifications are traceable to source requirements
+- **Activities**:
+  - Confirm all Phase 1 findings are addressed in specifications
+  - Validate business requirements traceability
+  - Review source code references and accuracy
+  - Assess completeness of migration considerations
+- **Success Criteria**: Complete traceability established
+
+## Review Governance
+
+### **Review Coordination**
+- **Review Manager**: Coordinates all review activities and stakeholder participation
+- **Review Schedule**: Structured timeline with clear milestones and deliverables
+- **Issue Tracking**: Systematic tracking and resolution of all review findings
+- **Communication Plan**: Regular status updates and stakeholder communication
+
+### **Issue Resolution Process**
+- **Issue Classification**: Critical, Major, Minor impact categorization
+- **Resolution Ownership**: Clear ownership assignments for issue resolution
+- **Update Process**: Systematic specification updates based on review findings
+- **Re-review Triggers**: Criteria for when specifications require additional review
+
+### **Approval Criteria**
+- **Technical Approval**: All technical issues resolved, implementation readiness confirmed
+- **Business Approval**: All business requirements validated, stakeholder sign-off obtained
+- **Quality Approval**: Documentation standards met, traceability established
+- **Risk Approval**: All risks identified, mitigation strategies in place
+
+## Success Metrics
+
+### **Review Completeness**
+- 100% of specifications reviewed by appropriate stakeholders
+- All review findings documented and tracked to resolution
+- All stakeholder concerns addressed and resolved
+- Complete sign-off obtained from all review categories
+
+### **Quality Indicators**
+- Zero critical issues remaining after review completion
+- Development team confidence in implementation readiness
+- Business stakeholder satisfaction with requirement coverage
+- Clear path forward to migration planning approved
+
+### **Risk Mitigation**
+- All technical risks identified and mitigation strategies defined
+- Business continuity risks assessed and addressed
+- Integration risks identified with coordination plans in place
+- Performance risks evaluated with mitigation strategies
+
+## Handoff to Phase 3
+
+### **Review Completion Criteria**
+- **All Reviews Complete**: Every stakeholder category has completed review
+- **Issues Resolved**: All critical and major issues resolved, minor issues managed
+- **Approvals Obtained**: Formal sign-off from all stakeholder categories
+- **Specifications Updated**: All necessary updates incorporated based on review findings
+
+### **Deliverables to Phase 3**
+- **Reviewed Specifications**: Complete, accurate, and approved specification suite
+- **Review Summary**: Comprehensive summary of all review findings and resolutions
+- **Risk Register**: Identified risks with mitigation strategies for planning consideration
+- **Stakeholder Sign-offs**: Formal approvals from all review categories
+
+### **Quality Gates Passed**
+- **Technical Readiness**: Specifications support C# implementation
+- **Business Readiness**: All business requirements captured and validated
+- **Implementation Readiness**: Development teams can proceed with confidence
+- **Integration Readiness**: External system impacts assessed and managed
+- **Performance Readiness**: Performance requirements realistic and achievable
+
+## Deterministic Steps
+
+Execute Phase 2b specification review in this structured sequence:
+
+1. **Prepare Review Environment**
+   - Verify Phase 2 specifications complete with quality gate report
+   - Assemble all stakeholder review teams with clear roles
+   - Set up issue tracking system for review findings
+   - Create review schedule with clear milestones and deadlines
+   - Distribute specification suite to all reviewers
+
+2. **Conduct Individual Stakeholder Reviews (Parallel)**
+   - **Technical Review**: Senior developers, architects review for completeness and accuracy
+   - **Business Review**: Domain experts, business analysts validate business rules
+   - **Implementation Review**: Development leads assess implementation readiness
+   - **Integration Review**: Integration architects verify external compatibility
+   - **Performance Review**: Performance engineers validate requirements
+   - **QA Review**: QA specialists check documentation standards
+   - Document all findings in issue tracking system with severity classification
+
+3. **Consolidate Review Findings**
+   - Collect all individual review findings
+   - Categorize issues: Critical, Major, Minor
+   - Identify common themes and cross-cutting concerns
+   - Prioritize issues by impact and urgency
+   - Create consolidated findings report
+
+4. **Conduct Cross-Functional Review Sessions**
+   - Facilitate collaborative review meetings
+   - Discuss findings requiring multiple perspectives
+   - Resolve ambiguities through group consensus
+   - Identify dependencies between issues
+   - Assign ownership for issue resolution
+
+5. **Resolve Critical and Major Issues**
+   - Work with specification authors to address critical issues immediately
+   - Update specifications based on approved resolutions
+   - Document rationale for all changes
+   - Re-review updated specifications for correctness
+   - Verify changes don't introduce new issues
+
+6. **Manage Minor Issues**
+   - Assess minor issues for impact and effort
+   - Decide which to address now vs. defer
+   - Document deferred issues with justification
+   - Create follow-up tasks for deferred items
+   - Update specifications for addressed minor issues
+
+7. **Validate Specification Updates**
+   - Verify all critical issues resolved
+   - Confirm major issues addressed or documented
+   - Check specification consistency after updates
+   - Validate cross-references still resolve correctly
+   - Ensure provenance footers updated with review status
+
+8. **Conduct Final Approval Process**
+   - Present updated specifications to each stakeholder category
+   - Obtain formal sign-offs from technical, business, implementation, integration, performance, and QA leads
+   - Document any remaining concerns or caveats
+   - Create approval summary with all sign-offs
+   - Update Phase 2b quality gate status to "Passed"
+
+9. **Prepare Handoff to Phase 3**
+   - Package approved specification suite
+   - Generate comprehensive review summary report
+   - Create risk register with mitigation strategies
+   - Document lessons learned from review process
+   - Schedule Phase 3 kickoff meeting
+
+10. **Validate Quality Gate Criteria**
+    - Verify all review categories completed
+    - Confirm all critical and major issues resolved
+    - Validate all formal sign-offs obtained
+    - Check specifications updated with all changes
+    - Ensure Phase 2b deliverables complete
+
+## Formatting Requirements
+
+Phase 2b review documentation must follow these formats:
+
+### Review Findings Format
+```markdown
+## Issue #[Number]
+
+**Category**: [Technical | Business | Implementation | Integration | Performance | QA]  
+**Severity**: [Critical | Major | Minor]  
+**Specification**: [Affected file(s)]  
+**Description**: [Clear description of issue]  
+**Impact**: [Consequences if not resolved]  
+**Recommendation**: [Proposed resolution]  
+**Assigned To**: [Owner]  
+**Status**: [Open | In Progress | Resolved | Deferred]  
+**Resolution**: [How it was resolved]
+```
+
+### Stakeholder Sign-Off Format
+```markdown
+## [Stakeholder Category] Review Sign-Off
+
+**Reviewer(s)**: [Names and roles]  
+**Review Date**: [YYYY-MM-DD]  
+**Status**: [Approved | Approved with Conditions | Not Approved]  
+**Critical Issues**: [Count]  
+**Major Issues**: [Count]  
+**Minor Issues**: [Count]  
+**Conditions** (if applicable): [List any conditions for approval]  
+**Comments**: [Additional feedback]  
+**Signature**: [Name, Date]
+```
+
+### Phase 2b Quality Gate Report Format
+```markdown
+# Phase 2b Quality Gate Report
+
+**Project**: [Project Name]  
+**Review Period**: [Start Date] to [End Date]  
+**Overall Status**: [PASSED | FAILED]
+
+## Review Summary
+- Technical Review: [Status]
+- Business Review: [Status]
+- Implementation Review: [Status]
+- Integration Review: [Status]
+- Performance Review: [Status]
+- QA Review: [Status]
+
+## Issues Summary
+- Critical Issues: [Total] ([Resolved] resolved, [Open] open)
+- Major Issues: [Total] ([Resolved] resolved, [Open] open)
+- Minor Issues: [Total] ([Resolved] resolved, [Deferred] deferred)
+
+## Sign-Offs Obtained
+- [List all formal sign-offs]
+
+## Risks Identified
+- [Summary of risks for Phase 3]
+
+## Handoff Readiness: [READY | NOT READY]
+```
+
+## OPSEC and Leak Control
+
+During Phase 2b specification review:
+
+- **NO internal stakeholder names or emails** in distributed review materials beyond secure channels
+- **NO internal project codenames** or sensitive identifiers in external communications
+- **Redact sensitive business information** if review involves external consultants
+- **Use secure channels** for review distribution (not public email or cloud storage)
+- **Control access** to specification repository based on need-to-know
+- **Review findings treated as confidential** project information
+- **Sign-off documents stored securely** with access controls
+- **Do NOT include customer data** in review examples or test scenarios
+
+## Integration Points
+
+Phase 2b integrates with:
+
+- **`rule.migration.overview.v1`**: Follows quality gate framework
+- **`rule.migration.spec-create.v1`**: Reviews outputs from Phase 2
+- **`rule.migration.planning.v1`**: Provides validated inputs for Phase 3
+- **Issue Tracking Systems**: JIRA, Azure DevOps, or equivalent for findings management
+- **Collaboration Tools**: Review meetings, shared document platforms
+- **Stakeholder Teams**: Technical leads, business analysts, architects, developers, QA
+- **Version Control**: Git for specification updates and change tracking
+- **Sign-Off Management**: Formal approval workflow and document management
+
+## Failure Modes and Recovery
+
+### Failure Mode 1: Critical Issues Cannot Be Resolved
+
+**Detection**: Review identifies showstopper issues with no clear resolution path
+
+**Impact**: Cannot proceed to Phase 3, project delays, potential scope changes
+
+**Recovery**:
+1. Escalate to project steering committee immediately
+2. Facilitate technical working sessions with all relevant experts
+3. Consider alternative approaches or scope adjustments
+4. Obtain executive decision on path forward
+5. Document decision rationale and update specifications accordingly
+
+**Prevention**: Early technical prototyping, expert consultation during Phase 2, regular stakeholder checkpoints
+
+### Failure Mode 2: Stakeholder Disagreement on Business Logic
+
+**Detection**: Business and technical reviewers have conflicting interpretations
+
+**Impact**: Specification approval blocked, unclear implementation guidance
+
+**Recovery**:
+1. Document all perspectives with supporting evidence
+2. Trace back to Phase 1 source code as single source of truth
+3. Facilitate joint session with both parties and Phase 1 analysts
+4. Test actual C++ system behavior if accessible
+5. Obtain executive decision if technical evidence inconclusive
+
+**Prevention**: Business stakeholder involvement in Phase 1 and 2, early ambiguity resolution
+
+### Failure Mode 3: Development Team Declares Specifications Unimplementable
+
+**Detection**: Implementation review identifies technical impossibilities or blockers
+
+**Impact**: Cannot proceed to implementation, major specification rework required
+
+**Recovery**:
+1. Identify specific technical barriers with detailed analysis
+2. Conduct technical spike or proof-of-concept to validate concerns
+3. Engage C# technology experts for alternative approaches
+4. Update specifications with feasible technical approach
+5. Re-review updated specifications for implementation readiness
+
+**Prevention**: Development team involvement in Phase 2, early technical validation, C# expertise consultation
+
+### Failure Mode 4: External Integration Compatibility Issues
+
+**Detection**: Integration review reveals breaking changes to external system interfaces
+
+**Impact**: Cannot maintain compatibility, external system coordination required
+
+**Recovery**:
+1. Document all compatibility issues with impact assessment
+2. Engage external system owners immediately
+3. Design adapter layer or translation mechanisms
+4. Plan coordinated deployment strategy
+5. Update integration specifications with mitigation approach
+
+**Prevention**: External system involvement in Phase 2, early interface validation, compatibility testing
+
+### Failure Mode 5: Review Process Stalls Due to Stakeholder Unavailability
+
+**Detection**: Review deadlines missed, stakeholders not responding
+
+**Impact**: Project delays, timeline at risk, momentum lost
+
+**Recovery**:
+1. Escalate to project manager and stakeholder managers
+2. Identify backup reviewers if primary unavailable
+3. Adjust review schedule with realistic availability
+4. Consider breaking review into smaller, more manageable sessions
+5. Obtain management commitment to reviewer availability
+
+**Prevention**: Stakeholder commitment secured upfront, backup reviewers identified, review time blocked on calendars
+
+## Provenance Footer Specification
+
+All Phase 2b review documents must include:
+
+```markdown
+---
+**Migration Phase**: 2b - Specification Review  
+**Generated by**: rule.migration.spec-review.v1  
+**Project**: [Project Name]  
+**Review Period**: [Start YYYY-MM-DD] to [End YYYY-MM-DD]  
+**Review Coordinator**: [Name/Role]  
+**Stakeholder Categories**: Technical, Business, Implementation, Integration, Performance, QA  
+**Total Issues**: [Critical: N, Major: N, Minor: N]  
+**Issues Resolved**: [Count and percentage]  
+**Review Status**: [Complete | Incomplete]  
+**Quality Gate**: [Passed | Failed]  
+**Handoff Date**: [YYYY-MM-DD]
+```
+
+## Related Rules
+
+- `rule.migration.overview.v1` - Overall migration framework and quality gates
+- `rule.migration.spec-create.v1` - Phase 2 that creates specifications being reviewed
+- `rule.migration.planning.v1` - Phase 3 that consumes reviewed specifications
+- `rule.migration.data-collection.v1` - Phase 1 providing source of truth for validation
+- `rule.authoring.validation-and-checklists.v1` - Validation principles and patterns
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All six stakeholder review categories completed (Technical, Business, Implementation, Integration, Performance, QA)
+- [ ] All critical issues resolved with specification updates
+- [ ] All major issues resolved or explicitly accepted with documented rationale
+- [ ] Minor issues resolved or deferred with documented plan
+- [ ] Formal sign-offs obtained from all stakeholder categories
+- [ ] Updated specifications incorporate all approved changes
+- [ ] Cross-references validated after specification updates
+- [ ] OPSEC clean (no sensitive stakeholder info, customer data, or internal identifiers in distributed materials)
+- [ ] Risk register created with mitigation strategies for Phase 3
+- [ ] Phase 2b quality gate report shows "PASSED" status
+- [ ] Handoff package complete for Phase 3 with all deliverables

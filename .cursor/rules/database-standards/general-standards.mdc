@@ -1,0 +1,179 @@
+# General SQL Development Standards
+
+## Repository Structure
+
+### Product Organization
+- Each product has its own top-level folder
+- Database technology folders within each product:
+  - MSSQL/ (Mandatory)
+  - Oracle/ (Only present if Oracle is supported)
+- Release folders within each database technology:
+  - Current: R970
+  - Previous: R960
+  - Each release follows standard versioning
+
+### Release Structure
+- Two types of release folders:
+  - CREATE: For creating a database from scratch
+  - UPGRADE: For updating an existing database to a specific version
+- Version control through DBVERSION and VERSION tables per module
+- Prevents double executions and version gaps
+- Module dependency checks in MSSQL (e.g., NLALL2.3CON depends on NLALL2.3, which depends on eBase-Core)
+
+### Module Naming Conventions
+- Module codes typically three letters (e.g., EBASE)
+- Some modules have longer codes
+- Used as prefixes in table names
+- eBase-Core (EBASE) uses prefixes:
+  - D: Schema-specific tables
+  - S: Security-related tables (used across schemas)
+  - E: Messaging-related tables (used across schemas)
+
+### Folder Naming Conventions
+- Product folders: PascalCase (e.g., `Supply-USG`, `Balancing-NLGBAL1`)
+- Database folders: UPPERCASE (`MSSQL`, `Oracle`)
+- Release folders: R-prefixed version number (`R970`, `R960`)
+
+## Version Control
+
+### Release Versioning
+- Current version: R970
+- Previous version: R960
+- Version format: R[XXX] where XXX is the version number
+- Each release must be self-contained
+- No cross-release dependencies
+
+### Script Versioning
+- Script names must include release number
+- Format: `[Product]_R970_[TaskID]_[Operation].sql`
+- Example: `USG_R970_21414393_CR_X_USG_ASSET.sql`
+- Always update scriptversion in header
+- Add comment line describing changes
+- Update scriptsetversion in Begin_Release file
+- Follow version format: YYYYMMDD (e.g., 20250106)
+
+### Solution Scripts (SOL)
+- Cross-release fixes delivered as SOL scripts
+- Originate in the Solution repository
+- Typically included with normal release scripts
+- Can be applied across multiple releases
+
+## Naming Conventions
+
+### Database Objects
+- Tables: PascalCase (e.g., `D_COUNTERREADING`)
+- Columns: snake_case (e.g., `meter_reading`)
+- Indexes: 
+  - Primary Key: `[Table]_[Column]_PK`
+  - Foreign Key: `[Table]_[Column]_FK`
+  - Non-unique: `[Table]_[Column]_IX`
+  - Unique: `[Table]_[Column]_UX`
+
+### Files and Folders
+- SQL files: PascalCase with underscores
+- Configuration files: lowercase with hyphens
+- Template files: PascalCase with operation type
+
+## Documentation Requirements
+
+### Script Documentation
+- Standard header format
+- Purpose and scope
+- Dependencies
+- Rollback procedures
+- Testing notes
+- Version information
+
+### Project Documentation
+- README.md in each product folder
+- Version history
+- Known issues
+- Deployment notes
+- Excel tracking sheet
+
+### Change Tracking
+- Update Excel tracking sheet with all changes
+- Include script versions and dependencies
+- Document affected modules and files
+- Note any cross-module impacts
+- Include automation requirements
+
+## Code Organization
+
+### Script Structure
+1. Header documentation
+2. Variable declarations
+3. Validation checks
+4. Main logic
+5. Error handling
+6. Version updates
+
+### Template Usage
+- Use appropriate template for each operation
+- Follow template naming conventions
+- Document any deviations
+
+## Deployment Process
+
+### CI/CD Pipeline
+- Creates zip archives of release scripts
+- Separate pipeline for releasing archives
+- Automated testing and validation
+- Updates Excel tracking sheet
+
+### Deployment Execution
+- Uses Begin_Upgrade.cmd script
+- Calls Begin_Upgrade.m for actual upgrade process
+- May be followed by solution script sets
+- Validates module dependencies
+- Updates documentation
+
+### Dependency Management
+- Document module dependencies in Begin_Release file
+- Set dependent module prefix (e.g., NLALL2_3)
+- Set required dependent DBVERSION (e.g., 9500001)
+- Include dependency check scripts
+- Validate dependencies before execution
+
+## Automation Requirements
+
+### Version Tracking
+- Automate script version updates
+- Automate scriptsetversion updates
+- Automate Excel tracking sheet updates
+- Validate version consistency
+
+### Dependency Validation
+- Automate dependency checks
+- Validate module dependencies
+- Check version requirements
+- Document dependency relationships
+
+### Documentation Updates
+- Automate documentation updates
+- Update Excel tracking sheet
+- Maintain version history
+- Track cross-module impacts
+
+## Best Practices
+
+### Development
+- Use version control
+- Follow naming conventions
+- Document changes
+- Test thoroughly
+- Update version tracking
+
+### Deployment
+- Backup before changes
+- Test in development
+- Validate after deployment
+- Monitor performance
+- Update documentation
+
+### Maintenance
+- Regular code reviews
+- Update documentation
+- Track technical debt
+- Plan migrations
+- Maintain Excel tracking sheet 

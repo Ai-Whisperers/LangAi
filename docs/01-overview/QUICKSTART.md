@@ -12,7 +12,7 @@ Get your first company research report in 5 minutes.
 
 ```bash
 # Research any company
-python run_research.py "Microsoft"
+python run_research.py --company "Microsoft"
 ```
 
 **Output**:
@@ -35,16 +35,16 @@ Report: outputs/research/microsoft/00_full_report.md
 
 ```bash
 # Standard research
-python scripts/research/cli.py research "Tesla"
+python scripts/research/cli.py --company "Tesla"
 
 # With options
-python scripts/research/cli.py research "Tesla" --depth comprehensive --format pdf
+python scripts/research/cli.py --company "Tesla" --depth comprehensive
 ```
 
 ## Option 3: Python API
 
 ```python
-from company_researcher import execute_research, ResearchDepth
+from company_researcher.orchestration import execute_research, ResearchDepth
 
 # Run research
 result = execute_research(
@@ -52,10 +52,11 @@ result = execute_research(
     depth=ResearchDepth.STANDARD
 )
 
-# Access results
-print(f"Quality: {result.quality_score}/100")
+# Access results (WorkflowState)
+print(f"Status: {result.status.value}")
+print(f"Quality: {result.data.get('quality_score')}")
 print(f"Cost: ${result.total_cost:.4f}")
-print(f"Report: {result.report_path}")
+print(result.data.get("synthesis", {}).get("summary", ""))
 ```
 
 ## Option 4: LangGraph Studio (Visual)
@@ -124,19 +125,11 @@ The system targets 85%+ quality. Scores measure:
 | Source Quality | 15% | Diverse, recent sources |
 | Coherence | 10% | No contradictions |
 
-## Cost Management
+## Cost management
 
-Monitor and control costs:
+Costs depend on model choice, depth, and how many agent calls run. For configuration knobs, see:
 
-```python
-from company_researcher import config
-
-# Set cost limit
-config.max_cost_per_research = 0.10  # $0.10 max
-
-# Use cheaper model for drafts
-config.llm_model = "claude-3-haiku-20240307"
-```
+- [Configuration Guide](../06-configuration/README.md)
 
 ## Troubleshooting
 

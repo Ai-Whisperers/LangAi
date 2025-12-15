@@ -1,0 +1,384 @@
+---
+id: rule.technical-specifications.domain-object.v1
+kind: rule
+version: 1.0.1
+description: Documents individual domain entities with complete field specifications and business meanings for C++ to C# migration
+globs: **/docs/technical/**/domain-objects/*.md, **/docs/technical/**/*-domain-object.md
+governs: **/docs/technical/**/domain-objects/*-domain-object.md
+implements: domain-object.documentation
+requires:
+  - rule.technical-specifications.anti-duplication.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+# Domain Object Documentation Rule
+
+## Purpose & Scope
+
+This rule defines how to create **individual domain object specification files** that document **one domain entity per file** with complete field descriptions, business meanings, and implementation requirements.
+
+**Applies to**: Documentation of C++ domain entities (TGEBCalendar, TGEBTariff, etc.) being migrated to C# domain objects. One domain object file per entity within the `docs/technical/[domain]/domain/domain-objects/` folder structure.
+
+**Does not apply to**: Database entity documentation (use entity-relationship-rule), business rules documentation (use business-rules-rule), enumeration documentation (use enumeration-rule), or implementation guides (belong in docs/implementation/).
+
+## Inputs (Contract)
+
+- C++ domain entity class identified for documentation (e.g., TGEBCalendar)
+- Phase 1 data collection findings for this entity from C++ source analysis
+- Complete list of entity fields with types and purposes from source code
+- Business context explaining what this entity represents
+- Understanding of entity relationships to other domain objects
+
+## Outputs (Contract)
+
+Domain object specification file containing:
+- File named `[entity-name]-domain-object.md` in `docs/technical/[domain]/domain/domain-objects/` folder
+- Complete field documentation (Type, Purpose, Business Meaning, Constraints, Usage for each field)
+- Terminology clarification (Domain Objects vs C# DDD Entities)
+- Business rules governing this entity
+- Migration requirements for C++ to C# conversion
+- Cross-references to related domain objects, enumerations, and business rules (using file paths)
+- Anti-duplication compliance (references to database schema, not duplication)
+
+## Purpose (Original)
+
+This rule defines how to create **individual domain object specification files** that document **one domain entity per file** with complete field descriptions, business meanings, and implementation requirements.
+
+## File Structure Requirement
+
+### **One Entity Per File**
+- Each domain entity MUST have its own dedicated specification file
+- File location: `docs/technical/[domain]/domain/domain-objects/[entity-name]-domain-object.md`
+- No mixing multiple entities in a single domain object file
+- Cross-reference other entities through links, not inline documentation
+
+### **File Naming Examples**
+- `docs/technical/calendars/domain/domain-objects/calendar-domain-object.md` (for TGEBCalendar entity)
+- `docs/technical/calendars/domain/domain-objects/calendar-entry-domain-object.md` (for TGEBCalendarEntry entity)
+- `docs/technical/calendars/domain/domain-objects/calendar-date-domain-object.md` (for TGEBCalendarDate entity)
+- `docs/technical/tariffs/domain/domain-objects/tariff-domain-object.md` (for TGEBTariff entity)
+
+### **Folder Structure Integration**
+Domain object files are part of the layered architecture:
+```text
+docs/technical/[domain]/
+├── database/                                      # Database layer (3-file pattern)
+│   ├── [domain]-database-schema.md
+│   ├── [domain]-database-constraints.md
+│   └── [domain]-database-analysis.md
+└── domain/                                        # Domain layer (DDD pattern)
+    ├── domain-objects/                           # Rich domain models
+    │   ├── [entity-name]-domain-object.md       # THIS RULE APPLIES HERE
+    │   └── [another-entity]-domain-object.md
+    └── enumerations/                             # Business enumerations
+        └── [enum-name]-enum.md
+```
+
+## Terminology Clarification
+
+### **Domain Objects vs Entities in C# DDD**
+In C# Domain-Driven Design, there's an important distinction:
+
+- **Domain Objects** (broader category):
+  - Entities - objects with identity that can change over time
+  - Value Objects - immutable objects defined by their attributes  
+  - Aggregates - clusters of domain objects treated as a unit
+  - Domain Services - operations that don't naturally belong to entities
+
+- **Entities** (specific type):
+  - Have unique identity (ID)
+  - Can change over time while maintaining identity
+  - Example: Customer, Order, Product
+
+This rule covers **Domain Entity** specifications - objects with identity and lifecycle management.
+
+## Document Structure
+
+### **Overview Section**
+- **Entity Purpose**: What this domain object represents in the business context
+- **Business Role**: How this object fits into overall business processes
+- **Lifecycle**: Key events in this object's existence (creation, updates, deletion)
+- **Relationships**: Summary of relationships to other domain objects
+
+### **Purpose Section**
+- **Business Definition**: What this object represents from business perspective
+- **Primary Responsibilities**: Core functions this object performs
+- **Key Capabilities**: Main operations and behaviors supported
+- **Business Value**: Why this object exists and its importance
+
+### **Domain Fields Section**
+- **Complete Field Coverage**: Every field that exists in the source system
+- **Field-by-Field Documentation**: Detailed specification for each field
+- **Business Context**: What each field means from business perspective
+- **Implementation Details**: Type, constraints, and usage information
+
+### **Business Rules Section**
+- **Field Constraints**: Business rules governing field values
+- **Entity Constraints**: Rules governing the entity as a whole
+- **Relationship Rules**: How this entity relates to others
+- **Lifecycle Rules**: Rules governing object creation, modification, deletion
+
+### **Migration Requirements Section**
+- **Preservation Needs**: What must be maintained from current system
+- **C++ to C# Mapping**: Specific considerations for the migration
+- **Performance Requirements**: Critical performance characteristics to maintain
+- **Integration Considerations**: How migration affects external systems
+
+## Field Documentation Standards
+
+### **Standard Field Format**
+```markdown
+### **FieldName**
+
+- **Type**: [Data Type with precision/size if applicable]
+- **Purpose**: [Primary function of this field]
+- **Business Meaning**: [What this field represents in business terms]
+- **Constraints**: [Required/optional, unique, range limits, etc.]
+- **Usage**: [How and when this field is used]
+```
+
+### **Required Field Information**
+- **Type**: Precise data type (string with length, decimal with precision, enum name)
+- **Purpose**: Primary function and role of the field
+- **Business Meaning**: What the field represents from business perspective
+- **Constraints**: Required/optional status, uniqueness, value ranges, format requirements
+- **Usage**: When and how the field is populated and used
+
+### **Additional Field Context**
+- **Default Values**: Any default values or initialization logic
+- **Validation Rules**: Business validation applied to this field
+- **Dependencies**: Relationships to other fields in same or different entities
+- **Evolution Notes**: How field usage has changed or might change
+
+## Business Context Requirements
+
+### **Business Meaning Documentation**
+- **Real-World Representation**: What real-world concept this field represents
+- **User Perspective**: How business users think about and use this field
+- **Business Process Integration**: Where this field fits in business workflows
+- **Decision Support**: How this field supports business decisions
+
+### **Usage Pattern Documentation**
+- **Population Methods**: How field values are typically set (user input, calculation, system generation)
+- **Update Frequency**: How often field values change
+- **Query Patterns**: How this field is typically searched or filtered
+- **Reporting Usage**: How this field appears in business reports
+
+### **Relationship Context**
+- **Foreign Key Relationships**: References to other entities and their business meaning
+- **Calculated Dependencies**: Fields whose values depend on this field
+- **Business Dependencies**: How changes to this field affect other business processes
+- **Integration Dependencies**: External systems that depend on this field
+
+## Quality Standards
+
+### **Completeness Requirements**
+- Every field from source system documented
+- Every relationship explained from business perspective
+- All constraints and validation rules captured
+- All usage patterns documented
+
+### **Accuracy Standards**
+- Field names match source system exactly
+- Data types are accurate and appropriate for C# implementation
+- Business meanings reflect actual usage, not assumptions
+- Constraints are based on observed system behavior
+
+### **Clarity Standards**
+- Business language used for business meanings
+- Technical language used for implementation details
+- Clear distinction between current behavior and migration requirements
+- Consistent terminology throughout document
+
+## Special Considerations
+
+### **C++ Source System Characteristics**
+- **Position-Based Access**: Document how C++ accesses fields by position
+- **Memory Management**: Note any special memory management considerations
+- **Collection Fields**: Document TList and similar collection patterns
+- **Caching Fields**: Identify fields used for performance caching
+
+### **Migration-Specific Requirements**
+- **Field Mapping**: How C++ field positions map to C# property names
+- **Type Conversion**: Any data type conversions required for C#
+- **Validation Migration**: How C++ validation translates to C# domain objects
+- **Performance Impact**: Fields critical for performance preservation
+
+### **Integration Considerations**
+- **External System Dependencies**: Fields used by external systems
+- **API Exposure**: Fields exposed through integration interfaces
+- **Data Migration**: Special considerations for migrating field data
+- **Backward Compatibility**: Requirements for maintaining compatibility
+
+## Template Patterns
+
+### **Entity Header Template**
+```markdown
+# [EntityName] Domain Object
+
+## Overview
+
+The **[EntityName]** is [brief business description of what this entity represents].
+
+## Purpose
+
+[Detailed explanation of business role and importance]
+
+## Domain Fields
+```
+
+### **Field Documentation Template**
+```markdown
+### **FieldName**
+
+- **Type**: [Precise data type]
+- **Purpose**: [Primary function]
+- **Business Meaning**: [Business context and real-world representation]
+- **Constraints**: [Required/optional, unique, range limits]
+- **Usage**: [Population method, update patterns, query usage]
+```
+
+### **Business Rules Template**
+```markdown
+## Business Rules
+
+### **Field Constraints**
+
+- [Field name]: [Specific business rules for this field]
+
+### **Entity Constraints**
+
+- [Entity-level business rules that govern the object as a whole]
+
+### **Relationship Rules**
+
+- [Rules governing how this entity relates to others]
+```
+
+## Quality Assurance
+
+### **Review Checklist**
+- [ ] All fields from source system documented
+- [ ] Business meanings are accurate and clear
+- [ ] Data types are appropriate for C# implementation
+- [ ] All constraints and validation rules captured
+- [ ] Migration considerations complete
+- [ ] Cross-references to related entities included
+- [ ] Business rules comprehensive and verifiable
+
+### **Common Issues to Avoid**
+- **Generic Descriptions**: Avoid generic field descriptions that don't reflect actual business usage
+- **Technical Jargon**: Don't use technical implementation details for business meanings
+- **Incomplete Coverage**: Ensure all fields from source system are included
+- **Inconsistent Naming**: Use exact field names from source system
+- **Missing Constraints**: Don't overlook business validation rules
+
+### **Stakeholder Validation**
+- **Business Users**: Validate business meanings and usage patterns
+- **Domain Experts**: Confirm business rules and constraints
+- **Developers**: Verify technical accuracy for implementation
+- **Migration Team**: Confirm migration considerations are complete
+
+## Maintenance Guidelines
+
+### **Keep Current**
+- Update as source system analysis reveals new information
+- Maintain accuracy as business rules evolve
+- Update migration considerations as C# design develops
+- Keep cross-references current as related documents change
+
+### **Review Triggers**
+- Source system analysis updates
+- Business rule changes or clarifications
+- C# domain model design decisions
+- Integration requirement changes
+- Performance requirement updates
+
+## Anti-Duplication Requirements
+
+**CRITICAL**: Domain objects must NOT duplicate content from source specifications. See [Technical Specification Anti-Duplication Rule](specification-anti-duplication-rule.mdc) for complete requirements.
+
+### **Reference, Don't Duplicate**
+- ❌ Never copy SQL table definitions into domain objects
+- ❌ Never copy detailed field specification tables
+- ❌ Never copy index or constraint SQL
+- ❌ Never copy business rules from business rule specifications
+- ❌ Never copy enumeration values from enumeration specifications
+- ✅ Reference database schema for technical specifications
+- ✅ Reference business rules for validation logic
+- ✅ Reference enumerations for value definitions
+- ✅ Focus on business meaning and domain context
+- ✅ Maintain single source of truth across all specification types
+
+---
+
+## Deterministic Steps
+
+When creating a domain object specification:
+
+1. **Identify C++ Entity**: Confirm C++ class name (e.g., TGEBCalendar) from source analysis
+2. **Create File**: Create `[entity-name]-domain-object.md` in `docs/technical/[domain]/domain/domain-objects/`
+3. **Add Overview Section**: Describe entity purpose, business role, lifecycle, relationships
+4. **Document All Fields**: For each field, provide Type, Purpose, Business Meaning, Constraints, Usage
+5. **Add Business Rules**: Document field constraints, entity constraints, relationship rules, lifecycle rules
+6. **Add Migration Section**: Specify preservation needs, C++ to C# mapping, performance requirements
+7. **Add Anti-Duplication Section**: Reference (don't duplicate) database schema, business rules, enumerations
+8. **Add Cross-References**: Link to related domain objects, enumerations, business rules using file paths
+9. **Validate Completeness**: Ensure all fields from C++ source documented, no SQL duplication, business context clear
+
+## OPSEC and Leak Control
+
+Domain object files must NOT contain:
+- **NO** internal server names, IP addresses, or database connection strings
+- **NO** credentials, tokens, API keys, or passwords
+- **NO** employee names or email addresses
+- **NO** confidential customer data or business-sensitive examples
+- **NO** proprietary vendor information
+- C++ source references by class/file name only (no absolute file paths with server names)
+
+## Integration Points
+
+This rule works with:
+- **rule.technical-specifications.anti-duplication.v1**: Ensures references instead of SQL duplication
+- **rule.technical-specifications.entity-relationship.v1**: Database schema provides technical foundation
+- **rule.technical-specifications.enumeration.v1**: Enumerations provide field value constraints
+- **rule.technical-specifications.business-rules.v1**: Business rules provide validation logic
+- **rule.technical-specifications.hybrid-architecture.v1**: Defines domain/domain-objects/ folder location
+
+## Failure Modes and Recovery
+
+**Failure**: SQL table definitions duplicated in domain object file
+- **Detection**: CREATE TABLE statements or detailed constraint SQL present
+- **Recovery**: Remove SQL, add reference to database schema file per anti-duplication rule
+
+**Failure**: Business rules duplicated instead of referenced
+- **Detection**: Validation algorithms detailed inline rather than referenced
+- **Recovery**: Remove duplicated rules, add references to business rules file
+
+**Failure**: Multiple entities documented in single file
+- **Detection**: File describes more than one C++ class
+- **Recovery**: Split into separate files, one per entity
+
+**Failure**: Missing business meaning for fields
+- **Detection**: Only technical types present, no "Business Meaning" section per field
+- **Recovery**: Add business context explaining what each field represents in real-world terms
+
+## Related Rules
+
+- **rule.technical-specifications.anti-duplication.v1**: Prevents content duplication across all specification types
+- **rule.technical-specifications.architecture.v1**: Overall documentation structure
+- **rule.technical-specifications.business-rules.v1**: Business logic documentation standards
+- **rule.technical-specifications.enumeration.v1**: Enumeration documentation standards
+- **rule.technical-specifications.entity-relationship.v1**: Database schema documentation standards
+- **rule.technical-specifications.hybrid-architecture.v1**: Layered folder structure definition
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no server names, IPs, credentials, emails, confidential data)
+- [ ] One entity per file (not multiple entities in single file)
+- [ ] All fields documented with Type, Purpose, Business Meaning, Constraints, Usage
+- [ ] NO SQL duplication (references database schema, doesn't copy CREATE TABLE statements)
+- [ ] Anti-duplication section present referencing other specifications
+- [ ] File in correct location: docs/technical/[domain]/domain/domain-objects/[entity]-domain-object.md
+- [ ] Cross-references use file paths to related domain objects, enumerations, business rules

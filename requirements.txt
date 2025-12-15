@@ -85,6 +85,7 @@ qdrant-client==1.11.0       # Qdrant vector DB
 # Caching
 redis==5.2.0                # Redis client
 hiredis==3.0.0              # Fast Redis parser
+celery==5.3.6               # Background task queue (optional; used by docker-compose worker/scheduler)
 
 # =============================================================================
 # API & WEB FRAMEWORK (Phase 3+) - PINNED VERSIONS

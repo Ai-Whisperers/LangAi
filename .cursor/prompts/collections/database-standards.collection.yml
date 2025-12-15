@@ -1,0 +1,15 @@
+id: database-standards-bundle
+name: "Database Standards"
+description: "Prompts for SQL migration and review work"
+tags:
+  - database
+  - sql
+  - standards
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/database-standards/create-migration-script.prompt.md
+    kind: prompt
+  - path: prompts/database-standards/review-sql-script.prompt.md
+    kind: prompt
+

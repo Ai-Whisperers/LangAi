@@ -1,0 +1,655 @@
+---
+id: rule.authoring.extraction-from-practice.v1
+kind: rule
+version: 1.0.1
+description: Defines how to extract and refine rules from real conversations and work, the primary recommended approach
+globs: **/*-rule.mdc, **/rules/**/*.mdc, **/conversations/**/*.md, **/tickets/**/*.md
+governs: **/*-rule.mdc, **/rules/**/*.mdc
+implements: rule.authoring.extraction
+requires:
+  - rule.authoring.file-structure.v1
+  - rule.authoring.naming-conventions.v1
+  - rule.authoring.contracts-and-scope.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ai, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Rule Extraction from Practice
+
+## Purpose & Scope
+
+This rule defines the **primary recommended approach** for creating rules: extract them from real conversations, work sessions, and problem-solving, then refine over 2-3 uses. This bottom-up, practice-first approach produces better rules faster than top-down design.
+
+**Applies to**: Creating new rules based on actual work patterns, conversations, and recurring decisions.
+
+**Does not apply to**: Initial framework rules (like these meta-rules) or rules mandated by external standards without practical validation.
+
+## Why Extraction is Superior
+
+### Practice Beats Theory
+
+**Top-Down (Design First)**: Guess what might be needed -> Write rule -> Hope it works
+
+**Bottom-Up (Extract from Practice)**: Do real work -> Notice what actually matters -> Codify it
+
+**Result**: Extracted rules are:
+- Grounded in reality
+- Cover actual edge cases
+- Include constraints that really matter
+- Skip theoretical concerns that don't appear in practice
+
+### Fast to Good Rules
+
+Timeline:
+1. **First extraction** (after completing task): Rule captures what worked
+2. **First refinement** (after 2nd use): Catches what was missing
+3. **Second refinement** (after 3rd use): Rule stabilizes
+4. **Production ready**: Rule is battle-tested
+
+**Total time**: 3 real uses -> robust, validated rule
+
+Contrast with design-first: months of speculation, still untested.
+
+### The Dogfooding Principle
+
+**"Make/Eat Your Own Food"**: AI adjusts its own rules based on using them.
+
+**Benefits**:
+- Rules stay current with practice
+- No rule becomes stale or theoretical
+- Continuous improvement built-in
+- Rules evolve with understanding
+
+## Inputs (Contract)
+
+- Completed conversation, work session, or ticket showing real problem-solving
+- Access to conversation history or work artifacts
+- specstory tool for systematic conversation extraction
+- Understanding of what decisions/patterns emerged
+- Authorization to create/update rules in target domain
+
+## Outputs (Contract)
+
+Rule file containing:
+- Extracted contracts (inputs/outputs from real work)
+- Extracted steps (what actually happened, not theory)
+- Extracted validations (what checks actually mattered)
+- Evidence references (links to source conversations/work)
+- Refinement history (what changed after each use)
+
+## Extraction Workflow
+
+### Phase 1: Recognition (During or After Work)
+
+**Question**: "Is this a pattern worth codifying?"
+
+**Signals to extract**:
+- [X] You made the same decision 2-3 times
+- [X] You enforced the same constraint repeatedly
+- [X] You caught the same error type multiple times
+- [X] You followed the same workflow naturally
+- [X] You discovered a non-obvious requirement
+- [X] You articulated a principle that guided work
+
+**Signals NOT to extract** (yet):
+- [X] One-time decision
+- [X] Obvious common sense
+- [X] Still figuring it out
+- [X] Might change significantly
+
+**Action**: Flag conversation/work for extraction when done.
+
+### Phase 2: Evidence Collection
+
+**Tool Support**: Use specstory for conversation extraction - it helps mine conversations systematically.
+
+**Mine the conversation/work for**:
+
+1. **Inputs you actually needed**:
+   - What files did you read?
+   - What information did you require?
+   - What context was essential?
+   - What dependencies did you check?
+
+2. **Outputs you actually produced**:
+   - What files did you create/modify?
+   - What sections did you include?
+   - What format did you use?
+   - What side effects occurred?
+
+3. **Steps you actually followed**:
+   - What was the sequence?
+   - What did you validate at each step?
+   - What decisions did you make?
+   - What alternatives did you consider and reject?
+
+4. **Constraints you actually enforced**:
+   - What did you check for?
+   - What did you prevent?
+   - What errors did you catch?
+   - What failures did you avoid?
+
+5. **Edge cases you actually encountered**:
+   - What unexpected situations arose?
+   - How did you handle them?
+   - What almost went wrong?
+
+**Technique**: Use specstory to search conversation for:
+- "We need to..." (inputs)
+- "I'll create..." (outputs)
+- "First... then... finally..." (steps)
+- "Make sure not to..." (constraints)
+- "Watch out for..." (failure modes)
+
+**About specstory**: A tool for extracting structured information from conversations, making evidence collection systematic and repeatable.
+
+### Phase 3: Distillation
+
+**Transform messy practice into clean rule**:
+
+#### 3.1 Define Contracts
+
+**From practice**: "I needed X, Y, Z and produced A, B, C"
+
+**To rule**:
+```markdown
+## Inputs (Contract)
+- X (specific format/requirement)
+- Y (validation criteria)
+- Z (dependency)
+
+## Outputs (Contract)
+- Creates/updates A (with sections...)
+- Produces B (with format...)
+- Side effect: C (with constraints...)
+```
+
+**Key**: Use ACTUAL requirements, not assumed ones.
+
+#### 3.2 Extract Steps
+
+**From practice**: Your actual workflow
+
+**To rule**:
+```markdown
+## Deterministic Steps
+
+1. [What you did first]
+2. [What you validated before proceeding]
+3. [What you did next]
+4. [How you handled the edge case]
+5. [Final validation you performed]
+```
+
+**Key**: Sequence from real work, including checks you actually performed.
+
+#### 3.3 Capture Constraints
+
+**From practice**: What you caught, prevented, or validated
+
+**To checklist**:
+```markdown
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] [Error you caught in practice]
+- [ ] [Constraint you enforced]
+- [ ] [Validation that saved you]
+- [ ] [Edge case you handled]
+```
+
+**Key**: Only include checks that mattered in real work.
+
+### Phase 4: Formalization
+
+Apply framework structure:
+
+1. **Choose ID** (using `rule.authoring.naming-conventions.v1`):
+   - Domain: Where did this work happen? (ticket, migration, etc.)
+   - Action: What operation did you perform? (update, create, validate)
+   - Example: `rule.ticket.plan.update.v1`
+
+2. **Write front-matter** (using `rule.authoring.file-structure.v1`):
+   - Fill all 10 required fields
+   - Set version to 1.0.0 (first extraction)
+   - Note provenance: extracted from [conversation/ticket ID]
+
+3. **Structure sections** (following canonical order):
+   - Purpose & Scope: What problem this solved
+   - Inputs/Outputs: From evidence collection
+   - Steps: From actual workflow
+   - Constraints: From what mattered
+   - Checklist: From validations performed
+
+4. **Add evidence reference**:
+```markdown
+## Extraction History
+
+**Extracted from**: [Conversation/ticket ID or path]
+**Date**: [YYYY-MM-DD]
+**Context**: [Brief description of work that generated this rule]
+**Key insight**: [What made this worth codifying]
+```
+
+### Phase 5: Initial Validation
+
+Before declaring rule complete:
+
+1. **Re-read source conversation** against rule:
+   - Would this rule have produced the same outcome?
+   - Did you capture all inputs you actually used?
+   - Did you capture all validations you performed?
+
+2. **Test against source**:
+   - If you followed this rule, would you do the same work?
+   - Are there gaps between rule and reality?
+   - Is anything over-specified (theoretical, not practical)?
+
+3. **Simplify**:
+   - Remove anything you didn't actually need
+   - Remove checks you didn't actually perform
+   - Remove steps you didn't actually take
+
+**Principle**: Rule should be **just sufficient** - no more, no less than practice requires.
+
+## Refinement Cycle
+
+### Use 1: First Application (After Extraction)
+
+**Apply rule to second similar task**
+
+**Watch for**:
+- What was missing from inputs contract?
+- What outputs did you need that weren't specified?
+- What steps were unclear or incomplete?
+- What edge cases did rule not cover?
+- What validations were missing?
+
+**Action**: Mark issues during work, update rule after completing task.
+
+**Version bump**: 1.0.0 -> 1.1.0 (minor, adding missing pieces)
+
+### Use 2: Second Application
+
+**Apply refined rule to third similar task**
+
+**Watch for**:
+- Is rule now sufficient?
+- Are all steps clear and actionable?
+- Does checklist catch real issues?
+- Are there still gaps?
+
+**Action**: Update rule again if needed.
+
+**Version bump**: 1.1.0 -> 1.2.0 (or 1.1.1 if just clarifications)
+
+### Use 3+: Stabilization
+
+**Apply rule repeatedly**
+
+**Watch for**:
+- Rule becoming stale (practice changed)
+- New edge cases discovered
+- Better ways of doing things
+
+**Action**: Update rule when practice evolves.
+
+**Version bump**: Depends on change type (major if breaking, minor if additive, patch if clarification)
+
+### Refinement Guidelines
+
+**After each use, ask**:
+
+1. **Was rule sufficient?**
+   - [X] Yes -> No changes needed
+   - [X] No -> What was missing? Add to rule.
+
+2. **Was rule accurate?**
+   - [X] Yes -> No changes needed
+   - [X] No -> What was wrong? Fix in rule.
+
+3. **Was rule clear?**
+   - [X] Yes -> No changes needed
+   - [X] No -> What was confusing? Clarify in rule.
+
+4. **Did checklist catch issues?**
+   - [X] Yes -> Great, keep it
+   - [X] No, missed something -> Add to checklist
+   - [!]? False positives -> Remove/adjust item
+
+**Refinement is fast**: 5-15 minutes after each use, rule gets better.
+
+## The Dogfooding Principle
+
+### AI Adjusts Its Own Rules
+
+**Standard approach**: Human writes rule -> AI follows it -> Rule stays static
+
+**Dogfooding approach**: Human + AI extract rule -> AI uses it -> AI refines it -> Rule evolves
+
+**Benefits**:
+1. **Self-improving**: Rules get better as AI uses them
+2. **Current**: Rules reflect actual practice, not old decisions
+3. **Honest**: AI knows what actually helps vs. theoretical constraints
+4. **Efficient**: No separate "rule maintenance" phase
+
+### How AI Refines Rules
+
+**During work, AI notes**:
+- "This input wasn't actually needed" (remove from contract)
+- "I needed X but rule didn't mention it" (add to contract)
+- "This validation caught an issue" (keep in checklist)
+- "This validation never triggers" (consider removing)
+- "This step was unclear, I interpreted it as Y" (clarify)
+
+**After work, AI proposes update**:
+```markdown
+## Proposed Refinement
+
+**Issue**: Step 3 says "validate structure" but doesn't specify how
+
+**Fix**: Change to "validate structure (check sections: X, Y, Z present)"
+
+**Rationale**: During use, I needed to guess what "validate" meant. 
+Making it explicit will help next time.
+
+**Version bump**: 1.1.0 -> 1.1.1 (clarification, not new behavior)
+```
+
+**Human reviews and approves**: Ensures quality while enabling self-improvement.
+
+### Rules That Adjust Themselves
+
+These meta-rules (rule-authoring framework) should themselves evolve:
+
+- If extraction process is unclear -> Refine this rule
+- If contracts are hard to write -> Refine contracts-and-scope rule
+- If checklists miss issues -> Refine validation-and-checklists rule
+
+**Principle**: The best rules are written by those who use them.
+
+## Anti-Patterns
+
+### 1. Extracting Too Early
+
+[X] **Bad**: After first occurrence
+```
+You solved problem once -> immediately write rule
+```
+
+**Problem**: Might be one-off, not pattern. Rule might be wrong.
+
+[X] **Good**: After 2-3 occurrences
+```
+You solved problem 2-3 times -> notice pattern -> extract rule
+```
+
+**Benefit**: Pattern is validated, rule is grounded.
+
+### 2. Over-Specification
+
+[X] **Bad**: Add every possible check
+```
+## Inputs (Contract)
+- File must exist
+- File must be UTF-8
+- File must have < 1000 lines
+- File must have valid YAML front-matter
+- File must... [20 more requirements]
+```
+
+**Problem**: Most checks never matter in practice.
+
+[X] **Good**: Only checks that caught real issues
+```
+## Inputs (Contract)
+- File must exist
+- File must have valid YAML front-matter (this actually failed once)
+```
+
+**Benefit**: Rule is lean, focused on what matters.
+
+### 3. Theory Over Practice
+
+[X] **Bad**: Design from first principles
+```
+"A good plan should have objectives, criteria, risks, dependencies..."
+[Never actually checked if all are needed]
+```
+
+**Problem**: Untested assumptions.
+
+[X] **Good**: Extract from what worked
+```
+"In practice, we always needed objectives and criteria. 
+Risks and dependencies were optional, only when relevant."
+```
+
+**Benefit**: Rule matches reality.
+
+### 4. Static Rules
+
+[X] **Bad**: Write rule, never update
+```
+Rule written in Jan 2025 -> used 50 times -> never refined
+```
+
+**Problem**: Practice evolves, rule doesn't.
+
+[X] **Good**: Refine after each use (first 3), then periodically
+```
+Rule written -> refined after use 1 -> refined after use 2 -> stable
+-> refined when practice changes
+```
+
+**Benefit**: Rule stays current.
+
+### 5. No Evidence Trail
+
+[X] **Bad**: Rule with no source reference
+```
+[Rule exists, no idea where it came from or why]
+```
+
+**Problem**: Can't validate, can't understand rationale.
+
+[X] **Good**: Rule links to source conversation/work
+```markdown
+## Extraction History
+Extracted from: conversations/ticket-workflow-discussion-2025-11-04.md
+Key insight: Discovered complexity assessment was critical decision point
+```
+
+**Benefit**: Can trace back to origin, understand context.
+
+## Evidence Reference Pattern
+
+Every extracted rule should include:
+
+```markdown
+## Extraction History
+
+### v1.0.0 - Initial Extraction (YYYY-MM-DD)
+
+**Source**: [Path to conversation/ticket/work]
+**Context**: [What problem were you solving?]
+**Pattern recognized**: [What repeated behavior triggered extraction?]
+**Key decisions**: [What non-obvious choices did you make?]
+
+### v1.1.0 - First Refinement (YYYY-MM-DD)
+
+**Issue found**: [What was missing/wrong when applied to second task?]
+**Change made**: [What did you add/fix/clarify?]
+**Validation**: [Did it work on second task?]
+
+### v1.2.0 - Second Refinement (YYYY-MM-DD)
+
+**Issue found**: [What was missing/wrong when applied to third task?]
+**Change made**: [What did you add/fix/clarify?]
+**Status**: [Is rule now stable?]
+```
+
+Place this section before "Related Rules" and after "Failure Modes."
+
+## Integration with Framework
+
+### Standard Rule Lifecycle
+
+**Design-First** (rare, for framework rules):
+1. Design rule from requirements
+2. Write using framework
+3. Test against scenarios
+4. Deploy
+
+**Extraction-First** (recommended, for domain rules):
+1. Do real work
+2. Extract rule from practice
+3. Formalize using framework
+4. Refine over 2-3 uses
+5. Deploy when stable
+
+### When to Use Each
+
+**Use Design-First when**:
+- Creating framework/meta-rules (like these)
+- Implementing external standards
+- No practice exists yet (greenfield)
+
+**Use Extraction-First when**:
+- Solving real problems
+- Patterns emerging from work
+- Iterating on process
+- Building domain rules (ticket, migration, etc.)
+
+**Default**: Extraction-First (90% of rules)
+
+## Tooling: specstory
+
+**Purpose**: Systematically extract structured information from conversations
+
+**Typical workflow**:
+1. Complete 2-3 conversations/tasks showing same pattern
+2. Run specstory on conversation transcripts
+3. Review extracted evidence (inputs, outputs, steps, constraints)
+4. Use evidence to write rule contracts and steps
+5. Formalize using framework structure
+
+**Benefits**:
+- Systematic extraction (no missed patterns)
+- Repeatable process
+- Structured output ready for rule writing
+- Reduces manual searching through conversations
+
+**Integration**: specstory output feeds directly into Phase 3 (Distillation) of extraction workflow.
+
+## Example: Extracting a Plan Rule
+
+### The Conversation (Simplified)
+
+**Note**: In practice, would use specstory to extract this systematically.
+
+```
+User: Create plan for ticket PROJ-123
+
+AI: I'll create plan.md. What's the objective?
+
+User: Implement OAuth login
+
+AI: [Creates plan with Objective, Background, Criteria, Complexity]
+
+User: Good, but add Dependencies and Risks sections
+
+AI: [Adds sections]
+
+User: Also make sure to note what track (simple vs complex)
+
+AI: [Adds Complexity Assessment with track and rationale]
+
+[Later, same pattern for PROJ-124, PROJ-125]
+```
+
+### Extraction
+
+**Pattern recognized**: After 3 tickets, clear structure emerged
+
+**Evidence collected**:
+- Inputs: Objective (always), Background (optional), Dependencies (when relevant)
+- Outputs: plan.md with specific sections
+- Steps: Create file -> Add required sections -> Validate format -> Add provenance
+- Constraints: Must have Objective and Criteria, Complexity track required
+
+**Rule extracted**: `rule.ticket.plan.update.v1`
+
+```yaml
+---
+id: rule.ticket.plan.update.v1
+kind: rule
+version: 1.0.0
+description: Creates/updates plan.md based on extracted practice from PROJ-123, 124, 125
+globs: **/plan.md
+governs: **/plan.md
+implements: plan.update
+requires:
+  - templar.plan.v1
+---
+
+## Extraction History
+
+**v1.0.0 - Initial Extraction (2025-11-04)**
+
+Source: conversations/ticket-planning-sessions.md (PROJ-123, 124, 125)
+Context: Creating ticket plans for feature implementation
+Pattern recognized: Same sections appeared in all 3 plans
+Key decisions: Complexity track is required, Background/Dependencies are optional
+```
+
+### First Refinement
+
+**Use on PROJ-126**:
+- Rule worked but forgot to mention timeline integration
+- Added "Updates timeline.md" to outputs contract
+
+**Version**: 1.0.0 -> 1.1.0
+
+### Second Refinement
+
+**Use on PROJ-127**:
+- Rule sufficient, but checklist wording improved
+- Clarified "OPSEC clean" with specific examples
+
+**Version**: 1.1.0 -> 1.1.1
+
+### Stabilization
+
+**Uses on PROJ-128, 129, 130**:
+- No changes needed
+- Rule declared stable
+
+## Validation
+
+A well-extracted rule should:
+
+1. **Trace to source**: Clear link to originating conversation/work
+2. **Reflect practice**: Contracts match what was actually needed/produced
+3. **Capture decisions**: Includes non-obvious choices from real work
+4. **Handle edge cases**: Covers unusual situations encountered
+5. **Validate what matters**: Checklist catches issues that arose in practice
+6. **Evolve with use**: Refined after 2-3 applications, then stable
+
+## Related Rules
+
+- `rule.authoring.file-structure.v1` - Structure for extracted rule
+- `rule.authoring.naming-conventions.v1` - Naming extracted rule
+- `rule.authoring.contracts-and-scope.v1` - Writing contracts from practice
+- `rule.authoring.provenance-and-versioning.v1` - Versioning through refinement cycle
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Rule extracted from real conversation/work (not theoretical design)
+- [ ] Used specstory (or similar tool) for systematic evidence collection
+- [ ] Evidence section present with source reference and extraction date
+- [ ] Contracts reflect actual inputs needed and outputs produced
+- [ ] Steps match actual workflow followed in practice
+- [ ] Checklist covers validations that caught real issues
+- [ ] Plan for refinement over next 2-3 uses documented
+- [ ] Rule follows dogfooding principle (AI can adjust it)

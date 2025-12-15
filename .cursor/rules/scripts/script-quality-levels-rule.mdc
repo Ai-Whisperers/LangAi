@@ -1,0 +1,502 @@
+---
+id: rule.scripts.quality-levels.v1
+kind: rule
+version: 1.0.0
+description: Defines 4 quality levels for script assessment and progression (Basic, Standard, Advanced, Production)
+globs: **/*.ps1, **/*.py
+governs: **/*.ps1, **/*.py
+implements: scripts.quality-levels
+requires:
+  - rule.scripts.core-principles.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: 
+  owner: team-devops
+  last_review: 2025-12-07
+  created: 2025-12-07
+alwaysApply: false
+---
+
+# Script Quality Levels
+
+## Purpose & Scope
+
+Defines a 4-level quality framework for assessing and improving scripts systematically. Quality levels provide clear progression path from Basic (minimum viable) to Production (mission-critical), with measurable criteria at each level.
+
+**Applies to**: All PowerShell (.ps1) and Python (.py) scripts in the repository where quality assessment is needed.
+
+**Does not apply to**: One-off throwaway scripts, external third-party scripts, or scripts explicitly marked as prototypes.
+
+## Inputs (Contract)
+
+- Script file to assess (.ps1 or .py)
+- Script purpose and use case (prototype, CI/CD automation, production system, etc.)
+- Optional: Target quality level based on requirements
+
+## Outputs (Contract)
+
+- Determined quality level (Basic, Standard, Advanced, or Production)
+- Gap analysis: Missing criteria to reach next level
+- Progression requirements: Specific actions needed to advance
+- Assessment confidence: All criteria met at determined level
+
+## Quality Levels Overview
+
+### Level Hierarchy
+
+```
+Basic → Standard → Advanced → Production
+  ↑         ↑           ↑           ↑
+ MVP    Production  Enterprise  Mission-
+              Ready               Critical
+```
+
+**Progressive Requirements**: Each level builds on the previous level. To qualify for Level N, ALL requirements of Level N-1 must be met.
+
+**Assessment Philosophy**: Conservative assessment - a script qualifies for level N only if ALL level N criteria are met. Missing any criterion means script is at highest level where all criteria pass.
+
+---
+
+## Level 1: Basic (Minimum Viable Script)
+
+### Definition
+
+A script that runs without errors and accomplishes its core function with minimal supporting features. Suitable for personal use, quick prototypes, and one-time tasks.
+
+### Target Use Cases
+
+- Personal scripts (not shared)
+- Quick prototypes and experiments
+- One-time data migrations
+- Learning and education
+- Throw-away automation
+
+### Must-Have Criteria
+
+- [ ] **Runs without errors**: Script executes to completion without unhandled exceptions
+- [ ] **Basic parameters**: Script accepts inputs via parameters/arguments (not hardcoded values)
+- [ ] **Minimal documentation**: Script has brief description (comment block or docstring) explaining purpose
+- [ ] **Simple error handling**: Script handles at least the most common error cases (e.g., file not found)
+- [ ] **Valid syntax**: Script passes language syntax validation (no syntax errors)
+
+### Should-Have Criteria (Nice-to-Have)
+
+- Basic input validation (type checking)
+- Descriptive variable names
+- Single responsibility (does one thing)
+
+### Example Characteristics
+
+- **PowerShell**: Script with `<#.SYNOPSIS#>` block, 2-5 parameters, basic try/catch
+- **Python**: Script with module docstring, argparse with 2-5 args, basic try/except
+- **Size**: Typically 50-150 lines
+- **Complexity**: Linear flow, minimal branching, no advanced features
+
+### Assessment Questions
+
+1. Does the script run successfully for its intended purpose?
+2. Are inputs parameterized (not hardcoded)?
+3. Is there a comment/docstring explaining what the script does?
+4. Does the script handle at least one common error gracefully?
+
+---
+
+## Level 2: Standard (Production-Ready Script)
+
+### Definition
+
+A fully-featured, professional-grade script ready for production use. Meets all professional standards for reusable automation. Suitable for shared team scripts, CI/CD pipelines, and standard automation tasks.
+
+### Target Use Cases
+
+- Shared team scripts and utilities
+- CI/CD pipeline automation
+- Scheduled tasks and cron jobs
+- Reusable automation libraries
+- Standard IT operations tasks
+
+### Must-Have Criteria
+
+- [ ] **ALL Basic criteria met** (Level 1)
+- [ ] **Comprehensive documentation**: Full help documentation (Get-Help/help() support)
+  - PowerShell: Complete comment-based help with .SYNOPSIS, .DESCRIPTION, .PARAMETER, .EXAMPLE
+  - Python: Module docstring with Usage and Examples sections
+- [ ] **Strong parameter validation**: Type constraints, validation attributes, required vs optional parameters clearly defined
+  - PowerShell: ValidateSet, ValidateRange, ValidatePattern, Parameter(Mandatory=$true)
+  - Python: Type hints + Pydantic validation OR argparse with proper type and choices
+- [ ] **Robust error handling**: Comprehensive try/catch/finally with meaningful error messages
+  - Set `$ErrorActionPreference = "Stop"` (PowerShell) or equivalent
+  - All external calls wrapped in error handling
+  - Error messages are actionable (tell user what to do)
+- [ ] **Portability**: Script works in both local dev environment AND CI/CD without modification
+  - No hardcoded paths (use `$PSScriptRoot` or `__file__` relative paths)
+  - Environment detection (local vs CI/CD)
+  - Portable defaults for paths and settings
+- [ ] **Exit codes**: Script uses proper exit codes (0 = success, non-zero = failure)
+- [ ] **Configuration file support**: For scripts with 5+ parameters, support external config files
+  - PowerShell: JSON config file
+  - Python: YAML config file with Pydantic validation
+- [ ] **Shared modules**: Reusable functions extracted to shared modules (if used in 2+ scripts)
+  - PowerShell: Functions in `scripts/modules/*.psm1` with `Export-ModuleMember`
+  - Python: Functions in `scripts/modules/*.py` with proper imports and `__all__`
+- [ ] **Conditional Unicode support**: Environment detection for Unicode/ASCII output
+  - Detect PowerShell 7+, Azure Pipelines, or UTF-8 console
+  - Use emojis (✅ ❌ ⚠️) in modern environments, ASCII ([OK] [ERR] [WARN]) in legacy
+  - Centralized detection logic (preferably in shared module)
+
+### Should-Have Criteria (Nice-to-Have)
+
+- Logging (basic Write-Host/print with timestamps)
+- Input validation with helpful error messages
+- Examples in documentation cover common scenarios
+- Script is idempotent (safe to run multiple times)
+
+### Example Characteristics
+
+- **PowerShell**: Full comment-based help, 5-10+ parameters with validation, config file support, portable paths
+- **Python**: Full module docstring, argparse CLI, Pydantic models, logging setup, portable
+- **Size**: Typically 150-400 lines
+- **Complexity**: Structured functions, clear flow, error boundaries
+
+### Assessment Questions
+
+1. Can `Get-Help script.ps1` or `python script.py --help` show comprehensive documentation?
+2. Are all parameters strongly typed and validated?
+3. Does error handling cover all external calls and provide actionable messages?
+4. Does the script work locally AND in CI/CD without modification?
+5. Does the script return proper exit codes?
+6. For 5+ parameters, is there config file support?
+7. Are shared functions extracted to modules (if used in 2+ scripts)?
+8. Does output adapt to environment (Unicode emojis vs ASCII)?
+
+---
+
+## Level 3: Advanced (Enterprise Script)
+
+### Definition
+
+An enterprise-grade script with advanced features for performance, observability, and reliability. Goes beyond Standard with 2+ advanced capabilities. Suitable for critical automation, high-performance needs, and complex workflows.
+
+### Target Use Cases
+
+- Critical automation workflows
+- High-performance data processing
+- Complex multi-step orchestration
+- Enterprise integration scripts
+- Performance-sensitive operations
+
+### Must-Have Criteria
+
+- [ ] **ALL Standard criteria met** (Level 2)
+- [ ] **2+ Advanced Features** from list:
+  - **Parallel/Concurrent Processing**: 
+    - PowerShell: `ForEach-Object -Parallel`
+    - Python: `multiprocessing.Pool` or `asyncio` for I/O-bound
+  - **Progress Reporting**:
+    - PowerShell: `Write-Progress` with percent complete
+    - Python: Rich Progress bars
+  - **Structured Logging**:
+    - PowerShell: `Write-Log` function with levels (INFO, WARN, ERROR, DEBUG)
+    - Python: logging module with levels and handlers
+  - **Smart Caching**:
+    - Skip unchanged items using file hashing or cache files
+    - Cache invalidation strategy
+  - **Retry Logic**:
+    - Exponential backoff for transient failures
+    - Configurable attempts and delays
+- [ ] **Unit Tests**: Automated tests covering core functionality
+  - PowerShell: Pester tests
+  - Python: pytest tests
+  - Minimum 50% code coverage
+- [ ] **Performance Optimized**: Script execution time measured and optimized
+  - Identified bottlenecks
+  - Applied appropriate optimization techniques
+  - Performance documented (e.g., "processes 1000 items in <5 seconds")
+
+### Should-Have Criteria (Nice-to-Have)
+
+- Performance profiling with metrics
+- Structured output (JSON/CSV for integration)
+- Configuration schema validation
+- Azure Pipelines integration (`##vso[...]` commands)
+
+### Example Characteristics
+
+- **PowerShell**: Standard + parallel processing + caching + Pester tests
+- **Python**: Standard + asyncio + logging + caching + pytest tests
+- **Size**: Typically 400-800 lines
+- **Complexity**: Modular design, helper functions, advanced patterns
+
+### Assessment Questions
+
+1. Does the script include 2+ advanced features from the list?
+2. Are there unit tests with 50%+ coverage?
+3. Has performance been measured and optimized?
+4. Are advanced features used appropriately (not over-engineering)?
+
+---
+
+## Level 4: Production (Mission-Critical Script)
+
+### Definition
+
+A mission-critical, production-grade script with full observability, monitoring, and operational excellence. Suitable for SLA-bound operations, production systems, and business-critical automation.
+
+### Target Use Cases
+
+- Production system automation
+- Mission-critical deployment scripts
+- SLA-bound operations
+- Regulated environment automation
+- Business-critical data processing
+
+### Must-Have Criteria
+
+- [ ] **ALL Advanced criteria met** (Level 3)
+- [ ] **2+ Production Features** from list:
+  - **Historical Trend Tracking**:
+    - Metrics stored over time (CSV or SQLite)
+    - Trend analysis capabilities
+    - Historical reporting
+  - **Webhook Notifications**:
+    - Teams/Slack integration for status updates
+    - Success/failure notifications with context
+    - Graceful degradation if webhook fails
+  - **Differential Analysis**:
+    - Analyze only changed items (git diff integration)
+    - Incremental processing
+    - Change detection
+  - **Configuration Schema Validation**:
+    - JSON Schema or Pydantic schema for config files
+    - Validation before execution
+    - Clear error messages for invalid config
+  - **WhatIf/Dry-Run Mode**:
+    - PowerShell: `SupportsShouldProcess` with `-WhatIf` support
+    - Python: `--dry-run` flag that simulates without side effects
+  - **Monitoring/Observability**:
+    - Health check endpoint or status file
+    - Metrics export (Prometheus, StatsD, etc.)
+    - Integration with monitoring systems
+- [ ] **80%+ Test Coverage**: Comprehensive unit tests
+  - Edge cases covered
+  - Integration tests present
+  - Performance tests included
+- [ ] **Performance Profiling**: Detailed performance metrics collected
+  - Execution time tracked per section
+  - Bottlenecks identified and documented
+  - Resource usage monitored (CPU, memory, I/O)
+- [ ] **Production Documentation**: Operational runbook included
+  - Failure modes documented
+  - Recovery procedures
+  - Monitoring and alerting setup
+  - On-call guidance
+
+### Should-Have Criteria (Nice-to-Have)
+
+- Security scanning integrated
+- Automated rollback capabilities
+- Multi-environment support (dev/staging/prod)
+- Audit logging for compliance
+
+### Example Characteristics
+
+- **PowerShell**: Advanced + history tracking + webhooks + WhatIf + 85% coverage + runbook
+- **Python**: Advanced + SQLite history + notifications + monitoring + 85% coverage + runbook
+- **Size**: Typically 800-1500 lines (or multiple modules)
+- **Complexity**: Production-grade design, error handling for all edge cases, full observability
+
+### Assessment Questions
+
+1. Does the script include 2+ production features from the list?
+2. Is there 80%+ test coverage with edge cases?
+3. Are performance metrics collected and profiled?
+4. Is there operational documentation (runbook)?
+5. Can the script be safely run in production with full observability?
+
+---
+
+## Quality Level Assessment
+
+### Assessment Process
+
+**Step-by-step assessment** (bottom-up approach):
+
+1. **Assess Basic** (Level 1):
+   - Review 5 Basic criteria
+   - If ALL met, continue to Standard
+   - If ANY not met, script is **Below Basic** (needs work)
+
+2. **Assess Standard** (Level 2):
+   - Review 6 Standard criteria (plus all Basic)
+   - If ALL met, continue to Advanced
+   - If ANY not met, script is **Basic** level
+
+3. **Assess Advanced** (Level 3):
+   - Review Advanced criteria (2+ features + tests + perf optimization)
+   - If ALL met, continue to Production
+   - If ANY not met, script is **Standard** level
+
+4. **Assess Production** (Level 4):
+   - Review Production criteria (2+ prod features + 80% coverage + profiling + runbook)
+   - If ALL met, script is **Production** level
+   - If ANY not met, script is **Advanced** level
+
+**Assessment Shortcut**: If you know script is missing Standard criteria, don't bother checking Advanced/Production.
+
+### Assessment Checklist Matrix
+
+| Criteria Category | Basic | Standard | Advanced | Production |
+|---|---|---|---|---|
+| **Runs without errors** | ✅ | ✅ | ✅ | ✅ |
+| **Basic parameters** | ✅ | ✅ | ✅ | ✅ |
+| **Minimal documentation** | ✅ | ✅ | ✅ | ✅ |
+| **Simple error handling** | ✅ | ✅ | ✅ | ✅ |
+| **Valid syntax** | ✅ | ✅ | ✅ | ✅ |
+| **Comprehensive documentation** | | ✅ | ✅ | ✅ |
+| **Strong parameter validation** | | ✅ | ✅ | ✅ |
+| **Robust error handling** | | ✅ | ✅ | ✅ |
+| **Portability** | | ✅ | ✅ | ✅ |
+| **Exit codes** | | ✅ | ✅ | ✅ |
+| **Config file support** | | ✅ | ✅ | ✅ |
+| **2+ Advanced features** | | | ✅ | ✅ |
+| **Unit tests (50%+ coverage)** | | | ✅ | ✅ |
+| **Performance optimized** | | | ✅ | ✅ |
+| **2+ Production features** | | | | ✅ |
+| **80%+ test coverage** | | | | ✅ |
+| **Performance profiling** | | | | ✅ |
+| **Production documentation** | | | | ✅ |
+
+**Total Criteria**: 5 Basic + 6 Standard + 3 Advanced + 4 Production = **18 criteria**
+
+---
+
+## Progression Requirements
+
+### Basic → Standard Progression
+
+**Gap to close**: 6 additional criteria
+
+**Actions required**:
+1. **Enhance documentation**:
+   - PowerShell: Add complete comment-based help (.SYNOPSIS, .DESCRIPTION, .PARAMETER, .EXAMPLE, .NOTES)
+   - Python: Add comprehensive module docstring with Usage and Examples
+2. **Add parameter validation**:
+   - PowerShell: Add ValidateSet, ValidateRange, or ValidatePattern attributes
+   - Python: Add type hints + Pydantic validation or argparse with types/choices
+3. **Improve error handling**:
+   - Wrap all external calls in try/catch
+   - Add meaningful error messages with guidance
+   - Set `$ErrorActionPreference = "Stop"` (PowerShell)
+4. **Make portable**:
+   - Remove hardcoded paths
+   - Add environment detection (local vs CI/CD)
+   - Use portable default paths ($PSScriptRoot, $env:TEMP, etc.)
+5. **Add exit codes**:
+   - Return 0 for success, non-zero for failure
+   - Consistent exit code strategy
+6. **Add config file support** (if 5+ parameters):
+   - Create JSON (PowerShell) or YAML (Python) config schema
+   - Load and merge config with parameters
+
+**Estimated effort**: 2-4 hours for typical script
+
+### Standard → Advanced Progression
+
+**Gap to close**: 3 additional criteria (but more features needed)
+
+**Actions required**:
+1. **Add 2+ advanced features** (select from list):
+   - **Parallel/Concurrent**: Significant effort (4-8 hours), high value for multi-item processing
+   - **Progress Reporting**: Low effort (1-2 hours), high value for long-running scripts
+   - **Structured Logging**: Medium effort (2-3 hours), high value for debugging and operations
+   - **Smart Caching**: Medium effort (3-4 hours), high value for repeated execution
+   - **Retry Logic**: Low effort (1-2 hours), high value for network operations
+2. **Add unit tests**:
+   - PowerShell: Create Pester test file
+   - Python: Create pytest test file
+   - Target 50%+ code coverage
+   - Effort: 4-8 hours depending on script complexity
+3. **Optimize performance**:
+   - Profile script execution
+   - Identify bottlenecks
+   - Apply optimization (caching, parallel, algorithm improvements)
+   - Document performance characteristics
+   - Effort: 2-4 hours
+
+**Estimated effort**: 10-20 hours for typical script (depends on features selected)
+
+### Advanced → Production Progression
+
+**Gap to close**: 4 additional criteria (but more features needed)
+
+**Actions required**:
+1. **Add 2+ production features** (select from list):
+   - **Historical Tracking**: Medium effort (4-6 hours), high value for trend analysis
+   - **Webhook Notifications**: Low effort (2-3 hours), high value for team awareness
+   - **Differential Analysis**: High effort (6-10 hours), high value for incremental processing
+   - **Config Schema Validation**: Low effort (2-3 hours), high value for error prevention
+   - **WhatIf/Dry-Run**: Medium effort (3-4 hours), high value for safety
+   - **Monitoring/Observability**: High effort (6-10 hours), critical for production operations
+2. **Increase test coverage to 80%+**:
+   - Add edge case tests
+   - Add integration tests
+   - Add performance tests
+   - Effort: 8-12 hours
+3. **Add performance profiling**:
+   - Implement per-section timing
+   - Collect resource usage metrics
+   - Create performance dashboard or summary
+   - Effort: 4-6 hours
+4. **Create production documentation**:
+   - Write operational runbook
+   - Document failure modes and recovery
+   - Create monitoring and alerting guides
+   - Effort: 4-6 hours
+
+**Estimated effort**: 25-40 hours for typical script (significant investment for mission-critical use)
+
+---
+
+## Quality Level Selection Guidance
+
+### When to Target Each Level
+
+| Level | Target When... | Skip When... |
+|---|---|---|
+| **Basic** | • Personal use only<br>• Quick prototype<br>• One-time task<br>• Learning exercise | • Script will be shared<br>• Script will run in CI/CD<br>• Script is for production |
+| **Standard** | • Shared with team<br>• Used in CI/CD<br>• Recurring automation<br>• Reusable utility | • High performance needed<br>• Mission-critical operation<br>• Quick throwaway task |
+| **Advanced** | • Performance critical<br>• Complex workflow<br>• Enterprise integration<br>• High-value automation | • Simple CI/CD task<br>• Performance not a concern<br>• Effort not justified |
+| **Production** | • Production system<br>• Mission-critical<br>• SLA-bound<br>• Regulated environment | • No SLA requirements<br>• Non-critical automation<br>• Development-only use |
+
+**Rule of Thumb**:
+- **Basic**: "Works for me"
+- **Standard**: "Works for the team"
+- **Advanced**: "Works at scale"
+- **Production**: "Works under all conditions"
+
+### Cost-Benefit Analysis
+
+| Progression | Estimated Effort | Value Gain |
+|---|---|---|
+| Basic → Standard | 2-4 hours | **High**: Makes script shareable, portable, and production-ready |
+| Standard → Advanced | 10-20 hours | **Medium**: Improves performance and reliability significantly |
+| Advanced → Production | 25-40 hours | **Low-Medium**: Adds operational excellence, only worthwhile for mission-critical scripts |
+
+**Recommendation**: Most scripts should target **Standard** level. Only invest in Advanced/Production when business value justifies the effort.
+
+---
+
+## Related Rules
+
+- `rule.scripts.core-principles.v1` - Foundation principles (portability, params, errors, config)
+- `rule.scripts.powershell-standards.v1` - PowerShell-specific standards and features
+- `rule.scripts.python-standards.v1` - Python-specific standards and features
+- `rule.scripts.agent-application.v1` - When to apply script rules
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Assessment follows bottom-up approach (Basic → Standard → Advanced → Production)
+- [ ] Script qualifies for level N only if ALL criteria of levels 1..N are met
+- [ ] Gap analysis identifies missing criteria for next level
+- [ ] Progression effort estimate is realistic
+- [ ] Target quality level is appropriate for script's use case
+- [ ] Quality level documented in script header or metadata

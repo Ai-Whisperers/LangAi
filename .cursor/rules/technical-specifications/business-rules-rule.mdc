@@ -1,0 +1,327 @@
+---
+id: rule.technical-specifications.business-rules.v1
+kind: rule
+version: 1.0.1
+description: Documents business logic, mathematical algorithms, validation rules, and decision criteria from C++ systems for C# migration
+globs: **/docs/technical/**/*-business-rules.md
+governs: **/docs/technical/**/*-business-rules.md
+implements: business-rules.documentation
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+# Business Rules Documentation Rule
+
+## Purpose & Scope
+
+This rule defines how to create business rules specification files that document business logic, validation rules, and decision criteria extracted from C++ source systems for migration to C# implementations.
+
+**Applies to**: Business rules files at `docs/technical/[domain]/[domain]-business-rules.md` documenting algorithms, validation rules, decision logic, and business processes spanning both database and domain layers. Focuses on WHAT rules do (step-by-step business logic) not HOW they're implemented in C++.
+
+**Does not apply to**: Domain object field specifications (use domain-object-rule), database constraints (use entity-relationship-rule), C# implementation guides (belong in docs/implementation/), or code-level technical details.
+
+## Inputs (Contract)
+
+- C++ source code analysis identifying business logic, algorithms, validation rules
+- Mathematical formulas and calculation logic from C++ implementation
+- Decision trees and conditional logic from C++ business processes
+- Validation frameworks and constraint enforcement mechanisms
+- Understanding of business processes and workflows
+
+## Outputs (Contract)
+
+Business rules specification file containing:
+- File at `docs/technical/[domain]/[domain]-business-rules.md`
+- Complete algorithms documented step-by-step in business terms
+- Validation rules with valid/invalid conditions and error responses
+- Decision logic with IF/THEN/ELSE trees and business impact
+- Exception handling and edge case management
+- Migration preservation requirements for exact business behavior replication
+
+## Purpose (Original)
+
+This rule defines how to create business rules specification files that document business logic, validation rules, and decision criteria extracted from C++ source systems for migration to C# implementations.
+
+## Document Structure
+
+### **Overview Section**
+- **Business Context**: What business processes these rules govern
+- **Scope**: Which functional area or domain these rules apply to
+- **Rule Categories**: Types of business rules covered in this document
+- **Impact Assessment**: How these rules affect business operations
+
+### **Business Logic Section**
+- **Core Algorithms**: Mathematical and logical algorithms that implement business requirements
+- **Decision Trees**: Complex decision logic with conditions and outcomes
+- **Validation Rules**: Data validation and business constraint enforcement
+- **Process Rules**: Sequential business process logic and workflows
+
+### **Rule Implementation Section**
+- **Current Behavior**: How rules are currently implemented in C++ system
+- **Input Validation**: Rules governing input data acceptance and validation
+- **Processing Logic**: Step-by-step business logic execution
+- **Output Generation**: Rules governing result calculation and formatting
+
+### **Exception Handling Section**
+- **Error Conditions**: Business scenarios that result in errors or exceptions
+- **Fallback Logic**: How system handles edge cases and invalid data
+- **Default Behaviors**: Default values and behaviors when normal processing fails
+- **Recovery Procedures**: How system recovers from error conditions
+
+### **Migration Preservation Section**
+- **Critical Rules**: Business rules that must be preserved exactly in migration
+- **Mathematical Accuracy**: Requirements for maintaining calculation precision
+- **Decision Logic**: Complex decision trees that must be replicated exactly
+- **Performance Impact**: Rules that have significant performance implications
+
+## Content Guidelines
+
+### **What to Document**
+- **Complete Business Logic**: All algorithms, calculations, and decision logic
+- **Validation Constraints**: All data validation rules and business constraints
+- **Process Flows**: Sequential logic and workflow rules
+- **Exception Scenarios**: Error handling and edge case management
+- **Integration Rules**: Rules governing external system interactions
+
+### **What to Avoid**
+- **Implementation Details**: Focus on WHAT the rule does, not HOW it's coded
+- **Technical Internals**: Avoid C++ specific implementation details
+- **Assumed Logic**: Only document verified business rules from source analysis
+- **Generic Patterns**: Don't assume standard business rules without verification
+
+### **Accuracy Requirements**
+- All rules must be traceable to source code analysis
+- Business logic must reflect actual system behavior
+- Validation rules must match current system constraints
+- Exception handling must document actual system behavior
+
+## Business Rule Documentation Patterns
+
+### **Algorithm Documentation Format**
+```markdown
+### **[AlgorithmName]**
+
+**Purpose**: [What business need this algorithm serves]
+
+**Business Logic**: 
+1. [Step-by-step description of algorithm logic]
+2. [Each step described in business terms]
+3. [Decision points and conditions clearly stated]
+
+**Inputs**: [Required input data and constraints]
+**Outputs**: [Expected output format and meaning]
+**Edge Cases**: [How algorithm handles special scenarios]
+
+**Source Reference**: [Reference to C++ source code location]
+```
+
+### **Validation Rule Format**
+```markdown
+### **[ValidationName]**
+
+**Rule**: [Clear statement of the validation requirement]
+**Trigger**: [When this validation is applied]
+**Valid Conditions**: [What constitutes valid data]
+**Invalid Conditions**: [What constitutes invalid data]
+**Error Response**: [How system responds to validation failures]
+
+**Business Rationale**: [Why this validation exists]
+**Source Reference**: [Reference to source implementation]
+```
+
+### **Decision Logic Format**
+```markdown
+### **[DecisionName]**
+
+**Decision Context**: [When this decision logic is applied]
+
+**Decision Tree**:
+- **IF** [condition] **THEN** [outcome]
+- **ELSE IF** [condition] **THEN** [outcome]  
+- **ELSE** [default outcome]
+
+**Business Impact**: [How this decision affects business outcomes]
+**Source Reference**: [Reference to source implementation]
+```
+
+## Quality Standards
+
+### **Completeness Requirements**
+- All business algorithms from source system documented
+- All validation rules and constraints captured
+- All decision logic and branching scenarios covered
+- All exception handling and error scenarios documented
+
+### **Accuracy Standards**
+- Business logic reflects actual system behavior
+- Validation rules match current system constraints
+- Decision logic captures all possible outcomes
+- Exception handling documents actual system responses
+
+### **Clarity Standards**
+- Business language used for rule descriptions
+- Technical details included only when necessary for understanding
+- Clear step-by-step logic for complex algorithms
+- Unambiguous conditions and outcomes
+
+## Special Considerations
+
+### **Mathematical Algorithm Preservation**
+- **Exact Replication**: Mathematical calculations must produce identical results
+- **Precision Requirements**: Document floating-point precision and rounding rules
+- **Formula Documentation**: Include mathematical formulas where business-critical
+- **Validation Testing**: Specify how mathematical accuracy will be validated
+
+### **Complex Business Logic**
+- **Multi-Step Processes**: Break complex logic into clear, sequential steps
+- **Conditional Logic**: Document all conditions and their business meanings
+- **State Dependencies**: Rules that depend on system or entity state
+- **Temporal Logic**: Rules that vary based on time, dates, or sequences
+
+### **Integration Business Rules**
+- **External System Rules**: Rules governing interactions with external systems
+- **Data Exchange Rules**: Validation and transformation rules for external data
+- **Service Contract Rules**: Business rules embedded in integration contracts
+- **Error Handling**: How business rules handle external system failures
+
+### **Performance-Critical Rules**
+- **High-Volume Processing**: Rules that must perform efficiently at scale
+- **Caching Dependencies**: Business rules that depend on cached data
+- **Optimization Requirements**: Rules where performance optimization is critical
+- **Resource Constraints**: Rules that must operate within resource limitations
+
+## Migration-Specific Requirements
+
+### **Business Logic Preservation**
+- **Identical Outcomes**: C# implementation must produce identical business results
+- **Edge Case Handling**: All edge cases must behave identically to C++ system
+- **Error Responses**: Error handling must maintain same business behavior
+- **Performance Characteristics**: Critical performance rules must be maintained
+
+### **Validation Rule Migration**
+- **Constraint Preservation**: All business constraints must be enforced in C#
+- **Error Message Consistency**: Error messages should maintain business meaning
+- **Validation Timing**: When validation occurs must be preserved
+- **Integration Impact**: Validation changes must not break external integrations
+
+### **Testing Requirements**
+- **Business Rule Testing**: Comprehensive test cases for all documented rules
+- **Regression Testing**: Validation that migrated rules produce identical outcomes
+- **Performance Testing**: Critical rules must meet performance requirements
+- **Integration Testing**: Rules affecting external systems must be integration tested
+
+## Quality Assurance
+
+### **Review Process**
+- **Business Stakeholder Review**: Validate business accuracy of documented rules
+- **Technical Review**: Verify completeness and technical accuracy
+- **Implementation Review**: Assess clarity for development team
+- **Testing Review**: Validate testability of documented rules
+
+### **Common Issues to Avoid**
+- **Incomplete Logic**: Missing steps in complex business algorithms
+- **Ambiguous Conditions**: Unclear or imprecise conditional logic
+- **Missing Edge Cases**: Overlooking important exception scenarios
+- **Performance Gaps**: Missing performance-critical business rules
+- **Integration Gaps**: Overlooking rules that affect external systems
+
+### **Validation Criteria**
+- All rules traceable to source code analysis
+- Business stakeholders can validate rule accuracy
+- Development team can implement from rule descriptions
+- Test team can create comprehensive test cases from rules
+
+## Cross-Reference Integration
+
+### **Link Patterns**
+- Reference from domain objects: `business rules defined in [Business Rules](rules-file.md)`
+- Reference from enumerations: `usage governed by rules in [Business Rules](rules-file.md)`
+- Reference from integration specs: `business validation per [Business Rules](rules-file.md)`
+
+### **Related Documentation**
+- **Domain Objects**: Link to entities affected by business rules
+- **Enumerations**: Link to enums used in business rule logic
+- **Integration Points**: Link to external systems affected by rules
+- **Performance Specs**: Link to performance-critical rule requirements
+
+## Maintenance Guidelines
+
+### **Keep Current**
+- Update when source system business logic changes
+- Maintain accuracy as business requirements evolve
+- Update migration considerations as C# design progresses
+- Keep cross-references current as related documents change
+
+### **Review Triggers**
+- Changes to source system business logic
+- New business requirements or rule modifications
+- Performance requirement changes
+- Integration requirement updates
+- Migration design decisions affecting business rules
+
+## Deterministic Steps
+
+When documenting business rules:
+
+1. **Analyze C++ Source**: Extract business logic, algorithms, validation rules from C++ implementation
+2. **Create File**: Create `[domain]-business-rules.md` at `docs/technical/[domain]/` root
+3. **Document Algorithms**: Write step-by-step business logic for each algorithm in business terms (WHAT, not HOW)
+4. **Document Validation Rules**: Specify valid/invalid conditions, error responses, business rationale
+5. **Document Decision Logic**: Create IF/THEN/ELSE decision trees with business impact
+6. **Document Exception Handling**: Capture error conditions, fallback logic, recovery procedures
+7. **Add Migration Requirements**: Specify exact replication needs, mathematical precision, performance impact
+8. **Validate Completeness**: Ensure all business algorithms, validation rules, decision logic documented
+
+## OPSEC and Leak Control
+
+Business rules files must NOT contain:
+- **NO** internal server names, IP addresses, or URLs
+- **NO** credentials, tokens, API keys, or passwords
+- **NO** employee names or email addresses
+- **NO** confidential customer data or business-sensitive calculation examples
+- **NO** proprietary vendor algorithms or licensing details
+- Business logic and formulas only (no infrastructure or deployment details)
+
+## Integration Points
+
+This rule works with:
+- **rule.technical-specifications.domain-object.v1**: Domain objects reference business rules for validation
+- **rule.technical-specifications.enumeration.v1**: Business rules use enum values in decision logic
+- **rule.technical-specifications.integration-points.v1**: Integration points apply business rules to external data
+- **rule.technical-specifications.hybrid-architecture.v1**: Defines business rules location at domain root
+
+## Failure Modes and Recovery
+
+**Failure**: Business rules too vague or ambiguous
+- **Detection**: Development team unable to implement from rule descriptions
+- **Recovery**: Add step-by-step detail, clarify conditions, provide examples
+
+**Failure**: Missing critical business rules
+- **Detection**: C++ source contains logic not documented in business rules
+- **Recovery**: Re-analyze C++ source, add all missing algorithms and validation rules
+
+**Failure**: Rules document HOW instead of WHAT
+- **Detection**: C++ implementation details and code patterns in business rules
+- **Recovery**: Rewrite focusing on business logic and outcomes, remove C++ technical details
+
+**Failure**: Mathematical precision not specified
+- **Detection**: Calculations documented without rounding rules or precision requirements
+- **Recovery**: Add precision requirements, rounding rules, formula documentation
+
+## Related Rules
+
+- **rule.technical-specifications.domain-object.v1**: Domain objects reference business rules
+- **rule.technical-specifications.enumeration.v1**: Business rules use enum values
+- **rule.technical-specifications.integration-points.v1**: Integration applies business rules
+- **rule.technical-specifications.hybrid-architecture.v1**: Defines business rules file location
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no server names, IPs, credentials, emails, confidential data)
+- [ ] File at correct location: docs/technical/[domain]/[domain]-business-rules.md
+- [ ] ALL algorithms documented step-by-step in business terms (WHAT, not HOW)
+- [ ] ALL validation rules have valid/invalid conditions and error responses
+- [ ] Decision logic captured with IF/THEN/ELSE trees and business impact
+- [ ] Mathematical formulas include precision requirements and rounding rules
+- [ ] Migration requirements specify exact replication and performance needs

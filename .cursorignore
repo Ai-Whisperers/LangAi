@@ -1,0 +1,22 @@
+# Cursor ignore file
+#
+# Files/directories listed here are excluded from:
+# - Cursor AI access
+# - Cursor indexing
+#
+# Use this for **secrets** and other files that should never be read by the assistant.
+
+# Secrets / credentials
+.env
+.env.*
+**/kaggle.json
+**/.aws/credentials
+**/.ssh/**
+**/id_rsa*
+**/id_ed25519*
+
+# Local virtual environments
+.venv/
+venv/
+
+

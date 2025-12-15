@@ -1,0 +1,50 @@
+---
+id: rule.python.code-style.v1
+kind: rule
+version: 1.0.0
+description: Python code style and quality standards for this repository (Black, Ruff, type hints, logging, error handling).
+globs: **/*.py
+governs: ""
+implements: python.code-style
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-python, last_review: 2025-12-15 }
+alwaysApply: false
+---
+
+# Python Code Style Rule
+
+## Purpose & Scope
+
+Keep Python code consistent, testable, and easy to maintain.
+
+**Applies to**: `**/*.py`
+
+**Does not apply to**: Generated artifacts (e.g., `outputs/`) unless explicitly requested.
+
+## Inputs (Contract)
+
+- The target Python files
+- Existing project configuration (`pyproject.toml`) for Black/Ruff/mypy
+
+## Outputs (Contract)
+
+- Code changes that:
+  - Are formatted by Black conventions
+  - Avoid common Ruff violations (imports, unused vars, obvious complexity)
+  - Preserve existing behavior unless explicitly requested
+
+## Standards
+
+- **Formatting**: Write code in a Black-compatible style (don’t hand-format against it).
+- **Imports**: Keep imports clean; remove unused imports; avoid circular imports.
+- **Typing**: Add type hints where they materially improve clarity (especially public functions and Pydantic models).
+- **Errors**: Raise specific exceptions and include actionable messages (WHAT/WHY/HOW).
+- **Logging**: Prefer structured logging patterns already used in the repo; avoid printing secrets.
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Code is Black-friendly and Ruff-friendly (no obvious style/lint issues)
+- [ ] Exceptions/errors are actionable and not vague
+- [ ] No secrets/tokens are introduced or logged
+

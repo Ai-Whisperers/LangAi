@@ -1,0 +1,430 @@
+---
+id: rule.migration.data-collection.v1
+kind: rule
+version: 1.0.1
+description: "Systematic analysis of C++ eBase systems to collect complete understanding before migration. Includes source code analysis, database schema extraction, business rule identification, and integration point mapping. Foundation phase for accurate migration."
+globs: **/*.cpp, **/*.h, **/*.ini, docs/**/*.md
+governs: docs/migration/phase-1/**/*.md
+implements: migration.data-collection
+requires:
+  - rule.migration.overview.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Migration Phase 1: Original Data Collection
+
+## Purpose & Scope
+
+This rule defines how to systematically collect and analyze original C++ eBase system data to ensure complete understanding before creating specifications. Phase 1 establishes the factual foundation for all subsequent migration work through exhaustive source code analysis, database verification, business rule identification, and integration mapping.
+
+**Applies to**: 
+- All C++ eBase systems undergoing migration to C# microservices
+- Initial data collection phase before specification creation
+- Systems with complete C++ source code access
+- Both database-backed and in-memory eBase implementations
+
+**Does not apply to**:
+- Greenfield C# development without C++ legacy
+- Systems without source code access (black-box systems)
+- Specification creation activities (covered by Phase 2 rule)
+- Implementation planning or coding activities
+- Systems already documented with verified specifications
+
+## Inputs (Contract)
+
+- C++ eBase source code repository with read access to all .cpp and .h files
+- Database configuration files (e.g., GENDATABASE.ini) if system uses database storage
+- System architecture documentation (if available, not required)
+- Access to subject matter experts for business logic clarification
+- Development environment configured for C++ code analysis
+- Tools installed: grep, codebase_search, read_file, file_search capabilities
+- Phase 1 documentation directory structure: `docs/migration/phase-1/`
+
+## Outputs (Contract)
+
+- Complete source code analysis documentation with file:line references for all findings
+- Database schema documentation validated against config files OR confirmation of in-memory-only implementation
+- Business rule catalog with algorithm descriptions and source code references
+- Integration point inventory with external system interfaces, data flows, and protocols
+- External interface catalog including all script functions (DB*, etc.) and automation APIs
+- Performance baseline documentation with optimization patterns identified
+- Technical stakeholder review sign-off confirming Phase 1 completeness
+- Phase 1 quality gate report with pass/fail status for all criteria
+
+## Data Collection Strategy
+
+### **Source Code Analysis**
+- **Objective**: Understand complete system functionality
+- **Activities**:
+  - Read all relevant .h and .cpp files
+  - Map class hierarchies and relationships
+  - Identify field positions and access patterns
+  - Extract enumeration values and constants
+  - Analyze memory management patterns
+- **Tools**: `grep`, `codebase_search`, `read_file`
+- **Output**: Comprehensive code structure documentation
+
+### **Database Schema Extraction**
+- **Objective**: Verify actual data storage structures
+- **Activities**:
+  - Examine database configuration files (e.g., GENDATABASE.ini)
+  - Validate table definitions against code assumptions
+  - Identify field mappings and relationships
+  - Document constraints and indexes
+- **Warning**: Never fabricate database schemas - verify against actual config files
+- **Output**: Accurate database structure documentation or confirmation of in-memory implementation
+
+### **Business Logic Identification**
+- **Objective**: Extract business rules from implementation code
+- **Activities**:
+  - Trace calculation algorithms and formulas
+  - Map condition evaluation logic
+  - Identify validation rules and constraints
+  - Document decision points and branching logic
+- **Focus**: What the system does, not how it's implemented
+- **Output**: Business rule catalog with source code references
+
+### **Integration Point Mapping**
+- **Objective**: Understand system boundaries and dependencies
+- **Activities**:
+  - Identify external system interfaces
+  - Map data flow in and out of the system
+  - Document service dependencies
+  - Analyze integration patterns and protocols
+- **Output**: Integration architecture diagram with detailed interface specifications
+
+### **External Interface Discovery**
+- **Objective**: Identify all external-facing interfaces and automation entry points
+- **Activities**:
+  - **Script Function Analysis**: Search for all script functions (e.g., `DBCREATE*`, `DBGET*`, `DBSET*` patterns)
+  - **Programmatic API Identification**: Find automation interfaces, batch operation functions
+  - **External Integration Points**: Web services, REST APIs, file-based interfaces
+  - **Third-Party Dependencies**: External system connection points and data feeds
+  - **Automation Interface Catalog**: Functions used by external systems for automation
+- **Tools**: `grep` for script patterns, `codebase_search` for interface discovery
+- **Output**: Complete external interface inventory with usage patterns and dependencies
+
+### **Performance Analysis**
+- **Objective**: Establish current system performance characteristics
+- **Activities**:
+  - Identify performance-critical code paths
+  - Document caching strategies and optimizations
+  - Analyze memory usage patterns
+  - Map concurrent processing capabilities
+- **Output**: Performance baseline documentation
+
+## Data Validation Rules
+
+### **Accuracy Requirements**
+- All findings must be traceable to actual source code
+- Assumptions must be clearly marked and validated
+- Conflicting information must be investigated and resolved
+- Edge cases and special conditions must be documented
+
+### **Completeness Criteria**
+- All public interfaces analyzed
+- All external interfaces and script functions identified
+- All enumeration values documented
+- All business rules identified
+- All integration points mapped
+- All automation interfaces documented
+- All performance optimizations understood
+
+### **Documentation Standards**
+- Reference source file names and line numbers
+- Include code snippets only when necessary for clarity
+- Use consistent terminology throughout
+- Maintain clear separation between facts and interpretations
+
+## Quality Assurance
+
+### **Cross-Verification**
+- Validate findings against multiple source files
+- Check consistency across related components
+- Verify assumptions against actual behavior
+- Confirm edge case handling
+
+### **Stakeholder Review**
+- Technical lead review of findings
+- Domain expert validation of business rules
+- Architecture review of integration points
+- Performance team validation of optimization strategies
+
+## Common Pitfalls to Avoid
+
+### **Fabrication Risks**
+- Never create database schemas not found in config files
+- Don't assume standard patterns without code verification  
+- Avoid generic implementations - document actual behavior
+- Don't fill gaps with speculation
+
+### **Analysis Gaps**
+- Missing error handling paths
+- Overlooked configuration dependencies
+- Incomplete enum value coverage
+- **Missed script functions and automation interfaces**
+- **Undocumented external API surfaces**
+- Unidentified performance bottlenecks
+
+## Output Requirements
+
+### **Documentation Structure**
+- Findings organized by functional area
+- Source code references for all claims
+- Clear distinction between observed behavior and inferred logic
+- Comprehensive coverage of all system components
+
+### **Handoff Criteria**
+- All source code analyzed and documented
+- All integration points identified and mapped
+- All business rules extracted and verified
+- All performance characteristics documented
+- Technical stakeholders have reviewed and approved findings
+
+## Deterministic Steps
+
+Execute Phase 1 data collection in this order:
+
+1. **Prepare Analysis Environment**
+   - Clone or access C++ source code repository
+   - Verify read access to all .cpp, .h, and .ini files
+   - Set up tools: grep, codebase_search, read_file
+   - Create documentation directory: `docs/migration/phase-1/`
+   - Identify subject matter experts for consultation
+
+2. **Analyze Source Code Structure**
+   - Use `glob_file_search` to inventory all .cpp and .h files
+   - Map class hierarchies and inheritance relationships
+   - Identify all enumeration definitions with numeric values
+   - Document field positions in memory-mapped structures
+   - Create comprehensive class/function catalog with source references
+
+3. **Extract Database Configuration**
+   - Locate database configuration files (GENDATABASE.ini or equivalent)
+   - If found: Extract complete table/field definitions with data types
+   - If not found: Document system as in-memory-only implementation
+   - NEVER fabricate database schemas - only document what exists in config
+   - Cross-reference database fields with C++ code field access patterns
+
+4. **Identify Business Rules**
+   - Search for calculation algorithms using `codebase_search`
+   - Trace condition evaluation logic with source code references
+   - Document validation rules and constraints with examples
+   - Map decision points and branching logic
+   - Extract mathematical formulas with exact implementation details
+
+5. **Map Integration Points**
+   - Identify external system interfaces (APIs, services, file interfaces)
+   - Document data flow in and out of system boundaries
+   - Map service dependencies and communication protocols
+   - Analyze integration patterns (synchronous, asynchronous, batch)
+
+6. **Discover External Interfaces**
+   - Search for script functions: `grep -r "DBCREATE|DBGET|DBSET" **/*.cpp **/*.h`
+   - Identify programmatic APIs and automation entry points
+   - Document web services, REST APIs, and file-based interfaces
+   - Map third-party dependencies and external data feeds
+   - Create automation interface catalog with usage examples
+
+7. **Analyze Performance Characteristics**
+   - Identify performance-critical code paths
+   - Document caching strategies and memory optimizations
+   - Analyze concurrent processing and threading patterns
+   - Establish performance baselines where measurable
+
+8. **Validate and Cross-Check Findings**
+   - Verify findings against multiple source files for consistency
+   - Cross-check assumptions with subject matter experts
+   - Confirm edge case handling is documented
+   - Resolve any conflicting or ambiguous information
+
+9. **Conduct Stakeholder Review**
+   - Present findings to technical lead and domain experts
+   - Validate business rule interpretations with business analysts
+   - Review integration points with architecture team
+   - Obtain sign-off on completeness and accuracy
+
+10. **Complete Quality Gate Validation**
+    - Verify all completeness criteria are met
+    - Confirm all accuracy requirements satisfied
+    - Document any known gaps or limitations
+    - Generate Phase 1 quality gate report with pass/fail status
+
+## Formatting Requirements
+
+Phase 1 documentation must follow these formats:
+
+### Source Code References
+Always use format: `FileName.cpp:LineNumber` or `FileName.h:LineNumber`
+
+Example: "Rate calculation algorithm found in `ForecastCalculator.cpp:234-267`"
+
+### Business Rule Documentation
+```markdown
+**Rule**: [Rule Name]  
+**Source**: [FileName:LineRange]  
+**Description**: [What the rule does]  
+**Algorithm**: [Step-by-step logic or formula]  
+**Example**: [Input → Output example]
+```
+
+### Integration Point Documentation
+```markdown
+**Interface**: [Interface Name]  
+**Type**: [REST API | File | Database | Message Queue]  
+**Direction**: [Inbound | Outbound | Bidirectional]  
+**Protocol**: [HTTP, FTP, JDBC, etc.]  
+**Data Format**: [JSON, XML, CSV, etc.]  
+**Source**: [FileName:LineRange]
+```
+
+### Script Function Catalog
+```markdown
+**Function**: [Function Name]  
+**Purpose**: [What it does]  
+**Parameters**: [Parameter list with types]  
+**Returns**: [Return type and meaning]  
+**Usage**: [How external systems call it]  
+**Source**: [FileName:LineRange]
+```
+
+## OPSEC and Leak Control
+
+During Phase 1 data collection:
+
+- **NO internal file system paths** beyond relative project paths in documentation
+- **NO developer names or email addresses** from code comments
+- **NO database connection strings** or credentials from config files
+- **NO internal server names** or IP addresses in integration documentation
+- **NO customer-specific data** from code examples or test data
+- **Redact sensitive values** in configuration examples
+- **Replace proprietary terms** with generic equivalents where appropriate
+- **Review all documentation** before stakeholder distribution for sensitive content
+
+## Integration Points
+
+Phase 1 integrates with:
+
+- **`rule.migration.overview.v1`**: Follows quality gates defined in overview
+- **`rule.migration.spec-create.v1`**: Provides inputs for Phase 2 specification creation
+- **Source Control Systems**: Git for version history and authorship tracking
+- **Code Analysis Tools**: grep, ripgrep, codebase_search for pattern discovery
+- **Subject Matter Experts**: Consultation for business logic validation
+- **Technical Documentation Tools**: Markdown editors, diagram tools for documentation
+
+## Failure Modes and Recovery
+
+### Failure Mode 1: Database Configuration File Not Found
+
+**Detection**: GENDATABASE.ini or equivalent missing, but code references database operations
+
+**Impact**: Cannot determine if system is database-backed or in-memory, specification uncertainty
+
+**Recovery**:
+1. Search entire codebase for database configuration patterns
+2. Check for alternative config file formats (XML, JSON, etc.)
+3. Interview developers/SMEs to confirm actual database usage
+4. If truly in-memory: document as such with code evidence
+5. If database-backed: obtain config from deployment environment
+
+**Prevention**: Early environment assessment, deployment documentation review
+
+### Failure Mode 2: Incomplete Source Code Access
+
+**Detection**: Missing .cpp/.h files, compilation dependencies unresolved
+
+**Impact**: Incomplete understanding, potential missing functionality in specifications
+
+**Recovery**:
+1. Identify specific missing files from build logs or includes
+2. Request access to complete source code repository
+3. Check for archived or branched code versions
+4. Document known gaps explicitly with impact assessment
+5. Escalate to project sponsor if access cannot be obtained
+
+**Prevention**: Verify complete source access before Phase 1 start, check build completeness
+
+### Failure Mode 3: Ambiguous or Conflicting Business Logic
+
+**Detection**: Multiple code paths with different behavior, unclear conditions
+
+**Impact**: Incorrect business rule documentation, potential C# implementation errors
+
+**Recovery**:
+1. Document all code paths with source references
+2. Consult with subject matter experts for clarification
+3. Review version history for context on changes
+4. Test actual system behavior if accessible
+5. Document ambiguity explicitly and get stakeholder decision
+
+**Prevention**: Early SME involvement, comprehensive code path analysis
+
+### Failure Mode 4: Undocumented External Interfaces
+
+**Detection**: Phase 2 or implementation discovers integration points not in Phase 1 findings
+
+**Impact**: Incomplete specifications, missed dependencies, implementation delays
+
+**Recovery**:
+1. Return to Phase 1 immediately to document missing interfaces
+2. Search for patterns: external library usage, network calls, file I/O
+3. Review deployment documentation for integration architecture
+4. Interview operations team about external system connections
+5. Update Phase 1 findings and re-validate quality gate
+
+**Prevention**: Comprehensive search patterns (DB*, API*, HTTP*, File*, Socket*), external interface checklist
+
+### Failure Mode 5: Performance Baseline Cannot Be Established
+
+**Detection**: No measurable performance data, system not accessible for testing
+
+**Impact**: No performance comparison for C# implementation, optimization unclear
+
+**Recovery**:
+1. Analyze code for performance-critical sections (loops, calculations, I/O)
+2. Estimate performance based on algorithm complexity
+3. Consult with operations for historical performance data
+4. Document qualitative performance observations from users
+5. Plan performance testing in implementation phase
+
+**Prevention**: Early access to running system, performance monitoring data collection
+
+## Provenance Footer Specification
+
+All Phase 1 documentation files must include footer:
+
+```markdown
+---
+**Migration Phase**: 1 - Data Collection  
+**Generated by**: rule.migration.data-collection.v1  
+**Source System**: [C++ eBase System Name]  
+**Analyzed Source**: [Repository/Branch/Commit]  
+**Analysis Date**: [YYYY-MM-DD]  
+**Analyst**: [Name/Role]  
+**Reviewed by**: [Reviewer Names]  
+**Status**: [Draft | In Review | Approved]  
+**Completeness**: [% estimated]  
+**Quality Gate**: [Not Started | In Progress | Passed | Failed]
+```
+
+## Related Rules
+
+- `rule.migration.overview.v1` - Overall migration process and quality gates
+- `rule.migration.spec-create.v1` - Phase 2 that consumes Phase 1 outputs
+- `rule.technical-spec.domain-overview.v1` - Specification format guidance
+- `rule.authoring.file-structure.v1` - Documentation structure standards
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All source code files (.cpp, .h) analyzed with file:line references documented
+- [ ] Database schema verified against config files OR in-memory implementation confirmed
+- [ ] All external interfaces cataloged including script functions (DB*, API*, etc.)
+- [ ] Business rules extracted with algorithms and source references (no fabricated content)
+- [ ] Integration points mapped with protocols, data formats, and directionality
+- [ ] Performance baselines established or qualitative analysis documented
+- [ ] OPSEC clean (no credentials, internal paths, developer names, or sensitive data)
+- [ ] Technical stakeholder review completed with sign-off obtained
+- [ ] Phase 1 quality gate criteria validated and passed
+- [ ] All documentation includes provenance footer with source references

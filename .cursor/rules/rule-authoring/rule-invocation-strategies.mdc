@@ -1,0 +1,580 @@
+---
+id: rule.authoring.invocation-strategies.v1
+kind: rule
+version: 1.0.2
+description: Defines when to use file-mask triggering (globs/governs), description-based agentic triggering, always-apply, or never-apply modes for rules. The most critical architectural decision in rule design - determines how and when rules activate.
+globs: **/*-rule.mdc, **/rules/**/*.mdc
+governs: ""
+implements: rule.authoring.invocation-strategies
+requires:
+  - rule.authoring.file-structure.v1
+  - rule.authoring.agent-application.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ai, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Rule Invocation Strategies
+
+## Purpose & Scope
+
+This rule defines the architectural decision framework for how rules are triggered and invoked. It answers the question: "Should this rule use file-mask triggering (globs/governs), description-based agentic triggering, always-apply, or never-apply?"
+
+**This is the most important architectural decision in rule design** - it determines reliability, safety, and maintainability of your rule system.
+
+**Applies to**: Anyone designing new rules or refactoring rule invocation patterns.
+
+**Does not apply to**: Rule content (what the rule does), rule structure (covered by file-structure rule).
+
+## Inputs (Contract)
+
+- Rule concept and purpose
+- Understanding of when rule should activate
+- Knowledge of target files or contexts
+- Safety and reliability requirements
+
+## Outputs (Contract)
+
+Explicit decision on:
+- Whether to use `globs`/`governs` (file-mask triggering)
+- Whether to omit globs/governs (description-based agentic triggering)
+- Whether to use `alwaysApply: true` or `false`
+- Whether rule is agent-callable or manual-only
+
+## The Three Invocation Strategies
+
+### Strategy 1: File-Mask Triggered Rules (Most Common - 80%+ of rules)
+
+[!]? **NOTE**: `globs` and `governs` use Cursor's custom comma-delimited format (NOT YAML arrays!)
+
+**Pattern**:
+```text
+globs: **/plan.md               # Files this rule can read (Cursor custom format)
+governs: **/plan.md             # Files this rule can write (Cursor custom format)
+alwaysApply: false              # Explicit trigger required
+```
+
+**When to Use**:
+- [X] Rule acts on specific, known file patterns
+- [X] Rule creates/modifies files with predictable names
+- [X] You want deterministic, file-based triggering
+- [X] Rule should activate when working with matching files
+- [X] Rule is operational (does actual work on files)
+
+**Advantages**:
+- **Precise**: Triggers only for relevant files
+- **Safe**: Clear scope boundaries prevent accidental mutations
+- **Predictable**: File patterns make behavior obvious
+- **Fast**: Agent can pattern-match efficiently
+- **Auditable**: Clear which files governed
+
+**Examples from Your Codebase**:
+- `rule.authoring.file-structure.v1`: `globs: **/*-rule.mdc`, `governs: **/*-rule.mdc`
+- `rule.authoring.overview.v1`: `globs: **/*-rule.mdc, **/rules/**/*.mdc`, `governs: ""`
+- Most operational rules use this pattern
+
+**Multiple Patterns (use comma-separated format)**:
+```text
+globs: **/*-rule.mdc, **/rules/**/*.mdc    # Comma-separated string (NOT YAML array!)
+governs: ""
+alwaysApply: false
+```
+
+**CRITICAL**: 
+- Set `alwaysApply: false` to prevent auto-triggering
+- Use comma-separated format (NOT YAML `-` syntax, NOT JSON `[]` brackets)
+
+### Strategy 2: Description-Triggered Agentic Rules (Agent-Application Meta-Rules)
+
+**Pattern**:
+```text
+# OMIT globs field entirely (no file-pattern triggering)
+# OMIT governs field entirely (coordination only, no writing)
+description: "Rich, detailed description with trigger keywords. Agent guidance for when and how to apply [domain] rules. Use this when user requests involve [specific patterns]..."
+implements: [domain].agent-application
+alwaysApply: false
+```
+
+**When to Use**:
+- [X] Rule is a **meta-rule** that coordinates other rules
+- Rule guides agent decision-making (does not write files directly)
+- [X] Triggering is semantic, not file-pattern based
+- [X] Rule maps user intent to operational rules
+- Rule provides "when/how to apply" guidance
+
+**Advantages**:
+- **Flexible**: Matches semantic intent, not just file patterns
+- **Coordinative**: Directs agent to correct operational rules
+- **Context-aware**: Can consider user request, project state, complexity
+- **Single responsibility**: Each agent-application rule focuses on one domain
+
+**Examples from Your Codebase**:
+- `rule.authoring.agent-application.v1`: NO globs, NO governs, rich description
+- `rule.agile.agent-application.v1`: NO globs, NO governs, describes when to use agile rules
+- `rule.ticket.agent-application.v1`: NO globs, NO governs, coordinates ticket rules
+
+**Key Characteristics**:
+1. **NO globs field** - Not file-triggered
+2. **NO governs field** - Doesn't write files (coordinates only)
+3. **Rich description** - Contains keywords, patterns, use cases
+4. **Maps patterns to rules** - "When user says X, apply rule Y"
+5. **Includes decision trees** - Helps agent choose correct rule
+
+**MUST BE**: Small, focused, high-quality. Agent reads these frequently.
+
+### Strategy 3: Always-Apply Rules (Rare - Use Sparingly)
+
+**Pattern**:
+```text
+globs: **/*                     # Broad pattern (Cursor custom format - NO brackets, NO quotes)
+governs: ""                     # Read-only (usually)
+alwaysApply: true               # Triggers automatically
+```
+
+**When to Use (Very Rare)**:
+- [X] Rule is **read-only validation/scanning** across all files
+- [X] Rule is **idempotent** (safe to run multiple times)
+- [X] Rule is **fast** (low performance impact)
+- [X] Rule enforces **universal constraint** (OPSEC, redaction)
+- [X] Accidental re-runs cause **zero harm**
+
+**Extreme Caution Required**:
+- [X] NEVER use with `governs: <pattern>` (would auto-mutate files)
+- [X] NEVER use for file generation
+- [X] NEVER use for context-sensitive transformations
+- [X] NEVER use if order matters
+
+**Examples**:
+- OPSEC redaction scan (read-only, safe to run always)
+- Universal validation check (read-only, idempotent)
+
+**Default**: **ALWAYS use `alwaysApply: false`** unless you have explicit justification.
+
+## Decision Tree: Choosing Invocation Strategy
+
+```
+What type of rule are you creating?
+|
+|--- Meta-rule coordinating other rules?
+|  |--- YES -> Strategy 2: Description-Triggered Agentic
+|  |        - OMIT globs
+|  |        - OMIT governs
+|  |        - Rich description
+|  |        - Name: *-agent-application-rule.mdc
+|  |
+|  `--- NO -> Continue to next question
+|
+|--- Does rule write/modify files?
+|  |--- YES -> Strategy 1: File-Mask Triggered
+|  |        - globs: **/specific-pattern.md
+|  |        - governs: **/specific-pattern.md
+|  |        - alwaysApply: false
+|  |
+|  `--- NO -> Continue to next question
+|
+|--- Does rule act on specific file patterns?
+|  |--- YES -> Strategy 1: File-Mask Triggered
+|  |        - globs: **/pattern.md
+|  |        - governs: "" (if read-only)
+|  |        - alwaysApply: false
+|  |
+|  `--- NO -> Continue to next question
+|
+`--- Is rule universal validation (read-only, idempotent)?
+   |--- YES -> Strategy 3: Always-Apply (RARE)
+   |        - globs: **/*
+   |        - governs: ""
+   |        - alwaysApply: true
+   |
+   `--- NO -> Default to Strategy 1 with specific globs
+```
+
+## Deterministic Steps
+
+### Step 1: Identify Rule Type
+
+**Question**: What is the primary purpose of this rule?
+
+1. **Coordination/Guidance**: Maps user intent to operational rules
+   - -> **Strategy 2**: Description-triggered agentic
+   
+2. **File Generation/Modification**: Creates or updates specific files
+   - -> **Strategy 1**: File-mask triggered
+   
+3. **File Validation/Reading**: Reads and validates specific files
+   - -> **Strategy 1**: File-mask triggered
+   
+4. **Universal Validation**: Scans all files for violations (RARE)
+   - -> **Strategy 3**: Always-apply (with extreme caution)
+
+### Step 2: Apply Strategy Pattern
+
+#### For Strategy 1 (File-Mask Triggered):
+
+1. Define specific globs:
+   ```yaml
+   globs: **/tickets/*/plan.md  # Specific as possible
+   ```
+
+2. Define governs:
+   ```yaml
+   governs: **/tickets/*/plan.md  # Exact files writable
+   # OR
+   governs: ""  # If read-only
+   ```
+
+3. Set alwaysApply:
+   ```yaml
+   alwaysApply: false  # ALWAYS false for operational rules
+   ```
+
+#### For Strategy 2 (Description-Triggered Agentic):
+
+1. OMIT globs field entirely (do not set to empty array)
+
+2. OMIT governs field entirely
+
+3. Write rich description:
+   ```yaml
+   description: "Agent guidance for when and how to apply ticket management rules. Use this when user requests involve starting/switching/completing tickets, ticket documentation (plan/context/progress/timeline), claims of 'done', workflow coordination, or ticket-related validation."
+   ```
+
+4. Set implements to agent-application:
+   ```yaml
+   implements: [domain].agent-application
+   ```
+
+5. Set alwaysApply:
+   ```yaml
+   alwaysApply: false
+   ```
+
+6. File name pattern: `*-agent-application-rule.mdc`
+
+#### For Strategy 3 (Always-Apply):
+
+**Checkpoint: Are you ABSOLUTELY SURE?**
+- [ ] Rule is read-only (governs: "")
+- [ ] Rule is idempotent (safe to run 100 times)
+- [ ] Rule is fast (< 100ms)
+- [ ] Rule has no side effects
+- [ ] Accidental re-runs cause zero harm
+
+If all YES:
+```yaml
+globs: **/*
+governs: ""
+alwaysApply: true
+```
+
+**If ANY is NO**: Use Strategy 1 instead with alwaysApply: false
+
+### Step 3: Validate Safety
+
+For Strategy 1:
+- [ ] globs is specific (not `**/*` unless justified)
+- [ ] governs matches exactly what rule writes
+- [ ] alwaysApply is false
+
+For Strategy 2:
+- [ ] NO globs field present
+- [ ] NO governs field present
+- [ ] description is rich with trigger keywords
+- [ ] Rule doesn't write files directly
+- [ ] Rule coordinates other rules
+
+For Strategy 3:
+- [ ] governs is empty array
+- [ ] Rule is truly read-only
+- [ ] Rule is idempotent and fast
+
+## Common Scenarios
+
+### Scenario A: Creating Operational Rule for plan.md
+
+**Goal**: Rule that creates/updates plan.md files in ticket directories
+
+**Decision Process**:
+1. Does it coordinate other rules? NO
+2. Does it write files? YES -> Strategy 1
+3. Specific file pattern? YES -> `**/tickets/*/plan.md`
+
+**Result**:
+```yaml
+id: rule.ticket.plan.update.v1
+kind: rule
+globs: **/tickets/*/plan.md
+governs: **/tickets/*/plan.md
+implements: plan.update
+alwaysApply: false
+```
+
+**Rationale**: Operational rule acting on specific files.
+
+### Scenario B: Creating Ticket Agent-Application Rule
+
+**Goal**: Meta-rule that helps agent decide which ticket rules to apply
+
+**Decision Process**:
+1. Does it coordinate other rules? YES -> Strategy 2
+2. Maps user intent to rules? YES
+3. Writes files directly? NO
+
+**Result**:
+```yaml
+id: rule.ticket.agent-application.v1
+kind: rule
+# NO globs field
+# NO governs field
+description: "Agent guidance for when and how to apply ticket management rules. Use this when user requests involve starting/switching/completing tickets..."
+implements: ticket.agent-application
+alwaysApply: false
+```
+
+**Rationale**: Meta-rule for coordination, description-triggered.
+
+### Scenario C: Creating OPSEC Redaction Scan (Rare)
+
+**Goal**: Universal scan for secrets/tokens in all files
+
+**Decision Process**:
+1. Universal validation? YES (potentially Strategy 3)
+2. Read-only? YES
+3. Idempotent? YES
+4. Fast? YES
+5. Safe to auto-run? YES
+
+**Result**:
+```yaml
+id: rule.opsec.redact-scan.v1
+kind: rule
+globs: **/*
+governs: ""
+alwaysApply: true
+```
+
+**Rationale**: Read-only universal validation, safe for always-apply.
+
+### Scenario D: Creating Domain Object Documentation Rule
+
+**Goal**: Rule that creates domain-object-[name].md files
+
+**Decision Process**:
+1. Does it coordinate other rules? NO
+2. Does it write files? YES -> Strategy 1
+3. Specific file pattern? YES -> `**/docs/technical/**/domain-object-*.md`
+
+**Result**:
+```yaml
+id: rule.technical-specifications.domain-object.v1
+kind: rule
+globs: **/docs/technical/**/domain-object-*.md
+governs: **/docs/technical/**/domain-object-*.md
+implements: domain-object.create
+alwaysApply: false
+```
+
+**Rationale**: Operational rule acting on specific file pattern.
+
+## Architecture: Agent-Application Pattern
+
+**The Pattern You've Established** (Good!):
+
+```
+Domain Rules Layer (80%+ of rules)
+|--- rule.ticket.plan.update.v1 (Strategy 1: File-mask)
+|--- rule.ticket.context.update.v1 (Strategy 1: File-mask)
+|--- rule.ticket.progress.append.v1 (Strategy 1: File-mask)
+`--- rule.ticket.timeline.track.v1 (Strategy 1: File-mask)
+
+Coordination Layer (1 per domain)
+`--- rule.ticket.agent-application.v1 (Strategy 2: Agentic)
+   `--- Maps user intent -> Correct domain rule
+```
+
+**Key Principle**: 
+- **Many operational rules** (Strategy 1) do the actual work
+- **One agent-application rule per domain** (Strategy 2) coordinates them
+- Agent-application rules are **small, focused, high-quality**
+
+**Your Current Domains**:
+- [X] `rule-authoring/agent-application-rule.mdc` (coordinates rule-authoring rules)
+- [X] `agile/agent-application-rule.mdc` (coordinates agile rules)
+- [X] `ticket/agent-application-rule.mdc` (coordinates ticket rules)
+- [X] `technical-specifications/agent-application-rule.mdc` (coordinates spec rules)
+
+**Pattern to Maintain**: Continue creating operational rules with Strategy 1, coordinate them with domain-specific agent-application rules using Strategy 2.
+
+## Migration Guide: From All-Agentic to File-Mask
+
+**Your Observation**: "I used to have all rules assigned agentic, now most are assigned on filemask"
+
+**This is the correct evolution**. Here's why:
+
+### Why File-Mask is Better for Operational Rules:
+
+1. **Precision**: Agent knows exactly when rule applies (file match)
+2. **Safety**: `governs` prevents accidental writes to wrong files
+3. **Performance**: Pattern matching is fast, semantic matching is expensive
+4. **Clarity**: Human readers understand `globs: ["**/plan.md"]` instantly
+5. **Debugging**: Easy to see which files trigger which rules
+
+### When Your Old All-Agentic Approach Was Problematic:
+
+- [X] Agent had to semantically match EVERY request to EVERY rule (slow)
+- [X] No clear file boundaries (risk of wrong rule applying)
+- [X] Descriptions became bloated with file patterns
+- [X] Hard to audit "what rule acts on what file"
+
+### Your New Hybrid Approach is Optimal:
+
+- [X] **Operational rules** (80%+): File-mask triggered (Strategy 1)
+- [X] **Coordination rules** (1 per domain): Description-triggered (Strategy 2)
+- [X] Agent-application rules are **small, focused, delegate quickly**
+
+**Keep this pattern.**
+
+## Best Practices
+
+### For Strategy 1 (File-Mask Triggered):
+
+[X] **DO**:
+- Use specific globs: `**/tickets/*/plan.md` not `**/*.md`
+- Match globs to governs exactly if rule writes files
+- Set `alwaysApply: false` (explicit trigger required)
+- Use empty governs (`governs: ""`) for read-only rules
+- Document in description what rule does (not when it triggers - globs do that)
+
+[X] **DON'T**:
+- Use `**/*` for globs unless truly universal
+- Set `alwaysApply: true` for file-writing rules
+- Have governs broader than globs (safety violation)
+- Mix file-mask triggering with complex semantic triggers
+
+### For Strategy 2 (Description-Triggered Agentic):
+
+[X] **DO**:
+- OMIT globs and governs fields entirely
+- Write rich description with trigger keywords
+- Name file `*-agent-application-rule.mdc`
+- Keep rule small and focused (agent reads frequently)
+- Include user request patterns -> rule mapping tables
+- Include decision trees for rule selection
+- Delegate to operational rules (Strategy 1) for actual work
+- Have ONE agent-application rule per domain
+
+[X] **DON'T**:
+- Write files directly in agent-application rules (coordinate only)
+- Create multiple agent-application rules for same domain (consolidate)
+- Duplicate operational logic (belongs in Strategy 1 rules)
+- Write long, complex agent-application rules (defeats purpose)
+- Set empty globs/governs (omit globs/governs fields) - OMIT entirely instead
+
+### For Strategy 3 (Always-Apply):
+
+[X] **DO**:
+- Use ONLY for read-only universal validation
+- Ensure rule is idempotent (safe to run 1000 times)
+- Ensure rule is fast (< 100ms)
+- Document why always-apply is justified
+- Set `governs: ""` (never write in always-apply rules)
+
+[X] **DON'T**:
+- Use with `governs` set to a pattern (creates auto-mutation risk)
+- Use for file generation (use Strategy 1)
+- Use unless absolutely necessary (default to Strategy 1)
+- Use if rule has side effects
+
+## Formatting Requirements
+
+### Strategy 1 Front-Matter:
+```yaml
+---
+id: rule.domain.action.v1
+kind: rule
+globs: **/specific-pattern.md
+governs: **/specific-pattern.md  # or "" if read-only
+alwaysApply: false
+---
+```
+
+### Strategy 2 Front-Matter:
+```yaml
+---
+id: rule.domain.agent-application.v1
+kind: rule
+# globs field OMITTED entirely
+# governs field OMITTED entirely
+description: "Rich, detailed description..."
+implements: domain.agent-application
+alwaysApply: false
+---
+```
+
+### Strategy 3 Front-Matter:
+```yaml
+---
+id: rule.domain.universal-scan.v1
+kind: rule
+globs: **/*
+governs: ""
+alwaysApply: true
+---
+```
+
+## OPSEC and Leak Control
+
+For all strategies:
+- File paths in globs must not leak internal structure unnecessarily
+- Descriptions must not contain secrets or internal URLs
+- governs must be explicit (prevents accidental exposure of sensitive files)
+
+## Integration Points
+
+This rule coordinates with:
+- **rule.authoring.file-structure.v1**: Defines where globs/governs/alwaysApply appear in front-matter
+- **rule.authoring.agent-application.v1**: Example of Strategy 2 pattern
+- **rule.authoring.contracts-and-scope.v1**: Relates to explicit file contracts
+
+## Failure Modes and Recovery
+
+**Failure**: Operational rule missing globs/governs
+- **Detection**: Rule doesn't trigger when expected
+- **Recovery**: Add explicit globs and governs fields
+- **Prevention**: Always use Strategy 1 for operational rules
+
+**Failure**: Agent-application rule has globs/governs
+- **Detection**: Agent-application rule tries to write files directly
+- **Recovery**: Remove globs/governs, ensure rule only coordinates
+- **Prevention**: Use Strategy 2 pattern explicitly
+
+**Failure**: alwaysApply: true on file-writing rule
+- **Detection**: Files mutated unexpectedly on every run
+- **Recovery**: IMMEDIATELY set to false, review all changes
+- **Prevention**: Never use alwaysApply with governs (except empty array)
+
+**Failure**: Too many agent-application rules in one domain
+- **Detection**: Multiple *-agent-application-rule.mdc in same domain
+- **Recovery**: Consolidate into single agent-application rule
+- **Prevention**: ONE agent-application rule per domain
+
+## Related Rules
+
+- **rule.authoring.file-structure.v1**: Defines front-matter structure
+- **rule.authoring.agent-application.v1**: Example Strategy 2 implementation
+- **rule.authoring.contracts-and-scope.v1**: Explicit contract patterns
+- **rule.ticket.agent-application.v1**: Example Strategy 2 for tickets
+- **rule.agile.agent-application.v1**: Example Strategy 2 for agile
+
+## FINAL MUST-PASS CHECKLIST
+
+Before claiming rule invocation strategy complete:
+
+- [ ] Strategy decision made explicitly (1, 2, or 3)
+- [ ] Strategy 1: globs and governs defined, alwaysApply: false
+- [ ] Strategy 2: globs and governs OMITTED (not empty array), rich description, name ends with "agent-application"
+- [ ] Strategy 3: governs is empty string `""`, alwaysApply: true justified, rule is read-only and idempotent
+- [ ] governs never broader than globs (safety check)
+- [ ] alwaysApply: true used ONLY with governs: "" (safety check)
+- [ ] Agent-application rules (Strategy 2) are small and focused
+- [ ] One agent-application rule per domain (not multiple)

@@ -1,0 +1,13 @@
+id: breaking-changes-bundle
+name: "Breaking Changes Documentation"
+description: "Prompts for capturing and communicating breaking changes"
+tags:
+  - breaking-changes
+  - release-notes
+  - communication
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/breaking-changes/document-breaking-changes.prompt.md
+    kind: prompt
+

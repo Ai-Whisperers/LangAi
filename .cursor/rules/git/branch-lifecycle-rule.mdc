@@ -1,0 +1,777 @@
+---
+id: rule.git.branch-lifecycle.v1
+kind: rule
+version: 1.2.0
+description: Defines complete workflows for branch creation, merging, promotion, and deletion across all branch types including maintenance releases for older version lines. Includes optimized changelog workflow to consolidate build triggers.
+globs: ""
+governs: ""
+implements: git.branch-lifecycle
+requires:
+  - rule.git.branch-structure.v1
+  - rule.git.branch-naming.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-platform, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# Git Branch Lifecycle Rule
+
+## Purpose
+
+This rule defines the complete lifecycle workflows for all branch types, from creation through merging and deletion. It provides step-by-step commands and explains the promotion paths that code follows from development to production.
+
+## Core Principles
+
+### Controlled Promotion
+
+Code flows through defined stages with quality gates:
+
+```
+develop → release/x.x → rc/x.x.x (optional) → main → tag → develop (forward-merge)
+```
+
+### Merge Strategy
+
+- **Use `--no-ff` (no-fast-forward)**: Creates explicit merge commits for traceability
+- **Never force-push**: Preserves history on protected branches
+- **Always test before merge**: Ensure CI passes before merging
+- **Delete after merge**: Clean up completed feature/fix/hotfix branches
+
+### Forward-Merge Principle
+
+After deploying to `main`, always merge `main` back to `develop` to keep development branch up-to-date with production.
+
+## Development Phase Workflows
+
+### Feature Development
+
+**Purpose**: Develop new features, enhancements, or epics
+
+#### Create Feature Branch
+
+```bash
+# Ensure develop is up-to-date
+git checkout develop
+git pull origin develop
+
+# Create feature branch
+git checkout -b feature/EPP-157
+
+# Push to remote (optional, for backup or collaboration)
+git push -u origin feature/EPP-157
+```
+
+#### Work on Feature
+
+```bash
+# Make changes
+git add <files>
+git commit -m "EPP-157: Implement dashboard component"
+
+# Keep feature branch updated with develop (if long-lived)
+git checkout develop
+git pull origin develop
+git checkout feature/EPP-157
+git merge develop
+
+# Push changes
+git push origin feature/EPP-157
+```
+
+#### Complete Feature
+
+```bash
+# Ensure feature is up-to-date with develop
+git checkout develop
+git pull origin develop
+git checkout feature/EPP-157
+git merge develop
+
+# Push final changes
+git push origin feature/EPP-157
+
+# Create pull request/merge request
+# (in GitLab, GitHub, etc.)
+
+# After PR approval, merge to develop
+git checkout develop
+git pull origin develop
+git merge --no-ff feature/EPP-157
+git push origin develop
+
+# Delete feature branch
+git branch -d feature/EPP-157
+git push origin --delete feature/EPP-157
+```
+
+**Validation Checklist**:
+- [ ] All tests pass
+- [ ] Code review approved
+- [ ] No merge conflicts with develop
+- [ ] Commit messages reference Jira ticket
+- [ ] Feature branch deleted after merge
+
+### Bug Fix (Development)
+
+**Purpose**: Fix bugs found during development
+
+#### Create Fix Branch
+
+```bash
+# Branch from develop
+git checkout develop
+git pull origin develop
+git checkout -b fix/EBASE-123
+git push -u origin fix/EBASE-123
+```
+
+#### Work on Fix
+
+```bash
+# Make changes
+git add <files>
+git commit -m "EBASE-123: Fix validation error in form"
+
+# Push changes
+git push origin fix/EBASE-123
+```
+
+#### Complete Fix
+
+```bash
+# Merge to develop (same as feature workflow)
+git checkout develop
+git pull origin develop
+git merge --no-ff fix/EBASE-123
+git push origin develop
+
+# Delete fix branch
+git branch -d fix/EBASE-123
+git push origin --delete fix/EBASE-123
+```
+
+**Validation Checklist**:
+- [ ] Bug is verified as fixed
+- [ ] Tests added to prevent regression
+- [ ] All tests pass
+- [ ] Code review approved
+
+## Release Preparation Phase
+
+### Create Release Branch
+
+**Purpose**: Stabilize version for QA and production deployment
+
+```bash
+# Ensure develop is stable
+git checkout develop
+git pull origin develop
+
+# Run all tests
+npm test  # or your test command
+
+# Create release branch
+git checkout -b release/9.10
+git push -u origin release/9.10
+```
+
+**Decision Point**: What version number?
+- Major.Minor format: `release/9.10`
+- Increment minor for feature releases
+- Increment major for breaking changes
+
+### Generate Changelog (Before RC Tagging)
+
+**Purpose**: Document changes and trigger single build before RC testing
+
+**Critical Timing**: Generate changelog AFTER merging to release branch but BEFORE pushing RC tags. This consolidates build triggers.
+
+```bash
+# On release/9.10 branch after merge from develop
+git checkout release/9.10
+git pull origin release/9.10
+
+# Generate changelog using AI prompt
+# - Automatically extracts last release version from release-* tags
+# - Determines new version from branch name (release/9.10 → 9.10.0)
+# - Analyzes commits since last release
+# See: .cursor/prompts/changelog/generate-changelog-from-git.md
+
+# After changelog is generated and reviewed:
+git add CHANGELOG.md
+git commit -m "docs: Update changelog for release 9.10.0"
+git push origin release/9.10
+# ↑ This push triggers the FIRST pipeline run (build only, no RC tag yet)
+```
+
+**Workflow Optimization**:
+- ✅ Old Workflow (2 builds): Merge→Push (build #1) → Generate changelog→Push (build #2) → Tag RC
+- ✅ New Workflow (1 build): Merge→Generate changelog→Push (build #1) → Tag RC
+- **Benefit**: Reduces unnecessary build cycles, changelog ready before RC testing
+
+**Version Detection**:
+- Last release: Automatically extracted from `git tag -l "release-*" --sort=-version:refname | head -1`
+- New version: Derived from branch name (`release/9.10` + semantic versioning rules)
+- Patch version: Starts at `.0` for new minor, increments for patches on same branch
+
+### Bug Fix (Release)
+
+**Purpose**: Fix issues found during QA on release branch
+
+#### Create Fix Branch
+
+```bash
+# Branch from release branch
+git checkout release/9.10
+git pull origin release/9.10
+git checkout -b fix/EBASE-124
+git push -u origin fix/EBASE-124
+```
+
+#### Complete Fix
+
+```bash
+# Merge back to release branch
+git checkout release/9.10
+git pull origin release/9.10
+git merge --no-ff fix/EBASE-124
+git push origin release/9.10
+
+# Delete fix branch
+git branch -d fix/EBASE-124
+git push origin --delete fix/EBASE-124
+
+# Forward-merge or cherry-pick to develop
+# Option 1: Merge entire release branch to develop
+git checkout develop
+git pull origin develop
+git merge --no-ff release/9.10
+git push origin develop
+
+# Option 2: Cherry-pick specific fix
+git checkout develop
+git cherry-pick <fix-commit-hash>
+git push origin develop
+```
+
+**Important**: Release fixes must be propagated to develop to prevent regression.
+
+### Release Candidate (Tag-Based, Not Branch)
+
+**Purpose**: Tag release branch for RC testing (internal and pre-prod)
+
+**Note**: Modern tag-based versioning uses tags, not RC branches. See `rule.cicd.tag-based-versioning.v2` for details.
+
+#### Create Internal RC (test-* tag)
+
+```bash
+# On release/9.10 branch (after changelog is committed and pushed)
+git checkout release/9.10
+git pull origin release/9.10
+
+# Tag for internal QA testing
+git tag -a test-9.10.0-rc1 -m "Internal RC1 for version 9.10.0"
+git push origin test-9.10.0-rc1
+# ↑ Triggers pipeline: publishes to TEST feed for internal QA
+```
+
+**Prerequisites Before Tagging RC**:
+- ✅ Changelog must be generated and committed
+- ✅ Release branch must be stable (all tests passing)
+- ✅ Version number decided (9.10.0 for new minor, 9.10.1 for patch)
+
+**Critical Rule**: Changelog BEFORE RC tags
+- If changelog not ready → Generate changelog first, commit, push → Then tag RC
+- This ensures single build trigger instead of multiple
+
+#### If RC Passes
+
+```bash
+# Proceed to deployment (see Deployment Phase below)
+```
+
+#### If RC Fails
+
+```bash
+# Abandon RC
+git branch -d rc/9.10.0
+git push origin --delete rc/9.10.0
+
+# Fix issues on release/9.10
+# Create new RC: rc/9.10.1
+```
+
+## Deployment Phase
+
+### Deploy to Production
+
+**Purpose**: Release to production and tag version
+
+#### Option 1: Deploy from Release Branch
+
+```bash
+# Merge release to main
+git checkout main
+git pull origin main
+git merge --no-ff release/9.10
+
+# Create version tag
+git tag -a v9.10.0 -m "Release version 9.10.0"
+
+# Push main and tags
+git push origin main
+git push origin v9.10.0
+
+# Forward-merge to develop
+git checkout develop
+git pull origin develop
+git merge --no-ff main
+git push origin develop
+```
+
+#### Option 2: Deploy from RC Branch
+
+```bash
+# Merge RC to main
+git checkout main
+git pull origin main
+git merge --no-ff rc/9.10.0
+
+# Create version tag
+git tag -a v9.10.0 -m "Release version 9.10.0"
+
+# Push main and tags
+git push origin main
+git push origin v9.10.0
+
+# Forward-merge to develop
+git checkout develop
+git pull origin develop
+git merge --no-ff main
+git push origin develop
+
+# Delete RC branch
+git branch -d rc/9.10.0
+git push origin --delete rc/9.10.0
+```
+
+**Deployment Checklist**:
+- [ ] Release branch or RC passes all tests
+- [ ] QA sign-off received
+- [ ] Deployment plan reviewed
+- [ ] Rollback plan prepared
+- [ ] Version tag created
+- [ ] Main merged back to develop
+- [ ] Deployment documented
+
+### Post-Deployment
+
+```bash
+# Keep release branch for maintenance (don't delete)
+# Tag can be used to recreate state if needed
+
+# Verify develop has latest production code
+git checkout develop
+git log --oneline -10
+
+# Verify tag exists
+git tag -l "v9.10.*"
+```
+
+## Hotfix Phase
+
+### Create Hotfix
+
+**Purpose**: Fix critical production issues immediately
+
+```bash
+# Branch from main (production)
+git checkout main
+git pull origin main
+git checkout -b hotfix/EBASE-127
+git push -u origin hotfix/EBASE-127
+```
+
+### Work on Hotfix
+
+```bash
+# Make fix
+git add <files>
+git commit -m "EBASE-127: Fix critical security vulnerability"
+
+# Push changes
+git push origin hotfix/EBASE-127
+
+# Create emergency PR/MR for review
+```
+
+### Deploy Hotfix
+
+```bash
+# Merge to main
+git checkout main
+git pull origin main
+git merge --no-ff hotfix/EBASE-127
+
+# Create patch version tag
+git tag -a v9.9.1 -m "Hotfix 9.9.1 - Security patch"
+
+# Push main and tag
+git push origin main
+git push origin v9.9.1
+
+# Forward-merge to develop
+git checkout develop
+git pull origin develop
+git merge --no-ff main
+git push origin develop
+
+# Delete hotfix branch
+git branch -d hotfix/EBASE-127
+git push origin --delete hotfix/EBASE-127
+```
+
+### Propagate to Active Releases
+
+If there are active release branches that need the fix:
+
+```bash
+# Cherry-pick to active release branch
+git checkout release/9.10
+git cherry-pick <hotfix-commit-hash>
+git push origin release/9.10
+
+# Or merge if appropriate
+git checkout release/9.10
+git merge main
+git push origin release/9.10
+```
+
+**Hotfix Checklist**:
+- [ ] Issue is production-critical (not a normal bug)
+- [ ] Fix is minimal and focused
+- [ ] Hotfix tested thoroughly
+- [ ] Emergency change approval obtained
+- [ ] Deployed to production
+- [ ] Forward-merged to develop
+- [ ] Propagated to active release branches if needed
+- [ ] Post-mortem scheduled
+
+## Maintenance Phase
+
+### Supporting Multiple Versions
+
+When multiple versions are in production:
+
+```bash
+# Maintain separate release branches
+release/1.2   # Older production version (maintenance/LTS)
+release/2.3   # Current production version (main tracks this)
+release/2.4   # Next version in QA
+```
+
+**Key Distinction: Where Production Tags Go**
+
+| Release Line | Tag Location | Merge to Main? |
+|--------------|--------------|----------------|
+| **Current** (main tracks this MAJOR version) | `main` | YES |
+| **Maintenance** (main is on newer MAJOR version) | `release/X.Y` | NO |
+
+### Patching Current Release Line
+
+When main is on the same major version:
+
+```bash
+# Fix for version 2.3 (main is on 2.x)
+git checkout release/2.3
+git checkout -b fix/EBASE-130
+# ... make fix ...
+git checkout release/2.3
+git merge --no-ff fix/EBASE-130
+
+# RC testing
+git tag -a test-2.3.1-rc1 -m "RC1 for patch 2.3.1"
+git push origin test-2.3.1-rc1
+
+# After RC passes: merge to main and tag
+git checkout main
+git merge --no-ff release/2.3 -m "Patch release 2.3.1"
+git tag -a release-2.3.1 -m "Patch release 2.3.1"
+git push origin main release-2.3.1
+
+# Forward-merge to develop
+git checkout develop
+git merge --no-ff main
+git push origin develop
+```
+
+### Patching Maintenance/Older Release Line
+
+When main has progressed to a newer major version:
+
+```bash
+# Scenario: main is on 2.3.x, customer needs patch for 1.2.x
+# Fix for version 1.2 (maintenance line)
+git checkout release/1.2
+git checkout -b fix/EBASE-131
+# ... make fix ...
+git checkout release/1.2
+git merge --no-ff fix/EBASE-131
+
+# RC testing (on release branch)
+git tag -a test-1.2.3-rc1 -m "RC1 for maintenance patch 1.2.3"
+git push origin test-1.2.3-rc1
+
+# After RC passes: tag directly on release branch (NO merge to main!)
+git checkout release/1.2
+git tag -a release-1.2.3 -m "Maintenance patch 1.2.3"
+git push origin release-1.2.3
+
+# DO NOT merge to main - main is on 2.x
+# DO NOT forward-merge to develop - different major version
+```
+
+**Critical Rule**: NEVER merge an older major version into a main that has progressed to a newer major version. This would cause version regression.
+
+### Cherry-Picking Fixes Across Version Lines
+
+```bash
+# If fix applies to both version lines
+# 1. Fix on current release line first
+git checkout release/2.3
+# ... make fix ...
+
+# 2. Cherry-pick to maintenance line (if applicable)
+git checkout release/1.2
+git cherry-pick <fix-commit>
+
+# 3. Cherry-pick to develop
+git checkout develop
+git cherry-pick <fix-commit>
+```
+
+### Archiving Old Releases
+
+When a release is no longer supported:
+
+```bash
+# Tag the end-of-life state
+git tag -a eol/9.8 -m "End of life for version 9.8"
+git push origin eol/9.8
+
+# Delete remote branch (optional)
+git push origin --delete release/9.8
+
+# Keep local branch for reference (optional)
+# Or delete: git branch -d release/9.8
+```
+
+## Common Scenarios
+
+### Scenario 1: Standard Feature Release
+
+```
+1. Feature development
+   - Multiple feature branches from develop
+   - Merge back to develop as completed
+
+2. Release preparation
+   - Create release/9.10 from develop
+   - QA testing begins
+
+3. QA fixes
+   - Create fix branches from release/9.10
+   - Merge fixes to release and develop
+
+4. Deployment
+   - Merge release/9.10 to main
+   - Tag v9.10.0
+   - Forward-merge main to develop
+```
+
+### Scenario 2: Release with RC
+
+```
+1. Feature development (same as above)
+
+2. Release preparation (same as above)
+
+3. Create RC for final validation
+   - Create rc/9.10.0 from release/9.10
+   - Deploy to staging
+
+4. RC passes → Deploy
+   - Merge rc/9.10.0 to main
+   - Tag v9.10.0
+   - Forward-merge main to develop
+   - Delete RC branch
+```
+
+### Scenario 3: Critical Production Bug (Current Release)
+
+```
+1. Production issue identified
+   - Create hotfix/EBASE-999 from main
+
+2. Fix and test
+   - Make minimal fix
+   - Test thoroughly
+
+3. Deploy immediately
+   - Merge to main
+   - Tag release-2.3.1
+   - Forward-merge to develop
+
+4. Propagate if needed
+   - Cherry-pick to active release branches
+```
+
+### Scenario 4: Maintenance Patch for Older Version
+
+```
+1. Customer on v1.2 needs a fix (main is on v2.3)
+   - Create fix/EBASE-1000 from release/1.2
+
+2. Fix and test
+   - Make minimal fix
+   - Tag test-1.2.3-rc1 on release/1.2
+
+3. Deploy maintenance patch
+   - Tag release-1.2.3 directly on release/1.2
+   - DO NOT merge to main (different major version)
+
+4. Propagate if needed
+   - Cherry-pick to release/2.3 and develop if applicable
+```
+
+### Scenario 5: Long-Running Feature
+
+```
+1. Create feature branch
+   - feature/EPP-200 from develop
+
+2. Keep updated (weekly or as needed)
+   - git checkout feature/EPP-200
+   - git merge develop
+   - Resolve conflicts incrementally
+
+3. Complete when ready
+   - Final merge from develop
+   - PR/MR review
+   - Merge to develop
+```
+
+## Merge Conflict Resolution
+
+### Conflicts with Develop
+
+```bash
+# On feature branch
+git checkout feature/EPP-157
+git merge develop
+
+# If conflicts
+# 1. Resolve conflicts in editor
+# 2. Mark as resolved
+git add <resolved-files>
+
+# 3. Complete merge
+git commit
+
+# 4. Test after resolution
+npm test
+
+# 5. Push
+git push origin feature/EPP-157
+```
+
+### Conflicts During PR/MR
+
+```bash
+# Update feature branch with latest develop
+git checkout develop
+git pull origin develop
+git checkout feature/EPP-157
+git merge develop
+
+# Resolve conflicts as above
+
+# Push updated branch
+git push origin feature/EPP-157
+
+# PR/MR will automatically update
+```
+
+## Integration with Other Rules
+
+```yaml
+# Ensure branch names are valid
+requires:
+  - rule.git.branch-naming.v1
+
+# Understand branch purposes
+requires:
+  - rule.git.branch-structure.v1
+
+# Enforce commit message standards
+requires:
+  - rule.development.commit-message.v1
+
+# Link to Jira tickets
+requires:
+  - rule.ticket.current.v1
+```
+
+## Quality Gates
+
+### Before Merging to Develop
+
+- ✅ All tests pass
+- ✅ Code review approved (if required)
+- ✅ No merge conflicts
+- ✅ Branch is up-to-date with develop
+- ✅ Commits reference Jira tickets
+
+### Before Creating Release
+
+- ✅ All planned features merged to develop
+- ✅ Develop is stable (all tests pass)
+- ✅ Version number determined
+- ✅ Changelog generated and committed (BEFORE RC tags)
+- ✅ Single build triggered by changelog push (not multiple builds)
+
+### Before Deploying to Main
+
+- ✅ QA sign-off received
+- ✅ All release tests pass
+- ✅ Deployment plan approved
+- ✅ Rollback plan prepared
+- ✅ Version tag ready
+
+### Before Deploying Hotfix
+
+- ✅ Issue is production-critical
+- ✅ Fix is minimal and tested
+- ✅ Emergency approval obtained
+- ✅ Communication plan executed
+
+## FINAL MUST-PASS CHECKLIST
+
+When executing branch lifecycle workflows:
+
+- [ ] Correct source branch identified (develop for features, release/X.Y for patches, main for hotfixes)
+- [ ] Branch naming follows conventions (see `rule.git.branch-naming.v1`)
+- [ ] Merge strategy uses `--no-ff` for traceability
+- [ ] **Changelog generated and committed BEFORE RC tags** (consolidates build triggers)
+- [ ] Two-stage RC workflow followed: `test-*-rcN` → `release-*-rcN` → `release-*` (see `rule.cicd.tag-based-versioning.v2`)
+- [ ] Version auto-detected: last release from tags, new version from branch name
+- [ ] Tag location correct: current release line on `main`, maintenance release line on `release/X.Y`
+- [ ] Forward-merge executed after deploying to main (for current release line only)
+- [ ] Completed feature/fix/hotfix branches deleted after merge
+- [ ] Merge conflicts resolved and tested
+- [ ] Quality gates passed before promotion
+- [ ] Maintenance releases NEVER merged to main when main is on newer major version
+
+---
+Generated by: rule.git.branch-lifecycle.v1
+Last Updated: 2025-12-06

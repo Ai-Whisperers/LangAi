@@ -1,0 +1,159 @@
+---
+id: rule.setup.project-setup.v1
+kind: rule
+version: 1.0.0
+description: Defines the Gold Standard project structure and setup configuration for .NET repositories
+globs: Directory.Build.props, Directory.Packages.props, global.json, NuGet.Config, cicd/azure-pipelines.yml, **/.cursor/rules/**/*
+governs: Directory.Build.props, Directory.Packages.props, global.json, NuGet.Config, cicd/**/*, **/.cursor/**/*, tickets/**/*, docs/**/*
+implements: project.setup
+requires:
+  - rule.cicd.tag-based-versioning.v2
+  - rule.authoring.rule-sync.v1
+  - rule.documentation.architecture.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: foundation-team, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# Project Setup Rule
+
+## Purpose & Scope
+
+This rule defines the "Gold Standard" project structure and setup configuration for new .NET repositories, based on the reference implementation in `eneve.domain`. It ensures that new projects start with a production-ready foundation including CI/CD, documentation, and package management.
+
+**Applies to**: New .NET repositories or existing repositories being refactored to standards.
+
+**Does not apply to**: Legacy projects not yet scheduled for modernization.
+
+**Reference Implementation**: `eneve.domain` (Gold Standard Plus - 100/100)
+
+## Inputs (Contract)
+
+- Repository name and purpose
+- Target .NET version (Standard: .NET 9.x)
+- Azure DevOps project details
+- Understanding of the "Gold Standard" structure
+
+## Outputs (Contract)
+
+A repository configured with:
+- **Build Infrastructure**: `Directory.Build.props`, `Directory.Packages.props`, `global.json`
+- **CI/CD**: `cicd/azure-pipelines.yml` (automated publishing ready)
+- **Documentation**: `docs/` structure (technical, implementation, rfcs)
+- **Ticket System**: `tickets/` directory with templates
+- **Cursor Config**: `.cursor/` with rules and prompts
+- **Source Layout**: `src/` and `tst/` separation
+
+## Gold Standard Structure
+
+### Root Directory
+```
+repo-root/
+├── .cursor/                 # AI Rules and Prompts
+│   ├── rules/               # Domain-specific rules
+│   ├── prompts/             # Reusable prompts
+│   ├── templars/            # File templates
+│   └── exemplars/           # Good/bad examples
+├── cicd/                    # CI/CD Configuration
+│   ├── azure-pipelines.yml  # Main pipeline definition
+│   ├── docs/                # CI/CD documentation
+│   └── scripts/             # PowerShell helper scripts
+├── docs/                    # Documentation Architecture
+│   ├── technical/           # WHAT exists
+│   ├── implementation/      # HOW to build
+│   └── rfcs/                # FUTURE proposals
+├── src/                     # Source Code
+├── tickets/                 # Ticket Management
+│   ├── templates/           # Ticket templates
+│   └── current.md           # Active ticket (gitignored)
+├── tst/                     # Unit/Integration Tests
+├── Directory.Build.props    # Shared build settings
+├── Directory.Packages.props # Central package management
+├── global.json              # SDK pinning
+├── NuGet.Config             # Package sources
+├── README.md                # Repo overview
+└── Solution.sln             # Visual Studio solution
+```
+
+## Setup Deterministic Steps
+
+### 1. Build Infrastructure Setup
+- Copy `Directory.Build.props` from reference
+- Copy `Directory.Packages.props` from reference
+- Copy `global.json` from reference
+- Copy `NuGet.Config` from reference
+- **Action**: Update properties in `Directory.Build.props` (Authors, RepoUrl)
+
+### 2. CI/CD Setup
+- Create `cicd/` directory
+- Copy `cicd/azure-pipelines.yml` from reference
+- Copy `cicd/scripts/` from reference (see Script Library below)
+- **Action**: Configure feed names in `azure-pipelines.yml` using pattern `NuGet Packages/{RepositoryName}`
+
+#### CI/CD Script Library
+
+**Core Scripts (Required for Level 2: 60/100)**:
+- ✅ `validate-documentation.ps1` - XML documentation completeness
+- ✅ `verify-xml-files.ps1` - Documentation file verification
+- ✅ `generate-doc-report.ps1` - Documentation coverage reporting
+- ✅ `validate-tag-context.ps1` - Tag format validation
+
+**Enhanced Scripts (Recommended for Level 3: 80/100)**:
+- ? `enhanced-coverage-analysis.ps1` - Deep coverage analysis
+- ? `check-breaking-changes.ps1` - API compatibility checking
+- ? `scan-licenses.ps1` - License compliance
+- ? `validate-package-metadata.ps1` - NuGet metadata validation
+- ? `validate-release-notes.ps1` - Release notes quality
+
+**Advanced Scripts (Optional for Level 4: 100/100)**:
+- ? `run-benchmarks.ps1` - Performance benchmarking
+- ? `run-mutation-tests.ps1` - Mutation testing
+- ? `calculate-code-metrics.ps1` - Code metrics tracking
+
+**Reference**: Complete script library at `eneve.domain/cicd/scripts/` (13 scripts)
+
+### 3. Cursor Configuration
+- Copy `.cursor/` directory recursively
+- **Action**: Run `rule-authoring/rule-sync-rule` if needed to get latest rules
+
+### 4. Project Structure
+- Create `src/` and `tst/`
+- Create solution file: `dotnet new sln -n [RepoName]`
+- Add projects to solution
+
+## Validation Checklist
+
+### Build & Package Management
+- [ ] `Directory.Build.props` present and customized
+- [ ] `Directory.Packages.props` present (Central Package Management)
+- [ ] `global.json` pins correct .NET SDK
+- [ ] `NuGet.Config` configured for Azure Artifacts
+
+### CI/CD Pipeline
+- [ ] `cicd/azure-pipelines.yml` present and matches maturity level
+- [ ] `cicd/scripts/` contains core scripts (minimum 4 required scripts)
+- [ ] Pipeline triggers on tags (`release-*`, `test-*`, `coverage-*`)
+- [ ] Feed names configured using pattern `NuGet Packages/{RepositoryName}`
+- [ ] Target maturity level achieved (60/100 minimum, 80/100 recommended, 100/100 best practice)
+
+### Documentation & Standards
+- [ ] `README.md` follows standard template
+- [ ] `.cursor/rules` populated
+- [ ] `tickets/` directory structure created
+
+## OPSEC & Safety
+- **NO** secrets in `NuGet.Config` (use Azure Artifacts Credential Provider)
+- **NO** internal server names hardcoded in templates
+- **NO** PAT tokens in checked-in files
+
+## Related Rules
+- `rule.cicd.tag-based-versioning.v2`
+- `rule.authoring.rule-sync.v1`
+- `rule.documentation.architecture.v1`
+
+## FINAL MUST-PASS CHECKLIST
+- [ ] Repository builds successfully (`dotnet build`)
+- [ ] CI/CD pipeline valid (no YAML errors)
+- [ ] All standard directories present
+- [ ] No secrets committed
+- [ ] Reference implementation (`eneve.domain`) patterns followed

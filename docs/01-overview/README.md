@@ -78,11 +78,13 @@ FINANCIAL MARKET PRODUCT COMPETITOR
 pip install -r requirements.txt
 
 # 2. Configure environment
-cp env.example .env
+cp env.example .env   # macOS/Linux
+# Windows PowerShell:
+#   Copy-Item env.example .env
 # Edit .env with your API keys
 
 # 3. Run research
-python run_research.py "Microsoft"
+python run_research.py --company "Microsoft"
 ```
 
 ## Project Structure

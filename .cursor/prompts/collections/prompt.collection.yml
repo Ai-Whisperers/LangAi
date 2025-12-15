@@ -1,0 +1,23 @@
+id: prompt-authoring-bundle
+name: "Prompt Authoring"
+description: "Core prompts for creating and improving prompt content"
+tags:
+  - prompts
+  - authoring
+  - quality
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/prompt/create-new-prompt.prompt.md
+    kind: prompt
+  - path: prompts/prompt/enhance-prompt.prompt.md
+    kind: prompt
+  - path: prompts/housekeeping/extraction/extract-templar-exemplar.prompt.md
+    kind: prompt
+  - path: prompts/prompt/improve-prompt.prompt.md
+    kind: prompt
+  - path: prompts/prompt/organize-prompts.prompt.md
+    kind: prompt
+  - path: prompts/prompt/validate-prompt.prompt.md
+    kind: prompt
+

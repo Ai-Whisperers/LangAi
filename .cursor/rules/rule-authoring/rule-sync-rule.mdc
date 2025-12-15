@@ -1,0 +1,671 @@
+---
+id: rule.authoring.rule-sync.v1
+kind: rule
+version: 1.0.0
+description: Defines systematic workflow for syncing rule files between repositories to propagate new insights and maintain consistency
+globs: **/*-rule.mdc, **/rules/**/*.mdc, **/templars/**/*.md, **/exemplars/**/*.md
+governs: **/*-rule.mdc, **/rules/**/*.mdc, **/templars/**/*.md, **/exemplars/**/*.md
+implements: rule.authoring.sync
+requires:
+  - rule.authoring.file-structure.v1
+  - rule.authoring.naming-conventions.v1
+  - rule.authoring.provenance-and-versioning.v1
+  - rule.authoring.validation-and-checklists.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ai, last_review: 2025-12-01 }
+alwaysApply: false
+---
+
+# Rule Sync Between Repositories
+
+## Purpose & Scope
+
+This rule defines a systematic workflow for syncing rule files between multiple repositories to ensure consistency and propagate new insights. It enables moving improved rules, new patterns, and best practices from a "source of truth" repository to other repositories that share the same rule framework.
+
+**Applies to**: All repositories using the rule-authoring framework where rules need to be kept consistent across codebases.
+
+**Does not apply to**: Repository-specific rules that are intentionally different, one-time rule migrations, or rules in different frameworks.
+
+## Inputs (Contract)
+
+- Source repository containing rule files (newer or authoritative version)
+- Target repository(ies) where rules should be synced
+- Understanding of which rules should be synced (all, domain-specific, or selective)
+- Access to both repositories' `.cursor/rules/` directories
+- Knowledge of sync direction (one-way or bidirectional)
+
+## Outputs (Contract)
+
+- Sync analysis report comparing rule files between repositories
+- List of rules to be added (present in source, missing in target)
+- List of rules to be updated (version differences)
+- List of rules to be reviewed (conflicting versions)
+- Updated target repository with synced rules
+- Sync log documenting what was synced and why
+- Validation report confirming synced rules comply with framework
+
+## Deterministic Steps
+
+### Step 1: Discover Rules in Both Repositories
+
+1. Scan source repository's `.cursor/rules/` directory
+2. Extract all rule files (`**/*-rule.mdc`)
+3. Parse front-matter to get ID, version, and provenance
+4. Build source rule registry: `{rule_id -> {path, version, last_review}}`
+5. Repeat for target repository
+6. Build target rule registry
+
+### Step 2: Compare and Categorize Differences
+
+For each rule ID found in either registry:
+
+**Category A: Rules to Add** (present in source, missing in target)
+- Rule ID exists in source registry only
+- Action: Copy entire rule file from source to target
+
+**Category B: Rules to Update** (version in source > version in target)
+- Same rule ID in both registries
+- Source version > Target version (compare semantic versions)
+- No local modifications in target (check last_review date)
+- Action: Replace target rule with source rule
+
+**Category C: Rules to Review** (conflicting changes)
+- Same rule ID in both registries
+- Both have been modified since last sync (different last_review dates)
+- Requires human decision on which to keep or how to merge
+- Action: Flag for manual review
+
+**Category D: Rules in Sync** (identical or target newer)
+- Same rule ID and version
+- OR target version > source version
+- Action: No sync needed
+
+### Step 3: Generate Sync Analysis Report
+
+Create report showing:
+
+```markdown
+# Rule Sync Analysis
+
+**Source**: [source repo path]
+**Target**: [target repo path]
+**Analysis Date**: [YYYY-MM-DD HH:MM UTC]
+
+## Summary
+
+- Rules to Add: [count]
+- Rules to Update: [count]
+- Rules to Review: [count]
+- Rules in Sync: [count]
+
+## Rules to Add (Category A)
+
+| Rule ID | Source Version | Domain | Action |
+|---------|----------------|--------|--------|
+| rule.x.y.v1 | 1.0.0 | domain | Add |
+
+## Rules to Update (Category B)
+
+| Rule ID | Source Version | Target Version | Last Modified | Action |
+|---------|----------------|----------------|---------------|--------|
+| rule.x.y.v1 | 1.2.0 | 1.0.0 | 2025-10-01 | Update |
+
+## Rules to Review (Category C)
+
+| Rule ID | Source Version | Target Version | Source Modified | Target Modified |
+|---------|----------------|----------------|-----------------|-----------------|
+| rule.x.y.v1 | 1.3.0 | 1.2.0 | 2025-11-04 | 2025-11-03 |
+
+**Review Needed**: Both versions modified recently, manual merge may be required.
+
+## Rules in Sync (Category D)
+
+[count] rules are already in sync.
+```
+
+### Step 4: Execute Sync (After Review)
+
+For each rule in Categories A and B (after human approval):
+
+1. **Create Sync Branch** (Recommended Pattern)
+   - Create a new branch in target repo: `chore/sync-rules-[source]-[date]`
+   - Perform all sync operations on this branch
+   - Enable Pull Request review for the sync
+
+2. **Validate source rule** against `rule.authoring.file-structure.v1`
+   - Ensure rule has proper front-matter
+   - Ensure rule follows canonical structure
+   - Run validation checklist
+
+3. **Analyze and Diff** (CRITICAL)
+   - Compare source rule with target rule (if exists)
+   - Identify specific changes (additions, modifications, removals)
+   - Verify changes are intended and safe for target context
+   - **NEVER** blindly copy without understanding differences
+   - If significant differences found, flag for manual review
+
+4. **Prepare target location**
+   - Determine correct directory in target repo
+   - Create directory structure if missing
+   - Backup existing file if updating (optional safety)
+
+5. **Copy rule file**
+   - Copy entire file from source to target
+   - Preserve file structure and content exactly
+   - Update file timestamps
+
+6. **Validate in target context**
+   - Ensure no broken dependencies (all `requires` exist in target)
+   - Verify globs/governs patterns match target structure
+   - Check for ID conflicts with other rules in target
+
+7. **Log sync action**
+   - Record in sync log: rule ID, version, action, timestamp
+   - Note in target rule's provenance if needed
+
+8. **Merge Branch**
+   - Submit PR/MR for review
+   - Merge to main/develop after validation passes
+
+### Step 5: Handle Category C (Conflicts)
+
+For rules requiring review:
+
+1. **Present both versions side-by-side**
+   - Show source version with changes since last sync
+   - Show target version with changes since last sync
+   - Highlight differences in contracts, steps, checklist
+
+2. **Prompt for decision**:
+   - Option 1: Keep source (overwrite target)
+   - Option 2: Keep target (skip sync for this rule)
+   - Option 3: Manual merge (requires human intervention)
+   - Option 4: Create v2 in target (both versions coexist)
+
+3. **Execute decision**
+   - Perform chosen action
+   - Document resolution in sync log
+
+### Step 6: Sync Related Assets
+
+After syncing rule files, sync related assets:
+
+**Templars**: 
+- If rule requires templar not in target, sync templar too
+- Apply same version comparison logic
+
+**Exemplars**: 
+- Sync exemplars if referenced by synced rules
+- Maintain `use:` flags and warnings
+
+**Dependencies**:
+- Build dependency graph for synced rules
+- Ensure all `requires` dependencies exist in target
+- Flag missing dependencies for review
+
+### Step 7: Validate Sync Integrity
+
+After sync complete:
+
+1. **Run validation** on all synced rules in target
+   - Parse front-matter
+   - Check canonical structure
+   - Validate all `requires` resolve
+
+2. **Check for broken references**
+   - Scan for path-based references (should be ID-based)
+   - Verify all ID-based references resolve
+   - Flag any unresolvable dependencies
+
+3. **Generate validation report**
+   - List all synced rules
+   - Validation status for each
+   - Any issues discovered
+
+### Step 8: Document Sync
+
+Create sync log in target repository:
+
+```markdown
+# Rule Sync Log
+
+## Sync Session: [YYYY-MM-DD HH:MM UTC]
+
+**Source**: [source repo]
+**Target**: [target repo]
+**Performed by**: [user/agent]
+
+### Rules Added
+
+- `rule.x.y.v1` (1.0.0) - Added to [domain]/
+- `rule.a.b.v1` (1.2.0) - Added to [domain]/
+
+### Rules Updated
+
+- `rule.p.q.v1` - Updated from 1.0.0 to 1.2.0
+- `rule.m.n.v1` - Updated from 1.1.0 to 1.3.0
+
+### Rules Reviewed/Merged
+
+- `rule.c.d.v1` - Kept target version (source changes not applicable)
+- `rule.e.f.v1` - Merged manually, created v2
+
+### Validation Status
+
+- ✅ All synced rules validated successfully
+- ✅ No broken dependencies
+- ✅ No ID conflicts
+
+### Next Review
+
+Recommended next sync: [YYYY-MM-DD] (30 days)
+```
+
+## Sync Strategies
+
+### Strategy 1: Full Domain Sync (Recommended for Initial Sync)
+
+**When to use**: Syncing entire domain (e.g., all ticket rules) for first time
+
+**Process**:
+- Compare all rules in domain folder
+- Sync all Category A and B rules
+- Review all Category C rules
+- Sync related templars and exemplars
+
+**Benefits**:
+- Complete consistency across domain
+- No partial states
+- All dependencies included
+
+**Time**: 1-2 hours for full domain
+
+### Strategy 2: Selective Rule Sync (Recommended for Regular Updates)
+
+**When to use**: Syncing specific improved rules after enhancements
+
+**Process**:
+- Identify specific rules that changed
+- Compare only those rules
+- Sync with their direct dependencies
+- Skip unchanged rules
+
+**Benefits**:
+- Fast, focused sync
+- Minimal disruption
+- Easy to review
+
+**Time**: 15-30 minutes per rule
+
+### Strategy 3: Incremental Sync (Recommended for Ongoing Maintenance)
+
+**When to use**: Regular syncing to keep repos up to date
+
+**Process**:
+- Track last sync date
+- Compare only rules modified since last sync
+- Sync incrementally
+- Maintain sync log for audit trail
+
+**Benefits**:
+- Minimal changes per sync
+- Clear audit trail
+- Easier conflict resolution
+
+**Frequency**: Weekly or monthly
+
+### Strategy 4: Bidirectional Sync (Advanced)
+
+**When to use**: Both repos actively developing rules
+
+**Process**:
+- Compare both directions (source -> target AND target -> source)
+- Identify newest version of each rule
+- Sync bidirectionally based on last_review dates
+- Merge when both modified
+
+**Benefits**:
+- Both repos benefit from improvements
+- No "master" repo needed
+- Collaborative rule development
+
+**Complexity**: Higher, requires conflict resolution strategy
+
+## Sync Decision Matrix
+
+| Source Version | Target Version | Source Modified | Target Modified | Action |
+|----------------|----------------|-----------------|-----------------|--------|
+| 1.2.0 | Missing | Recent | N/A | **Add** (Category A) |
+| 1.2.0 | 1.0.0 | Recent | Old | **Update** (Category B) |
+| 1.2.0 | 1.3.0 | Recent | Recent | **Review** - Target newer |
+| 1.2.0 | 1.2.0 | Recent | Recent | **Review** - Same version, both modified (Category C) |
+| 1.2.0 | 1.2.0 | Old | Old | **Skip** - Already synced (Category D) |
+| 1.0.0 | 1.2.0 | Old | Recent | **Skip** - Target ahead (Category D) |
+
+**Decision Factors**:
+1. **Version comparison**: Semantic version comparison (MAJOR.MINOR.PATCH)
+2. **Modification dates**: Compare `provenance.last_review` dates
+3. **Staleness threshold**: Consider rules older than 90 days as potentially stale
+4. **Domain boundaries**: Some domains may be repo-specific (don't sync)
+
+## Conflict Resolution Patterns
+
+### Pattern 1: Source Wins (Default for One-Way Sync)
+
+**When**: Source is authoritative, target is receiving updates
+
+**Rule**: Always use source version for Categories A and B
+
+**Category C**: Present conflict, but recommend source version
+
+### Pattern 2: Newest Wins
+
+**When**: Both repos collaborating, want latest improvements
+
+**Rule**: Compare `last_review` dates, use most recent
+
+**Category C**: Use version with most recent `last_review`
+
+### Pattern 3: Highest Version Wins
+
+**When**: Version numbers indicate maturity
+
+**Rule**: Compare semantic versions, use highest
+
+**Category C**: Use highest version number
+
+### Pattern 4: Manual Merge
+
+**When**: Both versions have valuable improvements
+
+**Process**:
+1. Create working branch in target
+2. Copy source version to temp location
+3. Present diff of changes
+4. Human reviews and merges manually
+5. Bump to new minor or major version
+6. Update `last_review` to today
+7. Document merge in sync log
+
+## Formatting Requirements
+
+### Sync Analysis Report
+
+Must follow structure:
+- Title: "# Rule Sync Analysis"
+- Source/Target identification
+- Summary with counts
+- Four category tables (A, B, C, D)
+- Clear action recommendations
+
+### Sync Log
+
+Must follow structure:
+- Title: "# Rule Sync Log"
+- Session metadata (date, source, target, performer)
+- Categorized actions (Added, Updated, Reviewed)
+- Validation status
+- Next review date
+
+Location: Store in target repo at `.cursor/rules/sync-log.md` (append-only)
+
+## OPSEC and Leak Control
+
+When syncing rules:
+
+- **NO repository-specific paths**: Rules should use relative paths only
+- **NO credentials or tokens**: Validate rules for OPSEC before syncing
+- **NO email addresses**: Check for email leaks in synced rules
+- **NO internal URLs**: Remove internal URLs specific to one repo
+- **Validate exemplars**: Ensure no sensitive example data in exemplars
+
+Sync validation must include OPSEC check per `rule.authoring.validation-and-checklists.v1`.
+
+## Integration Points
+
+This rule integrates with:
+
+- **rule.authoring.provenance-and-versioning.v1**: Version comparison logic
+- **rule.authoring.file-structure.v1**: Validation of synced rules
+- **rule.authoring.validation-and-checklists.v1**: Post-sync validation
+- **rule.authoring.cross-references.v1**: Dependency resolution across repos
+
+## Failure Modes and Recovery
+
+### Failure: Missing Dependencies
+
+**Detection**: Synced rule requires dependencies not in target repo
+
+**Recovery**:
+- Identify missing dependencies from `requires` field
+- Add to sync queue (cascade sync)
+- OR flag for manual addition
+- Validate all dependencies present before marking sync complete
+
+**Prevention**: Always analyze dependency graph before syncing
+
+### Failure: ID Conflicts
+
+**Detection**: Target repo has different rule with same ID
+
+**Recovery**:
+- Compare rule content (might be false positive - same rule, different path)
+- If truly different rules, rename one to avoid conflict
+- Update cross-references to new ID
+
+**Prevention**: Maintain rule registries, validate ID uniqueness
+
+### Failure: Broken File Paths
+
+**Detection**: Rule contains repository-specific absolute paths
+
+**Recovery**:
+- Convert to relative paths
+- OR flag for manual review if path-dependent
+- Update and test rule in target context
+
+**Prevention**: Rules should never use absolute paths
+
+### Failure: Version Regression
+
+**Detection**: Sync would downgrade target rule to older version
+
+**Recovery**:
+- Skip sync for that rule
+- Flag as "target ahead" in report
+- Consider reverse sync (target -> source)
+
+**Prevention**: Always compare versions before syncing
+
+### Failure: Validation Failure Post-Sync
+
+**Detection**: Synced rule fails validation in target repo
+
+**Recovery**:
+- Revert synced rule (restore from backup)
+- Investigate why rule fails in target context
+- Fix rule or target context issue
+- Re-sync after fix
+
+**Prevention**: Dry-run sync with validation before committing
+
+## Provenance Footer Specification
+
+No provenance footer needed for sync operation (rules themselves already have provenance metadata).
+
+However, sync log should document:
+
+```markdown
+---
+Sync performed: [YYYY-MM-DD HH:MM UTC]
+Source: [source repo]
+Target: [target repo]
+Agent: cursor-agent | rule.authoring.rule-sync.v1
+---
+```
+
+## Example Sync Workflow
+
+### Scenario: Syncing Ticket Rules from Foundation to Domain
+
+**Context**: 
+- Source: `eneve.ebase.foundation` (primary development repo)
+- Target: `eneve.domain` (older repo needing updates)
+- Domain: `ticket/` rules
+
+**Steps**:
+
+1. **Discover**:
+   ```
+   Source rules (eneve.ebase.foundation/.cursor/rules/ticket/):
+   - plan-rule.mdc (v1.2.0)
+   - progress-rule.mdc (v1.1.0)
+   - context-rule.mdc (v1.0.0)
+   
+   Target rules (eneve.domain/.cursor/rules/ticket/):
+   - plan-rule.mdc (v1.0.0)
+   - progress-rule.mdc (v1.1.0)
+   - [context-rule.mdc missing]
+   ```
+
+2. **Categorize**:
+   - **Add**: context-rule.mdc (v1.0.0)
+   - **Update**: plan-rule.mdc (1.0.0 -> 1.2.0)
+   - **Skip**: progress-rule.mdc (already at 1.1.0)
+
+3. **Generate Report**:
+   ```markdown
+   # Rule Sync Analysis
+   
+   **Source**: eneve.ebase.foundation
+   **Target**: eneve.domain
+   
+   ## Summary
+   - Rules to Add: 1
+   - Rules to Update: 1
+   - Rules to Review: 0
+   - Rules in Sync: 1
+   
+   ## Actions Recommended
+   1. Add: context-rule.mdc (new rule)
+   2. Update: plan-rule.mdc (1.0.0 -> 1.2.0)
+   ```
+
+4. **Execute Sync**:
+   - Copy `context-rule.mdc` to target
+   - Replace `plan-rule.mdc` in target with source version
+   - Validate both files
+
+5. **Validate**:
+   - Both rules pass validation
+   - No broken dependencies
+   - Globs/governs match target structure
+
+6. **Log**:
+   ```markdown
+   # Rule Sync Log
+   
+   ## Sync Session: 2025-12-01 10:30 UTC
+   
+   ### Rules Added
+   - rule.ticket.context.v1 (1.0.0)
+   
+   ### Rules Updated
+   - rule.ticket.plan.v1 (1.0.0 -> 1.2.0)
+   
+   ### Validation
+   - ✅ All synced rules validated
+   ```
+
+## Automation Considerations
+
+### Automated Sync (Caution Required)
+
+**Safe to automate**:
+- Category A (Add) - No existing rule to overwrite
+- Category B (Update) - Clear version progression, no local mods
+
+**Requires manual review**:
+- Category C (Conflicts) - Requires human decision
+- Any OPSEC violations detected
+- Missing dependencies in target
+
+### Sync Triggers
+
+**Manual trigger** (recommended): 
+- User initiates sync: "Sync rules from foundation to domain"
+- Review report before executing
+
+**Scheduled trigger** (advanced):
+- Weekly/monthly automated scan
+- Generate report
+- Execute only Category A (Add) automatically
+- Flag B and C for human review
+
+**Event trigger** (advanced):
+- After major rule update in source
+- Notify target repo maintainers
+- Suggest sync
+
+## Best Practices
+
+### DO:
+
+✅ **Always validate before syncing**: Run `rule.authoring.validation-and-checklists.v1` on source rules
+✅ **Review sync report**: Don't auto-execute without reviewing
+✅ **Check dependencies**: Ensure all `requires` exist in target
+✅ **Maintain sync log**: Append-only log for audit trail
+✅ **Test in target context**: Rules may behave differently in different repos
+✅ **Use semantic versioning**: Compare versions properly
+✅ **Backup before overwriting**: Keep copy of old version before updating
+
+### DON'T:
+
+❌ **Sync without comparing versions**: Always check version numbers
+❌ **Overwrite newer target versions**: Respect version progression
+❌ **Sync repository-specific rules**: Some rules are intentionally different
+❌ **Sync without validation**: Invalid rules can break target repo
+❌ **Ignore conflicts**: Category C requires explicit decision
+❌ **Sync broken dependencies**: Resolve dependency chains first
+❌ **Forget to document**: Always log what was synced
+
+## Repository-Specific Exclusions
+
+Some rules should NOT be synced because they're repository-specific:
+
+**Exclude**:
+- Rules with repo-specific paths in globs/governs
+- Rules referencing repo-specific dependencies
+- Rules in custom domains unique to one repo
+- Rules explicitly marked as "local-only" in provenance
+
+**How to mark non-syncable**:
+
+```yaml
+provenance:
+  owner: team-local
+  last_review: 2025-12-01
+  sync: local-only
+```
+
+Sync process should respect `sync: local-only` flag and skip those rules.
+
+## Related Rules
+
+- `rule.authoring.file-structure.v1` - Validation of synced rules
+- `rule.authoring.naming-conventions.v1` - Consistent naming across repos
+- `rule.authoring.provenance-and-versioning.v1` - Version comparison logic
+- `rule.authoring.validation-and-checklists.v1` - Post-sync validation
+- `rule.authoring.cross-references.v1` - Dependency resolution
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Sync analysis report generated with all four categories (A, B, C, D)
+- [ ] All source rules validated before syncing (pass rule.authoring.file-structure.v1)
+- [ ] **Analysis and Diff performed** - NO blind copies
+- [ ] Version comparison uses semantic versioning (MAJOR.MINOR.PATCH)
+- [ ] Category C conflicts presented for manual review (not auto-resolved)
+- [ ] All synced rules validated in target context (dependencies resolve)
+- [ ] Sync log created/updated with session details
+- [ ] OPSEC validated for all synced rules (no secrets/tokens/URLs/emails)
+- [ ] Repository-specific rules excluded (respect sync: local-only flag)

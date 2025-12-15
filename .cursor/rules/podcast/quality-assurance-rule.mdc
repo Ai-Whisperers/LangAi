@@ -1,0 +1,389 @@
+---
+rule_id: podcast.quality-assurance-rule
+title: "Podcast Quality Assurance Standards"
+description: "Comprehensive validation framework ensuring podcast episodes meet professional standards before recording and release"
+version: 1.0.0
+created: 2025-12-13
+status: active
+kind: rule
+governs: **/prompts/podcast/validate-script-quality.prompt.md, **/prompts/podcast/optimize-script-flow.prompt.md
+globs: **/prompts/podcast/validate-script-quality.prompt.md, **/prompts/podcast/optimize-script-flow.prompt.md
+implements: podcast.quality-assurance
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-podcast, last_review: 2025-12-13 }
+alwaysApply: false
+---
+
+# Podcast Quality Assurance Standards
+
+## Purpose
+
+Establish comprehensive validation framework ensuring cinema podcast episodes meet professional standards of content accuracy, engagement quality, and production excellence before recording investment and public release.
+
+## Scope
+
+**Covers**:
+- Content accuracy and analytical rigor validation
+- Engagement and entertainment value assessment
+- Production readiness and technical quality checks
+- Audience value and educational impact evaluation
+- Risk assessment and mitigation strategies
+
+**Does Not Cover**:
+- Research methodology (see `rule.podcast.content-research-rule`)
+- Script formatting (see `rule.podcast.script-formatting-rule`)
+- Audio production techniques
+
+## When to Apply
+
+Apply when:
+- Final script validation before recording
+- Episode content review and improvement
+- Quality control checkpoints in production workflow
+- Risk assessment before public release
+- Establishing quality benchmarks for series consistency
+
+## Core Principles
+
+### 1. Prevention Over Correction
+**Validate early, fix immediately** - Identify and resolve quality issues before recording investment, preventing expensive post-production fixes.
+
+### 2. Audience-Centric Validation
+**Listener experience drives standards** - Every validation criterion serves ultimate goal of delivering valuable, engaging podcast content to audience.
+
+### 3. Balanced Quality Dimensions
+**No single aspect defines quality** - Content accuracy, entertainment value, and production excellence must coexist in appropriate balance.
+
+### 4. Continuous Improvement
+**Quality standards evolve** - Use validation results to improve future episodes and refine production processes.
+
+## Quality Validation Framework
+
+### Phase 1: Content Integrity Validation
+
+#### Analytical Accuracy Assessment
+**Factual Correctness**:
+- Source information accurately represented without distortion
+- Technical film terminology used appropriately and explained
+- Historical facts verified and contextualized correctly
+- Critical interpretations supported by evidence or clearly marked as opinion
+
+**Analytical Rigor**:
+- Arguments logically structured with clear supporting evidence
+- Multiple perspectives acknowledged when relevant
+- Contradictions between sources addressed thoughtfully
+- Original insights add genuine value beyond source synthesis
+
+#### Attribution Standards
+**Source Transparency**:
+- All significant ideas properly attributed to originating sources
+- Source credibility context provided for audience understanding
+- Clear distinction between research consensus and personal opinion
+- Academic or specialized sources presented with appropriate authority
+
+### Phase 2: Engagement Quality Validation
+
+#### Entertainment Value Assessment
+**Attention Maintenance**:
+- Strong opening hook captures interest within first 30 seconds
+- Content variety prevents listener fatigue (analysis, anecdote, insight cycles)
+- Strategic engagement elements (questions, stories, revelations) placed effectively
+- Pacing builds and maintains momentum throughout episode
+
+**Emotional Connection**:
+- Authentic host passion conveyed through delivery
+- Personal anecdotes enhance rather than distract from analysis
+- Audience empathy and understanding demonstrated
+- Memorable moments created through emotional resonance
+
+#### Educational Impact Evaluation
+**Learning Value**:
+- Complex topics explained accessibly for target audience
+- Key insights clearly highlighted and summarized
+- Practical takeaways provided for listener application
+- Progressive revelation maintains curiosity and satisfaction
+
+### Phase 3: Production Readiness Validation
+
+#### Script Optimization Check
+**Delivery Enhancement**:
+- Conversational language optimized for spoken delivery
+- Natural transitions between complex and simple content
+- Performance cues enhance rather than constrain delivery
+- Timing estimates realistic for planned content depth
+
+**Technical Quality**:
+- Professional formatting maintained throughout
+- Production cues clear and unambiguous
+- Edit points strategically located for smooth flow
+- Accessibility features functional for all users
+
+#### Risk Assessment
+**Content Risks**:
+- Potentially controversial topics handled with appropriate nuance
+- Sensitive cultural or historical contexts addressed thoughtfully
+- Personal opinions clearly distinguished from objective analysis
+- Potential audience trigger warnings identified and addressed
+
+**Production Risks**:
+- Complex technical explanations have adequate time allocation
+- High-energy segments balanced with restful content
+- Backup content prepared for timing variations
+- Recording environment requirements clearly specified
+
+### Phase 4: Audience Value Validation
+
+#### Target Audience Alignment
+**Demographic Fit**:
+- Content depth appropriate for stated audience knowledge level
+- Language and references accessible to target demographic
+- Cultural context relevant to primary listener base
+- Value proposition clearly delivered through content
+
+#### Series Consistency Check
+**Brand Alignment**:
+- Episode maintains established series voice and approach
+- Quality level consistent with previous episodes
+- Format variations (if any) enhance rather than confuse
+- Series-long themes or character development maintained
+
+#### Market Value Assessment
+**Competitive Positioning**:
+- Unique insights or perspectives clearly established
+- Production quality meets or exceeds category standards
+- Content provides genuine value beyond entertainment
+- Potential for listener loyalty and recommendation identified
+
+## Validation Scoring System
+
+### Quality Dimensions (0-10 Scale)
+
+#### Content Quality Score
+- **9-10**: Exceptional analytical depth with flawless accuracy
+- **7-8**: Strong analysis with minor attribution or accuracy issues
+- **5-6**: Adequate analysis with some factual or logical gaps
+- **3-4**: Significant analytical weaknesses requiring major revision
+- **0-2**: Fundamental content problems preventing release
+
+#### Engagement Quality Score
+- **9-10**: Highly engaging with exceptional entertainment value
+- **7-8**: Well-paced and engaging with strong audience connection
+- **5-6**: Moderately engaging but with pacing or connection issues
+- **3-4**: Limited engagement requiring significant improvement
+- **0-2**: Poorly engaging content needing complete restructuring
+
+#### Production Quality Score
+- **9-10**: Professional production-ready with excellent formatting
+- **7-8**: Solid production quality with minor optimization opportunities
+- **5-6**: Adequate production quality with notable improvement areas
+- **3-4**: Significant production issues requiring major work
+- **0-2**: Unprofessional production quality blocking release
+
+### Overall Quality Rating
+**Formula**: (Content × 0.4) + (Engagement × 0.4) + (Production × 0.2)
+
+**Rating Scale**:
+- **Excellent (27-30)**: Release-ready with exceptional quality
+- **Good (24-26)**: Release-ready with strong quality
+- **Satisfactory (21-23)**: Release-ready with acceptable quality
+- **Needs Work (18-20)**: Requires revision before release
+- **Major Issues (0-17)**: Significant problems requiring substantial rework
+
+## Quality Assurance Workflow
+
+### Pre-Recording Checkpoint
+**Validation Requirements**:
+1. **Content Integrity Check**: All factual claims verified, sources properly attributed
+2. **Engagement Assessment**: Script tested for attention maintenance and flow
+3. **Production Readiness**: Technical quality confirmed, timing realistic
+4. **Risk Assessment**: Potential issues identified and mitigation planned
+
+**Decision Gate**:
+- **Proceed to Recording**: Quality scores meet minimum thresholds
+- **Minor Revisions**: Address specific issues (1-2 day timeline)
+- **Major Revisions**: Significant content or structural changes needed
+- **Cancel Episode**: Quality issues prevent viable episode creation
+
+### Post-Recording Validation
+**Additional Checks**:
+1. **Delivery Quality**: Actual performance matches script optimization
+2. **Timing Accuracy**: Recorded episode fits intended runtime
+3. **Technical Quality**: Audio quality meets production standards
+4. **Content Delivery**: Analytical points successfully conveyed
+
+### Release Readiness Assessment
+**Final Validation**:
+1. **Audience Value Confirmation**: Episode provides clear value to listeners
+2. **Series Consistency**: Maintains quality and style of previous episodes
+3. **Risk Mitigation**: All identified risks adequately addressed
+4. **Improvement Opportunities**: Lessons learned documented for future episodes
+
+## Quality Improvement Process
+
+### Issue Identification and Categorization
+**Content Issues**:
+- Factual inaccuracies requiring correction
+- Analytical weaknesses needing strengthening
+- Attribution problems to be resolved
+- Source quality concerns to be addressed
+
+**Engagement Issues**:
+- Pacing problems requiring restructuring
+- Connection gaps needing enhancement
+- Entertainment value deficiencies to improve
+- Audience attention challenges to resolve
+
+**Production Issues**:
+- Script formatting requiring cleanup
+- Timing estimation needing adjustment
+- Technical quality needing improvement
+- Delivery optimization opportunities
+
+### Revision Prioritization
+**Critical Priority (Fix Before Recording)**:
+- Factual inaccuracies that mislead audience
+- Major analytical flaws undermining credibility
+- Severe pacing issues causing listener abandonment
+- Technical problems preventing professional delivery
+
+**High Priority (Fix Before Release)**:
+- Attribution errors reducing trust
+- Moderate analytical weaknesses
+- Engagement issues reducing enjoyment
+- Production quality inconsistencies
+
+**Enhancement Priority (Consider for Improvement)**:
+- Minor analytical refinements
+- Engagement optimizations
+- Production polish opportunities
+- Future episode improvement applications
+
+## Success Metrics
+
+- **Quality Consistency**: Average quality scores across episode series
+- **Recording Efficiency**: Percentage of episodes proceeding to recording without major revisions
+- **Audience Satisfaction**: Listener feedback and retention metrics
+- **Improvement Rate**: Quality score improvements over time
+- **Risk Mitigation**: Successful avoidance of major quality incidents
+
+## Integration with Other Rules
+
+**Works With**:
+- `rule.podcast.content-research-rule` - Validates research quality foundation
+- `rule.podcast.authentic-voice-rule` - Ensures voice quality standards
+- `rule.podcast.script-formatting-rule` - Validates formatting effectiveness
+
+**Enables**:
+- `rule.podcast.recording-standards-rule` - Quality validation enables efficient recording
+- `rule.podcast.release-workflow-rule` - Ensures episodes meet release criteria
+
+## Inputs (Contract)
+
+- Episode script or content requiring validation
+- Established quality standards and criteria
+- Target audience expectations and engagement metrics
+- Production timeline and resource constraints
+
+## Outputs (Contract)
+
+- Comprehensive quality assessment with scored dimensions
+- Identified improvement areas with prioritized action items
+- Validation evidence documenting compliance or gaps
+- Release readiness determination with risk assessment
+
+## Deterministic Steps
+
+1. **Assess Content Integrity**: Validate analytical accuracy and attribution standards
+2. **Evaluate Engagement Quality**: Review entertainment value and audience connection
+3. **Check Production Readiness**: Verify technical quality and formatting standards
+4. **Calculate Quality Scores**: Apply scoring rubric to three dimensions
+5. **Determine Release Status**: Apply decision matrix for recording/release approval
+6. **Document Improvements**: Capture lessons learned for future episode enhancement
+
+## Formatting Requirements
+
+Quality assessment follows standardized report format:
+- Executive summary with overall rating and key findings
+- Detailed scoring breakdown by dimension with evidence
+- Prioritized improvement recommendations with timelines
+- Validation evidence and compliance documentation
+
+## OPSEC and Leak Control
+
+- NO confidential audience feedback or personal data
+- NO internal quality scoring methodologies
+- NO proprietary production techniques or tools
+- NO unreleased episode content in assessment reports
+
+## Integration Points
+
+- Validates output from `rule.podcast.content-research-rule` and `rule.podcast.authentic-voice-rule`
+- Works with `rule.podcast.script-formatting-rule` for production readiness
+- Enables `rule.podcast.recording-standards-rule` and `rule.podcast.release-workflow-rule`
+
+## Failure Modes and Recovery
+
+**False Positive Quality**: Episode appears ready but has hidden issues
+- **Detection**: Post-release audience feedback reveals problems
+- **Recovery**: Implement comprehensive pre-release testing, add validation layers
+
+**Over-Rigorous Standards**: Quality requirements prevent viable episode creation
+- **Detection**: Episodes consistently fail validation despite quality content
+- **Recovery**: Review and adjust scoring criteria, document exceptions
+
+**Validation Blind Spots**: Assessment misses critical quality dimensions
+- **Detection**: Pattern of similar issues in released episodes
+- **Recovery**: Expand validation checklist, add missing criteria
+
+## Provenance Footer Specification
+
+Quality assessment reports include validation provenance:
+
+```
+Produced-by: podcast.quality-assurance-rule | content-score={{score}} | engagement-score={{score}} | production-score={{score}} | overall={{rating}} | ts={{timestamp}}
+```
+
+## Tool Integration
+
+**Quality Assessment Tools**:
+- **Validation Checklist**: Standardized quality criteria evaluation
+- **Scoring Rubric**: Objective quality dimension assessment
+- **Feedback Collection**: Audience and peer review systems
+- **Analytics Integration**: Listener engagement and retention tracking
+
+**Improvement Tracking**:
+- **Quality Dashboard**: Visual representation of quality metrics over time
+- **Issue Database**: Catalog of common quality issues and solutions
+- **Improvement Log**: Documentation of changes made based on validation results
+
+## Exception Handling
+
+### Quality Threshold Adjustments
+**Episode Type Variations**: Different quality standards for different episode formats
+**Time Constraints**: Adjusted standards when production timeline limited
+**Experimental Content**: Modified criteria for testing new approaches
+
+**Adjustment Process**:
+1. **Document Rationale**: Clear reason for quality standard modification
+2. **Risk Assessment**: Evaluate potential impact of lowered standards
+3. **Mitigation Plan**: Strategies to minimize quality impact
+4. **Review Schedule**: Timeline for returning to full quality standards
+
+## FINAL VALIDATION CHECKLIST
+
+Before episode release:
+
+- [ ] Content integrity fully validated with accurate information and proper attribution
+- [ ] Engagement quality confirmed with strong hooks and maintained attention
+- [ ] Production readiness verified with professional formatting and realistic timing
+- [ ] Audience value assessed with clear educational or entertainment benefits
+- [ ] Risk assessment completed with mitigation strategies for identified issues
+- [ ] Quality scores calculated and minimum thresholds met
+- [ ] Revision prioritization completed for any identified issues
+- [ ] Improvement documentation captured for future episode enhancement
+- [ ] Final approval obtained from all relevant stakeholders
+
+---
+
+**TL;DR**: Comprehensive quality validation framework ensuring cinema podcast episodes deliver exceptional content accuracy, engagement value, and production quality through systematic assessment and continuous improvement.

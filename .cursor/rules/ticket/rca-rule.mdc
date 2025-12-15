@@ -1,0 +1,171 @@
+---
+id: rule.ticket.rca.v1
+kind: rule
+version: 1.0.1
+description: Rules for rca.md - Root Cause Analysis for defects and issues with prevention strategies
+globs: **/tickets/**/rca.md, **/tickets/**/plan.md, **/tickets/**/progress.md, **/tickets/**/timeline.md
+governs: **/tickets/**/rca.md
+implements: rca.analyze
+requires:
+  - rule.ticket.plan.v1
+  - rule.ticket.progress.v1
+  - rule.ticket.timeline.v1
+  - templar.rca.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# RCA Rule
+
+## Purpose & Scope
+
+The rca.md file conducts Root Cause Analysis for defects and issues. It serves as the ticket's "forensic analysis" - systematically investigating problems to prevent recurrence through structured analysis, resolution documentation, and prevention planning.
+
+**Applies to**: All `rca.md` files in `tickets/**/` directories for tickets addressing defects, issues, or problems requiring root cause analysis.
+
+**Does not apply to**: Template files (`templates/`), feature tickets without defects, or tickets that are purely enhancement-focused.
+
+## Inputs (Contract)
+
+- Ticket ID in format `PROJECT-NUMBER`
+- Directory `tickets/TICKET-ID/` must exist
+- Problem or defect identified and documented
+- Investigation completed or in progress
+- `progress.md` exists with investigation chronology
+- `timeline.md` exists with event timeline (optional but recommended)
+- Resolution implemented or planned
+- Current timestamp for RCA creation
+
+## Outputs (Contract)
+
+- Creates `tickets/TICKET-ID/rca.md`
+- Ensures sections present: `## Problem Statement`, `## Impact Assessment`, `## Timeline of Events`, `## Investigation Process`, `## Root Cause`, `## Contributing Factors`, `## Resolution`, `## Prevention Measures`, `## Process Improvements`, `## Lessons Learned`
+- Structure follows `templar.rca.v1`
+- Root cause identified with category (Human Error, Process Gaps, System Limitations, Communication Issues, Resource Constraints, Environmental Factors)
+- Prevention measures defined to prevent recurrence
+- Updates timeline.md with entry: `[TIMESTAMP] - RCA - Root cause analysis completed`
+- Stakeholder-appropriate language for sharing with team and management
+
+## Deterministic Steps
+
+Execute in order when creating rca.md:
+
+1. Validate ticket ID format matches `PROJECT-NUMBER` pattern
+2. Verify `tickets/TICKET-ID/` directory exists
+3. Verify problem is clearly documented (in plan.md or progress.md)
+4. Load `templar.rca.v1` for structure reference
+5. Generate `## Problem Statement` - Clear description of what went wrong
+6. Generate `## Impact Assessment` - Severity, scope, users affected, duration
+7. Generate `## Timeline of Events` - Chronological sequence from progress.md and timeline.md
+8. Generate `## Investigation Process` - How root cause was identified
+9. Generate `## Root Cause` - Fundamental reason, assign category
+10. Generate `## Contributing Factors` - Additional enabling factors
+11. Generate `## Resolution` - Steps taken to fix immediate problem
+12. Generate `## Prevention Measures` - Specific actions to prevent recurrence
+13. Generate `## Process Improvements` - Systemic changes identified
+14. Generate `## Lessons Learned` - Key insights for team and organization
+15. Write rca.md to disk
+16. Append entry to timeline.md: `[TIMESTAMP] - RCA - Root cause analysis completed`
+
+## Formatting Requirements
+
+RCA.md must follow `templar.rca.v1` structure:
+
+- **Heading Level 1**: File title (optional, "# Root Cause Analysis" or "# TICKET-ID RCA")
+- **Heading Level 2**: Required sections in order:
+  1. `## Problem Statement` - Clear, concise problem description
+  2. `## Impact Assessment` - Severity, Scope, Users Affected, Duration
+  3. `## Timeline of Events` - Chronological bullet list with timestamps
+  4. `## Investigation Process` - How root cause was found
+  5. `## Root Cause` - Fundamental cause with category
+  6. `## Contributing Factors` - Bullet list of enabling factors
+  7. `## Resolution` - Numbered steps taken to fix
+  8. `## Prevention Measures` - Bullet list with measure types
+  9. `## Process Improvements` - Systemic changes identified
+  10. `## Lessons Learned` - Bullet list of insights
+- **Root Cause Categories**: Must assign one category (Human Error, Process Gaps, System Limitations, Communication Issues, Resource Constraints, Environmental Factors)
+- **Prevention Measures**: Each should specify type (Technical, Process, Training, Monitoring, Documentation)
+- **Objective Tone**: Blameless analysis focused on systemic improvement
+
+## OPSEC and Leak Control
+
+When writing RCA:
+- NO internal system paths or server names
+- NO credentials, tokens, or API keys
+- NO email addresses or personal names (use roles: "developer", "team lead")
+- NO customer data or production identifiers
+- NO sensitive URLs or internal hostnames
+- Redact specific system names; use generic references
+- Focus on patterns and systemic issues, not individual blame
+- Problem descriptions should not reveal competitive intelligence or security vulnerabilities
+
+## Integration Points
+
+- **Syncs with**: `rule.ticket.plan.v1` (problem statement matches ticket objective)
+- **Informed by**: `rule.ticket.progress.v1` (investigation timeline from progress)
+- **Incorporates**: `rule.ticket.timeline.v1` (event timeline for impact assessment)
+- **Referenced by**: `rule.ticket.workflow.v1` for defect closure
+- **JIRA Sync**: RCA syncs back to JIRA for tracking and reporting
+- **Knowledge Management**: Learnings and prevention measures captured for organization
+- **Process Improvement**: Systemic issues escalated to management
+- **Quality Assurance**: Prevention measures feed into QA processes
+
+## Failure Modes and Recovery
+
+**Root cause unclear after investigation**:
+
+- Detection: Cannot identify fundamental cause
+- Recovery: Document known contributing factors, continue investigation
+- Fallback: Mark root cause as "Under Investigation" with timeline for completion
+
+**Multiple root causes identified**:
+
+- Detection: Problem has several fundamental causes
+- Recovery: Document primary root cause, list others as contributing factors
+- Fallback: Create separate RCA for each distinct root cause
+
+**Prevention measures unclear**:
+
+- Detection: Cannot determine how to prevent recurrence
+- Recovery: Document short-term mitigation, escalate for process review
+- Fallback: Note need for further analysis on prevention strategy
+
+**Impact assessment data unavailable**:
+
+- Detection: Cannot determine users affected or duration
+- Recovery: Estimate based on available information, mark as approximate
+- Fallback: Note limited impact data in assessment section
+
+**Timeline.md update fails**:
+
+- Detection: Cannot write to timeline.md
+- Recovery: Continue with rca.md creation, log warning
+- Fallback: RCA created but timeline not updated
+
+## Provenance Footer Specification
+
+Not applicable - rca.md is analytical document, not generated output. Provenance tracked via timeline.md entry.
+
+## Related Rules
+
+- `rule.ticket.plan.v1` - Problem statement aligns with ticket objective
+- `rule.ticket.progress.v1` - Investigation process sourced from progress
+- `rule.ticket.timeline.v1` - Event timeline incorporated for impact assessment
+- `rule.ticket.workflow.v1` - RCA part of defect closure process
+- `rule.ticket.recap.v1` - RCA insights incorporated into recap
+- `templar.rca.v1` - Structure template for rca.md
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (no internal paths, credentials, names, PII)
+- [ ] rca.md contains all required sections
+- [ ] Problem Statement is clear and specific
+- [ ] Root Cause identified with category assigned
+- [ ] Contributing Factors listed (at least 1)
+- [ ] Resolution steps documented (what was done)
+- [ ] Prevention Measures defined (at least 2) with types specified
+- [ ] Process Improvements identified
+- [ ] Lessons Learned captured (at least 2)
+- [ ] Only rca.md modified (governs compliance)
+- [ ] timeline.md updated with RCA completion entry

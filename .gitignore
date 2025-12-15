@@ -346,4 +346,10 @@ models/
 # - docs/             Documentation
 # - examples/         Example code
 # - deploy/           Deployment configs
-# - .github/          GitHub Actions (except logs)
+
+# =============================================================================
+# Archive and Agent Memory
+# =============================================================================
+.archive/
+.antigravity/
+

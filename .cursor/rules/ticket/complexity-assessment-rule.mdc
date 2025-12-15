@@ -1,0 +1,218 @@
+---
+id: rule.ticket.complexity-assessment.v1
+kind: rule
+version: 1.0.1
+description: Framework for assessing ticket complexity and determining implementation strategy - Simple Fix vs Complex Implementation tracks
+globs: **/tickets/**/plan.md, **/tickets/**/context.md
+governs: **/tickets/**/plan.md
+implements: complexity.assess
+requires:
+  - rule.ticket.plan.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Complexity Assessment Rule
+
+## Purpose & Scope
+
+Determines which implementation track a ticket should follow (Simple Fix vs Complex Implementation). This critical decision affects the entire workflow, documentation requirements, risk management approach, and resource allocation throughout the ticket lifecycle.
+
+**Applies to**: All tickets during planning phase before implementation begins.
+
+**Does not apply to**: Spike/investigation tickets with no deliverable implementation, or tickets already in progress.
+
+## Inputs (Contract)
+
+- Ticket ID in format `PROJECT-NUMBER`
+- Directory `tickets/TICKET-ID/` must exist
+- `plan.md` exists with problem description
+- Understanding of:
+  - Root cause (single or multiple)
+  - Number of files affected
+  - Lines of code to change
+  - Risk of side effects
+  - Solution pattern familiarity
+
+## Outputs (Contract)
+
+- Updates `tickets/TICKET-ID/plan.md` with `## Complexity Assessment` section
+- Complexity track determined: "Simple Fix" or "Complex Implementation"
+- Rationale documented for track selection
+- Criteria met listed (which specific criteria led to decision)
+- Decision principle applied: "When in doubt, prefer Complex track"
+- All criteria checked against requirements
+
+## Deterministic Steps
+
+Execute in order during ticket planning:
+
+1. Read `plan.md` and extract problem description, requirements, scope
+2. Identify root cause(s):
+   - Single, clear root cause? → Note for Simple Fix consideration
+   - Multiple or interconnected causes? → Marks as Complex
+3. Estimate files affected:
+   - Count modified files
+   - ≤3 files? → Note for Simple Fix consideration
+   - >3 files? → Marks as Complex
+4. Estimate lines of code changed:
+   - Count actual code changes (not comments/whitespace)
+   - ≤10 lines? → Note for Simple Fix consideration
+   - >10 lines? → Marks as Complex
+5. Assess risk of side effects:
+   - Low risk (isolated change)? → Note for Simple Fix consideration
+   - High risk (cross-cutting concerns)? → Marks as Complex
+6. Evaluate solution pattern familiarity:
+   - Well-understood pattern? → Note for Simple Fix consideration
+   - Unclear or novel approach? → Marks as Complex
+7. Apply decision criteria:
+   - **Simple Fix**: ALL criteria met (single cause, ≤3 files, ≤10 lines, low risk, known pattern)
+   - **Complex Implementation**: ANY criterion fails
+8. Apply decision principle: **When in doubt, prefer Complex track**
+9. Document decision in plan.md:
+   - Track: Simple Fix or Complex Implementation
+   - Rationale: Why this track was chosen
+   - Criteria Met: Which specific criteria were evaluated
+10. Update context.md with complexity assessment result
+
+## Implementation Tracks
+
+### Simple Fix Track (Direct Implementation)
+
+**Criteria - ALL must be met:**
+
+- Single, clear root cause identified
+- Solution affects ≤3 files
+- Change impact ≤10 lines of actual code
+- Low risk of side effects
+- Solution pattern is well-understood
+
+**Characteristics:**
+
+- Quick investigation (5-15 minutes)
+- Direct implementation without extensive planning
+- Minimal documentation requirements
+- Low risk of unintended consequences
+- Clear, straightforward solution path
+
+### Complex Implementation Track (Phased Approach)
+
+**Criteria - ANY indicates complexity:**
+
+- Multiple interconnected root causes
+- Solution affects >3 files or >10 lines
+- Architectural changes required
+- High risk of unintended consequences
+- Unclear solution patterns
+- Requires fresh context between phases
+
+**Characteristics:**
+
+- Comprehensive investigation required
+- Detailed planning phase
+- Full documentation requirements
+- High risk mitigation needed
+- Multiple possible solution approaches
+
+## Decision Framework
+
+**Decision Principle**: When in doubt, prefer the Complex track - it's better to over-engineer the process than miss critical issues.
+
+### Key Indicators for Simple Track
+- "This is just a wrong method call"
+- "Missing one parameter"
+- "Typo in configuration"
+- "Wrong constant value"
+- "Straightforward bug fix"
+
+### Key Indicators for Complex Track
+- "This affects multiple systems"
+- "Need to understand the full flow"
+- "Multiple possible solutions"
+- "Requires design decisions"
+- "Could have side effects"
+
+## Formatting Requirements
+
+Complexity Assessment section in plan.md must include:
+
+```markdown
+## Complexity Assessment
+
+**Track**: [Simple Fix | Complex Implementation]
+
+**Rationale**: [Why this track was chosen]
+
+**Criteria Met**:
+- Root Cause: [Single/Multiple]
+- Files Affected: [Number]
+- Lines Changed: [Estimated count]
+- Risk Level: [Low/High]
+- Solution Pattern: [Known/Unclear]
+
+**Decision Principle Applied**: When in doubt, prefer Complex track
+```
+
+## OPSEC and Leak Control
+
+When documenting complexity assessment:
+- NO specific file paths that reveal internal structure
+- NO architectural details that could expose system vulnerabilities
+- Generic references to "database service", "API layer", not specific component names
+- Focus on complexity factors, not implementation details
+
+## Integration Points
+
+- **Referenced by**: `rule.ticket.plan.v1` (executes assessment during plan creation)
+- **Informs**: `rule.ticket.workflow.v1` (determines commit and review strategy)
+- **Affects**: `rule.ticket.validation.v1` (Simple vs Complex validation levels)
+- **Documents in**: plan.md Complexity Assessment section
+- **Team Communication**: Stakeholder expectations based on track selection
+
+## Failure Modes and Recovery
+
+**Borderline complexity assessment**:
+
+- Detection: Criteria split between Simple and Complex
+- Recovery: Apply decision principle (prefer Complex track)
+- Fallback: Document borderline nature, can reassess if needed
+
+**Scope creep during implementation**:
+
+- Detection: Simple Fix expanding beyond original assessment
+- Recovery: Reassess complexity, switch to Complex track if needed
+- Fallback: Document scope change in progress.md, update plan.md
+
+**Hidden complexity discovered**:
+
+- Detection: Seemingly simple change reveals complex dependencies
+- Recovery: Stop, reassess complexity, switch to Complex track
+- Fallback: Document discovery, update assessment rationale
+
+**Assessment disagreement**:
+
+- Detection: Team member challenges complexity assessment
+- Recovery: Review criteria together, apply decision principle
+- Fallback: Err on side of Complex track for safety
+
+## Provenance Footer Specification
+
+Not applicable - complexity assessment documented in plan.md section, not separate generated file.
+
+## Related Rules
+
+- `rule.ticket.plan.v1` - Complexity assessment is part of planning
+- `rule.ticket.workflow.v1` - Track determines workflow approach
+- `rule.ticket.validation.v1` - Track determines validation depth
+- `rule.ticket.context.v1` - Assessment result captured in context
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All five criteria evaluated (root cause, files, lines, risk, pattern)
+- [ ] Decision documented in plan.md Complexity Assessment section
+- [ ] Track clearly stated: Simple Fix or Complex Implementation
+- [ ] Rationale provided for track selection
+- [ ] Decision principle applied: "When in doubt, prefer Complex"
+- [ ] Criteria met listed with specific values
+- [ ] Only plan.md modified (governs compliance)

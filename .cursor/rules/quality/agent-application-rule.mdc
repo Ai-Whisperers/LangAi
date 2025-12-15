@@ -1,0 +1,273 @@
+---
+id: rule.quality.agent-application.v1
+kind: rule
+version: 1.0.0
+description: Agent guidance for when and how to apply quality standards rules. Use this when user requests involve pre-commit validation, code quality checks, zero warnings/errors enforcement, or quality gate compliance.
+implements: quality.agent-application
+requires:
+  - rule.quality.zero-warnings-errors.v1
+  - rule.quality.diagnostic-messages.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: quality-standards, last_review: 2025-12-07 }
+alwaysApply: false
+---
+
+# Quality Standards - Agent Application Rule
+
+## Purpose
+
+This rule guides AI agents on when and how to apply quality standards rules for maintaining zero warnings and zero errors discipline across all development work.
+
+## When to Apply Quality Rules
+
+### Explicit Triggers
+
+Apply quality rules when the user's request involves:
+
+- Running pre-commit validation checks
+- Fixing warnings or errors in code
+- Setting up quality gates or validation scripts
+- Enforcing code quality standards before commits
+- Configuring linters, formatters, or analyzers
+- Implementing CI/CD quality checks
+- Reviewing code for quality compliance
+- Creating or updating validation scripts
+
+### Context Clues
+
+Apply quality rules when you observe:
+
+- User preparing to commit code (git add, git commit in context)
+- Linter warnings or compiler errors in terminal output
+- Discussion of build failures or test failures
+- Questions about code quality or validation
+- Setting up new projects or standardizing quality practices
+- Fixing technical debt or quality issues
+- Code review discussions mentioning warnings/errors
+
+### DO NOT Apply When
+
+- User is only reading/viewing code (read-only operations)
+- Request is about documentation or comments only (unless enforcing doc standards)
+- Working on experimental/prototype code not intended for commit
+- Explicitly working in a draft/WIP branch where quality gates are deferred
+
+## How to Apply Quality Rules
+
+### 1. Assess the Request
+
+Determine which aspect of quality standards is involved:
+
+- **Pre-commit validation**: Running checks before git commit → use `rule.quality.zero-warnings-errors.v1`
+- **Quality gate setup**: Configuring validation infrastructure → use `rule.quality.zero-warnings-errors.v1` (implementation patterns)
+- **Fixing quality issues**: Addressing warnings/errors → use `rule.quality.zero-warnings-errors.v1` (handling section)
+- **Overall quality discipline**: Understanding standards → use `rule.quality.zero-warnings-errors.v1`
+
+### 2. Load Required Rules
+
+```yaml
+# For pre-commit validation workflow
+requires:
+  - rule.quality.zero-warnings-errors.v1
+
+# For quality gate setup
+requires:
+  - rule.quality.zero-warnings-errors.v1
+
+# For fixing quality issues
+requires:
+  - rule.quality.zero-warnings-errors.v1
+```
+
+### 3. Execute with Validation
+
+When enforcing quality standards:
+
+1. **Verify validation tools available** - Check for linters, compilers, test runners
+2. **Run comprehensive validation** - Execute all applicable quality checks
+3. **Report all issues clearly** - Show warnings/errors with context
+4. **Guide fixes systematically** - Prioritize errors, then warnings
+5. **Re-validate after fixes** - Confirm zero warnings/errors
+6. **Only then allow commit** - Block commit until clean state achieved
+
+### 4. Provide Contextual Guidance
+
+Always explain:
+
+- **Why** quality gates matter (prevention over remediation)
+- **What** checks are being run and why each matters
+- **How** to fix specific warnings/errors efficiently
+- **When** validation should be run (before every commit)
+
+## Common Scenarios
+
+### Scenario 1: User Preparing to Commit
+
+```
+User: "Ready to commit these changes"
+
+Agent Actions:
+1. Load rule.quality.zero-warnings-errors.v1
+2. Check if validation has been run recently
+3. Recommend: Run validation before committing
+4. Provide: Specific validation commands for project type
+5. Explain: "Zero warnings, zero errors before every commit"
+6. Wait: For validation to pass before allowing commit
+```
+
+### Scenario 2: User Encounters Warnings/Errors
+
+```
+User: "Getting some warnings when I build"
+
+Agent Actions:
+1. Load rule.quality.zero-warnings-errors.v1
+2. Review warning messages in context
+3. Categorize: Errors vs warnings, priority levels
+4. Provide: Specific fix guidance or auto-fix commands
+5. Guide: Through systematic resolution
+6. Validate: Confirm fixes resolve all issues
+```
+
+### Scenario 3: Setting Up Quality Infrastructure
+
+```
+User: "How do I set up pre-commit validation?"
+
+Agent Actions:
+1. Load rule.quality.zero-warnings-errors.v1
+2. Identify project type (.NET, Python, JS, etc.)
+3. Provide: Appropriate validation script pattern
+4. Explain: Validation categories and tools needed
+5. Guide: Git hooks or CI/CD integration
+6. Test: Validation script works correctly
+```
+
+### Scenario 4: Quality Gate Failure
+
+```
+User: "Build failed in CI with warnings"
+
+Agent Actions:
+1. Load rule.quality.zero-warnings-errors.v1
+2. Analyze: CI output for specific warnings/errors
+3. Explain: Why quality gate blocked build
+4. Provide: Commands to reproduce locally
+5. Guide: Through fixes and re-validation
+6. Confirm: Local validation passes before pushing
+```
+
+## Integration with Other Rules
+
+### Ticket System Integration
+
+When both ticket and quality rules apply:
+
+```yaml
+requires:
+  - rule.ticket.validation-before-completion.v1
+  - rule.quality.zero-warnings-errors.v1
+```
+
+Example: Ticket cannot be marked complete unless quality validation passes.
+
+### Git Workflow Integration
+
+When committing code:
+
+```yaml
+requires:
+  - rule.git.branch-lifecycle.v1
+  - rule.quality.zero-warnings-errors.v1
+  - rule.development.commit-message.v1
+```
+
+Example: Pre-commit validation required before git commit.
+
+### CI/CD Integration
+
+When building or deploying:
+
+```yaml
+requires:
+  - rule.cicd.pre-build-validation.v1
+  - rule.quality.zero-warnings-errors.v1
+```
+
+Example: Local validation mirrors remote CI/CD checks.
+
+## Quality Standards
+
+### Always Provide
+
+- ✅ Specific validation commands for project type
+- ✅ Clear categorization of issues (errors vs warnings)
+- ✅ Prioritized fix guidance (errors first, then warnings)
+- ✅ Re-validation confirmation after fixes
+- ✅ Explanation of why zero-tolerance matters
+
+### Never Do
+
+- ❌ Allow commits with warnings or errors
+- ❌ Suggest "fixing later" or "TODO" markers for quality issues
+- ❌ Disable quality checks to make validation pass
+- ❌ Skip validation "just this once"
+- ❌ Comment out failing tests or suppress legitimate warnings
+
+## Tool-Specific Guidance
+
+### .NET Projects
+
+```powershell
+# Validation sequence
+dotnet restore
+dotnet build /warnaserror
+dotnet format --verify-no-changes
+dotnet test --no-build
+
+# Common fix: missing XML docs
+# Action: Add XML documentation to public members
+```
+
+### Python Projects
+
+```bash
+# Validation sequence
+flake8 .
+pylint src/
+mypy src/
+black --check .
+pytest
+
+# Common fix: linting issues
+# Action: Run black --format . for auto-fix
+```
+
+### JavaScript/TypeScript Projects
+
+```bash
+# Validation sequence
+npm run lint
+npm run type-check
+npm run format:check
+npm test
+
+# Common fix: formatting
+# Action: Run npm run format for auto-fix
+```
+
+## FINAL MUST-PASS CHECKLIST
+
+When applying quality rules, verify:
+
+- [ ] Validation tools identified and available for project type
+- [ ] All applicable validation checks have been run
+- [ ] All errors and warnings reported clearly with context
+- [ ] Fix guidance provided systematically (prioritized)
+- [ ] Re-validation confirms zero warnings/errors
+- [ ] Commit blocked until clean state achieved
+- [ ] User understands why quality discipline matters
+
+---
+Generated by: rule.quality.agent-application.v1  
+Last Updated: 2025-12-07

@@ -1,0 +1,190 @@
+---
+id: rule.agile.user-story-documentation.v1
+kind: rule
+version: 1.0.1
+description: Define structure and content requirements for User Story documentation in agile development
+globs: **/stories/**/*.md, **/docs/agile/stories/**/*.md, **/agile/stories/**/*.md, **/user-stories/**/*.md
+governs: **/stories/**/*.md, **/docs/agile/stories/**/*.md, **/agile/stories/**/*.md, **/user-stories/**/*.md
+implements: agile.user-story-documentation
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-agile, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# User Story Documentation Rule
+
+## Purpose & Scope
+
+This rule defines the canonical structure and content requirements for User Story documentation in agile development. A User Story is a simple, concise description of a feature told from the perspective of the person who desires the new capability, using the format: "As a [user], I want [functionality] so that [benefit]." User Stories represent specific, implementable pieces of functionality that can typically be completed within a single sprint.
+
+**Applies to**: All User Story documentation files in `stories/` or `user-stories/` directories, representing sprint-level work items that are directly implementable.
+
+**Does not apply to**: Epic-level documentation, Feature-level documentation, technical specifications without user stories, bug reports, or tasks that cannot be expressed from a user perspective.
+
+## Inputs (Contract)
+
+- User story requirement or user need
+- Parent Feature ID and Epic context
+- User persona or role definition
+- Desired functionality description
+- Business benefit or value statement
+- Story points estimate (Fibonacci: 1, 2, 3, 5, 8, 13, 21)
+- Existing user story file (if updating)
+
+## Outputs (Contract)
+
+- Creates or updates User Story documentation file at designated path
+- Ensures all 7 required sections present: Header, User Story, Acceptance Criteria, Technical Considerations, Design and UX, Testing Requirements, Definition of Done
+- Validates user story follows "As a [user], I want [functionality] so that [benefit]" format
+- Validates acceptance criteria use Given-When-Then format
+- Ensures story is appropriately sized (≤8 story points, flag if larger)
+- Links to parent Feature and Epic
+- Appends provenance footer with timestamp and rule ID
+- Preserves existing content when updating
+
+## Deterministic Steps
+
+1. Read user story requirements and user context
+2. Identify parent Feature and Epic, establish links
+3. Create Story Header with ID, Title, Feature reference, Epic reference, Status, Priority, Story Points, Created Date, Last Updated
+4. Document User Story: Main User Story using "As a [user], I want [functionality] so that [benefit]" format, User Type (primary and secondary users), Business Value
+5. Define Acceptance Criteria using Given-When-Then format for scenarios: Given [initial context], When [action occurs], Then [expected outcome]; include Functional Requirements (checkboxes), Non-Functional Requirements (performance, security, usability), Edge Cases
+6. Document Technical Considerations: Technical Approach, Dependencies, Integration Points, Data Requirements
+7. Document Design and UX: User Interface, User Experience, Accessibility, Responsive Design
+8. Define Testing Requirements: Test Scenarios, Test Data, Performance Testing, Security Testing
+9. Define Definition of Done: Completion Criteria (checkboxes), Quality Gates, Documentation, Deployment
+10. Validate story points ≤8 (flag for splitting if >8)
+11. Validate all acceptance criteria are testable
+12. Append provenance footer with timestamp and rule ID
+13. Save to designated path
+
+## Formatting Requirements
+
+### Structure
+- Use markdown format
+- Top-level H1: "# [Story ID]: [Story Title]"
+- Use H2 for major sections (## User Story, ## Acceptance Criteria, etc.)
+- Use H3 for subsections within major sections
+
+### User Story Format
+- **MUST** follow pattern: "As a [user], I want [functionality] so that [benefit]"
+- Use specific user roles (not generic "user" - use "Administrator", "End User", "Developer")
+- State clear functionality and explicit business benefit
+- Keep to single sentence if possible
+
+### Acceptance Criteria Format
+- **Primary format**: Given-When-Then for scenario-based criteria:
+  ```
+  - Given [initial context]
+  - When [action occurs]
+  - Then [expected outcome]
+  ```
+- Use bullet lists with checkboxes for requirement-based criteria
+- Ensure all criteria are testable and measurable
+- Include edge cases as separate scenarios
+
+### Story Points Guidelines
+- Use Fibonacci sequence: 1, 2, 3, 5, 8, 13, 21
+- Recommend: 1-5 points for normal stories
+- Warning: 8 points indicates high complexity
+- Flag: 13+ points requires story splitting
+
+### Links and References
+- Link to parent Feature: `Parent Feature: [FEATURE-ID](path/to/feature.md)`
+- Link to Epic: `Epic: [EPIC-ID](path/to/epic.md)`
+- Reference related user stories
+- Link to mockups, wireframes, or prototypes
+- Include links to user personas or research
+
+## OPSEC and Leak Control
+
+- NO internal system URLs or network paths
+- NO employee email addresses or personal contact information (use roles)
+- NO credentials, API keys, or access tokens
+- NO customer-specific data or personally identifiable information
+- NO actual test data if it contains sensitive information (use synthetic data)
+- Redact organization-specific system names if sensitive
+- Use generic placeholders for environment-specific configurations
+
+## Integration Points
+
+### Related Rules
+- `rule.agile.business-feature-documentation.v1` - User Stories implement Features
+- `rule.agile.technical-feature-documentation.v1` - Technical stories support technical features
+- `rule.agile.epic-documentation.v1` - Stories trace to Epic for context
+- `rule.agile.story-splitting.v1` - Large stories (>8 points) require splitting
+- `rule.ticket.plan.update.v1` - Stories may integrate with ticket workflow
+
+### Workflow Integration
+- User Story creation requires valid parent Feature
+- Story assignment triggers sprint planning
+- Story completion updates Feature progress
+- Definition of Done gates story closure
+- Story points feed velocity calculations
+
+## Failure Modes and Recovery
+
+**Invalid User Story Format**:
+- Detection: Missing "As a", "I want", or "so that" components
+- Recovery: Flag for product owner review, provide format template
+
+**Untestable Acceptance Criteria**:
+- Detection: Criteria use vague terms ("should work well", "fast enough", "user-friendly")
+- Recovery: Flag for QA review, provide examples of measurable criteria
+
+**Oversized Story**:
+- Detection: Story points >8
+- Recovery: Flag for story splitting using `rule.agile.story-splitting.v1`, prompt for breakdown
+
+**Missing Parent Feature**:
+- Detection: Feature reference empty or invalid
+- Recovery: Prompt for Feature ID, validate Feature exists
+
+**Incomplete Definition of Done**:
+- Detection: DoD section has <3 criteria or generic entries
+- Recovery: Add DoD template, flag for team review
+
+**No Test Scenarios**:
+- Detection: Testing Requirements section empty
+- Recovery: Generate test scenarios from acceptance criteria, flag for QA review
+
+## Provenance Footer Specification
+
+Append to all generated or updated User Story files:
+
+```
+---
+Produced-by: rule.agile.user-story-documentation.v1 | ts={{timestamp}} | status={{status}}
+```
+
+Example:
+```
+---
+Produced-by: rule.agile.user-story-documentation.v1 | ts=2025-11-04T14:30:00Z | status=created
+```
+
+For updates, preserve creation info:
+```
+---
+Created: 2025-10-01T10:00:00Z by rule.agile.user-story-documentation.v1
+Updated: 2025-11-04T14:30:00Z by rule.agile.user-story-documentation.v1
+```
+
+## Related Exemplar
+
+**Exemplar**: `user-story-example.md` - Full example showing well-structured user story documentation
+
+**Usage Note**: Use exemplar for pattern extraction only. NEVER copy exemplar content into production user story documentation. Extract structure, user story format, and acceptance criteria patterns, but synthesize new content based on actual story requirements.
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All 7 required sections present: Header, User Story, Acceptance Criteria, Technical Considerations, Design and UX, Testing Requirements, Definition of Done
+- [ ] User story follows exact format: "As a [user], I want [functionality] so that [benefit]"
+- [ ] Acceptance criteria use Given-When-Then format with testable outcomes
+- [ ] Story points assigned using Fibonacci sequence (1, 2, 3, 5, 8, 13, 21)
+- [ ] Story points ≤8 (if >8, flagged for splitting)
+- [ ] Parent Feature and Epic referenced with valid IDs
+- [ ] Definition of Done includes at least 3 specific criteria
+- [ ] No OPSEC violations (internal URLs, credentials, personal data)
+- [ ] Provenance footer appended with timestamp 

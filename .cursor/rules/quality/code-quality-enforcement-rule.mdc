@@ -1,0 +1,548 @@
+---
+id: rule.quality.code-quality-enforcement.v1
+kind: rule
+version: 1.0.0
+description: "Defines systematic code quality enforcement with graduated tightening, permanent temporary disablements management, and CI/CD integration"
+globs: **/.editorconfig, **/*.csproj, **/cicd/**/*.yml, **/cicd/**/*.ps1
+governs: **/.editorconfig, **/*.csproj, **/cicd/**/*.yml, **/cicd/**/*.ps1
+implements: code-quality.enforcement
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance:
+  owner: quality-standards
+  last_review: 2025-12-13
+  context: "Created to formalize systematic code quality enforcement with graduated tightening and CI/CD integration"
+alwaysApply: false
+---
+
+# Code Quality Enforcement Rule
+
+## Purpose & Scope
+
+This rule defines systematic code quality enforcement across .NET projects with graduated tightening approaches, CI/CD integration, and explicit handling of "permanent temporary disablements" (the principle that temporary suppressions become permanent). It provides structured processes to move from initial warnings-as-errors to strict zero-tolerance policies while managing legacy code and team adoption.
+
+**Applies to**: .NET projects requiring systematic code quality enforcement with graduated adoption.
+
+**Does not apply to**: Projects not using .NET analyzers, legacy codebases not scheduled for modernization, or experimental projects.
+
+## The Permanent Temporary Fix Principle
+
+**"There is nothing as permanent as a temporary fix."**
+
+This rule explicitly addresses the reality that:
+- Temporary suppressions often become permanent
+- Gradual enforcement prevents overwhelming teams
+- Structured processes are needed to systematically remove suppressions
+- CI/CD integration ensures enforcement doesn't break builds
+
+## Inputs (Contract)
+
+- Target project path (root directory or specific project)
+- Current enforcement phase (baseline, enforce, suppress, gradual, strict)
+- Tolerance level (0-100, where 0 = zero-tolerance)
+- Suppression expiration days (default 30)
+- CI/CD integration flag (true/false)
+
+## Outputs (Contract)
+
+- Modified .editorconfig with appropriate severity levels
+- Updated .csproj files with TreatWarningsAsErrors configuration
+- Temporary suppressions with expiration dates and review processes
+- CI/CD validation scripts integrated into build pipelines
+- Gradual enforcement schedules with phase transitions
+- Quality metrics and reporting dashboards
+
+## Deterministic Steps
+
+### Step 1: Assess Current Quality State
+
+**Baseline Assessment**:
+```bash
+# Count current violations
+dotnet build --configuration Release /p:TreatWarningsAsErrors=false 2>&1 | grep -E "(warning|error)" | wc -l
+
+# Identify violation types
+dotnet build --configuration Release /p:TreatWarningsAsErrors=false 2>&1 | grep -E "error \w+:" | sed 's/.*error \([A-Z][A-Z0-9]*\):.*/\1/' | sort | uniq -c
+```
+
+**Key Violations to Track**:
+- CA1304: Culture-specific string operations
+- CA1305: Culture-specific date/time formatting
+- CA1062: Null parameter validation
+- CA1307: String comparison without StringComparison
+- IDE1006: Private field naming conventions
+- CS1591: Missing XML documentation
+
+### Step 2: Configure Project-Level Enforcement
+
+**Update .csproj Files**:
+```xml
+<PropertyGroup>
+  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  <WarningsAsErrors />
+  <AnalysisLevel>latest</AnalysisLevel>
+  <EnableNETAnalyzers>true</EnableNETAnalyzers>
+</PropertyGroup>
+```
+
+**Apply to All Projects**:
+```bash
+find "$TARGET_PATH" -name "*.csproj" -type f | while read -r csproj; do
+  if ! grep -q "<TreatWarningsAsErrors>true</TreatWarningsAsErrors>" "$csproj"; then
+    sed -i '/<\/PropertyGroup>/i \  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>\n  <WarningsAsErrors />\n  <AnalysisLevel>latest</AnalysisLevel>\n  <EnableNETAnalyzers>true</EnableNETAnalyzers>' "$csproj"
+    echo "Updated: $csproj"
+  fi
+done
+```
+
+### Step 3: Configure EditorConfig Severity Levels
+
+**Phase-Based Configuration**:
+
+**Baseline Phase** (Assessment Only):
+```ini
+# All violations as warnings for counting
+[*.cs]
+dotnet_diagnostic.*.severity = warning
+```
+
+**Enforce Phase** (Enable Warnings-as-Errors):
+```ini
+# Enable enforcement for key categories
+[*.cs]
+dotnet_diagnostic.CA1304.severity = error
+dotnet_diagnostic.CA1305.severity = error
+dotnet_diagnostic.CA1062.severity = error
+```
+
+**Suppress Phase** (Add Temporary Suppressions):
+```ini
+# Keep key categories as errors, suppress others temporarily
+[*.cs]
+dotnet_diagnostic.CA1304.severity = error
+dotnet_diagnostic.CA1305.severity = error
+dotnet_diagnostic.CA1062.severity = error
+dotnet_diagnostic.IDE1006.severity = warning  # Temporary
+dotnet_diagnostic.CA1307.severity = warning  # Temporary
+```
+
+**Gradual Phase** (Remove Suppressions Gradually):
+```ini
+# Remove suppressions for fixed categories
+[*.cs]
+dotnet_diagnostic.CA1304.severity = error
+dotnet_diagnostic.CA1305.severity = error
+dotnet_diagnostic.CA1062.severity = error
+dotnet_diagnostic.IDE1006.severity = error  # Suppression removed
+dotnet_diagnostic.CA1307.severity = warning  # Still suppressed
+```
+
+**Strict Phase** (Full Enforcement):
+```ini
+# All violations as errors - zero tolerance
+[*.cs]
+dotnet_diagnostic.*.severity = error
+```
+
+### Step 4: Implement Temporary Suppressions
+
+**Global Suppressions File**:
+```csharp
+// GlobalSuppressions.cs
+using System.Diagnostics.CodeAnalysis;
+
+[assembly: SuppressMessage("Naming", "IDE1006:Missing prefix: '_'", Justification = "Temporary suppression during gradual enforcement. Remove by 2026-01-12", Scope = "member", Target = "~M:MyClass.method")]
+```
+
+**Suppression Management**:
+- Include expiration dates in justification
+- Use specific targets (not wildcards)
+- Document suppression rationale
+- Schedule regular review and cleanup
+
+**Suppression Lifecycle**:
+1. **Create**: When violations prevent build in enforce phase
+2. **Document**: Expiration date and removal plan
+3. **Review**: Monthly review of expired suppressions
+4. **Remove**: Systematic removal as violations are fixed
+
+### Step 5: CI/CD Integration
+
+**Validation Script** (`validate-code-quality.ps1`):
+```powershell
+param(
+    [Parameter(Mandatory=$true)]
+    [ValidateSet('baseline','enforce','suppress','gradual','strict')]
+    [string]$Phase,
+
+    [Parameter(Mandatory=$false)]
+    [int]$ToleranceLevel = 0,
+
+    [Parameter(Mandatory=$false)]
+    [int]$SuppressionDays = 30
+)
+
+$ErrorActionPreference = 'Stop'
+
+Write-Host "=== Code Quality Enforcement: $Phase Phase ===" -ForegroundColor Cyan
+
+switch ($Phase) {
+    'baseline' {
+        # Count violations
+        $result = dotnet build --configuration Release /p:TreatWarningsAsErrors=false 2>&1
+        $warnings = ($result | Select-String "warning").Count
+        $errors = ($result | Select-String "error").Count
+
+        Write-Host "Current state: $warnings warnings, $errors errors" -ForegroundColor Yellow
+
+        if ($warnings -eq 0 -and $errors -eq 0) {
+            Write-Host "✅ Already at zero warnings/errors!" -ForegroundColor Green
+        } else {
+            Write-Host "⚠️ Need enforcement phase" -ForegroundColor Yellow
+        }
+    }
+
+    'enforce' {
+        # Enable warnings as errors
+        Write-Host "Enabling warnings-as-errors..." -ForegroundColor Yellow
+
+        Get-ChildItem -Recurse -Filter "*.csproj" | ForEach-Object {
+            $content = Get-Content $_.FullName -Raw
+
+            if ($content -notmatch "<TreatWarningsAsErrors>true</TreatWarningsAsErrors>") {
+                $content = $content -replace "</PropertyGroup>", "  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>`n  </PropertyGroup>"
+                Set-Content $_.FullName $content
+                Write-Host "Updated: $($_.Name)" -ForegroundColor Green
+            }
+        }
+
+        # Test build
+        $result = dotnet build --configuration Release /p:TreatWarningsAsErrors=true 2>&1
+        $buildErrors = ($result | Select-String "error").Count
+
+        if ($buildErrors -eq 0) {
+            Write-Host "✅ Enforcement successful!" -ForegroundColor Green
+        } else {
+            Write-Host "❌ $buildErrors errors found. Need suppression phase." -ForegroundColor Red
+        }
+    }
+
+    'suppress' {
+        # Add temporary suppressions
+        Write-Host "Adding temporary suppressions..." -ForegroundColor Yellow
+
+        $suppressions = @()
+        $expirationDate = (Get-Date).AddDays($SuppressionDays).ToString("yyyy-MM-dd")
+
+        # Scan for common patterns and create suppressions
+        $result = dotnet build --configuration Release /p:TreatWarningsAsErrors=true 2>&1
+
+        $result | Select-String "error (?<code>\w+):" | ForEach-Object {
+            $code = $_.Matches.Groups['code'].Value
+            $suppressions += "dotnet_diagnostic.$code.severity = warning"
+        }
+
+        # Update .editorconfig
+        $editorConfig = ".editorconfig"
+        if (Test-Path $editorConfig) {
+            $content = Get-Content $editorConfig -Raw
+        } else {
+            $content = "[*.cs]`n"
+        }
+
+        foreach ($suppression in $suppressions) {
+            if ($content -notmatch [regex]::Escape($suppression)) {
+                $content += "`n$suppression"
+            }
+        }
+
+        # Add header comment
+        $header = "# Temporary suppressions - Review by $expirationDate`n"
+        if ($content -notmatch "# Temporary suppressions") {
+            $content = $header + $content
+        }
+
+        Set-Content $editorConfig $content
+        Write-Host "Added $($suppressions.Count) temporary suppressions" -ForegroundColor Green
+        Write-Host "Next review date: $expirationDate" -ForegroundColor Yellow
+    }
+
+    'gradual' {
+        # Remove suppressions gradually
+        Write-Host "Gradual tightening in progress..." -ForegroundColor Yellow
+
+        $editorConfig = ".editorconfig"
+        if (Test-Path $editorConfig) {
+            $content = Get-Content $editorConfig -Raw
+
+            # Remove culture-related suppressions first (easiest to fix)
+            $content = $content -replace "dotnet_diagnostic\.CA1304\.severity = warning`n", ""
+            $content = $content -replace "dotnet_diagnostic\.CA1305\.severity = warning`n", ""
+
+            # Remove null validation suppressions (medium difficulty)
+            $content = $content -replace "dotnet_diagnostic\.CA1062\.severity = warning`n", ""
+
+            Set-Content $editorConfig $content
+            Write-Host "Removed CA1304/CA1305/CA1062 suppressions" -ForegroundColor Green
+        }
+    }
+
+    'strict' {
+        # Full enforcement, no suppressions
+        Write-Host "Enforcing strict zero-tolerance policy..." -ForegroundColor Yellow
+
+        $editorConfig = ".editorconfig"
+        if (Test-Path $editorConfig) {
+            $content = Get-Content $editorConfig -Raw
+
+            # Remove all temporary suppressions
+            $content = $content -replace "dotnet_diagnostic\.\w+\.severity = warning`n", ""
+
+            # Add strict enforcement
+            if ($content -notmatch "dotnet_diagnostic\.\*\.severity = error") {
+                $content += "`ndotnet_diagnostic.*.severity = error"
+            }
+
+            Set-Content $editorConfig $content
+        }
+
+        # Test final build
+        $result = dotnet build --configuration Release /p:TreatWarningsAsErrors=true 2>&1
+        $errors = ($result | Select-String "error").Count
+
+        if ($errors -le $ToleranceLevel) {
+            Write-Host "✅ Strict enforcement achieved!" -ForegroundColor Green
+            Write-Host "Errors within tolerance: $errors ≤ $ToleranceLevel" -ForegroundColor Green
+        } else {
+            Write-Host "❌ $errors errors exceed tolerance level $ToleranceLevel" -ForegroundColor Red
+            exit 1
+        }
+    }
+}
+
+Write-Host "=== Phase $Phase Complete ===" -ForegroundColor Cyan
+```
+
+**Pipeline Integration**:
+```yaml
+# azure-pipelines.yml
+- task: PowerShell@2
+  displayName: 'Validate Code Quality Enforcement'
+  inputs:
+    targetType: 'inline'
+    script: |
+      ./cicd/scripts/validate-code-quality.ps1 -Phase $(QualityPhase) -ToleranceLevel $(WarningTolerance)
+    pwsh: true
+
+# Pipeline variables
+variables:
+  QualityPhase: 'enforce'  # Change gradually: enforce -> suppress -> gradual -> strict
+  WarningTolerance: 0
+```
+
+### Step 6: Implement Gradual Enforcement Schedules
+
+**Phase Transition Timeline**:
+
+| Phase | Duration | Focus | Suppressions |
+|-------|----------|-------|--------------|
+| Baseline | 1 week | Assessment | All as warnings |
+| Enforce | 1 week | Enable W→E | None |
+| Suppress | 4 weeks | Add temp fixes | Common violations |
+| Gradual | 4 weeks | Remove suppressions | Gradual removal |
+| Strict | Ongoing | Zero tolerance | None |
+
+**Automated Phase Transitions**:
+```powershell
+# Check if ready for next phase
+function Test-PhaseReadiness {
+    param([string]$CurrentPhase)
+
+    switch ($CurrentPhase) {
+        'suppress' {
+            # Check if suppressions are within limits
+            $suppressionCount = (Get-Content .editorconfig | Select-String "severity = warning").Count
+            return $suppressionCount -lt 20  # Ready if < 20 suppressions
+        }
+        'gradual' {
+            # Check if major categories fixed
+            $cultureErrors = dotnet build --configuration Release /p:TreatWarningsAsErrors=true 2>&1 |
+                Select-String "CA1304|CA1305" | Measure-Object | Select-Object -ExpandProperty Count
+            return $cultureErrors -eq 0  # Ready if no culture errors
+        }
+    }
+
+    return $false
+}
+```
+
+## Enforcement Categories and Priorities
+
+### Priority 1: Safety and Correctness (Always Errors)
+- CA1304: Culture-specific string operations
+- CA1305: Culture-specific date/time formatting
+- CA1062: Null parameter validation
+- CA2200: Rethrow to preserve stack details
+
+### Priority 2: Code Quality (Gradual Adoption)
+- CA1307: String comparison without StringComparison
+- IDE1006: Private field naming conventions
+- CA1822: Mark members as static
+- CA1825: Avoid zero-length array allocations
+
+### Priority 3: Documentation and Maintenance (Optional)
+- CS1591: Missing XML documentation
+- CA1050: Declare types in namespaces
+- CA1707: Identifiers should not contain underscores
+
+## Quality Metrics and Reporting
+
+### Metrics Collection:
+```powershell
+function Get-QualityMetrics {
+    $buildResult = dotnet build --configuration Release /p:TreatWarningsAsErrors=false 2>&1
+
+    $metrics = @{
+        TotalWarnings = ($buildResult | Select-String "warning").Count
+        TotalErrors = ($buildResult | Select-String "error").Count
+        CultureIssues = ($buildResult | Select-String "CA1304|CA1305").Count
+        NullValidation = ($buildResult | Select-String "CA1062").Count
+        NamingConvention = ($buildResult | Select-String "IDE1006").Count
+        SuppressionsActive = (Get-Content .editorconfig | Select-String "severity = warning").Count
+    }
+
+    return $metrics
+}
+```
+
+### Dashboard Integration:
+```markdown
+# Quality Enforcement Dashboard
+
+## Current Phase: **[PHASE]**
+
+## Metrics
+
+| Metric | Value | Target | Status |
+|--------|-------|--------|--------|
+| Total Warnings | [COUNT] | 0 | [STATUS] |
+| Culture Issues | [COUNT] | 0 | [STATUS] |
+| Active Suppressions | [COUNT] | <20 | [STATUS] |
+
+## Phase Progress
+
+- [X] Baseline assessment complete
+- [X] Enforcement enabled
+- [ ] Suppressions reviewed (due: [DATE])
+- [ ] Next phase ready
+
+## Recommendations
+
+Based on current metrics:
+- [RECOMMENDATION_1]
+- [RECOMMENDATION_2]
+```
+
+## Handling Permanent Temporary Fixes
+
+### The Reality Check
+
+**"Temporary suppressions become permanent because:**
+- Teams get used to builds passing
+- Original developers move on
+- "We'll fix it later" becomes "It's always been like this"
+- No systematic process to remove suppressions
+
+### Systematic Prevention
+
+1. **Expiration Dates**: All suppressions have explicit expiration dates
+2. **Review Cycles**: Monthly review of expired suppressions
+3. **Impact Analysis**: Track which suppressions hide the most violations
+4. **Gradual Removal**: Remove suppressions systematically, not all at once
+5. **Success Metrics**: Track suppression reduction over time
+
+### Suppression Review Process
+
+**Monthly Review**:
+```powershell
+# Find expired suppressions
+$expiredSuppressions = Get-Content .editorconfig | Select-String "Temporary suppression.*Remove by (?<date>\d{4}-\d{2}-\d{2})" | Where-Object {
+    $expirationDate = [DateTime]::Parse($_.Matches.Groups['date'].Value)
+    $expirationDate -lt (Get-Date)
+}
+
+if ($expiredSuppressions.Count -gt 0) {
+    Write-Host "Found $($expiredSuppressions.Count) expired suppressions:" -ForegroundColor Red
+    $expiredSuppressions | ForEach-Object { Write-Host "  $_" }
+
+    # Create review ticket
+    Write-Host "Creating suppression review ticket..." -ForegroundColor Yellow
+    # Integration with ticket system
+}
+```
+
+## Integration Points
+
+### With Ticket System
+- Quality enforcement phases tracked as tickets
+- Suppressions linked to specific remediation tickets
+- CI/CD failures create automatic quality violation tickets
+
+### With CI/CD Pipeline
+- Quality validation as mandatory pipeline step
+- Phase-based tolerance levels
+- Automated suppression expiration alerts
+
+### With Development Workflow
+- Pre-commit quality checks
+- IDE integration for real-time feedback
+- Team dashboards for quality trends
+
+## Failure Modes and Recovery
+
+**Build Breaking After Enforcement**:
+- **Detection**: CI/CD pipeline fails after enabling TreatWarningsAsErrors
+- **Recovery**: Automatically enter suppress phase, create remediation plan
+- **Prevention**: Always test enforcement in feature branch first
+
+**Suppressions Becoming Permanent**:
+- **Detection**: Suppressions older than 90 days
+- **Recovery**: Automated review process, create cleanup tickets
+- **Prevention**: Monthly suppression audits, clear expiration policies
+
+**Team Resistance to Quality Standards**:
+- **Detection**: Frequent suppression requests, quality violations ignored
+- **Recovery**: Team training, gradual adoption schedules, success metrics sharing
+- **Prevention**: Start with baseline assessment, demonstrate value, provide tooling
+
+**False Positive Analyzer Rules**:
+- **Detection**: Valid code flagged as violations
+- **Recovery**: Rule-specific suppressions, analyzer configuration tuning
+- **Prevention**: Test enforcement on representative codebase before rollout
+
+## Provenance Footer Specification
+
+For files modified by quality enforcement:
+
+```
+---
+Quality-Enforced: rule.quality.code-quality-enforcement.v1 | phase=[PHASE] | ts=[TIMESTAMP] | suppressions=[COUNT]
+```
+
+## Related Rules
+
+- `rule.quality.zero-warnings-errors.v1` - Core zero-tolerance policy
+- `rule.quality.diagnostic-messages.v1` - Quality diagnostic standards
+- `rule.cicd.pre-build-validation.v1` - CI/CD integration patterns
+- `rule.ticket.workflow.v1` - Ticket-based gradual enforcement
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Project .csproj files configured with TreatWarningsAsErrors=true
+- [ ] .editorconfig has appropriate severity levels for current phase
+- [ ] Temporary suppressions include expiration dates and review processes
+- [ ] CI/CD pipeline includes quality validation step
+- [ ] Gradual enforcement schedule prevents overwhelming teams
+- [ ] Suppression lifecycle prevents permanent temporary fixes
+- [ ] Quality metrics collected and reported
+- [ ] Phase transition automation handles edge cases

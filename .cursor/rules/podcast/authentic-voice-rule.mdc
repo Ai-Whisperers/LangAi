@@ -1,0 +1,301 @@
+---
+rule_id: podcast.authentic-voice-rule
+title: "Podcast Authentic Voice Standards"
+description: "Maintaining genuine personal perspective in cinema analysis while balancing research credibility"
+version: 1.0.0
+created: 2025-12-13
+status: active
+kind: rule
+governs: **/prompts/podcast/write-cinema-opinion.prompt.md, **/prompts/podcast/synthesize-episode-content.prompt.md, **/prompts/podcast/create-episode-essay.prompt.md
+globs: **/prompts/podcast/write-cinema-opinion.prompt.md, **/prompts/podcast/synthesize-episode-content.prompt.md, **/prompts/podcast/create-episode-essay.prompt.md
+implements: podcast.authentic-voice
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-podcast, last_review: 2025-12-13 }
+alwaysApply: false
+---
+
+# Podcast Authentic Voice Standards
+
+## Purpose
+
+Establish standards for developing and maintaining authentic personal voice in cinema podcast episodes, ensuring genuine perspective while maintaining analytical credibility and audience trust.
+
+## Scope
+
+**Covers**:
+- Personal connection development with cinema material
+- Opinion formation based on authentic reactions
+- Balance between research respect and personal insight
+- Voice consistency across episode content
+- Transparency about personal perspective limitations
+
+**Does Not Cover**:
+- Research methodology (see `rule.podcast.content-research-rule`)
+- Script formatting and delivery (see `rule.podcast.script-formatting-rule`)
+- Technical analysis presentation
+
+## When to Apply
+
+Apply when:
+- Developing personal analysis of cinema topics
+- Balancing research findings with personal opinions
+- Ensuring authentic voice in episode content
+- Maintaining consistency across episode segments
+- Addressing potential bias or perspective limitations
+
+## Core Principles
+
+### 1. Authenticity Over Authority
+**Your genuine reaction matters** - Audience values authentic personal insight more than forced expertise or imitation of critical consensus.
+
+### 2. Transparency First
+**Disclose your perspective** - Clearly communicate your background, biases, and limitations so listeners can contextualize your analysis.
+
+### 3. Research Integration, Not Replacement
+**Build upon, don't ignore research** - Use collected sources to inform and enhance personal perspective, not suppress it.
+
+### 4. Consistent Voice Maintenance
+**Stay true to your lens** - Maintain consistent analytical approach and personal philosophy throughout episode and series.
+
+## Voice Development Standards
+
+### Personal Connection Assessment
+
+#### Viewing History Integration
+**Leverage Your Experience**:
+- Reference specific viewing contexts (first viewing, re-watches, different life stages)
+- Connect personal viewing history to analytical insights
+- Use viewing evolution to demonstrate perspective development
+- Share appropriate personal anecdotes that illuminate analysis
+
+#### Expertise Context
+**Know Your Limits**:
+- Clearly state your cinema background and knowledge boundaries
+- Acknowledge when operating outside primary expertise areas
+- Use "I believe" or "in my experience" to signal personal perspective
+- Direct listeners to more authoritative sources when appropriate
+
+### Opinion Formation Process
+
+#### Research-Informed Perspective
+**Synthesize, Don't Parrot**:
+- Use research sources to understand critical landscape
+- Identify where your reactions align or diverge from consensus
+- Develop original insights informed by but not dictated by sources
+- Acknowledge when sources have changed your initial reactions
+
+#### Perspective Transparency
+**Contextualize Your View**:
+- Explain personal lens (cultural background, viewing habits, philosophical approach)
+- Note potential biases affecting interpretation
+- Indicate when personal taste influences analysis
+- Maintain intellectual honesty about perspective limitations
+
+### Content Balance Standards
+
+#### Research vs. Personal Voice Ratio
+**Episode Segment Balance**:
+- **Opening (20%)**: Higher research content to establish credibility
+- **Middle (60%)**: Balanced research integration with personal analysis
+- **Closing (20%)**: Higher personal reflection and unique insights
+
+**Overall Episode Balance**:
+- **Research Foundation**: 40-50% of content
+- **Personal Analysis**: 30-40% of content
+- **Synthesis/Integration**: 20-30% of content
+
+#### Voice Amplification Techniques
+**Enhance Personal Elements**:
+- Use first-person language strategically ("I find this scene...", "This moment always strikes me...")
+- Include emotional reactions alongside analytical observations
+- Share genuine uncertainties and evolving thoughts
+- Express passion for topics that genuinely move you
+
+### Consistency Standards
+
+#### Episode Internal Consistency
+**Maintain Coherent Perspective**:
+- Ensure personal opinions align with stated philosophy
+- Avoid contradictory positions within same episode
+- Build analysis progressively rather than jumping between viewpoints
+- End episode with perspective that feels earned through content
+
+#### Series Voice Consistency
+**Build Recognizable Brand**:
+- Maintain consistent analytical approach across episodes
+- Develop signature ways of approaching common topics
+- Allow perspective evolution but avoid radical shifts without explanation
+- Create listener expectations through reliable voice patterns
+
+## Quality Assurance Checklist
+
+### Pre-Analysis Validation
+- [ ] Personal connection to topic clearly identified
+- [ ] Expertise boundaries and limitations acknowledged
+- [ ] Perspective biases transparently stated
+- [ ] Research integration strategy planned
+
+### Content Development Validation
+- [ ] Research sources inform but don't dictate personal analysis
+- [ ] Original insights developed beyond source summary
+- [ ] Authentic emotional reactions included appropriately
+- [ ] Personal anecdotes enhance rather than distract from analysis
+
+### Balance Validation
+- [ ] Research/personal voice ratio appropriate for episode goals
+- [ ] Voice amplification techniques used effectively
+- [ ] Synthesis creates value beyond individual elements
+- [ ] Content hierarchy serves episode objectives
+
+### Consistency Validation
+- [ ] Episode maintains internal perspective coherence
+- [ ] Voice aligns with established series personality
+- [ ] Perspective evolution (if any) clearly explained
+- [ ] Listener expectations appropriately managed
+
+## Anti-Patterns to Avoid
+
+### ❌ Voice Suppression
+- **Research Overwhelm**: Letting source consensus drown out personal insight
+- **Authority Imitation**: Attempting to sound like established critics
+- **Over-Correction**: Avoiding personal opinion due to imposter syndrome
+
+### ❌ Transparency Failures
+- **Hidden Biases**: Failing to disclose perspective limitations affecting analysis
+- **False Authority**: Presenting personal taste as objective fact
+- **Context Omission**: Not explaining unique personal lens
+
+### ❌ Balance Problems
+- **Voice Domination**: Personal anecdotes overwhelming analytical content
+- **Research Neglect**: Dismissing credible sources due to personal disagreement
+- **Inconsistency**: Contradictory positions within same episode
+
+## Success Metrics
+
+- **Authenticity Score**: Listener perception of genuine perspective (survey/target: >80%)
+- **Transparency Rating**: Clear disclosure of perspective limitations
+- **Balance Achievement**: Appropriate research-to-voice ratio maintained
+- **Consistency Index**: Perspective coherence across episode segments
+- **Value Creation**: Unique insights provided beyond source synthesis
+
+## Integration with Other Rules
+
+**Works With**:
+- `rule.podcast.content-research-rule` - Provides foundation for personal perspective development
+- `rule.podcast.episode-structure-rule` - Voice serves episode organization goals
+- `rule.podcast.quality-assurance-rule` - Authentic voice validated for quality
+
+**Enables**:
+- `rule.podcast.script-formatting-rule` - Personal voice optimized for spoken delivery
+- `rule.podcast.spoken-word-optimization-rule` - Authentic delivery enhances engagement
+
+## Inputs (Contract)
+
+- Film topic or episode concept requiring personal analysis
+- Research sources and critical perspectives on the topic
+- Personal viewing history and cinema background information
+- Established series voice and analytical approach patterns
+
+## Outputs (Contract)
+
+- Episode content with authentic personal perspective integrated
+- Transparent disclosure of personal lens and limitations
+- Balanced synthesis of research and personal insight
+- Consistent voice maintained throughout episode segments
+
+## Deterministic Steps
+
+1. **Assess Personal Connection**: Evaluate genuine interest and experience with topic
+2. **Review Research Foundation**: Understand critical landscape without adopting consensus
+3. **Identify Perspective Lens**: Document personal background, biases, and analytical approach
+4. **Develop Authentic Analysis**: Create content combining research with personal insight
+5. **Validate Voice Consistency**: Ensure perspective aligns with established series personality
+6. **Disclose Limitations**: Transparently communicate when operating outside expertise areas
+
+## Formatting Requirements
+
+Content follows podcast script formatting standards with personal voice notation:
+- First-person language clearly marked for emphasis
+- Emotional reaction indicators integrated naturally
+- Perspective transparency statements formatted for clarity
+- Authentic anecdote integration optimized for spoken delivery
+
+## OPSEC and Leak Control
+
+- NO unauthorized personal information about real individuals
+- NO internal production notes or behind-the-scenes details
+- NO confidential research sources or unpublished materials
+- NO personal contact information or identifiable details
+
+## Integration Points
+
+- Works with `rule.podcast.content-research-rule` for research foundation
+- Works with `rule.podcast.script-formatting-rule` for delivery optimization
+- Works with `rule.podcast.quality-assurance-rule` for voice validation
+
+## Failure Modes and Recovery
+
+**Loss of Authenticity**: Voice becomes imitation of critical consensus
+- **Detection**: Content feels forced or generic
+- **Recovery**: Return to personal viewing notes, rewrite from genuine reactions
+
+**Over-Disclosure**: Personal limitations undermine credibility
+- **Detection**: Excessive focus on personal shortcomings
+- **Recovery**: Balance limitations with demonstrated expertise areas
+
+**Voice Inconsistency**: Perspective shifts within episode
+- **Detection**: Contradictory positions or approaches
+- **Recovery**: Realign content with established analytical philosophy
+
+## Provenance Footer Specification
+
+Generated content includes provenance for voice development process:
+
+```
+Produced-by: podcast.authentic-voice-rule | ts={{timestamp}} | personal-analysis=true
+```
+
+## Voice Development Exercises
+
+### Pre-Episode Preparation
+1. **Free Writing**: Write unfiltered reactions to film before research
+2. **Perspective Inventory**: Document personal cinema background and preferences
+3. **Bias Assessment**: Identify potential influences on analysis
+4. **Voice Samples**: Review previous episodes for consistency patterns
+
+### During Content Creation
+1. **Reaction Journaling**: Note genuine emotional responses during viewing
+2. **Source Dialogue**: Write conversations between sources and personal reactions
+3. **Authenticity Check**: Ask "Is this my real reaction or influenced response?"
+4. **Voice Alignment**: Ensure new analysis fits established perspective
+
+## Exception Handling
+
+### Challenging Personal Perspective Situations
+**Strong Disagreement with Sources**: When research contradicts personal experience
+**Limited Personal Connection**: When topic lacks personal relevance
+**Perspective Evolution**: When analysis changes established viewpoint
+
+**Handling Strategy**:
+1. **Acknowledge Tension**: Transparently note conflict between research and personal view
+2. **Provide Context**: Explain why personal perspective differs
+3. **Value Both Sides**: Respect research while maintaining authentic voice
+4. **Learn Publicly**: Use tension as teaching moment for listeners
+
+## FINAL VALIDATION CHECKLIST
+
+Before proceeding to script development:
+
+- [ ] Personal connection to topic authentically explored
+- [ ] Perspective limitations transparently disclosed
+- [ ] Research sources integrated without suppressing personal voice
+- [ ] Original insights developed beyond source consensus
+- [ ] Content balance appropriate for episode goals
+- [ ] Voice consistency maintained throughout content
+- [ ] Emotional authenticity enhances analytical content
+- [ ] Quality assurance checklist fully validated
+
+---
+
+**TL;DR**: Maintain genuine personal perspective in cinema analysis by transparently balancing research credibility with authentic voice, ensuring audience trust through honest disclosure and consistent analytical approach.

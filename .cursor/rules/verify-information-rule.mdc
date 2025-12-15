@@ -1,0 +1,68 @@
+---
+id: rule.general.verify-info.v1
+kind: rule
+version: 1.0.0
+description: Ensures AI verifies information before presenting it
+globs: "**/*"
+governs: ""
+implements: agent.verification
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# Verify Information Rule
+
+## Purpose & Scope
+
+This rule ensures that the AI always verifies information before presenting it, avoiding assumptions and speculation.
+
+**Applies to**: Fact-checking, code analysis, debugging.
+
+## Inputs (Contract)
+
+- Question or task
+- Available context
+
+## Outputs (Contract)
+
+- Verified facts
+- No "I assume" or "It should be" statements without evidence
+
+## Deterministic Steps
+
+1. Identify assertions to be made.
+2. Check context for evidence supporting each assertion.
+3. If evidence is missing, check files or search.
+4. If still missing, state "I do not know" or "I cannot verify". Do not guess.
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.no-impl-checks.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] All statements verified against context
+- [ ] No assumptions presented as fact
+- [ ] Honest admission of unknown information

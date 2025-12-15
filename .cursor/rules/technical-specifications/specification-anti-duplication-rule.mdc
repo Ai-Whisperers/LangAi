@@ -1,0 +1,461 @@
+---
+id: rule.technical-specifications.anti-duplication.v1
+kind: rule
+version: 1.0.1
+description: Prevents duplication between technical specifications by requiring references instead of copying content
+globs: **/docs/technical/**/*.md
+governs: **/docs/technical/**/*.md
+implements: anti-duplication.enforcement
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-migration, last_review: 2025-11-04 }
+alwaysApply: false
+---
+# Technical Specification Anti-Duplication Rule
+
+## Purpose & Scope
+
+This rule prevents duplication across all technical specification types by requiring references instead of copying content. It ensures single source of truth and maintains synchronization across the entire documentation architecture.
+
+**Applies to**: ALL technical specification files in `docs/technical/` including domain objects, business rules, enumerations, database schema, entity relationships, integration points, and domain overviews. Enforces REFERENCE, DON'T DUPLICATE principle across entire documentation architecture.
+
+**Does not apply to**: Implementation documentation in `docs/implementation/` (which references technical specs), RFCs in `docs/rfcs/`, or code comments.
+
+## Inputs (Contract)
+
+- Technical specification being created or updated
+- Understanding of which specification types should be authoritative for each content type
+- Knowledge of existing related specifications (database schema, business rules, enumerations)
+- Awareness of what content belongs in which specification type
+
+## Outputs (Contract)
+
+Technical specifications containing:
+- References to authoritative specifications (not duplicated content)
+- Cross-reference links using relative file paths
+- Specification-specific context and interpretation
+- NO duplicated SQL table definitions, field specifications, business rules, or enumeration values
+- Clear single source of truth for each type of information
+
+## Purpose (Original)
+
+This rule prevents duplication across all technical specification types by requiring references instead of copying content. It ensures single source of truth and maintains synchronization across the entire documentation architecture.
+
+## Core Principle
+
+**REFERENCE, DON'T DUPLICATE**: All technical specifications must reference source specifications rather than copying SQL, field definitions, business rules, or detailed technical content.
+
+## Scope of Application
+
+This rule applies to ALL technical specification types:
+
+### **Domain Layer Specifications**
+- Domain Objects
+- Business Rules  
+- Enumerations
+- Domain Overviews
+
+### **Database Layer Specifications**
+- Database Schema documents
+- Entity Relationship documents
+- Database Analysis documents
+
+### **Integration Layer Specifications**
+- Integration Points
+- API Specifications
+- Interface Documents
+
+### **Implementation Layer Specifications**
+- C# Implementation guides
+- Migration specifications
+- Architecture documents
+
+## Anti-Duplication Requirements
+
+### **Database Schema References**
+
+❌ **DON'T DO THIS** (Duplication):
+```markdown
+### Database Mapping
+
+```sql
+CREATE TABLE D_FORMULA (
+    NR              NUMBER NOT NULL,
+    CODE            VARCHAR2(60 BYTE) NOT NULL,
+    NAME            VARCHAR2(60 BYTE) NOT NULL,
+    -- ... 20+ more fields copied from schema
+);
+```
+
+✅ **DO THIS** (Reference):
+```markdown
+### Database Mapping
+
+**Source Reference**: See [D_FORMULA Table](../../database/formulas-database-schema.md#d_formula-table) in the Formula Database Schema for complete table structure, field specifications, and constraints.
+
+**Key Database Characteristics**:
+- **Primary Key**: NR (NUMBER, from GENCOUNTER_SEQ)
+- **Field Count**: 23 fields with formula definition and application flags
+- **Constraint**: FORMULA_NR_PK primary key constraint
+- **Data Type Mapping**: See [Data Type Mapping](../../database/formulas-database-schema.md#data-type-mapping) section
+```
+
+### **Field Specification References**
+
+❌ **DON'T DO THIS** (Duplication):
+```markdown
+| Field | Type | Purpose | Business Meaning | Constraints | Usage |
+|-------|------|---------|------------------|-------------|--------|
+| **NR** | NUMBER | Primary key | Unique formula identifier | NOT NULL, PK | System identification |
+| **CODE** | VARCHAR2(60) | Formula code | Unique formula identifier code | NOT NULL, DEFAULT ' ' | Business identification |
+-- ... copying all field details from database schema
+```
+
+✅ **DO THIS** (Reference with specific focus):
+```markdown
+**Field Specifications**: See [D_FORMULA Field Specifications](../../database/formulas-database-schema.md#field-specifications) for complete field definitions, types, and constraints.
+
+**Domain-Specific Field Usage**:
+- **Business Identity**: Code field serves as primary business identifier
+- **Display Name**: Name field used for user interface display
+- **Application Context**: APPL_METER, APPL_PROFILER, APPL_PORTFOLIO flags control usage context
+- **Temporal Validity**: STARTDATE/ENDDATE fields control formula lifecycle
+```
+
+### **Business Rules References**
+
+❌ **DON'T DO THIS** (Duplication):
+```markdown
+### Validation Rules
+
+1. **Code Uniqueness**: Formula codes must be unique within validity period
+2. **Date Range Validation**: StartDate must be <= EndDate
+3. **Application Context**: At least one application flag must be set
+-- ... copying all business rules from business rules specification
+```
+
+✅ **DO THIS** (Reference):
+```markdown
+**Business Rules**: See [Formula Business Rules](../business-rules/formula-business-rules.md) for complete validation rules and business logic requirements.
+
+**Implementation-Specific Considerations**:
+- **Code Uniqueness**: Enforced at domain entity level with unique constraint
+- **Temporal Validation**: Implemented in domain entity constructor
+- **Application Context**: Validated during formula activation
+```
+
+### **Enumeration References**
+
+❌ **DON'T DO THIS** (Duplication):
+```markdown
+### FormulaType Enumeration
+
+| Value | Name | Description |
+|-------|------|-------------|
+| 0 | Standard | Standard mathematical formula |
+| 1 | Conditional | Conditional logic formula |
+-- ... copying enumeration values and descriptions
+```
+
+✅ **DO THIS** (Reference):
+```markdown
+**Enumeration Reference**: See [FormulaType Enumeration](../enumerations/formula-type-enum.md) for complete value definitions and business meanings.
+
+**Usage Context**: FormulaType determines calculation algorithm and parameter validation rules.
+```
+
+### **Index and Constraint References**
+
+❌ **DON'T DO THIS** (Duplication):
+```markdown
+### Index Requirements
+
+```sql
+CREATE INDEX IX_FORMULAPARAMETER_CODE ON FormulaParameter(Code);
+CREATE INDEX IX_FORMULAPARAMETER_VALIDITY ON FormulaParameter(ValidFrom, ValidTo);
+-- ... copying all index definitions
+
+### Constraint Implementation
+
+```sql
+CONSTRAINT FK_FORMULAPARAMETER_METER 
+    FOREIGN KEY (MeterReference) REFERENCES Meter(Id);
+-- ... copying all constraint definitions
+```
+
+✅ **DO THIS** (Reference):
+```markdown
+### Constraints and Indexes
+
+**Database Constraints**: See [TABLE_NAME Constraints](../../database/[domain]-database-schema.md#database-relationships) for complete constraint definitions and foreign key relationships.
+
+**Index Strategy**: See [Index Strategy](../../database/[domain]-database-schema.md#index-strategy) for complete index definitions and performance optimization.
+
+**Implementation Considerations**:
+- **Parameter Lookup**: Code and validity period indexes critical for parameter resolution
+- **Reference Integrity**: Foreign key constraints ensure data validity
+- **Performance Optimization**: Indexes optimized for specific usage patterns
+```
+
+## Reference Patterns
+
+### **Database Schema References**
+
+```markdown
+**Source Reference**: See [TABLE_NAME Table](../../database/[domain]-database-schema.md#table_name-table) in the [Domain] Database Schema for complete table structure, field specifications, and constraints.
+```
+
+### **Business Rules References**
+
+```markdown
+**Business Rules**: See [Domain Business Rules](../business-rules/[domain]-business-rules.md) for complete validation rules and business logic requirements.
+```
+
+### **Enumeration References**
+
+```markdown
+**Enumeration Reference**: See [EnumName Enumeration](../enumerations/enum-name-enum.md) for complete value definitions and business meanings.
+```
+
+### **Cross-Domain References**
+
+```markdown
+# Cross-domain entity references
+[Related Entity](../../../other-domain/domain/domain-objects/entity-domain-object.md)
+
+# Cross-layer references
+[Database Schema](../../database/domain-database-schema.md)
+[Business Rules](../business-rules/domain-business-rules.md)
+[Integration Points](../../../integration/integration-points.md)
+```
+
+## Specification Focus Areas
+
+### **What TO Include in Each Specification Type**
+
+✅ **Domain Objects**:
+- Business meaning and context
+- Domain entity relationships
+- Usage patterns and behaviors
+- C# implementation patterns
+
+✅ **Business Rules**:
+- Validation logic and constraints
+- Business process rules
+- Decision criteria and algorithms
+- Exception handling rules
+
+✅ **Database Schema**:
+- Complete table structures
+- Field specifications and constraints
+- Index and performance optimization
+- Migration considerations
+
+✅ **Integration Points**:
+- Interface specifications
+- Data exchange patterns
+- Protocol definitions
+- Error handling patterns
+
+### **What NOT to Duplicate Across Specifications**
+
+❌ **Database Technical Content**:
+- Complete SQL table definitions
+- Detailed field specification tables
+- Complete data type mapping tables
+- Detailed constraint definitions
+- Complete index specifications
+- Foreign key constraint SQL
+- Index creation SQL statements
+
+❌ **Business Logic Content**:
+- Complete business rule definitions
+- Detailed validation rule tables
+- Complete decision tree logic
+- Detailed algorithm specifications
+
+❌ **Implementation Details**:
+- Tablespace allocations
+- Storage parameters
+- Database-specific optimization settings
+- Complete performance analysis
+- Detailed configuration parameters
+
+## Synchronization Benefits
+
+### **Single Source of Truth**
+- Each specification type maintains authority over its domain
+- Changes propagate automatically through references
+- No risk of inconsistency between duplicated specifications
+- Clear ownership and maintenance responsibility
+
+### **Maintenance Efficiency**
+- Updates only required in one authoritative location
+- Reduced maintenance overhead across specification types
+- Clear separation of concerns between specification layers
+- Easier to identify what needs updating when systems change
+
+### **Documentation Quality**
+- Cleaner specification files focused on their specific purpose
+- Better separation between different types of technical information
+- Easier to review and validate specific aspects without clutter
+- More focused documentation for different audiences and use cases
+
+## Implementation Guidelines
+
+### **Creating New Specifications**
+
+1. **Identify Authoritative Source**: Determine which specification type should be authoritative for each piece of information
+2. **Start with Reference Structure**: Always begin with references to authoritative sources
+3. **Add Specific Context**: Focus on information specific to the current specification type
+4. **Avoid Copying**: Never copy detailed technical content from other specifications
+5. **Link Appropriately**: Use relative links to maintain portability
+6. **Validate References**: Ensure all referenced sections exist and are accurate
+
+### **Updating Existing Specifications**
+
+1. **Identify Duplication**: Find copied content from other specifications
+2. **Determine Authority**: Identify which specification should be authoritative
+3. **Replace with References**: Convert duplicated content to references
+4. **Preserve Specific Context**: Keep information specific to current specification type
+5. **Validate Links**: Ensure all references point to correct sections
+6. **Test Documentation**: Verify complete information is still accessible
+
+### **Reference Link Patterns**
+
+```markdown
+# Same domain, different layers
+[Database Schema](../../database/domain-database-schema.md#section)
+[Business Rules](../business-rules/domain-business-rules.md#section)
+[Domain Object](../domain-objects/entity-domain-object.md#section)
+
+# Cross-domain references
+[Related Domain](../../../other-domain/layer/specification.md#section)
+
+# Implementation layer references
+[C# Implementation](../../../implementation/domain/implementation-guide.md#section)
+```
+
+## Quality Assurance
+
+### **Review Checklist**
+
+- [ ] No SQL table definitions copied from database schema
+- [ ] No detailed field specification tables duplicated
+- [ ] No business rules copied from business rules specifications
+- [ ] No enumeration values copied from enumeration specifications
+- [ ] All references use proper relative links
+- [ ] Referenced sections exist and are accessible
+- [ ] Specification-specific content is preserved and enhanced
+- [ ] Clear focus on specification type's specific purpose
+
+### **Anti-Patterns to Avoid**
+
+❌ **Copy-Paste Anti-Pattern**: Copying detailed content from other specifications  
+❌ **Broken Reference Anti-Pattern**: References to non-existent sections or files  
+❌ **Over-Reference Anti-Pattern**: Referencing everything without adding specific value  
+❌ **Under-Context Anti-Pattern**: Only references without specification-specific context  
+❌ **Authority Confusion Anti-Pattern**: Unclear which specification is authoritative for information  
+
+## Enforcement
+
+### **Documentation Review Requirements**
+- All new specifications must follow reference patterns
+- Existing specifications should be updated to remove duplication
+- References must be validated during documentation review
+- Specification-specific context must be present alongside references
+- Authority for each type of information must be clearly established
+
+### **Automated Checks** (Future)
+- Detect SQL code blocks in non-database specification files
+- Validate reference links are not broken
+- Check for duplicated content across specification types
+- Ensure specifications maintain focus on their specific purpose
+- Verify authoritative sources are properly referenced
+
+## Integration with Other Rules
+
+This anti-duplication rule works in conjunction with all specification rules:
+
+### **Domain Layer Rules**
+- [Domain Object Rule](domain-object-rule.mdc) - Structure and content standards
+- [Business Rules Rule](business-rules-rule.mdc) - Business logic documentation
+- [Enumeration Rule](enumeration-rule.mdc) - Enumeration documentation standards
+
+### **Architecture Rules**
+- [Documentation Architecture Rule](documentation-architecture-rule.mdc) - Overall structure
+- [Hybrid Documentation Architecture Rule](hybrid-documentation-architecture-rule.mdc) - Layered approach
+
+### **Integration Rules**
+- [Integration Points Rule](integration-points-rule.mdc) - Interface documentation
+- [Entity Relationship Rule](entity-relationship-rule.mdc) - Relationship documentation
+
+---
+
+## Deterministic Steps
+
+When creating or updating technical specifications:
+
+1. **Identify Content Type**: Determine what information needs to be documented
+2. **Determine Authority**: Identify which specification type should be authoritative for this content
+3. **Check for Existing Content**: Search for existing specifications that may contain this information
+4. **Reference vs Duplicate Decision**: If content exists elsewhere, reference it (don't duplicate)
+5. **Create Reference**: Add reference using relative file path with brief context
+6. **Add Specific Context**: Include specification-specific interpretation or usage
+7. **Validate No Duplication**: Ensure NO SQL, detailed field specs, business rules, or enum values are copied
+8. **Validate References**: Ensure all cross-reference links point to existing files and sections
+
+## OPSEC and Leak Control
+
+This rule enforces anti-duplication but does NOT override OPSEC requirements. All specifications must still:
+- **NO** internal server names, IP addresses, or URLs
+- **NO** credentials, tokens, API keys, or passwords
+- **NO** employee names or email addresses
+- **NO** confidential customer data or business-sensitive information
+- References themselves must not contain OPSEC-sensitive information
+
+## Integration Points
+
+This rule works with ALL technical specification rules:
+- **rule.technical-specifications.domain-object.v1**: Domain objects reference (don't duplicate) database schema
+- **rule.technical-specifications.business-rules.v1**: Business rules are referenced, not duplicated
+- **rule.technical-specifications.enumeration.v1**: Enumeration values are referenced, not copied
+- **rule.technical-specifications.entity-relationship.v1**: Database schema is the authoritative source
+- **rule.technical-specifications.hybrid-architecture.v1**: Layered structure supports clear authority boundaries
+
+## Failure Modes and Recovery
+
+**Failure**: SQL CREATE TABLE statements in domain object files
+- **Detection**: SQL code blocks found in non-database specification files
+- **Recovery**: Remove SQL, add reference to database schema file
+
+**Failure**: Business rules duplicated in multiple files
+- **Detection**: Same validation logic appears in business rules AND domain object files
+- **Recovery**: Keep in business rules file (authoritative), reference from domain objects
+
+**Failure**: Enumeration values copied instead of referenced
+- **Detection**: Complete enum value tables in domain object files
+- **Recovery**: Remove value table, add reference to enumeration file
+
+**Failure**: Broken cross-references after file reorganization
+- **Detection**: Links point to non-existent files or sections
+- **Recovery**: Update all relative paths, validate links systematically
+
+## Related Rules
+
+- **rule.technical-specifications.architecture.v1**: Overall documentation structure
+- **rule.technical-specifications.domain-object.v1**: Domain object specific standards requiring anti-duplication
+- **rule.technical-specifications.business-rules.v1**: Business logic documentation standards
+- **rule.technical-specifications.entity-relationship.v1**: Database schema as authoritative source
+- **rule.technical-specifications.enumeration.v1**: Enumeration documentation standards
+- **rule.technical-specifications.hybrid-architecture.v1**: Layered architecture supporting clear authority
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] OPSEC clean (references themselves don't contain sensitive information)
+- [ ] NO SQL table definitions duplicated in non-database files
+- [ ] NO detailed field specification tables copied from database schema
+- [ ] NO business rules duplicated from business rules specifications
+- [ ] NO enumeration values copied from enumeration specifications
+- [ ] Cross-references use relative file paths and point to existing files
+- [ ] Specification-specific context provided alongside references (not just links)

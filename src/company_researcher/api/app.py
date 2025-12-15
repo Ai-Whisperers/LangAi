@@ -225,6 +225,15 @@ Include your API key in the `X-API-Key` header.
             "timestamp": utc_now().isoformat()
         }
 
+    # Health endpoint (used by Docker/Kubernetes health checks)
+    @app.get("/health", tags=["health"])
+    async def health():
+        """Lightweight health endpoint."""
+        return {
+            "status": "healthy",
+            "timestamp": utc_now().isoformat(),
+        }
+
     # WebSocket endpoint
     @app.websocket("/ws")
     async def websocket_endpoint(websocket: WebSocket):

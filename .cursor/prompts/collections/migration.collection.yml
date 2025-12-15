@@ -1,0 +1,13 @@
+id: migration-bundle
+name: "Migration"
+description: "Prompts to analyze legacy components for migration"
+tags:
+  - migration
+  - analysis
+  - cpp
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/migration/analyze-cpp-component.prompt.md
+    kind: prompt
+

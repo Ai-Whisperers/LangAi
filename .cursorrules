@@ -1,0 +1,56 @@
+You are working in the "Company Researcher" repository (Python 3.11+).
+
+Project conventions:
+- Primary package: `src/company_researcher/`
+- Repository CLI entrypoint: `run_research.py`
+- Docs live under `docs/` (index: `docs/README.md`)
+- Deployment assets live under `deploy/` (Dockerfile, docker-compose, Kubernetes manifests)
+
+When updating documentation:
+- Prefer repo-root commands that work on Windows PowerShell and macOS/Linux
+- Keep doc links relative and valid
+- If you change an entrypoint (CLI/API), update the docs and deployment manifests in the same change
+
+When updating code:
+- Keep changes small and readable
+- Add helpful errors for missing optional dependencies (FastAPI/Celery/etc.)
+
+# Cursor Project Rules (.cursorrules)
+
+This repository is **Company Researcher**: a Python multi-agent research system built on **LangGraph + LangChain + Pydantic**.
+
+## Priorities
+
+- Prefer **correctness and traceability** over cleverness.
+- Prefer **small diffs** and preserve existing behavior unless explicitly asked.
+- Prefer **batching** when reading multiple files (faster + cheaper).
+
+## Coding standards (Python)
+
+- Follow existing tooling in `pyproject.toml`:
+  - Formatting: **Black**
+  - Linting: **Ruff**
+  - Types: **mypy** (gradual)
+  - Tests: **pytest**
+- Prefer explicit types for public APIs and Pydantic models.
+- Prefer small, testable functions.
+- Never commit secrets; use environment variables and `env.example`.
+
+## Project conventions
+
+- Source code: `src/`
+- Tests: `tests/`
+- Generated artifacts: `outputs/` (avoid editing these unless explicitly requested)
+
+## LangGraph / agent conventions
+
+- State must be explicit and serializable.
+- External calls (web search, HTTP) must have timeouts and clear error messages.
+- Log enough to debug runs, but never log secrets.
+
+## Rule conflicts
+
+- Prefer **project reality** (Python/LangGraph) over any legacy rules/prompts that mention .NET/XML.
+- Prefer `.cursor/rules/` for detailed standards; this file is only the high-level overlay.
+
+

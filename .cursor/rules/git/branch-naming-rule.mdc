@@ -1,0 +1,501 @@
+---
+id: rule.git.branch-naming.v1
+kind: rule
+version: 1.0.0
+description: Defines and enforces branch naming conventions using regex pattern for feature, fix, and hotfix branches to ensure Jira ticket traceability.
+globs: ""
+governs: ""
+implements: git.branch-naming
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-platform, last_review: 2025-11-22 }
+alwaysApply: false
+---
+
+# Git Branch Naming Rule
+
+## Purpose
+
+This rule defines and enforces standardized branch naming conventions that ensure direct traceability between Git branches and Jira tickets. Consistent naming enables automation, improves clarity, and supports efficient project management.
+
+## Naming Pattern
+
+### Work Branches (Feature, Fix, Hotfix)
+
+All work branches MUST follow this regex pattern:
+
+```regex
+^(feature|fix|hotfix)\/[A-Z]+-\d+$
+```
+
+**Pattern Breakdown**:
+- `^` - Start of string
+- `(feature|fix|hotfix)` - Branch type prefix (exact match, one of three)
+- `\/` - Forward slash separator
+- `[A-Z]+` - Jira project code (one or more uppercase letters)
+- `-` - Hyphen separator
+- `\d+` - Jira ticket number (one or more digits)
+- `$` - End of string
+
+**Critical Rules**:
+- NO additional text after the Jira code
+- NO descriptions or extra identifiers
+- Project code MUST be uppercase
+- Ticket number MUST be numeric
+
+### Version Branches (Release, RC)
+
+Version branches follow semantic versioning patterns:
+
+**Release Branches**:
+```regex
+^release\/\d+\.\d+$
+```
+
+Pattern: `release/[major].[minor]`
+
+Examples:
+- `release/9.10` ✓
+- `release/10.0` ✓
+- `release/9.10.1` ✗ (no patch number)
+
+**Release Candidate Branches**:
+```regex
+^rc\/\d+\.\d+\.\d+$
+```
+
+Pattern: `rc/[major].[minor].[patch]`
+
+Examples:
+- `rc/9.10.0` ✓
+- `rc/9.10.1` ✓
+- `rc/9.10` ✗ (missing patch number)
+
+## Valid Examples
+
+### Feature Branches
+
+```
+feature/EPP-157   ✓ Correct
+feature/EPP-1     ✓ Correct (single digit)
+feature/EBASE-999 ✓ Correct (multi-letter project)
+feature/XYZ-42    ✓ Correct (any valid Jira project)
+```
+
+### Fix Branches
+
+```
+fix/EBASE-123     ✓ Correct
+fix/EPP-456       ✓ Correct
+fix/BUG-789       ✓ Correct
+```
+
+### Hotfix Branches
+
+```
+hotfix/EBASE-127  ✓ Correct
+hotfix/SEC-999    ✓ Correct
+hotfix/PROD-42    ✓ Correct
+```
+
+### Release Branches
+
+```
+release/9.10      ✓ Correct
+release/10.0      ✓ Correct
+release/2.5       ✓ Correct
+```
+
+### Release Candidate Branches
+
+```
+rc/9.10.0         ✓ Correct
+rc/9.10.1         ✓ Correct (patch release)
+rc/10.0.0         ✓ Correct
+```
+
+## Invalid Examples (Common Mistakes)
+
+### Missing Prefix
+
+```
+EPP-157                    ✗ Missing prefix
+my-feature-branch          ✗ No prefix or Jira code
+bugfix                     ✗ Invalid prefix (use 'fix')
+```
+
+### Missing Jira Code
+
+```
+feature/new-dashboard      ✗ No Jira ticket reference
+fix/bug                    ✗ No Jira ticket reference
+hotfix/urgent              ✗ No Jira ticket reference
+```
+
+### Incorrect Case
+
+```
+feature/epp-157            ✗ Lowercase project code
+feature/Epp-157            ✗ Mixed case project code
+FEATURE/EPP-157            ✗ Uppercase prefix
+```
+
+### Extra Text
+
+```
+feature/EPP-157-dashboard  ✗ Extra description not allowed
+fix/EBASE-123-fix-validation ✗ Extra text after ticket
+hotfix/EBASE-127-urgent    ✗ No additional identifiers
+```
+
+### Wrong Format
+
+```
+feature-EPP-157            ✗ Wrong separator (should be /)
+feature/EPP_157            ✗ Wrong separator (should be -)
+feature/EPP/157            ✗ Too many separators
+```
+
+### Invalid Prefixes
+
+```
+bugfix/EBASE-123           ✗ Use 'fix' not 'bugfix'
+feat/EPP-157               ✗ Use 'feature' not 'feat'
+hf/EBASE-127               ✗ Use 'hotfix' not 'hf'
+```
+
+### Version Branch Errors
+
+```
+release/9.10.0             ✗ Release should not have patch number
+release/v9.10              ✗ No 'v' prefix in branch name
+rc/9.10                    ✗ RC must have patch number
+rc/v9.10.0                 ✗ No 'v' prefix in branch name
+```
+
+## Validation
+
+### Regex Implementation
+
+**JavaScript/TypeScript**:
+```javascript
+function validateBranchName(branchName) {
+  const workBranchPattern = /^(feature|fix|hotfix)\/[A-Z]+-\d+$/;
+  const releaseBranchPattern = /^release\/\d+\.\d+$/;
+  const rcBranchPattern = /^rc\/\d+\.\d+\.\d+$/;
+  
+  return workBranchPattern.test(branchName) ||
+         releaseBranchPattern.test(branchName) ||
+         rcBranchPattern.test(branchName);
+}
+
+// Usage
+console.log(validateBranchName("feature/EPP-157"));  // true
+console.log(validateBranchName("my-feature"));       // false
+```
+
+**Python**:
+```python
+import re
+
+def validate_branch_name(branch_name):
+    work_branch_pattern = r'^(feature|fix|hotfix)/[A-Z]+-\d+$'
+    release_branch_pattern = r'^release/\d+\.\d+$'
+    rc_branch_pattern = r'^rc/\d+\.\d+\.\d+$'
+    
+    return (bool(re.match(work_branch_pattern, branch_name)) or
+            bool(re.match(release_branch_pattern, branch_name)) or
+            bool(re.match(rc_branch_pattern, branch_name)))
+
+# Usage
+print(validate_branch_name("feature/EPP-157"))  # True
+print(validate_branch_name("my-feature"))       # False
+```
+
+**Shell (Bash)**:
+```bash
+#!/bin/bash
+
+validate_branch_name() {
+    local branch="$1"
+    
+    if [[ $branch =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
+       [[ $branch =~ ^release/[0-9]+\.[0-9]+$ ]] || \
+       [[ $branch =~ ^rc/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        return 0  # Valid
+    else
+        return 1  # Invalid
+    fi
+}
+
+# Usage
+if validate_branch_name "feature/EPP-157"; then
+    echo "Valid branch name"
+else
+    echo "Invalid branch name"
+fi
+```
+
+### Git Hooks
+
+**Pre-push Hook** (`.git/hooks/pre-push`):
+```bash
+#!/bin/bash
+
+# Get the current branch name
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+# Allow main and develop
+if [[ "$current_branch" == "main" ]] || [[ "$current_branch" == "develop" ]]; then
+    exit 0
+fi
+
+# Validate branch name
+if [[ $current_branch =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
+   [[ $current_branch =~ ^release/[0-9]+\.[0-9]+$ ]] || \
+   [[ $current_branch =~ ^rc/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    exit 0
+else
+    echo "ERROR: Invalid branch name: $current_branch"
+    echo ""
+    echo "Branch names must follow one of these patterns:"
+    echo "  - feature/PROJECT-123"
+    echo "  - fix/PROJECT-123"
+    echo "  - hotfix/PROJECT-123"
+    echo "  - release/X.Y"
+    echo "  - rc/X.Y.Z"
+    echo ""
+    echo "Examples:"
+    echo "  - feature/EPP-157"
+    echo "  - fix/EBASE-123"
+    echo "  - hotfix/EBASE-127"
+    echo "  - release/9.10"
+    echo "  - rc/9.10.0"
+    exit 1
+fi
+```
+
+Make executable:
+```bash
+chmod +x .git/hooks/pre-push
+```
+
+## Branch Name Construction
+
+### From Jira Ticket
+
+Given a Jira ticket (e.g., `EPP-157`) and work type, construct branch name:
+
+```javascript
+function constructBranchName(jiraTicket, branchType) {
+  // Validate inputs
+  if (!['feature', 'fix', 'hotfix'].includes(branchType)) {
+    throw new Error(`Invalid branch type: ${branchType}`);
+  }
+  
+  const ticketPattern = /^[A-Z]+-\d+$/;
+  if (!ticketPattern.test(jiraTicket)) {
+    throw new Error(`Invalid Jira ticket format: ${jiraTicket}`);
+  }
+  
+  return `${branchType}/${jiraTicket}`;
+}
+
+// Usage
+const branchName = constructBranchName("EPP-157", "feature");
+console.log(branchName);  // "feature/EPP-157"
+```
+
+### Extracting Jira Ticket
+
+From a valid branch name, extract the Jira ticket:
+
+```javascript
+function extractJiraTicket(branchName) {
+  const match = branchName.match(/^(?:feature|fix|hotfix)\/([A-Z]+-\d+)$/);
+  return match ? match[1] : null;
+}
+
+// Usage
+const ticket = extractJiraTicket("feature/EPP-157");
+console.log(ticket);  // "EPP-157"
+```
+
+## Server-Side Enforcement
+
+### GitLab CI/CD
+
+Add to `.gitlab-ci.yml`:
+
+```yaml
+validate-branch-name:
+  stage: validate
+  script:
+    - |
+      if [[ "$CI_COMMIT_REF_NAME" == "main" ]] || [[ "$CI_COMMIT_REF_NAME" == "develop" ]]; then
+        exit 0
+      fi
+      
+      if [[ $CI_COMMIT_REF_NAME =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
+         [[ $CI_COMMIT_REF_NAME =~ ^release/[0-9]+\.[0-9]+$ ]] || \
+         [[ $CI_COMMIT_REF_NAME =~ ^rc/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "✓ Branch name is valid"
+        exit 0
+      else
+        echo "✗ Invalid branch name: $CI_COMMIT_REF_NAME"
+        echo "See branching strategy documentation"
+        exit 1
+      fi
+  only:
+    - branches
+```
+
+### GitHub Actions
+
+Add to `.github/workflows/validate-branch.yml`:
+
+```yaml
+name: Validate Branch Name
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  validate-branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        run: |
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          
+          if [[ "$BRANCH_NAME" == "main" ]] || [[ "$BRANCH_NAME" == "develop" ]]; then
+            exit 0
+          fi
+          
+          if [[ $BRANCH_NAME =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
+             [[ $BRANCH_NAME =~ ^release/[0-9]+\.[0-9]+$ ]] || \
+             [[ $BRANCH_NAME =~ ^rc/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "✓ Branch name is valid: $BRANCH_NAME"
+            exit 0
+          else
+            echo "✗ Invalid branch name: $BRANCH_NAME"
+            echo ""
+            echo "Valid patterns:"
+            echo "  - feature/PROJECT-123"
+            echo "  - fix/PROJECT-123"
+            echo "  - hotfix/PROJECT-123"
+            echo "  - release/X.Y"
+            echo "  - rc/X.Y.Z"
+            exit 1
+          fi
+```
+
+## Benefits
+
+### Traceability
+
+- **Direct Mapping**: Branch name immediately identifies Jira ticket
+- **No Ambiguity**: One branch = one ticket
+- **Audit Trail**: Easy to track what work went into each release
+
+### Automation
+
+- **CI/CD Pipelines**: Trigger jobs based on branch patterns
+- **Jira Integration**: Auto-link commits and PRs to tickets
+- **Status Updates**: Automatically update ticket status on branch events
+
+### Clarity
+
+- **Purpose Clear**: Branch type (feature/fix/hotfix) immediately visible
+- **Work Identification**: No need to guess what a branch contains
+- **Team Communication**: Universal understanding of branch names
+
+### Consistency
+
+- **Standard Format**: Everyone follows same convention
+- **Reduced Errors**: Less chance of miscommunication
+- **Tooling Support**: Scripts and tools can parse branch names reliably
+
+## Integration with Other Rules
+
+```yaml
+# Validate branch structure
+requires:
+  - rule.git.branch-structure.v1
+
+# Extract ticket from active ticket file
+requires:
+  - rule.ticket.current.v1
+
+# Ensure commits reference Jira
+requires:
+  - rule.development.commit-message.v1
+```
+
+## Agent Behavior
+
+When AI agent encounters branch naming:
+
+### Creating Branches
+
+1. **Extract Jira Ticket**: From context or `tickets/current.md`
+2. **Validate Format**: Ensure ticket matches `[A-Z]+-\d+`
+3. **Determine Type**: Ask user or infer (feature/fix/hotfix)
+4. **Construct Name**: `{type}/{ticket}`
+5. **Validate Result**: Test against regex before suggesting
+
+### Validating Branches
+
+1. **Test Against Regex**: Use appropriate pattern
+2. **Provide Specific Feedback**: Explain WHY invalid
+3. **Suggest Correction**: Show correct format
+4. **Give Examples**: Provide valid alternatives
+
+### Example Interaction
+
+**Invalid Input**:
+```
+User: "Create branch my-new-feature"
+
+Agent: "The branch name 'my-new-feature' doesn't follow the required naming convention.
+
+Branch names must match: feature/PROJECT-123
+
+To create a valid branch, I need the Jira ticket code (e.g., EPP-157).
+What ticket are you working on?"
+```
+
+**Valid Input**:
+```
+User: "Create branch for EPP-157"
+
+Agent: "Creating feature branch for EPP-157:
+
+git checkout develop
+git pull origin develop
+git checkout -b feature/EPP-157
+
+The branch name follows the pattern: feature/[A-Z]+-\d+"
+```
+
+## FINAL MUST-PASS CHECKLIST
+
+When creating or validating branch names:
+
+- [ ] Work branches match regex: `^(feature|fix|hotfix)\/[A-Z]+-\d+$`
+- [ ] Release branches match regex: `^release\/\d+\.\d+$`
+- [ ] RC branches match regex: `^rc\/\d+\.\d+\.\d+$`
+- [ ] Jira project code is uppercase
+- [ ] No extra text or descriptions after Jira code
+- [ ] Branch type prefix is lowercase (feature, fix, hotfix)
+- [ ] Validation provides specific, actionable feedback
+- [ ] Examples of valid and invalid names are provided
+
+---
+Generated by: rule.git.branch-naming.v1
+Last Updated: 2025-11-22

@@ -1,0 +1,66 @@
+---
+id: rule.general.no-confirmations.v1
+kind: rule
+version: 1.0.0
+description: Prevents asking for confirmation of information already in context
+globs: "**/*"
+governs: ""
+implements: communication.efficiency
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# No Unnecessary Confirmations Rule
+
+## Purpose & Scope
+
+This rule prevents the AI from asking for confirmation of information that is already provided in the context or previous messages.
+
+**Applies to**: Interaction flow.
+
+## Inputs (Contract)
+
+- Context containing facts/requirements
+
+## Outputs (Contract)
+
+- Execution based on known facts
+- No "Is this correct?" questions for things already stated
+
+## Deterministic Steps
+
+1. Check context for the information.
+2. If present, assume it is correct and proceed.
+3. Only ask for confirmation if the information is ambiguous, contradictory, or missing.
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.no-impl-checks.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] No confirmation asked for known facts
+- [ ] Action taken immediately based on context
+- [ ] Interaction flow is efficient

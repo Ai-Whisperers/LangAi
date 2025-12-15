@@ -1,0 +1,17 @@
+id: unit-testing-bundle
+name: "Unit Testing"
+description: "Prompts for assessing and generating unit tests"
+tags:
+  - testing
+  - quality
+  - coverage
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/unit-testing/check-test-coverage.prompt.md
+    kind: prompt
+  - path: prompts/unit-testing/generate-missing-tests.prompt.md
+    kind: prompt
+  - path: prompts/unit-testing/validate-test-quality.prompt.md
+    kind: prompt
+

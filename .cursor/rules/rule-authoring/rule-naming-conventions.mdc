@@ -1,0 +1,623 @@
+---
+id: rule.authoring.naming-conventions.v1
+kind: rule
+version: 1.0.1
+description: Defines naming patterns for rule IDs, file names, templars, and exemplars
+globs: **/*-rule.mdc, **/rules/**/*.mdc, **/templars/**/*.md, **/exemplars/**/*.md
+governs: **/*-rule.mdc, **/rules/**/*.mdc, **/templars/**/*.md, **/exemplars/**/*.md
+implements: rule.authoring.naming-conventions
+requires:
+  - rule.authoring.file-structure.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ai, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Rule Naming Conventions
+
+## Purpose & Scope
+
+This rule defines consistent naming patterns for rule IDs, file names, templars, and exemplars. Consistent naming enables discovery, reduces confusion, and supports tooling for dependency resolution and validation.
+
+**Applies to**: All rule files, templars, exemplars, and related directories.
+
+**Does not apply to**: Generated output files, user documentation, or code files.
+
+## Inputs (Contract)
+
+- New rule, templar, or exemplar being created
+- Understanding of domain area (ticket, migration, authoring, etc.)
+- Knowledge of what action/capability the file provides
+- Existing naming patterns in the project (for consistency)
+
+## Outputs (Contract)
+
+Files with:
+- ID following pattern `[kind].[domain].[action].v[major]`
+- File name following pattern `[domain]-[action]-[kind].mdc` (rules) or `[target]-[qualifier].md` (templars/exemplars)
+- Directory structure organized by domain
+- Consistent casing and delimiter usage
+- No ambiguous or conflicting names
+
+## Rule ID Naming
+
+### ID Pattern
+
+```
+[kind].[domain].[action].v[major]
+```
+
+### Components
+
+**kind**: Type of file
+- `rule` - Operational rule
+- `templar` - Template for output structure
+- `exemplar` - Example for pattern learning
+
+**domain**: Area or subsystem
+- `ticket` - Ticket workflow rules
+- `migration` - Migration rules
+- `authoring` - Rule authoring rules
+- `database` - Database rules
+- Custom domains as needed
+
+**action**: What the rule does (verb or noun)
+- `update` - Updates/modifies files
+- `create` - Creates new files
+- `validate` - Validates content
+- `redact` - Redacts sensitive data
+- Custom actions as needed
+
+**v[major]**: Major version number
+- `v1`, `v2`, `v3`, etc.
+- Major version only (not full semver)
+
+### Examples
+
+**Rules**:
+- `rule.ticket.plan.update.v1`
+- `rule.ticket.progress.create.v1`
+- `rule.ticket.opsec.redact.v1`
+- `rule.migration.spec.create.v2`
+- `rule.authoring.file-structure.v1`
+- `rule.database.index.create.v1`
+
+**Templars**:
+- `templar.plan.v1`
+- `templar.progress.v2`
+- `templar.migration-spec.v1`
+
+**Exemplars**:
+- `exemplar.plan.good.v1`
+- `exemplar.plan.bad.v1`
+- `exemplar.progress.good.v1`
+
+### ID Rules
+
+1. **Lowercase only**: All components lowercase
+2. **Dot separator**: Use `.` between components
+3. **No underscores in ID**: Use dots, not underscores
+4. **No hyphens in ID**: Exception: multi-word terms like `migration-spec`
+5. **Globally unique**: No two files share same ID
+6. **Stable**: ID never changes (file can move, ID stays same)
+7. **Version suffix**: Always end with `.v[major]`
+
+### ID Anti-Patterns
+
+[X] **Bad**:
+- `Rule.Ticket.Plan.Update.V1` (capital letters)
+- `rule_ticket_plan_update_v1` (underscores)
+- `rule.ticket.plan.update` (missing version)
+- `rule.ticket.plan.update.v1.2.3` (full semver in ID)
+- `rule.plan.update.v1` (missing domain)
+- `rule.ticket.v1` (missing action)
+
+[X] **Good**:
+- `rule.ticket.plan.update.v1`
+
+## File Name Naming
+
+### Rule File Names
+
+**Pattern**: `[domain]-[action]-rule.mdc`
+
+**Examples**:
+- `plan-rule.mdc` (if domain clear from directory)
+- `ticket-plan-rule.mdc` (if domain not clear)
+- `progress-update-rule.mdc`
+- `opsec-redact-rule.mdc`
+- `file-structure-rule.mdc`
+
+**Variation for multi-word**: Use hyphens
+- `migration-spec-create-rule.mdc`
+- `cross-references-rule.mdc`
+
+### Templar File Names
+
+**Pattern**: `[target]-template.md`
+
+**Examples**:
+- `plan-template.md`
+- `progress-template.md`
+- `migration-spec-template.md`
+- `context-template.md`
+
+### Exemplar File Names
+
+**Pattern**: `[target]-[qualifier].md`
+
+**Qualifiers**:
+- `good` - Best practices example
+- `bad` - Anti-pattern example
+- `edge-case` - Unusual but valid example
+- `complex` - Complex scenario example
+- `simple` - Simple scenario example
+
+**Examples**:
+- `plan-good.md`
+- `plan-bad.md`
+- `progress-good.md`
+- `progress-edge-case.md`
+
+### File Name Rules
+
+1. **Lowercase only**: All lowercase
+2. **Hyphen separator**: Use `-` between words
+3. **Suffix indicator**: `-rule.mdc`, `-template.md`, or qualifier
+4. **No underscores**: Use hyphens, not underscores
+5. **No spaces**: Use hyphens instead
+6. **Descriptive**: Name indicates content without reading file
+7. **Consistent length**: Avoid unnecessarily long names
+
+### File Name Anti-Patterns
+
+[X] **Bad**:
+- `PlanRule.mdc` (capitals)
+- `plan_rule.mdc` (underscores)
+- `plan rule.mdc` (spaces)
+- `plan.mdc` (missing `-rule` suffix)
+- `plan-update-ticket-rule-for-creating-and-modifying.mdc` (too long)
+
+[X] **Good**:
+- `plan-rule.mdc`
+- `plan-update-rule.mdc`
+
+## Directory Structure
+
+### Recommended Layout
+
+```
+.cursor/
+  rules/
+    ticket/
+      plan-rule.mdc
+      progress-rule.mdc
+      context-rule.mdc
+      timeline-rule.mdc
+      opsec-redact-rule.mdc
+    migration/
+      spec-create-rule.mdc
+      data-collection-rule.mdc
+    authoring/
+      file-structure-rule.mdc
+      naming-conventions-rule.mdc
+      cross-references-rule.mdc
+  templars/
+    ticket/
+      plan-template.md
+      progress-template.md
+    migration/
+      spec-template.md
+  exemplars/
+    ticket/
+      plan-good.md
+      plan-bad.md
+      progress-good.md
+    migration/
+      spec-good.md
+```
+
+### Directory Naming Rules
+
+1. **Lowercase only**: All directory names lowercase
+2. **Hyphen separator**: Multi-word directories use hyphens
+3. **No underscores**: Use hyphens, not underscores
+4. **Plural for collections**: `rules/`, `templars/`, `exemplars/`
+5. **Singular for domains**: `ticket/`, `migration/`, `authoring/`
+6. **Depth limit**: Max 3 levels deep (`.cursor/rules/domain/`)
+
+## Domain Naming
+
+### Choosing Domain Names
+
+**Domain**: Represents area of concern or subsystem
+
+**Guidelines**:
+- Use singular form: `ticket`, not `tickets`
+- Use noun: `migration`, not `migrate`
+- Be specific: `database` not `data`
+- Match project structure: If project has `ticket/` module, use `ticket` domain
+- Keep short: 1-2 words max
+
+### Standard Domains
+
+**ticket**: Ticket workflow and tracking
+- `rule.ticket.plan.update.v1`
+- `rule.ticket.progress.create.v1`
+
+**migration**: System migration rules
+- `rule.migration.spec.create.v1`
+- `rule.migration.data-collection.v1`
+
+**authoring**: Rule authoring and meta-rules
+- `rule.authoring.file-structure.v1`
+- `rule.authoring.naming-conventions.v1`
+
+**database**: Database operations
+- `rule.database.index.create.v1`
+- `rule.database.migration.validate.v1`
+
+**code**: Code generation or analysis
+- `rule.code.generate.v1`
+- `rule.code.refactor.v1`
+
+**documentation**: Documentation rules
+- `rule.documentation.structure.v1`
+- `rule.documentation.api-spec.v1`
+
+### Custom Domains
+
+Create custom domains for your project:
+
+**Examples**:
+- `rule.accounting.report.generate.v1`
+- `rule.security.audit.scan.v1`
+- `rule.deployment.package.create.v1`
+
+**Rules for custom domains**:
+1. Match your project's modules/areas
+2. Use consistent naming across related rules
+3. Document domain in rule-authoring-overview.mdc
+4. Avoid overlapping domains (clear boundaries)
+
+## Action Naming
+
+### Choosing Action Names
+
+**Action**: Describes what the rule does
+
+**Guidelines**:
+- Use verb form: `update`, `create`, `validate`
+- Be specific: `redact` not `process`
+- Match operation: `update` for modify, `create` for new
+- Keep short: 1-2 words max
+
+### Standard Actions
+
+**create**: Creates new files or content
+- `rule.ticket.plan.create.v1`
+
+**update**: Modifies existing files or content
+- `rule.ticket.plan.update.v1`
+
+**validate**: Checks correctness or compliance
+- `rule.ticket.plan.validate.v1`
+
+**generate**: Produces content (often from templates)
+- `rule.code.class.generate.v1`
+
+**transform**: Converts from one format to another
+- `rule.migration.spec.transform.v1`
+
+**analyze**: Examines and reports on content
+- `rule.code.complexity.analyze.v1`
+
+**redact**: Removes sensitive information
+- `rule.ticket.opsec.redact.v1`
+
+**sync**: Synchronizes between systems
+- `rule.ticket.jira.sync.v1`
+
+### Multi-Word Actions
+
+For multi-word actions, use single term or hyphenate:
+
+**Examples**:
+- `rule.database.schema.validate.v1` (not `validate-schema`)
+- `rule.ticket.cross-reference.v1` (hyphenate compound noun used as action)
+
+### Action Anti-Patterns
+
+[X] **Bad**:
+- `rule.ticket.plan.do-stuff.v1` (vague)
+- `rule.ticket.plan.change.v1` (ambiguous: create or update?)
+- `rule.ticket.plan.update-or-create.v1` (compound action)
+
+[X] **Good**:
+- `rule.ticket.plan.update.v1` (clear, handles both create and update)
+
+## Templar Naming
+
+### Templar IDs
+
+**Pattern**: `templar.[target].v[major]`
+
+**Components**:
+- `templar` - Kind
+- `target` - What this templates (usually a file type)
+- `v[major]` - Version
+
+**Examples**:
+- `templar.plan.v1`
+- `templar.progress.v1`
+- `templar.migration-spec.v2`
+- `templar.rca.v1`
+
+### Templar File Names
+
+**Pattern**: `[target]-template.md`
+
+**Examples**:
+- `plan-template.md`
+- `progress-template.md`
+- `migration-spec-template.md`
+
+### Templar Rules
+
+1. ID is shorter than rule ID (no domain, no action)
+2. Target should match the file type being templated
+3. `-template` suffix in file name makes purpose clear
+4. Templars organized by domain in directory structure
+
+## Exemplar Naming
+
+### Exemplar IDs
+
+**Pattern**: `exemplar.[target].[qualifier].v[major]`
+
+**Components**:
+- `exemplar` - Kind
+- `target` - What this exemplifies
+- `qualifier` - Type of example (good, bad, edge-case, etc.)
+- `v[major]` - Version
+
+**Examples**:
+- `exemplar.plan.good.v1`
+- `exemplar.plan.bad.v1`
+- `exemplar.progress.good.v1`
+- `exemplar.migration-spec.edge-case.v1`
+
+### Exemplar File Names
+
+**Pattern**: `[target]-[qualifier].md`
+
+**Examples**:
+- `plan-good.md`
+- `plan-bad.md`
+- `progress-edge-case.md`
+- `migration-spec-complex.md`
+
+### Exemplar Qualifiers
+
+**Standard qualifiers**:
+- `good` - Best practices, follow this
+- `bad` - Anti-patterns, avoid this
+- `edge-case` - Unusual but valid scenario
+- `simple` - Minimal example
+- `complex` - Comprehensive example
+
+**Usage**:
+- Most rules should have at least `good` and `bad` exemplars
+- Complex domains benefit from `edge-case` exemplars
+- Tutorial rules benefit from `simple` exemplars
+
+## Implements Field Naming
+
+The `implements` field uses simplified naming:
+
+**Pattern**: `[domain].[action]` or `[action]`
+
+**Examples**:
+- `plan.update`
+- `progress.create`
+- `opsec.redact`
+- `file-structure` (when domain is clear from context)
+
+**Rules**:
+1. Shorter than full ID (no `rule.` prefix, no version)
+2. Used for conceptual grouping
+3. Multiple rules can implement same capability
+4. Templars and exemplars reference this in `implements`/`illustrates`
+
+## Version Numbering
+
+### In IDs
+
+Use major version only: `v1`, `v2`, `v3`
+
+**Examples**:
+- `rule.ticket.plan.update.v1`
+- `rule.ticket.plan.update.v2`
+
+### In Front-Matter
+
+Use full semantic version: `MAJOR.MINOR.PATCH`
+
+```yaml
+version: 1.2.3
+```
+
+### Version Consistency
+
+Major version in ID must match major version in front-matter:
+
+[X] **Good**:
+```yaml
+id: rule.ticket.plan.update.v1
+version: 1.5.2
+```
+
+[X] **Bad**:
+```yaml
+id: rule.ticket.plan.update.v1
+version: 2.0.0  # Mismatch!
+```
+
+## Naming Checklist
+
+When naming a new rule/templar/exemplar:
+
+- [ ] ID follows pattern: `[kind].[domain].[action].v[major]`
+- [ ] File name follows pattern: `[domain]-[action]-[kind].[ext]`
+- [ ] All lowercase (ID and file name)
+- [ ] Dots in ID, hyphens in file name
+- [ ] Domain matches project structure
+- [ ] Action is clear verb
+- [ ] Version suffix present in ID
+- [ ] ID is globally unique
+- [ ] File name matches ID semantically
+
+## Examples by Type
+
+### Ticket Rules
+
+**IDs**:
+- `rule.ticket.plan.update.v1`
+- `rule.ticket.progress.update.v1`
+- `rule.ticket.context.update.v1`
+- `rule.ticket.timeline.append.v1`
+- `rule.ticket.recap.create.v1`
+- `rule.ticket.rca.create.v1`
+
+**File names**:
+- `plan-rule.mdc`
+- `progress-rule.mdc`
+- `context-rule.mdc`
+- `timeline-rule.mdc`
+- `recap-rule.mdc`
+- `rca-rule.mdc`
+
+### Migration Rules
+
+**IDs**:
+- `rule.migration.spec.create.v1`
+- `rule.migration.data-collection.v1`
+- `rule.migration.review.v1`
+- `rule.migration.planning.v1`
+
+**File names**:
+- `spec-create-rule.mdc`
+- `data-collection-rule.mdc`
+- `review-rule.mdc`
+- `planning-rule.mdc`
+
+### Authoring Rules
+
+**IDs**:
+- `rule.authoring.file-structure.v1`
+- `rule.authoring.naming-conventions.v1`
+- `rule.authoring.cross-references.v1`
+- `rule.authoring.contracts-and-scope.v1`
+- `rule.authoring.templars-and-exemplars.v1`
+- `rule.authoring.provenance-and-versioning.v1`
+- `rule.authoring.validation-and-checklists.v1`
+
+**File names**:
+- `file-structure-rule.mdc`
+- `naming-conventions-rule.mdc`
+- `cross-references-rule.mdc`
+- `contracts-and-scope-rule.mdc`
+- `templars-and-exemplars-rule.mdc`
+- `provenance-and-versioning-rule.mdc`
+- `validation-and-checklists-rule.mdc`
+
+## Case Styles
+
+### For IDs
+
+**Use**: `lowercase.dot.separated`
+
+**Examples**:
+- `rule.ticket.plan.update.v1`
+- `templar.migration-spec.v1`
+
+### For File Names
+
+**Use**: `lowercase-hyphen-separated.ext`
+
+**Examples**:
+- `plan-rule.mdc`
+- `migration-spec-template.md`
+
+### For Directory Names
+
+**Use**: `lowercase-hyphen-separated`
+
+**Examples**:
+- `rule-authoring/`
+- `ticket/`
+
+### Never Use
+
+[X] **camelCase**: `planRule.mdc`
+[X] **PascalCase**: `PlanRule.mdc`
+[X] **snake_case**: `plan_rule.mdc`
+[X] **SCREAMING_CASE**: `PLAN_RULE.mdc`
+
+## Name Collision Avoidance
+
+### Check Before Creating
+
+Before creating new rule:
+1. Search for similar IDs: `grep -r "rule.ticket.plan" .cursor/rules/`
+2. Check rule-index.yml (if exists)
+3. Review domain for existing rules
+4. Ensure action term is not overloaded
+
+### Handling Similar Rules
+
+If two rules are similar, differentiate by action:
+
+**Example**: Two plan rules
+- `rule.ticket.plan.create.v1` - Creates new plans
+- `rule.ticket.plan.update.v1` - Updates existing plans
+
+Or by scope:
+- `rule.ticket.plan.validate.v1` - Validates structure
+- `rule.ticket.plan.validate-content.v1` - Validates content quality
+
+### Deprecation and Replacement
+
+When replacing a rule:
+- New rule gets new ID (usually v2)
+- Old rule marked deprecated
+- Both can coexist during transition
+
+**Example**:
+```yaml
+# Old
+id: rule.ticket.plan.update.v1
+provenance:
+  deprecated: 2025-11-04
+  superseded_by: rule.ticket.plan.update.v2
+
+# New
+id: rule.ticket.plan.update.v2
+version: 2.0.0
+```
+
+## Related Rules
+
+- `rule.authoring.file-structure.v1` - ID in front-matter
+- `rule.authoring.cross-references.v1` - Referencing by ID
+- `rule.authoring.provenance-and-versioning.v1` - Version numbering
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] ID follows pattern: `[kind].[domain].[action].v[major]` (all lowercase, dots)
+- [ ] File name follows pattern: `[domain]-[action]-[kind].[ext]` (all lowercase, hyphens)
+- [ ] Major version in ID matches major version in front-matter `version` field
+- [ ] ID is globally unique (checked against existing rules)
+- [ ] Domain is appropriate and matches project structure
+- [ ] Action is clear verb describing what rule does
+- [ ] No spaces, underscores, or capitals in ID or file name

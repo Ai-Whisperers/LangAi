@@ -178,7 +178,7 @@ def test_enhanced_agent():
     print("  - Would incur API costs")
 
     print("\n  Skipping full agent test in validation script")
-    print("  Run actual research to test: python hello_research.py \"Tesla\"")
+    print("  Run actual research to test: python examples/hello_research.py \"Tesla\"")
 
     print("\n[OK] Enhanced agent structure validated\n")
 

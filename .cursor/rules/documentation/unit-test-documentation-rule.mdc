@@ -1,0 +1,300 @@
+---
+id: rule.documentation.unit-tests.v1
+kind: rule
+version: 1.0.0
+description: Standards for documenting unit tests with XML comments and meaningful inline comments. Documentation-only changes (no code logic modifications).
+globs: **/*Tests.cs
+governs: **/*Tests.cs
+implements: documentation.unit-tests
+requires:
+  - rule.documentation.standards.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-platform, last_review: 2025-11-25 }
+alwaysApply: false
+---
+
+# Unit Test Documentation Rule
+
+## Purpose & Scope
+
+This rule defines the standards for documenting unit tests in the codebase. It ensures clarity, maintainability, and consistency across all test files, with a focus on XML documentation and meaningful inline comments. **No code logic or structure should be changed as part of this rule—only documentation.**
+
+**Applies to**: All test files matching `**/*Tests.cs` pattern.
+
+**Does not apply to**: Production code (use `rule.documentation.standards.v1`), integration tests, or performance tests.
+
+## Inputs (Contract)
+
+- Test file (*.Tests.cs) requiring documentation
+- Understanding of test purpose and test class structure
+- Knowledge of testing framework (xUnit, NUnit, MSTest)
+- Access to tested production code for context
+
+## Outputs (Contract)
+
+Test file with:
+- XML documentation for test class explaining purpose
+- XML documentation for each test method with:
+  - What is being tested
+  - Expected behavior
+  - Edge cases covered
+  - Mathematical/logical reasoning
+- Inline comments explaining:
+  - Arrange phase (setup)
+  - Act phase (execution)
+  - Assert phase (verification)
+- `[Trait]` attributes for categorization
+- Cross-references to related tests
+
+## Deterministic Steps
+
+1. Read existing test file
+2. For test class:
+   - Add `<summary>` explaining class purpose
+   - Describe relationship to tested component
+   - Note test strategy or approach
+3. For EACH test method:
+   - Add `<summary>` with:
+     - What is being tested
+     - Expected behavior and why it matters
+     - Edge cases or scenarios covered
+   - Add `<remarks>` for complex test logic
+4. Add inline comments:
+   - "// Arrange" section - setup explanation
+   - "// Act" section - operation explanation
+   - "// Assert" section - verification explanation
+5. Add `[Trait]` attributes for categorization:
+   - Category ("Basic", "EdgeCase", "NaN", "Performance")
+   - Component name
+6. Add cross-references with `<seealso>` to related tests
+7. Validate documentation completeness
+8. Write updated file
+
+## Formatting Requirements
+
+### Test Class Documentation
+
+```csharp
+/// <summary>
+/// Tests for [ComponentName] to verify [primary functionality].
+/// </summary>
+/// <remarks>
+/// This test class validates [what aspects], including:
+/// <list type="bullet">
+/// <item><description>Basic functionality</description></item>
+/// <item><description>Edge cases</description></item>
+/// <item><description>Error handling</description></item>
+/// </list>
+/// <para>
+/// Test strategy: [describe approach, e.g., "property-based", "example-based"]
+/// </para>
+/// </remarks>
+/// <seealso cref="ComponentName"/>
+public class ComponentNameTests
+```
+
+### Test Method Documentation
+
+```csharp
+/// <summary>
+/// Verifies that [component] [behavior] when [condition].
+/// </summary>
+/// <remarks>
+/// This test ensures [why this matters]. The expected result is [outcome]
+/// because [mathematical/logical reasoning].
+/// <para>
+/// Edge case covered: [specific scenario]
+/// </para>
+/// </remarks>
+[Fact]
+[Trait("Category", "EdgeCase")]
+[Trait("Component", "ComponentName")]
+public void MethodName_Should_Behavior_When_Condition()
+{
+    // Arrange - Set up test data and preconditions
+    var input = CreateTestInput();
+    var expected = CalculateExpectedResult();
+    
+    // Act - Execute the operation being tested
+    var actual = _component.MethodName(input);
+    
+    // Assert - Verify the expected behavior
+    Assert.Equal(expected, actual);
+}
+```
+
+### Mock Class Documentation
+
+```csharp
+/// <summary>
+/// Mock implementation of [InterfaceName] for testing [specific behavior].
+/// </summary>
+/// <remarks>
+/// This mock simulates [what behavior] by [how it works]. Used to test
+/// [what scenarios] without requiring [real dependency].
+/// </remarks>
+private class MockComponent : IComponent
+{
+    /// <summary>
+    /// Simulates [specific behavior] by returning [what].
+    /// </summary>
+    public ReturnType MethodName()
+    {
+        // Mock implementation explanation
+        return mockValue;
+    }
+}
+```
+
+## Requirements
+
+### 1. Test Class Documentation
+- Add XML documentation comments for each test class
+- Explain the purpose of the class and its role in the testing pipeline
+- Describe the relationship between tested component and test class
+- State the expected behavior when components are combined (if applicable)
+
+### 2. Test Method Documentation
+- Add detailed XML documentation for each test method, including:
+  - A clear description of what is being tested
+  - The expected behavior and its importance
+  - Any specific edge cases or scenarios covered
+  - The mathematical or logical reasoning behind the expected results
+
+### 3. Test Categories and Traits
+- Use `[Trait]` or equivalent attributes to group related tests:
+  - Basic functionality
+  - Edge cases
+  - NaN handling
+  - Performance-related tests
+  - Category and Component traits
+
+### 4. Inline Comments
+- Include inline comments within test methods to explain:
+  - The setup/arrangement phase
+  - The specific operations being performed
+  - The verification steps
+  - Any assumptions made in the test
+
+### 5. Mock Class Documentation
+- Add XML documentation for any mock or stub classes used in tests:
+  - State their purpose in testing
+  - Describe the mock behavior implemented
+  - Explain how they simulate real component behavior
+
+### 6. Edge Cases and Error Conditions
+- Consider and document test cases for:
+  - Error conditions and exception handling
+  - Boundary conditions
+  - Different combinations of component behaviors
+  - Memory and performance considerations
+
+### 7. Examples
+- Include examples in the documentation showing:
+  - Typical usage patterns
+  - Common scenarios
+  - Expected input/output relationships
+
+### 8. Cross-References
+- Add cross-references to related test classes and documentation where appropriate
+- Use `<seealso cref="..."/>` to link to tested components
+- Reference related test methods
+
+### 9. Documentation-Only Changes
+- **Do not adjust or modify any code logic, structure, or behavior as part of this rule. Only documentation (XML comments, inline comments, and attributes) should be added or updated.**
+
+### 10. Consistency
+- All documentation must follow the standard XML documentation format and maintain consistency with the existing codebase documentation style
+
+## Test Documentation Patterns
+
+### Fact Tests
+```csharp
+/// <summary>
+/// Verifies that [method] returns [expected] for [input scenario].
+/// </summary>
+[Fact]
+public void MethodName_ReturnsExpected_ForValidInput()
+```
+
+### Theory Tests
+```csharp
+/// <summary>
+/// Verifies that [method] handles [range of inputs] correctly.
+/// </summary>
+/// <param name="input">Test input value.</param>
+/// <param name="expected">Expected result for the input.</param>
+[Theory]
+[InlineData(1, 2)]
+[InlineData(5, 10)]
+public void MethodName_HandlesMultipleInputs(int input, int expected)
+```
+
+### Exception Tests
+```csharp
+/// <summary>
+/// Verifies that [method] throws <see cref="ExceptionType"/> when [condition].
+/// </summary>
+/// <remarks>
+/// This validation is important because [reason].
+/// </remarks>
+[Fact]
+public void MethodName_ThrowsException_WhenInvalidInput()
+```
+
+## OPSEC and Leak Control
+
+When documenting tests:
+- NO internal system paths in test data explanations
+- NO credentials or tokens in test examples
+- NO customer data in test scenarios
+- NO production URLs (use "https://test.example.com")
+- Generic test data only
+
+## Integration Points
+
+- **Standards**: Follows `rule.documentation.standards.v1` for XML documentation
+- **Testing Framework**: Works with xUnit, NUnit, MSTest
+- **Production Code**: Documents relationship to tested components
+- **Test Reports**: Well-documented tests provide better failure diagnostics
+
+## Failure Modes and Recovery
+
+**Test purpose unclear**:
+- Detection: Summary doesn't explain what's being tested
+- Recovery: Add clear description of test scenario and expected behavior
+- Prevention: Document tests as you write them
+
+**Missing Arrange/Act/Assert comments**:
+- Detection: Test logic not clearly separated
+- Recovery: Add inline comments for each phase
+- Prevention: Use AAA pattern consistently
+
+**Undocumented edge cases**:
+- Detection: Complex test without explanation
+- Recovery: Add `<remarks>` explaining the edge case
+- Prevention: Document why edge case matters when writing test
+
+**Missing trait categorization**:
+- Detection: Tests not grouped logically
+- Recovery: Add `[Trait]` attributes for category and component
+- Prevention: Categorize tests from the start
+
+## Related Rules
+
+- `rule.documentation.standards.v1` - General XML documentation standards
+- `rule.documentation.testing.v1` - Framework for testing documentation completeness
+- `rule.documentation.agent-application.v1` - Agent coordination
+- Master reference: `docs/DOCUMENTATION-STANDARDS.md`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Test class has XML documentation explaining purpose
+- [ ] All test methods have `<summary>` describing what is tested
+- [ ] Complex tests have `<remarks>` with reasoning
+- [ ] AAA pattern commented (Arrange, Act, Assert)
+- [ ] Tests categorized with `[Trait]` attributes
+- [ ] Mock classes documented if present
+- [ ] Cross-references to tested components included
+- [ ] Documentation-only (no code logic changes)
+- [ ] OPSEC clean (no secrets, internal paths, customer data)

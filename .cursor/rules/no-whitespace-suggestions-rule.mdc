@@ -1,0 +1,67 @@
+---
+id: rule.general.no-whitespace.v1
+kind: rule
+version: 1.0.0
+description: Prevents suggesting whitespace-only changes
+globs: "**/*"
+governs: ""
+implements: coding.style
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-general, last_review: 2025-12-06 }
+alwaysApply: false
+---
+
+# No Whitespace Suggestions Rule
+
+## Purpose & Scope
+
+This rule prevents the AI from suggesting whitespace changes (indentation, trailing spaces) unless they are the *only* requested change or essential for syntax (e.g., Python).
+
+**Applies to**: Code modification.
+
+## Inputs (Contract)
+
+- Target file
+- Proposed changes
+
+## Outputs (Contract)
+
+- Changes focused on logic/content
+- No noise from whitespace diffs
+
+## Deterministic Steps
+
+1. Filter proposed changes.
+2. If a change is purely whitespace (and not syntactically required), discard it.
+3. Apply only meaningful changes.
+
+## Formatting Requirements
+
+None.
+
+## OPSEC and Leak Control
+
+N/A
+
+## Integration Points
+
+None.
+
+## Failure Modes and Recovery
+
+N/A
+
+## Provenance Footer Specification
+
+N/A
+
+## Related Rules
+
+- `rule.general.no-unnecessary-updates.v1`
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] No whitespace-only noise
+- [ ] Focus on logic
+- [ ] Clean diffs

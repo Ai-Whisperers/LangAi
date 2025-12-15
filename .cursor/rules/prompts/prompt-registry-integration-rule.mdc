@@ -1,0 +1,968 @@
+---
+id: rule.prompts.registry-integration.v1
+kind: rule
+version: 1.0.0
+description: Integration standards for Prompt Registry extension with Cursor, including .prompt.md format, collection manifests, and slash-command workflows
+globs: **/.cursor/prompts/**/*.prompt.md, **/.cursor/prompts/collections/*.collection.yml
+governs: **/.cursor/prompts/**/*.prompt.md, **/.cursor/prompts/collections/*.collection.yml
+implements: prompts.registry-integration
+requires:
+  - rule.prompts.creation.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-prompts, last_review: 2025-12-08 }
+alwaysApply: false
+---
+
+# Prompt Registry Integration Standards
+
+## Purpose
+
+Define standards for integrating prompt libraries with the Prompt Registry extension in Cursor, enabling quick prompt invocation via `/` commands while maintaining Git-controlled, YAML-based prompt organization.
+
+## Scope
+
+**Covers**:
+- `.prompt.md` file format with YAML frontmatter
+- Collection manifest structure (`.collection.yml`)
+- Directory organization for Prompt Registry
+- Prompt Registry extension configuration
+- Slash command (`/`) workflow
+- Integration with existing prompt creation standards
+
+**Does Not Cover**:
+- General prompt quality standards (see `rule.prompts.creation.v1`)
+- Prompt extraction from conversations (see `rule.prompts.extraction.v1`)
+- Ad-hoc conversational prompts
+
+## When to Apply
+
+Apply when:
+- Creating new prompts for the prompt library
+- Organizing prompts into collections
+- Setting up Prompt Registry integration
+- Converting existing prompts to `.prompt.md` format
+- Managing prompt bundles for team distribution
+
+## Why Prompt Registry
+
+**Problem Being Solved**:
+Without Prompt Registry, developers resort to:
+- One-line ad-hoc prompts (lose quality and consistency)
+- Manual copy-paste from prompt files (slow, friction-heavy)
+- Browsing and dragging files (breaks flow)
+
+**Solution**:
+Prompt Registry enables:
+- **Quick invocation**: Type `/prompt-name` in Cursor chat
+- **Fuzzy search**: Auto-complete as you type
+- **Version control**: Prompts remain in Git under `.cursor/prompts/`
+- **Collection management**: Organize related prompts into bundles
+- **Team distribution**: Share prompt collections across repositories
+- **Native integration**: Works with Cursor/VS Code Copilot Chat
+
+## Directory Structure
+
+### Recommended Organization
+
+```
+.cursor/
+  rules/                          # Rule files (already established)
+  prompts/
+    collections/                  # Collection manifests
+      core-workflows.collection.yml
+      deep-research.collection.yml
+      ticket-management.collection.yml
+      agile-workflows.collection.yml
+    prompts/                      # Actual prompt files
+      deep-research.prompt.md
+      refactor-legacy.prompt.md
+      generate-tests.prompt.md
+      start-ticket.prompt.md
+      analyze-coverage.prompt.md
+      ...
+```
+
+**Key Points**:
+- Prompts live near rules (both under `.cursor/`)
+- All in Git control
+- Collection manifests separate from prompt files
+- Clear separation of concerns
+
+### Alternative Organization (by Category)
+
+```
+.cursor/
+  prompts/
+    collections/
+      ticket.collection.yml
+      testing.collection.yml
+      agile.collection.yml
+    prompts/
+      ticket/
+        start-ticket.prompt.md
+        update-progress.prompt.md
+      testing/
+        generate-tests.prompt.md
+        analyze-coverage.prompt.md
+      agile/
+        create-story.prompt.md
+        split-story.prompt.md
+```
+
+**Choose based on**:
+- Flat structure: Simpler, good for smaller libraries (<50 prompts)
+- Categorized: Better for large libraries, mirrors rules structure
+
+## Prompt File Format (.prompt.md)
+
+### Complete Example
+
+```markdown
+---
+name: deep-research
+description: "Multi-source, citation-backed deep research with explicit uncertainty handling"
+agent: cursor-agent
+model: GPT-4
+tools:
+  - search/codebase
+  - githubRepo
+  - web/*
+argument-hint: "Topic to research (be specific)"
+category: research
+tags: research, analysis, citations, multi-source
+---
+
+You are my deep-research co-pilot.
+
+## Goals
+
+1. Map the problem space before answering
+2. Use multi-source evidence with citations
+3. Make uncertainty explicit (what we do NOT know)
+4. End with a short, opinionated recommendation
+
+## Process
+
+### Step 1: Clarify
+Restate the question in your own words to confirm understanding.
+
+### Step 2: Plan Research
+Identify 3–5 research sub-questions to answer.
+
+### Step 3: Search Workspace First
+Use `#tool:search/codebase` to find relevant context in this workspace.
+
+### Step 4: External Sources
+Use `#tool:web/*` or `#tool:githubRepo` for missing pieces.
+
+### Step 5: Summarize with Structure
+Present findings using:
+- **Key Findings**: Main discoveries with citations
+- **Contradictions / Open Questions**: What's unclear or conflicting
+- **Recommended Next Steps**: Specific, actionable guidance
+
+## Output Format
+
+Structure the answer with H2/H3 headings and bullet lists for readability.
+
+**Required Sections**:
+- Problem Space Map
+- Evidence Summary (with citations)
+- Uncertainty Analysis
+- Recommendations
+
+## Validation
+
+- [ ] All claims have citations
+- [ ] Contradictions explicitly noted
+- [ ] Uncertainty clearly stated
+- [ ] Recommendations are actionable
+```
+
+### Required Frontmatter Fields
+
+| Field | Required | Type | Purpose | Example |
+|-------|----------|------|---------|---------|
+| `name` | ✅ Yes | string | Slash command identifier | `deep-research` |
+| `description` | ✅ Yes | string (quoted) | One-line purpose for quick-pick | `"Multi-source research with citations"` |
+| `agent` | ⚠️ Recommended | string | Which agent executes this | `cursor-agent` |
+| `model` | ⚠️ Recommended | string | AI model to use | `GPT-4`, `Claude-3.5-Sonnet` |
+| `tools` | ⚠️ Optional | array | MCP tools or integrations | `[search/codebase, web/*]` |
+| `argument-hint` | ⚠️ Optional | string (quoted) | Hint for required arguments | `"File path to analyze"` |
+| `category` | ⚠️ Optional | string | Grouping category | `testing`, `agile`, `research` |
+| `tags` | ⚠️ Optional | comma-separated | Searchable keywords | `research, analysis, citations` |
+
+### Frontmatter Format Rules
+
+**CRITICAL**: Use proper YAML format (matching our YAML-format fixes from EPP-192)
+
+✅ **Correct Format**:
+```yaml
+---
+name: generate-tests
+description: "Generate unit tests for selected code"
+agent: cursor-agent
+model: GPT-4
+tools:
+  - search/codebase
+  - fileSystem
+tags: testing, quality, automation
+---
+```
+
+❌ **WRONG - Do NOT use**:
+```yaml
+# WRONG: JSON-style array (we fixed this throughout EPP-192)
+tools: ["search/codebase", "fileSystem"]
+
+# WRONG: Single-line YAML array
+tools: [search/codebase, fileSystem]
+
+# WRONG: Empty JSON array
+tools: []
+```
+
+**For tools/arrays**: Use YAML list syntax with `- ` prefix on separate lines, OR omit field entirely if empty.
+
+**For strings with special characters**: Use double quotes around `description` and `argument-hint`.
+
+### Body Content Structure
+
+After frontmatter, structure prompt body using:
+
+1. **Purpose/Goals Section**: What this prompt achieves
+2. **Process Section**: Step-by-step instructions (use H3 for sub-steps)
+3. **Output Format Section**: Exact format expected
+4. **Validation Section**: Checklist for quality
+
+**Follow existing prompt-creation standards** for:
+- Placeholders (use `[PLACEHOLDER]` or `{{placeholder}}`)
+- XML delimiters for robust context (e.g., `<code_snippet>...</code_snippet>`)
+- Chain-of-Thought (CoT) reasoning instructions
+- Few-shot examples (if applicable)
+- Success criteria
+
+See `rule.prompts.creation.v1` for detailed guidance on body content.
+
+## Collection Manifest Format (.collection.yml)
+
+### Complete Example
+
+```yaml
+id: deep-research-bundle
+name: "Deep Research & Analysis"
+description: "Standardized deep research flows for engineering and product work"
+tags: [research, analysis, standards]
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/deep-research.prompt.md
+    kind: prompt
+  - path: prompts/multi-source-analysis.prompt.md
+    kind: prompt
+  - path: prompts/evidence-synthesis.prompt.md
+    kind: prompt
+```
+
+### Required Manifest Fields
+
+| Field | Required | Type | Purpose | Example |
+|-------|----------|------|---------|---------|
+| `id` | ✅ Yes | string | Unique collection identifier | `ticket-workflows-bundle` |
+| `name` | ✅ Yes | string (quoted) | Human-readable collection name | `"Ticket Management Workflows"` |
+| `description` | ✅ Yes | string (quoted) | Collection purpose | `"Standard ticket workflow prompts"` |
+| `tags` | ⚠️ Optional | YAML array | Searchable keywords | `[ticket, workflow, management]` |
+| `version` | ⚠️ Recommended | string | Semantic version | `1.0.0` |
+| `owner` | ⚠️ Recommended | string | Responsible team/person | `team-prompts` |
+| `items` | ✅ Yes | YAML array | Prompt file references | See below |
+
+### Items Array Structure
+
+Each item in `items` must have:
+
+```yaml
+items:
+  - path: prompts/example.prompt.md  # Relative to .cursor/prompts/
+    kind: prompt                      # Always "prompt" for now
+```
+
+**Path Convention**:
+- Use relative paths from `.cursor/prompts/` root
+- Use forward slashes `/` (works on Windows too)
+- No leading `./`
+
+**Example**:
+```yaml
+items:
+  - path: prompts/start-ticket.prompt.md      # Flat structure
+    kind: prompt
+  - path: prompts/ticket/start.prompt.md      # Categorized structure
+    kind: prompt
+```
+
+### Collection Naming Conventions
+
+**Collection IDs**: `[domain]-[purpose]-bundle`
+- `ticket-workflows-bundle`
+- `testing-utilities-bundle`
+- `deep-research-bundle`
+
+**Collection Names**: Use Title Case with descriptive purpose
+- `"Ticket Management Workflows"`
+- `"Testing & Quality Utilities"`
+- `"Deep Research & Analysis"`
+
+### Multiple Collections Strategy
+
+**Organize by**:
+1. **Domain**: One collection per major workflow area (ticket, agile, testing, etc.)
+2. **Team**: Different teams maintain separate collections
+3. **Project**: Project-specific prompts in dedicated collections
+
+**Example Multi-Collection Setup**:
+```
+collections/
+  core-workflows.collection.yml      # Universal prompts everyone uses
+  ticket-management.collection.yml   # Ticket workflow prompts
+  testing-quality.collection.yml     # Test generation & analysis
+  agile-ceremonies.collection.yml    # Sprint planning, story creation
+  deep-research.collection.yml       # Research & analysis prompts
+```
+
+## Prompt Registry Setup
+
+### Step 1: Install Extension
+
+**In Cursor** (or VS Code):
+1. Open Extensions panel (`Ctrl+Shift+X`)
+2. Search: `Prompt Registry`
+3. Install the extension by Amadeus IT Group (Apache-2.0 license, open-source)
+4. Restart Cursor/VS Code
+
+### Step 2: Add Local Source
+
+**Using Command Palette**:
+1. `Ctrl+Shift+P` → `Prompt Registry: Add Source`
+2. **Type**: `local-awesome-copilot`
+3. **Path**: `./.cursor/prompts` (relative to workspace root)
+   - Or use absolute path: `E:\WPG\Git\E21\GitRepos\eneve.domain\.cursor\prompts`
+4. **Collections path**: `collections` (default, relative to prompts folder)
+
+**Configuration persists** in Prompt Registry's workspace settings.
+
+### Step 3: Verify Source
+
+**Open Prompt Registry Sidebar**:
+- Click Prompt Registry icon in Activity Bar
+- Should see your collections listed (e.g., "Deep Research & Analysis")
+- Expand to see individual prompts
+
+### Step 4: Install Collections
+
+**Install prompts into Copilot**:
+1. Right-click collection → `Install`
+2. Prompt Registry syncs prompts into Copilot's prompt directory
+3. Prompts become available in Cursor chat via `/` commands
+
+**What happens**:
+- Extension reads `.collection.yml` manifests
+- Copies referenced `.prompt.md` files into Copilot's active prompt set
+- Enables slash command invocation
+
+### Step 5: Enable Copilot Prompt Files
+
+**In Cursor settings** (if not already enabled):
+1. Open Settings (`Ctrl+,`)
+2. Search: `chat.promptFiles`
+3. Enable: `"chat.promptFiles": true`
+4. Reload window if needed
+
+**This enables**:
+- `/` command auto-complete in chat
+- Prompt picker via Command Palette
+- Argument passing to prompts
+
+## Using Prompts with Slash Commands
+
+### Basic Invocation
+
+**In Cursor Chat Panel**:
+
+1. **Type `/` to trigger auto-complete**
+   - See list of all installed prompts
+   - Fuzzy search: type part of name (e.g., `/deep` shows `deep-research`)
+
+2. **Select prompt from list** or continue typing full name
+   - Example: `/deep-research`
+
+3. **Add arguments** (if prompt expects them)
+   - Example: `/generate-tests Calculator.cs`
+   - Argument hint shows in auto-complete (from `argument-hint` field)
+
+4. **Press Enter** to execute
+   - Cursor loads prompt content
+   - Passes to AI agent with context
+   - Displays response
+
+### Advanced Usage
+
+**Pass multi-word arguments**:
+```
+/deep-research Optimize Cursor prompt library setup for Prompt Registry
+```
+
+**Use in conversation context**:
+```
+User: [Selects code block]
+User: /generate-tests
+```
+- Selected context automatically available to prompt
+
+**Chain with follow-ups**:
+```
+User: /deep-research microservice authentication patterns
+[AI responds]
+User: Now apply that to our system [references workspace]
+```
+
+### Command Palette Alternative
+
+**If slash commands don't work**:
+1. `Ctrl+Shift+P` → `Copilot Chat: Run Prompt`
+2. Quick-pick shows all prompts with descriptions
+3. Select prompt → Enter arguments → Execute
+
+## Integration with Existing Standards
+
+### Aligns with Prompt Creation Rule
+
+**Prompt body structure** follows `rule.prompts.creation.v1`:
+- Purpose/Goals
+- Process (numbered steps)
+- Output Format
+- Validation checklist
+- Advanced patterns (CoT, Few-Shot, XML delimiters)
+
+**Frontmatter adds**:
+- Machine-readable metadata for Prompt Registry
+- Slash command configuration
+- Tool/agent binding
+
+### Aligns with YAML Format Standards (EPP-192)
+
+**Critical**: `.prompt.md` frontmatter follows same YAML rules as `.cursor/rules/`:
+- **NO JSON arrays**: Use YAML list syntax with `- ` prefix
+- **NO single-line arrays**: Each item on separate line
+- **Empty arrays**: Omit field entirely or use `fieldname: ""` (empty string)
+- **Strings with special chars**: Use double quotes
+
+**See**: EPP-192 fixes, `rule.authoring.file-structure.v1` for YAML format standards.
+
+### Works with Rule System
+
+**Prompts reference rules**:
+```markdown
+## Rules Applied
+
+This prompt enforces:
+- `.cursor/rules/ticket/plan-rule.mdc`
+- `.cursor/rules/ticket/complexity-assessment-rule.mdc`
+
+**Validates Against**:
+- `rule.ticket.plan.update.v1`
+```
+
+**Prompts can invoke rules**:
+```markdown
+## Process
+
+1. **Read Ticket Rules**: Apply standards from `.cursor/rules/ticket/`
+2. **Generate Plan**: Following `templar.plan.v1` structure
+3. **Validate**: Against `rule.ticket.validation.v1`
+```
+
+## Workflow Examples
+
+### Example 1: Create New Prompt for Common Task
+
+**Scenario**: Developer frequently asks agent to analyze test coverage.
+
+**Process**:
+1. **Create prompt file**: `.cursor/prompts/prompts/analyze-coverage.prompt.md`
+
+```yaml
+---
+name: analyze-coverage
+description: "Analyze unit test coverage and identify gaps"
+agent: cursor-agent
+model: GPT-4
+tools:
+  - search/codebase
+  - fileSystem
+argument-hint: "Folder path to analyze"
+category: testing
+tags: testing, quality, coverage
+---
+
+# Analyze Test Coverage
+
+[Full prompt body following prompt-creation-rule standards]
+```
+
+2. **Add to collection**: `.cursor/prompts/collections/testing-quality.collection.yml`
+
+```yaml
+items:
+  - path: prompts/analyze-coverage.prompt.md
+    kind: prompt
+```
+
+3. **Reinstall collection** (if already installed):
+   - Prompt Registry sidebar → Right-click collection → `Reinstall`
+
+4. **Use in chat**:
+```
+/analyze-coverage src/Domain/
+```
+
+### Example 2: Organize Related Prompts into Bundle
+
+**Scenario**: Team has 5 ticket-related prompts, want them grouped.
+
+**Process**:
+1. **Collect prompt files**:
+   - `start-ticket.prompt.md`
+   - `update-progress.prompt.md`
+   - `complete-ticket.prompt.md`
+   - `switch-ticket.prompt.md`
+   - `validate-ticket.prompt.md`
+
+2. **Create collection manifest**: `.cursor/prompts/collections/ticket-workflows.collection.yml`
+
+```yaml
+id: ticket-workflows-bundle
+name: "Ticket Management Workflows"
+description: "Complete ticket lifecycle workflow prompts"
+tags: [ticket, workflow, management]
+version: 1.0.0
+owner: team-dev
+items:
+  - path: prompts/start-ticket.prompt.md
+    kind: prompt
+  - path: prompts/update-progress.prompt.md
+    kind: prompt
+  - path: prompts/complete-ticket.prompt.md
+    kind: prompt
+  - path: prompts/switch-ticket.prompt.md
+    kind: prompt
+  - path: prompts/validate-ticket.prompt.md
+    kind: prompt
+```
+
+3. **Add source** (if not already added): See "Step 2: Add Local Source"
+
+4. **Install collection**: Prompt Registry → `ticket-workflows-bundle` → Install
+
+5. **Team members get access**: Pull from Git → Prompt Registry auto-detects → Install
+
+### Example 3: Convert Existing One-Liner to Proper Prompt
+
+**Before** (ad-hoc one-liner):
+```
+Please analyze XML documentation coverage in src/Domain/ and report gaps
+```
+
+**After** (proper prompt file): `.cursor/prompts/prompts/check-doc-coverage.prompt.md`
+
+```yaml
+---
+name: check-doc-coverage
+description: "Analyze XML documentation coverage and identify gaps"
+agent: cursor-agent
+model: GPT-4
+tools:
+  - search/codebase
+argument-hint: "Folder path to check"
+category: documentation
+tags: documentation, quality, xml
+---
+
+# Check Documentation Coverage
+
+## Purpose
+
+Analyze XML documentation completeness in C# code and identify items needing documentation.
+
+## Process
+
+### Step 1: Scan Folder Structure
+Examine all `.cs` files in `[FOLDER_PATH]`.
+
+### Step 2: Identify Public Members
+Find public:
+- Classes
+- Methods
+- Properties
+- Interfaces
+
+### Step 3: Check XML Comments
+For each public member, verify:
+- `<summary>` tag present
+- `<param>` tags for all parameters
+- `<returns>` tag if method returns value
+- `<exception>` tags for thrown exceptions
+
+### Step 4: Report Findings
+
+**Format**:
+```markdown
+## Coverage Summary
+- Total public members: [count]
+- Documented: [count] ([percentage]%)
+- Missing documentation: [count]
+
+## Missing Documentation
+
+### [FileName.cs]
+- Line [X]: [MemberType] `[MemberName]` - Missing [what]
+
+## Recommendations
+[Prioritized action plan]
+```
+
+## Validation
+
+- [ ] All public members identified
+- [ ] Coverage percentage calculated
+- [ ] Specific line numbers provided
+- [ ] Actionable recommendations given
+```
+
+**Usage**:
+```
+/check-doc-coverage src/Domain/Entities/
+```
+
+**Benefits**:
+- Reusable across projects
+- Consistent output format
+- Quick invocation
+- Version controlled
+- Shareable with team
+
+## Best Practices
+
+### 1. Name Prompts for Easy Recall
+
+**Good Names** (easy to type/remember):
+- `/start` → `start-ticket`
+- `/progress` → `update-progress`
+- `/test` → `generate-tests`
+- `/dr` → `deep-research` (abbreviation works if memorable)
+
+**Avoid**:
+- Long names: `generate-comprehensive-unit-tests-for-selected-code`
+- Ambiguous: `do-the-thing`, `helper`
+- Special chars: `test_gen` (use hyphens, not underscores)
+
+### 2. Write Clear Descriptions
+
+**Description field** appears in auto-complete and quick-pick, so make it count:
+
+✅ **Good**:
+- `"Generate unit tests for selected code with full coverage"`
+- `"Multi-source research with citations and uncertainty analysis"`
+- `"Start ticket workflow: create plan, set context, initialize files"`
+
+❌ **Bad**:
+- `"Tests"` (too vague)
+- `"This prompt helps you do research stuff"` (verbose, unclear)
+
+### 3. Use Argument Hints Effectively
+
+**When prompts expect parameters**, add clear hints:
+
+✅ **Good**:
+```yaml
+argument-hint: "Folder path to analyze"
+argument-hint: "Ticket ID (e.g., EPP-192)"
+argument-hint: "Class name and method name"
+```
+
+❌ **Bad**:
+```yaml
+argument-hint: "input"
+argument-hint: "stuff to check"
+```
+
+### 4. Organize Collections by Usage Frequency
+
+**Core Collection**: Daily-use prompts everyone needs
+- `/start`, `/progress`, `/complete` (ticket workflows)
+- `/test`, `/doc` (quality checks)
+
+**Domain Collections**: Specialized workflows
+- `deep-research-bundle`: Research-heavy work
+- `agile-ceremonies-bundle`: Sprint planning, story creation
+- `migration-bundle`: C++ to C# migration prompts
+
+**This prevents**: Cluttering auto-complete with rarely-used prompts.
+
+### 5. Version Control Everything
+
+**Commit to Git**:
+- All `.prompt.md` files
+- All `.collection.yml` manifests
+- Prompt Registry config (if exportable)
+
+**Benefits**:
+- Team syncs automatically on pull
+- History of prompt improvements
+- Rollback if needed
+- Branch-specific prompt variations
+
+### 6. Keep Frontmatter Minimal
+
+**Only include fields you actually use**:
+
+✅ **Minimal**:
+```yaml
+---
+name: generate-tests
+description: "Generate unit tests for selected code"
+---
+```
+
+✅ **With Tools**:
+```yaml
+---
+name: deep-research
+description: "Multi-source research with citations"
+model: GPT-4
+tools:
+  - search/codebase
+  - web/*
+---
+```
+
+❌ **Excessive**:
+```yaml
+---
+name: simple-prompt
+description: "Do a thing"
+agent: cursor-agent
+model: GPT-4
+tools:
+argument-hint:
+category:
+tags:
+# Half the fields are empty!
+---
+```
+
+### 7. Test Prompts Before Committing
+
+**Before adding to collection**:
+1. Create `.prompt.md` file
+2. Manually copy content into Cursor chat
+3. Test with real scenarios
+4. Iterate on instructions/format
+5. When satisfied → add to collection → commit
+
+**Avoid**: Committing untested prompts that don't work.
+
+## Troubleshooting
+
+### Prompt Not Showing in Auto-Complete
+
+**Possible Causes**:
+
+1. **Collection not installed**
+   - Fix: Prompt Registry sidebar → Right-click collection → Install
+
+2. **Frontmatter missing `name` field**
+   - Fix: Add `name: prompt-identifier` to frontmatter
+
+3. **Copilot prompt files not enabled**
+   - Fix: Settings → `"chat.promptFiles": true` → Reload window
+
+4. **Path in collection manifest wrong**
+   - Fix: Verify path is relative to `.cursor/prompts/` root
+   - Example: `prompts/example.prompt.md` (not `./prompts/example.prompt.md`)
+
+5. **YAML syntax error in frontmatter**
+   - Fix: Validate YAML (check for proper indentation, no tabs, correct array syntax)
+
+### Prompt Executes But Doesn't Work as Expected
+
+**Possible Causes**:
+
+1. **Prompt instructions unclear**
+   - Fix: Apply `rule.prompts.creation.v1` quality standards (specificity, actionability)
+
+2. **Missing context requirements**
+   - Fix: Explicitly state required context in prompt body
+   - Example: "You must have file X open" or "Select code before running"
+
+3. **Tools not available**
+   - Fix: Verify tools specified in `tools:` field actually exist
+   - Check: MCP server configuration, Cursor settings
+
+4. **Model mismatch**
+   - Fix: Verify `model:` field matches available models in your Cursor setup
+
+### Extension Not Finding Collections
+
+**Possible Causes**:
+
+1. **Source path incorrect**
+   - Fix: Re-add source with correct path
+   - Try absolute path if relative doesn't work
+
+2. **Collections folder missing or misnamed**
+   - Fix: Ensure `.cursor/prompts/collections/` exists
+   - Note: Folder name must be exactly `collections`
+
+3. **Manifest files missing `.collection.yml` extension**
+   - Fix: Rename `example.collection.yaml` → `example.collection.yml`
+   - Note: Extension must be `.yml` (not `.yaml`)
+
+4. **Git submodule or symlink issues**
+   - Fix: If using advanced Git setups, ensure Prompt Registry can read actual files
+
+### Slash Command Not Recognized
+
+**Possible Causes**:
+
+1. **Wrong chat context**
+   - Fix: Ensure using Cursor/Copilot Chat panel (not terminal or editor)
+
+2. **Keybinding conflict**
+   - Fix: Check if `/` is bound to something else in Cursor keybindings
+
+3. **Extension disabled**
+   - Fix: Extensions → Prompt Registry → Enable
+
+4. **Cache issue**
+   - Fix: Reload window (`Ctrl+Shift+P` → `Developer: Reload Window`)
+
+## Anti-Patterns
+
+### ❌ Don't Mix Prompt Formats
+
+**Bad**: Some prompts use `.prompt.md` with frontmatter, others use plain `.md`
+
+**Impact**: Inconsistent behavior, some prompts won't work with Prompt Registry
+
+**Fix**: Standardize on `.prompt.md` with YAML frontmatter for ALL prompts
+
+### ❌ Don't Use JSON Array Syntax in Frontmatter
+
+**Bad**:
+```yaml
+tools: ["search/codebase", "fileSystem"]
+```
+
+**Impact**: Violates YAML format standards from EPP-192, inconsistent with rules
+
+**Fix**: Use YAML list syntax:
+```yaml
+tools:
+  - search/codebase
+  - fileSystem
+```
+
+### ❌ Don't Create One Mega-Collection
+
+**Bad**: Single collection with 100+ prompts
+
+**Impact**: Cluttered auto-complete, hard to find prompts, slow to load
+
+**Fix**: Split into domain-specific collections (10-20 prompts each)
+
+### ❌ Don't Hardcode Specific Values in Prompts
+
+**Bad**:
+```markdown
+Analyze test coverage in src/Domain/Entities/Calendar.cs
+```
+
+**Impact**: Prompt only works for one specific file, not reusable
+
+**Fix**: Use placeholders:
+```markdown
+Analyze test coverage in [FILE_PATH]
+```
+
+Then pass argument: `/analyze-coverage src/Domain/Entities/Calendar.cs`
+
+### ❌ Don't Skip Descriptions
+
+**Bad**:
+```yaml
+name: dr
+description: ""
+```
+
+**Impact**: No context in auto-complete, team doesn't know what prompt does
+
+**Fix**: Always provide clear, specific description
+
+### ❌ Don't Commit Untested Prompts
+
+**Bad**: Create prompt, add to collection, commit, push → then discover it doesn't work
+
+**Impact**: Breaks team workflow, requires immediate fix
+
+**Fix**: Test manually first, iterate until works, THEN commit
+
+## Related Rules
+
+- `rule.prompts.creation.v1` - General prompt quality standards
+- `rule.prompts.extraction.v1` - Extracting prompts from conversations
+- `rule.prompts.agent-application.v1` - When to apply prompt rules
+- `rule.authoring.file-structure.v1` - YAML frontmatter standards
+- `rule.authoring.templars-and-exemplars.v1` - Template vs example separation
+
+## FINAL MUST-PASS CHECKLIST
+
+### For `.prompt.md` Files
+
+- [ ] File uses `.prompt.md` extension
+- [ ] YAML frontmatter present with `---` delimiters
+- [ ] Required fields present: `name`, `description`
+- [ ] `name` is short, memorable, slash-command friendly
+- [ ] `description` is clear and quoted
+- [ ] YAML format follows EPP-192 standards (no JSON arrays)
+- [ ] Tools use YAML list syntax (if present)
+- [ ] Body follows `rule.prompts.creation.v1` structure
+- [ ] Prompt tested manually before committing
+
+### For `.collection.yml` Manifests
+
+- [ ] File uses `.collection.yml` extension (not `.yaml`)
+- [ ] Required fields present: `id`, `name`, `description`, `items`
+- [ ] `id` follows `[domain]-[purpose]-bundle` convention
+- [ ] `name` is Title Case and descriptive
+- [ ] `items` array uses YAML list syntax
+- [ ] All `path` values are relative to `.cursor/prompts/`
+- [ ] All referenced `.prompt.md` files exist
+- [ ] Collection purpose clear and focused (10-20 prompts max)
+
+### For Prompt Registry Integration
+
+- [ ] Extension installed in Cursor
+- [ ] Local source added with correct path
+- [ ] Collections folder at `.cursor/prompts/collections/`
+- [ ] Prompts folder at `.cursor/prompts/prompts/`
+- [ ] Collection installed in Prompt Registry
+- [ ] Copilot prompt files enabled in settings
+- [ ] Slash commands work in Cursor chat
+- [ ] All files committed to Git
+
+---
+
+**Related Documentation**:
+- Prompt Registry GitHub: https://github.com/AmadeusITGroup/prompt-registry
+- VS Code Copilot Prompt Files: https://code.visualstudio.com/docs/copilot/copilot-chat
+- Rule Framework: `.cursor/rules/rule-authoring/`

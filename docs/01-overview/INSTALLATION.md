@@ -37,7 +37,7 @@ This guide walks you through setting up the Company Researcher system.
 
 ```bash
 git clone https://github.com/your-org/company-researcher.git
-cd company-researcher
+cd company-researcher  # or: cd <your-repo-folder>
 ```
 
 ### Step 2: Create Virtual Environment
@@ -66,7 +66,10 @@ pip install -r requirements-dev.txt
 
 ```bash
 # Copy example environment file
-cp env.example .env
+cp env.example .env   # macOS/Linux
+
+# Windows PowerShell
+Copy-Item env.example .env
 
 # Edit with your API keys
 # Windows: notepad .env
@@ -102,10 +105,10 @@ LANGSMITH_API_KEY=...
 
 ```bash
 # Run quick test
-python -c "from company_researcher import config; print('Installation successful!')"
+python -c "from company_researcher.config import get_config; get_config(); print('Installation successful!')"
 
 # Run first research (optional)
-python run_research.py "Microsoft"
+python run_research.py --company "Microsoft"
 ```
 
 ## Configuration Options

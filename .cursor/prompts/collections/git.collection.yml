@@ -1,0 +1,22 @@
+id: git-prompts-bundle
+name: "Git Workflow"
+description: "Prompts for branching, commits, and release workflows"
+tags:
+  - git
+  - branching
+  - release
+  - validation
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/git/create-branch.prompt.md
+    kind: prompt
+  - path: prompts/git/create-merge-request.prompt.md
+    kind: prompt
+  - path: prompts/git/fix-release-tag-workflow.prompt.md
+    kind: prompt
+  - path: prompts/git/pre-commit-validation.prompt.md
+    kind: prompt
+  - path: prompts/git/prepare-commit.prompt.md
+    kind: prompt
+

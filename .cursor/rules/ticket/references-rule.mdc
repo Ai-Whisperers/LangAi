@@ -1,0 +1,283 @@
+---
+id: rule.ticket.references.v1
+kind: rule
+version: 1.0.1
+description: Static file and conversation references for tickets
+globs: **/tickets/**/references.md
+governs: **/tickets/**/references.md
+implements: references.track
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+# References.md Rule
+
+## Purpose
+The `references.md` file serves as a **static reference directory** for file locations, conversation links, debug data, and technical references related to the ticket. It is NOT a progress tracking file or implementation log.
+
+## Content Guidelines
+
+### ✅ INCLUDE (Static References Only)
+- **File paths and locations**: Specific files, methods, and line numbers relevant to the ticket
+- **Conversation file links**: All conversations that contributed to the ticket work  
+- **Technical specifications**: Relevant docs from `docs/technical/` organized by domain (layering, virtual administrations, etc.)
+- **Debug data**: Test cases, error messages, data examples that are factual
+- **Technical references**: External documentation, API references, specifications
+- **Related tickets**: Simple list with brief relation description
+- **API endpoints**: URLs and endpoint descriptions
+- **Key findings**: Factual technical discoveries (without status indicators)
+
+### ❌ EXCLUDE (Progress/Status Information)
+
+#### Status Indicators
+- **Progress markers**: ✅, ❌, checkmarks, status emojis
+- **Status descriptions**: "NEW BUG MANIFESTATION", "TEST FIX", "MAJOR BREAKTHROUGH"
+- **Implementation status**: "Status: Implemented", "Status: PAUSED", "COMPLETED"
+- **Achievement labels**: "COMPREHENSIVE FIX", "ARCHITECTURAL CLARIFICATION"
+
+#### Progress Tracking
+- **Temporal progress**: "Next steps", "Current phase", timeline information
+- **Completion tracking**: Any indication of what's done or not done
+- **Implementation summaries**: Descriptions of what was accomplished
+- **Status updates**: Recent changes, latest work, progress reports
+
+#### Implementation Details
+- **Solution architecture**: Detailed implementation explanations (→ context.md)
+- **Code change descriptions**: What was modified and why (→ progress.md)  
+- **Technical decisions**: Why certain approaches were chosen (→ progress.md)
+- **Session summaries**: What happened in conversations (→ progress.md)
+
+### Content Length Guidelines
+- **Maximum**: ~50 lines for most tickets
+- **Complex tickets**: ~100 lines maximum
+- **If longer**: Content likely belongs in context.md or progress.md
+
+## Structure Guidelines
+
+### ✅ Acceptable Structure
+```markdown
+## Technical Documentation
+
+### Technical Specifications - [Domain Name]
+Location: `docs/technical/[domain]/`
+
+1. **spec-file-1.md** - Brief description of what this spec covers
+2. **spec-file-2.md** - Brief description
+3. **spec-file-3.md** - Brief description
+
+### Technical Specifications - [Another Domain]
+Location: `docs/technical/[another-domain]/`
+
+1. **spec-file-A.md** - Brief description
+2. **spec-file-B.md** - Brief description
+
+## Source Files
+
+### Target Files ([Branch Name])
+- `path/to/file.cs` - Implementation file
+- `path/to/file.h` - Header declarations
+
+### Reference Implementation ([Reference Branch])
+- `full/path/to/reference/file.cs` - Already implemented version
+
+## Key Files
+**File:** path/to/file.cs  
+**Method:** MethodName (lines 123-456)
+**Purpose:** What this file/method does
+
+## Conversation References  
+- **conversations/[USER INITIALS]/YYYY-MM-DD_HH-MMZ-{description}.md** - Brief topic description
+
+## Debug Data
+**Error:** Specific error message
+**Test Case:** Factual test scenario description
+
+## Related Tickets
+- **EBASE-XXXX** - Brief relation description
+```
+
+### ❌ NOT Acceptable Structure
+```markdown
+## Implementation Status ❌ (Progress information)
+- ✅ File implemented ❌ (Status tracking)
+- Status: Complete ❌ (Progress tracking)
+- MAJOR BREAKTHROUGH ❌ (Progress description)
+- Latest Conversations ❌ (Timeline information)
+- Last Updated Files ❌ (Progress tracking)
+```
+
+## Update Rules
+
+### Incremental Updates Only
+- **Add new references**: Always additive
+- **Restructure if needed**: Can reorganize for clarity
+- **Never remove**: Don't delete existing references
+- **Include current session**: Always add files modified and conversations from current session
+
+### Required Updates
+- **Current conversation**: Always include the most recent conversation file
+- **Modified files**: Include all files edited in the current session  
+- **Technical specifications**: Include all relevant technical documentation from `docs/technical/` organized by domain
+- **New technical findings**: Add any new file references or debug data discovered
+
+## Content Distribution
+
+### references.md (Static References)
+- File locations and paths
+- Conversation file links
+- Technical specifications organized by domain
+- Technical reference links
+- Factual debug data
+
+### progress.md (Dynamic Progress)  
+- What was accomplished
+- Implementation status
+- Session summaries
+- Achievement descriptions
+
+### context.md (Current State)
+- Current technical situation
+- Recent technical decisions
+- Architecture explanations
+- Current focus areas
+
+## Quality Guidelines
+
+### Factual Only
+- Stick to objective file references and conversation links
+- Avoid subjective assessments or progress judgments
+- Keep descriptions brief and factual
+- No status indicators or progress language
+
+### Navigation Focused
+- Help someone find relevant files and conversations
+- Organize technical specifications by domain (layering, virtual administrations, etc.)
+- Provide enough context to understand what each reference contains
+- Organize logically for easy scanning
+- Keep reference descriptions concise
+
+### Maintenance
+- Update with each session that adds new files or conversations
+- Keep references current and accurate
+- Remove broken links but preserve reference history
+- Move detailed content to appropriate files (progress.md, context.md)
+
+## Anti-Patterns to Avoid
+
+### ❌ Progress Language
+- "BREAKTHROUGH", "COMPLETED", "FIXED", "RESOLVED"
+- "Latest", "Recent", "Current status", "Next steps"
+- "Achievement", "Milestone", "Success", "Implementation"
+
+### ❌ Status Tracking
+- Checkboxes with completion status
+- Progress percentages or indicators  
+- Implementation phase descriptions
+- Session outcome summaries
+
+### ❌ Excessive Detail
+- Long technical explanations (→ context.md)
+- Implementation decision rationale (→ progress.md)
+- Detailed conversation summaries (→ progress.md)
+- Architecture deep-dives (→ context.md)
+
+## Template Reference
+Use `templates/references-template.md` for consistent structure and format.
+
+## Technical Specifications Section
+
+### Purpose
+The Technical Specifications section provides organized references to documentation in `docs/technical/` that is relevant to understanding and implementing the ticket work.
+
+### Organization by Domain
+
+Group technical specifications by their domain/area:
+
+**Common Domains**:
+- **Layering Domain**: `docs/technical/meter-calculations/layering/`
+  - Layering concepts, database schemas, atomic swap approaches
+- **Virtual Administrations**: `docs/technical/virtual_administrations/`
+  - Domain objects, database schemas, business rules
+- **Domain-Specific**: Additional domains as relevant to ticket
+
+### Format
+
+```markdown
+## Technical Documentation
+
+### Technical Specifications - [Domain Name]
+Location: `docs/technical/[domain-path]/`
+
+1. **filename.md** - One-line description of what this spec covers
+2. **another-file.md** - One-line description
+3. **third-file.md** - One-line description
+
+### Technical Specifications - [Another Domain]
+Location: `docs/technical/[other-domain-path]/`
+
+1. **spec-a.md** - Description
+2. **spec-b.md** - Description
+```
+
+### Guidelines
+
+1. **List all relevant specs**: Include all technical documentation that provides context for the ticket
+2. **Group by domain**: Organize specs into logical domain groupings
+3. **Provide location**: Always include the base directory path for each domain
+4. **Brief descriptions**: One-line summary of what each spec covers
+5. **Numbered lists**: Use numbered lists for easy counting and reference
+6. **Consistent ordering**: Order specs logically (overview first, then details)
+
+### Example
+
+```markdown
+## Technical Documentation
+
+### Technical Specifications - Layering Domain
+Location: `docs/technical/meter-calculations/layering/`
+
+1. **layering-overview.md** - Layering concept across three contexts (virtual meters, portfolios, group meters)
+2. **layering-database-schema.md** - Database tables (D_METERLAYER) and LAYER field semantics
+3. **atomic-swap-improvement.md** - Proposed atomic swap approach (target implementation)
+4. **layering-integration-points.md** - System integration requirements and 1610 process interaction
+
+### Technical Specifications - Virtual Administrations Domain
+Location: `docs/technical/virtual_administrations/`
+
+1. **virtual-meter-structure.md** - Virtual meter structure and parent-child relationships
+2. **virtual-administrations-domain-overview.md** - Domain overview with complete architecture
+3. **database/virtual-administrations-database-schema.md** - Complete database schema (D_VIRTUALMETER, D_METERLAYER)
+```
+
+### When to Include
+
+Include technical specifications when:
+- Ticket requires understanding of domain concepts
+- Implementation must align with documented architecture
+- Multiple related specs provide comprehensive context
+- Specs define database schema, business rules, or algorithms being implemented
+
+### When to Exclude
+
+Do NOT include:
+- Unrelated technical specifications from other domains
+- General documentation not relevant to ticket
+- Specifications marked as deprecated or obsolete
+
+## Rationale
+- **Navigation**: Quick access to relevant files, conversations, and technical documentation
+- **Static References**: Unchanging directory of locations and links
+- **Domain Organization**: Technical specs grouped by area for easy discovery
+- **Clear Separation**: Progress tracking stays in progress.md
+- **Audit Trail**: Supports complete traceability without duplication
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] File contains ONLY static references (files, specs, conversations)
+- [ ] NO status indicators (✅, ❌) or progress tracking
+- [ ] Technical specs grouped by domain with locations
+- [ ] Conversation links include user initials and description
+- [ ] No implementation details or decision rationale
+- [ ] Debug data is factual and specific
+- [ ] "Progress" and "Context" info moved to respective files

@@ -1,0 +1,350 @@
+---
+id: rule.ticket.workflow.v1
+kind: rule
+version: 1.0.1
+description: Standard workflow for ticket documentation and traceability with adaptive implementation strategy, JIRA integration, and commit discipline
+globs: **/tickets/**/*.md
+governs: **/tickets/**/*.md
+implements: ticket.workflow
+requires:
+  - rule.ticket.plan.v1
+  - rule.ticket.context.v1
+  - rule.ticket.progress.v1
+  - rule.ticket.timeline.v1
+  - rule.ticket.recap.v1
+  - rule.ticket.rca.v1
+  - rule.ticket.validation.v1
+  - rule.ticket.complexity-assessment.v1
+  - rule.ticket.switching-discipline.v1
+  - rule.ticket.completion-discipline.v1
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-ticket, last_review: 2025-11-04 }
+alwaysApply: false
+---
+
+# Ticket Workflow Rule
+
+## Purpose & Scope
+
+Defines the standard workflow for ticket documentation and traceability throughout the ticket lifecycle. Integrates adaptive implementation strategy (Simple Fix vs Complex Implementation), commit discipline, JIRA synchronization, and validation protocols into a cohesive workflow.
+
+**Applies to**: All ticket work from initiation through closure.
+
+**Does not apply to**: Non-ticket work, ad-hoc tasks without ticket tracking.
+
+## Ticket System Overview
+
+A ticket is a small, short-lived AI entity that knows its plan, history, and context. Each ticket maintains structured documentation enabling:
+- Complete audit trail from planning through closure
+- Context continuity across sessions and switches
+- Team communication and knowledge transfer
+- JIRA integration and reporting
+- Time tracking and billing
+
+## Inputs (Contract)
+
+- Ticket ID in format `PROJECT-NUMBER`
+- Ticket objective or problem description
+- User requirements and acceptance criteria
+- Current workspace with tickets/ directory structure
+
+## Outputs (Contract)
+
+- Complete ticket documentation throughout lifecycle:
+  - plan.md created with objectives and complexity assessment
+  - context.md maintained with current state
+  - progress.md logging all actions chronologically
+  - timeline.md tracking timestamped events
+  - recap.md summarizing outcomes at completion
+  - rca.md (if defect) analyzing root cause
+- Git commits following commit discipline
+- JIRA synchronization (plan, progress, recap, rca)
+- Validated deliverables meeting acceptance criteria
+- Audit trail from initiation through closure
+
+## Ticket Components
+
+Each ticket consists of structured documentation files governed by specific rules:
+
+- **current.md** - Active ticket identifier → `rule.ticket.current.v1` (local only)
+- **plan.md** - Objectives and strategy → `rule.ticket.plan.v1`
+- **context.md** - Current state → `rule.ticket.context.v1`
+- **progress.md** - Chronological log → `rule.ticket.progress.v1`
+- **timeline.md** - Timestamped events → `rule.ticket.timeline.v1`
+- **recap.md** - Outcome summary → `rule.ticket.recap.v1`
+- **rca.md** - Root cause analysis → `rule.ticket.rca.v1` (defects only)
+- **references.md** - File references → `rule.ticket.references.v1`
+- **hours.md** - Billing hours (generated from timeline)
+
+## Adaptive Implementation Strategy
+
+Two implementation tracks based on `rule.ticket.complexity-assessment.v1`:
+
+**Simple Fix Track**: Single root cause, ≤3 files, ≤10 lines, low risk, known pattern
+**Complex Implementation Track**: Multiple causes, >3 files, >10 lines, high risk, or unclear solution
+
+**Decision Principle**: When in doubt, prefer Complex track for thorough analysis
+
+## Deterministic Steps
+
+High-level workflow phases:
+
+1. **Ticket Initiation**:
+   - Receive ticket ID and requirements from user
+   - Create `tickets/TICKET-ID/` directory
+   - Execute `rule.ticket.plan.v1` → creates plan.md
+   - Execute `rule.ticket.complexity-assessment.v1` → determines track
+   - Execute `rule.ticket.context.v1` → initializes context.md
+   - Execute `rule.ticket.progress.v1` → first entry
+   - Update `tickets/current.md` with ticket ID
+
+2. **Implementation Phase**:
+   - Execute `rule.ticket.switching-discipline.v1` if switching tickets
+   - Implement according to complexity track
+   - Update context.md with current state
+   - Append progress.md with actions and decisions
+   - Update timeline.md with timestamped events
+   - Perform sync commits for ticket documentation
+
+3. **Validation Phase**:
+   - Execute `rule.ticket.completion-discipline.v1` (behavioral check)
+   - Execute `rule.ticket.validation.v1` (comprehensive validation)
+   - Document validation evidence in progress.md
+   - Only after validation passes → mark context.md complete
+
+4. **Closure Phase**:
+   - Execute `rule.ticket.recap.v1` → creates recap.md
+   - If defect: Execute `rule.ticket.rca.v1` → creates rca.md
+   - Execute `rule.ticket.timeline.v1` → finalize timeline
+   - Perform closure commit (all files + code)
+   - Sync recap/rca to JIRA
+   - Clear `tickets/current.md` (or switch to next ticket)
+
+## Formatting Requirements
+
+See individual file rules for specific formatting:
+- plan.md → `rule.ticket.plan.v1`
+- context.md → `rule.ticket.context.v1`
+- progress.md → `rule.ticket.progress.v1`
+- timeline.md → `rule.ticket.timeline.v1`
+- recap.md → `rule.ticket.recap.v1`
+- rca.md → `rule.ticket.rca.v1`
+
+## Commit Strategy
+
+**CRITICAL RULE**: AI must ALWAYS ask for explicit permission before executing any commit, tag, or push operation.
+
+### Sync Step (During Work)
+- Update ticket documentation files with latest session findings
+- Copy referenced conversation files from `specstory/history/` to `conversations/[USER INITIALS]/` folder (sanitized for OPSEC)
+- Files updated during sync: `context.md`, `progress.md`, `references.md`, `timeline.md`
+- Log git commits and sync events in `timeline.md` with timestamps
+- Update `tickets/current.md` when switching active tickets (local only)
+- Purpose: Capture current state and progress for traceability
+
+### Step Commits (After Sync)
+- Commit synced ticket documentation files after significant updates
+- Files to commit during work: `plan.md`, `context.md`, `progress.md`, `references.md`, `timeline.md`
+- Commit message format: `"Doc [TICKET-123] : Update [file] - brief description"`
+- Purpose: Track progress and enable context switches
+
+### Closure Commit (Final)
+- Commit all adjusted files when ticket is complete
+- Includes: Code files, tests, documentation, all ticket files, sanitized conversations
+- Complete `recap.md`, `rca.md` (if needed), and `timeline.md` before closure commit
+- Copy referenced conversation files from `specstory/history/` to `conversations/[USER INITIALS]/` folder (sanitized for OPSEC)
+- Commit message format: `"Doc/Fix/Feat/Chore [TICKET-123] : [Summary] - complete description of all 
+changes"`
+- Purpose: Atomic commit of entire ticket implementation with full traceability
+
+**Note**: `hours.md` is generated on request for billing/analysis, separate from git commits
+
+### Files to Track
+**Step Commits (ticket documentation):**
+- `tickets/TICKET-123/plan.md`
+- `tickets/TICKET-123/context.md` 
+- `tickets/TICKET-123/progress.md`
+- `tickets/TICKET-123/references.md`
+- `tickets/TICKET-123/timeline.md`
+
+**Closure Commits (on completion):**
+- `tickets/TICKET-123/recap.md`
+- `tickets/TICKET-123/rca.md` (when needed)
+
+**Generated on Request (separate from commits):**
+- `tickets/TICKET-123/hours.md` (billing/analysis)
+
+**Local Files (not committed):**
+- `tickets/current.md` (workspace-specific active ticket tracker)
+
+**Closure Commit (all changes):**
+- All code files modified
+- Test files added/modified
+- Documentation files updated
+- All ticket documentation files
+- Sanitized conversation files in `conversations/` folder (only those referenced/used during ticket work)
+- Any configuration changes
+
+### Conversation Management
+**Current Process:**
+1. Copy most recent conversation file from `specstory/history/` to `conversations/[USER INITIALS]/`
+2. Copy only conversation files from `specstory/history/` that were referenced or used during ticket work to `conversations/[USER INITIALS]/`
+   - Use copy command: `copy ".specstory\history\[filename].md" "conversations\[USER INITIALS]\[filename].md"`
+3. Include copied conversation files in closure commit for complete traceability
+4. Update `references.md` to link to the copied conversation files in the `conversations/[USER INITIALS]/` folder
+
+**Selection Criteria:**
+- Conversations that directly contributed to understanding the problem
+- Conversations where implementation decisions were made
+- Conversations that contain key technical insights or solutions
+- Conversations that should be preserved for future reference on this ticket
+
+**Do NOT copy:**
+- Unrelated conversations from the same time period
+- Conversations that only contain exploratory work not relevant to the final solution
+- Conversations that contain no actionable outcomes for the ticket
+
+**Future Enhancement:**
+- Sanitization will be performed by specialized tool before copy
+- Tool will handle OPSEC concerns (sensitive paths, personal info, credentials, etc.)
+- Will preserve technical content and decision rationale
+
+## Folder Structure
+
+### Core Folders
+- **Root** - Core documentation files (plan, context, progress, timeline, references, recap, rca, story/feature/epic, design)
+- **data/** - External JIRA data (not committed)
+- **logs/** - External JIRA logs (not committed)
+- **work/** - Working documents, analysis, checklists (not committed)
+
+### Decision Rule
+- **Root**: Permanent documentation that tells the ticket story
+- **work/**: Supporting documents used during development (can be discarded after completion)
+
+**Detailed structure and examples**: See `@/ticket/ticket-workflow-folder-example.md`
+
+---
+
+## Agent Workflow (Future State)
+- **Planning Agent**: Creates plans, syncs to JIRA, performs complexity assessment
+- **Execution Agent(s)**: Implements based on plans and complexity track
+- **Simple Fixes**: Can be pre-committed to git for quick resolution
+- **Complex Changes**: Follow standard review and approval process
+- **Decision Points**: Fresh context evaluation for complex implementations
+
+## Rationale
+- **Traceability:** Clear separation of concerns across specialized files ensures robust audit trails
+- **Clarity:** Each file has a focused purpose defined in its respective rule file
+- **Audit Trail:** Chronological progress tracking with immutable history
+- **Flexibility:** Mutable context tracking that reflects current state
+- **Efficiency:** Adaptive strategy balances speed for simple fixes with rigor for complex changes
+
+## JIRA Integration
+- **Initialization:** Load ticket data and logs from JIRA into data/ and logs/ folders
+- **Sync Back:** Updates to recap.md, rca.md, references.md, and progress.md sync to JIRA
+- **Plan Tracking:** Plans sync to JIRA immediately for tracking and approval
+- **Automated Sync:** Files designed for easy copy-paste or automated JIRA integration
+
+## General Workflow Expectations
+- **Step Commits:** Commit ticket documentation files during work progress
+- **Closure Commits:** Commit all adjusted files when ticket is complete
+- **Context Switches:** Ensure latest state and next steps are clearly documented
+- **Documentation Quality:** Keep all files clear, concise, and up to date
+- **Complexity Assessment:** Assess early and follow appropriate implementation track
+- **Git Discipline:** All ticket files must be committed for traceability
+
+## Benefits
+- **Complete Audit Trail:** Clear record of planning, current state, and completed work
+- **Seamless Handovers:** Facilitates reviews, audits, and knowledge transfer
+- **Team Communication:** Improves onboarding and project traceability
+- **Context Continuity:** Supports context switches and work resumption
+- **Process Integration:** Enables robust JIRA integration and automated workflows
+- **Balanced Efficiency:** Simple fixes handled quickly while complex changes maintain rigor
+
+
+## OPSEC and Leak Control
+
+All ticket documentation must follow OPSEC guidelines:
+- NO internal system paths or server names
+- NO credentials, tokens, or API keys
+- NO email addresses or personal identifiable information
+- NO customer data or production identifiers
+- Each file rule defines specific OPSEC requirements
+
+## Integration Points
+
+- **JIRA Sync**: plan.md, progress.md, recap.md, rca.md sync to JIRA
+- **Git Integration**: Commit strategy ensures traceability
+- **Time Tracking**: timeline.md enables hours.md generation
+- **Validation**: `rule.ticket.validation.v1` enforced before closure
+- **Switching**: `rule.ticket.switching-discipline.v1` manages multi-ticket work
+- **Completion**: `rule.ticket.completion-discipline.v1` ensures quality
+
+## Failure Modes and Recovery
+
+**Ticket directory creation fails**:
+
+- Detection: Cannot create `tickets/TICKET-ID/` directory
+- Recovery: Check permissions, create parent directories if needed
+- Fallback: Request user create directory manually
+
+**Rule execution fails during workflow**:
+
+- Detection: Specific rule (plan, context, etc.) returns error
+- Recovery: Continue with manual file creation, log error
+- Fallback: Document incomplete automation in progress.md
+
+**JIRA sync fails**:
+
+- Detection: Cannot sync to external JIRA system
+- Recovery: Continue with local files, retry sync later
+- Fallback: Manual JIRA update with local file content
+
+**Validation fails at closure**:
+
+- Detection: `rule.ticket.validation.v1` finds issues
+- Recovery: Fix issues, re-validate, DO NOT close ticket
+- Fallback: Ticket remains in progress until validation passes
+
+## Provenance Footer Specification
+
+Individual ticket files follow their respective rule's provenance requirements. The workflow itself doesn't add provenance - tracked via git commits and timeline entries.
+
+## Command Rules
+
+**sync command**: User types "sync" → Update context.md, progress.md, references.md, timeline.md with latest session findings
+
+**recap command**: User types "recap" → Execute `rule.ticket.recap.v1`, create/update recap.md
+
+**rca command**: User types "rca" → Execute `rule.ticket.rca.v1`, create/update rca.md
+
+## Related Rules
+
+All ticket system rules (this is the hub):
+
+- `rule.ticket.overview.v1` - Ticket system manifest and index
+- `rule.ticket.plan.v1` - Planning and objectives
+- `rule.ticket.context.v1` - Current state tracking
+- `rule.ticket.progress.v1` - Chronological logging
+- `rule.ticket.timeline.v1` - Timestamp tracking
+- `rule.ticket.recap.v1` - Outcome summarization
+- `rule.ticket.rca.v1` - Root cause analysis
+- `rule.ticket.validation.v1` - Pre-completion validation
+- `rule.ticket.complexity-assessment.v1` - Implementation track selection
+- `rule.ticket.switching-discipline.v1` - Multi-ticket management
+- `rule.ticket.completion-discipline.v1` - Behavioral quality standards
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Ticket initiated with plan.md and complexity assessment
+- [ ] Context.md maintained throughout implementation
+- [ ] Progress.md logs all actions chronologically
+- [ ] Timeline.md tracks timestamped events
+- [ ] Validation completed per `rule.ticket.validation.v1`
+- [ ] Recap.md created at closure
+- [ ] RCA.md created if defect ticket
+- [ ] All commits follow commit discipline
+- [ ] JIRA synced with ticket documentation
+- [ ] Complete audit trail from initiation to closure
+
+
