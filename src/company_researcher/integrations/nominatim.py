@@ -15,8 +15,8 @@ IMPORTANT: Nominatim has a strict usage policy:
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from .base_client import BaseAPIClient
 from ..utils import get_logger
+from .base_client import BaseAPIClient
 
 logger = get_logger(__name__)
 
@@ -24,6 +24,7 @@ logger = get_logger(__name__)
 @dataclass
 class NominatimResult:
     """Nominatim geocoding result."""
+
     place_id: int
     osm_type: str
     osm_id: int
@@ -47,7 +48,7 @@ class NominatimResult:
             type=data.get("type", ""),
             importance=data.get("importance", 0),
             address=data.get("address", {}),
-            boundingbox=data.get("boundingbox", [])
+            boundingbox=data.get("boundingbox", []),
         )
 
 
@@ -79,7 +80,7 @@ class NominatimClient(BaseAPIClient):
             api_key="free",  # Placeholder
             cache_ttl=86400,  # 24 hour cache
             rate_limit_calls=1,
-            rate_limit_period=1.0  # Strict: 1/second
+            rate_limit_period=1.0,  # Strict: 1/second
         )
 
     def is_available(self) -> bool:
@@ -97,7 +98,7 @@ class NominatimClient(BaseAPIClient):
         query: str,
         country_codes: Optional[List[str]] = None,
         limit: int = 5,
-        addressdetails: bool = True
+        addressdetails: bool = True,
     ) -> List[NominatimResult]:
         """
         Search for a location (forward geocoding).
@@ -115,7 +116,7 @@ class NominatimClient(BaseAPIClient):
             "q": query,
             "format": "json",
             "limit": min(limit, 50),
-            "addressdetails": 1 if addressdetails else 0
+            "addressdetails": 1 if addressdetails else 0,
         }
 
         if country_codes:
@@ -125,11 +126,7 @@ class NominatimClient(BaseAPIClient):
         return [NominatimResult.from_dict(item) for item in (data or [])]
 
     async def reverse(
-        self,
-        latitude: float,
-        longitude: float,
-        zoom: int = 18,
-        addressdetails: bool = True
+        self, latitude: float, longitude: float, zoom: int = 18, addressdetails: bool = True
     ) -> Optional[NominatimResult]:
         """
         Reverse geocode coordinates.
@@ -148,7 +145,7 @@ class NominatimClient(BaseAPIClient):
             "lon": longitude,
             "format": "json",
             "zoom": zoom,
-            "addressdetails": 1 if addressdetails else 0
+            "addressdetails": 1 if addressdetails else 0,
         }
 
         data = await self._request("reverse", params)
@@ -163,7 +160,7 @@ class NominatimClient(BaseAPIClient):
         county: Optional[str] = None,
         state: Optional[str] = None,
         country: Optional[str] = None,
-        postalcode: Optional[str] = None
+        postalcode: Optional[str] = None,
     ) -> List[NominatimResult]:
         """
         Search with structured address components.
@@ -179,10 +176,7 @@ class NominatimClient(BaseAPIClient):
         Returns:
             List of NominatimResult objects
         """
-        params = {
-            "format": "json",
-            "addressdetails": 1
-        }
+        params = {"format": "json", "addressdetails": 1}
 
         if street:
             params["street"] = street
@@ -200,10 +194,7 @@ class NominatimClient(BaseAPIClient):
         data = await self._request("search", params)
         return [NominatimResult.from_dict(item) for item in (data or [])]
 
-    async def lookup(
-        self,
-        osm_ids: List[str]
-    ) -> List[NominatimResult]:
+    async def lookup(self, osm_ids: List[str]) -> List[NominatimResult]:
         """
         Look up OSM objects by ID.
 
@@ -214,19 +205,13 @@ class NominatimClient(BaseAPIClient):
         Returns:
             List of NominatimResult objects
         """
-        params = {
-            "osm_ids": ",".join(osm_ids),
-            "format": "json",
-            "addressdetails": 1
-        }
+        params = {"osm_ids": ",".join(osm_ids), "format": "json", "addressdetails": 1}
 
         data = await self._request("lookup", params)
         return [NominatimResult.from_dict(item) for item in (data or [])]
 
     async def geocode_city(
-        self,
-        city: str,
-        country: Optional[str] = None
+        self, city: str, country: Optional[str] = None
     ) -> Optional[NominatimResult]:
         """
         Geocode a city.
@@ -241,10 +226,7 @@ class NominatimClient(BaseAPIClient):
         results = await self.structured_search(city=city, country=country)
         return results[0] if results else None
 
-    async def get_country_center(
-        self,
-        country: str
-    ) -> Optional[NominatimResult]:
+    async def get_country_center(self, country: str) -> Optional[NominatimResult]:
         """
         Get approximate center of a country.
 

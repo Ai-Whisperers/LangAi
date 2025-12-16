@@ -8,9 +8,11 @@ model selection, and research parameters.
 import os
 import re
 from typing import List, Optional
+
+from dotenv import load_dotenv
 from pydantic import Field
 from pydantic_settings import BaseSettings
-from dotenv import load_dotenv
+
 from .utils import get_logger
 
 # Load environment variables
@@ -44,12 +46,12 @@ class ResearchConfig(BaseSettings):
 
     anthropic_api_key: str = Field(
         default_factory=lambda: os.getenv("ANTHROPIC_API_KEY", ""),
-        description="Anthropic API key for Claude models"
+        description="Anthropic API key for Claude models",
     )
 
     tavily_api_key: str = Field(
         default_factory=lambda: os.getenv("TAVILY_API_KEY", ""),
-        description="Tavily API key for web search"
+        description="Tavily API key for web search",
     )
 
     # ========================================================================
@@ -58,22 +60,22 @@ class ResearchConfig(BaseSettings):
 
     alpha_vantage_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("ALPHA_VANTAGE_API_KEY"),
-        description="Alpha Vantage API key (25 req/day free)"
+        description="Alpha Vantage API key (25 req/day free)",
     )
 
     fmp_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("FMP_API_KEY"),
-        description="Financial Modeling Prep API key (250 req/day free)"
+        description="Financial Modeling Prep API key (250 req/day free)",
     )
 
     finnhub_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("FINNHUB_API_KEY"),
-        description="Finnhub API key (60 req/min free)"
+        description="Finnhub API key (60 req/min free)",
     )
 
     polygon_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("POLYGON_API_KEY"),
-        description="Polygon.io API key (5 req/min free)"
+        description="Polygon.io API key (5 req/min free)",
     )
 
     # ========================================================================
@@ -82,17 +84,17 @@ class ResearchConfig(BaseSettings):
 
     newsapi_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("NEWSAPI_KEY"),
-        description="NewsAPI key (100 req/day free for dev)"
+        description="NewsAPI key (100 req/day free for dev)",
     )
 
     gnews_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("GNEWS_API_KEY"),
-        description="GNews API key (100 req/day free)"
+        description="GNews API key (100 req/day free)",
     )
 
     mediastack_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("MEDIASTACK_API_KEY"),
-        description="Mediastack API key (500 req/month free)"
+        description="Mediastack API key (500 req/month free)",
     )
 
     # ========================================================================
@@ -101,7 +103,7 @@ class ResearchConfig(BaseSettings):
 
     hunter_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("HUNTER_API_KEY"),
-        description="Hunter.io API key (25 searches/month free)"
+        description="Hunter.io API key (25 searches/month free)",
     )
 
     # Note: Domainsdb.info is FREE - no API key needed
@@ -112,7 +114,7 @@ class ResearchConfig(BaseSettings):
 
     opencage_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("OPENCAGE_API_KEY"),
-        description="OpenCage Geocoding API key (2,500 req/day free)"
+        description="OpenCage Geocoding API key (2,500 req/day free)",
     )
 
     # Note: Nominatim (OpenStreetMap) is FREE - no API key needed
@@ -123,7 +125,7 @@ class ResearchConfig(BaseSettings):
 
     huggingface_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("HUGGINGFACE_API_KEY"),
-        description="Hugging Face API key (free tier with rate limits)"
+        description="Hugging Face API key (free tier with rate limits)",
     )
 
     # ========================================================================
@@ -132,17 +134,17 @@ class ResearchConfig(BaseSettings):
 
     reddit_client_id: Optional[str] = Field(
         default_factory=lambda: os.getenv("REDDIT_CLIENT_ID"),
-        description="Reddit API client ID (100 req/min free with OAuth)"
+        description="Reddit API client ID (100 req/min free with OAuth)",
     )
 
     reddit_client_secret: Optional[str] = Field(
         default_factory=lambda: os.getenv("REDDIT_CLIENT_SECRET"),
-        description="Reddit API client secret"
+        description="Reddit API client secret",
     )
 
     github_token: Optional[str] = Field(
         default_factory=lambda: os.getenv("GITHUB_TOKEN"),
-        description="GitHub API token (5,000 req/hour free)"
+        description="GitHub API token (5,000 req/hour free)",
     )
 
     # ========================================================================
@@ -151,70 +153,62 @@ class ResearchConfig(BaseSettings):
 
     agentops_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("AGENTOPS_API_KEY"),
-        description="AgentOps API key for agent monitoring"
+        description="AgentOps API key for agent monitoring",
     )
 
     langsmith_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("LANGSMITH_API_KEY"),
-        description="LangSmith API key for LangChain tracing"
+        description="LangSmith API key for LangChain tracing",
     )
 
     langchain_tracing_v2: bool = Field(
-        default_factory=lambda: os.getenv("LANGCHAIN_TRACING_V2","false").lower() == "true",
-        description="Enable LangSmith tracing"
+        default_factory=lambda: os.getenv("LANGCHAIN_TRACING_V2", "false").lower() == "true",
+        description="Enable LangSmith tracing",
     )
 
     langchain_project: str = Field(
-        default_factory=lambda: os.getenv("LANGCHAIN_PROJECT","langai-research"),
-        description="LangSmith project name"
+        default_factory=lambda: os.getenv("LANGCHAIN_PROJECT", "langai-research"),
+        description="LangSmith project name",
     )
 
     langchain_endpoint: str = Field(
-        default_factory=lambda: os.getenv("LANGCHAIN_ENDPOINT","https://api.smith.langchain.com"),
-        description="LangSmith API endpoint"
+        default_factory=lambda: os.getenv("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com"),
+        description="LangSmith API endpoint",
     )
 
     @property
     def observability_enabled(self) -> bool:
         """Check if any observability tool is configured."""
-        return bool(self.agentops_api_key) or (bool(self.langsmith_api_key) and self.langchain_tracing_v2)
+        return bool(self.agentops_api_key) or (
+            bool(self.langsmith_api_key) and self.langchain_tracing_v2
+        )
 
     # ========================================================================
     # Model Configuration
     # ========================================================================
 
     llm_model: str = Field(
-        default="claude-3-5-haiku-20241022",
-        description="Claude model to use for analysis"
+        default="claude-3-5-haiku-20241022", description="Claude model to use for analysis"
     )
 
     llm_temperature: float = Field(
-        default=0.0,
-        description="Temperature for LLM (0.0 = deterministic)"
+        default=0.0, description="Temperature for LLM (0.0 = deterministic)"
     )
 
-    llm_max_tokens: int = Field(
-        default=4000,
-        description="Maximum tokens for LLM output"
-    )
+    llm_max_tokens: int = Field(default=4000, description="Maximum tokens for LLM output")
 
     # ========================================================================
     # Search Configuration
     # ========================================================================
 
-    num_search_queries: int = Field(
-        default=5,
-        description="Number of search queries to generate"
-    )
+    num_search_queries: int = Field(default=5, description="Number of search queries to generate")
 
     search_results_per_query: int = Field(
-        default=3,
-        description="Number of results per search query"
+        default=3, description="Number of results per search query"
     )
 
     max_search_results: int = Field(
-        default=15,
-        description="Maximum total search results to process"
+        default=15, description="Maximum total search results to process"
     )
 
     # ========================================================================
@@ -222,27 +216,19 @@ class ResearchConfig(BaseSettings):
     # ========================================================================
 
     max_research_time_seconds: int = Field(
-        default=300,
-        description="Maximum time for research (5 minutes)"
+        default=300, description="Maximum time for research (5 minutes)"
     )
 
-    target_cost_usd: float = Field(
-        default=0.30,
-        description="Target cost per research"
-    )
+    target_cost_usd: float = Field(default=0.30, description="Target cost per research")
 
     # ========================================================================
     # Output Configuration
     # ========================================================================
 
-    output_dir: str = Field(
-        default="outputs",
-        description="Directory for research reports"
-    )
+    output_dir: str = Field(default="outputs", description="Directory for research reports")
 
     report_format: str = Field(
-        default="markdown",
-        description="Report output format (markdown only for Phase 1)"
+        default="markdown", description="Report output format (markdown only for Phase 1)"
     )
 
     # ========================================================================
@@ -251,29 +237,18 @@ class ResearchConfig(BaseSettings):
     # ========================================================================
 
     report_sources_per_domain: int = Field(
-        default=3,
-        description="Max sources to display per domain in report"
+        default=3, description="Max sources to display per domain in report"
     )
 
     report_max_results: int = Field(
-        default=10,
-        description="Max search results to include in reports"
+        default=10, description="Max search results to include in reports"
     )
 
-    summary_max_items: int = Field(
-        default=5,
-        description="Max items per category in summaries"
-    )
+    summary_max_items: int = Field(default=5, description="Max items per category in summaries")
 
-    insights_max_count: int = Field(
-        default=10,
-        description="Max insights to generate"
-    )
+    insights_max_count: int = Field(default=10, description="Max insights to generate")
 
-    recommendations_max_count: int = Field(
-        default=5,
-        description="Max recommendations to generate"
-    )
+    recommendations_max_count: int = Field(default=5, description="Max recommendations to generate")
 
     # ========================================================================
     # Agent-Specific Configuration
@@ -282,168 +257,120 @@ class ResearchConfig(BaseSettings):
 
     # Core Agents
     researcher_max_tokens: int = Field(
-        default=500,
-        description="Max tokens for researcher query generation"
+        default=500, description="Max tokens for researcher query generation"
     )
     researcher_temperature: float = Field(
-        default=0.7,
-        description="Temperature for creative query generation"
+        default=0.7, description="Temperature for creative query generation"
     )
 
     analyst_max_tokens: int = Field(
-        default=1000,
-        description="Max tokens for analyst summarization"
+        default=1000, description="Max tokens for analyst summarization"
     )
-    analyst_temperature: float = Field(
-        default=0.1,
-        description="Semi-deterministic analysis"
-    )
+    analyst_temperature: float = Field(default=0.1, description="Semi-deterministic analysis")
 
     synthesizer_max_tokens: int = Field(
-        default=1500,
-        description="Max tokens for synthesizer overview"
+        default=1500, description="Max tokens for synthesizer overview"
     )
-    synthesizer_temperature: float = Field(
-        default=0.1,
-        description="Semi-deterministic synthesis"
-    )
+    synthesizer_temperature: float = Field(default=0.1, description="Semi-deterministic synthesis")
 
     # Financial Agents
     financial_max_tokens: int = Field(
-        default=800,
-        description="Max tokens for basic financial analysis"
+        default=800, description="Max tokens for basic financial analysis"
     )
     financial_temperature: float = Field(
-        default=0.0,
-        description="Deterministic financial extraction"
+        default=0.0, description="Deterministic financial extraction"
     )
 
     enhanced_financial_max_tokens: int = Field(
-        default=1200,
-        description="Max tokens for enhanced financial analysis"
+        default=1200, description="Max tokens for enhanced financial analysis"
     )
 
     investment_analyst_max_tokens: int = Field(
-        default=2500,
-        description="Max tokens for investment analyst (detailed reports)"
+        default=2500, description="Max tokens for investment analyst (detailed reports)"
     )
     investment_analyst_temperature: float = Field(
-        default=0.1,
-        description="Temperature for investment analysis (slightly creative)"
+        default=0.1, description="Temperature for investment analysis (slightly creative)"
     )
 
     # Market Agents
-    market_max_tokens: int = Field(
-        default=800,
-        description="Max tokens for market analysis"
-    )
-    market_temperature: float = Field(
-        default=0.0,
-        description="Deterministic market analysis"
-    )
+    market_max_tokens: int = Field(default=800, description="Max tokens for market analysis")
+    market_temperature: float = Field(default=0.0, description="Deterministic market analysis")
 
     enhanced_market_max_tokens: int = Field(
-        default=1200,
-        description="Max tokens for enhanced market analysis"
+        default=1200, description="Max tokens for enhanced market analysis"
     )
 
     competitor_scout_max_tokens: int = Field(
-        default=1500,
-        description="Max tokens for competitor analysis"
+        default=1500, description="Max tokens for competitor analysis"
     )
 
     # Specialized Agents
     brand_auditor_max_tokens: int = Field(
-        default=2000,
-        description="Max tokens for brand audit reports"
+        default=2000, description="Max tokens for brand audit reports"
     )
 
     social_media_max_tokens: int = Field(
-        default=1500,
-        description="Max tokens for social media analysis"
+        default=1500, description="Max tokens for social media analysis"
     )
 
     sales_intelligence_max_tokens: int = Field(
-        default=1800,
-        description="Max tokens for sales intelligence"
+        default=1800, description="Max tokens for sales intelligence"
     )
 
-    product_max_tokens: int = Field(
-        default=1000,
-        description="Max tokens for product analysis"
-    )
+    product_max_tokens: int = Field(default=1000, description="Max tokens for product analysis")
 
     # Research Agents
     deep_research_max_tokens: int = Field(
-        default=2000,
-        description="Max tokens for deep research (comprehensive)"
+        default=2000, description="Max tokens for deep research (comprehensive)"
     )
     deep_research_temperature: float = Field(
-        default=0.0,
-        description="Temperature for deep research (deterministic)"
+        default=0.0, description="Temperature for deep research (deterministic)"
     )
     deep_research_query_max_tokens: int = Field(
-        default=500,
-        description="Max tokens for follow-up query generation"
+        default=500, description="Max tokens for follow-up query generation"
     )
     deep_research_query_temperature: float = Field(
-        default=0.3,
-        description="Temperature for query generation (creative)"
+        default=0.3, description="Temperature for query generation (creative)"
     )
 
-    reasoning_max_tokens: int = Field(
-        default=2000,
-        description="Max tokens for reasoning agent"
-    )
+    reasoning_max_tokens: int = Field(default=2000, description="Max tokens for reasoning agent")
     reasoning_temperature: float = Field(
-        default=0.1,
-        description="Temperature for reasoning (slightly creative)"
+        default=0.1, description="Temperature for reasoning (slightly creative)"
     )
     reasoning_hypothesis_max_tokens: int = Field(
-        default=800,
-        description="Max tokens for hypothesis testing"
+        default=800, description="Max tokens for hypothesis testing"
     )
     reasoning_hypothesis_temperature: float = Field(
-        default=0.0,
-        description="Temperature for hypothesis testing (deterministic)"
+        default=0.0, description="Temperature for hypothesis testing (deterministic)"
     )
     reasoning_inference_max_tokens: int = Field(
-        default=1000,
-        description="Max tokens for strategic inference"
+        default=1000, description="Max tokens for strategic inference"
     )
     reasoning_inference_temperature: float = Field(
-        default=0.2,
-        description="Temperature for strategic inference (moderately creative)"
+        default=0.2, description="Temperature for strategic inference (moderately creative)"
     )
 
     # Quality Agents
     logic_critic_max_tokens: int = Field(
-        default=800,
-        description="Max tokens for logic critic evaluation"
+        default=800, description="Max tokens for logic critic evaluation"
     )
     logic_critic_temperature: float = Field(
-        default=0.0,
-        description="Temperature for logic critic (deterministic)"
+        default=0.0, description="Temperature for logic critic (deterministic)"
     )
 
     # ESG Agent
-    esg_max_tokens: int = Field(
-        default=1500,
-        description="Max tokens for ESG analysis"
-    )
+    esg_max_tokens: int = Field(default=1500, description="Max tokens for ESG analysis")
 
     # ========================================================================
     # Processing Limits
     # ========================================================================
 
     max_sources_per_agent: int = Field(
-        default=15,
-        description="Maximum sources each agent processes"
+        default=15, description="Maximum sources each agent processes"
     )
 
     content_truncate_length: int = Field(
-        default=500,
-        description="Length to truncate content snippets"
+        default=500, description="Length to truncate content snippets"
     )
 
     # ========================================================================
@@ -452,27 +379,24 @@ class ResearchConfig(BaseSettings):
 
     enable_domain_exploration: bool = Field(
         default=True,
-        description="Enable automatic domain exploration when company website is found"
+        description="Enable automatic domain exploration when company website is found",
     )
 
     domain_exploration_max_pages: int = Field(
-        default=8,
-        description="Maximum pages to fetch per domain during exploration"
+        default=8, description="Maximum pages to fetch per domain during exploration"
     )
 
     domain_exploration_timeout: float = Field(
-        default=10.0,
-        description="HTTP timeout for domain exploration requests"
+        default=10.0, description="HTTP timeout for domain exploration requests"
     )
 
     domain_exploration_max_content: int = Field(
-        default=50000,
-        description="Maximum content length to extract per page"
+        default=50000, description="Maximum content length to extract per page"
     )
 
     domain_exploration_priority_categories: List[str] = Field(
         default=["leadership", "products", "investors", "news"],
-        description="Priority page categories to explore"
+        description="Priority page categories to explore",
     )
 
     # ========================================================================
@@ -480,23 +404,19 @@ class ResearchConfig(BaseSettings):
     # ========================================================================
 
     api_timeout_seconds: float = Field(
-        default=60.0,
-        description="Default timeout for API calls in seconds"
+        default=60.0, description="Default timeout for API calls in seconds"
     )
 
     api_connect_timeout_seconds: float = Field(
-        default=10.0,
-        description="Connection timeout for API calls in seconds"
+        default=10.0, description="Connection timeout for API calls in seconds"
     )
 
     search_timeout_seconds: float = Field(
-        default=30.0,
-        description="Timeout for search API calls in seconds"
+        default=30.0, description="Timeout for search API calls in seconds"
     )
 
     webhook_timeout_seconds: float = Field(
-        default=10.0,
-        description="Timeout for webhook delivery calls in seconds"
+        default=10.0, description="Timeout for webhook delivery calls in seconds"
     )
 
     # ========================================================================
@@ -528,17 +448,25 @@ class ResearchConfig(BaseSettings):
         issues: List[str] = []
 
         # Validate required keys
-        issues.extend(self._validate_required_key(
-            "ANTHROPIC_API_KEY", self.anthropic_api_key, "anthropic",
-            "https://console.anthropic.com/", "sk-ant-api##-..."
-        ))
-        issues.extend(self._validate_required_key(
-            "TAVILY_API_KEY", self.tavily_api_key, "tavily",
-            "https://tavily.com/", "tvly-..."
-        ))
+        issues.extend(
+            self._validate_required_key(
+                "ANTHROPIC_API_KEY",
+                self.anthropic_api_key,
+                "anthropic",
+                "https://console.anthropic.com/",
+                "sk-ant-api##-...",
+            )
+        )
+        issues.extend(
+            self._validate_required_key(
+                "TAVILY_API_KEY", self.tavily_api_key, "tavily", "https://tavily.com/", "tvly-..."
+            )
+        )
 
         # Validate optional keys
-        if self.langsmith_api_key and not self._validate_key_format("langsmith", self.langsmith_api_key):
+        if self.langsmith_api_key and not self._validate_key_format(
+            "langsmith", self.langsmith_api_key
+        ):
             issues.append(
                 "WARNING: LANGSMITH_API_KEY format looks suspicious. "
                 "Expected format: lspt-... or lsk-..."
@@ -590,8 +518,8 @@ class ResearchConfig(BaseSettings):
 
         if critical_issues and strict:
             raise ConfigurationError(
-                "Configuration validation failed:\n" +
-                "\n".join(f"  - {i}" for i in critical_issues)
+                "Configuration validation failed:\n"
+                + "\n".join(f"  - {i}" for i in critical_issues)
             )
 
     def _validate_key_format(self, key_type: str, key_value: str) -> bool:
@@ -624,23 +552,13 @@ class ResearchConfig(BaseSettings):
         """
         # Pricing as of December 2024
         pricing = {
-            "claude-3-5-haiku-20241022": {
-                "input": 0.80,
-                "output": 4.00
-            },
-            "claude-3-5-sonnet-20241022": {
-                "input": 3.00,
-                "output": 15.00
-            },
-            "claude-3-haiku-20240307": {
-                "input": 0.25,
-                "output": 1.25
-            }
+            "claude-3-5-haiku-20241022": {"input": 0.80, "output": 4.00},
+            "claude-3-5-sonnet-20241022": {"input": 3.00, "output": 15.00},
+            "claude-3-haiku-20240307": {"input": 0.25, "output": 1.25},
         }
 
         return pricing.get(
-            self.llm_model,
-            {"input": 3.00, "output": 15.00}  # Default to Sonnet pricing
+            self.llm_model, {"input": 3.00, "output": 15.00}  # Default to Sonnet pricing
         )
 
     def calculate_llm_cost(self, input_tokens: int, output_tokens: int) -> float:

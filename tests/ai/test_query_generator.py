@@ -1,15 +1,17 @@
 """Tests for AI query generator."""
-import pytest
-from unittest.mock import patch
+
 import json
+from unittest.mock import patch
+
+import pytest
 
 from company_researcher.ai.query import (
     AIQueryGenerator,
-    get_query_generator,
     CompanyContext,
-    QueryPurpose,
-    QueryGenerationResult,
     GeneratedQuery,
+    QueryGenerationResult,
+    QueryPurpose,
+    get_query_generator,
 )
 
 
@@ -18,10 +20,7 @@ class TestCompanyContext:
 
     def test_infer_languages_latam(self):
         """Test language inference for LATAM companies."""
-        context = CompanyContext(
-            company_name="Grupo Bimbo",
-            known_region="LATAM"
-        )
+        context = CompanyContext(company_name="Grupo Bimbo", known_region="LATAM")
         languages = context.get_inferred_languages()
         assert "en" in languages
         assert "es" in languages
@@ -29,20 +28,14 @@ class TestCompanyContext:
 
     def test_infer_languages_brazil(self):
         """Test language inference for Brazil."""
-        context = CompanyContext(
-            company_name="Petrobras",
-            known_country="Brazil"
-        )
+        context = CompanyContext(company_name="Petrobras", known_country="Brazil")
         languages = context.get_inferred_languages()
         assert "en" in languages
         assert "pt" in languages
 
     def test_infer_languages_mexico(self):
         """Test language inference for Mexico."""
-        context = CompanyContext(
-            company_name="FEMSA",
-            known_country="Mexico"
-        )
+        context = CompanyContext(company_name="FEMSA", known_country="Mexico")
         languages = context.get_inferred_languages()
         assert "en" in languages
         assert "es" in languages
@@ -55,10 +48,7 @@ class TestCompanyContext:
 
     def test_infer_languages_custom(self):
         """Test custom language list."""
-        context = CompanyContext(
-            company_name="SAP",
-            languages=["en", "de"]
-        )
+        context = CompanyContext(company_name="SAP", languages=["en", "de"])
         languages = context.get_inferred_languages()
         assert languages == ["en", "de"]
 
@@ -98,10 +88,7 @@ class TestGeneratedQuery:
     def test_create_query(self):
         """Test creating a generated query."""
         query = GeneratedQuery(
-            query="Tesla revenue 2024",
-            purpose=QueryPurpose.FINANCIAL,
-            language="en",
-            priority=1
+            query="Tesla revenue 2024", purpose=QueryPurpose.FINANCIAL, language="en", priority=1
         )
         assert query.query == "Tesla revenue 2024"
         assert query.purpose == QueryPurpose.FINANCIAL.value
@@ -109,10 +96,7 @@ class TestGeneratedQuery:
 
     def test_query_defaults(self):
         """Test query defaults."""
-        query = GeneratedQuery(
-            query="Test query",
-            purpose=QueryPurpose.OVERVIEW
-        )
+        query = GeneratedQuery(query="Test query", purpose=QueryPurpose.OVERVIEW)
         assert query.language == "en"
         assert query.priority == 3
         assert query.is_fallback is False
@@ -125,11 +109,17 @@ class TestQueryGenerationResult:
         """Test filtering queries by purpose."""
         result = QueryGenerationResult(
             queries=[
-                GeneratedQuery(query="Q1", purpose=QueryPurpose.FINANCIAL, language="en", priority=1),
-                GeneratedQuery(query="Q2", purpose=QueryPurpose.FINANCIAL, language="es", priority=2),
-                GeneratedQuery(query="Q3", purpose=QueryPurpose.PRODUCTS, language="en", priority=3),
+                GeneratedQuery(
+                    query="Q1", purpose=QueryPurpose.FINANCIAL, language="en", priority=1
+                ),
+                GeneratedQuery(
+                    query="Q2", purpose=QueryPurpose.FINANCIAL, language="es", priority=2
+                ),
+                GeneratedQuery(
+                    query="Q3", purpose=QueryPurpose.PRODUCTS, language="en", priority=3
+                ),
             ],
-            total_queries=3
+            total_queries=3,
         )
 
         financial = result.get_queries_by_purpose(QueryPurpose.FINANCIAL)
@@ -142,11 +132,17 @@ class TestQueryGenerationResult:
         """Test filtering queries by language."""
         result = QueryGenerationResult(
             queries=[
-                GeneratedQuery(query="Q1", purpose=QueryPurpose.FINANCIAL, language="en", priority=1),
-                GeneratedQuery(query="Q2", purpose=QueryPurpose.FINANCIAL, language="es", priority=2),
-                GeneratedQuery(query="Q3", purpose=QueryPurpose.PRODUCTS, language="en", priority=3),
+                GeneratedQuery(
+                    query="Q1", purpose=QueryPurpose.FINANCIAL, language="en", priority=1
+                ),
+                GeneratedQuery(
+                    query="Q2", purpose=QueryPurpose.FINANCIAL, language="es", priority=2
+                ),
+                GeneratedQuery(
+                    query="Q3", purpose=QueryPurpose.PRODUCTS, language="en", priority=3
+                ),
             ],
-            total_queries=3
+            total_queries=3,
         )
 
         english = result.get_queries_by_language("en")
@@ -159,11 +155,17 @@ class TestQueryGenerationResult:
         """Test getting high priority queries."""
         result = QueryGenerationResult(
             queries=[
-                GeneratedQuery(query="Q1", purpose=QueryPurpose.FINANCIAL, language="en", priority=1),
-                GeneratedQuery(query="Q2", purpose=QueryPurpose.FINANCIAL, language="en", priority=2),
-                GeneratedQuery(query="Q3", purpose=QueryPurpose.PRODUCTS, language="en", priority=3),
+                GeneratedQuery(
+                    query="Q1", purpose=QueryPurpose.FINANCIAL, language="en", priority=1
+                ),
+                GeneratedQuery(
+                    query="Q2", purpose=QueryPurpose.FINANCIAL, language="en", priority=2
+                ),
+                GeneratedQuery(
+                    query="Q3", purpose=QueryPurpose.PRODUCTS, language="en", priority=3
+                ),
             ],
-            total_queries=3
+            total_queries=3,
         )
 
         high_priority = result.get_high_priority_queries(max_priority=2)
@@ -173,11 +175,17 @@ class TestQueryGenerationResult:
         """Test converting to simple query list."""
         result = QueryGenerationResult(
             queries=[
-                GeneratedQuery(query="Q3", purpose=QueryPurpose.PRODUCTS, language="en", priority=3),
-                GeneratedQuery(query="Q1", purpose=QueryPurpose.FINANCIAL, language="en", priority=1),
-                GeneratedQuery(query="Q2", purpose=QueryPurpose.FINANCIAL, language="en", priority=2),
+                GeneratedQuery(
+                    query="Q3", purpose=QueryPurpose.PRODUCTS, language="en", priority=3
+                ),
+                GeneratedQuery(
+                    query="Q1", purpose=QueryPurpose.FINANCIAL, language="en", priority=1
+                ),
+                GeneratedQuery(
+                    query="Q2", purpose=QueryPurpose.FINANCIAL, language="en", priority=2
+                ),
             ],
-            total_queries=3
+            total_queries=3,
         )
 
         query_list = result.to_query_list()
@@ -198,57 +206,50 @@ class TestAIQueryGenerator:
     @pytest.fixture
     def mock_llm_response(self):
         """Mock LLM response for query generation."""
-        return json.dumps({
-            "queries": [
-                {
-                    "query": "Tesla Inc annual report 2024",
-                    "purpose": "financial",
-                    "expected_sources": ["sec", "official"],
-                    "language": "en",
-                    "priority": 1,
-                    "reasoning": "Official financial information"
+        return json.dumps(
+            {
+                "queries": [
+                    {
+                        "query": "Tesla Inc annual report 2024",
+                        "purpose": "financial",
+                        "expected_sources": ["sec", "official"],
+                        "language": "en",
+                        "priority": 1,
+                        "reasoning": "Official financial information",
+                    },
+                    {
+                        "query": "Tesla revenue earnings Q4",
+                        "purpose": "financial",
+                        "expected_sources": ["news"],
+                        "language": "en",
+                        "priority": 2,
+                        "reasoning": "Recent financial performance",
+                    },
+                    {
+                        "query": "Tesla vs BYD market share",
+                        "purpose": "competitors",
+                        "expected_sources": ["industry_report"],
+                        "language": "en",
+                        "priority": 2,
+                        "reasoning": "Competitive positioning",
+                    },
+                ],
+                "company_context_inferred": {
+                    "likely_industry": "Automotive",
+                    "likely_type": "public",
+                    "likely_region": "North America",
                 },
-                {
-                    "query": "Tesla revenue earnings Q4",
-                    "purpose": "financial",
-                    "expected_sources": ["news"],
-                    "language": "en",
-                    "priority": 2,
-                    "reasoning": "Recent financial performance"
-                },
-                {
-                    "query": "Tesla vs BYD market share",
-                    "purpose": "competitors",
-                    "expected_sources": ["industry_report"],
-                    "language": "en",
-                    "priority": 2,
-                    "reasoning": "Competitive positioning"
-                }
-            ],
-            "company_context_inferred": {
-                "likely_industry": "Automotive",
-                "likely_type": "public",
-                "likely_region": "North America"
-            },
-            "suggested_follow_ups": [
-                "Tesla SEC 10-K filing",
-                "Tesla investor presentation"
-            ],
-            "estimated_coverage": {
-                "financial": 0.8,
-                "products": 0.3,
-                "competitors": 0.6
+                "suggested_follow_ups": ["Tesla SEC 10-K filing", "Tesla investor presentation"],
+                "estimated_coverage": {"financial": 0.8, "products": 0.3, "competitors": 0.6},
             }
-        })
+        )
 
     def test_generate_queries_success(self, generator, mock_llm_response):
         """Test successful query generation with mocked _call_llm."""
         # Use 'new=' instead of 'return_value=' for async method replacement
-        with patch.object(generator, '_call_llm', new=lambda *args, **kwargs: mock_llm_response):
+        with patch.object(generator, "_call_llm", new=lambda *args, **kwargs: mock_llm_response):
             context = CompanyContext(
-                company_name="Tesla",
-                is_public=True,
-                known_industry="Automotive"
+                company_name="Tesla", is_public=True, known_industry="Automotive"
             )
 
             result = generator.generate_queries(context, num_queries=5)
@@ -260,35 +261,34 @@ class TestAIQueryGenerator:
 
     def test_generate_queries_latam(self, generator):
         """Test query generation for LATAM company includes Spanish."""
-        mock_response = json.dumps({
-            "queries": [
-                {
-                    "query": "Grupo Bimbo informe anual",
-                    "purpose": "financial",
-                    "expected_sources": ["official"],
-                    "language": "es",
-                    "priority": 1,
-                    "reasoning": "Spanish financial report"
-                },
-                {
-                    "query": "Grupo Bimbo annual report",
-                    "purpose": "financial",
-                    "expected_sources": ["official"],
-                    "language": "en",
-                    "priority": 2,
-                    "reasoning": "English financial report"
-                }
-            ],
-            "company_context_inferred": {"likely_region": "LATAM"},
-            "suggested_follow_ups": [],
-            "estimated_coverage": {"financial": 0.7}
-        })
+        mock_response = json.dumps(
+            {
+                "queries": [
+                    {
+                        "query": "Grupo Bimbo informe anual",
+                        "purpose": "financial",
+                        "expected_sources": ["official"],
+                        "language": "es",
+                        "priority": 1,
+                        "reasoning": "Spanish financial report",
+                    },
+                    {
+                        "query": "Grupo Bimbo annual report",
+                        "purpose": "financial",
+                        "expected_sources": ["official"],
+                        "language": "en",
+                        "priority": 2,
+                        "reasoning": "English financial report",
+                    },
+                ],
+                "company_context_inferred": {"likely_region": "LATAM"},
+                "suggested_follow_ups": [],
+                "estimated_coverage": {"financial": 0.7},
+            }
+        )
 
-        with patch.object(generator, '_call_llm', new=lambda *args, **kwargs: mock_response):
-            context = CompanyContext(
-                company_name="Grupo Bimbo",
-                known_region="LATAM"
-            )
+        with patch.object(generator, "_call_llm", new=lambda *args, **kwargs: mock_response):
+            context = CompanyContext(company_name="Grupo Bimbo", known_region="LATAM")
 
             result = generator.generate_queries(context)
 
@@ -316,15 +316,10 @@ class TestAIQueryGenerator:
         """Test parsing of generation result."""
         data = {
             "queries": [
-                {
-                    "query": "Test query",
-                    "purpose": "overview",
-                    "language": "en",
-                    "priority": 1
-                }
+                {"query": "Test query", "purpose": "overview", "language": "en", "priority": 1}
             ],
             "company_context_inferred": {"likely_industry": "Tech"},
-            "estimated_coverage": {"overview": 0.8}
+            "estimated_coverage": {"overview": 0.8},
         }
 
         result = generator._parse_generation_result(data, ["en"])
@@ -341,6 +336,7 @@ class TestQueryGeneratorSingleton:
         """Test that get_query_generator returns singleton."""
         # Reset the singleton first
         import company_researcher.ai.query.generator as gen_module
+
         gen_module._generator_instance = None
 
         gen1 = get_query_generator()
@@ -353,38 +349,37 @@ class TestQueryGenerationIntegration:
 
     def test_full_workflow(self, mock_smart_client):
         """Test full query generation workflow."""
-        mock_response = json.dumps({
-            "queries": [
-                {
-                    "query": "Tesla financial report 2024",
-                    "purpose": "financial",
-                    "expected_sources": ["sec"],
-                    "language": "en",
-                    "priority": 1,
-                    "reasoning": "Financial data"
-                },
-                {
-                    "query": "Tesla competitors electric vehicles",
-                    "purpose": "competitors",
-                    "expected_sources": ["news"],
-                    "language": "en",
-                    "priority": 2,
-                    "reasoning": "Competitive analysis"
-                }
-            ],
-            "company_context_inferred": {},
-            "suggested_follow_ups": [],
-            "estimated_coverage": {}
-        })
+        mock_response = json.dumps(
+            {
+                "queries": [
+                    {
+                        "query": "Tesla financial report 2024",
+                        "purpose": "financial",
+                        "expected_sources": ["sec"],
+                        "language": "en",
+                        "priority": 1,
+                        "reasoning": "Financial data",
+                    },
+                    {
+                        "query": "Tesla competitors electric vehicles",
+                        "purpose": "competitors",
+                        "expected_sources": ["news"],
+                        "language": "en",
+                        "priority": 2,
+                        "reasoning": "Competitive analysis",
+                    },
+                ],
+                "company_context_inferred": {},
+                "suggested_follow_ups": [],
+                "estimated_coverage": {},
+            }
+        )
 
         mock_smart_client.complete.return_value.content = mock_response
 
         generator = get_query_generator()
         context = CompanyContext(
-            company_name="Tesla",
-            known_industry="Automotive",
-            is_public=True,
-            stock_ticker="TSLA"
+            company_name="Tesla", known_industry="Automotive", is_public=True, stock_ticker="TSLA"
         )
 
         result = generator.generate_queries(context, num_queries=5)

@@ -7,36 +7,32 @@ Workflow:
     Input → Generate Queries → Search → Analyze → Extract Data → Save Report → Output
 """
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 
-from ..state import OverallState, InputState, OutputState, create_initial_state, create_output_state
 from ..agents.core.company_classifier import classify_company_node
+from ..state import InputState, OutputState, OverallState, create_initial_state, create_output_state
 
 # Import all workflow nodes from the nodes package
-from .nodes import (
-    # Search nodes
+from .nodes import (  # Search nodes; Analysis nodes; Enrichment nodes; Output nodes
+    analyze_node,
+    check_quality_node,
+    competitive_analysis_node,
+    extract_data_node,
     generate_queries_node,
+    investment_thesis_node,
+    news_sentiment_node,
+    risk_assessment_node,
+    save_report_node,
     search_node,
     sec_edgar_node,
-    website_scraping_node,
-    # Analysis nodes
-    analyze_node,
-    extract_data_node,
-    check_quality_node,
     should_continue_research,
-    # Enrichment nodes
-    news_sentiment_node,
-    competitive_analysis_node,
-    risk_assessment_node,
-    # Output nodes
-    investment_thesis_node,
-    save_report_node,
+    website_scraping_node,
 )
-
 
 # ============================================================================
 # Workflow Graph Construction
 # ============================================================================
+
 
 def create_research_workflow() -> StateGraph:
     """
@@ -64,7 +60,9 @@ def create_research_workflow() -> StateGraph:
     workflow.add_node("generate_queries", generate_queries_node)
     workflow.add_node("search", search_node)
     workflow.add_node("sec_edgar", sec_edgar_node)  # FREE SEC filings for US companies
-    workflow.add_node("website_scraping", website_scraping_node)  # FREE Wikipedia + Jina website scraping
+    workflow.add_node(
+        "website_scraping", website_scraping_node
+    )  # FREE Wikipedia + Jina website scraping
     workflow.add_node("analyze", analyze_node)
     workflow.add_node("extract_data", extract_data_node)
     workflow.add_node("check_quality", check_quality_node)
@@ -92,8 +90,8 @@ def create_research_workflow() -> StateGraph:
         should_continue_research,
         {
             "iterate": "generate_queries",  # Loop back to improve
-            "finish": "competitive_analysis"  # Quality is good, proceed to analysis
-        }
+            "finish": "competitive_analysis",  # Quality is good, proceed to analysis
+        },
     )
 
     # Enhanced analysis pipeline
@@ -108,6 +106,7 @@ def create_research_workflow() -> StateGraph:
 # ============================================================================
 # Main Research Function
 # ============================================================================
+
 
 def research_company(company_name: str) -> OutputState:
     """
@@ -142,7 +141,9 @@ def research_company(company_name: str) -> OutputState:
     print(f"Report: {output['report_path']}")
     print(f"Duration: {output['metrics']['duration_seconds']:.1f}s")
     print(f"Cost: ${output['metrics']['cost_usd']:.4f}")
-    print(f"Tokens: {output['metrics']['tokens']['input']:,} in, {output['metrics']['tokens']['output']:,} out")
+    print(
+        f"Tokens: {output['metrics']['tokens']['input']:,} in, {output['metrics']['tokens']['output']:,} out"
+    )
     print(f"Sources: {output['metrics']['sources_count']}")
     print(f"{'='*60}\n")
 

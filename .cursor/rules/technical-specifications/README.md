@@ -83,7 +83,7 @@ This rule system uses a **hybrid documentation strategy**:
 
 #### **Three-Folder Separation**:
 - **docs/technical/**: Current system specifications ("WHAT exists")
-- **docs/implementation/**: C# target design ("HOW to build")  
+- **docs/implementation/**: C# target design ("HOW to build")
 - **docs/rfcs/**: Future proposals ("WHAT could be")
 
 #### **Layered Documentation within Technical**:

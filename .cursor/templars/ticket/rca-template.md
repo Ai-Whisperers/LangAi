@@ -31,4 +31,3 @@ provenance: { owner: team-ticket, last_review: 2025-12-06 }
 ## Prevention
 - [ ] {{prevention_action_1}}
 - [ ] {{prevention_action_2}}
-

@@ -20,11 +20,11 @@ Close a ticket cleanly: validate, document outcomes, and ensure traceability.
 - Files: plan.md, context.md, progress.md; optional timeline.md, rca.md (if defect), recap.md
 
 ## Deterministic Steps
-1) Validate completion: acceptance criteria met; no open blockers  
-2) Summarize outcomes and evidence; ensure recap (and rca if applicable)  
-3) Update timeline if needed; cite sources  
-4) List final next steps (handoff, merge, release)  
-5) Call out missing artifacts if any  
+1) Validate completion: acceptance criteria met; no open blockers
+2) Summarize outcomes and evidence; ensure recap (and rca if applicable)
+3) Update timeline if needed; cite sources
+4) List final next steps (handoff, merge, release)
+5) Call out missing artifacts if any
 
 ## Expected Output
 - Completion statement with evidence sources
@@ -43,4 +43,3 @@ Close a ticket cleanly: validate, document outcomes, and ensure traceability.
 ```
 @close-ticket PROMPTS-EXTRACT
 ```
-

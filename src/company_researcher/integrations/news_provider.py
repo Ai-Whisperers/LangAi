@@ -12,8 +12,9 @@ Each provider is tried in order until news is successfully retrieved.
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -21,6 +22,7 @@ logger = get_logger(__name__)
 
 class NewsProviderStatus(Enum):
     """Provider availability status."""
+
     AVAILABLE = "available"
     RATE_LIMITED = "rate_limited"
     ERROR = "error"
@@ -30,6 +32,7 @@ class NewsProviderStatus(Enum):
 @dataclass
 class NewsArticle:
     """Unified news article structure."""
+
     title: str
     description: Optional[str] = None
     content: Optional[str] = None
@@ -55,13 +58,14 @@ class NewsArticle:
             "image_url": self.image_url,
             "category": self.category,
             "sentiment": self.sentiment,
-            "relevance_score": self.relevance_score
+            "relevance_score": self.relevance_score,
         }
 
 
 @dataclass
 class NewsResult:
     """Result from news search."""
+
     query: str
     articles: List[NewsArticle] = field(default_factory=list)
     total_results: int = 0
@@ -75,13 +79,14 @@ class NewsResult:
             "articles": [a.to_dict() for a in self.articles],
             "total_results": self.total_results,
             "sources_used": self.sources_used,
-            "search_time": self.search_time.isoformat()
+            "search_time": self.search_time.isoformat(),
         }
 
 
 @dataclass
 class ProviderState:
     """Tracks state of a news provider."""
+
     name: str
     status: NewsProviderStatus = NewsProviderStatus.AVAILABLE
     last_call: Optional[datetime] = None
@@ -104,9 +109,7 @@ class ProviderState:
         if self.limit and self.calls_count >= self.limit:
             self.status = NewsProviderStatus.RATE_LIMITED
             if self.reset_period == "daily":
-                self.reset_time = utc_now().replace(
-                    hour=0, minute=0, second=0
-                ) + timedelta(days=1)
+                self.reset_time = utc_now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
             else:  # monthly
                 next_month = utc_now().replace(day=1) + timedelta(days=32)
                 self.reset_time = next_month.replace(day=1)
@@ -139,10 +142,7 @@ class NewsProvider:
     """
 
     def __init__(
-        self,
-        config: Any,
-        providers: Optional[List[str]] = None,
-        enable_caching: bool = True
+        self, config: Any, providers: Optional[List[str]] = None, enable_caching: bool = True
     ):
         """
         Initialize the news provider.
@@ -191,11 +191,7 @@ class NewsProvider:
                 logger.debug("Tavily key not configured, skipping")
                 continue
 
-            self.providers[name] = ProviderState(
-                name=name,
-                limit=limit,
-                reset_period=reset_period
-            )
+            self.providers[name] = ProviderState(name=name, limit=limit, reset_period=reset_period)
             logger.info(f"Registered news provider: {name}")
 
     def search_news(
@@ -206,7 +202,7 @@ class NewsProvider:
         to_date: Optional[datetime] = None,
         language: str = "en",
         category: Optional[str] = None,
-        force_refresh: bool = False
+        force_refresh: bool = False,
     ) -> NewsResult:
         """
         Search for news articles using fallback chain.
@@ -267,9 +263,7 @@ class NewsProvider:
         # Deduplicate and sort by date
         result.articles = self._deduplicate_articles(result.articles)
         result.articles = sorted(
-            result.articles,
-            key=lambda a: a.published_at or datetime.min,
-            reverse=True
+            result.articles, key=lambda a: a.published_at or datetime.min, reverse=True
         )[:max_results]
 
         result.total_results = len(result.articles)
@@ -293,7 +287,7 @@ class NewsProvider:
         from_date: Optional[datetime],
         to_date: Optional[datetime],
         language: str,
-        category: Optional[str]
+        category: Optional[str],
     ) -> List[NewsArticle]:
         """Fetch articles from a specific provider."""
         if provider == "newsapi":
@@ -312,7 +306,7 @@ class NewsProvider:
         max_results: int,
         from_date: Optional[datetime],
         to_date: Optional[datetime],
-        language: str
+        language: str,
     ) -> List[NewsArticle]:
         """Fetch from NewsAPI."""
         from .news_api import NewsAPIClient
@@ -324,59 +318,50 @@ class NewsProvider:
             from_date=from_date,
             to_date=to_date,
             language=language,
-            page_size=max_results
+            page_size=max_results,
         )
 
         articles = []
         for a in articles_data:
-            articles.append(NewsArticle(
-                title=a.get("title", ""),
-                description=a.get("description"),
-                content=a.get("content"),
-                url=a.get("url", ""),
-                source_name=a.get("source", {}).get("name"),
-                author=a.get("author"),
-                published_at=self._parse_date(a.get("publishedAt")),
-                image_url=a.get("urlToImage")
-            ))
+            articles.append(
+                NewsArticle(
+                    title=a.get("title", ""),
+                    description=a.get("description"),
+                    content=a.get("content"),
+                    url=a.get("url", ""),
+                    source_name=a.get("source", {}).get("name"),
+                    author=a.get("author"),
+                    published_at=self._parse_date(a.get("publishedAt")),
+                    image_url=a.get("urlToImage"),
+                )
+            )
         return articles
 
-    def _fetch_gnews(
-        self,
-        query: str,
-        max_results: int,
-        language: str
-    ) -> List[NewsArticle]:
+    def _fetch_gnews(self, query: str, max_results: int, language: str) -> List[NewsArticle]:
         """Fetch from GNews."""
         from .gnews import GNewsClient
 
         client = GNewsClient(self.config.gnews_api_key)
 
-        articles_data = client.search(
-            query=query,
-            max_results=max_results,
-            language=language
-        )
+        articles_data = client.search(query=query, max_results=max_results, language=language)
 
         articles = []
         for a in articles_data:
-            articles.append(NewsArticle(
-                title=a.get("title", ""),
-                description=a.get("description"),
-                content=a.get("content"),
-                url=a.get("url", ""),
-                source_name=a.get("source", {}).get("name"),
-                published_at=self._parse_date(a.get("publishedAt")),
-                image_url=a.get("image")
-            ))
+            articles.append(
+                NewsArticle(
+                    title=a.get("title", ""),
+                    description=a.get("description"),
+                    content=a.get("content"),
+                    url=a.get("url", ""),
+                    source_name=a.get("source", {}).get("name"),
+                    published_at=self._parse_date(a.get("publishedAt")),
+                    image_url=a.get("image"),
+                )
+            )
         return articles
 
     def _fetch_mediastack(
-        self,
-        query: str,
-        max_results: int,
-        language: str,
-        category: Optional[str]
+        self, query: str, max_results: int, language: str, category: Optional[str]
     ) -> List[NewsArticle]:
         """Fetch from Mediastack."""
         from .mediastack import MediastackClient
@@ -384,31 +369,26 @@ class NewsProvider:
         client = MediastackClient(self.config.mediastack_api_key)
 
         articles_data = client.search(
-            keywords=query,
-            limit=max_results,
-            languages=language,
-            categories=category
+            keywords=query, limit=max_results, languages=language, categories=category
         )
 
         articles = []
         for a in articles_data:
-            articles.append(NewsArticle(
-                title=a.get("title", ""),
-                description=a.get("description"),
-                url=a.get("url", ""),
-                source_name=a.get("source"),
-                author=a.get("author"),
-                published_at=self._parse_date(a.get("published_at")),
-                image_url=a.get("image"),
-                category=a.get("category")
-            ))
+            articles.append(
+                NewsArticle(
+                    title=a.get("title", ""),
+                    description=a.get("description"),
+                    url=a.get("url", ""),
+                    source_name=a.get("source"),
+                    author=a.get("author"),
+                    published_at=self._parse_date(a.get("published_at")),
+                    image_url=a.get("image"),
+                    category=a.get("category"),
+                )
+            )
         return articles
 
-    def _fetch_tavily_news(
-        self,
-        query: str,
-        max_results: int
-    ) -> List[NewsArticle]:
+    def _fetch_tavily_news(self, query: str, max_results: int) -> List[NewsArticle]:
         """Fetch news via Tavily web search."""
         from tavily import TavilyClient
 
@@ -416,22 +396,20 @@ class NewsProvider:
 
         # Search for news specifically
         news_query = f"{query} news latest"
-        results = client.search(
-            query=news_query,
-            max_results=max_results,
-            search_depth="basic"
-        )
+        results = client.search(query=news_query, max_results=max_results, search_depth="basic")
 
         articles = []
         for r in results.get("results", []):
-            articles.append(NewsArticle(
-                title=r.get("title", ""),
-                description=r.get("content", "")[:500] if r.get("content") else None,
-                content=r.get("content"),
-                url=r.get("url", ""),
-                source_name=self._extract_domain(r.get("url", "")),
-                relevance_score=r.get("score", 0.0)
-            ))
+            articles.append(
+                NewsArticle(
+                    title=r.get("title", ""),
+                    description=r.get("content", "")[:500] if r.get("content") else None,
+                    content=r.get("content"),
+                    url=r.get("url", ""),
+                    source_name=self._extract_domain(r.get("url", "")),
+                    relevance_score=r.get("score", 0.0),
+                )
+            )
         return articles
 
     def _parse_date(self, date_str: Optional[str]) -> Optional[datetime]:
@@ -458,6 +436,7 @@ class NewsProvider:
         """Extract domain from URL."""
         try:
             from urllib.parse import urlparse
+
             parsed = urlparse(url)
             domain = parsed.netloc
             if domain.startswith("www."):
@@ -489,10 +468,7 @@ class NewsProvider:
         return cached
 
     def get_company_news(
-        self,
-        company_name: str,
-        max_results: int = 10,
-        days_back: int = 30
+        self, company_name: str, max_results: int = 10, days_back: int = 30
     ) -> NewsResult:
         """
         Get recent news for a specific company.
@@ -506,11 +482,7 @@ class NewsProvider:
             NewsResult with company news
         """
         from_date = utc_now() - timedelta(days=days_back)
-        return self.search_news(
-            query=company_name,
-            max_results=max_results,
-            from_date=from_date
-        )
+        return self.search_news(query=company_name, max_results=max_results, from_date=from_date)
 
     def get_provider_status(self) -> Dict[str, Dict[str, Any]]:
         """Get status of all providers."""
@@ -521,7 +493,7 @@ class NewsProvider:
                 "limit": state.limit,
                 "reset_period": state.reset_period,
                 "last_call": state.last_call.isoformat() if state.last_call else None,
-                "last_error": state.last_error
+                "last_error": state.last_error,
             }
             for name, state in self.providers.items()
         }

@@ -11,8 +11,8 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Dict, List, Optional
 
-from .base_client import BaseAPIClient
 from ..utils import get_logger, utc_now
+from .base_client import BaseAPIClient
 
 logger = get_logger(__name__)
 
@@ -20,6 +20,7 @@ logger = get_logger(__name__)
 @dataclass
 class GNewsArticle:
     """News article from GNews."""
+
     title: str
     description: str
     content: str
@@ -40,7 +41,7 @@ class GNewsArticle:
             image=data.get("image"),
             published_at=data.get("publishedAt", ""),
             source_name=source.get("name", ""),
-            source_url=source.get("url", "")
+            source_url=source.get("url", ""),
         )
 
 
@@ -67,15 +68,10 @@ class GNewsClient(BaseAPIClient):
             env_var="GNEWS_API_KEY",
             cache_ttl=1800,  # 30 min cache for news
             rate_limit_calls=100,
-            rate_limit_period=86400.0  # Daily limit
+            rate_limit_period=86400.0,  # Daily limit
         )
 
-    async def _request(
-        self,
-        endpoint: str,
-        params: Optional[Dict] = None,
-        **kwargs
-    ):
+    async def _request(self, endpoint: str, params: Optional[Dict] = None, **kwargs):
         """Override to add API key to all requests."""
         params = params or {}
         params["apikey"] = self.api_key
@@ -89,7 +85,7 @@ class GNewsClient(BaseAPIClient):
         max_results: int = 10,
         from_date: Optional[str] = None,
         to_date: Optional[str] = None,
-        sort_by: str = "publishedAt"
+        sort_by: str = "publishedAt",
     ) -> List[GNewsArticle]:
         """
         Search for news articles.
@@ -113,12 +109,7 @@ class GNewsClient(BaseAPIClient):
             - Exact phrase: '"company name"'
             - Exclude: -word
         """
-        params = {
-            "q": query,
-            "lang": lang,
-            "max": min(max_results, 100),
-            "sortby": sort_by
-        }
+        params = {"q": query, "lang": lang, "max": min(max_results, 100), "sortby": sort_by}
 
         if country:
             params["country"] = country
@@ -136,7 +127,7 @@ class GNewsClient(BaseAPIClient):
         topic: Optional[str] = None,
         country: str = "us",
         lang: str = "en",
-        max_results: int = 10
+        max_results: int = 10,
     ) -> List[GNewsArticle]:
         """
         Get top headlines by topic.
@@ -150,11 +141,7 @@ class GNewsClient(BaseAPIClient):
         Returns:
             List of GNewsArticle objects
         """
-        params = {
-            "country": country,
-            "lang": lang,
-            "max": min(max_results, 100)
-        }
+        params = {"country": country, "lang": lang, "max": min(max_results, 100)}
 
         if topic:
             params["topic"] = topic
@@ -164,11 +151,7 @@ class GNewsClient(BaseAPIClient):
         return [GNewsArticle.from_dict(article) for article in articles]
 
     async def get_company_news(
-        self,
-        company_name: str,
-        days_back: int = 7,
-        max_results: int = 20,
-        lang: str = "en"
+        self, company_name: str, days_back: int = 7, max_results: int = 20, lang: str = "en"
     ) -> List[GNewsArticle]:
         """
         Get recent news about a company.
@@ -189,13 +172,11 @@ class GNewsClient(BaseAPIClient):
             lang=lang,
             from_date=from_date,
             max_results=max_results,
-            sort_by="relevance"
+            sort_by="relevance",
         )
 
     async def get_business_headlines(
-        self,
-        country: str = "us",
-        max_results: int = 10
+        self, country: str = "us", max_results: int = 10
     ) -> List[GNewsArticle]:
         """
         Get business news headlines.
@@ -208,15 +189,11 @@ class GNewsClient(BaseAPIClient):
             List of GNewsArticle objects
         """
         return await self.get_top_headlines(
-            topic="business",
-            country=country,
-            max_results=max_results
+            topic="business", country=country, max_results=max_results
         )
 
     async def get_tech_headlines(
-        self,
-        country: str = "us",
-        max_results: int = 10
+        self, country: str = "us", max_results: int = 10
     ) -> List[GNewsArticle]:
         """
         Get technology news headlines.
@@ -229,7 +206,5 @@ class GNewsClient(BaseAPIClient):
             List of GNewsArticle objects
         """
         return await self.get_top_headlines(
-            topic="technology",
-            country=country,
-            max_results=max_results
+            topic="technology", country=country, max_results=max_results
         )

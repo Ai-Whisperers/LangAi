@@ -55,7 +55,7 @@ repository/
     Author      : DevOps Team
     Version     : 1.0.0
     Location    : scripts/modules/
-    
+
     Functions Exported:
     - Test-Unicode
     - Get-StatusEmoji
@@ -66,7 +66,7 @@ repository/
 
 .EXAMPLE
     Import-Module "$PSScriptRoot/modules/Common.psm1" -Force
-    
+
     $checkmark = Get-StatusEmoji 'success'
     Write-Host "$checkmark All tests passed!" -ForegroundColor Green
 
@@ -83,23 +83,23 @@ function Test-Unicode {
     <#
     .SYNOPSIS
         Detects if the environment supports Unicode output.
-    
+
     .DESCRIPTION
         Checks multiple factors to determine Unicode support:
         - PowerShell version (7+ always supports Unicode)
         - Azure Pipelines environment (supports Unicode)
         - Console encoding (UTF-8 check)
-    
+
     .OUTPUTS
         [bool] True if Unicode is supported, False otherwise.
-    
+
     .EXAMPLE
         if (Test-Unicode) {
             Write-Host "✅ Unicode supported"
         } else {
             Write-Host "[OK] ASCII fallback"
         }
-    
+
     .NOTES
         PowerShell 7+ and Azure Pipelines have full Unicode support.
         Windows PowerShell 5.1 depends on console encoding.
@@ -107,20 +107,20 @@ function Test-Unicode {
     [CmdletBinding()]
     [OutputType([bool])]
     param()
-    
+
     # PowerShell 7+ always supports Unicode
     $psVersion = $PSVersionTable.PSVersion.Major
     if ($psVersion -ge 7) {
         Write-Verbose "Unicode supported: PowerShell $psVersion detected"
         return $true
     }
-    
+
     # Azure Pipelines supports Unicode
     if ($env:AGENT_TEMPDIRECTORY -ne $null) {
         Write-Verbose "Unicode supported: Azure Pipelines environment detected"
         return $true
     }
-    
+
     # Check if console encoding is UTF-8
     try {
         $isUtf8Console = [Console]::OutputEncoding.CodePage -eq 65001
@@ -132,7 +132,7 @@ function Test-Unicode {
     catch {
         Write-Verbose "Unicode detection: Console encoding check failed"
     }
-    
+
     Write-Verbose "Unicode not supported: Using ASCII fallback"
     return $false
 }
@@ -145,28 +145,28 @@ function Get-StatusEmoji {
     <#
     .SYNOPSIS
         Gets status indicator emoji or ASCII fallback.
-    
+
     .DESCRIPTION
         Returns appropriate Unicode emoji or ASCII text based on environment
         support detected by Test-Unicode. Automatically adapts output to
         environment capabilities.
-    
+
     .PARAMETER Status
         Status type. Valid values: 'success', 'warning', 'error', 'info'
-    
+
     .OUTPUTS
         [string] Emoji or ASCII representation of status.
-    
+
     .EXAMPLE
         $checkmark = Get-StatusEmoji 'success'
         Write-Host "$checkmark Tests passed!" -ForegroundColor Green
         # Output: "✅ Tests passed!" or "[OK] Tests passed!"
-    
+
     .EXAMPLE
         $error = Get-StatusEmoji 'error'
         Write-Host "$error Build failed!" -ForegroundColor Red
         # Output: "❌ Build failed!" or "[ERR] Build failed!"
-    
+
     .NOTES
         Supports: success, warning, error, info
         Adapts based on Unicode support in current environment
@@ -178,7 +178,7 @@ function Get-StatusEmoji {
         [ValidateSet('success', 'warning', 'error', 'info')]
         [string]$Status
     )
-    
+
     if (Test-Unicode) {
         $emojis = @{
             'success' = '✅'
@@ -194,7 +194,7 @@ function Get-StatusEmoji {
             'info'    = '[INFO]'
         }
     }
-    
+
     return $emojis[$Status]
 }
 
@@ -202,30 +202,30 @@ function Get-StatusMessage {
     <#
     .SYNOPSIS
         Formats a complete status message with emoji/ASCII indicator.
-    
+
     .DESCRIPTION
         Combines status emoji with message text and optional details.
         Provides consistent message formatting across all scripts.
-    
+
     .PARAMETER Status
         Status type: 'success', 'warning', 'error', 'info'
-    
+
     .PARAMETER Message
         Primary message text
-    
+
     .PARAMETER Details
         Optional additional details (shown on new line)
-    
+
     .OUTPUTS
         [string] Formatted status message
-    
+
     .EXAMPLE
         $msg = Get-StatusMessage 'success' 'Build completed' 'Duration: 2m 34s'
         Write-Host $msg -ForegroundColor Green
         # Output:
         # ✅ Build completed
         # Duration: 2m 34s
-    
+
     .EXAMPLE
         $msg = Get-StatusMessage 'error' 'Validation failed'
         Write-Host $msg -ForegroundColor Red
@@ -236,21 +236,21 @@ function Get-StatusMessage {
         [Parameter(Mandatory = $true)]
         [ValidateSet('success', 'warning', 'error', 'info')]
         [string]$Status,
-        
+
         [Parameter(Mandatory = $true)]
         [string]$Message,
-        
+
         [Parameter(Mandatory = $false)]
         [string]$Details
     )
-    
+
     $emoji = Get-StatusEmoji $Status
     $output = "$emoji $Message"
-    
+
     if ($Details) {
         $output += "`n$Details"
     }
-    
+
     return $output
 }
 
@@ -258,24 +258,24 @@ function Write-Section {
     <#
     .SYNOPSIS
         Writes a formatted section header.
-    
+
     .DESCRIPTION
         Displays a visually distinct section header for script output.
         Improves readability of multi-step scripts.
-    
+
     .PARAMETER Title
         Section title text
-    
+
     .PARAMETER Color
         Console color for output (default: Cyan)
-    
+
     .EXAMPLE
         Write-Section "Running Tests"
         # Output:
         # ================================================================================
         # Running Tests
         # ================================================================================
-    
+
     .EXAMPLE
         Write-Section "Validation Complete" -Color Green
     #>
@@ -283,11 +283,11 @@ function Write-Section {
     param(
         [Parameter(Mandatory = $true)]
         [string]$Title,
-        
+
         [Parameter(Mandatory = $false)]
         [ConsoleColor]$Color = 'Cyan'
     )
-    
+
     $separator = "=" * 80
     Write-Host ""
     Write-Host $separator -ForegroundColor $Color
@@ -304,23 +304,23 @@ function Test-CommandExists {
     <#
     .SYNOPSIS
         Checks if a command/executable exists in PATH.
-    
+
     .DESCRIPTION
         Verifies that a required command is available before attempting to use it.
         Useful for checking prerequisites (dotnet, git, etc.)
-    
+
     .PARAMETER Command
         Command name to check
-    
+
     .OUTPUTS
         [bool] True if command exists, False otherwise
-    
+
     .EXAMPLE
         if (-not (Test-CommandExists 'dotnet')) {
             Write-Error ".NET SDK not found. Install from https://dot.net"
             exit 3
         }
-    
+
     .EXAMPLE
         Test-CommandExists 'git' -ErrorAction Stop
     #>
@@ -330,15 +330,15 @@ function Test-CommandExists {
         [Parameter(Mandatory = $true)]
         [string]$Command
     )
-    
+
     $exists = $null -ne (Get-Command $Command -ErrorAction SilentlyContinue)
-    
+
     if ($exists) {
         Write-Verbose "Command '$Command' found in PATH"
     } else {
         Write-Verbose "Command '$Command' not found in PATH"
     }
-    
+
     return $exists
 }
 
@@ -346,37 +346,37 @@ function Get-GitRoot {
     <#
     .SYNOPSIS
         Gets the root directory of the current git repository.
-    
+
     .DESCRIPTION
         Finds the git repository root by walking up the directory tree
         until .git directory is found.
-    
+
     .OUTPUTS
         [string] Full path to git repository root
-    
+
     .EXAMPLE
         $repoRoot = Get-GitRoot
         $scriptsPath = Join-Path $repoRoot "scripts"
-    
+
     .NOTES
         Throws error if not in a git repository
     #>
     [CmdletBinding()]
     [OutputType([string])]
     param()
-    
+
     try {
         $gitRoot = git rev-parse --show-toplevel 2>$null
-        
+
         if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($gitRoot)) {
             throw "Not in a git repository"
         }
-        
+
         # Convert Unix path to Windows path if needed
         if ($IsWindows -or $PSVersionTable.PSVersion.Major -lt 6) {
             $gitRoot = $gitRoot -replace '/', '\'
         }
-        
+
         Write-Verbose "Git root: $gitRoot"
         return $gitRoot
     }
@@ -433,53 +433,53 @@ Import-Module $ModulePath -Force
 
 try {
     Write-Section "Code Quality Validation"
-    
+
     # Check prerequisites
     $info = Get-StatusEmoji 'info'
     Write-Host "$info Checking prerequisites..." -ForegroundColor Cyan
-    
+
     if (-not (Test-CommandExists 'dotnet')) {
         $error = Get-StatusEmoji 'error'
         Write-Host "$error .NET SDK not found" -ForegroundColor Red
         Write-Host "Install from: https://dot.net" -ForegroundColor Yellow
         exit 3
     }
-    
+
     $success = Get-StatusEmoji 'success'
     Write-Host "$success Prerequisites verified" -ForegroundColor Green
     Write-Host ""
-    
+
     # Run linting
     Write-Host "$info Running linter..." -ForegroundColor Cyan
     dotnet format --verify-no-changes
-    
+
     if ($LASTEXITCODE -ne 0) {
         $warning = Get-StatusEmoji 'warning'
         Write-Host "$warning Format issues found - run 'dotnet format' to fix" -ForegroundColor Yellow
         exit 1
     }
-    
+
     Write-Host "$success Linting passed" -ForegroundColor Green
     Write-Host ""
-    
+
     # Build check
     Write-Host "$info Building solution..." -ForegroundColor Cyan
     dotnet build --no-restore
-    
+
     if ($LASTEXITCODE -ne 0) {
         $error = Get-StatusEmoji 'error'
         Write-Host "$error Build failed" -ForegroundColor Red
         exit 1
     }
-    
+
     Write-Host "$success Build successful" -ForegroundColor Green
     Write-Host ""
-    
+
     # Final summary
     Write-Section "Validation Complete" -Color Green
     $msg = Get-StatusMessage 'success' 'All quality checks passed' 'Ready to commit'
     Write-Host $msg -ForegroundColor Green
-    
+
     exit 0
 }
 catch {
@@ -523,30 +523,30 @@ Import-Module $ModulePath -Force
 
 try {
     Write-Section "Changelog Generation"
-    
+
     # Check git availability
     if (-not (Test-CommandExists 'git')) {
         $error = Get-StatusEmoji 'error'
         Write-Host "$error Git not found in PATH" -ForegroundColor Red
         exit 3
     }
-    
+
     # Get repository root
     $repoRoot = Get-GitRoot
     $fullPath = Join-Path $repoRoot $OutputFile
-    
+
     $info = Get-StatusEmoji 'info'
     Write-Host "$info Repository: $repoRoot" -ForegroundColor Cyan
     Write-Host "$info Output file: $fullPath" -ForegroundColor Cyan
     Write-Host ""
-    
+
     # Generate changelog logic here...
     # (Simplified for exemplar)
-    
+
     $success = Get-StatusEmoji 'success'
     $msg = Get-StatusMessage 'success' 'Changelog generated' "File: $fullPath"
     Write-Host $msg -ForegroundColor Green
-    
+
     exit 0
 }
 catch {
@@ -602,24 +602,24 @@ Describe "Test-Unicode" {
 
 ## Best Practices Demonstrated
 
-✅ **Complete comment-based help** - Every function documented  
-✅ **Export-ModuleMember** - Only public functions exported  
-✅ **Relative imports** - `$PSScriptRoot` for portability  
-✅ **-Force flag** - Ensures fresh module load  
-✅ **Verbose logging** - `Write-Verbose` for debugging  
-✅ **Parameter validation** - `ValidateSet`, `Mandatory`  
-✅ **Regions** - Organized function groups  
-✅ **Error handling** - Try/catch with meaningful messages  
+✅ **Complete comment-based help** - Every function documented
+✅ **Export-ModuleMember** - Only public functions exported
+✅ **Relative imports** - `$PSScriptRoot` for portability
+✅ **-Force flag** - Ensures fresh module load
+✅ **Verbose logging** - `Write-Verbose` for debugging
+✅ **Parameter validation** - `ValidateSet`, `Mandatory`
+✅ **Regions** - Organized function groups
+✅ **Error handling** - Try/catch with meaningful messages
 
 ---
 
 ## Anti-Patterns Avoided
 
-❌ **Giant module** - Focused on common utilities only  
-❌ **No documentation** - All functions have full help  
-❌ **Hardcoded paths** - Uses relative paths  
-❌ **Missing exports** - Explicit `Export-ModuleMember`  
-❌ **No versioning** - Module has version in header  
+❌ **Giant module** - Focused on common utilities only
+❌ **No documentation** - All functions have full help
+❌ **Hardcoded paths** - Uses relative paths
+❌ **Missing exports** - Explicit `Export-ModuleMember`
+❌ **No versioning** - Module has version in header
 
 ---
 
@@ -641,29 +641,29 @@ Describe "Common Module" {
             $result | Should -BeOfType [bool]
         }
     }
-    
+
     Context "Get-StatusEmoji" {
         It "Returns string for valid status" {
             $result = Get-StatusEmoji 'success'
             $result | Should -BeOfType [string]
             $result | Should -Not -BeNullOrEmpty
         }
-        
+
         It "Throws error for invalid status" {
             { Get-StatusEmoji 'invalid' } | Should -Throw
         }
-        
+
         It "Returns Unicode or ASCII" {
             $result = Get-StatusEmoji 'success'
             $result | Should -Match '^(✅|\[OK\])$'
         }
     }
-    
+
     Context "Test-CommandExists" {
         It "Returns true for PowerShell" {
             Test-CommandExists 'pwsh' | Should -BeTrue
         }
-        
+
         It "Returns false for non-existent command" {
             Test-CommandExists 'totally-fake-command-xyz' | Should -BeFalse
         }
@@ -753,4 +753,3 @@ This exemplar demonstrates:
 - Production-ready patterns
 
 **Key Takeaway**: Extract shared functions to modules for DRY, consistency, and faster development.
-

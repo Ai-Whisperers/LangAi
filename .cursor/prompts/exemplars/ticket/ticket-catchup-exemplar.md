@@ -58,4 +58,3 @@ Sources: context.md, progress.md (no timeline.md).
 
 ## When to Reference
 Use when resuming tickets or onboarding reviewers who need a crisp, source-backed snapshot and immediate plan.
-

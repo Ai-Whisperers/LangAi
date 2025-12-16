@@ -17,10 +17,10 @@ This module contains nodes for generating comprehensive reports with:
 import json
 import re
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
-from ...state import OverallState
 from ...config import get_config
+from ...state import OverallState
 from ...utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -29,6 +29,7 @@ logger = get_logger(__name__)
 # =============================================================================
 # Cross-Section Data Enrichment Node
 # =============================================================================
+
 
 def enrich_executive_summary_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -51,33 +52,36 @@ def enrich_executive_summary_node(state: OverallState) -> Dict[str, Any]:
     if market_analysis:
         # Look for market share percentages
         market_share_match = re.search(
-            r'market share[^\d]*(\d+\.?\d*)\s*%',
-            market_analysis, re.IGNORECASE
+            r"market share[^\d]*(\d+\.?\d*)\s*%", market_analysis, re.IGNORECASE
         )
         if market_share_match:
             market_share = market_share_match.group(1)
             # Check if market share is already in overview
             if "Market Share" in company_overview and "No specific" in company_overview:
                 company_overview = re.sub(
-                    r'(\*\*Market Share[^*]*\*\*[:\s]*)([^\n]*)',
-                    f'\\1{market_share}% (from market analysis)',
-                    company_overview
+                    r"(\*\*Market Share[^*]*\*\*[:\s]*)([^\n]*)",
+                    f"\\1{market_share}% (from market analysis)",
+                    company_overview,
                 )
                 enrichments.append(f"market_share: {market_share}%")
 
         # Extract competitors
         competitors_section = re.search(
-            r'(?:competitors|competidores)[^\n]*\n((?:\s*[-*]\s*[^\n]+\n)+)',
-            market_analysis, re.IGNORECASE
+            r"(?:competitors|competidores)[^\n]*\n((?:\s*[-*]\s*[^\n]+\n)+)",
+            market_analysis,
+            re.IGNORECASE,
         )
         if competitors_section:
             # Check if competitors are missing in overview
-            if "Competitors" in company_overview and "No specific" in company_overview.split("Competitors")[1][:100]:
+            if (
+                "Competitors" in company_overview
+                and "No specific" in company_overview.split("Competitors")[1][:100]
+            ):
                 competitors_text = competitors_section.group(1).strip()
                 company_overview = re.sub(
-                    r'(## Competitors\n)([^\n]*No specific[^\n]*)',
-                    f'\\1{competitors_text}',
-                    company_overview
+                    r"(## Competitors\n)([^\n]*No specific[^\n]*)",
+                    f"\\1{competitors_text}",
+                    company_overview,
                 )
                 enrichments.append("competitors list")
 
@@ -86,9 +90,9 @@ def enrich_executive_summary_node(state: OverallState) -> Dict[str, Any]:
         if isinstance(note, str):
             # Look for CEO mentions
             ceo_patterns = [
-                r'CEO[:\s]+([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)',
-                r'Chief Executive Officer[:\s]+([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)',
-                r'Gerente General[:\s]+([A-Z][a-záéíóú]+\s+[A-Z][a-záéíóú]+(?:\s+[A-Z][a-záéíóú]+)?)',
+                r"CEO[:\s]+([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",
+                r"Chief Executive Officer[:\s]+([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",
+                r"Gerente General[:\s]+([A-Z][a-záéíóú]+\s+[A-Z][a-záéíóú]+(?:\s+[A-Z][a-záéíóú]+)?)",
             ]
             for pattern in ceo_patterns:
                 ceo_match = re.search(pattern, note)
@@ -97,9 +101,9 @@ def enrich_executive_summary_node(state: OverallState) -> Dict[str, Any]:
                     # Update overview if CEO is missing
                     if "CEO" in company_overview and "No specific" in company_overview:
                         company_overview = re.sub(
-                            r'(\*\*CEO[^*]*\*\*[:\s]*)([^\n]*No specific[^\n]*)',
-                            f'\\1{ceo_name}',
-                            company_overview
+                            r"(\*\*CEO[^*]*\*\*[:\s]*)([^\n]*No specific[^\n]*)",
+                            f"\\1{ceo_name}",
+                            company_overview,
                         )
                         enrichments.append(f"ceo: {ceo_name}")
                         break
@@ -108,17 +112,18 @@ def enrich_executive_summary_node(state: OverallState) -> Dict[str, Any]:
     financial_analysis = state.get("agent_outputs", {}).get("financial", "")
     if financial_analysis:
         revenue_match = re.search(
-            r'(?:revenue|ingresos)[^\d$]*\$?\s*(\d+(?:\.\d+)?)\s*(million|billion|M|B|millones)',
-            financial_analysis, re.IGNORECASE
+            r"(?:revenue|ingresos)[^\d$]*\$?\s*(\d+(?:\.\d+)?)\s*(million|billion|M|B|millones)",
+            financial_analysis,
+            re.IGNORECASE,
         )
         if revenue_match:
             revenue_value = revenue_match.group(1)
             revenue_unit = revenue_match.group(2)
             if "Revenue" in company_overview and "No specific" in company_overview:
                 company_overview = re.sub(
-                    r'(\*\*Annual Revenue[^*]*\*\*[:\s]*)([^\n]*No specific[^\n]*)',
-                    f'\\1${revenue_value} {revenue_unit} (from financial analysis)',
-                    company_overview
+                    r"(\*\*Annual Revenue[^*]*\*\*[:\s]*)([^\n]*No specific[^\n]*)",
+                    f"\\1${revenue_value} {revenue_unit} (from financial analysis)",
+                    company_overview,
                 )
                 enrichments.append(f"revenue: ${revenue_value} {revenue_unit}")
 
@@ -135,6 +140,7 @@ def enrich_executive_summary_node(state: OverallState) -> Dict[str, Any]:
 # =============================================================================
 # Comprehensive Report Generation Node
 # =============================================================================
+
 
 def save_comprehensive_report_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -156,10 +162,16 @@ def save_comprehensive_report_node(state: OverallState) -> Dict[str, Any]:
     # Format all sections
     sections = {
         "overview": state.get("company_overview", "*No overview available*"),
-        "financial": _format_agent_output("Financial Analysis", state.get("agent_outputs", {}).get("financial")),
-        "market": _format_agent_output("Market Analysis", state.get("agent_outputs", {}).get("market")),
+        "financial": _format_agent_output(
+            "Financial Analysis", state.get("agent_outputs", {}).get("financial")
+        ),
+        "market": _format_agent_output(
+            "Market Analysis", state.get("agent_outputs", {}).get("market")
+        ),
         "esg": _format_agent_output("ESG Analysis", state.get("agent_outputs", {}).get("esg")),
-        "brand": _format_agent_output("Brand Analysis", state.get("agent_outputs", {}).get("brand")),
+        "brand": _format_agent_output(
+            "Brand Analysis", state.get("agent_outputs", {}).get("brand")
+        ),
         "sentiment": _format_news_sentiment(state.get("news_sentiment")),
         "competitive": _format_competitive_analysis(state.get("competitive_matrix")),
         "financial_comparison": _format_financial_comparison(state.get("financial_comparison")),
@@ -312,6 +324,7 @@ def save_comprehensive_report_node(state: OverallState) -> Dict[str, Any]:
 # Formatter Functions
 # =============================================================================
 
+
 def _format_agent_output(title: str, content: Optional[str]) -> str:
     """Format an agent's output."""
     if not content:
@@ -450,7 +463,9 @@ def _format_risk_profile(profile: Optional[Dict]) -> str:
     if risks:
         sections.append("\n### Key Risks")
         for r in risks[:5]:
-            sections.append(f"- **{r.get('description', 'N/A')}** ({r.get('severity', 'Unknown')} severity)")
+            sections.append(
+                f"- **{r.get('description', 'N/A')}** ({r.get('severity', 'Unknown')} severity)"
+            )
             if r.get("mitigation"):
                 sections.append(f"  - *Mitigation:* {r.get('mitigation')}")
 
@@ -463,7 +478,7 @@ def _format_investment_thesis(thesis: Optional[Dict]) -> str:
         return "*No investment thesis available*"
 
     # Confidence is stored as 0-1 decimal, convert to percentage
-    confidence = thesis.get('confidence', 0)
+    confidence = thesis.get("confidence", 0)
     # If confidence > 1, it's already a percentage; otherwise convert
     confidence_pct = confidence if confidence > 1 else confidence * 100
 
@@ -480,26 +495,26 @@ def _format_investment_thesis(thesis: Optional[Dict]) -> str:
     if bull:
         sections.append("\n### Bull Case")
         # Use correct key names from output_nodes.py
-        headline = bull.get('headline') or bull.get('thesis', 'N/A')
-        upside = bull.get('target_upside') or bull.get('upside_potential', 0)
+        headline = bull.get("headline") or bull.get("thesis", "N/A")
+        upside = bull.get("target_upside") or bull.get("upside_potential", 0)
         sections.append(f"**Thesis:** {headline}")
         sections.append(f"**Upside:** {upside:.1f}%")
-        if bull.get('catalysts'):
+        if bull.get("catalysts"):
             sections.append("**Catalysts:**")
-            for cat in bull.get('catalysts', [])[:3]:
+            for cat in bull.get("catalysts", [])[:3]:
                 sections.append(f"- {cat}")
 
     bear = thesis.get("bear_case", {})
     if bear:
         sections.append("\n### Bear Case")
         # Use correct key names from output_nodes.py
-        headline = bear.get('headline') or bear.get('thesis', 'N/A')
-        downside = bear.get('target_downside') or bear.get('downside_risk', 0)
+        headline = bear.get("headline") or bear.get("thesis", "N/A")
+        downside = bear.get("target_downside") or bear.get("downside_risk", 0)
         sections.append(f"**Thesis:** {headline}")
         sections.append(f"**Downside:** {downside:.1f}%")
-        if bear.get('key_risks'):
+        if bear.get("key_risks"):
             sections.append("**Key Risks:**")
-            for risk in bear.get('key_risks', [])[:3]:
+            for risk in bear.get("key_risks", [])[:3]:
                 sections.append(f"- {risk}")
 
     suitable = thesis.get("suitable_for", [])

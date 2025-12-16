@@ -27,7 +27,7 @@ Vivo is a leading telecommunications company in Brazil providing mobile, fixed-l
 
 ## Market Position
 - **Industry Standing:** Leading telecommunications provider in Brazil
-- **Key Market Segments:** 
+- **Key Market Segments:**
   - Mobile telecommunications
   - Fixed-line telephone services
   - Broadband internet

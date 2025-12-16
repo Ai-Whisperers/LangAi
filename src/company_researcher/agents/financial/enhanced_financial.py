@@ -14,21 +14,22 @@ Provides:
 - Funding analysis (for private companies)
 """
 
-from typing import Dict, Any, Optional, Callable
+from typing import Any, Callable, Dict, Optional
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
+from ...llm.client_factory import calculate_cost, get_anthropic_client, safe_extract_text
 from ...state import OverallState
 from ...tools.alpha_vantage_client import AlphaVantageClient, extract_key_metrics
 from ...tools.sec_edgar_parser import (
     SECEdgarParser,
-    is_public_company,
-    extract_revenue_trends,
+    extract_financial_health,
     extract_profitability_metrics,
-    extract_financial_health
+    extract_revenue_trends,
+    is_public_company,
 )
 
 
@@ -47,7 +48,9 @@ class EnhancedFinancialAgent:
         return enhanced_financial_agent_node(state)
 
 
-def create_enhanced_financial_agent(search_tool: Callable = None, llm_client: Any = None) -> EnhancedFinancialAgent:
+def create_enhanced_financial_agent(
+    search_tool: Callable = None, llm_client: Any = None
+) -> EnhancedFinancialAgent:
     """Factory function to create an EnhancedFinancialAgent."""
     return EnhancedFinancialAgent(search_tool=search_tool, llm_client=llm_client)
 
@@ -118,6 +121,7 @@ Begin your analysis:"""
 # Enhanced Financial Agent
 # ==============================================================================
 
+
 def enhanced_financial_agent_node(state: OverallState) -> Dict[str, Any]:
     """
     Enhanced Financial Agent Node: Comprehensive financial analysis.
@@ -144,18 +148,10 @@ def enhanced_financial_agent_node(state: OverallState) -> Dict[str, Any]:
     sec_parser = SECEdgarParser()
 
     # Determine company type and fetch appropriate data
-    financial_data = gather_financial_data(
-        company_name,
-        alpha_vantage,
-        sec_parser
-    )
+    financial_data = gather_financial_data(company_name, alpha_vantage, sec_parser)
 
     # Create comprehensive analysis prompt
-    prompt = create_financial_analysis_prompt(
-        company_name,
-        financial_data,
-        search_results
-    )
+    prompt = create_financial_analysis_prompt(company_name, financial_data, search_results)
 
     # Call LLM for analysis
     client = get_anthropic_client()
@@ -163,14 +159,11 @@ def enhanced_financial_agent_node(state: OverallState) -> Dict[str, Any]:
         model=config.llm_model,
         max_tokens=config.enhanced_financial_max_tokens,
         temperature=config.financial_temperature,
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
     )
 
     financial_analysis = safe_extract_text(response, agent_name="enhanced_financial")
-    cost = calculate_cost(
-        response.usage.input_tokens,
-        response.usage.output_tokens
-    )
+    cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
 
     logger.info(f"Enhanced Financial analysis complete - cost: ${cost:.4f}")
 
@@ -180,14 +173,11 @@ def enhanced_financial_agent_node(state: OverallState) -> Dict[str, Any]:
         "data_sources_used": {
             "alpha_vantage": financial_data.get("alpha_vantage", {}).get("available", False),
             "sec_edgar": financial_data.get("sec_edgar", {}).get("available", False),
-            "search_results": len(search_results) > 0
+            "search_results": len(search_results) > 0,
         },
         "data_extracted": True,
         "cost": cost,
-        "tokens": {
-            "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
-        }
+        "tokens": {"input": response.usage.input_tokens, "output": response.usage.output_tokens},
     }
 
     return {
@@ -195,8 +185,8 @@ def enhanced_financial_agent_node(state: OverallState) -> Dict[str, Any]:
         "total_cost": cost,
         "total_tokens": {
             "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
-        }
+            "output": response.usage.output_tokens,
+        },
     }
 
 
@@ -204,10 +194,9 @@ def enhanced_financial_agent_node(state: OverallState) -> Dict[str, Any]:
 # Helper Functions
 # ==============================================================================
 
+
 def gather_financial_data(
-    company_name: str,
-    alpha_vantage: AlphaVantageClient,
-    sec_parser: SECEdgarParser
+    company_name: str, alpha_vantage: AlphaVantageClient, sec_parser: SECEdgarParser
 ) -> Dict[str, Any]:
     """
     Gather financial data from all available sources.
@@ -271,16 +260,14 @@ def gather_financial_data(
         logger.debug("SEC EDGAR skipped (private company)")
         financial_data["sec_edgar"] = {
             "available": False,
-            "reason": "Private company - no SEC filings"
+            "reason": "Private company - no SEC filings",
         }
 
     return financial_data
 
 
 def create_financial_analysis_prompt(
-    company_name: str,
-    financial_data: Dict[str, Any],
-    search_results: list
+    company_name: str, financial_data: Dict[str, Any], search_results: list
 ) -> str:
     """
     Create comprehensive financial analysis prompt.
@@ -322,9 +309,13 @@ def create_financial_analysis_prompt(
         data_summary.append("✓ **SEC EDGAR**: Official filings available")
 
         if sec_data.get("latest_10k"):
-            data_summary.append(f"  Latest 10-K: {sec_data['latest_10k'].get('filing_date', 'N/A')}")
+            data_summary.append(
+                f"  Latest 10-K: {sec_data['latest_10k'].get('filing_date', 'N/A')}"
+            )
         if sec_data.get("latest_10q"):
-            data_summary.append(f"  Latest 10-Q: {sec_data['latest_10q'].get('filing_date', 'N/A')}")
+            data_summary.append(
+                f"  Latest 10-Q: {sec_data['latest_10q'].get('filing_date', 'N/A')}"
+            )
     else:
         data_summary.append(f"✗ **SEC EDGAR**: {sec_data.get('reason', 'Not available')}")
 
@@ -337,18 +328,20 @@ def create_financial_analysis_prompt(
     data_summary_text = "\n".join(data_summary)
 
     # Format search results
-    formatted_results = "\n\n".join([
-        f"Source {i+1}: {result.get('title', 'N/A')}\n"
-        f"URL: {result.get('url', 'N/A')}\n"
-        f"Content: {result.get('content', 'N/A')[:400]}..."
-        for i, result in enumerate(search_results[:10])
-    ])
+    formatted_results = "\n\n".join(
+        [
+            f"Source {i+1}: {result.get('title', 'N/A')}\n"
+            f"URL: {result.get('url', 'N/A')}\n"
+            f"Content: {result.get('content', 'N/A')[:400]}..."
+            for i, result in enumerate(search_results[:10])
+        ]
+    )
 
     # Create prompt
     prompt = ENHANCED_FINANCIAL_PROMPT.format(
         company_name=company_name,
         financial_data_summary=data_summary_text,
-        search_results=formatted_results if formatted_results else "No search results available."
+        search_results=formatted_results if formatted_results else "No search results available.",
     )
 
     return prompt

@@ -11,14 +11,14 @@ researching "Personal Paraguay telecom").
 
 import json
 import re
-from typing import Tuple, Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional, Tuple
 
-from .models import Source, SourceQuality, ConfidenceLevel, ResearchFact
-
+from .models import ConfidenceLevel, ResearchFact, Source, SourceQuality
 
 # ============================================================================
 # AI Source Relevance Filter
 # ============================================================================
+
 
 class AISourceRelevanceFilter:
     """
@@ -58,7 +58,7 @@ class AISourceRelevanceFilter:
         "general": [
             r"\brecipe|cooking\b",
             r"\bweather forecast\b",
-        ]
+        ],
     }
 
     # Keywords that indicate high relevance for specific industries
@@ -90,12 +90,7 @@ class AISourceRelevanceFilter:
         self.llm_client = llm_client
 
     def quick_relevance_check(
-        self,
-        title: str,
-        snippet: str,
-        url: str,
-        research_target: str,
-        industry: str = "general"
+        self, title: str, snippet: str, url: str, research_target: str, industry: str = "general"
     ) -> Tuple[bool, float, str]:
         """
         Quick pattern-based relevance check (no LLM call).
@@ -145,12 +140,22 @@ class AISourceRelevanceFilter:
 
         # Penalize clearly irrelevant domains
         irrelevant_domains = [
-            "tripadvisor", "booking.com", "expedia", "yelp",
-            "pinterest", "instagram", "tiktok", "youtube.com/watch",
+            "tripadvisor",
+            "booking.com",
+            "expedia",
+            "yelp",
+            "pinterest",
+            "instagram",
+            "tiktok",
+            "youtube.com/watch",
             # History/geography sites that pollute telecom research
-            "curiosfera-historia.com", "historiauniversal.org", "historyextra.com",
-            "worldhistory.org", "britannica.com/place",  # Country pages, not company
-            "lonelyplanet.com", "roughguides.com",  # Travel guides
+            "curiosfera-historia.com",
+            "historiauniversal.org",
+            "historyextra.com",
+            "worldhistory.org",
+            "britannica.com/place",  # Country pages, not company
+            "lonelyplanet.com",
+            "roughguides.com",  # Travel guides
         ]
         if any(domain in url_lower for domain in irrelevant_domains):
             relevance_score -= 0.3
@@ -163,7 +168,7 @@ class AISourceRelevanceFilter:
         sources: List[Dict[str, Any]],
         research_target: str,
         industry: str = "telecom",
-        company_context: Optional[Dict[str, Any]] = None
+        company_context: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
         """
         Use AI to filter sources for relevance to the research target.
@@ -184,15 +189,15 @@ class AISourceRelevanceFilter:
             filtered = []
             for source in sources:
                 is_relevant, score, reason = self.quick_relevance_check(
-                    source.get('title', ''),
-                    source.get('snippet', source.get('content', '')),
-                    source.get('url', ''),
+                    source.get("title", ""),
+                    source.get("snippet", source.get("content", "")),
+                    source.get("url", ""),
                     research_target,
-                    industry
+                    industry,
                 )
                 if is_relevant:
-                    source['relevance_score'] = score
-                    source['relevance_reason'] = reason
+                    source["relevance_score"] = score
+                    source["relevance_reason"] = reason
                     filtered.append(source)
             return filtered
 
@@ -210,12 +215,14 @@ Company Context:
         # Prepare sources for AI analysis
         source_summaries = []
         for i, src in enumerate(sources[:30]):  # Limit to 30 for token efficiency
-            source_summaries.append(f"""
+            source_summaries.append(
+                f"""
 Source {i+1}:
 - Title: {src.get('title', 'N/A')[:100]}
 - URL: {src.get('url', 'N/A')}
 - Snippet: {src.get('snippet', src.get('content', ''))[:200]}
-""")
+"""
+            )
 
         sources_text = "\n".join(source_summaries)
 
@@ -251,55 +258,55 @@ Only include sources that are clearly about "{research_target}" the {industry} c
                 system="You are a research quality analyst. Filter sources for relevance. Return valid JSON only.",
                 task_type="extraction",
                 max_tokens=500,
-                json_mode=True
+                json_mode=True,
             )
 
             # Parse response
             if isinstance(result, str):
                 content = result
-            elif hasattr(result, 'content'):
+            elif hasattr(result, "content"):
                 content = result.content
             elif isinstance(result, dict):
-                content = result.get('content', '{}')
+                content = result.get("content", "{}")
             else:
-                content = '{}'
+                content = "{}"
 
             parsed = json.loads(content)
-            relevant_indices = set(parsed.get('relevant_sources', []))
+            relevant_indices = set(parsed.get("relevant_sources", []))
 
             # Filter sources
             filtered = []
             for i, src in enumerate(sources[:30]):
                 if (i + 1) in relevant_indices:
-                    src['relevance_score'] = 0.9
-                    src['relevance_reason'] = 'AI verified as relevant'
+                    src["relevance_score"] = 0.9
+                    src["relevance_reason"] = "AI verified as relevant"
                     filtered.append(src)
                 else:
                     # Keep but mark as low relevance if it passes quick check
                     is_relevant, score, reason = self.quick_relevance_check(
-                        src.get('title', ''),
-                        src.get('snippet', ''),
-                        src.get('url', ''),
+                        src.get("title", ""),
+                        src.get("snippet", ""),
+                        src.get("url", ""),
                         research_target,
-                        industry
+                        industry,
                     )
                     if is_relevant and score >= 0.6:
-                        src['relevance_score'] = score * 0.8  # Reduce confidence
-                        src['relevance_reason'] = f'Pattern match (AI excluded): {reason}'
+                        src["relevance_score"] = score * 0.8  # Reduce confidence
+                        src["relevance_reason"] = f"Pattern match (AI excluded): {reason}"
                         filtered.append(src)
 
             # Add remaining sources (beyond 30) that weren't AI-checked
             for src in sources[30:]:
                 is_relevant, score, reason = self.quick_relevance_check(
-                    src.get('title', ''),
-                    src.get('snippet', ''),
-                    src.get('url', ''),
+                    src.get("title", ""),
+                    src.get("snippet", ""),
+                    src.get("url", ""),
                     research_target,
-                    industry
+                    industry,
                 )
                 if is_relevant:
-                    src['relevance_score'] = score
-                    src['relevance_reason'] = reason
+                    src["relevance_score"] = score
+                    src["relevance_reason"] = reason
                     filtered.append(src)
 
             return filtered
@@ -309,15 +316,15 @@ Only include sources that are clearly about "{research_target}" the {industry} c
             filtered = []
             for source in sources:
                 is_relevant, score, reason = self.quick_relevance_check(
-                    source.get('title', ''),
-                    source.get('snippet', source.get('content', '')),
-                    source.get('url', ''),
+                    source.get("title", ""),
+                    source.get("snippet", source.get("content", "")),
+                    source.get("url", ""),
                     research_target,
-                    industry
+                    industry,
                 )
                 if is_relevant:
-                    source['relevance_score'] = score
-                    source['relevance_reason'] = f'{reason} (AI fallback: {e})'
+                    source["relevance_score"] = score
+                    source["relevance_reason"] = f"{reason} (AI fallback: {e})"
                     filtered.append(source)
             return filtered
 
@@ -325,6 +332,7 @@ Only include sources that are clearly about "{research_target}" the {industry} c
 # ============================================================================
 # Source Quality Assessor
 # ============================================================================
+
 
 class SourceQualityAssessor:
     """
@@ -342,7 +350,6 @@ class SourceQualityAssessor:
         "sec.gov": (SourceQuality.OFFICIAL, 100),
         "investor.": (SourceQuality.OFFICIAL, 97),  # investor.tesla.com, investor.microsoft.com
         "ir.": (SourceQuality.OFFICIAL, 97),  # ir.tesla.com (investor relations)
-
         # Authoritative sources (80-94)
         "bloomberg.com": (SourceQuality.AUTHORITATIVE, 92),
         "reuters.com": (SourceQuality.AUTHORITATIVE, 90),
@@ -350,7 +357,6 @@ class SourceQualityAssessor:
         "wsj.com": (SourceQuality.AUTHORITATIVE, 88),
         "apnews.com": (SourceQuality.AUTHORITATIVE, 85),
         "afp.com": (SourceQuality.AUTHORITATIVE, 85),
-
         # Reputable sources (65-79)
         "forbes.com": (SourceQuality.REPUTABLE, 75),
         "techcrunch.com": (SourceQuality.REPUTABLE, 72),
@@ -359,7 +365,6 @@ class SourceQualityAssessor:
         "theverge.com": (SourceQuality.REPUTABLE, 70),
         "wired.com": (SourceQuality.REPUTABLE, 72),
         "arstechnica.com": (SourceQuality.REPUTABLE, 73),
-
         # Community sources (40-64)
         "reddit.com": (SourceQuality.COMMUNITY, 50),
         "news.ycombinator.com": (SourceQuality.COMMUNITY, 55),
@@ -451,6 +456,7 @@ class SourceQualityAssessor:
 # Quality Tier Information
 # ============================================================================
 
+
 def get_quality_tier_info(quality: SourceQuality) -> dict:
     """
     Get information about a quality tier.
@@ -498,9 +504,12 @@ def get_quality_tier_info(quality: SourceQuality) -> dict:
         },
     }
 
-    return info.get(quality, {
-        "name": "Unknown",
-        "description": "Quality tier information not available",
-        "score_range": (0, 100),
-        "examples": [],
-    })
+    return info.get(
+        quality,
+        {
+            "name": "Unknown",
+            "description": "Quality tier information not available",
+            "score_range": (0, 100),
+            "examples": [],
+        },
+    )

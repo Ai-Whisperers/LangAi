@@ -266,7 +266,7 @@ Before validating:
 ## Customization Points
 
 ### Level Definitions
-**Placeholders**: `[Critical Compliance Category]`, `[Standard Requirements Category]`, etc.  
+**Placeholders**: `[Critical Compliance Category]`, `[Standard Requirements Category]`, etc.
 **Guidance**: Define 4 validation levels that make sense for your domain:
 - **Level 1**: What absolutely MUST be correct (blockers)
 - **Level 2**: What should be correct (important but not blocking)
@@ -274,7 +274,7 @@ Before validating:
 - **Level 4**: What represents best practices (nice-to-have)
 
 ### Weights
-**Placeholders**: `[Weight]%`  
+**Placeholders**: `[Weight]%`
 **Guidance**: Assign percentage weights summing to 100%. Typical:
 - Critical: 40%
 - Important: 20-25%
@@ -282,27 +282,27 @@ Before validating:
 - Best Practices: 10-15%
 
 ### Thresholds
-**Placeholders**: `[threshold]%`, `[range]%`  
+**Placeholders**: `[threshold]%`, `[range]%`
 **Guidance**: Set pass/fail thresholds. Typical:
 - PASS: ≥90% with zero errors
 - WARNING: 70-89% OR has warnings only
 - FAIL: <70% OR has any errors
 
 ### Checks
-**Placeholders**: `[Critical check N]`, `[Standard check N]`, etc.  
+**Placeholders**: `[Critical check N]`, `[Standard check N]`, etc.
 **Guidance**: List specific checks for your artifact type. Be concrete, not vague.
 
 ### Examples
-**Placeholders**: `[Artifact description]`  
+**Placeholders**: `[Artifact description]`
 **Guidance**: Provide 2-3 examples showing: all-pass, critical-fail, warning-only scenarios.
 
 ## Example Usage (Applying This Templar)
 
 ### Creating "Validate API Response" Prompt
 
-**Level 1 (Critical)**: Valid JSON, required fields present  
-**Level 2 (Standard)**: Field naming conventions, HTTP status codes  
-**Level 3 (Quality)**: Schema compliance, business rules  
+**Level 1 (Critical)**: Valid JSON, required fields present
+**Level 2 (Standard)**: Field naming conventions, HTTP status codes
+**Level 3 (Quality)**: Schema compliance, business rules
 **Level 4 (Best Practice)**: Response timing, caching headers
 
 **Weights**: 40% / 20% / 30% / 10%
@@ -345,4 +345,3 @@ Good application of this pattern achieves:
 ---
 
 **Pattern Provenance**: Extracted from `validate-prompt.prompt.md` which demonstrates exceptional multi-level validation with weighted scoring, clear severity separation, and actionable feedback with examples.
-

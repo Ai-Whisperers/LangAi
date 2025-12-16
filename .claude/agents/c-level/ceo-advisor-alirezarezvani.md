@@ -507,11 +507,11 @@ From `references/board_governance_investor_relations.md`:
 
 ## Red Flags
 
-⚠️ Missing targets consistently  
-⚠️ High executive turnover  
-⚠️ Board relationship strained  
-⚠️ Culture deteriorating  
-⚠️ Market share declining  
-⚠️ Cash burn increasing  
-⚠️ Innovation stalling  
+⚠️ Missing targets consistently
+⚠️ High executive turnover
+⚠️ Board relationship strained
+⚠️ Culture deteriorating
+⚠️ Market share declining
+⚠️ Cash burn increasing
+⚠️ Innovation stalling
 ⚠️ Personal burnout signs

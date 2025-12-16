@@ -56,6 +56,19 @@ If you don’t use Prompt Registry, you can still open a prompt file and copy/pa
 python .cursor/scripts/validate-prompt-collections.py
 ```
 
+### Validate the whole Cursor setup (recommended before sharing changes)
+
+Run the single entrypoint:
+
+```text
+python .cursor/scripts/validate-cursor-config.py
+```
+
+It validates:
+- YAML under `.cursor/`
+- Prompt Registry collections (`.collection.yml` → referenced prompt files exist)
+- Rule index (`.cursor/rules/rule-index.yml` → referenced files exist)
+
 ### Add a new rule
 
 1. Prefer adding a focused rule under `.cursor/rules/<domain>/`
@@ -82,5 +95,3 @@ Details: `.cursor/MCP_SETUP.md`.
 - **Rule granularity**: split “mega rules” into smaller, file-scoped rules (better triggering, less drift).
 - **Validation scripts**: add small validators (like prompt collection checks) to prevent broken references.
 - **Safety controls**: restrict dangerous shell operations via CLI permissions and Cursor settings.
-
-

@@ -15,19 +15,13 @@ from ..utils import get_logger
 
 logger = get_logger(__name__)
 
-from .base_mapper import (
-    BaseMapper,
-    FrameworkType,
-    MappedEdge,
-    MappedGraph,
-    MappedNode,
-    NodeType,
-)
+from .base_mapper import BaseMapper, FrameworkType, MappedEdge, MappedGraph, MappedNode, NodeType
 
 
 @dataclass
 class SwarmFunction:
     """Representation of a Swarm function."""
+
     name: str
     description: str
     function: Optional[Callable] = None
@@ -37,6 +31,7 @@ class SwarmFunction:
 @dataclass
 class SwarmAgent:
     """Representation of a Swarm Agent."""
+
     name: str
     instructions: str
     functions: List[SwarmFunction] = field(default_factory=list)
@@ -79,30 +74,32 @@ class SwarmMapper(BaseMapper):
         """Extract agent information."""
         functions = []
 
-        for func in getattr(agent, 'functions', []):
+        for func in getattr(agent, "functions", []):
             # Check if function returns another agent
             returns_agent = False
             if callable(func):
                 try:
-                    hints = getattr(func, '__annotations__', {})
-                    return_hint = hints.get('return', None)
-                    if return_hint and 'Agent' in str(return_hint):
+                    hints = getattr(func, "__annotations__", {})
+                    return_hint = hints.get("return", None)
+                    if return_hint and "Agent" in str(return_hint):
                         returns_agent = True
                 except Exception as e:
                     logger.debug(f"Failed to check function return type: {e}")
 
-            functions.append(SwarmFunction(
-                name=getattr(func, '__name__', 'unknown') if callable(func) else str(func),
-                description=inspect.getdoc(func) if callable(func) else '',
-                function=func if callable(func) else None,
-                returns_agent=returns_agent
-            ))
+            functions.append(
+                SwarmFunction(
+                    name=getattr(func, "__name__", "unknown") if callable(func) else str(func),
+                    description=inspect.getdoc(func) if callable(func) else "",
+                    function=func if callable(func) else None,
+                    returns_agent=returns_agent,
+                )
+            )
 
         return SwarmAgent(
-            name=getattr(agent, 'name', 'agent'),
-            instructions=getattr(agent, 'instructions', ''),
+            name=getattr(agent, "name", "agent"),
+            instructions=getattr(agent, "instructions", ""),
             functions=functions,
-            model=getattr(agent, 'model', 'gpt-4')
+            model=getattr(agent, "model", "gpt-4"),
         )
 
     def _build_graph(self, agents: List[SwarmAgent]) -> MappedGraph:
@@ -120,7 +117,7 @@ class SwarmMapper(BaseMapper):
                 framework=FrameworkType.SWARM,
                 description=agent.instructions,
                 tools=[f.name for f in agent.functions],
-                config={"model": agent.model}
+                config={"model": agent.model},
             )
             nodes.append(agent_node)
 
@@ -133,34 +130,34 @@ class SwarmMapper(BaseMapper):
                     framework=FrameworkType.SWARM,
                     description=func.description,
                     function=func.function,
-                    config={"returns_agent": func.returns_agent}
+                    config={"returns_agent": func.returns_agent},
                 )
                 nodes.append(func_node)
 
                 # Edge from agent to function
-                edges.append(MappedEdge(
-                    source=agent_node.id,
-                    target=func_node.id,
-                    edge_type="function_call"
-                ))
+                edges.append(
+                    MappedEdge(source=agent_node.id, target=func_node.id, edge_type="function_call")
+                )
 
                 # If function returns agent, add potential handoff edges
                 if func.returns_agent:
                     # Add edges to all other agents (runtime determines actual target)
                     for other_agent in agent_names:
                         if other_agent != agent.name:
-                            edges.append(MappedEdge(
-                                source=func_node.id,
-                                target=f"agent_{other_agent}",
-                                edge_type="conditional",
-                                condition=f"handoff_to_{other_agent}"
-                            ))
+                            edges.append(
+                                MappedEdge(
+                                    source=func_node.id,
+                                    target=f"agent_{other_agent}",
+                                    edge_type="conditional",
+                                    condition=f"handoff_to_{other_agent}",
+                                )
+                            )
 
         # Determine entry point (first agent or triage agent)
         entry_point = None
         for node in nodes:
             if node.node_type == NodeType.AGENT:
-                if 'triage' in node.name.lower():
+                if "triage" in node.name.lower():
                     entry_point = node.id
                     break
                 if entry_point is None:
@@ -172,15 +169,16 @@ class SwarmMapper(BaseMapper):
             nodes=nodes,
             edges=edges,
             entry_point=entry_point,
-            exit_points=[]
+            exit_points=[],
         )
 
     def to_langgraph(self, graph: MappedGraph) -> Any:
         """Convert to LangGraph StateGraph."""
         try:
-            from langgraph.graph import StateGraph, END
-            from typing import TypedDict, Annotated
             import operator
+            from typing import Annotated, TypedDict
+
+            from langgraph.graph import END, StateGraph
         except ImportError:
             raise ImportError("langgraph is required for conversion")
 
@@ -196,14 +194,16 @@ class SwarmMapper(BaseMapper):
         agent_names = [n.name for n in agent_nodes]
 
         for node in agent_nodes:
+
             def make_agent_node(agent_node: MappedNode):
                 async def agent_func(state: SwarmState) -> SwarmState:
                     # Agent logic - check for handoffs
                     return {
                         "messages": [{"role": "assistant", "content": f"Agent {agent_node.name}"}],
                         "current_agent": agent_node.name,
-                        "handoff_to": ""
+                        "handoff_to": "",
                     }
+
                 return agent_func
 
             workflow.add_node(node.id, make_agent_node(node))
@@ -226,19 +226,12 @@ class SwarmMapper(BaseMapper):
                     if other.id != node.id:
                         route_map[other.id] = other.id
 
-                workflow.add_conditional_edges(
-                    node.id,
-                    should_handoff,
-                    route_map
-                )
+                workflow.add_conditional_edges(node.id, should_handoff, route_map)
 
         return workflow
 
 
-def map_swarm_to_langgraph(
-    agents: Any,
-    compile: bool = False
-) -> Any:
+def map_swarm_to_langgraph(agents: Any, compile: bool = False) -> Any:
     """
     Convenience function to map Swarm agents to LangGraph.
 

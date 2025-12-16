@@ -52,8 +52,8 @@ Need a standardized framework for domain entities and repositories to ensure con
 ## User Stories
 
 ### Primary User Story
-**As a** developer  
-**I want to** have standardized domain entities and repositories  
+**As a** developer
+**I want to** have standardized domain entities and repositories
 **So that** I can consistently extract, transform, and persist EBASE bootstrapped configuration data across all supported tables without duplicating code
 
 **Acceptance Criteria:**
@@ -69,8 +69,8 @@ Need a standardized framework for domain entities and repositories to ensure con
 ### Secondary User Stories
 
 #### 1. Data Consistency Story
-**As a** system architect  
-**I want** consistent data access patterns across all bootstrapped configuration tables  
+**As a** system architect
+**I want** consistent data access patterns across all bootstrapped configuration tables
 **So that** I can ensure data integrity and maintainability
 
 **Acceptance Criteria:**
@@ -80,8 +80,8 @@ Need a standardized framework for domain entities and repositories to ensure con
 - Transaction management is standardized
 
 #### 2. Testing Support Story
-**As a** QA engineer  
-**I want** standardized entity and repository patterns  
+**As a** QA engineer
+**I want** standardized entity and repository patterns
 **So that** I can create consistent unit tests and integration tests
 
 **Acceptance Criteria:**
@@ -338,22 +338,22 @@ public abstract class BaseEntity
     /// Unique identifier (primary key)
     /// </summary>
     public int NR { get; set; }
-    
+
     /// <summary>
     /// Date and time when the entity was created
     /// </summary>
     public DateTime CreatedDate { get; set; }
-    
+
     /// <summary>
     /// Date and time when the entity was last modified (nullable)
     /// </summary>
     public DateTime? ModifiedDate { get; set; }
-    
+
     /// <summary>
     /// Username of the user who created the entity
     /// </summary>
     public string CreatedBy { get; set; }
-    
+
     /// <summary>
     /// Username of the user who last modified the entity
     /// </summary>
@@ -374,32 +374,32 @@ public class MeasurementUnit : BaseEntity
     [Required]
     [MaxLength(50)]
     public string Unit { get; set; }
-    
+
     /// <summary>
     /// Conversion factor to base unit
     /// </summary>
     public decimal Factor { get; set; }
-    
+
     /// <summary>
     /// Switch value for unit type classification
     /// </summary>
     public int Switch { get; set; }
-    
+
     /// <summary>
     /// Interval type for meter readings
     /// </summary>
     public int Interval { get; set; }
-    
+
     /// <summary>
     /// Unit type classification
     /// </summary>
     public int UnitType { get; set; }
-    
+
     /// <summary>
     /// Foreign key to counter unit (nullable)
     /// </summary>
     public int? CounterUnitNR { get; set; }
-    
+
     /// <summary>
     /// Navigation property to counter unit
     /// </summary>
@@ -419,27 +419,27 @@ public interface IRepository<T> where T : BaseEntity
     /// Get entity by ID
     /// </summary>
     Task<T> GetByIdAsync(int id);
-    
+
     /// <summary>
     /// Get all entities
     /// </summary>
     Task<IEnumerable<T>> GetAllAsync();
-    
+
     /// <summary>
     /// Add new entity
     /// </summary>
     Task<T> AddAsync(T entity);
-    
+
     /// <summary>
     /// Update existing entity
     /// </summary>
     Task<T> UpdateAsync(T entity);
-    
+
     /// <summary>
     /// Delete entity by ID
     /// </summary>
     Task DeleteAsync(int id);
-    
+
     /// <summary>
     /// Check if entity exists by ID
     /// </summary>
@@ -456,43 +456,43 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
 {
     protected readonly IDbConnection _connection;
     protected readonly string _tableName;
-    
+
     public Repository(IDbConnection connection, string tableName)
     {
         _connection = connection;
         _tableName = tableName;
     }
-    
+
     public virtual async Task<T> GetByIdAsync(int id)
     {
         var sql = $"SELECT * FROM {_tableName} WHERE NR = @Id";
         return await _connection.QuerySingleOrDefaultAsync<T>(sql, new { Id = id });
     }
-    
+
     public virtual async Task<IEnumerable<T>> GetAllAsync()
     {
         var sql = $"SELECT * FROM {_tableName}";
         return await _connection.QueryAsync<T>(sql);
     }
-    
+
     public virtual async Task<T> AddAsync(T entity)
     {
         // Implementation with INSERT and SCOPE_IDENTITY()
         // ...
     }
-    
+
     public virtual async Task<T> UpdateAsync(T entity)
     {
         // Implementation with UPDATE
         // ...
     }
-    
+
     public virtual async Task DeleteAsync(int id)
     {
         var sql = $"DELETE FROM {_tableName} WHERE NR = @Id";
         await _connection.ExecuteAsync(sql, new { Id = id });
     }
-    
+
     public virtual async Task<bool> ExistsAsync(int id)
     {
         var sql = $"SELECT COUNT(1) FROM {_tableName} WHERE NR = @Id";
@@ -574,10 +574,10 @@ public async Task GetByIdAsync_WithValidId_ReturnsEntity()
     // Arrange
     var mockConnection = new Mock<IDbConnection>();
     var repository = new Repository<MeasurementUnit>(mockConnection.Object, "D_BETREKKING");
-    
+
     // Act
     var result = await repository.GetByIdAsync(1);
-    
+
     // Assert
     Assert.IsNotNull(result);
     Assert.AreEqual(1, result.NR);
@@ -601,23 +601,23 @@ public async Task IntegrationTest_AddAndRetrieveEntity()
     using var connection = new SqlConnection(TestConnectionString);
     using var transaction = connection.BeginTransaction();
     var repository = new MeasurementUnitRepository(connection, transaction);
-    
-    var entity = new MeasurementUnit 
-    { 
-        Unit = "kWh", 
+
+    var entity = new MeasurementUnit
+    {
+        Unit = "kWh",
         Factor = 1.0m,
         Switch = 1,
         Interval = 15,
         UnitType = 1
     };
-    
+
     // Act
     var added = await repository.AddAsync(entity);
     var retrieved = await repository.GetByIdAsync(added.NR);
-    
+
     // Assert
     Assert.AreEqual(entity.Unit, retrieved.Unit);
-    
+
     // Cleanup
     transaction.Rollback();
 }
@@ -638,8 +638,8 @@ public async Task PerformanceTest_GetAllAsync()
     var stopwatch = Stopwatch.StartNew();
     var entities = await repository.GetAllAsync();
     stopwatch.Stop();
-    
-    Assert.Less(stopwatch.ElapsedMilliseconds, 5000, 
+
+    Assert.Less(stopwatch.ElapsedMilliseconds, 5000,
         "GetAllAsync should complete in less than 5 seconds");
 }
 ```
@@ -658,10 +658,10 @@ public async Task SecurityTest_SqlInjectionPrevention()
 {
     // Attempt SQL injection
     var maliciousInput = "'; DROP TABLE D_BETREKKING; --";
-    
+
     // Should safely handle the input (parameterized query)
     var result = await repository.GetByIdAsync(maliciousInput);
-    
+
     // Should return null, not execute the SQL
     Assert.IsNull(result);
 }
@@ -785,5 +785,3 @@ public async Task SecurityTest_SqlInjectionPrevention()
 - [ ] Rollback plan documented
 - [ ] Knowledge transfer to team completed
 ```
-
-

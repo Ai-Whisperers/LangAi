@@ -14,8 +14,8 @@ rules:
 
 Please create a new prompt file following Prompt Registry format standards and best practices.
 
-**Pattern**: Prompt Creation Pattern ⭐⭐⭐⭐  
-**Effectiveness**: Essential for maintaining prompt library quality  
+**Pattern**: Prompt Creation Pattern ⭐⭐⭐⭐
+**Effectiveness**: Essential for maintaining prompt library quality
 **Use When**: Creating new reusable prompts for the library
 
 ---
@@ -209,8 +209,8 @@ tags: keyword1, keyword2, keyword3
 
 [Brief description]
 
-**Pattern**: [Pattern Name] ⭐⭐⭐⭐⭐  
-**Effectiveness**: [Effectiveness statement]  
+**Pattern**: [Pattern Name] ⭐⭐⭐⭐⭐
+**Effectiveness**: [Effectiveness statement]
 **Use When**: [Use cases]
 
 ---
@@ -295,8 +295,8 @@ argument-hint: "What input it expects (if applicable)"
 
 Brief introduction explaining what this prompt accomplishes and when to use it.
 
-**Pattern**: [Pattern Name if applicable]  
-**Effectiveness**: [Effectiveness statement]  
+**Pattern**: [Pattern Name if applicable]
+**Effectiveness**: [Effectiveness statement]
 **Use When**: [Use cases]
 
 ---
@@ -394,7 +394,7 @@ With context:
 
 ---
 
-**Created**: [Date]  
+**Created**: [Date]
 **Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 ```
 
@@ -507,8 +507,8 @@ argument-hint: "Branch name to validate"
 
 Please validate Git branch names against established naming conventions and suggest corrections if needed.
 
-**Pattern**: Validation Pattern  
-**Effectiveness**: Prevents non-compliant branch names  
+**Pattern**: Validation Pattern
+**Effectiveness**: Prevents non-compliant branch names
 **Use When**: Before creating new Git branches
 
 ---
@@ -696,8 +696,6 @@ This prompt demonstrates exceptional quality and has been extracted into:
 
 ---
 
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)
-
-

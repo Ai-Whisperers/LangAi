@@ -12,8 +12,8 @@ argument-hint: "Folder path to scan for duplicates (e.g., .cursor/rules/ticket/)
 
 Please scan for duplicate or overlapping artifacts (rules, prompts, tickets, docs) and recommend consolidation strategies to eliminate redundancy and improve maintainability.
 
-**Pattern**: Duplicate Detection and Consolidation Pattern ⭐⭐⭐⭐⭐  
-**Effectiveness**: Essential for maintaining single source of truth  
+**Pattern**: Duplicate Detection and Consolidation Pattern ⭐⭐⭐⭐⭐
+**Effectiveness**: Essential for maintaining single source of truth
 **Use When**: Quarterly cleanup, after major refactoring, or when noticing confusion about which artifact to use
 
 ---
@@ -592,6 +592,6 @@ Before finalizing consolidation:
 
 ---
 
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)

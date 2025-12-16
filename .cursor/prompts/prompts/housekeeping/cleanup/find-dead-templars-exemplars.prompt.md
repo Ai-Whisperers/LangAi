@@ -57,4 +57,3 @@ Keep the prompt library lean by identifying “dead nodes” (templars/exemplars
 ## Related
 - `.cursor/prompts/housekeeping/extract-templar-exemplar.prompt.md`
 - `scripts/housekeeping/extract-templar-exemplar.ps1`
-

@@ -8,10 +8,10 @@ Provides filtering capabilities for context items based on:
 - Custom rules
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
-from .models import ContextItem, ContextVisibility
 from ...utils import utc_now
+from .models import ContextItem, ContextVisibility
 
 
 class ContextFilter:
@@ -34,7 +34,7 @@ class ContextFilter:
             "market": ["market", "tam", "sam", "som", "industry", "growth"],
             "competitive": ["competitor", "competition", "rival", "market_share"],
             "product": ["product", "feature", "technology", "innovation"],
-            "synthesizer": ["summary", "finding", "key_point", "conclusion"]
+            "synthesizer": ["summary", "finding", "key_point", "conclusion"],
         }
 
     def add_type_filter(self, agent_type: str, tags: List[str]) -> None:
@@ -52,10 +52,7 @@ class ContextFilter:
         return self._type_filters.get(agent_type, [])
 
     def filter_for_agent(
-        self,
-        items: Dict[str, ContextItem],
-        target_agent: str,
-        target_type: str
+        self, items: Dict[str, ContextItem], target_agent: str, target_type: str
     ) -> Dict[str, Any]:
         """
         Filter context items for a specific agent.
@@ -95,7 +92,7 @@ class ContextFilter:
         self,
         items: Dict[str, ContextItem],
         include_tags: Optional[List[str]] = None,
-        exclude_tags: Optional[List[str]] = None
+        exclude_tags: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Filter items by tags.
@@ -129,10 +126,7 @@ class ContextFilter:
         return filtered
 
     def filter_by_visibility(
-        self,
-        items: Dict[str, ContextItem],
-        visibility: ContextVisibility,
-        agent_name: str
+        self, items: Dict[str, ContextItem], visibility: ContextVisibility, agent_name: str
     ) -> Dict[str, Any]:
         """
         Filter items by visibility level.
@@ -157,9 +151,7 @@ class ContextFilter:
         return filtered
 
     def filter_by_owner(
-        self,
-        items: Dict[str, ContextItem],
-        owner_agents: List[str]
+        self, items: Dict[str, ContextItem], owner_agents: List[str]
     ) -> Dict[str, Any]:
         """
         Filter items by owner agent.
@@ -183,9 +175,7 @@ class ContextFilter:
         return filtered
 
     def filter_recent(
-        self,
-        items: Dict[str, ContextItem],
-        max_age_seconds: int = 3600
+        self, items: Dict[str, ContextItem], max_age_seconds: int = 3600
     ) -> Dict[str, Any]:
         """
         Filter items by age.

@@ -16,8 +16,7 @@ Usage:
 """
 
 import os
-from typing import Optional, TypeVar, Union, Callable
-
+from typing import Callable, Optional, TypeVar, Union
 
 T = TypeVar("T")
 
@@ -102,10 +101,7 @@ def get_required_config(
         try:
             return cast(value)
         except (ValueError, TypeError) as e:
-            raise ConfigError(
-                key,
-                f"Configuration '{key}' has invalid value '{value}': {e}"
-            )
+            raise ConfigError(key, f"Configuration '{key}' has invalid value '{value}': {e}")
 
     return value
 

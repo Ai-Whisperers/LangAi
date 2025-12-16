@@ -8,29 +8,34 @@ Custom middleware for:
 - CORS handling
 """
 
-from typing import Dict, Any, Optional, Callable, List
 import asyncio
-import threading
-import time
 import hashlib
 import hmac
 import logging
+import threading
+import time
 from collections import defaultdict
+from typing import Any, Callable, Dict, List, Optional
 
 try:
     from fastapi import Request, Response
     from fastapi.responses import JSONResponse
     from starlette.middleware.base import BaseHTTPMiddleware
+
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
+
     # Stubs for when FastAPI not available
     class BaseHTTPMiddleware:
         pass
+
     class Request:
         pass
+
     class Response:
         pass
+
 
 # Common path constants
 PATH_HEALTH = "/health"
@@ -50,6 +55,7 @@ ERR_FASTAPI_REQUIRED = "FastAPI required"
 # Rate Limiting
 # ============================================================================
 
+
 class RateLimiter:
     """
     In-memory rate limiter using sliding window.
@@ -59,10 +65,7 @@ class RateLimiter:
     """
 
     def __init__(
-        self,
-        requests_per_minute: int = 60,
-        requests_per_hour: int = 1000,
-        burst_limit: int = 10
+        self, requests_per_minute: int = 60, requests_per_hour: int = 1000, burst_limit: int = 10
     ):
         self._rpm = requests_per_minute
         self._rph = requests_per_hour
@@ -112,9 +115,7 @@ class RateLimiter:
         self._minute_windows[client_id] = [
             t for t in self._minute_windows[client_id] if t > minute_ago
         ]
-        self._hour_windows[client_id] = [
-            t for t in self._hour_windows[client_id] if t > hour_ago
-        ]
+        self._hour_windows[client_id] = [t for t in self._hour_windows[client_id] if t > hour_ago]
 
         minute_count = len(self._minute_windows[client_id])
         hour_count = len(self._hour_windows[client_id])
@@ -123,7 +124,7 @@ class RateLimiter:
             "limit_minute": self._rpm,
             "remaining_minute": max(0, self._rpm - minute_count),
             "limit_hour": self._rph,
-            "remaining_hour": max(0, self._rph - hour_count)
+            "remaining_hour": max(0, self._rph - hour_count),
         }
 
         # Check limits
@@ -151,6 +152,7 @@ class RateLimiter:
 
 
 if FASTAPI_AVAILABLE:
+
     class RateLimitMiddleware(BaseHTTPMiddleware):
         """Rate limiting middleware."""
 
@@ -159,12 +161,11 @@ if FASTAPI_AVAILABLE:
             app,
             requests_per_minute: int = 60,
             requests_per_hour: int = 1000,
-            exclude_paths: Optional[List[str]] = None
+            exclude_paths: Optional[List[str]] = None,
         ):
             super().__init__(app)
             self._limiter = RateLimiter(
-                requests_per_minute=requests_per_minute,
-                requests_per_hour=requests_per_hour
+                requests_per_minute=requests_per_minute, requests_per_hour=requests_per_hour
             )
             self._exclude_paths = exclude_paths or DEFAULT_EXCLUDED_PATHS
 
@@ -186,13 +187,13 @@ if FASTAPI_AVAILABLE:
                         "error": "Rate limit exceeded",
                         "retry_after": info.get("retry_after", 60),
                         "limit": info.get("limit_minute"),
-                        "remaining": 0
+                        "remaining": 0,
                     },
                     headers={
                         "Retry-After": str(info.get("retry_after", 60)),
                         "X-RateLimit-Limit": str(info.get("limit_minute")),
-                        "X-RateLimit-Remaining": "0"
-                    }
+                        "X-RateLimit-Remaining": "0",
+                    },
                 )
 
             # Process request
@@ -218,10 +219,9 @@ if FASTAPI_AVAILABLE:
 
             return f"ip:{request.client.host if request.client else 'unknown'}"
 
-
-# ============================================================================
-# API Key Authentication
-# ============================================================================
+    # ============================================================================
+    # API Key Authentication
+    # ============================================================================
 
     class APIKeyMiddleware(BaseHTTPMiddleware):
         """API key authentication middleware."""
@@ -231,7 +231,7 @@ if FASTAPI_AVAILABLE:
             app,
             api_keys: Optional[Dict[str, str]] = None,
             require_auth: bool = True,
-            exclude_paths: Optional[List[str]] = None
+            exclude_paths: Optional[List[str]] = None,
         ):
             super().__init__(app)
             self._api_keys = api_keys or {}
@@ -253,10 +253,7 @@ if FASTAPI_AVAILABLE:
             if not api_key:
                 return JSONResponse(
                     status_code=401,
-                    content={
-                        "error": "API key required",
-                        "detail": "Include X-API-Key header"
-                    }
+                    content={"error": "API key required", "detail": "Include X-API-Key header"},
                 )
 
             # Validate API key
@@ -265,8 +262,8 @@ if FASTAPI_AVAILABLE:
                     status_code=403,
                     content={
                         "error": "Invalid API key",
-                        "detail": "The provided API key is not valid"
-                    }
+                        "detail": "The provided API key is not valid",
+                    },
                 )
 
             # Add user info to request state
@@ -283,10 +280,9 @@ if FASTAPI_AVAILABLE:
             """Revoke an API key."""
             self._api_keys.pop(key, None)
 
-
-# ============================================================================
-# Request Logging
-# ============================================================================
+    # ============================================================================
+    # Request Logging
+    # ============================================================================
 
     class RequestLoggingMiddleware(BaseHTTPMiddleware):
         """Request logging middleware."""
@@ -296,7 +292,7 @@ if FASTAPI_AVAILABLE:
             app,
             logger: Optional[logging.Logger] = None,
             log_body: bool = False,
-            exclude_paths: Optional[List[str]] = None
+            exclude_paths: Optional[List[str]] = None,
         ):
             super().__init__(app)
             self._logger = logger or logging.getLogger("api.requests")
@@ -326,8 +322,7 @@ if FASTAPI_AVAILABLE:
 
                 # Log response
                 self._logger.info(
-                    f"[{request_id}] {response.status_code} "
-                    f"duration={duration_ms:.2f}ms"
+                    f"[{request_id}] {response.status_code} " f"duration={duration_ms:.2f}ms"
                 )
 
                 # Add request ID to response
@@ -338,14 +333,14 @@ if FASTAPI_AVAILABLE:
             except Exception as e:
                 duration_ms = (time.time() - start_time) * 1000
                 self._logger.error(
-                    f"[{request_id}] ERROR: {str(e)} "
-                    f"duration={duration_ms:.2f}ms"
+                    f"[{request_id}] ERROR: {str(e)} " f"duration={duration_ms:.2f}ms"
                 )
                 raise
 
         def _generate_request_id(self) -> str:
             """Generate unique request ID."""
             import uuid
+
             return str(uuid.uuid4())[:8]
 
 
@@ -354,6 +349,7 @@ if FASTAPI_AVAILABLE:
 # ============================================================================
 
 if FASTAPI_AVAILABLE:
+
     class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
         """
         Middleware to limit request body size.
@@ -363,14 +359,14 @@ if FASTAPI_AVAILABLE:
 
         # Default limits
         DEFAULT_MAX_BODY_SIZE = 10 * 1024 * 1024  # 10 MB
-        DEFAULT_MAX_JSON_SIZE = 1 * 1024 * 1024   # 1 MB
+        DEFAULT_MAX_JSON_SIZE = 1 * 1024 * 1024  # 1 MB
 
         def __init__(
             self,
             app,
             max_body_size: int = None,
             max_json_size: int = None,
-            exclude_paths: Optional[List[str]] = None
+            exclude_paths: Optional[List[str]] = None,
         ):
             """
             Initialize request size limit middleware.
@@ -421,18 +417,17 @@ if FASTAPI_AVAILABLE:
                             content={
                                 "error": "Request entity too large",
                                 "detail": f"{size_type} size ({size} bytes) exceeds limit ({max_size} bytes)",
-                                "max_size": max_size
-                            }
+                                "max_size": max_size,
+                            },
                         )
                 except ValueError:
                     pass
 
             return await call_next(request)
 
-
-# ============================================================================
-# CSRF Protection
-# ============================================================================
+    # ============================================================================
+    # CSRF Protection
+    # ============================================================================
 
     class CSRFProtectionMiddleware(BaseHTTPMiddleware):
         """
@@ -447,15 +442,18 @@ if FASTAPI_AVAILABLE:
             app,
             allowed_origins: Optional[List[str]] = None,
             exclude_paths: Optional[List[str]] = None,
-            safe_methods: Optional[List[str]] = None
+            safe_methods: Optional[List[str]] = None,
         ):
             super().__init__(app)
-            self._allowed_origins = set(allowed_origins or [
-                "http://localhost:3000",
-                "http://localhost:8000",
-                "http://127.0.0.1:3000",
-                "http://127.0.0.1:8000",
-            ])
+            self._allowed_origins = set(
+                allowed_origins
+                or [
+                    "http://localhost:3000",
+                    "http://localhost:8000",
+                    "http://127.0.0.1:3000",
+                    "http://127.0.0.1:8000",
+                ]
+            )
             self._exclude_paths = exclude_paths or DEFAULT_AUTH_EXCLUDED_PATHS
             # Safe methods don't require CSRF validation
             self._safe_methods = safe_methods or ["GET", "HEAD", "OPTIONS"]
@@ -478,8 +476,8 @@ if FASTAPI_AVAILABLE:
                     status_code=403,
                     content={
                         "error": "CSRF validation failed",
-                        "detail": "Invalid or missing Origin header"
-                    }
+                        "detail": "Invalid or missing Origin header",
+                    },
                 )
 
             return await call_next(request)
@@ -494,6 +492,7 @@ if FASTAPI_AVAILABLE:
             if referer:
                 # Extract origin from referer URL
                 from urllib.parse import urlparse
+
                 parsed = urlparse(referer)
                 referer_origin = f"{parsed.scheme}://{parsed.netloc}"
                 return referer_origin in self._allowed_origins
@@ -510,6 +509,7 @@ if FASTAPI_AVAILABLE:
 # Webhook Signature Verification
 # ============================================================================
 
+
 class WebhookSigner:
     """Sign and verify webhook payloads."""
 
@@ -523,11 +523,7 @@ class WebhookSigner:
         return f"v1={signature}"
 
     def verify(
-        self,
-        payload: bytes,
-        signature: str,
-        timestamp: int,
-        tolerance_seconds: int = 300
+        self, payload: bytes, signature: str, timestamp: int, tolerance_seconds: int = 300
     ) -> bool:
         """Verify a webhook signature."""
         # Check timestamp
@@ -544,11 +540,12 @@ class WebhookSigner:
 # CORS Configuration
 # ============================================================================
 
+
 def get_cors_config(
     allow_origins: Optional[List[str]] = None,
     allow_credentials: bool = True,
     allow_methods: Optional[List[str]] = None,
-    allow_headers: Optional[List[str]] = None
+    allow_headers: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """Get CORS configuration dictionary."""
     return {

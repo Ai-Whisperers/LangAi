@@ -27,8 +27,8 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .models import TaskStorage, _utcnow, _serialize_datetime
 from ...utils import get_logger
+from .models import TaskStorage, _serialize_datetime, _utcnow
 
 logger = get_logger(__name__)
 
@@ -51,18 +51,16 @@ class SQLiteTaskStorage(TaskStorage):
 
     def _get_connection(self) -> sqlite3.Connection:
         """Get thread-local database connection."""
-        if not hasattr(self._local, 'connection'):
-            self._local.connection = sqlite3.connect(
-                str(self.db_path),
-                check_same_thread=False
-            )
+        if not hasattr(self._local, "connection"):
+            self._local.connection = sqlite3.connect(str(self.db_path), check_same_thread=False)
             self._local.connection.row_factory = sqlite3.Row
         return self._local.connection
 
     def _init_db(self) -> None:
         """Initialize database schema."""
         conn = self._get_connection()
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS tasks (
                 task_id TEXT PRIMARY KEY,
                 company_name TEXT NOT NULL,
@@ -72,21 +70,31 @@ class SQLiteTaskStorage(TaskStorage):
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
-        """)
-        conn.execute("""
+        """
+        )
+        conn.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)
-        """)
-        conn.execute("""
+        """
+        )
+        conn.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_tasks_company ON tasks(company_name)
-        """)
-        conn.execute("""
+        """
+        )
+        conn.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_tasks_created ON tasks(created_at)
-        """)
-        conn.execute("""
+        """
+        )
+        conn.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_tasks_batch ON tasks(batch_id)
-        """)
+        """
+        )
 
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS batches (
                 batch_id TEXT PRIMARY KEY,
                 status TEXT NOT NULL,
@@ -94,10 +102,13 @@ class SQLiteTaskStorage(TaskStorage):
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
-        """)
-        conn.execute("""
+        """
+        )
+        conn.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_batches_status ON batches(status)
-        """)
+        """
+        )
         conn.commit()
 
     async def save_task(self, task_id: str, task: Dict[str, Any]) -> bool:
@@ -118,11 +129,17 @@ class SQLiteTaskStorage(TaskStorage):
                     task.get("status", "pending"),
                     task.get("batch_id"),
                     json.dumps(task, default=_serialize_datetime),
-                    task.get("created_at", now) if isinstance(task.get("created_at"), str)
-                        else task.get("created_at", _utcnow()).isoformat() if task.get("created_at")
-                        else now,
-                    now
-                )
+                    (
+                        task.get("created_at", now)
+                        if isinstance(task.get("created_at"), str)
+                        else (
+                            task.get("created_at", _utcnow()).isoformat()
+                            if task.get("created_at")
+                            else now
+                        )
+                    ),
+                    now,
+                ),
             )
             conn.commit()
             return True
@@ -133,13 +150,10 @@ class SQLiteTaskStorage(TaskStorage):
     async def get_task(self, task_id: str) -> Optional[Dict[str, Any]]:
         """Get a task from SQLite."""
         conn = self._get_connection()
-        cursor = conn.execute(
-            "SELECT data FROM tasks WHERE task_id = ?",
-            (task_id,)
-        )
+        cursor = conn.execute("SELECT data FROM tasks WHERE task_id = ?", (task_id,))
         row = cursor.fetchone()
         if row:
-            return json.loads(row['data'])
+            return json.loads(row["data"])
         return None
 
     async def update_task(self, task_id: str, updates: Dict[str, Any]) -> bool:
@@ -154,10 +168,7 @@ class SQLiteTaskStorage(TaskStorage):
     async def delete_task(self, task_id: str) -> bool:
         """Delete a task from SQLite."""
         conn = self._get_connection()
-        cursor = conn.execute(
-            "DELETE FROM tasks WHERE task_id = ?",
-            (task_id,)
-        )
+        cursor = conn.execute("DELETE FROM tasks WHERE task_id = ?", (task_id,))
         conn.commit()
         return cursor.rowcount > 0
 
@@ -166,7 +177,7 @@ class SQLiteTaskStorage(TaskStorage):
         status: Optional[str] = None,
         company: Optional[str] = None,
         limit: int = 50,
-        offset: int = 0
+        offset: int = 0,
     ) -> List[Dict[str, Any]]:
         """List tasks with filtering."""
         conn = self._get_connection()
@@ -186,7 +197,7 @@ class SQLiteTaskStorage(TaskStorage):
         params.extend([limit, offset])
 
         cursor = conn.execute(query, params)
-        return [json.loads(row['data']) for row in cursor.fetchall()]
+        return [json.loads(row["data"]) for row in cursor.fetchall()]
 
     async def save_batch(self, batch_id: str, batch: Dict[str, Any]) -> bool:
         """Save a batch to SQLite."""
@@ -204,11 +215,17 @@ class SQLiteTaskStorage(TaskStorage):
                     batch_id,
                     batch.get("status", "pending"),
                     json.dumps(batch, default=_serialize_datetime),
-                    batch.get("created_at", now) if isinstance(batch.get("created_at"), str)
-                        else batch.get("created_at", _utcnow()).isoformat() if batch.get("created_at")
-                        else now,
-                    now
-                )
+                    (
+                        batch.get("created_at", now)
+                        if isinstance(batch.get("created_at"), str)
+                        else (
+                            batch.get("created_at", _utcnow()).isoformat()
+                            if batch.get("created_at")
+                            else now
+                        )
+                    ),
+                    now,
+                ),
             )
             conn.commit()
             return True
@@ -219,13 +236,10 @@ class SQLiteTaskStorage(TaskStorage):
     async def get_batch(self, batch_id: str) -> Optional[Dict[str, Any]]:
         """Get a batch from SQLite."""
         conn = self._get_connection()
-        cursor = conn.execute(
-            "SELECT data FROM batches WHERE batch_id = ?",
-            (batch_id,)
-        )
+        cursor = conn.execute("SELECT data FROM batches WHERE batch_id = ?", (batch_id,))
         row = cursor.fetchone()
         if row:
-            return json.loads(row['data'])
+            return json.loads(row["data"])
         return None
 
     async def update_batch(self, batch_id: str, updates: Dict[str, Any]) -> bool:
@@ -242,15 +256,12 @@ class SQLiteTaskStorage(TaskStorage):
         conn = self._get_connection()
 
         if status:
-            cursor = conn.execute(
-                "SELECT COUNT(*) as count FROM tasks WHERE status = ?",
-                (status,)
-            )
+            cursor = conn.execute("SELECT COUNT(*) as count FROM tasks WHERE status = ?", (status,))
         else:
             cursor = conn.execute("SELECT COUNT(*) as count FROM tasks")
 
         row = cursor.fetchone()
-        return row['count'] if row else 0
+        return row["count"] if row else 0
 
     async def cleanup_old_tasks(self, max_age_days: int = 7) -> int:
         """Remove tasks older than max_age_days."""
@@ -258,17 +269,11 @@ class SQLiteTaskStorage(TaskStorage):
         conn = self._get_connection()
 
         # Delete old tasks
-        cursor = conn.execute(
-            "DELETE FROM tasks WHERE created_at < ?",
-            (cutoff,)
-        )
+        cursor = conn.execute("DELETE FROM tasks WHERE created_at < ?", (cutoff,))
         tasks_deleted = cursor.rowcount
 
         # Delete old batches
-        conn.execute(
-            "DELETE FROM batches WHERE created_at < ?",
-            (cutoff,)
-        )
+        conn.execute("DELETE FROM batches WHERE created_at < ?", (cutoff,))
         conn.commit()
 
         logger.info(f"Cleaned up {tasks_deleted} old tasks")
@@ -276,6 +281,6 @@ class SQLiteTaskStorage(TaskStorage):
 
     def close(self) -> None:
         """Close database connection."""
-        if hasattr(self._local, 'connection'):
+        if hasattr(self._local, "connection"):
             self._local.connection.close()
             del self._local.connection

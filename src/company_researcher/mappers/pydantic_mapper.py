@@ -15,19 +15,13 @@ from ..utils import get_logger
 
 logger = get_logger(__name__)
 
-from .base_mapper import (
-    BaseMapper,
-    FrameworkType,
-    MappedEdge,
-    MappedGraph,
-    MappedNode,
-    NodeType,
-)
+from .base_mapper import BaseMapper, FrameworkType, MappedEdge, MappedGraph, MappedNode, NodeType
 
 
 @dataclass
 class PydanticAgent:
     """Representation of a Pydantic-based Agent."""
+
     name: str
     model_class: Optional[Type] = None
     fields: Dict[str, Any] = field(default_factory=dict)
@@ -78,21 +72,25 @@ class PydanticMapper(BaseMapper):
         # Get fields
         fields = {}
         try:
-            if hasattr(model_class, 'model_fields'):
+            if hasattr(model_class, "model_fields"):
                 # Pydantic v2
                 for name, field_info in model_class.model_fields.items():
                     fields[name] = {
                         "type": str(field_info.annotation),
                         "required": field_info.is_required(),
-                        "default": str(field_info.default) if field_info.default is not None else None
+                        "default": (
+                            str(field_info.default) if field_info.default is not None else None
+                        ),
                     }
-            elif hasattr(model_class, '__fields__'):
+            elif hasattr(model_class, "__fields__"):
                 # Pydantic v1
                 for name, field_info in model_class.__fields__.items():
                     fields[name] = {
                         "type": str(field_info.outer_type_),
                         "required": field_info.required,
-                        "default": str(field_info.default) if field_info.default is not None else None
+                        "default": (
+                            str(field_info.default) if field_info.default is not None else None
+                        ),
                     }
         except Exception as e:
             logger.debug(f"Failed to extract Pydantic fields from {model_class.__name__}: {e}")
@@ -100,22 +98,22 @@ class PydanticMapper(BaseMapper):
         # Get validators
         validators = []
         for name, method in inspect.getmembers(model_class, predicate=inspect.isfunction):
-            if name.startswith('validate_') or hasattr(method, '__validator_config__'):
+            if name.startswith("validate_") or hasattr(method, "__validator_config__"):
                 validators.append(name)
 
         # Get methods
         methods = []
         for name, method in inspect.getmembers(model_class, predicate=inspect.isfunction):
-            if not name.startswith('_') and name not in validators:
+            if not name.startswith("_") and name not in validators:
                 methods.append(name)
 
         # Get config
         config = {}
-        if hasattr(model_class, 'model_config'):
+        if hasattr(model_class, "model_config"):
             config = dict(model_class.model_config)
-        elif hasattr(model_class, 'Config'):
+        elif hasattr(model_class, "Config"):
             config_class = model_class.Config
-            config = {k: v for k, v in vars(config_class).items() if not k.startswith('_')}
+            config = {k: v for k, v in vars(config_class).items() if not k.startswith("_")}
 
         return PydanticAgent(
             name=model_class.__name__,
@@ -123,7 +121,7 @@ class PydanticMapper(BaseMapper):
             fields=fields,
             validators=validators,
             methods=methods,
-            config=config
+            config=config,
         )
 
     def _build_graph(self, agents: List[PydanticAgent]) -> MappedGraph:
@@ -141,8 +139,8 @@ class PydanticMapper(BaseMapper):
                 config={
                     "fields": agent.fields,
                     "validators": agent.validators,
-                    "pydantic_config": agent.config
-                }
+                    "pydantic_config": agent.config,
+                },
             )
             nodes.append(agent_node)
 
@@ -153,30 +151,26 @@ class PydanticMapper(BaseMapper):
                     name=validator,
                     node_type=NodeType.CUSTOM,
                     framework=FrameworkType.PYDANTIC,
-                    description=f"Validator for {agent.name}"
+                    description=f"Validator for {agent.name}",
                 )
                 nodes.append(val_node)
-                edges.append(MappedEdge(
-                    source=agent_node.id,
-                    target=val_node.id,
-                    edge_type="validates"
-                ))
+                edges.append(
+                    MappedEdge(source=agent_node.id, target=val_node.id, edge_type="validates")
+                )
 
             # Add method nodes for significant methods
             for method in agent.methods:
-                if method not in ('dict', 'json', 'copy', 'schema'):
+                if method not in ("dict", "json", "copy", "schema"):
                     method_node = MappedNode(
                         id=f"method_{agent.name}_{method}",
                         name=method,
                         node_type=NodeType.TOOL,
-                        framework=FrameworkType.PYDANTIC
+                        framework=FrameworkType.PYDANTIC,
                     )
                     nodes.append(method_node)
-                    edges.append(MappedEdge(
-                        source=agent_node.id,
-                        target=method_node.id,
-                        edge_type="method"
-                    ))
+                    edges.append(
+                        MappedEdge(source=agent_node.id, target=method_node.id, edge_type="method")
+                    )
 
         entry_point = nodes[0].id if nodes else None
 
@@ -186,15 +180,16 @@ class PydanticMapper(BaseMapper):
             nodes=nodes,
             edges=edges,
             entry_point=entry_point,
-            exit_points=[]
+            exit_points=[],
         )
 
     def to_langgraph(self, graph: MappedGraph) -> Any:
         """Convert to LangGraph StateGraph."""
         try:
-            from langgraph.graph import StateGraph, END
-            from typing import TypedDict, Annotated
             import operator
+            from typing import Annotated, TypedDict
+
+            from langgraph.graph import END, StateGraph
         except ImportError:
             raise ImportError("langgraph is required for conversion")
 
@@ -209,13 +204,11 @@ class PydanticMapper(BaseMapper):
         agent_nodes = [n for n in graph.nodes if n.node_type == NodeType.AGENT]
 
         for node in agent_nodes:
+
             def make_agent_node(agent_node: MappedNode):
                 async def agent_func(state: PydanticState) -> PydanticState:
-                    return {
-                        "messages": [],
-                        "validated_data": {},
-                        "errors": []
-                    }
+                    return {"messages": [], "validated_data": {}, "errors": []}
+
                 return agent_func
 
             workflow.add_node(node.id, make_agent_node(node))
@@ -228,10 +221,7 @@ class PydanticMapper(BaseMapper):
         return workflow
 
 
-def map_pydantic_to_langgraph(
-    model: Any,
-    compile: bool = False
-) -> Any:
+def map_pydantic_to_langgraph(model: Any, compile: bool = False) -> Any:
     """
     Convenience function to map Pydantic model to LangGraph.
 

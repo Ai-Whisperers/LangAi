@@ -372,17 +372,22 @@ def create_html_viewer(mermaid_code: str, title: str = "Workflow Visualization")
 
 def main():
     # Fix Windows encoding issues
-    import sys
     import io
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    import sys
+
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
     parser = argparse.ArgumentParser(description="Visualize Company Researcher workflows")
-    parser.add_argument("--format", choices=["mermaid", "json", "html", "all"], default="all",
-                       help="Output format")
-    parser.add_argument("--output", "-o", default="outputs/visualizations",
-                       help="Output directory")
-    parser.add_argument("--diagram", choices=["workflow", "agents", "integrations", "all"], default="all",
-                       help="Which diagram to generate")
+    parser.add_argument(
+        "--format", choices=["mermaid", "json", "html", "all"], default="all", help="Output format"
+    )
+    parser.add_argument("--output", "-o", default="outputs/visualizations", help="Output directory")
+    parser.add_argument(
+        "--diagram",
+        choices=["workflow", "agents", "integrations", "all"],
+        default="all",
+        help="Which diagram to generate",
+    )
 
     args = parser.parse_args()
 
@@ -425,11 +430,9 @@ def main():
             # Simple JSON export of structure
             json_file = output_dir / f"{diagram_name}.json"
             with open(json_file, "w", encoding="utf-8") as f:
-                json.dump({
-                    "name": diagram_name,
-                    "title": title,
-                    "mermaid": mermaid_code
-                }, f, indent=2)
+                json.dump(
+                    {"name": diagram_name, "title": title, "mermaid": mermaid_code}, f, indent=2
+                )
             print(f"[OK] JSON saved: {json_file}")
 
         # Always print Mermaid to console

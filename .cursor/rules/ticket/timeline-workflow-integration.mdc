@@ -31,7 +31,7 @@ Integration of timeline.md with ticket workflow, focusing on hours.md generation
 
 ### Session Calculation Rules
 - **Work Session**: Continuous work with <30min gaps between events
-- **Total Time**: Sum of all work sessions  
+- **Total Time**: Sum of all work sessions
 - **Billing Time**: Rounded up to 15-minute increments (unless excessive 10m)
 - **Calendar Time**: Include documented breaks for context
 

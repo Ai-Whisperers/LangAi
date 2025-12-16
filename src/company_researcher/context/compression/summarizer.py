@@ -4,11 +4,11 @@ Progressive Summarizer Module.
 Multi-level summarization for long documents.
 """
 
-from typing import Dict, Any, List, Optional
 import re
+from typing import Any, Dict, List, Optional
 
-from .models import CompressionLevel
 from .compressor import TextCompressor
+from .models import CompressionLevel
 
 
 class ProgressiveSummarizer:
@@ -32,10 +32,7 @@ class ProgressiveSummarizer:
         self._compressor = TextCompressor()
 
     def summarize_progressive(
-        self,
-        text: str,
-        levels: int = 2,
-        final_length: int = 500
+        self, text: str, levels: int = 2, final_length: int = 500
     ) -> Dict[str, Any]:
         """
         Progressively summarize text through multiple levels.
@@ -48,37 +45,33 @@ class ProgressiveSummarizer:
         Returns:
             Dictionary with summaries at each level
         """
-        results = {
-            "original_length": len(text),
-            "levels": []
-        }
+        results = {"original_length": len(text), "levels": []}
 
         current_text = text
 
         for level in range(levels):
             # Calculate target for this level
             reduction_factor = 0.4 ** (level + 1)
-            target_length = max(
-                final_length,
-                int(len(text) * reduction_factor)
-            )
+            target_length = max(final_length, int(len(text) * reduction_factor))
 
             # Compress
-            compression_level = CompressionLevel.MODERATE if level == 0 else CompressionLevel.AGGRESSIVE
-
-            result = self._compressor.compress(
-                current_text,
-                level=compression_level,
-                target_length=target_length
+            compression_level = (
+                CompressionLevel.MODERATE if level == 0 else CompressionLevel.AGGRESSIVE
             )
 
-            results["levels"].append({
-                "level": level + 1,
-                "input_length": len(current_text),
-                "output_length": len(result.compressed_text),
-                "compression_ratio": result.compression_ratio,
-                "text": result.compressed_text
-            })
+            result = self._compressor.compress(
+                current_text, level=compression_level, target_length=target_length
+            )
+
+            results["levels"].append(
+                {
+                    "level": level + 1,
+                    "input_length": len(current_text),
+                    "output_length": len(result.compressed_text),
+                    "compression_ratio": result.compression_ratio,
+                    "text": result.compressed_text,
+                }
+            )
 
             current_text = result.compressed_text
 
@@ -92,9 +85,7 @@ class ProgressiveSummarizer:
         return results
 
     def summarize_sections(
-        self,
-        text: str,
-        section_headers: Optional[List[str]] = None
+        self, text: str, section_headers: Optional[List[str]] = None
     ) -> Dict[str, str]:
         """
         Summarize text by sections.
@@ -111,7 +102,7 @@ class ProgressiveSummarizer:
             section_headers = [
                 r"#{1,3}\s+(.+)",  # Markdown headers
                 r"^([A-Z][A-Za-z\s]+):\s*$",  # Title: format
-                r"^\d+\.\s+(.+)"  # Numbered sections
+                r"^\d+\.\s+(.+)",  # Numbered sections
             ]
 
         # Split into sections
@@ -123,7 +114,7 @@ class ProgressiveSummarizer:
                 result = self._compressor.compress(
                     section_text,
                     level=CompressionLevel.MODERATE,
-                    target_length=min(500, len(section_text) // 2)
+                    target_length=min(500, len(section_text) // 2),
                 )
                 summaries[section_name] = result.compressed_text
             else:
@@ -131,11 +122,7 @@ class ProgressiveSummarizer:
 
         return summaries
 
-    def _split_sections(
-        self,
-        text: str,
-        patterns: List[str]
-    ) -> Dict[str, str]:
+    def _split_sections(self, text: str, patterns: List[str]) -> Dict[str, str]:
         """Split text into sections."""
         sections = {}
         current_section = "Introduction"

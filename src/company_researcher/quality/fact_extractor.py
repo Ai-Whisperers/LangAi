@@ -16,6 +16,7 @@ from typing import Any, Dict, List
 
 class FactCategory(str, Enum):
     """Category of extracted facts."""
+
     FINANCIAL = "financial"
     MARKET = "market"
     COMPANY = "company"
@@ -27,6 +28,7 @@ class FactCategory(str, Enum):
 
 class ClaimType(str, Enum):
     """Type of claim being made."""
+
     NUMERICAL = "numerical"  # Contains specific numbers
     TEMPORAL = "temporal"  # Contains dates/time references
     COMPARATIVE = "comparative"  # Compares entities
@@ -36,6 +38,7 @@ class ClaimType(str, Enum):
 @dataclass
 class ExtractedFact:
     """A fact extracted from text content."""
+
     content: str
     category: FactCategory = FactCategory.UNKNOWN
     claim_type: ClaimType = ClaimType.ATTRIBUTIVE
@@ -46,7 +49,7 @@ class ExtractedFact:
 
     def to_research_fact(self, source: Any) -> Any:
         """Convert to ResearchFact model for compatibility."""
-        from .models import ResearchFact, ConfidenceLevel
+        from .models import ConfidenceLevel, ResearchFact
 
         # Map confidence hint to confidence level
         if self.confidence_hint >= 0.7:
@@ -60,13 +63,14 @@ class ExtractedFact:
             content=self.content,
             source=source,
             confidence=confidence,
-            extracted_by=self.source_agent
+            extracted_by=self.source_agent,
         )
 
 
 @dataclass
 class ExtractedEntity:
     """An entity extracted from text."""
+
     text: str
     entity_type: str  # "number", "company", "date", "person", etc.
     start_pos: int = 0
@@ -76,6 +80,7 @@ class ExtractedEntity:
 @dataclass
 class ExtractionResult:
     """Result of fact extraction from text."""
+
     facts: List[ExtractedFact] = field(default_factory=list)
     entities: List[ExtractedEntity] = field(default_factory=list)
     total_facts: int = 0
@@ -111,66 +116,130 @@ class FactExtractor:
         # Numerical patterns (money, percentages, counts)
         self._numerical_patterns = [
             # Currency amounts
-            re.compile(r'\$[\d,]+(?:\.\d+)?(?:\s*(?:billion|million|trillion|[BMT]))?', re.IGNORECASE),
-            re.compile(r'[\d,]+(?:\.\d+)?\s*(?:USD|EUR|GBP|BRL|MXN)', re.IGNORECASE),
+            re.compile(
+                r"\$[\d,]+(?:\.\d+)?(?:\s*(?:billion|million|trillion|[BMT]))?", re.IGNORECASE
+            ),
+            re.compile(r"[\d,]+(?:\.\d+)?\s*(?:USD|EUR|GBP|BRL|MXN)", re.IGNORECASE),
             # Percentages
-            re.compile(r'[\d,]+(?:\.\d+)?\s*%'),
+            re.compile(r"[\d,]+(?:\.\d+)?\s*%"),
             # Employee counts and general numbers with units
-            re.compile(r'[\d,]+\s+(?:employees|workers|staff|people)', re.IGNORECASE),
+            re.compile(r"[\d,]+\s+(?:employees|workers|staff|people)", re.IGNORECASE),
             # Large numbers with multipliers
-            re.compile(r'[\d,]+(?:\.\d+)?\s*(?:billion|million|thousand|[BMKbmk])\b', re.IGNORECASE),
+            re.compile(
+                r"[\d,]+(?:\.\d+)?\s*(?:billion|million|thousand|[BMKbmk])\b", re.IGNORECASE
+            ),
         ]
 
         # Temporal patterns
         self._temporal_patterns = [
-            re.compile(r'\b(?:19|20)\d{2}\b'),  # Years
-            re.compile(r'\b(?:Q[1-4]|FY)\s*(?:19|20)?\d{2}\b', re.IGNORECASE),  # Quarters
-            re.compile(r'\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\b', re.IGNORECASE),
-            re.compile(r'\bfounded\s+(?:in\s+)?(?:19|20)\d{2}\b', re.IGNORECASE),
-            re.compile(r'\b(?:since|from|in)\s+(?:19|20)\d{2}\b', re.IGNORECASE),
+            re.compile(r"\b(?:19|20)\d{2}\b"),  # Years
+            re.compile(r"\b(?:Q[1-4]|FY)\s*(?:19|20)?\d{2}\b", re.IGNORECASE),  # Quarters
+            re.compile(
+                r"\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\b",
+                re.IGNORECASE,
+            ),
+            re.compile(r"\bfounded\s+(?:in\s+)?(?:19|20)\d{2}\b", re.IGNORECASE),
+            re.compile(r"\b(?:since|from|in)\s+(?:19|20)\d{2}\b", re.IGNORECASE),
         ]
 
         # Comparative patterns
         self._comparative_patterns = [
-            re.compile(r'\b(?:larger|smaller|bigger|better|worse|higher|lower|more|less|greater)\s+than\b', re.IGNORECASE),
-            re.compile(r'\b(?:outperform|underperform|exceed|surpass|lag)\w*\b', re.IGNORECASE),
-            re.compile(r'\b(?:compared\s+to|versus|vs\.?)\b', re.IGNORECASE),
-            re.compile(r'\b(?:leading|trailing|ahead|behind)\b', re.IGNORECASE),
+            re.compile(
+                r"\b(?:larger|smaller|bigger|better|worse|higher|lower|more|less|greater)\s+than\b",
+                re.IGNORECASE,
+            ),
+            re.compile(r"\b(?:outperform|underperform|exceed|surpass|lag)\w*\b", re.IGNORECASE),
+            re.compile(r"\b(?:compared\s+to|versus|vs\.?)\b", re.IGNORECASE),
+            re.compile(r"\b(?:leading|trailing|ahead|behind)\b", re.IGNORECASE),
         ]
 
         # Category keywords
         self._category_keywords = {
             FactCategory.FINANCIAL: [
-                'revenue', 'profit', 'income', 'ebitda', 'earnings', 'sales',
-                'margin', 'cash flow', 'dividend', 'eps', 'market cap',
-                'valuation', 'funding', 'investment', 'debt', 'assets'
+                "revenue",
+                "profit",
+                "income",
+                "ebitda",
+                "earnings",
+                "sales",
+                "margin",
+                "cash flow",
+                "dividend",
+                "eps",
+                "market cap",
+                "valuation",
+                "funding",
+                "investment",
+                "debt",
+                "assets",
             ],
             FactCategory.MARKET: [
-                'market share', 'tam', 'sam', 'cagr', 'growth rate',
-                'market size', 'industry', 'sector', 'competition'
+                "market share",
+                "tam",
+                "sam",
+                "cagr",
+                "growth rate",
+                "market size",
+                "industry",
+                "sector",
+                "competition",
             ],
             FactCategory.COMPANY: [
-                'founded', 'headquarters', 'headquartered', 'employees',
-                'established', 'incorporated', 'based in', 'located'
+                "founded",
+                "headquarters",
+                "headquartered",
+                "employees",
+                "established",
+                "incorporated",
+                "based in",
+                "located",
             ],
             FactCategory.LEADERSHIP: [
-                'ceo', 'cfo', 'cto', 'founder', 'chairman', 'president',
-                'executive', 'board', 'director', 'chief'
+                "ceo",
+                "cfo",
+                "cto",
+                "founder",
+                "chairman",
+                "president",
+                "executive",
+                "board",
+                "director",
+                "chief",
             ],
             FactCategory.PRODUCT: [
-                'product', 'service', 'platform', 'solution', 'offering',
-                'launch', 'release', 'feature'
+                "product",
+                "service",
+                "platform",
+                "solution",
+                "offering",
+                "launch",
+                "release",
+                "feature",
             ],
         }
 
         # Confidence modifiers
         self._high_confidence_indicators = [
-            'according to', 'reported', 'announced', 'confirmed',
-            'sec filing', 'official', 'stated', 'disclosed'
+            "according to",
+            "reported",
+            "announced",
+            "confirmed",
+            "sec filing",
+            "official",
+            "stated",
+            "disclosed",
         ]
         self._low_confidence_indicators = [
-            'approximately', 'about', 'around', 'estimated', 'roughly',
-            'may', 'might', 'could', 'possibly', 'potentially'
+            "approximately",
+            "about",
+            "around",
+            "estimated",
+            "roughly",
+            "may",
+            "might",
+            "could",
+            "possibly",
+            "potentially",
         ]
 
     def extract(self, text: str, agent_name: str = "unknown") -> ExtractionResult:
@@ -210,7 +279,10 @@ class FactExtractor:
             all_entities.extend(entities)
 
             # Create fact if it has extractable content
-            if claim_type in (ClaimType.NUMERICAL, ClaimType.TEMPORAL, ClaimType.COMPARATIVE) or entities:
+            if (
+                claim_type in (ClaimType.NUMERICAL, ClaimType.TEMPORAL, ClaimType.COMPARATIVE)
+                or entities
+            ):
                 fact = ExtractedFact(
                     content=sentence.strip(),
                     category=category,
@@ -218,7 +290,7 @@ class FactExtractor:
                     source_agent=agent_name,
                     confidence_hint=confidence,
                     needs_verification=confidence < 0.7,
-                    entities=[e.text for e in entities]
+                    entities=[e.text for e in entities],
                 )
                 facts.append(fact)
 
@@ -226,13 +298,11 @@ class FactExtractor:
             facts=facts,
             entities=all_entities,
             total_facts=len(facts),
-            total_sentences=len(sentences)
+            total_sentences=len(sentences),
         )
 
     def extract_from_agent_output(
-        self,
-        agent_output: Dict[str, Any],
-        agent_name: str
+        self, agent_output: Dict[str, Any], agent_name: str
     ) -> ExtractionResult:
         """
         Extract facts from structured agent output.
@@ -260,25 +330,36 @@ class FactExtractor:
             facts=all_facts,
             entities=all_entities,
             total_facts=len(all_facts),
-            total_sentences=total_sentences
+            total_sentences=total_sentences,
         )
 
     def _split_sentences(self, text: str) -> List[str]:
         """Split text into sentences, preserving decimals and abbreviations."""
         # Protect common abbreviations
         protected = text
-        abbreviations = ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.', 'Inc.', 'Ltd.', 'Corp.', 'vs.', 'etc.']
+        abbreviations = [
+            "Mr.",
+            "Mrs.",
+            "Ms.",
+            "Dr.",
+            "Prof.",
+            "Inc.",
+            "Ltd.",
+            "Corp.",
+            "vs.",
+            "etc.",
+        ]
         for abbr in abbreviations:
-            protected = protected.replace(abbr, abbr.replace('.', '<DOT>'))
+            protected = protected.replace(abbr, abbr.replace(".", "<DOT>"))
 
         # Protect decimal numbers
-        protected = re.sub(r'(\d)\.(\d)', r'\1<DOT>\2', protected)
+        protected = re.sub(r"(\d)\.(\d)", r"\1<DOT>\2", protected)
 
         # Split on sentence boundaries
-        sentences = re.split(r'(?<=[.!?])\s+', protected)
+        sentences = re.split(r"(?<=[.!?])\s+", protected)
 
         # Restore protected characters
-        sentences = [s.replace('<DOT>', '.') for s in sentences]
+        sentences = [s.replace("<DOT>", ".") for s in sentences]
 
         return sentences
 
@@ -309,9 +390,9 @@ class FactExtractor:
 
         # Agent name hints
         agent_hints = {
-            'financial': FactCategory.FINANCIAL,
-            'market': FactCategory.MARKET,
-            'researcher': FactCategory.COMPANY,
+            "financial": FactCategory.FINANCIAL,
+            "market": FactCategory.MARKET,
+            "researcher": FactCategory.COMPANY,
         }
 
         # Check keywords for each category
@@ -350,7 +431,7 @@ class FactExtractor:
                 break
 
         # Numerical specificity boost
-        if re.search(r'\d+\.\d+', text):  # Decimal numbers
+        if re.search(r"\d+\.\d+", text):  # Decimal numbers
             confidence += 0.1
 
         # Cap confidence
@@ -363,27 +444,32 @@ class FactExtractor:
         # Extract numbers
         for pattern in self._numerical_patterns:
             for match in pattern.finditer(text):
-                entities.append(ExtractedEntity(
-                    text=match.group(),
-                    entity_type="number",
-                    start_pos=match.start(),
-                    end_pos=match.end()
-                ))
+                entities.append(
+                    ExtractedEntity(
+                        text=match.group(),
+                        entity_type="number",
+                        start_pos=match.start(),
+                        end_pos=match.end(),
+                    )
+                )
 
         # Extract years
-        year_pattern = re.compile(r'\b(19|20)\d{2}\b')
+        year_pattern = re.compile(r"\b(19|20)\d{2}\b")
         for match in year_pattern.finditer(text):
-            entities.append(ExtractedEntity(
-                text=match.group(),
-                entity_type="date",
-                start_pos=match.start(),
-                end_pos=match.end()
-            ))
+            entities.append(
+                ExtractedEntity(
+                    text=match.group(),
+                    entity_type="date",
+                    start_pos=match.start(),
+                    end_pos=match.end(),
+                )
+            )
 
         return entities
 
 
 # Convenience functions
+
 
 def extract_facts(text: str, agent_name: str) -> List[ExtractedFact]:
     """

@@ -23,4 +23,3 @@ provenance: { owner: team-ticket, last_review: 2025-12-06 }
 
 ## External Links
 - [{{Title}}]({{URL}}) - {{description}}
-

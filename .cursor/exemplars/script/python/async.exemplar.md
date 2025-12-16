@@ -19,7 +19,7 @@ from typing import List, Dict
 async def analyze_package_async(package: Package) -> Dict:
     """Analyze single package asynchronously."""
     await asyncio.sleep(0.1)  # Simulate I/O
-    
+
     return {
         'name': package.name,
         'line_coverage': calculate_line_coverage(package),
@@ -53,4 +53,3 @@ def analyze_packages(packages: List[Package]) -> List[Dict]:
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

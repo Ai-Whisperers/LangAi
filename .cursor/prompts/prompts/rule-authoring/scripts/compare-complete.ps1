@@ -18,22 +18,22 @@
 param(
     [Parameter(Mandatory=$false, HelpMessage="Path to source repository")]
     [string]$SourceRepo = "E:\WPG\Git\E21\GitRepos\eneve.ebase.foundation",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="Path to target repository")]
     [string]$TargetRepo = "E:\WPG\Git\E21\GitRepos\eneve.domain",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="File mask for rules (default: *.mdc)")]
     [string]$RulesMask = "*.mdc",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="File mask for prompts (default: *.md)")]
     [string]$PromptsMask = "*.md",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="File mask for scripts (default: *.ps1)")]
     [string]$ScriptsMask = "*.ps1",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="Rules folder relative path (default: .cursor\rules)")]
     [string]$RulesPath = ".cursor\rules",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="Prompts folder relative path (default: .cursor\prompts)")]
     [string]$PromptsPath = ".cursor\prompts"
 )
@@ -65,7 +65,7 @@ if (Test-Path $sourceRulesPath) {
     foreach ($sourceRule in $sourceRules) {
         $relativePath = $sourceRule.FullName.Replace("$sourceRulesPath\", "")
         $targetPath = Join-Path $targetRulesPath $relativePath
-        
+
         # Extract version from source (only for .mdc files with front-matter)
         $sourceContent = Get-Content $sourceRule.FullName -Raw
         if ($RulesMask -eq "*.mdc" -and $sourceContent -match '(?s)^---\s*\n(.*?)\n---') {
@@ -76,7 +76,7 @@ if (Test-Path $sourceRulesPath) {
             $sourceVersion = "N/A"
             $sourceId = "N/A"
         }
-        
+
         # Check target
         if (Test-Path $targetPath) {
             if ($RulesMask -eq "*.mdc") {
@@ -99,7 +99,7 @@ if (Test-Path $sourceRulesPath) {
             $targetVersion = "MISSING"
             $status = "ADD"
         }
-        
+
         $rulesResults += [PSCustomObject]@{
             File = $relativePath
             SourceId = $sourceId
@@ -136,10 +136,10 @@ if (Test-Path $sourcePromptsPath) {
     foreach ($sourcePrompt in $sourcePrompts) {
         $relativePath = $sourcePrompt.FullName.Replace("$sourcePromptsPath\", "")
         $targetPath = Join-Path $targetPromptsPath $relativePath
-        
+
         # Get file hash for comparison
         $sourceHash = (Get-FileHash -Path $sourcePrompt.FullName -Algorithm MD5).Hash
-        
+
         # Check target
         if (Test-Path $targetPath) {
             $targetHash = (Get-FileHash -Path $targetPath -Algorithm MD5).Hash
@@ -148,7 +148,7 @@ if (Test-Path $sourcePromptsPath) {
             $status = "ADD"
             $targetHash = "MISSING"
         }
-        
+
         $promptsResults += [PSCustomObject]@{
             File = $relativePath
             SourceHash = $sourceHash.Substring(0, 8)
@@ -185,10 +185,10 @@ if (Test-Path $sourceScriptsPath) {
     foreach ($sourceScript in $sourceScripts) {
         $relativePath = $sourceScript.FullName.Replace("$sourceScriptsPath\", "")
         $targetPath = Join-Path $targetScriptsPath $relativePath
-        
+
         # Get file hash for comparison
         $sourceHash = (Get-FileHash -Path $sourceScript.FullName -Algorithm MD5).Hash
-        
+
         # Check target
         if (Test-Path $targetPath) {
             $targetHash = (Get-FileHash -Path $targetPath -Algorithm MD5).Hash
@@ -197,7 +197,7 @@ if (Test-Path $sourceScriptsPath) {
             $status = "ADD"
             $targetHash = "MISSING"
         }
-        
+
         $scriptsResults += [PSCustomObject]@{
             File = $relativePath
             SourceHash = $sourceHash.Substring(0, 8)

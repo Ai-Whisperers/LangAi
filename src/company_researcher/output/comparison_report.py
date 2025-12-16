@@ -14,11 +14,12 @@ Output formats:
 - JSON for API responses
 """
 
-from typing import Dict, Any, List, Optional
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-import json
+from typing import Any, Dict, List, Optional
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -26,6 +27,7 @@ logger = get_logger(__name__)
 
 class ComparisonMetric(str, Enum):
     """Metrics for company comparison."""
+
     REVENUE = "revenue"
     REVENUE_GROWTH = "revenue_growth"
     MARKET_CAP = "market_cap"
@@ -39,6 +41,7 @@ class ComparisonMetric(str, Enum):
 
 class ComparisonCategory(str, Enum):
     """Categories for comparison."""
+
     FINANCIAL = "financial"
     MARKET = "market"
     OPERATIONS = "operations"
@@ -49,6 +52,7 @@ class ComparisonCategory(str, Enum):
 @dataclass
 class CompanyData:
     """Structured data for a company in comparison."""
+
     name: str
     ticker: Optional[str] = None
     metrics: Dict[str, Any] = field(default_factory=dict)
@@ -64,6 +68,7 @@ class CompanyData:
 @dataclass
 class MetricComparison:
     """Comparison result for a single metric."""
+
     metric_name: str
     category: ComparisonCategory
     values: Dict[str, Any]  # company_name -> value
@@ -76,6 +81,7 @@ class MetricComparison:
 @dataclass
 class ComparisonReport:
     """Complete comparison report."""
+
     title: str
     companies: List[str]
     generated_at: datetime
@@ -292,14 +298,16 @@ class ComparisonReportGenerator:
             numeric_vals = [v for v in values.values() if isinstance(v, (int, float))]
             average = sum(numeric_vals) / len(numeric_vals) if numeric_vals else None
 
-            comparisons.append(MetricComparison(
-                metric_name=config["name"],
-                category=config["category"],
-                values=values,
-                best_performer=best,
-                worst_performer=worst,
-                average=average,
-            ))
+            comparisons.append(
+                MetricComparison(
+                    metric_name=config["name"],
+                    category=config["category"],
+                    values=values,
+                    best_performer=best,
+                    worst_performer=worst,
+                    average=average,
+                )
+            )
 
         return comparisons
 
@@ -335,9 +343,7 @@ class ComparisonReportGenerator:
         return winners
 
     def _generate_insights(
-        self,
-        comparisons: List[MetricComparison],
-        swot: Dict[str, Dict[str, List[str]]]
+        self, comparisons: List[MetricComparison], swot: Dict[str, Dict[str, List[str]]]
     ) -> List[str]:
         """Generate key insights from comparison."""
         insights = []
@@ -350,7 +356,9 @@ class ComparisonReportGenerator:
 
         if company_wins:
             leader = max(company_wins, key=company_wins.get)
-            insights.append(f"{leader} leads in {company_wins[leader]} out of {len(comparisons)} metrics compared.")
+            insights.append(
+                f"{leader} leads in {company_wins[leader]} out of {len(comparisons)} metrics compared."
+            )
 
         # Note significant gaps
         for comp in comparisons:
@@ -403,13 +411,15 @@ class ComparisonReportGenerator:
         for company in report.companies:
             lines.append(f"- {company}")
 
-        lines.extend([
-            "",
-            "## Metric Comparison",
-            "",
-            "| Metric | " + " | ".join(report.companies) + " | Leader |",
-            "|--------|" + "|".join(["--------"] * len(report.companies)) + "|--------|",
-        ])
+        lines.extend(
+            [
+                "",
+                "## Metric Comparison",
+                "",
+                "| Metric | " + " | ".join(report.companies) + " | Leader |",
+                "|--------|" + "|".join(["--------"] * len(report.companies)) + "|--------|",
+            ]
+        )
 
         for comp in report.metric_comparisons:
             row = f"| {comp.metric_name} |"
@@ -422,18 +432,22 @@ class ComparisonReportGenerator:
             lines.append(row)
 
         # SWOT Matrix
-        lines.extend([
-            "",
-            "## SWOT Analysis",
-            "",
-        ])
+        lines.extend(
+            [
+                "",
+                "## SWOT Analysis",
+                "",
+            ]
+        )
 
         for company, swot in report.swot_matrix.items():
-            lines.extend([
-                f"### {company}",
-                "",
-                "**Strengths:**",
-            ])
+            lines.extend(
+                [
+                    f"### {company}",
+                    "",
+                    "**Strengths:**",
+                ]
+            )
             for s in swot.get("strengths", []):
                 lines.append(f"- {s}")
 
@@ -445,19 +459,23 @@ class ComparisonReportGenerator:
             lines.append("")
 
         # Key Insights
-        lines.extend([
-            "## Key Insights",
-            "",
-        ])
+        lines.extend(
+            [
+                "## Key Insights",
+                "",
+            ]
+        )
         for insight in report.key_insights:
             lines.append(f"- {insight}")
 
         # Recommendations
-        lines.extend([
-            "",
-            "## Recommendations",
-            "",
-        ])
+        lines.extend(
+            [
+                "",
+                "## Recommendations",
+                "",
+            ]
+        )
         for rec in report.recommendations:
             lines.append(f"- {rec}")
 
@@ -523,7 +541,7 @@ class ComparisonReportGenerator:
                 val = comp.values.get(company, "N/A")
                 if isinstance(val, (int, float)):
                     val = f"{val:,.2f}" if isinstance(val, float) else f"{val:,}"
-                css = ' class="winner"' if company == comp.best_performer else ''
+                css = ' class="winner"' if company == comp.best_performer else ""
                 html += f"            <td{css}>{val}</td>\n"
             html += f'            <td class="winner">{comp.best_performer or "N/A"}</td>\n'
             html += "        </tr>\n"
@@ -547,8 +565,7 @@ def create_comparison_generator() -> ComparisonReportGenerator:
 
 
 async def compare_companies(
-    company_data: Dict[str, Dict[str, Any]],
-    output_format: str = "markdown"
+    company_data: Dict[str, Dict[str, Any]], output_format: str = "markdown"
 ) -> str:
     """
     Quick comparison of multiple companies.

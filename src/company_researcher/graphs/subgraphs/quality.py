@@ -12,13 +12,14 @@ This subgraph ensures research quality meets threshold before
 proceeding to output generation.
 """
 
-from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
-from langgraph.graph import StateGraph, START, END
+from typing import Any, Dict, List, Optional
 
-from ...state.workflow import OverallState
+from langgraph.graph import END, START, StateGraph
+
 from ...agents.quality.logic_critic import logic_critic_agent_node
 from ...quality import check_research_quality
+from ...state.workflow import OverallState
 from ...utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -53,6 +54,7 @@ class QualityConfig:
 # ============================================================================
 # Quality Check Nodes
 # ============================================================================
+
 
 def extract_facts_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -174,7 +176,7 @@ def detect_contradictions_node(state: OverallState) -> Dict[str, Any]:
             continue
 
         for i, fact1 in enumerate(cat_facts):
-            for fact2 in cat_facts[i + 1:]:
+            for fact2 in cat_facts[i + 1 :]:
                 # Skip if same source
                 if fact1.get("source_agent") == fact2.get("source_agent"):
                     continue
@@ -214,8 +216,8 @@ def _check_contradiction(fact1: Dict, fact2: Dict) -> Optional[Dict]:
     import re
 
     # Extract numbers from both facts
-    numbers1 = re.findall(r'\$?[\d,]+\.?\d*[BMK]?%?', text1)
-    numbers2 = re.findall(r'\$?[\d,]+\.?\d*[BMK]?%?', text2)
+    numbers1 = re.findall(r"\$?[\d,]+\.?\d*[BMK]?%?", text1)
+    numbers2 = re.findall(r"\$?[\d,]+\.?\d*[BMK]?%?", text2)
 
     # Check if facts discuss same topic but have different numbers
     common_topics = ["revenue", "employees", "market", "growth", "share"]
@@ -303,13 +305,15 @@ def identify_gaps_node(state: OverallState) -> Dict[str, Any]:
         is_missing = value is None or (isinstance(value, (str, list, dict)) and not value)
 
         if is_missing:
-            gaps.append({
-                "section": section_name,
-                "field": field,
-                "description": section_info["description"],
-                "severity": section_info["severity"],
-                "recommendation": f"Research more about {section_info['description'].lower()}",
-            })
+            gaps.append(
+                {
+                    "section": section_name,
+                    "field": field,
+                    "description": section_info["description"],
+                    "severity": section_info["severity"],
+                    "recommendation": f"Research more about {section_info['description'].lower()}",
+                }
+            )
 
             if section_info["severity"] in ("high", "critical"):
                 gap_recommendations.append(
@@ -374,7 +378,11 @@ def calculate_quality_score_node(state: OverallState) -> Dict[str, Any]:
     coverage_score = max(0, 100 - (high_severity_gaps * 25) - (total_gaps * 10))
 
     # Accuracy: Use logic critic score if available
-    accuracy_score = logic_critic_score if logic_critic_score > 0 else (completeness_score + consistency_score) / 2
+    accuracy_score = (
+        logic_critic_score
+        if logic_critic_score > 0
+        else (completeness_score + consistency_score) / 2
+    )
 
     # Weighted final score
     weights = {
@@ -385,10 +393,10 @@ def calculate_quality_score_node(state: OverallState) -> Dict[str, Any]:
     }
 
     final_score = (
-        completeness_score * weights["completeness"] +
-        consistency_score * weights["consistency"] +
-        coverage_score * weights["coverage"] +
-        accuracy_score * weights["accuracy"]
+        completeness_score * weights["completeness"]
+        + consistency_score * weights["consistency"]
+        + coverage_score * weights["coverage"]
+        + accuracy_score * weights["accuracy"]
     )
 
     quality_breakdown = {
@@ -401,7 +409,9 @@ def calculate_quality_score_node(state: OverallState) -> Dict[str, Any]:
     }
 
     logger.info(f"[QUALITY] Score: {final_score:.1f}/100")
-    logger.info(f"[QUALITY] Breakdown: completeness={completeness_score:.0f}, consistency={consistency_score:.0f}, coverage={coverage_score:.0f}, accuracy={accuracy_score:.0f}")
+    logger.info(
+        f"[QUALITY] Breakdown: completeness={completeness_score:.0f}, consistency={consistency_score:.0f}, coverage={coverage_score:.0f}, accuracy={accuracy_score:.0f}"
+    )
 
     return {
         "quality_score": round(final_score, 1),
@@ -439,7 +449,9 @@ def should_iterate_node(state: OverallState) -> Dict[str, Any]:
         elif contradictions.get("critical", 0) > 0:
             iteration_reason = "Critical contradictions detected"
         else:
-            iteration_reason = f"Quality score ({quality_score:.1f}) below threshold ({min_quality})"
+            iteration_reason = (
+                f"Quality score ({quality_score:.1f}) below threshold ({min_quality})"
+            )
 
     # Generate missing info list for iteration
     missing_info = []
@@ -458,6 +470,7 @@ def should_iterate_node(state: OverallState) -> Dict[str, Any]:
 # ============================================================================
 # Routing Functions
 # ============================================================================
+
 
 def route_quality_decision(state: OverallState) -> str:
     """
@@ -483,9 +496,8 @@ def route_quality_decision(state: OverallState) -> str:
 # Subgraph Creation
 # ============================================================================
 
-def create_quality_subgraph(
-    config: Optional[QualityConfig] = None
-) -> StateGraph:
+
+def create_quality_subgraph(config: Optional[QualityConfig] = None) -> StateGraph:
     """
     Create the quality assurance subgraph.
 

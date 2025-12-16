@@ -27,15 +27,16 @@ Usage:
     cache.set("custom_key", data, ttl_hours=12)
 """
 
-import json
-import hashlib
-from pathlib import Path
-from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List
-from dataclasses import dataclass, asdict
-from threading import Lock
 import gzip
-from ..utils import get_logger, utc_now, get_config
+import hashlib
+import json
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from pathlib import Path
+from threading import Lock
+from typing import Any, Dict, List, Optional
+
+from ..utils import get_config, get_logger, utc_now
 
 logger = get_logger(__name__)
 
@@ -43,6 +44,7 @@ logger = get_logger(__name__)
 @dataclass
 class CacheEntry:
     """Cache entry with metadata."""
+
     key: str
     data: Any
     created_at: str
@@ -78,21 +80,18 @@ class ResultCache:
 
     # Default TTLs in hours
     DEFAULT_TTLS = {
-        "search": 24,           # Search results: 24 hours
-        "scrape": 168,          # Scraped content: 7 days
+        "search": 24,  # Search results: 24 hours
+        "scrape": 168,  # Scraped content: 7 days
         "classification": 720,  # Company classification: 30 days
-        "financial": 1,         # Financial data: 1 hour (real-time)
-        "news": 6,              # News results: 6 hours
-        "wikipedia": 720,       # Wikipedia: 30 days
-        "sec_filing": 720,      # SEC filings: 30 days (rarely change)
-        "default": 24,          # Default: 24 hours
+        "financial": 1,  # Financial data: 1 hour (real-time)
+        "news": 6,  # News results: 6 hours
+        "wikipedia": 720,  # Wikipedia: 30 days
+        "sec_filing": 720,  # SEC filings: 30 days (rarely change)
+        "default": 24,  # Default: 24 hours
     }
 
     def __init__(
-        self,
-        cache_dir: Optional[str] = None,
-        compress: bool = True,
-        max_size_mb: int = 500
+        self, cache_dir: Optional[str] = None, compress: bool = True, max_size_mb: int = 500
     ):
         """
         Initialize result cache.
@@ -102,21 +101,15 @@ class ResultCache:
             compress: Whether to compress cached data
             max_size_mb: Maximum cache size in MB
         """
-        self.cache_dir = Path(cache_dir or get_config(
-            "RESEARCH_CACHE_DIR",
-            default=".research_cache"
-        ))
+        self.cache_dir = Path(
+            cache_dir or get_config("RESEARCH_CACHE_DIR", default=".research_cache")
+        )
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         self.compress = compress
         self.max_size_bytes = max_size_mb * 1024 * 1024
         self._lock = Lock()
-        self._stats = {
-            "hits": 0,
-            "misses": 0,
-            "writes": 0,
-            "expired": 0
-        }
+        self._stats = {"hits": 0, "misses": 0, "writes": 0, "expired": 0}
 
         logger.info(f"Result cache initialized: {self.cache_dir}")
 
@@ -179,11 +172,7 @@ class ResultCache:
             return None
 
     def set(
-        self,
-        key: str,
-        data: Any,
-        cache_type: str = "default",
-        ttl_hours: Optional[int] = None
+        self, key: str, data: Any, cache_type: str = "default", ttl_hours: Optional[int] = None
     ) -> bool:
         """
         Set cached value.
@@ -213,7 +202,7 @@ class ResultCache:
             expires_at=expires.isoformat(),
             cache_type=cache_type,
             hit_count=0,
-            size_bytes=0
+            size_bytes=0,
         )
 
         try:
@@ -321,7 +310,7 @@ class ResultCache:
 
                 by_type[type_name] = {
                     "files": type_files,
-                    "size_mb": round(type_size / 1024 / 1024, 2)
+                    "size_mb": round(type_size / 1024 / 1024, 2),
                 }
                 total_files += type_files
                 total_size += type_size
@@ -331,7 +320,7 @@ class ResultCache:
             "total_size_mb": round(total_size / 1024 / 1024, 2),
             "by_type": by_type,
             "hit_rate": self._stats["hits"] / max(self._stats["hits"] + self._stats["misses"], 1),
-            **self._stats
+            **self._stats,
         }
 
 

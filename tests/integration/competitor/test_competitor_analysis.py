@@ -17,22 +17,22 @@ Usage:
 
 from datetime import datetime, timedelta, timezone
 
-from src.company_researcher.tools.competitor_analysis_utils import (
-    CompetitorType,
-    ThreatLevel,
-    classify_competitor,
-    assess_threat_level,
-    TechStackAnalyzer,
-    GitHubMetrics,
-    analyze_competitive_positioning,
-    analyze_patent_portfolio,
-    aggregate_review_sentiment
-)
 from src.company_researcher.agents.market.competitor_scout import (
+    assess_competitors_from_data,
+    compare_tech_stacks,
     extract_competitor_data,
     format_competitor_search_results,
-    assess_competitors_from_data,
-    compare_tech_stacks
+)
+from src.company_researcher.tools.competitor_analysis_utils import (
+    CompetitorType,
+    GitHubMetrics,
+    TechStackAnalyzer,
+    ThreatLevel,
+    aggregate_review_sentiment,
+    analyze_competitive_positioning,
+    analyze_patent_portfolio,
+    assess_threat_level,
+    classify_competitor,
 )
 
 
@@ -44,10 +44,10 @@ def test_competitor_classification():
 
     test_cases = [
         # (market_overlap, product_similarity, customer_overlap, expected_type)
-        (90, 85, 80, CompetitorType.DIRECT),      # High overlap = DIRECT
-        (60, 55, 50, CompetitorType.INDIRECT),    # Moderate = INDIRECT
+        (90, 85, 80, CompetitorType.DIRECT),  # High overlap = DIRECT
+        (60, 55, 50, CompetitorType.INDIRECT),  # Moderate = INDIRECT
         (30, 20, 70, CompetitorType.SUBSTITUTE),  # Low product, high customer = SUBSTITUTE
-        (20, 15, 25, CompetitorType.POTENTIAL),   # Low overlap = POTENTIAL
+        (20, 15, 25, CompetitorType.POTENTIAL),  # Low overlap = POTENTIAL
     ]
 
     print("\n  Testing competitor classification...")
@@ -58,7 +58,9 @@ def test_competitor_classification():
         status = "[OK]" if result == expected else "[FAIL]"
         if result == expected:
             passed += 1
-        print(f"  {status} Overlap({market}%, {product}%, {customer}%): {result.value} (expected: {expected.value})")
+        print(
+            f"  {status} Overlap({market}%, {product}%, {customer}%): {result.value} (expected: {expected.value})"
+        )
 
     print(f"\n  Passed: {passed}/{len(test_cases)}")
     print("\n[OK] Competitor classification test complete\n")
@@ -76,10 +78,10 @@ def test_threat_assessment():
     test_cases = [
         # (market_share, growth_rate, funding, quality, brand)
         (80, 100, 10, 10, 10),  # Maximum values
-        (40, 50, 8, 8, 8),      # High values
-        (20, 30, 5, 5, 5),      # Medium values
-        (5, 10, 3, 3, 3),       # Low values
-        (1, 2, 1, 1, 1),        # Minimal values
+        (40, 50, 8, 8, 8),  # High values
+        (20, 30, 5, 5, 5),  # Medium values
+        (5, 10, 3, 3, 3),  # Low values
+        (1, 2, 1, 1, 1),  # Minimal values
     ]
 
     print("\n  Testing threat level assessment...")
@@ -142,8 +144,8 @@ def test_tech_stack_analyzer():
     print(f"  Unique to B: {comparison['unique_to_b']}")
 
     # Verify comparison
-    assert comparison['similarity_score'] > 0, "Should have some similarity"
-    assert comparison['similarity_score'] < 100, "Should not be identical"
+    assert comparison["similarity_score"] > 0, "Should have some similarity"
+    assert comparison["similarity_score"] < 100, "Should not be identical"
     print("  [OK] Comparison correct")
 
     print("\n[OK] Tech stack analyzer test complete\n")
@@ -160,10 +162,7 @@ def test_github_metrics():
 
     # Generate test commits with timezone-aware datetimes
     now = datetime.now(timezone.utc)
-    commits = [
-        now - timedelta(days=i)
-        for i in range(45)  # 45 commits spread over 45 days
-    ]
+    commits = [now - timedelta(days=i) for i in range(45)]  # 45 commits spread over 45 days
 
     frequency = GitHubMetrics.calculate_commit_frequency(commits, period_days=30)
     print(f"  Commits in last 30 days: ~30")
@@ -177,11 +176,7 @@ def test_github_metrics():
     print("\n  Testing repository health calculation...")
 
     health = GitHubMetrics.calculate_repository_health(
-        stars=1500,
-        forks=250,
-        open_issues=45,
-        closed_issues=180,
-        last_commit_days_ago=3
+        stars=1500, forks=250, open_issues=45, closed_issues=180, last_commit_days_ago=3
     )
 
     print(f"  Stars: 1,500, Forks: 250")
@@ -193,17 +188,14 @@ def test_github_metrics():
     print(f"  Maintenance: {health['maintenance_score']}/100")
 
     # Verify scores are reasonable
-    assert 0 <= health['health_score'] <= 100, "Health score out of range"
-    assert health['activity_score'] >= 80, "Recent commits should give high activity"
+    assert 0 <= health["health_score"] <= 100, "Health score out of range"
+    assert health["activity_score"] >= 80, "Recent commits should give high activity"
     print("  [OK] Health calculation correct")
 
     # Test team size estimation
     print("\n  Testing team size estimation...")
 
-    min_size, max_size = GitHubMetrics.estimate_team_size(
-        contributors=25,
-        commit_frequency=5.0
-    )
+    min_size, max_size = GitHubMetrics.estimate_team_size(contributors=25, commit_frequency=5.0)
 
     print(f"  Contributors: 25, Commit frequency: 5.0/day")
     print(f"  Estimated team size: {min_size}-{max_size}")
@@ -226,25 +218,14 @@ def test_competitive_positioning():
         "Strong brand recognition",
         "Advanced AI technology",
         "Large customer base",
-        "Excellent support"
+        "Excellent support",
     ]
 
-    company_weaknesses = [
-        "Higher pricing",
-        "Complex onboarding"
-    ]
+    company_weaknesses = ["Higher pricing", "Complex onboarding"]
 
-    competitor_strengths = [
-        "Competitive pricing",
-        "Simple interface",
-        "Fast performance"
-    ]
+    competitor_strengths = ["Competitive pricing", "Simple interface", "Fast performance"]
 
-    competitor_weaknesses = [
-        "Limited features",
-        "Poor support",
-        "No enterprise tier"
-    ]
+    competitor_weaknesses = ["Limited features", "Poor support", "No enterprise tier"]
 
     print("\n  Testing positioning analysis...")
     print(f"  Company strengths: {len(company_strengths)}")
@@ -256,7 +237,7 @@ def test_competitive_positioning():
         company_strengths=company_strengths,
         company_weaknesses=company_weaknesses,
         competitor_strengths=competitor_strengths,
-        competitor_weaknesses=competitor_weaknesses
+        competitor_weaknesses=competitor_weaknesses,
     )
 
     print("\n  Results:")
@@ -266,9 +247,9 @@ def test_competitive_positioning():
     print(f"  Threats: {positioning['threats']}")
 
     # Verify analysis
-    assert len(positioning['advantages']) > 0, "Should have some advantages"
-    assert len(positioning['disadvantages']) > 0, "Should have some disadvantages"
-    assert len(positioning['opportunities']) > 0, "Should have opportunities"
+    assert len(positioning["advantages"]) > 0, "Should have some advantages"
+    assert len(positioning["disadvantages"]) > 0, "Should have some disadvantages"
+    assert len(positioning["opportunities"]) > 0, "Should have opportunities"
     print("  [OK] Positioning analysis correct")
 
     print("\n[OK] Competitive positioning test complete\n")
@@ -294,8 +275,8 @@ def test_patent_analysis():
     passed = 0
     for patents, recent, categories, expected in test_cases:
         result = analyze_patent_portfolio(patents, recent, categories)
-        status = "[OK]" if result['portfolio_strength'] == expected else "[FAIL]"
-        if result['portfolio_strength'] == expected:
+        status = "[OK]" if result["portfolio_strength"] == expected else "[FAIL]"
+        if result["portfolio_strength"] == expected:
             passed += 1
 
         print(f"  {status} Patents={patents}, Recent={recent}")
@@ -332,19 +313,19 @@ def test_review_sentiment():
     print(f"  Average rating: {result['average_rating']}/5")
     print(f"  Sentiment: {result['sentiment']}")
     print(f"  Distribution:")
-    for star, count in result['rating_distribution'].items():
+    for star, count in result["rating_distribution"].items():
         print(f"    {star}: {count}")
 
     # Verify calculation
-    expected_avg = sum(r['rating'] for r in reviews) / len(reviews)
-    assert abs(result['average_rating'] - expected_avg) < 0.01, "Average mismatch"
-    assert result['available'] is True, "Should be available"
+    expected_avg = sum(r["rating"] for r in reviews) / len(reviews)
+    assert abs(result["average_rating"] - expected_avg) < 0.01, "Average mismatch"
+    assert result["available"] is True, "Should be available"
     print("  [OK] Sentiment aggregation correct")
 
     # Test empty reviews
     print("\n  Testing empty reviews...")
     empty_result = aggregate_review_sentiment([])
-    assert empty_result['available'] is False, "Should indicate not available"
+    assert empty_result["available"] is False, "Should indicate not available"
     print("  [OK] Empty reviews handled correctly")
 
     print("\n[OK] Review sentiment test complete\n")
@@ -393,8 +374,8 @@ def test_extract_competitor_data():
     print(f"  Competitive intensity: {result['competitive_intensity']}")
 
     # Verify extraction
-    assert result['competitor_count'] >= 3, "Should find at least 3 competitors"
-    assert result['competitive_intensity'] is not None, "Should extract intensity"
+    assert result["competitor_count"] >= 3, "Should find at least 3 competitors"
+    assert result["competitive_intensity"] is not None, "Should extract intensity"
     print("  [OK] Data extraction correct")
 
     print("\n[OK] Extract competitor data test complete\n")
@@ -411,18 +392,18 @@ def test_format_search_results():
         {
             "title": "Top Salesforce Competitors and Alternatives",
             "url": "https://example.com/salesforce-alternatives",
-            "content": "Compare Salesforce alternatives including HubSpot, Zoho, and Microsoft Dynamics..."
+            "content": "Compare Salesforce alternatives including HubSpot, Zoho, and Microsoft Dynamics...",
         },
         {
             "title": "Salesforce Company Overview",
             "url": "https://example.com/salesforce",
-            "content": "Salesforce is a leading CRM provider..."
+            "content": "Salesforce is a leading CRM provider...",
         },
         {
             "title": "Salesforce vs HubSpot: Full Comparison",
             "url": "https://example.com/salesforce-vs-hubspot",
-            "content": "In this competitor comparison, we analyze how Salesforce compares to HubSpot..."
-        }
+            "content": "In this competitor comparison, we analyze how Salesforce compares to HubSpot...",
+        },
     ]
 
     print("\n  Testing search result formatting...")
@@ -459,7 +440,7 @@ def test_assess_competitors():
             "growth_rate": 40,
             "funding_strength": 8,
             "product_quality": 7,
-            "brand_strength": 6
+            "brand_strength": 6,
         },
         {
             "name": "StartupX",
@@ -470,8 +451,8 @@ def test_assess_competitors():
             "growth_rate": 100,
             "funding_strength": 6,
             "product_quality": 5,
-            "brand_strength": 3
-        }
+            "brand_strength": 3,
+        },
     ]
 
     print("\n  Testing competitor assessment...")
@@ -485,9 +466,15 @@ def test_assess_competitors():
         print(f"    Threat: {comp['threat_level']}")
 
     # Verify assessment - check types are valid
-    assert assessed[0]['competitor_type'] == 'DIRECT', "High overlap should be DIRECT"
-    assert assessed[0]['threat_level'] in ['CRITICAL', 'HIGH', 'MODERATE', 'LOW', 'EMERGING'], "Should be valid threat"
-    assert assessed[1]['competitor_type'] == 'INDIRECT', "Moderate overlap should be INDIRECT"
+    assert assessed[0]["competitor_type"] == "DIRECT", "High overlap should be DIRECT"
+    assert assessed[0]["threat_level"] in [
+        "CRITICAL",
+        "HIGH",
+        "MODERATE",
+        "LOW",
+        "EMERGING",
+    ], "Should be valid threat"
+    assert assessed[1]["competitor_type"] == "INDIRECT", "Moderate overlap should be INDIRECT"
     print("\n  [OK] Assessment correct")
 
     print("\n[OK] Assess competitors test complete\n")
@@ -515,9 +502,9 @@ def test_tech_stack_comparison_helper():
     print(f"  Common technologies: {result['comparison']['common_technologies']}")
 
     # Verify result structure
-    assert 'company_stack' in result, "Should have company_stack"
-    assert 'competitor_stack' in result, "Should have competitor_stack"
-    assert 'comparison' in result, "Should have comparison"
+    assert "company_stack" in result, "Should have company_stack"
+    assert "competitor_stack" in result, "Should have competitor_stack"
+    assert "comparison" in result, "Should have comparison"
     print("  [OK] Comparison helper works correctly")
 
     print("\n[OK] Tech stack comparison helper test complete\n")
@@ -532,7 +519,6 @@ def test_agent_structure():
 
     print("\n  Verifying agent imports...")
 
-
     print("  [OK] competitor_scout_agent_node imported")
     print("  [OK] competitor_scout_agent_node_traced imported")
 
@@ -540,7 +526,7 @@ def test_agent_structure():
     print("\n  Verifying workflow integration...")
 
     from src.company_researcher.workflows.parallel_agent_research import (
-        create_parallel_agent_workflow
+        create_parallel_agent_workflow,
     )
 
     workflow = create_parallel_agent_workflow()
@@ -549,9 +535,7 @@ def test_agent_structure():
     # Verify LangFlow component
     print("\n  Verifying LangFlow component...")
 
-    from src.company_researcher.langflow.components import (
-        COMPONENT_REGISTRY
-    )
+    from src.company_researcher.langflow.components import COMPONENT_REGISTRY
 
     assert "CompetitorScout" in COMPONENT_REGISTRY, "Should be in registry"
     print("  [OK] CompetitorScoutComponent in registry")
@@ -597,6 +581,7 @@ def run_all_tests():
         except Exception as e:
             results.append((test_name, "FAILED", str(e)))
             import traceback
+
             traceback.print_exc()
 
     # Print summary

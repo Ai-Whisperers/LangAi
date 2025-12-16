@@ -1,17 +1,18 @@
 """Tests for config utilities."""
 
 import os
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from company_researcher.utils.config import (
     ConfigError,
-    get_config,
-    get_required_config,
     get_bool_config,
-    get_int_config,
+    get_config,
     get_float_config,
+    get_int_config,
     get_list_config,
+    get_required_config,
 )
 
 

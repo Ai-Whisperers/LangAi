@@ -42,6 +42,7 @@ from typing import Any, Dict, List, Optional, Tuple
 @dataclass
 class FormatterConfig:
     """Configuration for search result formatting."""
+
     max_sources: int = 15
     content_length: int = 500
     show_relevance: bool = False
@@ -65,7 +66,7 @@ class SearchResultFormatter:
         keywords: Optional[List[str]] = None,
         boost_keywords: Optional[List[str]] = None,
         boost_amount: int = 3,
-        config: Optional[FormatterConfig] = None
+        config: Optional[FormatterConfig] = None,
     ):
         self.keywords = keywords or []
         self.boost_keywords = boost_keywords or []
@@ -87,8 +88,7 @@ class SearchResultFormatter:
 
         # Base score from keyword matches
         score = sum(
-            1 for keyword in self.keywords
-            if keyword.lower() in content or keyword.lower() in title
+            1 for keyword in self.keywords if keyword.lower() in content or keyword.lower() in title
         )
 
         # Boost for high-priority keywords
@@ -98,10 +98,7 @@ class SearchResultFormatter:
 
         return score
 
-    def sort_by_relevance(
-        self,
-        results: List[Dict[str, Any]]
-    ) -> List[Tuple[int, Dict[str, Any]]]:
+    def sort_by_relevance(self, results: List[Dict[str, Any]]) -> List[Tuple[int, Dict[str, Any]]]:
         """
         Sort results by relevance score (descending).
 
@@ -119,12 +116,7 @@ class SearchResultFormatter:
         scored.sort(key=lambda x: x[0], reverse=True)
         return scored
 
-    def format_single(
-        self,
-        result: Dict[str, Any],
-        index: int,
-        score: Optional[int] = None
-    ) -> str:
+    def format_single(self, result: Dict[str, Any], index: int, score: Optional[int] = None) -> str:
         """
         Format a single search result.
 
@@ -142,7 +134,7 @@ class SearchResultFormatter:
 
         # Truncate content
         if isinstance(content, str) and len(content) > self.config.content_length:
-            content = content[:self.config.content_length] + "..."
+            content = content[: self.config.content_length] + "..."
 
         # Build header
         if self.config.show_relevance and score is not None:
@@ -170,7 +162,7 @@ class SearchResultFormatter:
 
         # Format top results
         formatted = []
-        for i, (score, result) in enumerate(scored_results[:self.config.max_sources], 1):
+        for i, (score, result) in enumerate(scored_results[: self.config.max_sources], 1):
             formatted.append(self.format_single(result, i, score))
 
         return "\n\n".join(formatted)
@@ -180,22 +172,35 @@ class SearchResultFormatter:
 # Domain-Specific Formatters
 # ==============================================================================
 
+
 class MarketSearchFormatter(SearchResultFormatter):
     """Formatter optimized for market analysis."""
 
     def __init__(self, config: Optional[FormatterConfig] = None):
         super().__init__(
             keywords=[
-                "market", "industry", "TAM", "SAM", "growth", "trend",
-                "competitive", "regulation", "customer", "segment",
-                "CAGR", "forecast", "projection", "share"
+                "market",
+                "industry",
+                "TAM",
+                "SAM",
+                "growth",
+                "trend",
+                "competitive",
+                "regulation",
+                "customer",
+                "segment",
+                "CAGR",
+                "forecast",
+                "projection",
+                "share",
             ],
             boost_keywords=["market size", "market share", "TAM", "total addressable"],
-            config=config or FormatterConfig(
+            config=config
+            or FormatterConfig(
                 show_relevance=True,
                 relevance_label="Market Relevance",
-                empty_message="No market-specific results available."
-            )
+                empty_message="No market-specific results available.",
+            ),
         )
 
 
@@ -205,16 +210,26 @@ class CompetitorSearchFormatter(SearchResultFormatter):
     def __init__(self, config: Optional[FormatterConfig] = None):
         super().__init__(
             keywords=[
-                "competitor", "alternative", "versus", "vs", "compare",
-                "rival", "competition", "market share", "similar",
-                "against", "better than", "switch from"
+                "competitor",
+                "alternative",
+                "versus",
+                "vs",
+                "compare",
+                "rival",
+                "competition",
+                "market share",
+                "similar",
+                "against",
+                "better than",
+                "switch from",
             ],
             boost_keywords=["competitor", "alternative", "competitive analysis"],
-            config=config or FormatterConfig(
+            config=config
+            or FormatterConfig(
                 show_relevance=True,
                 relevance_label="Competitor Relevance",
-                empty_message="No competitor-specific results available."
-            )
+                empty_message="No competitor-specific results available.",
+            ),
         )
 
 
@@ -224,16 +239,28 @@ class FinancialSearchFormatter(SearchResultFormatter):
     def __init__(self, config: Optional[FormatterConfig] = None):
         super().__init__(
             keywords=[
-                "revenue", "profit", "margin", "growth", "earnings",
-                "financial", "quarter", "fiscal", "annual", "funding",
-                "valuation", "investment", "IPO", "acquisition"
+                "revenue",
+                "profit",
+                "margin",
+                "growth",
+                "earnings",
+                "financial",
+                "quarter",
+                "fiscal",
+                "annual",
+                "funding",
+                "valuation",
+                "investment",
+                "IPO",
+                "acquisition",
             ],
             boost_keywords=["revenue", "profit margin", "earnings report", "financial results"],
-            config=config or FormatterConfig(
+            config=config
+            or FormatterConfig(
                 show_relevance=True,
                 relevance_label="Financial Relevance",
-                empty_message="No financial-specific results available."
-            )
+                empty_message="No financial-specific results available.",
+            ),
         )
 
 
@@ -243,16 +270,27 @@ class ProductSearchFormatter(SearchResultFormatter):
     def __init__(self, config: Optional[FormatterConfig] = None):
         super().__init__(
             keywords=[
-                "product", "feature", "service", "offering", "solution",
-                "platform", "technology", "tool", "capability", "integration",
-                "pricing", "plan", "tier"
+                "product",
+                "feature",
+                "service",
+                "offering",
+                "solution",
+                "platform",
+                "technology",
+                "tool",
+                "capability",
+                "integration",
+                "pricing",
+                "plan",
+                "tier",
             ],
             boost_keywords=["product launch", "new feature", "product roadmap"],
-            config=config or FormatterConfig(
+            config=config
+            or FormatterConfig(
                 show_relevance=True,
                 relevance_label="Product Relevance",
-                empty_message="No product-specific results available."
-            )
+                empty_message="No product-specific results available.",
+            ),
         )
 
 
@@ -262,16 +300,26 @@ class SalesSearchFormatter(SearchResultFormatter):
     def __init__(self, config: Optional[FormatterConfig] = None):
         super().__init__(
             keywords=[
-                "customer", "client", "deal", "contract", "partnership",
-                "adoption", "implementation", "case study", "testimonial",
-                "buyer", "procurement", "decision maker"
+                "customer",
+                "client",
+                "deal",
+                "contract",
+                "partnership",
+                "adoption",
+                "implementation",
+                "case study",
+                "testimonial",
+                "buyer",
+                "procurement",
+                "decision maker",
             ],
             boost_keywords=["customer success", "case study", "partnership announcement"],
-            config=config or FormatterConfig(
+            config=config
+            or FormatterConfig(
                 show_relevance=True,
                 relevance_label="Sales Relevance",
-                empty_message="No sales-relevant results available."
-            )
+                empty_message="No sales-relevant results available.",
+            ),
         )
 
 
@@ -281,22 +329,34 @@ class BrandSearchFormatter(SearchResultFormatter):
     def __init__(self, config: Optional[FormatterConfig] = None):
         super().__init__(
             keywords=[
-                "brand", "reputation", "perception", "awareness", "sentiment",
-                "review", "rating", "satisfaction", "loyalty", "trust",
-                "image", "identity", "messaging"
+                "brand",
+                "reputation",
+                "perception",
+                "awareness",
+                "sentiment",
+                "review",
+                "rating",
+                "satisfaction",
+                "loyalty",
+                "trust",
+                "image",
+                "identity",
+                "messaging",
             ],
             boost_keywords=["brand perception", "customer review", "brand reputation"],
-            config=config or FormatterConfig(
+            config=config
+            or FormatterConfig(
                 show_relevance=True,
                 relevance_label="Brand Relevance",
-                empty_message="No brand-relevant results available."
-            )
+                empty_message="No brand-relevant results available.",
+            ),
         )
 
 
 # ==============================================================================
 # Mixin for Agent Classes
 # ==============================================================================
+
 
 class SearchResultMixin:
     """
@@ -334,13 +394,11 @@ class SearchResultMixin:
             content_length=self.search_content_length,
             show_relevance=self.search_show_relevance,
             relevance_label=self.search_relevance_label,
-            empty_message=self.search_empty_message
+            empty_message=self.search_empty_message,
         )
 
         return SearchResultFormatter(
-            keywords=self.search_keywords,
-            boost_keywords=self.search_boost_keywords,
-            config=config
+            keywords=self.search_keywords, boost_keywords=self.search_boost_keywords, config=config
         )
 
     def format_search_results(self, results: List[Dict[str, Any]]) -> str:
@@ -352,6 +410,7 @@ class SearchResultMixin:
 # Convenience Functions
 # ==============================================================================
 
+
 def format_search_results(
     results: List[Dict[str, Any]],
     max_sources: int = 15,
@@ -360,7 +419,7 @@ def format_search_results(
     boost_keywords: Optional[List[str]] = None,
     show_relevance: bool = False,
     relevance_label: str = "Relevance",
-    empty_message: str = "No search results available."
+    empty_message: str = "No search results available.",
 ) -> str:
     """
     Format search results for LLM analysis.
@@ -386,13 +445,11 @@ def format_search_results(
         content_length=content_length,
         show_relevance=show_relevance,
         relevance_label=relevance_label,
-        empty_message=empty_message
+        empty_message=empty_message,
     )
 
     formatter = SearchResultFormatter(
-        keywords=keywords,
-        boost_keywords=boost_keywords,
-        config=config
+        keywords=keywords, boost_keywords=boost_keywords, config=config
     )
 
     return formatter.format(results)

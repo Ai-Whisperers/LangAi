@@ -10,17 +10,19 @@ This script addresses specific research failures:
 5. Business segments (Tigo Sports, Tigo Money)
 """
 
+import json
 import os
 import sys
-import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 from dotenv import load_dotenv
+
 load_dotenv()
+
 
 def main():
     print("\n" + "=" * 70)
@@ -72,7 +74,7 @@ def main():
             "Millicom Paraguay financial results Q1 Q2 Q3 2024",
             "Telefonica Celular Paraguay estados financieros",
             "Tigo Paraguay EBITDA margen 2024",
-        ]
+        ],
     }
 
     all_results = {}
@@ -85,19 +87,18 @@ def main():
         for query in queries:
             try:
                 response = router.search(
-                    query=query,
-                    quality="premium",
-                    max_results=10,
-                    min_results=5
+                    query=query, quality="premium", max_results=10, min_results=5
                 )
 
                 if response.success and response.results:
                     for r in response.results:
                         result_dict = r.to_dict()
-                        result_dict['query'] = query
-                        result_dict['category'] = category
+                        result_dict["query"] = query
+                        result_dict["category"] = category
                         category_results.append(result_dict)
-                    print(f"  [OK] '{query[:50]}...' -> {len(response.results)} results via {response.provider}")
+                    print(
+                        f"  [OK] '{query[:50]}...' -> {len(response.results)} results via {response.provider}"
+                    )
                 else:
                     print(f"  [WARN] '{query[:50]}...' -> No results")
 
@@ -108,7 +109,7 @@ def main():
         seen_urls = set()
         unique_results = []
         for r in category_results:
-            url = r.get('url', '')
+            url = r.get("url", "")
             if url and url not in seen_urls:
                 seen_urls.add(url)
                 unique_results.append(r)
@@ -137,7 +138,7 @@ def main():
         for r in results[:15]:  # Limit to top 15
             context += f"\nSource: {r.get('url', 'N/A')}\n"
             context += f"Title: {r.get('title', 'N/A')}\n"
-            content = r.get('content', r.get('snippet', ''))
+            content = r.get("content", r.get("snippet", ""))
             if content:
                 context += f"Content: {content[:1000]}\n"
             context += "---\n"
@@ -154,7 +155,6 @@ Return JSON with:
   "confidence": "high/medium/low"
 }
 Only include information explicitly stated in the sources. Do not fabricate.""",
-
             "market_2024": """Extract market share data for Paraguay telecom market from these sources.
 Return JSON with:
 {
@@ -167,7 +167,6 @@ Return JSON with:
   "confidence": "high/medium/low"
 }
 Only use 2023 or 2024 data. Flag if data is older.""",
-
             "subscribers_2024": """Extract subscriber/user count data for Tigo Paraguay from these sources.
 Return JSON with:
 {
@@ -180,7 +179,6 @@ Return JSON with:
   "confidence": "high/medium/low"
 }
 Only include numbers explicitly stated. Do not estimate.""",
-
             "regulatory": """Extract regulatory information about Tigo Paraguay from these sources.
 Return JSON with:
 {
@@ -192,7 +190,6 @@ Return JSON with:
   "source_urls": ["list of urls"],
   "confidence": "high/medium/low"
 }""",
-
             "business_segments": """Extract business segment information for Tigo Paraguay from these sources.
 Return JSON with:
 {
@@ -215,7 +212,6 @@ Return JSON with:
   },
   "confidence": "high/medium/low"
 }""",
-
             "financial_2024": """Extract financial data for Tigo Paraguay from these sources.
 Return JSON with:
 {
@@ -228,7 +224,7 @@ Return JSON with:
   "source_urls": ["list of urls"],
   "confidence": "high/medium/low"
 }
-Note: Distinguish between Tigo Paraguay specifically vs Millicom group totals."""
+Note: Distinguish between Tigo Paraguay specifically vs Millicom group totals.""",
         }
 
         if category not in prompts:
@@ -253,18 +249,18 @@ IMPORTANT:
                 system="You are a data extraction specialist. Extract only factual information with sources. Return valid JSON only.",
                 task_type="extraction",
                 max_tokens=2000,
-                json_mode=True
+                json_mode=True,
             )
 
-            if result and result.get('content'):
+            if result and result.get("content"):
                 try:
-                    extracted = json.loads(result['content'])
+                    extracted = json.loads(result["content"])
                     extracted_data[category] = extracted
                     print(f"  [OK] Extracted {category}")
                     print(f"  Provider: {result.get('provider', 'unknown')}")
                 except json.JSONDecodeError:
                     print(f"  [WARN] Invalid JSON for {category}")
-                    extracted_data[category] = {"raw": result['content']}
+                    extracted_data[category] = {"raw": result["content"]}
             else:
                 print(f"  [WARN] No extraction result for {category}")
 
@@ -277,7 +273,7 @@ IMPORTANT:
 
     # Save raw extracted data
     extracted_path = output_dir / "targeted_extraction.json"
-    with open(extracted_path, 'w', encoding='utf-8') as f:
+    with open(extracted_path, "w", encoding="utf-8") as f:
         json.dump(extracted_data, f, indent=2, ensure_ascii=False)
     print(f"\nSaved extracted data to: {extracted_path}")
 
@@ -295,8 +291,8 @@ IMPORTANT:
 ## 1. Leadership (2024 Update)
 """
 
-    leadership = extracted_data.get('leadership_2024', {})
-    if leadership.get('ceo_name'):
+    leadership = extracted_data.get("leadership_2024", {})
+    if leadership.get("ceo_name"):
         report += f"""
 **CEO:** {leadership['ceo_name']}
 - Appointed: {leadership.get('ceo_appointed_date', 'N/A')}
@@ -305,16 +301,16 @@ IMPORTANT:
     else:
         report += "\n*CEO information not found in search results*\n"
 
-    if leadership.get('other_executives'):
+    if leadership.get("other_executives"):
         report += "\n**Other Executives:**\n"
-        for exec in leadership['other_executives']:
+        for exec in leadership["other_executives"]:
             report += f"- {exec.get('name', 'N/A')} - {exec.get('title', 'N/A')}\n"
 
     report += f"""
 ## 2. Market Position (Current Data)
 """
-    market = extracted_data.get('market_2024', {})
-    if market.get('tigo_market_share'):
+    market = extracted_data.get("market_2024", {})
+    if market.get("tigo_market_share"):
         report += f"""
 **Tigo Paraguay Market Share:** {market['tigo_market_share']}
 - Data Year: {market.get('tigo_market_share_year', 'N/A')}
@@ -322,7 +318,7 @@ IMPORTANT:
 
 **Competitor Shares:**
 """
-        for comp, share in market.get('competitor_shares', {}).items():
+        for comp, share in market.get("competitor_shares", {}).items():
             report += f"- {comp}: {share}\n"
     else:
         report += "\n*Current market share data not found*\n"
@@ -330,8 +326,8 @@ IMPORTANT:
     report += f"""
 ## 3. Subscriber Data
 """
-    subs = extracted_data.get('subscribers_2024', {})
-    if any([subs.get('mobile_subscribers'), subs.get('broadband_subscribers')]):
+    subs = extracted_data.get("subscribers_2024", {})
+    if any([subs.get("mobile_subscribers"), subs.get("broadband_subscribers")]):
         report += f"""
 - **Mobile Subscribers:** {subs.get('mobile_subscribers', 'N/A')} ({subs.get('mobile_subscribers_date', 'N/A')})
 - **Broadband Subscribers:** {subs.get('broadband_subscribers', 'N/A')}
@@ -344,8 +340,8 @@ IMPORTANT:
     report += f"""
 ## 4. Regulatory Environment
 """
-    reg = extracted_data.get('regulatory', {})
-    if reg.get('regulator') or reg.get('5g_status'):
+    reg = extracted_data.get("regulatory", {})
+    if reg.get("regulator") or reg.get("5g_status"):
         report += f"""
 **Regulator:** {reg.get('regulator', 'CONATEL')}
 **5G Status:** {reg.get('5g_status', 'N/A')}
@@ -353,7 +349,7 @@ IMPORTANT:
 
 **Licenses:**
 """
-        for lic in reg.get('licenses_held', []):
+        for lic in reg.get("licenses_held", []):
             report += f"- {lic}\n"
     else:
         report += "\n*Regulatory data not found*\n"
@@ -361,9 +357,9 @@ IMPORTANT:
     report += f"""
 ## 5. Business Segments
 """
-    segments = extracted_data.get('business_segments', {})
+    segments = extracted_data.get("business_segments", {})
 
-    tigo_sports = segments.get('tigo_sports', {})
+    tigo_sports = segments.get("tigo_sports", {})
     if tigo_sports:
         report += f"""
 ### Tigo Sports
@@ -372,7 +368,7 @@ IMPORTANT:
 - **Revenue:** {tigo_sports.get('revenue_usd', 'N/A')}
 """
 
-    tigo_money = segments.get('tigo_money', {})
+    tigo_money = segments.get("tigo_money", {})
     if tigo_money:
         report += f"""
 ### Tigo Money
@@ -384,8 +380,8 @@ IMPORTANT:
     report += f"""
 ## 6. Financial Data (2024)
 """
-    fin = extracted_data.get('financial_2024', {})
-    if fin.get('revenue_usd'):
+    fin = extracted_data.get("financial_2024", {})
+    if fin.get("revenue_usd"):
         report += f"""
 - **Revenue:** {fin['revenue_usd']} ({fin.get('revenue_year', 'N/A')})
 - **Revenue Growth:** {fin.get('revenue_growth_pct', 'N/A')}
@@ -420,7 +416,7 @@ IMPORTANT:
 """
 
     report_path = output_dir / "targeted_gaps_report.md"
-    with open(report_path, 'w', encoding='utf-8') as f:
+    with open(report_path, "w", encoding="utf-8") as f:
         f.write(report)
 
     print(f"\nSaved gap report to: {report_path}")

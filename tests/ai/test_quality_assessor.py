@@ -1,17 +1,19 @@
 """Tests for AI quality assessor."""
-import pytest
-from unittest.mock import AsyncMock, patch
+
 import json
+from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from company_researcher.ai.quality import (
     AIQualityAssessor,
+    ContentQualityAssessment,
+    OverallQualityReport,
+    QualityLevel,
+    SourceQualityAssessment,
+    SourceType,
     get_quality_assessor,
     reset_quality_assessor,
-    QualityLevel,
-    SourceType,
-    ContentQualityAssessment,
-    SourceQualityAssessment,
-    OverallQualityReport,
 )
 
 
@@ -102,7 +104,7 @@ class TestContentQualityAssessment:
             specificity=0.8,
             completeness=0.7,
             issues=["Some figures lack sources"],
-            strengths=["Recent data included"]
+            strengths=["Recent data included"],
         )
 
         assert assessment.section_name == "financial"
@@ -120,7 +122,7 @@ class TestContentQualityAssessment:
             score=65.0,
             factual_density=0.5,
             specificity=0.5,
-            completeness=0.5
+            completeness=0.5,
         )
 
         assert assessment.accuracy_indicators == 0.5
@@ -145,7 +147,7 @@ class TestSourceQualityAssessment:
             authority_score=0.9,
             recency_score=0.95,
             relevance_score=0.85,
-            is_primary_source=False
+            is_primary_source=False,
         )
 
         assert assessment.domain == "reuters.com"
@@ -165,7 +167,7 @@ class TestOverallQualityReport:
             score=80.0,
             factual_density=0.7,
             specificity=0.8,
-            completeness=0.75
+            completeness=0.75,
         )
 
         report = OverallQualityReport(
@@ -174,7 +176,7 @@ class TestOverallQualityReport:
             section_assessments=[section],
             section_scores={"financial": 80.0},
             ready_for_delivery=True,
-            iteration_needed=False
+            iteration_needed=False,
         )
 
         assert report.overall_score == 78.0
@@ -190,7 +192,7 @@ class TestOverallQualityReport:
                 score=80.0,
                 factual_density=0.7,
                 specificity=0.8,
-                completeness=0.75
+                completeness=0.75,
             ),
             ContentQualityAssessment(
                 section_name="competitors",
@@ -198,7 +200,7 @@ class TestOverallQualityReport:
                 score=45.0,
                 factual_density=0.3,
                 specificity=0.4,
-                completeness=0.3
+                completeness=0.3,
             ),
         ]
 
@@ -207,7 +209,7 @@ class TestOverallQualityReport:
             overall_level=QualityLevel.ACCEPTABLE,
             section_assessments=sections,
             ready_for_delivery=False,
-            iteration_needed=True
+            iteration_needed=True,
         )
 
         failing = report.get_failing_sections()
@@ -222,7 +224,7 @@ class TestOverallQualityReport:
             score=80.0,
             factual_density=0.7,
             specificity=0.8,
-            completeness=0.75
+            completeness=0.75,
         )
 
         report = OverallQualityReport(
@@ -230,7 +232,7 @@ class TestOverallQualityReport:
             overall_level=QualityLevel.GOOD,
             section_assessments=[section],
             ready_for_delivery=True,
-            iteration_needed=False
+            iteration_needed=False,
         )
 
         assert report.get_section_score("financial") == 80.0
@@ -249,49 +251,53 @@ class TestAIQualityAssessor:
     @pytest.fixture
     def mock_content_response(self):
         """Mock LLM response for content assessment."""
-        return json.dumps({
-            "section_name": "financial",
-            "quality_level": "good",
-            "score": 82,
-            "factual_density": 0.75,
-            "specificity": 0.8,
-            "completeness": 0.85,
-            "accuracy_indicators": 0.7,
-            "recency": 0.9,
-            "issues": ["Some figures lack sources"],
-            "strengths": ["Specific revenue numbers", "Recent data"],
-            "improvement_suggestions": ["Add source citations"],
-            "missing_topics": ["Profit margins"]
-        })
+        return json.dumps(
+            {
+                "section_name": "financial",
+                "quality_level": "good",
+                "score": 82,
+                "factual_density": 0.75,
+                "specificity": 0.8,
+                "completeness": 0.85,
+                "accuracy_indicators": 0.7,
+                "recency": 0.9,
+                "issues": ["Some figures lack sources"],
+                "strengths": ["Specific revenue numbers", "Recent data"],
+                "improvement_suggestions": ["Add source citations"],
+                "missing_topics": ["Profit margins"],
+            }
+        )
 
     @pytest.fixture
     def mock_source_response(self):
         """Mock LLM response for source assessment."""
-        return json.dumps({
-            "url": "https://reuters.com/article/tesla",
-            "domain": "reuters.com",
-            "title": "Tesla Reports Record Revenue",
-            "quality_level": "excellent",
-            "source_type": "news_major",
-            "authority_score": 0.9,
-            "recency_score": 0.95,
-            "relevance_score": 0.85,
-            "depth_score": 0.7,
-            "is_primary_source": False,
-            "is_paywalled": False,
-            "reasoning": "Major financial news outlet with recent coverage"
-        })
+        return json.dumps(
+            {
+                "url": "https://reuters.com/article/tesla",
+                "domain": "reuters.com",
+                "title": "Tesla Reports Record Revenue",
+                "quality_level": "excellent",
+                "source_type": "news_major",
+                "authority_score": 0.9,
+                "recency_score": 0.95,
+                "relevance_score": 0.85,
+                "depth_score": 0.7,
+                "is_primary_source": False,
+                "is_paywalled": False,
+                "reasoning": "Major financial news outlet with recent coverage",
+            }
+        )
 
     @pytest.mark.asyncio
     async def test_assess_content_quality(self, assessor, mock_content_response):
         """Test content quality assessment."""
-        with patch.object(assessor, '_call_llm', new_callable=AsyncMock) as mock_call:
+        with patch.object(assessor, "_call_llm", new_callable=AsyncMock) as mock_call:
             mock_call.return_value = mock_content_response
 
             result = await assessor.assess_content_quality(
                 content="Tesla reported $81.5B revenue in 2023, a 19% increase from the previous year. The company maintains 20% market share in the global EV market.",
                 section_name="financial",
-                company_name="Tesla"
+                company_name="Tesla",
             )
 
             assert result.quality_level == QualityLevel.GOOD
@@ -304,9 +310,7 @@ class TestAIQualityAssessor:
     async def test_assess_empty_content(self, assessor):
         """Test assessment of empty content."""
         result = await assessor.assess_content_quality(
-            content="",
-            section_name="financial",
-            company_name="Tesla"
+            content="", section_name="financial", company_name="Tesla"
         )
 
         assert result.quality_level == QualityLevel.INSUFFICIENT
@@ -319,7 +323,7 @@ class TestAIQualityAssessor:
         result = await assessor.assess_content_quality(
             content="Tesla is a company.",  # Less than 50 chars
             section_name="financial",
-            company_name="Tesla"
+            company_name="Tesla",
         )
 
         assert result.quality_level == QualityLevel.INSUFFICIENT
@@ -328,14 +332,14 @@ class TestAIQualityAssessor:
     @pytest.mark.asyncio
     async def test_assess_source_quality(self, assessor, mock_source_response):
         """Test source quality assessment."""
-        with patch.object(assessor, '_call_llm', new_callable=AsyncMock) as mock_call:
+        with patch.object(assessor, "_call_llm", new_callable=AsyncMock) as mock_call:
             mock_call.return_value = mock_source_response
 
             result = await assessor.assess_source_quality(
                 url="https://reuters.com/article/tesla",
                 title="Tesla Reports Record Revenue",
                 snippet="Tesla Inc reported record revenue...",
-                company_name="Tesla"
+                company_name="Tesla",
             )
 
             assert result.quality_level == QualityLevel.EXCELLENT
@@ -346,18 +350,20 @@ class TestAIQualityAssessor:
     @pytest.mark.asyncio
     async def test_generate_overall_report(self, assessor):
         """Test overall report generation."""
-        mock_response = json.dumps({
-            "overall_score": 78,
-            "overall_level": "good",
-            "key_gaps": ["ESG information missing"],
-            "critical_issues": [],
-            "recommendations": ["Add more recent data"],
-            "ready_for_delivery": True,
-            "iteration_needed": False,
-            "focus_areas_for_iteration": []
-        })
+        mock_response = json.dumps(
+            {
+                "overall_score": 78,
+                "overall_level": "good",
+                "key_gaps": ["ESG information missing"],
+                "critical_issues": [],
+                "recommendations": ["Add more recent data"],
+                "ready_for_delivery": True,
+                "iteration_needed": False,
+                "focus_areas_for_iteration": [],
+            }
+        )
 
-        with patch.object(assessor, '_call_llm', new_callable=AsyncMock) as mock_call:
+        with patch.object(assessor, "_call_llm", new_callable=AsyncMock) as mock_call:
             mock_call.return_value = mock_response
 
             section_assessments = [
@@ -367,7 +373,7 @@ class TestAIQualityAssessor:
                     score=80,
                     factual_density=0.7,
                     specificity=0.8,
-                    completeness=0.75
+                    completeness=0.75,
                 )
             ]
 
@@ -380,7 +386,7 @@ class TestAIQualityAssessor:
                     authority_score=0.8,
                     recency_score=0.9,
                     relevance_score=0.85,
-                    is_primary_source=False
+                    is_primary_source=False,
                 )
             ]
 
@@ -388,7 +394,7 @@ class TestAIQualityAssessor:
                 company_name="Tesla",
                 section_assessments=section_assessments,
                 source_assessments=source_assessments,
-                threshold=75.0
+                threshold=75.0,
             )
 
             assert report.overall_score == 78
@@ -399,19 +405,21 @@ class TestAIQualityAssessor:
     @pytest.mark.asyncio
     async def test_assess_confidence(self, assessor):
         """Test confidence assessment."""
-        mock_response = json.dumps({
-            "claim": "Tesla revenue is $81.5B",
-            "confidence_level": "good",
-            "confidence_score": 0.85,
-            "supporting_sources": 3,
-            "contradicting_sources": 0,
-            "source_quality_avg": 0.8,
-            "uncertainty_indicators": [],
-            "verification_status": "verified",
-            "reasoning": "Multiple high-quality sources confirm this figure"
-        })
+        mock_response = json.dumps(
+            {
+                "claim": "Tesla revenue is $81.5B",
+                "confidence_level": "good",
+                "confidence_score": 0.85,
+                "supporting_sources": 3,
+                "contradicting_sources": 0,
+                "source_quality_avg": 0.8,
+                "uncertainty_indicators": [],
+                "verification_status": "verified",
+                "reasoning": "Multiple high-quality sources confirm this figure",
+            }
+        )
 
-        with patch.object(assessor, '_call_llm', new_callable=AsyncMock) as mock_call:
+        with patch.object(assessor, "_call_llm", new_callable=AsyncMock) as mock_call:
             mock_call.return_value = mock_response
 
             result = await assessor.assess_confidence(
@@ -420,14 +428,13 @@ class TestAIQualityAssessor:
                     {"source": "Reuters", "supports": True, "quote": "Tesla reported $81.5B"},
                     {"source": "Bloomberg", "supports": True, "quote": "Revenue of $81.5 billion"},
                 ],
-                company_name="Tesla"
+                company_name="Tesla",
             )
 
             assert result.confidence_level == QualityLevel.GOOD
             assert result.confidence_score == 0.85
             assert result.supporting_sources == 3
             assert result.verification_status == "verified"
-
 
 
 class TestQualityAssessorSingleton:
@@ -460,44 +467,50 @@ class TestAIQualityAssessorIntegration:
     @pytest.mark.asyncio
     async def test_full_process_workflow(self, assessor):
         """Test the full process method."""
-        mock_content_response = json.dumps({
-            "section_name": "financial",
-            "quality_level": "good",
-            "score": 80,
-            "factual_density": 0.7,
-            "specificity": 0.8,
-            "completeness": 0.75,
-            "issues": [],
-            "strengths": ["Good data"],
-            "improvement_suggestions": [],
-            "missing_topics": []
-        })
+        mock_content_response = json.dumps(
+            {
+                "section_name": "financial",
+                "quality_level": "good",
+                "score": 80,
+                "factual_density": 0.7,
+                "specificity": 0.8,
+                "completeness": 0.75,
+                "issues": [],
+                "strengths": ["Good data"],
+                "improvement_suggestions": [],
+                "missing_topics": [],
+            }
+        )
 
-        mock_source_response = json.dumps({
-            "url": "https://example.com",
-            "domain": "example.com",
-            "title": "Test",
-            "quality_level": "good",
-            "source_type": "news_major",
-            "authority_score": 0.8,
-            "recency_score": 0.9,
-            "relevance_score": 0.85,
-            "depth_score": 0.7,
-            "is_primary_source": False,
-            "is_paywalled": False,
-            "reasoning": "Good source"
-        })
+        mock_source_response = json.dumps(
+            {
+                "url": "https://example.com",
+                "domain": "example.com",
+                "title": "Test",
+                "quality_level": "good",
+                "source_type": "news_major",
+                "authority_score": 0.8,
+                "recency_score": 0.9,
+                "relevance_score": 0.85,
+                "depth_score": 0.7,
+                "is_primary_source": False,
+                "is_paywalled": False,
+                "reasoning": "Good source",
+            }
+        )
 
-        mock_overall_response = json.dumps({
-            "overall_score": 78,
-            "overall_level": "good",
-            "key_gaps": [],
-            "critical_issues": [],
-            "recommendations": [],
-            "ready_for_delivery": True,
-            "iteration_needed": False,
-            "focus_areas_for_iteration": []
-        })
+        mock_overall_response = json.dumps(
+            {
+                "overall_score": 78,
+                "overall_level": "good",
+                "key_gaps": [],
+                "critical_issues": [],
+                "recommendations": [],
+                "ready_for_delivery": True,
+                "iteration_needed": False,
+                "focus_areas_for_iteration": [],
+            }
+        )
 
         call_count = [0]
         responses = [mock_content_response, mock_source_response, mock_overall_response]
@@ -507,11 +520,19 @@ class TestAIQualityAssessorIntegration:
             call_count[0] += 1
             return responses[idx]
 
-        with patch.object(assessor, '_call_llm', side_effect=mock_llm):
+        with patch.object(assessor, "_call_llm", side_effect=mock_llm):
             result = await assessor.process(
                 company_name="Tesla",
-                sections={"financial": "Tesla reported $81.5B in revenue for 2023, a 19% increase from the previous year. The company maintains a strong market position in the EV industry."},
-                sources=[{"url": "https://example.com", "title": "Test", "snippet": "Tesla reported strong quarterly results..."}]
+                sections={
+                    "financial": "Tesla reported $81.5B in revenue for 2023, a 19% increase from the previous year. The company maintains a strong market position in the EV industry."
+                },
+                sources=[
+                    {
+                        "url": "https://example.com",
+                        "title": "Test",
+                        "snippet": "Tesla reported strong quarterly results...",
+                    }
+                ],
             )
 
             assert isinstance(result, OverallQualityReport)
@@ -530,12 +551,12 @@ class TestAIQualityAssessorIntegration:
         async def mock_failing_llm(*args, **kwargs):
             raise Exception("LLM service unavailable")
 
-        with patch.object(assessor, '_call_llm', side_effect=mock_failing_llm):
+        with patch.object(assessor, "_call_llm", side_effect=mock_failing_llm):
             # Should NOT raise - graceful degradation returns fallback
             result = await assessor.assess_content_quality(
                 content="Tesla reported significant revenue growth in 2023 with strong market position.",
                 section_name="financial",
-                company_name="Tesla"
+                company_name="Tesla",
             )
 
             # Verify fallback result is returned

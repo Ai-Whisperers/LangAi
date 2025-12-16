@@ -18,14 +18,14 @@ Targeted queries for specific missing data points yield precise information.
 
 import json
 import re
-from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass, field
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 
-from ..llm.smart_client import SmartLLMClient
+from ..agents.research.multilingual_search import BRAND_DISAMBIGUATION_MAP, PARENT_COMPANY_MAP
 from ..integrations.search_router import get_search_router
-from ..agents.research.multilingual_search import PARENT_COMPANY_MAP, BRAND_DISAMBIGUATION_MAP
+from ..llm.smart_client import SmartLLMClient
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -44,7 +44,13 @@ PARENT_COMPANY_DETAILS = {
         "ticker": "TIGO",
         "sec_cik": None,  # Not SEC-registered
         "investor_relations": "https://www.millicom.com/investors/",
-        "subsidiaries": ["Tigo Paraguay", "Tigo Guatemala", "Tigo Honduras", "Tigo Colombia", "Tigo Bolivia"],
+        "subsidiaries": [
+            "Tigo Paraguay",
+            "Tigo Guatemala",
+            "Tigo Honduras",
+            "Tigo Colombia",
+            "Tigo Bolivia",
+        ],
         "exchange": "NASDAQ",
     },
     "América Móvil": {
@@ -64,15 +70,17 @@ PARENT_COMPANY_DETAILS = {
 
 class GapPriority(Enum):
     """Priority levels for data gaps."""
+
     CRITICAL = "critical"  # CEO, revenue, market share
-    HIGH = "high"          # Subscribers, competitors, products
-    MEDIUM = "medium"      # ESG, regulatory, history
-    LOW = "low"            # Nice-to-have details
+    HIGH = "high"  # Subscribers, competitors, products
+    MEDIUM = "medium"  # ESG, regulatory, history
+    LOW = "low"  # Nice-to-have details
 
 
 @dataclass
 class DataGap:
     """Represents a specific gap in research data."""
+
     field_name: str
     category: str
     priority: GapPriority
@@ -88,6 +96,7 @@ class DataGap:
 @dataclass
 class GapAnalysisResult:
     """Result of gap analysis."""
+
     company_name: str
     gaps: List[DataGap]
     total_gaps: int
@@ -119,7 +128,7 @@ class IntelligentGapFiller:
                 "{company} nuevo gerente general nombrado {year}",
                 "{company} executive leadership team {year}",
                 "who is the CEO of {company} {year}",
-            ]
+            ],
         },
         "financial": {
             "fields": ["revenue", "revenue_year", "ebitda", "profit_margin", "assets"],
@@ -128,7 +137,7 @@ class IntelligentGapFiller:
                 "{company} revenue ingresos {year}",
                 "{company} financial results Q{quarter} {year}",
                 "{parent_company} {country} earnings report {year}",
-            ]
+            ],
         },
         "market_position": {
             "fields": ["market_share", "market_share_year", "market_rank", "subscriber_count"],
@@ -137,7 +146,7 @@ class IntelligentGapFiller:
                 "{company} market share cuota mercado {year}",
                 "{company} subscribers usuarios {year}",
                 "{regulator} {country} telecommunications statistics {year}",
-            ]
+            ],
         },
         "regulatory": {
             "fields": ["regulator_name", "licenses", "spectrum_bands", "5g_status"],
@@ -146,7 +155,7 @@ class IntelligentGapFiller:
                 "{regulator} {company} license spectrum",
                 "{company} 5G licitacion espectro {year}",
                 "{country} telecommunications regulatory {year}",
-            ]
+            ],
         },
         "business_segments": {
             "fields": ["main_products", "segment_revenue", "digital_services"],
@@ -154,7 +163,7 @@ class IntelligentGapFiller:
             "query_templates": [
                 "{company} productos servicios offerings",
                 "{company} {segment} revenue users {year}",
-            ]
+            ],
         },
         "competitors": {
             "fields": ["main_competitors", "competitive_position"],
@@ -162,8 +171,8 @@ class IntelligentGapFiller:
             "query_templates": [
                 "{company} vs {competitor} comparison {country}",
                 "{country} {industry} market competition {year}",
-            ]
-        }
+            ],
+        },
     }
 
     def __init__(self, preferred_provider: Optional[str] = None):
@@ -212,18 +221,12 @@ class IntelligentGapFiller:
         # Get detailed parent info
         parent_details = self.parent_company_details.get(parent_name)
         if parent_details:
-            return {
-                "parent_name": parent_name,
-                **parent_details
-            }
+            return {"parent_name": parent_name, **parent_details}
 
         return {"parent_name": parent_name}
 
     def generate_parent_company_queries(
-        self,
-        company_name: str,
-        gap_type: str,
-        year: int
+        self, company_name: str, gap_type: str, year: int
     ) -> List[str]:
         """
         Generate queries targeting parent company SEC/investor relations.
@@ -270,10 +273,7 @@ class IntelligentGapFiller:
     # =========================================================================
 
     def generate_founded_date_queries(
-        self,
-        company_name: str,
-        legal_name: Optional[str] = None,
-        country: Optional[str] = None
+        self, company_name: str, legal_name: Optional[str] = None, country: Optional[str] = None
     ) -> List[str]:
         """
         Generate targeted queries to find company founding date.
@@ -327,13 +327,13 @@ class IntelligentGapFiller:
         # Patterns for founding dates
         patterns = [
             # "founded in 1998" / "established in 1998"
-            r'(?:founded|established|incorporated|created|launched)\s+(?:in\s+)?(\d{4})',
+            r"(?:founded|established|incorporated|created|launched)\s+(?:in\s+)?(\d{4})",
             # "fundada en 1998" / "constituida en 1998"
-            r'(?:fundad[ao]|establecid[ao]|constituid[ao]|cread[ao])\s+(?:en\s+)?(\d{4})',
+            r"(?:fundad[ao]|establecid[ao]|constituid[ao]|cread[ao])\s+(?:en\s+)?(\d{4})",
             # "since 1998" / "desde 1998"
-            r'(?:since|desde)\s+(\d{4})',
+            r"(?:since|desde)\s+(\d{4})",
             # "(1998)" in context of founding
-            r'(?:founding|foundation|fundación|inicio)\s*[\(\[]?(\d{4})[\)\]]?',
+            r"(?:founding|foundation|fundación|inicio)\s*[\(\[]?(\d{4})[\)\]]?",
         ]
 
         text_lower = text.lower()
@@ -347,19 +347,12 @@ class IntelligentGapFiller:
                 if 1800 <= year <= datetime.now().year:
                     # Check if company name is nearby in text
                     if company_lower in text_lower:
-                        return {
-                            "year": year,
-                            "pattern_matched": pattern,
-                            "confidence": 0.8
-                        }
+                        return {"year": year, "pattern_matched": pattern, "confidence": 0.8}
 
         return None
 
     def analyze_gaps(
-        self,
-        company_name: str,
-        research_data: Dict[str, Any],
-        report_text: str = ""
+        self, company_name: str, research_data: Dict[str, Any], report_text: str = ""
     ) -> GapAnalysisResult:
         """
         Use AI to analyze research output and identify specific gaps.
@@ -427,33 +420,37 @@ Return JSON array of gaps:
                 system="You are a research quality analyst. Identify specific data gaps in company research. Return valid JSON only.",
                 task_type="extraction",
                 max_tokens=2000,
-                json_mode=True
+                json_mode=True,
             )
 
             # Handle various result types
             logger.debug(f"[GAP-ANALYSIS] Result type: {type(result)}")
             if isinstance(result, str):
                 content = result
-            elif hasattr(result, 'content'):
+            elif hasattr(result, "content"):
                 content = result.content
             elif isinstance(result, dict):
-                content = result.get('content', '[]')
+                content = result.get("content", "[]")
             else:
-                content = '[]'
+                content = "[]"
 
-            logger.debug(f"[GAP-ANALYSIS] Content (first 500 chars): {content[:500] if content else 'empty'}")
+            logger.debug(
+                f"[GAP-ANALYSIS] Content (first 500 chars): {content[:500] if content else 'empty'}"
+            )
             parsed = json.loads(content)
 
             # Handle both direct array and wrapped {"gaps": [...]} formats
-            if isinstance(parsed, dict) and 'gaps' in parsed:
-                gaps_data = parsed['gaps']
+            if isinstance(parsed, dict) and "gaps" in parsed:
+                gaps_data = parsed["gaps"]
             elif isinstance(parsed, list):
                 gaps_data = parsed
             else:
                 logger.warning(f"[GAP-ANALYSIS] Unexpected JSON structure: {type(parsed)}")
                 gaps_data = []
 
-            logger.debug(f"[GAP-ANALYSIS] Parsed {len(gaps_data)} items, first item type: {type(gaps_data[0]) if gaps_data else 'N/A'}")
+            logger.debug(
+                f"[GAP-ANALYSIS] Parsed {len(gaps_data)} items, first item type: {type(gaps_data[0]) if gaps_data else 'N/A'}"
+            )
 
             # Convert to DataGap objects
             gaps = []
@@ -461,19 +458,24 @@ Return JSON array of gaps:
                 if not isinstance(g, dict):
                     logger.warning(f"[GAP-ANALYSIS] Skipping non-dict item: {type(g)}")
                     continue
-                priority = GapPriority(g.get('priority', 'medium'))
+                priority = GapPriority(g.get("priority", "medium"))
                 gap = DataGap(
-                    field_name=g.get('field_name', ''),
-                    category=g.get('category', ''),
+                    field_name=g.get("field_name", ""),
+                    category=g.get("category", ""),
                     priority=priority,
-                    current_value=g.get('current_value'),
-                    expected_format=g.get('expected_format', 'text'),
-                    context_hint=g.get('context_hint', '')
+                    current_value=g.get("current_value"),
+                    expected_format=g.get("expected_format", "text"),
+                    context_hint=g.get("context_hint", ""),
                 )
                 gaps.append(gap)
 
             # Sort by priority
-            priority_order = {GapPriority.CRITICAL: 0, GapPriority.HIGH: 1, GapPriority.MEDIUM: 2, GapPriority.LOW: 3}
+            priority_order = {
+                GapPriority.CRITICAL: 0,
+                GapPriority.HIGH: 1,
+                GapPriority.MEDIUM: 2,
+                GapPriority.LOW: 3,
+            }
             gaps.sort(key=lambda x: priority_order[x.priority])
 
             critical_count = sum(1 for g in gaps if g.priority == GapPriority.CRITICAL)
@@ -485,7 +487,7 @@ Return JSON array of gaps:
                 gaps=gaps,
                 total_gaps=len(gaps),
                 critical_gaps=critical_count,
-                analysis_timestamp=datetime.now().isoformat()
+                analysis_timestamp=datetime.now().isoformat(),
             )
 
         except Exception as e:
@@ -495,14 +497,11 @@ Return JSON array of gaps:
                 gaps=[],
                 total_gaps=0,
                 critical_gaps=0,
-                analysis_timestamp=datetime.now().isoformat()
+                analysis_timestamp=datetime.now().isoformat(),
             )
 
     def generate_targeted_queries(
-        self,
-        company_name: str,
-        gaps: List[DataGap],
-        company_context: Dict[str, Any]
+        self, company_name: str, gaps: List[DataGap], company_context: Dict[str, Any]
     ) -> List[DataGap]:
         """
         Use AI to generate targeted search queries for each gap.
@@ -530,7 +529,7 @@ Return JSON array of gaps:
             logger.info(f"[QUERY-GEN] Found parent company: {parent_info.get('parent_name')}")
 
         # Check for brand disambiguation
-        legal_name = company_context.get('legal_name')
+        legal_name = company_context.get("legal_name")
         if not legal_name:
             name_lower = company_name.lower()
             if name_lower in BRAND_DISAMBIGUATION_MAP:
@@ -547,14 +546,17 @@ Return JSON array of gaps:
                     company_name, gap.field_name, current_year
                 )
                 specialized_queries.extend(parent_queries)
-                logger.debug(f"[QUERY-GEN] Added {len(parent_queries)} parent company queries for {gap.field_name}")
+                logger.debug(
+                    f"[QUERY-GEN] Added {len(parent_queries)} parent company queries for {gap.field_name}"
+                )
 
             # Founded date queries
-            if "founded" in gap.field_name.lower() or gap.field_name in ["founding_year", "established_date"]:
+            if "founded" in gap.field_name.lower() or gap.field_name in [
+                "founding_year",
+                "established_date",
+            ]:
                 founded_queries = self.generate_founded_date_queries(
-                    company_name,
-                    legal_name=legal_name,
-                    country=company_context.get('country')
+                    company_name, legal_name=legal_name, country=company_context.get("country")
                 )
                 specialized_queries.extend(founded_queries)
                 logger.debug(f"[QUERY-GEN] Added {len(founded_queries)} founded date queries")
@@ -565,7 +567,9 @@ Return JSON array of gaps:
         # Prepare gap descriptions for AI
         gap_descriptions = []
         for i, gap in enumerate(gaps):
-            gap_descriptions.append(f"{i+1}. {gap.field_name} ({gap.category}, {gap.priority.value})")
+            gap_descriptions.append(
+                f"{i+1}. {gap.field_name} ({gap.category}, {gap.priority.value})"
+            )
             gap_descriptions.append(f"   Current: {gap.current_value or 'missing'}")
             gap_descriptions.append(f"   Format: {gap.expected_format}")
             gap_descriptions.append(f"   Hint: {gap.context_hint}")
@@ -575,10 +579,10 @@ Return JSON array of gaps:
         # Add parent company and legal name to context
         enhanced_context = {**company_context}
         if parent_info:
-            enhanced_context['parent_company'] = parent_info.get('parent_name')
-            enhanced_context['parent_ticker'] = parent_info.get('ticker')
+            enhanced_context["parent_company"] = parent_info.get("parent_name")
+            enhanced_context["parent_ticker"] = parent_info.get("ticker")
         if legal_name:
-            enhanced_context['legal_name'] = legal_name
+            enhanced_context["legal_name"] = legal_name
 
         context_text = json.dumps(enhanced_context, indent=2)
 
@@ -628,18 +632,18 @@ Return JSON mapping gap field names to query arrays:
                 system="You are a search query specialist. Generate precise, targeted queries to find specific data. Return valid JSON only.",
                 task_type="extraction",
                 max_tokens=2000,
-                json_mode=True
+                json_mode=True,
             )
 
             # Handle various result types
             if isinstance(result, str):
                 content = result
-            elif hasattr(result, 'content'):
+            elif hasattr(result, "content"):
                 content = result.content
             elif isinstance(result, dict):
-                content = result.get('content', '{}')
+                content = result.get("content", "{}")
             else:
-                content = '{}'
+                content = "{}"
 
             queries_map = json.loads(content)
 
@@ -658,7 +662,9 @@ Return JSON mapping gap field names to query arrays:
                         unique_queries.append(q)
 
                 gap.generated_queries = unique_queries
-                logger.debug(f"[QUERY-GEN] {gap.field_name}: {len(gap.generated_queries)} total queries")
+                logger.debug(
+                    f"[QUERY-GEN] {gap.field_name}: {len(gap.generated_queries)} total queries"
+                )
 
             total_queries = sum(len(g.generated_queries) for g in gaps)
             logger.info(f"[QUERY-GEN] Generated {total_queries} total queries for {len(gaps)} gaps")
@@ -671,9 +677,7 @@ Return JSON mapping gap field names to query arrays:
             return gaps
 
     def execute_gap_searches(
-        self,
-        gaps: List[DataGap],
-        max_results_per_query: int = 5
+        self, gaps: List[DataGap], max_results_per_query: int = 5
     ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Execute searches for all generated queries.
@@ -702,17 +706,19 @@ Return JSON mapping gap field names to query arrays:
                         quality="premium",
                         provider=self.preferred_provider,  # Use preferred provider if set
                         max_results=max_results_per_query,
-                        min_results=3
+                        min_results=3,
                     )
 
                     if response.success and response.results:
                         for r in response.results:
                             result_dict = r.to_dict()
-                            result_dict['query'] = query
-                            result_dict['gap_field'] = gap.field_name
+                            result_dict["query"] = query
+                            result_dict["gap_field"] = gap.field_name
                             field_results.append(result_dict)
 
-                        logger.debug(f"[SEARCH] '{query[:40]}...' -> {len(response.results)} results via {response.provider}")
+                        logger.debug(
+                            f"[SEARCH] '{query[:40]}...' -> {len(response.results)} results via {response.provider}"
+                        )
 
                 except Exception as e:
                     logger.warning(f"[SEARCH] Query failed: {e}")
@@ -721,7 +727,7 @@ Return JSON mapping gap field names to query arrays:
             seen_urls = set()
             unique_results = []
             for r in field_results:
-                url = r.get('url', '')
+                url = r.get("url", "")
                 if url and url not in seen_urls:
                     seen_urls.add(url)
                     unique_results.append(r)
@@ -735,7 +741,7 @@ Return JSON mapping gap field names to query arrays:
         self,
         gaps: List[DataGap],
         search_results: Dict[str, List[Dict[str, Any]]],
-        company_name: str
+        company_name: str,
     ) -> List[DataGap]:
         """
         Use AI to extract specific data points from search results.
@@ -760,7 +766,7 @@ Return JSON mapping gap field names to query arrays:
             for r in results[:10]:  # Limit context size
                 context_parts.append(f"URL: {r.get('url', '')}")
                 context_parts.append(f"Title: {r.get('title', '')}")
-                content = r.get('content', r.get('snippet', ''))[:500]
+                content = r.get("content", r.get("snippet", ""))[:500]
                 context_parts.append(f"Content: {content}")
                 context_parts.append("---")
 
@@ -799,28 +805,30 @@ Return JSON:
                     system="You are a precise data extractor. Only extract explicitly stated facts with sources.",
                     task_type="extraction",
                     max_tokens=500,
-                    json_mode=True
+                    json_mode=True,
                 )
 
                 # Handle various result types
                 if isinstance(result, str):
                     content = result
-                elif hasattr(result, 'content'):
+                elif hasattr(result, "content"):
                     content = result.content
                 elif isinstance(result, dict):
-                    content = result.get('content', '{}')
+                    content = result.get("content", "{}")
                 else:
-                    content = '{}'
+                    content = "{}"
 
                 extracted = json.loads(content)
 
-                if extracted.get('value'):
-                    gap.found_value = extracted['value']
-                    gap.found_source = extracted.get('source_url')
-                    confidence_map = {'high': 0.9, 'medium': 0.7, 'low': 0.4}
-                    gap.confidence = confidence_map.get(extracted.get('confidence', 'low'), 0.5)
+                if extracted.get("value"):
+                    gap.found_value = extracted["value"]
+                    gap.found_source = extracted.get("source_url")
+                    confidence_map = {"high": 0.9, "medium": 0.7, "low": 0.4}
+                    gap.confidence = confidence_map.get(extracted.get("confidence", "low"), 0.5)
 
-                    logger.info(f"[EXTRACT] {gap.field_name}: '{gap.found_value}' (confidence: {gap.confidence})")
+                    logger.info(
+                        f"[EXTRACT] {gap.field_name}: '{gap.found_value}' (confidence: {gap.confidence})"
+                    )
 
             except Exception as e:
                 logger.warning(f"[EXTRACT] Error extracting {gap.field_name}: {e}")
@@ -832,7 +840,7 @@ Return JSON:
         company_name: str,
         research_data: Dict[str, Any],
         report_text: str = "",
-        company_context: Optional[Dict[str, Any]] = None
+        company_context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Complete gap-filling workflow.
@@ -852,10 +860,7 @@ Return JSON:
 
         # Default context
         if company_context is None:
-            company_context = {
-                "company_name": company_name,
-                "year": datetime.now().year
-            }
+            company_context = {"company_name": company_name, "year": datetime.now().year}
 
         # Phase 1: Analyze gaps
         logger.info("\n[PHASE 1] Analyzing research gaps...")
@@ -868,9 +873,7 @@ Return JSON:
         # Phase 2: Generate targeted queries
         logger.info(f"\n[PHASE 2] Generating queries for {len(gap_analysis.gaps)} gaps...")
         gaps_with_queries = self.generate_targeted_queries(
-            company_name,
-            gap_analysis.gaps,
-            company_context
+            company_name, gap_analysis.gaps, company_context
         )
 
         # Phase 3: Execute searches
@@ -896,20 +899,22 @@ Return JSON:
                     "source": g.found_source,
                     "confidence": g.confidence,
                     "category": g.category,
-                    "priority": g.priority.value
+                    "priority": g.priority.value,
                 }
-                for g in filled_gaps if g.found_value
+                for g in filled_gaps
+                if g.found_value
             },
             "unfilled_gaps": [
                 {
                     "field": g.field_name,
                     "category": g.category,
                     "priority": g.priority.value,
-                    "queries_tried": g.generated_queries
+                    "queries_tried": g.generated_queries,
                 }
-                for g in filled_gaps if not g.found_value
+                for g in filled_gaps
+                if not g.found_value
             ],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         logger.info(f"\n{'='*60}")
@@ -925,7 +930,7 @@ def fill_research_gaps(
     research_data: Dict[str, Any],
     report_text: str = "",
     company_context: Optional[Dict[str, Any]] = None,
-    preferred_provider: Optional[str] = None
+    preferred_provider: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Convenience function to fill gaps in research data.

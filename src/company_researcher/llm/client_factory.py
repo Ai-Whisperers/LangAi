@@ -25,9 +25,11 @@ Usage:
     client = factory.get_anthropic()
 """
 
-from typing import Optional, Any
 import threading
+from typing import Any, Optional
+
 import httpx
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -43,14 +45,14 @@ class LLMClientFactory:
     Eliminates duplicated client initialization across agent files.
     """
 
-    _instance: Optional['LLMClientFactory'] = None
+    _instance: Optional["LLMClientFactory"] = None
     _lock = threading.Lock()
 
     # Client instances
     _anthropic_client: Optional[Anthropic] = None
     _tavily_client: Optional[Any] = None
 
-    def __new__(cls) -> 'LLMClientFactory':
+    def __new__(cls) -> "LLMClientFactory":
         """Singleton pattern implementation."""
         if cls._instance is None:
             with cls._lock:
@@ -61,7 +63,7 @@ class LLMClientFactory:
     def __init__(self):
         """Initialize factory (only runs once due to singleton)."""
         # Lazy import to avoid circular dependencies
-        if not hasattr(self, '_initialized'):
+        if not hasattr(self, "_initialized"):
             self._initialized = True
             self._config = None
 
@@ -70,6 +72,7 @@ class LLMClientFactory:
         """Lazy load config to avoid circular imports."""
         if self._config is None:
             from ..config import get_config
+
             self._config = get_config()
         return self._config
 
@@ -85,8 +88,7 @@ class LLMClientFactory:
         """
         # Create timeout configuration
         timeout = httpx.Timeout(
-            timeout=self.config.api_timeout_seconds,
-            connect=self.config.api_connect_timeout_seconds
+            timeout=self.config.api_timeout_seconds, connect=self.config.api_connect_timeout_seconds
         )
 
         if api_key:
@@ -98,8 +100,7 @@ class LLMClientFactory:
             with self._lock:
                 if self._anthropic_client is None:
                     self._anthropic_client = Anthropic(
-                        api_key=self.config.anthropic_api_key,
-                        timeout=timeout
+                        api_key=self.config.anthropic_api_key, timeout=timeout
                     )
         return self._anthropic_client
 
@@ -126,9 +127,7 @@ class LLMClientFactory:
         if self._tavily_client is None:
             with self._lock:
                 if self._tavily_client is None:
-                    self._tavily_client = TavilyClient(
-                        api_key=self.config.tavily_api_key
-                    )
+                    self._tavily_client = TavilyClient(api_key=self.config.tavily_api_key)
         return self._tavily_client
 
     def search_with_timeout(self, query: str, **kwargs) -> Any:
@@ -155,9 +154,7 @@ class LLMClientFactory:
             try:
                 return future.result(timeout=timeout)
             except concurrent.futures.TimeoutError:
-                raise TimeoutError(
-                    f"Tavily search timed out after {timeout} seconds"
-                )
+                raise TimeoutError(f"Tavily search timed out after {timeout} seconds")
 
     def create_message(
         self,
@@ -165,7 +162,7 @@ class LLMClientFactory:
         model: Optional[str] = None,
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
-        system: Optional[str] = None
+        system: Optional[str] = None,
     ) -> Any:
         """
         Convenience method to create an Anthropic message.
@@ -188,7 +185,7 @@ class LLMClientFactory:
             "model": model or self.config.llm_model,
             "max_tokens": max_tokens or self.config.llm_max_tokens,
             "temperature": temperature if temperature is not None else self.config.llm_temperature,
-            "messages": messages
+            "messages": messages,
         }
 
         if system:
@@ -269,7 +266,7 @@ def create_message(
     model: Optional[str] = None,
     max_tokens: Optional[int] = None,
     temperature: Optional[float] = None,
-    system: Optional[str] = None
+    system: Optional[str] = None,
 ) -> Any:
     """
     Create an Anthropic message with default config.
@@ -288,11 +285,7 @@ def create_message(
         response = create_message(prompt)
     """
     return get_factory().create_message(
-        prompt=prompt,
-        model=model,
-        max_tokens=max_tokens,
-        temperature=temperature,
-        system=system
+        prompt=prompt, model=model, max_tokens=max_tokens, temperature=temperature, system=system
     )
 
 
@@ -330,6 +323,7 @@ def search_with_timeout(query: str, **kwargs) -> Any:
 # Enhanced Feature Imports (lazy loaded)
 # ============================================================================
 
+
 def get_prompt_cache():
     """
     Get the prompt cache for cost-optimized API calls.
@@ -349,6 +343,7 @@ def get_prompt_cache():
         )
     """
     from .prompt_cache import get_prompt_cache as _get_prompt_cache
+
     return _get_prompt_cache()
 
 
@@ -370,6 +365,7 @@ def get_streaming_client():
         )
     """
     from .streaming import get_streaming_client as _get_streaming_client
+
     return _get_streaming_client()
 
 
@@ -393,6 +389,7 @@ def get_cost_tracker():
         summary = tracker.get_summary()
     """
     from .cost_tracker import get_cost_tracker as _get_cost_tracker
+
     return _get_cost_tracker()
 
 
@@ -401,9 +398,7 @@ class LLMResponseError(Exception):
 
 
 def safe_extract_text(
-    response: Any,
-    default: Optional[str] = None,
-    agent_name: str = "unknown"
+    response: Any, default: Optional[str] = None, agent_name: str = "unknown"
 ) -> str:
     """
     Safely extract text from an Anthropic message response.
@@ -428,7 +423,7 @@ def safe_extract_text(
     """
     try:
         # Check if response has content attribute
-        if not hasattr(response, 'content'):
+        if not hasattr(response, "content"):
             raise LLMResponseError("Response has no 'content' attribute")
 
         # Check if content is not empty
@@ -437,7 +432,7 @@ def safe_extract_text(
 
         # Check if first content block exists and has text
         first_block = response.content[0]
-        if not hasattr(first_block, 'text'):
+        if not hasattr(first_block, "text"):
             raise LLMResponseError(
                 f"First content block has no 'text' attribute. "
                 f"Block type: {type(first_block).__name__}"
@@ -445,9 +440,7 @@ def safe_extract_text(
 
         text = first_block.text
         if not isinstance(text, str):
-            raise LLMResponseError(
-                f"Content text is not a string: {type(text).__name__}"
-            )
+            raise LLMResponseError(f"Content text is not a string: {type(text).__name__}")
 
         return text
 
@@ -463,17 +456,13 @@ def safe_extract_text(
 
     except LLMResponseError:
         if default is not None:
-            logger.warning(
-                f"[{agent_name}] LLM response error, using default value"
-            )
+            logger.warning(f"[{agent_name}] LLM response error, using default value")
             return default
         raise
 
 
 def safe_extract_json(
-    response: Any,
-    default: Optional[Any] = None,
-    agent_name: str = "unknown"
+    response: Any, default: Optional[Any] = None, agent_name: str = "unknown"
 ) -> Any:
     """
     Safely extract and parse JSON from an Anthropic message response.
@@ -509,19 +498,19 @@ def safe_extract_json(
         text = text.strip()
 
         # Try to find JSON object boundaries
-        start_idx = text.find('{')
-        end_idx = text.rfind('}')
+        start_idx = text.find("{")
+        end_idx = text.rfind("}")
 
         if start_idx >= 0 and end_idx > start_idx:
-            json_str = text[start_idx:end_idx + 1]
+            json_str = text[start_idx : end_idx + 1]
             return json.loads(json_str)
 
         # Try parsing as array
-        start_idx = text.find('[')
-        end_idx = text.rfind(']')
+        start_idx = text.find("[")
+        end_idx = text.rfind("]")
 
         if start_idx >= 0 and end_idx > start_idx:
-            json_str = text[start_idx:end_idx + 1]
+            json_str = text[start_idx : end_idx + 1]
             return json.loads(json_str)
 
         # Try parsing entire text
@@ -544,7 +533,7 @@ def track_api_call(
     output_tokens: int,
     agent_name: str = "",
     company_name: str = "",
-    cached_tokens: int = 0
+    cached_tokens: int = 0,
 ) -> float:
     """
     Convenience function to track an API call and return cost.
@@ -567,5 +556,5 @@ def track_api_call(
         output_tokens=output_tokens,
         agent_name=agent_name,
         company_name=company_name,
-        cached_tokens=cached_tokens
+        cached_tokens=cached_tokens,
     )

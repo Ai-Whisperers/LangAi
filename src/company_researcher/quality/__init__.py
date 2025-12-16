@@ -18,118 +18,99 @@ Phase History:
 - Phase 22: Consolidated flat structure (removed duplicate subdirectories)
 """
 
-# Core models (shared across modules)
-from .models import (
-    Source,
-    ResearchFact,
-    QualityReport,
-    SourceQuality,
-    ConfidenceLevel
+# AI-powered extraction (replaces legacy fact_extractor)
+from ..ai.extraction import AIDataExtractor as FactExtractor  # Alias for backward compatibility
+from ..ai.extraction import ExtractedFact, ExtractionResult, FactCategory
+from ..ai.extraction import FactType as ClaimType  # Alias for backward compatibility
+from .audit_trail import (
+    AgentExecution,
+    AuditEvent,
+    AuditEventType,
+    ClaimProvenance,
+    ResearchAuditTrail,
+    SourceReference,
+    create_audit_trail,
 )
+from .confidence_scorer import ConfidenceFactors
+from .confidence_scorer import ConfidenceLevel as ScorerConfidenceLevel
+from .confidence_scorer import ConfidenceScorer, ScoredFact
+from .confidence_scorer import SourceInfo as ConfidenceSourceInfo
+from .confidence_scorer import SourceType, create_confidence_scorer, score_facts
+from .contradiction_detector import (
+    Contradiction,
+    ContradictionDetector,
+    ContradictionReport,
+    ContradictionSeverity,
+    ResolutionStrategy,
+    detect_contradictions,
+    quick_contradiction_check,
+)
+from .cross_source_validator import (
+    Conflict,
+    ConflictType,
+    CrossSourceValidator,
+    Fact,
+    SourceInfo,
+    SourceTier,
+    ValidationResult,
+    validate_research_data,
+)
+from .enhanced_contradiction_detector import Contradiction as EnhancedContradiction
+from .enhanced_contradiction_detector import ContradictionReport as EnhancedContradictionReport
+from .enhanced_contradiction_detector import (
+    ContradictionType,
+    EnhancedContradictionDetector,
+    ExtractedClaim,
+)
+from .freshness_tracker import (
+    DataType,
+    DateExtractor,
+    FreshnessAssessment,
+    FreshnessLevel,
+    FreshnessThreshold,
+    FreshnessTracker,
+    assess_data_freshness,
+    create_freshness_tracker,
+)
+
+# Core models (shared across modules)
+from .models import ConfidenceLevel, QualityReport, ResearchFact, Source, SourceQuality
+from .quality_checker import check_research_quality
+from .source_assessor import SourceQualityAssessor, get_quality_tier_info
+from .source_attribution import (
+    Citation,
+    CitationStyle,
+    Evidence,
+    EvidenceChain,
+    EvidenceType,
+    SourceDocument,
+)
+from .source_attribution import SourceTracker as AttributionTracker
+from .source_attribution import create_tracker_for_research
+from .source_tracker import SourceTracker
 
 # ============================================================================
 # Validation Module
 # ============================================================================
 
-from .quality_checker import check_research_quality
-
-from .contradiction_detector import (
-    ContradictionDetector,
-    Contradiction,
-    ContradictionReport,
-    ContradictionSeverity,
-    ResolutionStrategy,
-    detect_contradictions,
-    quick_contradiction_check
-)
-
-from .cross_source_validator import (
-    CrossSourceValidator,
-    SourceInfo,
-    SourceTier,
-    Fact,
-    Conflict,
-    ConflictType,
-    ValidationResult,
-    validate_research_data,
-)
-
-from .enhanced_contradiction_detector import (
-    EnhancedContradictionDetector,
-    ContradictionType,
-    ExtractedClaim,
-    Contradiction as EnhancedContradiction,
-    ContradictionReport as EnhancedContradictionReport,
-)
 
 # ============================================================================
 # Tracking Module
 # ============================================================================
 
-from .source_tracker import SourceTracker
-
-from .freshness_tracker import (
-    FreshnessTracker,
-    FreshnessAssessment,
-    FreshnessLevel,
-    FreshnessThreshold,
-    DataType,
-    DateExtractor,
-    create_freshness_tracker,
-    assess_data_freshness,
-)
-
-from .audit_trail import (
-    ResearchAuditTrail,
-    AuditEvent,
-    AuditEventType,
-    SourceReference,
-    ClaimProvenance,
-    AgentExecution,
-    create_audit_trail,
-)
 
 # ============================================================================
 # Scoring Module
 # ============================================================================
 
-from .source_assessor import SourceQualityAssessor, get_quality_tier_info
-
-from .confidence_scorer import (
-    ConfidenceScorer,
-    ScoredFact,
-    ConfidenceFactors,
-    SourceInfo as ConfidenceSourceInfo,
-    SourceType,
-    ConfidenceLevel as ScorerConfidenceLevel,
-    score_facts,
-    create_confidence_scorer,
-)
 
 # ============================================================================
 # Extraction Module
 # ============================================================================
 
-# AI-powered extraction (replaces legacy fact_extractor)
-from ..ai.extraction import (
-    AIDataExtractor as FactExtractor,  # Alias for backward compatibility
-    ExtractedFact,
-    ExtractionResult,
-    FactCategory,
-    FactType as ClaimType,  # Alias for backward compatibility
-)
+
 # Note: extract_facts and extract_from_all_agents removed - use AIDataExtractor directly
 
-from .source_attribution import (
-    SourceTracker as AttributionTracker,
-    SourceDocument,
-    Evidence,
-    EvidenceChain,
-    EvidenceType,
-    Citation,
-    CitationStyle,
-    create_tracker_for_research,
-)
 
 # ============================================================================
 # Exports
@@ -142,7 +123,6 @@ __all__ = [
     "QualityReport",
     "SourceQuality",
     "ConfidenceLevel",
-
     # Validation
     "check_research_quality",
     "ContradictionDetector",
@@ -165,7 +145,6 @@ __all__ = [
     "ExtractedClaim",
     "EnhancedContradiction",
     "EnhancedContradictionReport",
-
     # Tracking
     "SourceTracker",
     "FreshnessTracker",
@@ -183,7 +162,6 @@ __all__ = [
     "ClaimProvenance",
     "AgentExecution",
     "create_audit_trail",
-
     # Scoring
     "SourceQualityAssessor",
     "get_quality_tier_info",
@@ -195,7 +173,6 @@ __all__ = [
     "ScorerConfidenceLevel",
     "score_facts",
     "create_confidence_scorer",
-
     # Extraction (AI-powered)
     "FactExtractor",
     "ExtractedFact",

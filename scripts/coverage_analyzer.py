@@ -13,12 +13,12 @@ Analyzes Python codebase for comprehensive test coverage gaps including:
 """
 
 import ast
-import os
 import json
-from pathlib import Path
-from typing import Dict, List, Set, Tuple, Any, Optional
-from dataclasses import dataclass, field, asdict
+import os
+from dataclasses import asdict, dataclass, field
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 
 class Priority(str, Enum):
@@ -38,6 +38,7 @@ class TestType(str, Enum):
 @dataclass
 class TestGap:
     """Represents a test coverage gap."""
+
     file_path: str
     element_name: str
     element_type: str  # function, class, method, module
@@ -55,6 +56,7 @@ class TestGap:
 @dataclass
 class CodeElement:
     """Represents a code element to be tested."""
+
     name: str
     type: str
     file_path: str
@@ -79,19 +81,18 @@ class ASTAnalyzer(ast.NodeVisitor):
 
     def visit_ClassDef(self, node: ast.ClassDef):
         """Visit class definition."""
-        is_public = not node.name.startswith('_')
+        is_public = not node.name.startswith("_")
 
         # Check if it's a test class
-        if node.name.startswith('Test') or any(
-            base.id == 'TestCase' if isinstance(base, ast.Name) else False
-            for base in node.bases
+        if node.name.startswith("Test") or any(
+            base.id == "TestCase" if isinstance(base, ast.Name) else False for base in node.bases
         ):
             self.generic_visit(node)
             return
 
         element = CodeElement(
             name=node.name,
-            type='class',
+            type="class",
             file_path=self.file_path,
             line_number=node.lineno,
             is_public=is_public,
@@ -101,7 +102,7 @@ class ASTAnalyzer(ast.NodeVisitor):
             return_type=None,
             has_error_handling=self._has_error_handling(node),
             complexity=self._calculate_complexity(node),
-            docstring=ast.get_docstring(node)
+            docstring=ast.get_docstring(node),
         )
         self.elements.append(element)
 
@@ -113,21 +114,23 @@ class ASTAnalyzer(ast.NodeVisitor):
     def visit_FunctionDef(self, node: ast.FunctionDef):
         """Visit function/method definition."""
         # Skip test functions
-        if node.name.startswith('test_'):
+        if node.name.startswith("test_"):
             return
 
-        is_public = not node.name.startswith('_')
+        is_public = not node.name.startswith("_")
         is_async = isinstance(node, ast.AsyncFunctionDef)
 
         # Get parameters
-        params = [arg.arg for arg in node.args.args if arg.arg != 'self' and arg.arg != 'cls']
+        params = [arg.arg for arg in node.args.args if arg.arg != "self" and arg.arg != "cls"]
 
         # Get return type
         return_type = None
         if node.returns:
-            return_type = ast.unparse(node.returns) if hasattr(ast, 'unparse') else str(node.returns)
+            return_type = (
+                ast.unparse(node.returns) if hasattr(ast, "unparse") else str(node.returns)
+            )
 
-        element_type = 'method' if self.current_class else 'function'
+        element_type = "method" if self.current_class else "function"
         full_name = f"{self.current_class}.{node.name}" if self.current_class else node.name
 
         element = CodeElement(
@@ -142,7 +145,7 @@ class ASTAnalyzer(ast.NodeVisitor):
             return_type=return_type,
             has_error_handling=self._has_error_handling(node),
             complexity=self._calculate_complexity(node),
-            docstring=ast.get_docstring(node)
+            docstring=ast.get_docstring(node),
         )
         self.elements.append(element)
 
@@ -161,8 +164,10 @@ class ASTAnalyzer(ast.NodeVisitor):
         """Calculate cyclomatic complexity."""
         complexity = 1
         for child in ast.walk(node):
-            if isinstance(child, (ast.If, ast.While, ast.For, ast.ExceptHandler,
-                                ast.With, ast.Assert, ast.BoolOp)):
+            if isinstance(
+                child,
+                (ast.If, ast.While, ast.For, ast.ExceptHandler, ast.With, ast.Assert, ast.BoolOp),
+            ):
                 complexity += 1
         return complexity
 
@@ -178,7 +183,7 @@ class TestAnalyzer(ast.NodeVisitor):
 
     def visit_FunctionDef(self, node: ast.FunctionDef):
         """Visit test function."""
-        if not node.name.startswith('test_'):
+        if not node.name.startswith("test_"):
             return
 
         self.current_test = node.name
@@ -186,27 +191,21 @@ class TestAnalyzer(ast.NodeVisitor):
         # Check for assertions
         has_assertions = self._has_assertions(node)
         if not has_assertions:
-            self.test_issues.append({
-                'test': node.name,
-                'issue': 'no_assertions',
-                'line': node.lineno
-            })
+            self.test_issues.append(
+                {"test": node.name, "issue": "no_assertions", "line": node.lineno}
+            )
 
         # Check for hardcoded values
         if self._has_hardcoded_values(node):
-            self.test_issues.append({
-                'test': node.name,
-                'issue': 'hardcoded_values',
-                'line': node.lineno
-            })
+            self.test_issues.append(
+                {"test": node.name, "issue": "hardcoded_values", "line": node.lineno}
+            )
 
         # Check for external service calls
         if self._calls_external_service(node):
-            self.test_issues.append({
-                'test': node.name,
-                'issue': 'external_service',
-                'line': node.lineno
-            })
+            self.test_issues.append(
+                {"test": node.name, "issue": "external_service", "line": node.lineno}
+            )
 
         # Extract what's being tested
         tested = self._extract_tested_elements(node)
@@ -222,7 +221,7 @@ class TestAnalyzer(ast.NodeVisitor):
                 return True
             if isinstance(child, ast.Call):
                 if isinstance(child.func, ast.Attribute):
-                    if child.func.attr.startswith('assert'):
+                    if child.func.attr.startswith("assert"):
                         return True
         return False
 
@@ -239,8 +238,8 @@ class TestAnalyzer(ast.NodeVisitor):
 
     def _calls_external_service(self, node: ast.FunctionDef) -> bool:
         """Check if test calls external services."""
-        external_patterns = ['requests.', 'httpx.', 'urllib.', 'http.client']
-        code = ast.unparse(node) if hasattr(ast, 'unparse') else ''
+        external_patterns = ["requests.", "httpx.", "urllib.", "http.client"]
+        code = ast.unparse(node) if hasattr(ast, "unparse") else ""
         return any(pattern in code for pattern in external_patterns)
 
     def _extract_tested_elements(self, node: ast.FunctionDef) -> Set[str]:
@@ -282,12 +281,12 @@ class CoverageAnalyzer:
 
     def _analyze_source_files(self):
         """Analyze all source files."""
-        for py_file in self.src_dir.rglob('*.py'):
-            if '__pycache__' in str(py_file) or 'test' in str(py_file).lower():
+        for py_file in self.src_dir.rglob("*.py"):
+            if "__pycache__" in str(py_file) or "test" in str(py_file).lower():
                 continue
 
             try:
-                with open(py_file, 'r', encoding='utf-8') as f:
+                with open(py_file, "r", encoding="utf-8") as f:
                     tree = ast.parse(f.read(), filename=str(py_file))
 
                 analyzer = ASTAnalyzer(str(py_file.relative_to(self.src_dir)))
@@ -305,12 +304,12 @@ class CoverageAnalyzer:
             print(f"Warning: Test directory {self.test_dir} does not exist")
             return
 
-        for py_file in self.test_dir.rglob('*.py'):
-            if '__pycache__' in str(py_file):
+        for py_file in self.test_dir.rglob("*.py"):
+            if "__pycache__" in str(py_file):
                 continue
 
             try:
-                with open(py_file, 'r', encoding='utf-8') as f:
+                with open(py_file, "r", encoding="utf-8") as f:
                     tree = ast.parse(f.read(), filename=str(py_file))
 
                 analyzer = TestAnalyzer(str(py_file.relative_to(self.test_dir)))
@@ -334,8 +333,10 @@ class CoverageAnalyzer:
                     continue
 
                 # Check if element is tested
-                is_tested = element.name in self.tested_elements or \
-                           element.name.split('.')[-1] in self.tested_elements
+                is_tested = (
+                    element.name in self.tested_elements
+                    or element.name.split(".")[-1] in self.tested_elements
+                )
 
                 if not is_tested:
                     self._add_untested_gap(element, file_has_tests)
@@ -369,7 +370,7 @@ class CoverageAnalyzer:
 
     def _add_untested_gap(self, element: CodeElement, file_has_tests: bool):
         """Add gap for untested element."""
-        priority = Priority.HIGH if element.type == 'class' else Priority.MEDIUM
+        priority = Priority.HIGH if element.type == "class" else Priority.MEDIUM
         if not file_has_tests:
             priority = Priority.HIGH
 
@@ -377,7 +378,7 @@ class CoverageAnalyzer:
             file_path=element.file_path,
             element_name=element.name,
             element_type=element.type,
-            gap_type='untested_element',
+            gap_type="untested_element",
             reason=f"Public {element.type} '{element.name}' has no tests",
             test_type_needed=TestType.UNIT,
             priority=priority,
@@ -385,7 +386,7 @@ class CoverageAnalyzer:
             complexity=element.complexity,
             has_error_handling=element.has_error_handling,
             has_async=element.is_async,
-            parameters=element.parameters
+            parameters=element.parameters,
         )
         self.gaps.append(gap)
 
@@ -395,12 +396,12 @@ class CoverageAnalyzer:
             file_path=element.file_path,
             element_name=element.name,
             element_type=element.type,
-            gap_type='missing_edge_cases',
+            gap_type="missing_edge_cases",
             reason=f"High complexity ({element.complexity}) requires edge case testing",
             test_type_needed=TestType.UNIT,
             priority=Priority.HIGH,
             line_number=element.line_number,
-            complexity=element.complexity
+            complexity=element.complexity,
         )
         self.gaps.append(gap)
 
@@ -410,12 +411,12 @@ class CoverageAnalyzer:
             file_path=element.file_path,
             element_name=element.name,
             element_type=element.type,
-            gap_type='missing_error_paths',
+            gap_type="missing_error_paths",
             reason="Contains error handling that should be tested",
             test_type_needed=TestType.UNIT,
             priority=Priority.HIGH,
             line_number=element.line_number,
-            has_error_handling=True
+            has_error_handling=True,
         )
         self.gaps.append(gap)
 
@@ -425,12 +426,12 @@ class CoverageAnalyzer:
             file_path=element.file_path,
             element_name=element.name,
             element_type=element.type,
-            gap_type='missing_async_test',
+            gap_type="missing_async_test",
             reason="Async function requires async test handling",
             test_type_needed=TestType.UNIT,
             priority=Priority.MEDIUM,
             line_number=element.line_number,
-            has_async=True
+            has_async=True,
         )
         self.gaps.append(gap)
 
@@ -440,37 +441,38 @@ class CoverageAnalyzer:
             file_path=element.file_path,
             element_name=element.name,
             element_type=element.type,
-            gap_type='missing_boundary_tests',
+            gap_type="missing_boundary_tests",
             reason=f"Function with {len(element.parameters)} parameters needs boundary testing",
             test_type_needed=TestType.UNIT,
             priority=Priority.MEDIUM,
             line_number=element.line_number,
-            parameters=element.parameters
+            parameters=element.parameters,
         )
         self.gaps.append(gap)
 
     def generate_report(self, output_file: str = "test_coverage_gaps.json"):
         """Generate comprehensive report."""
         report = {
-            'summary': {
-                'total_gaps': len(self.gaps),
-                'high_priority': len([g for g in self.gaps if g.priority == Priority.HIGH]),
-                'medium_priority': len([g for g in self.gaps if g.priority == Priority.MEDIUM]),
-                'low_priority': len([g for g in self.gaps if g.priority == Priority.LOW]),
-                'by_type': {},
-                'test_issues': len(self.test_issues)
+            "summary": {
+                "total_gaps": len(self.gaps),
+                "high_priority": len([g for g in self.gaps if g.priority == Priority.HIGH]),
+                "medium_priority": len([g for g in self.gaps if g.priority == Priority.MEDIUM]),
+                "low_priority": len([g for g in self.gaps if g.priority == Priority.LOW]),
+                "by_type": {},
+                "test_issues": len(self.test_issues),
             },
-            'gaps': [asdict(gap) for gap in self.gaps],
-            'test_issues': self.test_issues
+            "gaps": [asdict(gap) for gap in self.gaps],
+            "test_issues": self.test_issues,
         }
 
         # Count by gap type
         for gap in self.gaps:
             gap_type = gap.gap_type
-            report['summary']['by_type'][gap_type] = \
-                report['summary']['by_type'].get(gap_type, 0) + 1
+            report["summary"]["by_type"][gap_type] = (
+                report["summary"]["by_type"].get(gap_type, 0) + 1
+            )
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             json.dump(report, f, indent=2)
 
         print(f"\nReport saved to {output_file}")
@@ -480,7 +482,7 @@ class CoverageAnalyzer:
         print(f"  Medium priority: {report['summary']['medium_priority']}")
         print(f"  Low priority: {report['summary']['low_priority']}")
         print(f"\nGaps by type:")
-        for gap_type, count in sorted(report['summary']['by_type'].items()):
+        for gap_type, count in sorted(report["summary"]["by_type"].items()):
             print(f"  {gap_type}: {count}")
 
         return report
@@ -490,10 +492,10 @@ def main():
     """Main entry point."""
     import argparse
 
-    parser = argparse.ArgumentParser(description='Analyze test coverage gaps')
-    parser.add_argument('--src', default='src', help='Source directory')
-    parser.add_argument('--tests', default='tests', help='Tests directory')
-    parser.add_argument('--output', default='test_coverage_gaps.json', help='Output file')
+    parser = argparse.ArgumentParser(description="Analyze test coverage gaps")
+    parser.add_argument("--src", default="src", help="Source directory")
+    parser.add_argument("--tests", default="tests", help="Tests directory")
+    parser.add_argument("--output", default="test_coverage_gaps.json", help="Output file")
     args = parser.parse_args()
 
     analyzer = CoverageAnalyzer(args.src, args.tests)
@@ -503,9 +505,9 @@ def main():
     # Print first 20 high-priority gaps
     high_priority = [g for g in gaps if g.priority == Priority.HIGH][:20]
     if high_priority:
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("TOP 20 HIGH PRIORITY GAPS:")
-        print("="*80)
+        print("=" * 80)
         for i, gap in enumerate(high_priority, 1):
             print(f"\n{i}. {gap.element_name} ({gap.element_type})")
             print(f"   File: {gap.file_path}:{gap.line_number}")
@@ -514,5 +516,5 @@ def main():
             print(f"   Test needed: {gap.test_type_needed.value}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

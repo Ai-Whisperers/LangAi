@@ -15,7 +15,7 @@ World-class senior prompt engineer skill for production-grade AI/ML/Data systems
 # Core Tool 1
 python scripts/prompt_optimizer.py --input data/ --output results/
 
-# Core Tool 2  
+# Core Tool 2
 python scripts/rag_evaluator.py --target project/ --analyze
 
 # Core Tool 3

@@ -82,4 +82,3 @@ Given a completed prompt (with output artifacts), recommend and emit the next pr
 - `housekeeping/find-workflow-candidates.prompt.md`
 - `housekeeping/chain-condense-ticket.prompt.md`
 - `ticket/start-ticket.prompt.md`
-

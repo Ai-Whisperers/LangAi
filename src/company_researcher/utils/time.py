@@ -194,6 +194,7 @@ def is_recent(
 # Research-Specific Time Utilities
 # ==============================================================================
 
+
 def get_current_year() -> int:
     """Get the current year.
 
@@ -340,21 +341,37 @@ def get_freshness_indicator(field_type: str) -> str:
 
     # Fields that need absolutely current data
     current_only = {
-        "ceo", "leadership", "management", "executives",
-        "headquarters", "employees", "headcount",
+        "ceo",
+        "leadership",
+        "management",
+        "executives",
+        "headquarters",
+        "employees",
+        "headcount",
     }
 
     # Fields where data may lag by a year (financial reports)
     financial_lag = {
-        "revenue", "profit", "earnings", "financial",
-        "market_share", "subscribers", "arpu",
-        "ebitda", "margin", "growth",
+        "revenue",
+        "profit",
+        "earnings",
+        "financial",
+        "market_share",
+        "subscribers",
+        "arpu",
+        "ebitda",
+        "margin",
+        "growth",
     }
 
     # Fields that don't need date filtering
     no_date = {
-        "history", "founded", "origin", "background",
-        "overview", "about",
+        "history",
+        "founded",
+        "origin",
+        "background",
+        "overview",
+        "about",
     }
 
     field_lower = field_type.lower()

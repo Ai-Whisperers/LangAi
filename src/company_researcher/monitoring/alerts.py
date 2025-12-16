@@ -25,8 +25,10 @@ def _utcnow() -> datetime:
 # Enums and Data Models
 # ============================================================================
 
+
 class AlertSeverity(str, Enum):
     """Alert severity levels."""
+
     INFO = "info"
     WARNING = "warning"
     ERROR = "error"
@@ -35,6 +37,7 @@ class AlertSeverity(str, Enum):
 
 class AlertStatus(str, Enum):
     """Alert status."""
+
     ACTIVE = "active"
     ACKNOWLEDGED = "acknowledged"
     RESOLVED = "resolved"
@@ -43,15 +46,17 @@ class AlertStatus(str, Enum):
 
 class AlertCondition(str, Enum):
     """Alert condition types."""
-    THRESHOLD = "threshold"        # Value exceeds threshold
-    RATE = "rate"                  # Rate of change
-    ABSENCE = "absence"            # No data received
-    PATTERN = "pattern"            # Pattern detected
+
+    THRESHOLD = "threshold"  # Value exceeds threshold
+    RATE = "rate"  # Rate of change
+    ABSENCE = "absence"  # No data received
+    PATTERN = "pattern"  # Pattern detected
 
 
 @dataclass
 class AlertRule:
     """Definition of an alert rule."""
+
     rule_id: str
     name: str
     metric: str
@@ -72,13 +77,14 @@ class AlertRule:
             "threshold": self.threshold,
             "severity": self.severity.value,
             "duration_seconds": self.duration_seconds,
-            "enabled": self.enabled
+            "enabled": self.enabled,
         }
 
 
 @dataclass
 class Alert:
     """An active or historical alert."""
+
     alert_id: str
     rule_id: str
     name: str
@@ -105,13 +111,14 @@ class Alert:
             "threshold": self.threshold,
             "triggered_at": self.triggered_at.isoformat(),
             "acknowledged_at": self.acknowledged_at.isoformat() if self.acknowledged_at else None,
-            "resolved_at": self.resolved_at.isoformat() if self.resolved_at else None
+            "resolved_at": self.resolved_at.isoformat() if self.resolved_at else None,
         }
 
 
 # ============================================================================
 # Alert Manager
 # ============================================================================
+
 
 class AlertManager:
     """
@@ -183,7 +190,7 @@ class AlertManager:
                 condition=AlertCondition.THRESHOLD,
                 threshold=0.2,  # 20% failure rate
                 severity=AlertSeverity.ERROR,
-                description="Research failure rate exceeds 20%"
+                description="Research failure rate exceeds 20%",
             ),
             AlertRule(
                 rule_id="high_daily_cost",
@@ -192,7 +199,7 @@ class AlertManager:
                 condition=AlertCondition.THRESHOLD,
                 threshold=10.0,  # $10/day
                 severity=AlertSeverity.WARNING,
-                description="Daily cost exceeds $10"
+                description="Daily cost exceeds $10",
             ),
             AlertRule(
                 rule_id="slow_response",
@@ -201,7 +208,7 @@ class AlertManager:
                 condition=AlertCondition.THRESHOLD,
                 threshold=30.0,  # 30 seconds
                 severity=AlertSeverity.WARNING,
-                description="P95 latency exceeds 30 seconds"
+                description="P95 latency exceeds 30 seconds",
             ),
             AlertRule(
                 rule_id="api_errors",
@@ -210,8 +217,8 @@ class AlertManager:
                 condition=AlertCondition.THRESHOLD,
                 threshold=0.05,  # 5% error rate
                 severity=AlertSeverity.ERROR,
-                description="API error rate exceeds 5%"
-            )
+                description="API error rate exceeds 5%",
+            ),
         ]
 
         for rule in default_rules:
@@ -256,12 +263,7 @@ class AlertManager:
     # Metric Checking
     # ==========================================================================
 
-    def check_metric(
-        self,
-        metric: str,
-        value: float,
-        metadata: Optional[Dict[str, Any]] = None
-    ):
+    def check_metric(self, metric: str, value: float, metadata: Optional[Dict[str, Any]] = None):
         """
         Check a metric value against all applicable rules.
 
@@ -280,8 +282,7 @@ class AlertManager:
             # Trim old values (keep last hour)
             cutoff = now - timedelta(hours=1)
             self._metric_values[metric] = [
-                (ts, v) for ts, v in self._metric_values[metric]
-                if ts > cutoff
+                (ts, v) for ts, v in self._metric_values[metric] if ts > cutoff
             ]
 
             # Check rules
@@ -289,12 +290,7 @@ class AlertManager:
                 if rule.metric == metric and rule.enabled:
                     self._evaluate_rule(rule, value, metadata)
 
-    def _evaluate_rule(
-        self,
-        rule: AlertRule,
-        value: float,
-        metadata: Optional[Dict[str, Any]]
-    ):
+    def _evaluate_rule(self, rule: AlertRule, value: float, metadata: Optional[Dict[str, Any]]):
         """Evaluate a rule against a value."""
         triggered = False
 
@@ -316,10 +312,7 @@ class AlertManager:
             self._maybe_resolve_alert(rule.rule_id)
 
     def _maybe_trigger_alert(
-        self,
-        rule: AlertRule,
-        value: float,
-        metadata: Optional[Dict[str, Any]]
+        self, rule: AlertRule, value: float, metadata: Optional[Dict[str, Any]]
     ):
         """Trigger alert if cooldown allows."""
         now = _utcnow()
@@ -348,7 +341,7 @@ class AlertManager:
             message=f"{rule.name}: {value:.4f} exceeds threshold {rule.threshold}",
             value=value,
             threshold=rule.threshold,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         self._alerts[alert_id] = alert
@@ -400,7 +393,7 @@ class AlertManager:
 
                 # Prune history to prevent memory leaks
                 if len(self._alert_history) > self._max_history_size:
-                    self._alert_history = self._alert_history[-self._max_history_size // 2:]
+                    self._alert_history = self._alert_history[-self._max_history_size // 2 :]
 
                 msg = "auto-resolved" if auto else "resolved"
                 self._logger.info(f"Alert {msg}: {alert_id}")
@@ -413,14 +406,12 @@ class AlertManager:
                 alert.status = AlertStatus.SILENCED
                 self._logger.info(f"Alert silenced: {alert_id} for {duration_minutes}m")
 
-    def get_active_alerts(
-        self,
-        severity: Optional[AlertSeverity] = None
-    ) -> List[Alert]:
+    def get_active_alerts(self, severity: Optional[AlertSeverity] = None) -> List[Alert]:
         """Get all active alerts."""
         with self._lock:
             alerts = [
-                a for a in self._alerts.values()
+                a
+                for a in self._alerts.values()
                 if a.status in [AlertStatus.ACTIVE, AlertStatus.ACKNOWLEDGED]
             ]
 
@@ -432,17 +423,13 @@ class AlertManager:
                 AlertSeverity.CRITICAL: 0,
                 AlertSeverity.ERROR: 1,
                 AlertSeverity.WARNING: 2,
-                AlertSeverity.INFO: 3
+                AlertSeverity.INFO: 3,
             }
             alerts.sort(key=lambda a: (severity_order.get(a.severity, 4), a.triggered_at))
 
             return alerts
 
-    def get_alert_history(
-        self,
-        limit: int = 100,
-        since: Optional[datetime] = None
-    ) -> List[Alert]:
+    def get_alert_history(self, limit: int = 100, since: Optional[datetime] = None) -> List[Alert]:
         """Get alert history."""
         with self._lock:
             history = self._alert_history
@@ -488,13 +475,14 @@ class AlertManager:
             "active_alerts": [a.to_dict() for a in self.get_active_alerts()],
             "alert_counts": self.get_alert_count_by_severity(),
             "rules": [r.to_dict() for r in self._rules.values()],
-            "history_count": len(self._alert_history)
+            "history_count": len(self._alert_history),
         }
 
 
 # ============================================================================
 # Factory Function
 # ============================================================================
+
 
 def create_alert_manager() -> AlertManager:
     """Create an alert manager instance."""

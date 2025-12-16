@@ -2,8 +2,9 @@
 Base agent class for all research agents.
 """
 
-from typing import Dict, Any
 from abc import ABC, abstractmethod
+from typing import Any, Dict
+
 from ...state import OverallState
 
 

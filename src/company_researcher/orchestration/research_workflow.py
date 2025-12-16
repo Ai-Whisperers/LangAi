@@ -10,34 +10,36 @@ Pre-built workflow configurations for company research:
 Integrates all agents into cohesive workflows.
 """
 
-from typing import Dict, Any, Optional, Callable
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Callable, Dict, Optional
 
 from .workflow_engine import (
-    WorkflowEngine,
-    WorkflowState,
     NodeConfig,
     NodeType,
+    WorkflowEngine,
+    WorkflowState,
     create_workflow_engine,
 )
-
 
 # ============================================================================
 # Research Depth Configuration
 # ============================================================================
 
+
 class ResearchDepth(str, Enum):
     """Research depth levels."""
-    QUICK = "quick"            # Basic company info only
-    STANDARD = "standard"      # Core analysis agents
+
+    QUICK = "quick"  # Basic company info only
+    STANDARD = "standard"  # Core analysis agents
     COMPREHENSIVE = "comprehensive"  # Full analysis suite
-    CUSTOM = "custom"          # User-defined
+    CUSTOM = "custom"  # User-defined
 
 
 @dataclass
 class ResearchConfig:
     """Research workflow configuration."""
+
     depth: ResearchDepth = ResearchDepth.STANDARD
     include_financial: bool = True
     include_market: bool = True
@@ -56,8 +58,10 @@ class ResearchConfig:
 # Agent Node Handlers (Stubs - Connect to actual agents)
 # ============================================================================
 
+
 def _create_search_node() -> Callable:
     """Create search agent node handler."""
+
     def handler(state: Dict[str, Any]) -> Dict[str, Any]:
         company_name = state.get("company_name", "Unknown")
         print(f"[Search] Searching for: {company_name}")
@@ -65,19 +69,25 @@ def _create_search_node() -> Callable:
         # In production, this would call the actual search agent
         return {
             "search_results": [
-                {"title": f"{company_name} Overview", "content": f"Information about {company_name}..."},
-                {"title": f"{company_name} News", "content": f"Recent news about {company_name}..."},
+                {
+                    "title": f"{company_name} Overview",
+                    "content": f"Information about {company_name}...",
+                },
+                {
+                    "title": f"{company_name} News",
+                    "content": f"Recent news about {company_name}...",
+                },
             ],
-            "agent_outputs": {
-                "search": {"status": "completed", "result_count": 2}
-            },
-            "total_cost": 0.001
+            "agent_outputs": {"search": {"status": "completed", "result_count": 2}},
+            "total_cost": 0.001,
         }
+
     return handler
 
 
 def _create_financial_node() -> Callable:
     """Create financial agent node handler."""
+
     def handler(state: Dict[str, Any]) -> Dict[str, Any]:
         company_name = state.get("company_name", "Unknown")
         print(f"[Financial] Analyzing: {company_name}")
@@ -87,16 +97,18 @@ def _create_financial_node() -> Callable:
                 "financial": {
                     "analysis": f"Financial analysis for {company_name}",
                     "health_score": 75.0,
-                    "cost": 0.01
+                    "cost": 0.01,
                 }
             },
-            "total_cost": 0.01
+            "total_cost": 0.01,
         }
+
     return handler
 
 
 def _create_market_node() -> Callable:
     """Create market analysis agent node handler."""
+
     def handler(state: Dict[str, Any]) -> Dict[str, Any]:
         company_name = state.get("company_name", "Unknown")
         print(f"[Market] Analyzing market for: {company_name}")
@@ -106,16 +118,18 @@ def _create_market_node() -> Callable:
                 "market": {
                     "analysis": f"Market analysis for {company_name}",
                     "market_score": 70.0,
-                    "cost": 0.01
+                    "cost": 0.01,
                 }
             },
-            "total_cost": 0.01
+            "total_cost": 0.01,
         }
+
     return handler
 
 
 def _create_competitive_node() -> Callable:
     """Create competitive analysis agent node handler."""
+
     def handler(state: Dict[str, Any]) -> Dict[str, Any]:
         company_name = state.get("company_name", "Unknown")
         print(f"[Competitive] Analyzing competitors for: {company_name}")
@@ -125,16 +139,18 @@ def _create_competitive_node() -> Callable:
                 "competitive": {
                     "analysis": f"Competitive analysis for {company_name}",
                     "competitors": ["Competitor A", "Competitor B"],
-                    "cost": 0.01
+                    "cost": 0.01,
                 }
             },
-            "total_cost": 0.01
+            "total_cost": 0.01,
         }
+
     return handler
 
 
 def _create_news_node() -> Callable:
     """Create news analysis agent node handler."""
+
     def handler(state: Dict[str, Any]) -> Dict[str, Any]:
         company_name = state.get("company_name", "Unknown")
         print(f"[News] Analyzing news for: {company_name}")
@@ -144,16 +160,18 @@ def _create_news_node() -> Callable:
                 "news": {
                     "analysis": f"News analysis for {company_name}",
                     "sentiment": "positive",
-                    "cost": 0.008
+                    "cost": 0.008,
                 }
             },
-            "total_cost": 0.008
+            "total_cost": 0.008,
         }
+
     return handler
 
 
 def _create_brand_node() -> Callable:
     """Create brand auditor agent node handler."""
+
     def handler(state: Dict[str, Any]) -> Dict[str, Any]:
         company_name = state.get("company_name", "Unknown")
         print(f"[Brand] Auditing brand for: {company_name}")
@@ -163,16 +181,18 @@ def _create_brand_node() -> Callable:
                 "brand": {
                     "analysis": f"Brand audit for {company_name}",
                     "brand_score": 72.0,
-                    "cost": 0.01
+                    "cost": 0.01,
                 }
             },
-            "total_cost": 0.01
+            "total_cost": 0.01,
         }
+
     return handler
 
 
 def _create_social_node() -> Callable:
     """Create social media agent node handler."""
+
     def handler(state: Dict[str, Any]) -> Dict[str, Any]:
         company_name = state.get("company_name", "Unknown")
         print(f"[Social] Analyzing social presence for: {company_name}")
@@ -182,16 +202,18 @@ def _create_social_node() -> Callable:
                 "social_media": {
                     "analysis": f"Social media analysis for {company_name}",
                     "social_score": 65.0,
-                    "cost": 0.01
+                    "cost": 0.01,
                 }
             },
-            "total_cost": 0.01
+            "total_cost": 0.01,
         }
+
     return handler
 
 
 def _create_sales_node() -> Callable:
     """Create sales intelligence agent node handler."""
+
     def handler(state: Dict[str, Any]) -> Dict[str, Any]:
         company_name = state.get("company_name", "Unknown")
         print(f"[Sales] Generating sales intel for: {company_name}")
@@ -201,16 +223,18 @@ def _create_sales_node() -> Callable:
                 "sales": {
                     "analysis": f"Sales intelligence for {company_name}",
                     "lead_score": "warm",
-                    "cost": 0.01
+                    "cost": 0.01,
                 }
             },
-            "total_cost": 0.01
+            "total_cost": 0.01,
         }
+
     return handler
 
 
 def _create_investment_node() -> Callable:
     """Create investment analyst agent node handler."""
+
     def handler(state: Dict[str, Any]) -> Dict[str, Any]:
         company_name = state.get("company_name", "Unknown")
         print(f"[Investment] Analyzing investment potential for: {company_name}")
@@ -220,16 +244,18 @@ def _create_investment_node() -> Callable:
                 "investment": {
                     "analysis": f"Investment analysis for {company_name}",
                     "rating": "BUY",
-                    "cost": 0.015
+                    "cost": 0.015,
                 }
             },
-            "total_cost": 0.015
+            "total_cost": 0.015,
         }
+
     return handler
 
 
 def _create_quality_node() -> Callable:
     """Create quality checker node handler."""
+
     def handler(state: Dict[str, Any]) -> Dict[str, Any]:
         print("[Quality] Running quality checks...")
 
@@ -242,16 +268,18 @@ def _create_quality_node() -> Callable:
                 "quality": {
                     "score": quality_score,
                     "checks_passed": len(agent_outputs),
-                    "cost": 0.005
+                    "cost": 0.005,
                 }
             },
-            "total_cost": 0.005
+            "total_cost": 0.005,
         }
+
     return handler
 
 
 def _create_synthesis_node() -> Callable:
     """Create synthesis node handler."""
+
     def handler(state: Dict[str, Any]) -> Dict[str, Any]:
         company_name = state.get("company_name", "Unknown")
         agent_outputs = state.get("agent_outputs", {})
@@ -262,16 +290,15 @@ def _create_synthesis_node() -> Callable:
         synthesis = {
             "company_name": company_name,
             "agents_completed": list(agent_outputs.keys()),
-            "summary": f"Comprehensive research synthesis for {company_name}"
+            "summary": f"Comprehensive research synthesis for {company_name}",
         }
 
         return {
             "synthesis": synthesis,
-            "agent_outputs": {
-                "synthesis": synthesis
-            },
-            "total_cost": 0.01
+            "agent_outputs": {"synthesis": synthesis},
+            "total_cost": 0.01,
         }
+
     return handler
 
 
@@ -279,9 +306,9 @@ def _create_synthesis_node() -> Callable:
 # Workflow Builders
 # ============================================================================
 
+
 def create_research_workflow(
-    config: Optional[ResearchConfig] = None,
-    use_actual_agents: bool = False
+    config: Optional[ResearchConfig] = None, use_actual_agents: bool = False
 ) -> WorkflowEngine:
     """
     Create a research workflow based on configuration.
@@ -295,116 +322,104 @@ def create_research_workflow(
     """
     cfg = config or ResearchConfig()
 
-    engine = create_workflow_engine(
-        max_parallel=cfg.max_parallel,
-        enable_retries=True
-    )
+    engine = create_workflow_engine(max_parallel=cfg.max_parallel, enable_retries=True)
 
     # Start with search
-    engine.add_node(NodeConfig(
-        name="search",
-        node_type=NodeType.AGENT,
-        handler=_create_search_node(),
-        children=["parallel_analysis"]
-    ))
+    engine.add_node(
+        NodeConfig(
+            name="search",
+            node_type=NodeType.AGENT,
+            handler=_create_search_node(),
+            children=["parallel_analysis"],
+        )
+    )
 
     # Parallel analysis group
     parallel_children = []
 
     if cfg.include_financial:
-        engine.add_node(NodeConfig(
-            name="financial",
-            node_type=NodeType.AGENT,
-            handler=_create_financial_node()
-        ))
+        engine.add_node(
+            NodeConfig(name="financial", node_type=NodeType.AGENT, handler=_create_financial_node())
+        )
         parallel_children.append("financial")
 
     if cfg.include_market:
-        engine.add_node(NodeConfig(
-            name="market",
-            node_type=NodeType.AGENT,
-            handler=_create_market_node()
-        ))
+        engine.add_node(
+            NodeConfig(name="market", node_type=NodeType.AGENT, handler=_create_market_node())
+        )
         parallel_children.append("market")
 
     if cfg.include_competitive:
-        engine.add_node(NodeConfig(
-            name="competitive",
-            node_type=NodeType.AGENT,
-            handler=_create_competitive_node()
-        ))
+        engine.add_node(
+            NodeConfig(
+                name="competitive", node_type=NodeType.AGENT, handler=_create_competitive_node()
+            )
+        )
         parallel_children.append("competitive")
 
     if cfg.include_news:
-        engine.add_node(NodeConfig(
-            name="news",
-            node_type=NodeType.AGENT,
-            handler=_create_news_node()
-        ))
+        engine.add_node(
+            NodeConfig(name="news", node_type=NodeType.AGENT, handler=_create_news_node())
+        )
         parallel_children.append("news")
 
     if cfg.include_brand:
-        engine.add_node(NodeConfig(
-            name="brand",
-            node_type=NodeType.AGENT,
-            handler=_create_brand_node()
-        ))
+        engine.add_node(
+            NodeConfig(name="brand", node_type=NodeType.AGENT, handler=_create_brand_node())
+        )
         parallel_children.append("brand")
 
     if cfg.include_social:
-        engine.add_node(NodeConfig(
-            name="social",
-            node_type=NodeType.AGENT,
-            handler=_create_social_node()
-        ))
+        engine.add_node(
+            NodeConfig(name="social", node_type=NodeType.AGENT, handler=_create_social_node())
+        )
         parallel_children.append("social")
 
     if cfg.include_sales:
-        engine.add_node(NodeConfig(
-            name="sales",
-            node_type=NodeType.AGENT,
-            handler=_create_sales_node()
-        ))
+        engine.add_node(
+            NodeConfig(name="sales", node_type=NodeType.AGENT, handler=_create_sales_node())
+        )
         parallel_children.append("sales")
 
     if cfg.include_investment:
-        engine.add_node(NodeConfig(
-            name="investment",
-            node_type=NodeType.AGENT,
-            handler=_create_investment_node()
-        ))
+        engine.add_node(
+            NodeConfig(
+                name="investment", node_type=NodeType.AGENT, handler=_create_investment_node()
+            )
+        )
         parallel_children.append("investment")
 
     # Add parallel execution node
-    engine.add_node(NodeConfig(
-        name="parallel_analysis",
-        node_type=NodeType.PARALLEL,
-        children=parallel_children
-    ))
+    engine.add_node(
+        NodeConfig(
+            name="parallel_analysis", node_type=NodeType.PARALLEL, children=parallel_children
+        )
+    )
     engine.connect("parallel_analysis", "quality" if cfg.enable_quality_check else "synthesis")
 
     # Quality check
     if cfg.enable_quality_check:
-        engine.add_node(NodeConfig(
-            name="quality",
-            node_type=NodeType.AGENT,
-            handler=_create_quality_node(),
-            children=["synthesis"]
-        ))
+        engine.add_node(
+            NodeConfig(
+                name="quality",
+                node_type=NodeType.AGENT,
+                handler=_create_quality_node(),
+                children=["synthesis"],
+            )
+        )
 
     # Final synthesis
-    engine.add_node(NodeConfig(
-        name="synthesis",
-        node_type=NodeType.AGENT,
-        handler=_create_synthesis_node(),
-        children=["end"]
-    ))
+    engine.add_node(
+        NodeConfig(
+            name="synthesis",
+            node_type=NodeType.AGENT,
+            handler=_create_synthesis_node(),
+            children=["end"],
+        )
+    )
 
     # End node
-    engine.add_node(NodeConfig(
-        name="end",
-        node_type=NodeType.END
-    ))
+    engine.add_node(NodeConfig(name="end", node_type=NodeType.END))
 
     return engine
 
@@ -422,7 +437,7 @@ def create_quick_research_workflow() -> WorkflowEngine:
         include_sales=False,
         include_investment=False,
         enable_quality_check=False,
-        max_parallel=2
+        max_parallel=2,
     )
     return create_research_workflow(config)
 
@@ -441,7 +456,7 @@ def create_comprehensive_research_workflow() -> WorkflowEngine:
         include_investment=True,
         include_deep_research=True,
         enable_quality_check=True,
-        max_parallel=6
+        max_parallel=6,
     )
     return create_research_workflow(config)
 
@@ -450,10 +465,11 @@ def create_comprehensive_research_workflow() -> WorkflowEngine:
 # Convenience Functions
 # ============================================================================
 
+
 def execute_research(
     company_name: str,
     depth: ResearchDepth = ResearchDepth.STANDARD,
-    config: Optional[ResearchConfig] = None
+    config: Optional[ResearchConfig] = None,
 ) -> WorkflowState:
     """
     Execute research for a company.
@@ -480,9 +496,7 @@ def execute_research(
     print(f"Starting {depth.value} research for: {company_name}")
     print(f"{'='*60}\n")
 
-    result = workflow.execute(
-        initial_data={"company_name": company_name}
-    )
+    result = workflow.execute(initial_data={"company_name": company_name})
 
     print(f"\n{'='*60}")
     print(f"Research completed: {result.status.value}")
@@ -498,6 +512,7 @@ def execute_research(
 # Workflow Templates for Specific Use Cases
 # ============================================================================
 
+
 def create_due_diligence_workflow() -> WorkflowEngine:
     """Create workflow for investment due diligence."""
     config = ResearchConfig(
@@ -511,7 +526,7 @@ def create_due_diligence_workflow() -> WorkflowEngine:
         include_sales=False,
         include_investment=True,
         enable_quality_check=True,
-        max_parallel=4
+        max_parallel=4,
     )
     return create_research_workflow(config)
 
@@ -529,7 +544,7 @@ def create_sales_prospecting_workflow() -> WorkflowEngine:
         include_sales=True,
         include_investment=False,
         enable_quality_check=False,
-        max_parallel=4
+        max_parallel=4,
     )
     return create_research_workflow(config)
 
@@ -547,6 +562,6 @@ def create_competitive_intelligence_workflow() -> WorkflowEngine:
         include_sales=False,
         include_investment=False,
         enable_quality_check=True,
-        max_parallel=4
+        max_parallel=4,
     )
     return create_research_workflow(config)

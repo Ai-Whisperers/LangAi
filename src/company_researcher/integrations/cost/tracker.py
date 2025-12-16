@@ -15,13 +15,8 @@ from pathlib import Path
 from threading import Lock
 from typing import Optional
 
-from .models import (
-    ProviderCategory,
-    PROVIDER_CONFIGS,
-    UsageRecord,
-    CostAlert,
-)
 from ...utils import get_logger, utc_now
+from .models import PROVIDER_CONFIGS, CostAlert, ProviderCategory, UsageRecord
 
 logger = get_logger(__name__)
 
@@ -41,7 +36,7 @@ class CostTracker:
         self,
         daily_budget: float = 10.0,
         monthly_budget: float = 200.0,
-        storage_path: Optional[Path] = None
+        storage_path: Optional[Path] = None,
     ):
         """
         Initialize cost tracker.
@@ -74,32 +69,26 @@ class CostTracker:
     def _setup_default_alerts(self):
         """Set up default budget alerts."""
         # Daily budget alert at 80%
-        self.add_alert(CostAlert(
-            name="daily_80_percent",
-            threshold=self.daily_budget * 0.8,
-            period="daily"
-        ))
+        self.add_alert(
+            CostAlert(name="daily_80_percent", threshold=self.daily_budget * 0.8, period="daily")
+        )
 
         # Daily budget alert at 100%
-        self.add_alert(CostAlert(
-            name="daily_limit",
-            threshold=self.daily_budget,
-            period="daily"
-        ))
+        self.add_alert(CostAlert(name="daily_limit", threshold=self.daily_budget, period="daily"))
 
         # Monthly budget alert at 50%
-        self.add_alert(CostAlert(
-            name="monthly_50_percent",
-            threshold=self.monthly_budget * 0.5,
-            period="monthly"
-        ))
+        self.add_alert(
+            CostAlert(
+                name="monthly_50_percent", threshold=self.monthly_budget * 0.5, period="monthly"
+            )
+        )
 
         # Monthly budget alert at 80%
-        self.add_alert(CostAlert(
-            name="monthly_80_percent",
-            threshold=self.monthly_budget * 0.8,
-            period="monthly"
-        ))
+        self.add_alert(
+            CostAlert(
+                name="monthly_80_percent", threshold=self.monthly_budget * 0.8, period="monthly"
+            )
+        )
 
     def _load_usage(self):
         """Load historical usage from storage."""
@@ -136,12 +125,7 @@ class CostTracker:
         except Exception as e:
             logger.warning(f"Failed to save usage: {e}")
 
-    def track(
-        self,
-        provider: str,
-        units: float = 1.0,
-        metadata: Optional[dict] = None
-    ) -> float:
+    def track(self, provider: str, units: float = 1.0, metadata: Optional[dict] = None) -> float:
         """
         Track usage for a provider.
 
@@ -166,7 +150,7 @@ class CostTracker:
             timestamp=utc_now(),
             units=units,
             cost=cost,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         with self._lock:
@@ -176,18 +160,12 @@ class CostTracker:
         # Check alerts
         self._check_alerts()
 
-        logger.debug(
-            f"Tracked {units} {config.unit_type}s for {provider}: ${cost:.4f}"
-        )
+        logger.debug(f"Tracked {units} {config.unit_type}s for {provider}: ${cost:.4f}")
 
         return cost
 
     def track_llm(
-        self,
-        provider: str,
-        input_tokens: int,
-        output_tokens: int,
-        model: Optional[str] = None
+        self, provider: str, input_tokens: int, output_tokens: int, model: Optional[str] = None
     ) -> float:
         """
         Track LLM usage with token counts.
@@ -207,11 +185,7 @@ class CostTracker:
         return self.track(
             provider=provider,
             units=units,
-            metadata={
-                "input_tokens": input_tokens,
-                "output_tokens": output_tokens,
-                "model": model
-            }
+            metadata={"input_tokens": input_tokens, "output_tokens": output_tokens, "model": model},
         )
 
     def add_alert(self, alert: CostAlert):
@@ -225,9 +199,7 @@ class CostTracker:
             current = self._get_period_cost(alert.period, alert.category, alert.provider)
 
             if current >= alert.threshold:
-                logger.warning(
-                    f"ALERT [{alert.name}]: ${current:.2f} >= ${alert.threshold:.2f}"
-                )
+                logger.warning(f"ALERT [{alert.name}]: ${current:.2f} >= ${alert.threshold:.2f}")
                 if alert.callback:
                     alert.callback(current, alert.threshold)
 
@@ -235,7 +207,7 @@ class CostTracker:
         self,
         period: str,
         category: Optional[ProviderCategory] = None,
-        provider: Optional[str] = None
+        provider: Optional[str] = None,
     ) -> float:
         """Get cost for a specific period."""
         now = utc_now()
@@ -314,10 +286,7 @@ class CostTracker:
                 session_total += record.cost
 
         return {
-            "session": {
-                "start": self._session_start.isoformat(),
-                "cost": round(session_total, 4)
-            },
+            "session": {"start": self._session_start.isoformat(), "cost": round(session_total, 4)},
             "daily": {
                 "date": today_start.date().isoformat(),
                 "cost": round(daily_total, 4),
@@ -325,7 +294,7 @@ class CostTracker:
                 "remaining": round(self.daily_budget - daily_total, 4),
                 "percent_used": round((daily_total / self.daily_budget) * 100, 1),
                 "by_category": {k: round(v, 4) for k, v in daily_by_category.items()},
-                "by_provider": {k: round(v, 4) for k, v in daily_by_provider.items()}
+                "by_provider": {k: round(v, 4) for k, v in daily_by_provider.items()},
             },
             "monthly": {
                 "month": month_start.strftime("%Y-%m"),
@@ -334,8 +303,8 @@ class CostTracker:
                 "remaining": round(self.monthly_budget - monthly_total, 4),
                 "percent_used": round((monthly_total / self.monthly_budget) * 100, 1),
                 "by_category": {k: round(v, 4) for k, v in monthly_by_category.items()},
-                "by_provider": {k: round(v, 4) for k, v in monthly_by_provider.items()}
-            }
+                "by_provider": {k: round(v, 4) for k, v in monthly_by_provider.items()},
+            },
         }
 
     def get_recommendations(self) -> list[str]:
@@ -405,19 +374,19 @@ class CostTracker:
 
         with open(filepath, "w", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow([
-                "timestamp", "provider", "category", "units", "cost", "metadata"
-            ])
+            writer.writerow(["timestamp", "provider", "category", "units", "cost", "metadata"])
 
             for record in self._usage:
-                writer.writerow([
-                    record.timestamp.isoformat(),
-                    record.provider,
-                    record.category,
-                    record.units,
-                    record.cost,
-                    json.dumps(record.metadata)
-                ])
+                writer.writerow(
+                    [
+                        record.timestamp.isoformat(),
+                        record.provider,
+                        record.category,
+                        record.units,
+                        record.cost,
+                        json.dumps(record.metadata),
+                    ]
+                )
 
         logger.info(f"Exported {len(self._usage)} records to {filepath}")
 
@@ -435,26 +404,32 @@ class CostTracker:
 
         # Daily
         print(f"\nToday ({summary['daily']['date']}):")
-        print(f"  Total: ${summary['daily']['cost']:.4f} / ${summary['daily']['budget']:.2f} "
-              f"({summary['daily']['percent_used']:.1f}%)")
+        print(
+            f"  Total: ${summary['daily']['cost']:.4f} / ${summary['daily']['budget']:.2f} "
+            f"({summary['daily']['percent_used']:.1f}%)"
+        )
         print(f"  Remaining: ${summary['daily']['remaining']:.4f}")
 
-        if summary['daily']['by_category']:
+        if summary["daily"]["by_category"]:
             print("  By Category:")
-            for cat, cost in sorted(summary['daily']['by_category'].items(),
-                                   key=lambda x: x[1], reverse=True):
+            for cat, cost in sorted(
+                summary["daily"]["by_category"].items(), key=lambda x: x[1], reverse=True
+            ):
                 print(f"    {cat}: ${cost:.4f}")
 
         # Monthly
         print(f"\nThis Month ({summary['monthly']['month']}):")
-        print(f"  Total: ${summary['monthly']['cost']:.4f} / ${summary['monthly']['budget']:.2f} "
-              f"({summary['monthly']['percent_used']:.1f}%)")
+        print(
+            f"  Total: ${summary['monthly']['cost']:.4f} / ${summary['monthly']['budget']:.2f} "
+            f"({summary['monthly']['percent_used']:.1f}%)"
+        )
         print(f"  Remaining: ${summary['monthly']['remaining']:.4f}")
 
-        if summary['monthly']['by_category']:
+        if summary["monthly"]["by_category"]:
             print("  By Category:")
-            for cat, cost in sorted(summary['monthly']['by_category'].items(),
-                                   key=lambda x: x[1], reverse=True):
+            for cat, cost in sorted(
+                summary["monthly"]["by_category"].items(), key=lambda x: x[1], reverse=True
+            ):
                 print(f"    {cat}: ${cost:.4f}")
 
         # Recommendations
@@ -472,9 +447,7 @@ _tracker_lock = Lock()
 
 
 def get_cost_tracker(
-    daily_budget: float = 10.0,
-    monthly_budget: float = 200.0,
-    storage_path: Optional[Path] = None
+    daily_budget: float = 10.0, monthly_budget: float = 200.0, storage_path: Optional[Path] = None
 ) -> CostTracker:
     """
     Get or create the singleton cost tracker.
@@ -492,8 +465,6 @@ def get_cost_tracker(
     with _tracker_lock:
         if _cost_tracker is None:
             _cost_tracker = CostTracker(
-                daily_budget=daily_budget,
-                monthly_budget=monthly_budget,
-                storage_path=storage_path
+                daily_budget=daily_budget, monthly_budget=monthly_budget, storage_path=storage_path
             )
         return _cost_tracker

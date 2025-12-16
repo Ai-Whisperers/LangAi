@@ -10,4 +10,3 @@ owner: team-prompts
 items:
   - path: prompts/package/generate-package-metadata.prompt.md
     kind: prompt
-

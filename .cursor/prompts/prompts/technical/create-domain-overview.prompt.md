@@ -78,4 +78,3 @@ Domain: Invoicing. Key Entities: Invoice, LineItem, Tax.
 **Applies Rules**:
 - `.cursor/rules/technical-specifications/domain-overview-rule.mdc`
 - `.cursor/rules/technical-specifications/hybrid-documentation-architecture-rule.mdc`
-

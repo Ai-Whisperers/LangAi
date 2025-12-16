@@ -9,13 +9,14 @@ Provides comprehensive market analysis including:
 - Customer intelligence
 """
 
-from typing import Dict, Any, Optional, Callable
+from typing import Any, Callable, Dict, Optional
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
+from ...llm.client_factory import calculate_cost, get_anthropic_client, safe_extract_text
 from ...state import OverallState
 
 
@@ -34,7 +35,9 @@ class EnhancedMarketAgent:
         return enhanced_market_agent_node(state)
 
 
-def create_enhanced_market_agent(search_tool: Callable = None, llm_client: Any = None) -> EnhancedMarketAgent:
+def create_enhanced_market_agent(
+    search_tool: Callable = None, llm_client: Any = None
+) -> EnhancedMarketAgent:
     """Factory function to create an EnhancedMarketAgent."""
     return EnhancedMarketAgent(search_tool=search_tool, llm_client=llm_client)
 
@@ -160,6 +163,7 @@ Begin your market analysis:"""
 # Enhanced Market Analyst Agent
 # ==============================================================================
 
+
 def enhanced_market_agent_node(state: OverallState) -> Dict[str, Any]:
     """
     Enhanced Market Analyst Agent Node: Comprehensive market analysis.
@@ -190,7 +194,7 @@ def enhanced_market_agent_node(state: OverallState) -> Dict[str, Any]:
                 "market": {
                     "analysis": "No search results available for market analysis",
                     "data_extracted": False,
-                    "cost": 0.0
+                    "cost": 0.0,
                 }
             }
         }
@@ -207,14 +211,11 @@ def enhanced_market_agent_node(state: OverallState) -> Dict[str, Any]:
         model=config.llm_model,
         max_tokens=config.enhanced_market_max_tokens,
         temperature=config.market_temperature,
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
     )
 
     market_analysis = safe_extract_text(response, agent_name="enhanced_market")
-    cost = calculate_cost(
-        response.usage.input_tokens,
-        response.usage.output_tokens
-    )
+    cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
 
     logger.info(f"Enhanced Market analysis complete - cost: ${cost:.4f}")
 
@@ -223,10 +224,7 @@ def enhanced_market_agent_node(state: OverallState) -> Dict[str, Any]:
         "analysis": market_analysis,
         "data_extracted": True,
         "cost": cost,
-        "tokens": {
-            "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
-        }
+        "tokens": {"input": response.usage.input_tokens, "output": response.usage.output_tokens},
     }
 
     return {
@@ -234,8 +232,8 @@ def enhanced_market_agent_node(state: OverallState) -> Dict[str, Any]:
         "total_cost": cost,
         "total_tokens": {
             "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
-        }
+            "output": response.usage.output_tokens,
+        },
     }
 
 
@@ -243,10 +241,8 @@ def enhanced_market_agent_node(state: OverallState) -> Dict[str, Any]:
 # Helper Functions
 # ==============================================================================
 
-def create_market_analysis_prompt(
-    company_name: str,
-    search_results: list
-) -> str:
+
+def create_market_analysis_prompt(company_name: str, search_results: list) -> str:
     """
     Create comprehensive market analysis prompt.
 
@@ -262,8 +258,7 @@ def create_market_analysis_prompt(
 
     # Create prompt
     prompt = ENHANCED_MARKET_PROMPT.format(
-        company_name=company_name,
-        search_results=formatted_results
+        company_name=company_name, search_results=formatted_results
     )
 
     return prompt
@@ -281,8 +276,16 @@ def format_market_search_results(search_results: list) -> str:
     """
     # Prioritize results with market/industry keywords
     market_keywords = [
-        "market", "industry", "TAM", "SAM", "growth", "trend",
-        "competitive", "regulation", "customer", "segment"
+        "market",
+        "industry",
+        "TAM",
+        "SAM",
+        "growth",
+        "trend",
+        "competitive",
+        "regulation",
+        "customer",
+        "segment",
     ]
 
     # Score results by relevance
@@ -293,8 +296,7 @@ def format_market_search_results(search_results: list) -> str:
 
         # Count market keyword matches
         relevance_score = sum(
-            1 for keyword in market_keywords
-            if keyword in content or keyword in title
+            1 for keyword in market_keywords if keyword in content or keyword in title
         )
 
         scored_results.append((relevance_score, result))
@@ -332,7 +334,7 @@ def extract_market_indicators(analysis_text: str) -> Dict[str, any]:
         "market_size_estimates": {},
         "trends_identified": [],
         "competitive_intensity": None,
-        "regulatory_impact": None
+        "regulatory_impact": None,
     }
 
     # Extract TAM/SAM/SOM (simple pattern matching)
@@ -386,9 +388,21 @@ def infer_industry_category(company_name: str) -> str:
 
     # Technology companies
     tech_keywords = [
-        "tech", "software", "ai", "cloud", "data", "cyber",
-        "microsoft", "google", "apple", "meta", "amazon",
-        "salesforce", "adobe", "oracle", "ibm"
+        "tech",
+        "software",
+        "ai",
+        "cloud",
+        "data",
+        "cyber",
+        "microsoft",
+        "google",
+        "apple",
+        "meta",
+        "amazon",
+        "salesforce",
+        "adobe",
+        "oracle",
+        "ibm",
     ]
     if any(kw in company_lower for kw in tech_keywords):
         return "Technology / Software"
@@ -400,17 +414,20 @@ def infer_industry_category(company_name: str) -> str:
 
     # Fintech / Payments
     fintech_keywords = [
-        "stripe", "paypal", "square", "bank", "payment",
-        "financial", "fintech", "credit"
+        "stripe",
+        "paypal",
+        "square",
+        "bank",
+        "payment",
+        "financial",
+        "fintech",
+        "credit",
     ]
     if any(kw in company_lower for kw in fintech_keywords):
         return "Financial Technology / Payments"
 
     # Healthcare / Biotech
-    health_keywords = [
-        "health", "medical", "pharma", "biotech", "therapeutics",
-        "clinical", "drug"
-    ]
+    health_keywords = ["health", "medical", "pharma", "biotech", "therapeutics", "clinical", "drug"]
     if any(kw in company_lower for kw in health_keywords):
         return "Healthcare / Biotechnology"
 
@@ -442,37 +459,40 @@ def get_industry_context(industry: str) -> Dict[str, str]:
             "typical_tam_range": "$100B - $5T",
             "growth_benchmark": "15-40% CAGR",
             "competitive_intensity": "HIGH to INTENSE",
-            "key_trends": "AI/ML, Cloud, SaaS, Cybersecurity"
+            "key_trends": "AI/ML, Cloud, SaaS, Cybersecurity",
         },
         "Automotive / Transportation": {
             "typical_tam_range": "$2T - $8T",
             "growth_benchmark": "3-8% CAGR (ICE), 25-40% (EV)",
             "competitive_intensity": "HIGH",
-            "key_trends": "Electrification, Autonomous, Shared Mobility"
+            "key_trends": "Electrification, Autonomous, Shared Mobility",
         },
         "Financial Technology / Payments": {
             "typical_tam_range": "$500B - $2T",
             "growth_benchmark": "10-20% CAGR",
             "competitive_intensity": "INTENSE",
-            "key_trends": "Digital Payments, Blockchain, Embedded Finance"
+            "key_trends": "Digital Payments, Blockchain, Embedded Finance",
         },
         "Healthcare / Biotechnology": {
             "typical_tam_range": "$500B - $3T",
             "growth_benchmark": "5-12% CAGR",
             "competitive_intensity": "MODERATE to HIGH",
-            "key_trends": "Precision Medicine, Telehealth, Gene Therapy"
+            "key_trends": "Precision Medicine, Telehealth, Gene Therapy",
         },
         "E-commerce / Retail": {
             "typical_tam_range": "$3T - $10T",
             "growth_benchmark": "10-15% CAGR",
             "competitive_intensity": "INTENSE",
-            "key_trends": "Omnichannel, D2C, Social Commerce"
-        }
+            "key_trends": "Omnichannel, D2C, Social Commerce",
+        },
     }
 
-    return industry_contexts.get(industry, {
-        "typical_tam_range": "Varies",
-        "growth_benchmark": "Varies",
-        "competitive_intensity": "Varies",
-        "key_trends": "Industry-specific"
-    })
+    return industry_contexts.get(
+        industry,
+        {
+            "typical_tam_range": "Varies",
+            "growth_benchmark": "Varies",
+            "competitive_intensity": "Varies",
+            "key_trends": "Industry-specific",
+        },
+    )

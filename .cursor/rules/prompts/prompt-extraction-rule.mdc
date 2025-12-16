@@ -120,7 +120,7 @@ Look for these patterns:
 
 **1. Explicit Context Pattern**
 ```
-"Using the domain model in [FILE], implement [FEATURE] following 
+"Using the domain model in [FILE], implement [FEATURE] following
 the pattern established in [REFERENCE_FILE]"
 ```
 - ✅ Specifies exact source
@@ -151,7 +151,7 @@ Show test results proving it works"
 
 **4. Build-On-Previous Pattern**
 ```
-"Now that we have [X], extend it to handle [Y] using the same 
+"Now that we have [X], extend it to handle [Y] using the same
 approach we used for [Z]"
 ```
 - ✅ References prior work
@@ -248,7 +248,7 @@ From effective prompts, extract reusable templates:
 
 **Pattern Category**: [Category from patterns above]
 
-**Use When**: 
+**Use When**:
 [Specific scenario where this works]
 
 **Prerequisites**:
@@ -267,7 +267,7 @@ From effective prompts, extract reusable templates:
 **Expected Outcome**:
 [What this should produce]
 
-**Success Rate**: 
+**Success Rate**:
 [If known from multiple uses]
 
 **Example Usage**:

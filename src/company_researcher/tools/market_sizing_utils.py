@@ -9,40 +9,40 @@ Provides frameworks and calculations for:
 - Competitive dynamics assessment
 """
 
-from typing import Dict, List, Optional, Tuple
 from enum import Enum
-
+from typing import Dict, List, Optional, Tuple
 
 # ==============================================================================
 # Enums and Constants
 # ==============================================================================
 
+
 class MarketTrend(str, Enum):
     """Market trend direction classification."""
-    GROWING = "GROWING"          # Positive growth trajectory
-    DECLINING = "DECLINING"      # Negative growth trajectory
-    STABLE = "STABLE"            # Flat growth (~0-5%)
-    EMERGING = "EMERGING"        # New market, high growth potential
-    MATURE = "MATURE"            # Established market, low growth
-    DISRUPTING = "DISRUPTING"    # Undergoing major transformation
+
+    GROWING = "GROWING"  # Positive growth trajectory
+    DECLINING = "DECLINING"  # Negative growth trajectory
+    STABLE = "STABLE"  # Flat growth (~0-5%)
+    EMERGING = "EMERGING"  # New market, high growth potential
+    MATURE = "MATURE"  # Established market, low growth
+    DISRUPTING = "DISRUPTING"  # Undergoing major transformation
 
 
 class CompetitiveIntensity(str, Enum):
     """Competitive intensity levels."""
-    LOW = "LOW"                  # Few competitors, high barriers
-    MODERATE = "MODERATE"        # Balanced competition
-    HIGH = "HIGH"                # Many competitors, price pressure
-    INTENSE = "INTENSE"          # Highly fragmented, low margins
+
+    LOW = "LOW"  # Few competitors, high barriers
+    MODERATE = "MODERATE"  # Balanced competition
+    HIGH = "HIGH"  # Many competitors, price pressure
+    INTENSE = "INTENSE"  # Highly fragmented, low margins
 
 
 # ==============================================================================
 # TAM/SAM/SOM Calculations
 # ==============================================================================
 
-def calculate_tam(
-    total_potential_customers: float,
-    average_revenue_per_customer: float
-) -> float:
+
+def calculate_tam(total_potential_customers: float, average_revenue_per_customer: float) -> float:
     """
     Calculate Total Addressable Market (TAM).
 
@@ -66,10 +66,7 @@ def calculate_tam(
     return total_potential_customers * average_revenue_per_customer
 
 
-def calculate_sam(
-    tam: float,
-    addressable_percentage: float
-) -> float:
+def calculate_sam(tam: float, addressable_percentage: float) -> float:
     """
     Calculate Serviceable Available Market (SAM).
 
@@ -93,10 +90,7 @@ def calculate_sam(
     return tam * (addressable_percentage / 100)
 
 
-def calculate_som(
-    sam: float,
-    market_share_percentage: float
-) -> float:
+def calculate_som(sam: float, market_share_percentage: float) -> float:
     """
     Calculate Serviceable Obtainable Market (SOM).
 
@@ -124,7 +118,7 @@ def calculate_market_sizing(
     total_potential_customers: float,
     average_revenue_per_customer: float,
     addressable_percentage: float,
-    market_share_percentage: float
+    market_share_percentage: float,
 ) -> Dict[str, float]:
     """
     Calculate complete TAM/SAM/SOM market sizing.
@@ -147,7 +141,7 @@ def calculate_market_sizing(
         "sam": sam,
         "som": som,
         "addressable_percentage": addressable_percentage,
-        "market_share_percentage": market_share_percentage
+        "market_share_percentage": market_share_percentage,
     }
 
 
@@ -155,9 +149,9 @@ def calculate_market_sizing(
 # Market Penetration Analysis
 # ==============================================================================
 
+
 def calculate_penetration_rate(
-    current_customers: float,
-    total_addressable_customers: float
+    current_customers: float, total_addressable_customers: float
 ) -> float:
     """
     Calculate market penetration rate.
@@ -186,9 +180,7 @@ def calculate_penetration_rate(
 
 
 def calculate_growth_potential(
-    current_market_size: float,
-    projected_market_size: float,
-    years: int
+    current_market_size: float, projected_market_size: float, years: int
 ) -> Dict[str, float]:
     """
     Calculate market growth potential.
@@ -205,11 +197,7 @@ def calculate_growth_potential(
         - cagr: Compound annual growth rate
     """
     if current_market_size == 0:
-        return {
-            "total_growth": 0.0,
-            "growth_rate": 0.0,
-            "cagr": 0.0
-        }
+        return {"total_growth": 0.0, "growth_rate": 0.0, "cagr": 0.0}
 
     total_growth = projected_market_size - current_market_size
     growth_rate = (total_growth / current_market_size) * 100
@@ -223,7 +211,7 @@ def calculate_growth_potential(
     return {
         "total_growth": round(total_growth, 2),
         "growth_rate": round(growth_rate, 2),
-        "cagr": round(cagr, 2)
+        "cagr": round(cagr, 2),
     }
 
 
@@ -231,10 +219,8 @@ def calculate_growth_potential(
 # Industry Trend Analysis
 # ==============================================================================
 
-def classify_trend(
-    historical_growth_rate: float,
-    market_maturity: str = "mature"
-) -> MarketTrend:
+
+def classify_trend(historical_growth_rate: float, market_maturity: str = "mature") -> MarketTrend:
     """
     Classify market trend based on growth rate and maturity.
 
@@ -268,8 +254,7 @@ def classify_trend(
 
 
 def analyze_industry_trend(
-    historical_data: List[Tuple[str, float]],
-    market_maturity: str = "mature"
+    historical_data: List[Tuple[str, float]], market_maturity: str = "mature"
 ) -> Dict[str, any]:
     """
     Analyze industry trend from historical data.
@@ -286,10 +271,7 @@ def analyze_industry_trend(
         - outlook: Qualitative assessment
     """
     if len(historical_data) < 2:
-        return {
-            "available": False,
-            "reason": "Insufficient historical data"
-        }
+        return {"available": False, "reason": "Insufficient historical data"}
 
     # Sort by year
     sorted_data = sorted(historical_data, key=lambda x: x[0])
@@ -311,11 +293,13 @@ def analyze_industry_trend(
     if len(sorted_data) >= 3:
         # Compare recent growth vs earlier growth
         mid_point = len(sorted_data) // 2
-        early_data = sorted_data[:mid_point + 1]
+        early_data = sorted_data[: mid_point + 1]
         recent_data = sorted_data[mid_point:]
 
         early_cagr = (((early_data[-1][1] / early_data[0][1]) ** (1 / len(early_data))) - 1) * 100
-        recent_cagr = (((recent_data[-1][1] / recent_data[0][1]) ** (1 / len(recent_data))) - 1) * 100
+        recent_cagr = (
+            ((recent_data[-1][1] / recent_data[0][1]) ** (1 / len(recent_data))) - 1
+        ) * 100
 
         if abs(recent_cagr - early_cagr) < 3:
             direction = "stable"
@@ -335,15 +319,11 @@ def analyze_industry_trend(
         "cagr": round(cagr, 2),
         "direction": direction,
         "outlook": outlook,
-        "historical_data": sorted_data
+        "historical_data": sorted_data,
     }
 
 
-def generate_outlook(
-    trend: MarketTrend,
-    cagr: float,
-    direction: str
-) -> str:
+def generate_outlook(trend: MarketTrend, cagr: float, direction: str) -> str:
     """Generate qualitative market outlook."""
     if trend == MarketTrend.EMERGING:
         return "High-growth emerging market with significant expansion potential"
@@ -364,10 +344,11 @@ def generate_outlook(
 # Competitive Analysis
 # ==============================================================================
 
+
 def assess_competitive_intensity(
     number_of_competitors: int,
     market_concentration_hhi: Optional[float] = None,
-    barriers_to_entry: str = "moderate"
+    barriers_to_entry: str = "moderate",
 ) -> CompetitiveIntensity:
     """
     Assess competitive intensity of market.
@@ -428,9 +409,7 @@ def assess_competitive_intensity(
             return CompetitiveIntensity.INTENSE
 
 
-def calculate_market_share_distribution(
-    competitor_revenues: Dict[str, float]
-) -> Dict[str, any]:
+def calculate_market_share_distribution(competitor_revenues: Dict[str, float]) -> Dict[str, any]:
     """
     Calculate market share distribution and concentration.
 
@@ -454,12 +433,11 @@ def calculate_market_share_distribution(
 
     # Calculate market shares
     market_shares = {
-        company: (revenue / total_revenue) * 100
-        for company, revenue in competitor_revenues.items()
+        company: (revenue / total_revenue) * 100 for company, revenue in competitor_revenues.items()
     }
 
     # Calculate HHI
-    hhi = sum(share ** 2 for share in market_shares.values())
+    hhi = sum(share**2 for share in market_shares.values())
 
     # Calculate CR4 (top 4 concentration)
     top_4_shares = sorted(market_shares.values(), reverse=True)[:4]
@@ -474,13 +452,14 @@ def calculate_market_share_distribution(
         "hhi": round(hhi, 2),
         "top_4_concentration": round(cr4, 2),
         "market_leader": market_leader,
-        "market_leader_share": round(market_shares[market_leader], 2)
+        "market_leader_share": round(market_shares[market_leader], 2),
     }
 
 
 # ==============================================================================
 # Helper Functions
 # ==============================================================================
+
 
 def format_currency(amount: float, currency: str = "USD") -> str:
     """

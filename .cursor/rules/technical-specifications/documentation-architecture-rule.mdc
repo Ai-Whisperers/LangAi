@@ -48,7 +48,7 @@ This rule defines the three-folder documentation architecture that ensures clean
 ```text
 docs/
 ├── technical/          # "WHAT" - Current System Specifications
-├── implementation/     # "HOW" - C# Target Design Documents  
+├── implementation/     # "HOW" - C# Target Design Documents
 └── rfcs/              # "FUTURE" - Request for Comments & Proposals
 ```
 
@@ -92,7 +92,7 @@ docs/
 - Includes migration strategy and approach
 - Addresses performance and scalability requirements
 
-#### **docs/rfcs/** - Future Proposals ("FUTURE")  
+#### **docs/rfcs/** - Future Proposals ("FUTURE")
 **Purpose**: Document future enhancements, wish list items, and improvement proposals
 **Content Focus**: Ideas for system improvement beyond basic migration
 **Audience**: Product owners, technical leads, future development teams
@@ -251,7 +251,7 @@ docs/rfcs/
 
 ### **Review Responsibilities**
 - **Technical Specifications**: Business analysts and domain experts
-- **Implementation Documents**: Solution architects and development leads  
+- **Implementation Documents**: Solution architects and development leads
 - **RFC Documents**: Product owners and technical leads
 
 ## Success Criteria
@@ -294,7 +294,7 @@ When creating new documentation:
 
 Documentation files must NOT contain:
 - **NO** internal server names, IP addresses, or URLs
-- **NO** credentials, tokens, API keys, or passwords  
+- **NO** credentials, tokens, API keys, or passwords
 - **NO** employee email addresses or personal information
 - **NO** confidential customer data or business-sensitive information
 - **NO** proprietary vendor details or licensing information

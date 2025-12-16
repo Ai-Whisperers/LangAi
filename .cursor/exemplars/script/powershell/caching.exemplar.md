@@ -19,17 +19,17 @@ function Get-ProjectHash {
         [Parameter(Mandatory=$true)]
         [string]$ProjectPath
     )
-    
+
     $files = Get-ChildItem -Path $ProjectPath -Filter "*.cs" -Recurse
-    $hashes = $files | ForEach-Object { 
-        (Get-FileHash $_.FullName -Algorithm SHA256).Hash 
+    $hashes = $files | ForEach-Object {
+        (Get-FileHash $_.FullName -Algorithm SHA256).Hash
     } | Sort-Object
-    
+
     $combined = $hashes -join ""
     $stream = [System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes($combined))
     $finalHash = (Get-FileHash -InputStream $stream -Algorithm SHA256).Hash
     $stream.Dispose()
-    
+
     return $finalHash
 }
 
@@ -44,19 +44,19 @@ if (Test-Path $cacheFile) {
 # Check each project
 foreach ($project in $projects) {
     $currentHash = Get-ProjectHash -ProjectPath $project.Directory
-    
+
     if ($cache.ContainsKey($project.Name) -and $cache[$project.Name].Hash -eq $currentHash) {
         Write-Host "⚡ Skipping $($project.Name) (unchanged since last run)" -ForegroundColor Yellow
-        
+
         # Use cached results
         $projectResults[$project.Name] = $cache[$project.Name].Results
         continue
     }
-    
+
     # Run coverage for changed project
     Write-Log "Analyzing $($project.Name) (detected changes)" -Level INFO
     $result = Analyze-ProjectCoverage -Project $project
-    
+
     # Update cache
     $cache[$project.Name] = @{
         Hash = $currentHash
@@ -148,10 +148,10 @@ foreach ($item in $items) {
     }
 }
 
-$hitRate = if ($items.Count -gt 0) { 
-    [Math]::Round(($cacheHits / $items.Count) * 100, 1) 
-} else { 
-    0 
+$hitRate = if ($items.Count -gt 0) {
+    [Math]::Round(($cacheHits / $items.Count) * 100, 1)
+} else {
+    0
 }
 
 Write-Log "Cache performance: $cacheHits hits, $cacheMisses misses ($hitRate% hit rate)" -Level INFO
@@ -176,4 +176,3 @@ Write-Log "Cache performance: $cacheHits hits, $cacheMisses misses ($hitRate% hi
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

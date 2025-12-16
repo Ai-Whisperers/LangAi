@@ -11,20 +11,17 @@ This enhanced researcher builds on the base researcher by adding:
 
 from typing import Any, Callable, Dict, List, Optional, Set
 from urllib.parse import urlparse
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
 
 from ...config import get_config
+from ...crawling import ScrapingBackend, WebScraper, create_web_scraper
 from ...llm.client_factory import get_tavily_client
 from ...llm.smart_client import smart_completion
-from ...state import OverallState
 from ...prompts import GENERATE_QUERIES_PROMPT
-from ...crawling import (
-    WebScraper,
-    create_web_scraper,
-    ScrapingBackend,
-)
+from ...state import OverallState
 
 
 def _get_extraction_schemas():
@@ -39,6 +36,7 @@ def _get_extraction_schemas():
         CompanyProducts,
         FinancialHighlights,
     )
+
     return CompanyBasicInfo, CompanyLeadership, CompanyProducts, FinancialHighlights
 
 
@@ -75,10 +73,7 @@ class EnhancedResearcherAgent:
 
         Note: This method is sync because the LangGraph workflow is sync.
         """
-        state = {
-            "company_name": company_name,
-            "missing_info": missing_info or []
-        }
+        state = {"company_name": company_name, "missing_info": missing_info or []}
         return enhanced_researcher_node(state, self.web_scraper)
 
 
@@ -113,8 +108,14 @@ def _identify_company_domains(results: List[Dict], company_name: str) -> List[st
 
     # Patterns that suggest official company sites
     official_patterns = [
-        "about", "company", "corporate", "oficial", "official",
-        "who-we-are", "quienes-somos", "nosotros"
+        "about",
+        "company",
+        "corporate",
+        "oficial",
+        "official",
+        "who-we-are",
+        "quienes-somos",
+        "nosotros",
     ]
 
     seen_domains: Set[str] = set()
@@ -216,8 +217,16 @@ def _deep_scrape_company_website(
         CompanyBasicInfo, CompanyLeadership, CompanyProducts, _ = _get_extraction_schemas()
 
         extraction_tasks = [
-            ("/about", "Extract company description, founding year, headquarters, and mission", CompanyBasicInfo),
-            ("/team", "Extract names and titles of executives and leadership team", CompanyLeadership),
+            (
+                "/about",
+                "Extract company description, founding year, headquarters, and mission",
+                CompanyBasicInfo,
+            ),
+            (
+                "/team",
+                "Extract names and titles of executives and leadership team",
+                CompanyLeadership,
+            ),
             ("/products", "Extract product names, descriptions, and categories", CompanyProducts),
         ]
 
@@ -296,18 +305,21 @@ def _explore_with_enhanced_scraping(
                         content_dict = {"data": str(data)}
 
                     content = "\n".join(
-                        f"**{k}**: {v}" for k, v in content_dict.items()
+                        f"**{k}**: {v}"
+                        for k, v in content_dict.items()
                         if v and v != [] and v != {}
                     )
 
-                    all_results.append({
-                        "title": f"{company_name} - {key.replace('_', ' ').title()}",
-                        "url": domain_url,
-                        "content": content,
-                        "score": 0.95,  # High score for structured extraction
-                        "source": "enhanced_scraper",
-                        "extraction_type": key,
-                    })
+                    all_results.append(
+                        {
+                            "title": f"{company_name} - {key.replace('_', ' ').title()}",
+                            "url": domain_url,
+                            "content": content,
+                            "score": 0.95,  # High score for structured extraction
+                            "source": "enhanced_scraper",
+                            "extraction_type": key,
+                        }
+                    )
 
             logger.info(
                 f"Enhanced exploration added {len(scrape_data['pages'])} pages "
@@ -320,10 +332,7 @@ def _explore_with_enhanced_scraping(
     return all_results
 
 
-def enhanced_researcher_node(
-    state: OverallState,
-    web_scraper: WebScraper = None
-) -> Dict[str, Any]:
+def enhanced_researcher_node(state: OverallState, web_scraper: WebScraper = None) -> Dict[str, Any]:
     """
     Enhanced Researcher Agent Node with Firecrawl/ScrapeGraph (cost-optimized).
 
@@ -367,10 +376,7 @@ Previous research had gaps. Focus queries on:
         num_queries = 5
         query_context = ""
 
-    prompt = GENERATE_QUERIES_PROMPT.format(
-        company_name=company_name,
-        num_queries=num_queries
-    )
+    prompt = GENERATE_QUERIES_PROMPT.format(company_name=company_name, num_queries=num_queries)
     if query_context:
         prompt += f"\n\n{query_context}"
 
@@ -379,7 +385,7 @@ Previous research had gaps. Focus queries on:
         prompt=prompt,
         task_type="extraction",  # Routes to DeepSeek V3 ($0.14/1M)
         max_tokens=config.researcher_max_tokens,
-        temperature=config.researcher_temperature
+        temperature=config.researcher_temperature,
     )
 
     fallback_queries = [
@@ -387,12 +393,13 @@ Previous research had gaps. Focus queries on:
         f"{company_name} revenue financial performance",
         f"{company_name} products services",
         f"{company_name} competitors market position",
-        f"{company_name} recent news developments"
+        f"{company_name} recent news developments",
     ]
 
     # Parse the JSON response
     try:
         import json
+
         queries = json.loads(result.content)
         if not isinstance(queries, list):
             queries = fallback_queries
@@ -412,18 +419,17 @@ Previous research had gaps. Focus queries on:
 
     for query in queries:
         logger.debug(f"Executing search: {query}")
-        search_response = tavily_client.search(
-            query=query,
-            max_results=3
-        )
+        search_response = tavily_client.search(query=query, max_results=3)
 
         for result in search_response.get("results", []):
             all_results.append(result)
-            sources.append({
-                "title": result.get("title", ""),
-                "url": result.get("url", ""),
-                "score": result.get("score", 0.0)
-            })
+            sources.append(
+                {
+                    "title": result.get("title", ""),
+                    "url": result.get("url", ""),
+                    "score": result.get("score", 0.0),
+                }
+            )
 
     search_cost = len(queries) * 0.001
     logger.info(f"Found {len(all_results)} results from Tavily search")
@@ -448,8 +454,7 @@ Previous research had gaps. Focus queries on:
 
             # Count structured extractions
             extraction_count = sum(
-                1 for r in exploration_results
-                if r.get("source") == "enhanced_scraper"
+                1 for r in exploration_results if r.get("source") == "enhanced_scraper"
             )
 
             logger.info(
@@ -460,12 +465,14 @@ Previous research had gaps. Focus queries on:
             # Add exploration results
             for exp_result in exploration_results:
                 all_results.append(exp_result)
-                sources.append({
-                    "title": exp_result.get("title", ""),
-                    "url": exp_result.get("url", ""),
-                    "score": exp_result.get("score", 0.0),
-                    "source": exp_result.get("source", "enhanced_scraper")
-                })
+                sources.append(
+                    {
+                        "title": exp_result.get("title", ""),
+                        "url": exp_result.get("url", ""),
+                        "score": exp_result.get("score", 0.0),
+                        "source": exp_result.get("source", "enhanced_scraper"),
+                    }
+                )
 
     logger.info(f"Total sources after enhanced exploration: {len(all_results)}")
 
@@ -483,10 +490,7 @@ Previous research had gaps. Focus queries on:
         "domains_explored": len(company_domains) if config.enable_domain_exploration else 0,
         "scraping_backends": [b.value for b in backends],
         "cost": total_cost,
-        "tokens": {
-            "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
-        }
+        "tokens": {"input": response.usage.input_tokens, "output": response.usage.output_tokens},
     }
 
     logger.info(f"Enhanced Researcher complete - cost: ${total_cost:.4f}")
@@ -498,6 +502,6 @@ Previous research had gaps. Focus queries on:
         "total_cost": total_cost,
         "total_tokens": {
             "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
-        }
+            "output": response.usage.output_tokens,
+        },
     }

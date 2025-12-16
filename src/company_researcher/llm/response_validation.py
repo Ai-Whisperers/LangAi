@@ -25,11 +25,12 @@ Usage:
 
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class ValidationError(Exception):
@@ -49,11 +50,9 @@ class ResponseValidationWarning(Warning):
 # Generic Validation Utilities
 # ============================================================================
 
+
 def safe_get(
-    data: Union[Dict, Any],
-    path: str,
-    default: T = None,
-    expected_type: Type[T] = None
+    data: Union[Dict, Any], path: str, default: T = None, expected_type: Type[T] = None
 ) -> T:
     """
     Safely get a nested value from a dict or object.
@@ -102,9 +101,7 @@ def safe_get(
 
 
 def validate_required_fields(
-    data: Dict[str, Any],
-    required_fields: List[str],
-    context: str = "response"
+    data: Dict[str, Any], required_fields: List[str], context: str = "response"
 ) -> None:
     """
     Validate that required fields exist in a dictionary.
@@ -121,7 +118,7 @@ def validate_required_fields(
         raise ValidationError(
             f"{context} must be a dictionary, got {type(data).__name__}",
             field=None,
-            received=type(data).__name__
+            received=type(data).__name__,
         )
 
     missing = [f for f in required_fields if f not in data]
@@ -129,15 +126,12 @@ def validate_required_fields(
         raise ValidationError(
             f"{context} missing required fields: {', '.join(missing)}",
             field=missing[0],
-            received=list(data.keys())
+            received=list(data.keys()),
         )
 
 
 def validate_type(
-    value: Any,
-    expected_type: Type,
-    field_name: str,
-    allow_none: bool = False
+    value: Any, expected_type: Type, field_name: str, allow_none: bool = False
 ) -> None:
     """
     Validate that a value is of the expected type.
@@ -154,9 +148,7 @@ def validate_type(
     if value is None:
         if not allow_none:
             raise ValidationError(
-                f"Field '{field_name}' is None but required",
-                field=field_name,
-                received=None
+                f"Field '{field_name}' is None but required", field=field_name, received=None
             )
         return
 
@@ -165,7 +157,7 @@ def validate_type(
             f"Field '{field_name}' expected {expected_type.__name__}, "
             f"got {type(value).__name__}",
             field=field_name,
-            received=type(value).__name__
+            received=type(value).__name__,
         )
 
 
@@ -187,14 +179,14 @@ def validate_positive_int(value: Any, field_name: str) -> int:
         raise ValidationError(
             f"Field '{field_name}' must be an integer, got {type(value).__name__}",
             field=field_name,
-            received=value
+            received=value,
         )
 
     if value < 0:
         raise ValidationError(
             f"Field '{field_name}' must be non-negative, got {value}",
             field=field_name,
-            received=value
+            received=value,
         )
 
     return value
@@ -218,14 +210,12 @@ def validate_string_not_empty(value: Any, field_name: str) -> str:
         raise ValidationError(
             f"Field '{field_name}' must be a string, got {type(value).__name__}",
             field=field_name,
-            received=value
+            received=value,
         )
 
     if not value.strip():
         raise ValidationError(
-            f"Field '{field_name}' must not be empty",
-            field=field_name,
-            received=value
+            f"Field '{field_name}' must not be empty", field=field_name, received=value
         )
 
     return value
@@ -235,9 +225,11 @@ def validate_string_not_empty(value: Any, field_name: str) -> str:
 # Anthropic Response Validation
 # ============================================================================
 
+
 @dataclass
 class ValidatedAnthropicResponse:
     """Validated Anthropic API response."""
+
     content: str
     model: str
     stop_reason: Optional[str]
@@ -247,9 +239,7 @@ class ValidatedAnthropicResponse:
 
 
 def validate_anthropic_response(
-    response: Any,
-    require_content: bool = True,
-    max_content_length: int = 1_000_000
+    response: Any, require_content: bool = True, max_content_length: int = 1_000_000
 ) -> ValidatedAnthropicResponse:
     """
     Validate an Anthropic API response.
@@ -274,7 +264,7 @@ def validate_anthropic_response(
         raise ValidationError(
             "Response content must be a list",
             field="content",
-            received=type(content_blocks).__name__
+            received=type(content_blocks).__name__,
         )
 
     # Extract text content
@@ -287,9 +277,7 @@ def validate_anthropic_response(
 
     if require_content and not content.strip():
         raise ValidationError(
-            "Response contains no text content",
-            field="content",
-            received=content_blocks
+            "Response contains no text content", field="content", received=content_blocks
         )
 
     if len(content) > max_content_length:
@@ -332,7 +320,7 @@ def validate_anthropic_response(
         stop_reason=stop_reason,
         input_tokens=input_tokens,
         output_tokens=output_tokens,
-        raw_response=response
+        raw_response=response,
     )
 
 
@@ -359,9 +347,11 @@ def extract_anthropic_content(response: Any, default: str = "") -> str:
 # Tavily Response Validation
 # ============================================================================
 
+
 @dataclass
 class ValidatedTavilyResult:
     """A validated Tavily search result."""
+
     title: str
     url: str
     content: str
@@ -372,6 +362,7 @@ class ValidatedTavilyResult:
 @dataclass
 class ValidatedTavilyResponse:
     """Validated Tavily API response."""
+
     query: str
     results: List[ValidatedTavilyResult]
     answer: Optional[str]
@@ -379,9 +370,7 @@ class ValidatedTavilyResponse:
 
 
 def validate_tavily_response(
-    response: Dict[str, Any],
-    max_results: int = 100,
-    require_results: bool = False
+    response: Dict[str, Any], max_results: int = 100, require_results: bool = False
 ) -> ValidatedTavilyResponse:
     """
     Validate a Tavily search API response.
@@ -400,7 +389,7 @@ def validate_tavily_response(
     if not isinstance(response, dict):
         raise ValidationError(
             f"Tavily response must be a dictionary, got {type(response).__name__}",
-            received=type(response).__name__
+            received=type(response).__name__,
         )
 
     # Extract query
@@ -426,7 +415,7 @@ def validate_tavily_response(
                 url=safe_get(result, "url", default=""),
                 content=safe_get(result, "content", default=""),
                 score=float(safe_get(result, "score", default=0.0)),
-                raw_result=result
+                raw_result=result,
             )
             results.append(validated_result)
         except (ValueError, TypeError) as e:
@@ -434,9 +423,7 @@ def validate_tavily_response(
 
     if require_results and not results:
         raise ValidationError(
-            "Tavily response contains no valid results",
-            field="results",
-            received=raw_results
+            "Tavily response contains no valid results", field="results", received=raw_results
         )
 
     # Extract answer if present
@@ -445,16 +432,12 @@ def validate_tavily_response(
         answer = str(answer)
 
     return ValidatedTavilyResponse(
-        query=query,
-        results=results,
-        answer=answer,
-        raw_response=response
+        query=query, results=results, answer=answer, raw_response=response
     )
 
 
 def extract_tavily_results(
-    response: Dict[str, Any],
-    default: List[Dict] = None
+    response: Dict[str, Any], default: List[Dict] = None
 ) -> List[Dict[str, str]]:
     """
     Safely extract search results from a Tavily response.
@@ -472,12 +455,7 @@ def extract_tavily_results(
     try:
         validated = validate_tavily_response(response, require_results=False)
         return [
-            {
-                "title": r.title,
-                "url": r.url,
-                "content": r.content,
-                "score": r.score
-            }
+            {"title": r.title, "url": r.url, "content": r.content, "score": r.score}
             for r in validated.results
         ]
     except ValidationError as e:
@@ -489,10 +467,9 @@ def extract_tavily_results(
 # Generic JSON Response Validation
 # ============================================================================
 
+
 def validate_json_response(
-    response: Any,
-    schema: Dict[str, Type],
-    context: str = "JSON response"
+    response: Any, schema: Dict[str, Type], context: str = "JSON response"
 ) -> Dict[str, Any]:
     """
     Validate a JSON response against a simple schema.
@@ -519,7 +496,7 @@ def validate_json_response(
     if not isinstance(response, dict):
         raise ValidationError(
             f"{context} must be a dictionary, got {type(response).__name__}",
-            received=type(response).__name__
+            received=type(response).__name__,
         )
 
     validated = {}
@@ -534,7 +511,7 @@ def validate_json_response(
                 f"{context} field '{field}' expected {expected_type.__name__}, "
                 f"got {type(value).__name__}",
                 field=field,
-                received=type(value).__name__
+                received=type(value).__name__,
             )
         validated[field] = value
 
@@ -545,11 +522,8 @@ def validate_json_response(
 # Response Size Limits
 # ============================================================================
 
-def enforce_response_limits(
-    content: str,
-    max_length: int = 500_000,
-    truncate: bool = True
-) -> str:
+
+def enforce_response_limits(content: str, max_length: int = 500_000, truncate: bool = True) -> str:
     """
     Enforce size limits on response content.
 
@@ -571,13 +545,11 @@ def enforce_response_limits(
         return content
 
     if truncate:
-        logger.warning(
-            f"Response content truncated from {len(content)} to {max_length} characters"
-        )
+        logger.warning(f"Response content truncated from {len(content)} to {max_length} characters")
         return content[:max_length]
     else:
         raise ValidationError(
             f"Response content exceeds maximum length ({len(content)} > {max_length})",
             field="content",
-            received=len(content)
+            received=len(content),
         )

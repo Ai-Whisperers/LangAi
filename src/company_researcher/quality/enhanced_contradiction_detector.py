@@ -10,9 +10,10 @@ Addresses Issue #5: Contradiction Detection Weaknesses.
 
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Any
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -20,6 +21,7 @@ logger = get_logger(__name__)
 
 class ContradictionType(Enum):
     """Types of contradictions detected."""
+
     NUMERIC = "numeric"  # Numbers that conflict
     TEMPORAL = "temporal"  # Timeline inconsistencies
     CATEGORICAL = "categorical"  # Mutually exclusive categories
@@ -30,6 +32,7 @@ class ContradictionType(Enum):
 
 class ContradictionSeverity(Enum):
     """Severity levels for contradictions."""
+
     CRITICAL = "critical"  # Major claim conflicts
     SIGNIFICANT = "significant"  # Notable inconsistencies
     MINOR = "minor"  # Small discrepancies
@@ -39,6 +42,7 @@ class ContradictionSeverity(Enum):
 @dataclass
 class ExtractedClaim:
     """A claim extracted from text with metadata."""
+
     text: str
     value: Optional[Any]
     unit: Optional[str]
@@ -54,6 +58,7 @@ class ExtractedClaim:
 @dataclass
 class Contradiction:
     """A detected contradiction between claims."""
+
     claim_a: ExtractedClaim
     claim_b: ExtractedClaim
     contradiction_type: ContradictionType
@@ -68,24 +73,25 @@ class Contradiction:
             "claim_a": {
                 "text": self.claim_a.text,
                 "source": self.claim_a.source,
-                "value": self.claim_a.value
+                "value": self.claim_a.value,
             },
             "claim_b": {
                 "text": self.claim_b.text,
                 "source": self.claim_b.source,
-                "value": self.claim_b.value
+                "value": self.claim_b.value,
             },
             "type": self.contradiction_type.value,
             "severity": self.severity.value,
             "confidence": round(self.confidence, 3),
             "explanation": self.explanation,
-            "resolution": self.resolution_suggestion
+            "resolution": self.resolution_suggestion,
         }
 
 
 @dataclass
 class ContradictionReport:
     """Complete contradiction analysis report."""
+
     contradictions: List[Contradiction]
     total_claims_analyzed: int
     contradiction_rate: float
@@ -99,7 +105,7 @@ class ContradictionReport:
             "contradiction_rate": round(self.contradiction_rate, 3),
             "severity_distribution": self.severity_distribution,
             "has_critical": self.has_critical,
-            "contradictions": [c.to_dict() for c in self.contradictions]
+            "contradictions": [c.to_dict() for c in self.contradictions],
         }
 
 
@@ -126,24 +132,26 @@ class EnhancedContradictionDetector:
     # Numeric extraction patterns
     NUMERIC_PATTERNS = {
         "currency": re.compile(
-            r'\$\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|thousand|[TBMKtbmk])?',
-            re.IGNORECASE
+            r"\$\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|thousand|[TBMKtbmk])?",
+            re.IGNORECASE,
         ),
-        "percentage": re.compile(
-            r'([\d,]+(?:\.\d+)?)\s*%'
-        ),
+        "percentage": re.compile(r"([\d,]+(?:\.\d+)?)\s*%"),
         "plain_number": re.compile(
-            r'(?<!\$)([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|thousand|employees?|users?|customers?)?',
-            re.IGNORECASE
+            r"(?<!\$)([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|thousand|employees?|users?|customers?)?",
+            re.IGNORECASE,
         ),
     }
 
     # Multipliers for normalization
     MULTIPLIERS = {
-        "trillion": 1e12, "t": 1e12,
-        "billion": 1e9, "b": 1e9,
-        "million": 1e6, "m": 1e6,
-        "thousand": 1e3, "k": 1e3,
+        "trillion": 1e12,
+        "t": 1e12,
+        "billion": 1e9,
+        "b": 1e9,
+        "million": 1e6,
+        "m": 1e6,
+        "thousand": 1e3,
+        "k": 1e3,
     }
 
     # Fields and their tolerance for "same" values
@@ -188,21 +196,17 @@ class EnhancedContradictionDetector:
         if use_embeddings:
             try:
                 from sentence_transformers import SentenceTransformer
-                self._encoder = SentenceTransformer('all-MiniLM-L6-v2')
+
+                self._encoder = SentenceTransformer("all-MiniLM-L6-v2")
                 logger.info("EnhancedContradictionDetector initialized with embeddings")
             except ImportError:
                 logger.warning(
-                    "sentence-transformers not installed. "
-                    "Using keyword-based comparison."
+                    "sentence-transformers not installed. " "Using keyword-based comparison."
                 )
                 self._use_embeddings = False
 
     def analyze(
-        self,
-        text_a: str,
-        text_b: str,
-        source_a: str = "source_a",
-        source_b: str = "source_b"
+        self, text_a: str, text_b: str, source_a: str = "source_a", source_b: str = "source_b"
     ) -> ContradictionReport:
         """
         Analyze two texts for contradictions.
@@ -223,10 +227,7 @@ class EnhancedContradictionDetector:
 
         return self._build_report(contradictions, len(claims_a) + len(claims_b))
 
-    def analyze_multi_source(
-        self,
-        sources: Dict[str, str]
-    ) -> ContradictionReport:
+    def analyze_multi_source(self, sources: Dict[str, str]) -> ContradictionReport:
         """
         Analyze multiple sources for cross-contradictions.
 
@@ -247,20 +248,15 @@ class EnhancedContradictionDetector:
         total_claims = sum(len(c) for c in all_claims.values())
 
         for i, source_a in enumerate(source_names):
-            for source_b in source_names[i+1:]:
+            for source_b in source_names[i + 1 :]:
                 contradictions = self._find_contradictions(
-                    all_claims[source_a],
-                    all_claims[source_b]
+                    all_claims[source_a], all_claims[source_b]
                 )
                 all_contradictions.extend(contradictions)
 
         return self._build_report(all_contradictions, total_claims)
 
-    def _extract_claims(
-        self,
-        text: str,
-        source: str
-    ) -> List[ExtractedClaim]:
+    def _extract_claims(self, text: str, source: str) -> List[ExtractedClaim]:
         """Extract factual claims from text."""
         claims = []
 
@@ -275,11 +271,7 @@ class EnhancedContradictionDetector:
 
         return claims
 
-    def _extract_numeric_claims(
-        self,
-        text: str,
-        source: str
-    ) -> List[ExtractedClaim]:
+    def _extract_numeric_claims(self, text: str, source: str) -> List[ExtractedClaim]:
         """Extract claims with numeric values."""
         claims = []
         sentences = self._split_sentences(text)
@@ -290,113 +282,124 @@ class EnhancedContradictionDetector:
                 value = self._normalize_number(match.group(1), match.group(2))
                 field_type = self._infer_field_type(sentence)
 
-                claims.append(ExtractedClaim(
-                    text=sentence.strip(),
-                    value=value,
-                    unit="USD",
-                    field_type=field_type,
-                    source=source
-                ))
+                claims.append(
+                    ExtractedClaim(
+                        text=sentence.strip(),
+                        value=value,
+                        unit="USD",
+                        field_type=field_type,
+                        source=source,
+                    )
+                )
 
             # Percentages
             for match in self.NUMERIC_PATTERNS["percentage"].finditer(sentence):
                 value = float(match.group(1).replace(",", ""))
                 field_type = self._infer_field_type(sentence, is_percentage=True)
 
-                claims.append(ExtractedClaim(
-                    text=sentence.strip(),
-                    value=value,
-                    unit="percent",
-                    field_type=field_type,
-                    source=source
-                ))
+                claims.append(
+                    ExtractedClaim(
+                        text=sentence.strip(),
+                        value=value,
+                        unit="percent",
+                        field_type=field_type,
+                        source=source,
+                    )
+                )
 
             # Plain numbers with context
             for match in self.NUMERIC_PATTERNS["plain_number"].finditer(sentence):
                 context = match.group(2) or ""
-                if context.lower() in ["employees", "employee", "users", "user", "customers", "customer"]:
+                if context.lower() in [
+                    "employees",
+                    "employee",
+                    "users",
+                    "user",
+                    "customers",
+                    "customer",
+                ]:
                     value = self._normalize_number(match.group(1), None)
-                    claims.append(ExtractedClaim(
-                        text=sentence.strip(),
-                        value=value,
-                        unit=context.lower(),
-                        field_type="employees" if "employ" in context.lower() else "users",
-                        source=source
-                    ))
+                    claims.append(
+                        ExtractedClaim(
+                            text=sentence.strip(),
+                            value=value,
+                            unit=context.lower(),
+                            field_type="employees" if "employ" in context.lower() else "users",
+                            source=source,
+                        )
+                    )
 
         return claims
 
-    def _extract_factual_claims(
-        self,
-        text: str,
-        source: str
-    ) -> List[ExtractedClaim]:
+    def _extract_factual_claims(self, text: str, source: str) -> List[ExtractedClaim]:
         """Extract categorical/factual claims."""
         claims = []
         sentences = self._split_sentences(text)
 
         # Headquarters extraction
         hq_patterns = [
-            r'(?:headquartered|based|located)\s+in\s+([A-Z][a-zA-Z\s,]+)',
-            r'headquarters?\s+(?:is|are)\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+)',
+            r"(?:headquartered|based|located)\s+in\s+([A-Z][a-zA-Z\s,]+)",
+            r"headquarters?\s+(?:is|are)\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+)",
         ]
 
         for sentence in sentences:
             for pattern in hq_patterns:
                 match = re.search(pattern, sentence)
                 if match:
-                    claims.append(ExtractedClaim(
-                        text=sentence.strip(),
-                        value=match.group(1).strip(),
-                        unit=None,
-                        field_type="headquarters",
-                        source=source
-                    ))
+                    claims.append(
+                        ExtractedClaim(
+                            text=sentence.strip(),
+                            value=match.group(1).strip(),
+                            unit=None,
+                            field_type="headquarters",
+                            source=source,
+                        )
+                    )
 
         # CEO extraction
         ceo_patterns = [
-            r'(?:CEO|chief executive)\s+(?:is|:)?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)',
-            r'([A-Z][a-z]+\s+[A-Z][a-z]+)\s+(?:is|serves as)\s+(?:the\s+)?CEO',
+            r"(?:CEO|chief executive)\s+(?:is|:)?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)",
+            r"([A-Z][a-z]+\s+[A-Z][a-z]+)\s+(?:is|serves as)\s+(?:the\s+)?CEO",
         ]
 
         for sentence in sentences:
             for pattern in ceo_patterns:
                 match = re.search(pattern, sentence, re.IGNORECASE)
                 if match:
-                    claims.append(ExtractedClaim(
-                        text=sentence.strip(),
-                        value=match.group(1).strip(),
-                        unit=None,
-                        field_type="ceo",
-                        source=source
-                    ))
+                    claims.append(
+                        ExtractedClaim(
+                            text=sentence.strip(),
+                            value=match.group(1).strip(),
+                            unit=None,
+                            field_type="ceo",
+                            source=source,
+                        )
+                    )
 
         # Founded year
         founded_patterns = [
-            r'founded\s+(?:in\s+)?(\d{4})',
-            r'established\s+(?:in\s+)?(\d{4})',
-            r'since\s+(\d{4})',
+            r"founded\s+(?:in\s+)?(\d{4})",
+            r"established\s+(?:in\s+)?(\d{4})",
+            r"since\s+(\d{4})",
         ]
 
         for sentence in sentences:
             for pattern in founded_patterns:
                 match = re.search(pattern, sentence, re.IGNORECASE)
                 if match:
-                    claims.append(ExtractedClaim(
-                        text=sentence.strip(),
-                        value=int(match.group(1)),
-                        unit="year",
-                        field_type="founded",
-                        source=source
-                    ))
+                    claims.append(
+                        ExtractedClaim(
+                            text=sentence.strip(),
+                            value=int(match.group(1)),
+                            unit="year",
+                            field_type="founded",
+                            source=source,
+                        )
+                    )
 
         return claims
 
-    def _extract_directional_claims(
-        self,
-        text: str,
-        source: str
-    ) -> List[ExtractedClaim]:
+    def _extract_directional_claims(self, text: str, source: str) -> List[ExtractedClaim]:
         """Extract claims about trends and directions."""
         claims = []
         sentences = self._split_sentences(text)
@@ -420,20 +423,20 @@ class EnhancedContradictionDetector:
                 # Determine what metric the direction applies to
                 field_type = self._infer_field_type(sentence)
                 if field_type != "unknown":
-                    claims.append(ExtractedClaim(
-                        text=sentence.strip(),
-                        value=direction,
-                        unit="direction",
-                        field_type=f"{field_type}_trend",
-                        source=source
-                    ))
+                    claims.append(
+                        ExtractedClaim(
+                            text=sentence.strip(),
+                            value=direction,
+                            unit="direction",
+                            field_type=f"{field_type}_trend",
+                            source=source,
+                        )
+                    )
 
         return claims
 
     def _find_contradictions(
-        self,
-        claims_a: List[ExtractedClaim],
-        claims_b: List[ExtractedClaim]
+        self, claims_a: List[ExtractedClaim], claims_b: List[ExtractedClaim]
     ) -> List[Contradiction]:
         """Find contradictions between two sets of claims."""
         contradictions = []
@@ -450,11 +453,7 @@ class EnhancedContradictionDetector:
 
         return contradictions
 
-    def _claims_comparable(
-        self,
-        claim_a: ExtractedClaim,
-        claim_b: ExtractedClaim
-    ) -> bool:
+    def _claims_comparable(self, claim_a: ExtractedClaim, claim_b: ExtractedClaim) -> bool:
         """Determine if two claims can be compared."""
         # Same field type
         if claim_a.field_type == claim_b.field_type:
@@ -466,19 +465,14 @@ class EnhancedContradictionDetector:
 
         # Check semantic similarity if embeddings available
         if self._use_embeddings and self._encoder:
-            similarity = self._semantic_similarity(
-                claim_a.text,
-                claim_b.text
-            )
+            similarity = self._semantic_similarity(claim_a.text, claim_b.text)
             return similarity > 0.7
 
         # Keyword-based comparison
         return self._keyword_similarity(claim_a, claim_b) > 0.5
 
     def _check_contradiction(
-        self,
-        claim_a: ExtractedClaim,
-        claim_b: ExtractedClaim
+        self, claim_a: ExtractedClaim, claim_b: ExtractedClaim
     ) -> Optional[Contradiction]:
         """Check if two claims contradict each other."""
 
@@ -498,9 +492,7 @@ class EnhancedContradictionDetector:
         return None
 
     def _check_numeric_contradiction(
-        self,
-        claim_a: ExtractedClaim,
-        claim_b: ExtractedClaim
+        self, claim_a: ExtractedClaim, claim_b: ExtractedClaim
     ) -> Optional[Contradiction]:
         """Check for numeric value contradictions."""
         val_a = float(claim_a.value)
@@ -514,8 +506,7 @@ class EnhancedContradictionDetector:
 
         # Get tolerance for this field type
         tolerance = self.FIELD_TOLERANCES.get(
-            claim_a.field_type.replace("_trend", ""),
-            0.20  # Default 20% tolerance
+            claim_a.field_type.replace("_trend", ""), 0.20  # Default 20% tolerance
         )
 
         if diff_ratio <= tolerance:
@@ -538,13 +529,11 @@ class EnhancedContradictionDetector:
             severity=severity,
             confidence=min(0.95, 0.5 + diff_ratio),
             explanation=f"Numeric values differ by {diff_ratio*100:.1f}%: {val_a} vs {val_b}",
-            resolution_suggestion=f"Verify {claim_a.field_type} from authoritative source"
+            resolution_suggestion=f"Verify {claim_a.field_type} from authoritative source",
         )
 
     def _check_directional_contradiction(
-        self,
-        claim_a: ExtractedClaim,
-        claim_b: ExtractedClaim
+        self, claim_a: ExtractedClaim, claim_b: ExtractedClaim
     ) -> Optional[Contradiction]:
         """Check for directional/trend contradictions."""
         if claim_a.value != claim_b.value:
@@ -555,14 +544,12 @@ class EnhancedContradictionDetector:
                 severity=ContradictionSeverity.SIGNIFICANT,
                 confidence=0.8,
                 explanation=f"Contradicting trends: {claim_a.value} vs {claim_b.value}",
-                resolution_suggestion="Check date of sources - newer data may supersede"
+                resolution_suggestion="Check date of sources - newer data may supersede",
             )
         return None
 
     def _check_factual_contradiction(
-        self,
-        claim_a: ExtractedClaim,
-        claim_b: ExtractedClaim
+        self, claim_a: ExtractedClaim, claim_b: ExtractedClaim
     ) -> Optional[Contradiction]:
         """Check for factual/categorical contradictions."""
         val_a = claim_a.value.lower().strip()
@@ -591,30 +578,22 @@ class EnhancedContradictionDetector:
             severity=ContradictionSeverity.SIGNIFICANT,
             confidence=0.85,
             explanation=f"Conflicting {claim_a.field_type}: '{claim_a.value}' vs '{claim_b.value}'",
-            resolution_suggestion=f"Verify {claim_a.field_type} from official source"
+            resolution_suggestion=f"Verify {claim_a.field_type} from official source",
         )
 
-    def _normalize_number(
-        self,
-        num_str: str,
-        multiplier_str: Optional[str]
-    ) -> float:
+    def _normalize_number(self, num_str: str, multiplier_str: Optional[str]) -> float:
         """Normalize a number with multiplier to base value."""
         # Remove commas
         num = float(num_str.replace(",", ""))
 
         if multiplier_str:
-            mult_key = multiplier_str.lower().rstrip('s')  # Remove plural
+            mult_key = multiplier_str.lower().rstrip("s")  # Remove plural
             multiplier = self.MULTIPLIERS.get(mult_key, 1)
             num *= multiplier
 
         return num
 
-    def _infer_field_type(
-        self,
-        sentence: str,
-        is_percentage: bool = False
-    ) -> str:
+    def _infer_field_type(self, sentence: str, is_percentage: bool = False) -> str:
         """Infer what field type a sentence is about."""
         sentence_lower = sentence.lower()
 
@@ -632,17 +611,14 @@ class EnhancedContradictionDetector:
 
         return "unknown"
 
-    def _semantic_similarity(
-        self,
-        text_a: str,
-        text_b: str
-    ) -> float:
+    def _semantic_similarity(self, text_a: str, text_b: str) -> float:
         """Calculate semantic similarity using embeddings."""
         if not self._encoder:
             return 0.5
 
         try:
             import numpy as np
+
             embeddings = self._encoder.encode([text_a, text_b])
 
             similarity = np.dot(embeddings[0], embeddings[1]) / (
@@ -653,18 +629,32 @@ class EnhancedContradictionDetector:
             logger.debug(f"Embedding similarity failed: {e}")
             return 0.5
 
-    def _keyword_similarity(
-        self,
-        claim_a: ExtractedClaim,
-        claim_b: ExtractedClaim
-    ) -> float:
+    def _keyword_similarity(self, claim_a: ExtractedClaim, claim_b: ExtractedClaim) -> float:
         """Calculate keyword-based similarity."""
         words_a = set(claim_a.text.lower().split())
         words_b = set(claim_b.text.lower().split())
 
         # Remove stopwords
-        stopwords = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'to', 'of',
-                     'and', 'in', 'for', 'on', 'with', 'at', 'by', 'this', 'that'}
+        stopwords = {
+            "the",
+            "a",
+            "an",
+            "is",
+            "are",
+            "was",
+            "were",
+            "to",
+            "of",
+            "and",
+            "in",
+            "for",
+            "on",
+            "with",
+            "at",
+            "by",
+            "this",
+            "that",
+        }
         words_a -= stopwords
         words_b -= stopwords
 
@@ -679,21 +669,14 @@ class EnhancedContradictionDetector:
     def _split_sentences(self, text: str) -> List[str]:
         """Split text into sentences."""
         # Simple sentence splitting
-        sentences = re.split(r'[.!?]\s+', text)
+        sentences = re.split(r"[.!?]\s+", text)
         return [s.strip() for s in sentences if s.strip()]
 
     def _build_report(
-        self,
-        contradictions: List[Contradiction],
-        total_claims: int
+        self, contradictions: List[Contradiction], total_claims: int
     ) -> ContradictionReport:
         """Build the final contradiction report."""
-        severity_dist = {
-            "critical": 0,
-            "significant": 0,
-            "minor": 0,
-            "negligible": 0
-        }
+        severity_dist = {"critical": 0, "significant": 0, "minor": 0, "negligible": 0}
 
         for c in contradictions:
             severity_dist[c.severity.value] += 1
@@ -703,5 +686,5 @@ class EnhancedContradictionDetector:
             total_claims_analyzed=total_claims,
             contradiction_rate=len(contradictions) / max(total_claims, 1),
             severity_distribution=severity_dist,
-            has_critical=severity_dist["critical"] > 0
+            has_critical=severity_dist["critical"] > 0,
         )

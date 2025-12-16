@@ -13,10 +13,10 @@ provenance:
 
 # Domain Object: MeasurementUnit
 
-**Domain**: Units Management  
-**Status**: C++ Analysis Complete  
-**Created**: 2025-11-29  
-**Last Updated**: 2025-11-29  
+**Domain**: Units Management
+**Status**: C++ Analysis Complete
+**Created**: 2025-11-29
+**Last Updated**: 2025-11-29
 **Source**: `eBase/Units/MeasurementUnit.h`, `eBase/Units/MeasurementUnit.cpp`
 
 ## Overview
@@ -44,14 +44,14 @@ The MeasurementUnit domain object represents units of measurement for energy cal
 
 ### Identity Fields
 
-**Nr (long)**  
+**Nr (long)**
 - **Business Meaning**: System-assigned unique identifier for the measurement unit
 - **Usage**: Primary key for database persistence, foreign key references from other domains
 - **Validation**: Must be positive, auto-generated from GENCOUNTER_SEQ
 - **C++ Source**: `MeasurementUnit.h:45` - `long m_Nr`
 - **C# Mapping**: `public long Nr { get; private set; }`
 
-**Unit (string, required)**  
+**Unit (string, required)**
 - **Business Meaning**: Human-readable unit symbol for display (e.g., "kWh", "MWh", "m³")
 - **Usage**: User interface display, report generation, data export labels
 - **Validation**: Maximum 20 characters, must be unique within tenant, required field
@@ -61,7 +61,7 @@ The MeasurementUnit domain object represents units of measurement for energy cal
 
 ### Classification Fields
 
-**UnitType (int, required)**  
+**UnitType (int, required)**
 - **Business Meaning**: Classification of unit category for type-safe conversions
 - **Usage**: Prevents invalid cross-type conversions (e.g., volume to energy)
 - **Validation**: Must match valid UnitType enumeration value
@@ -69,7 +69,7 @@ The MeasurementUnit domain object represents units of measurement for energy cal
 - **C# Mapping**: `public UnitType UnitType { get; set; }`
 - **Enumeration Reference**: See [UnitType Enumeration](../enumerations/unit-type-enum.md) for valid values (Energy=0, Volume=1, Power=2, etc.)
 
-**OrderNr (double, optional)**  
+**OrderNr (double, optional)**
 - **Business Meaning**: Display order for user interface listings and dropdowns
 - **Usage**: Sorts units in logical sequence (e.g., kWh before MWh before GWh)
 - **Validation**: Non-negative, defaults to 0 if not specified
@@ -78,7 +78,7 @@ The MeasurementUnit domain object represents units of measurement for energy cal
 
 ### Conversion Fields
 
-**Factor (decimal, required)**  
+**Factor (decimal, required)**
 - **Business Meaning**: Conversion multiplier to base unit for this unit type
 - **Usage**: Core conversion mathematics - all conversions use factor-based calculations
 - **Validation**: Must be positive and non-zero (see [Business Rules](../business-rules/unit-conversion-business-rules.md#rule-1-conversion-factor-validation))
@@ -86,7 +86,7 @@ The MeasurementUnit domain object represents units of measurement for energy cal
 - **C# Mapping**: `public decimal Factor { get; set; }`
 - **Example**: kWh factor=1000 means 1 kWh = 1000 Wh (base unit)
 
-**CounterUnitId (long, optional)**  
+**CounterUnitId (long, optional)**
 - **Business Meaning**: Reference to inverse unit for bidirectional conversion validation
 - **Usage**: Ensures conversion symmetry (A→B→A preserves value)
 - **Validation**: Must reference valid MeasurementUnit if specified
@@ -97,7 +97,7 @@ The MeasurementUnit domain object represents units of measurement for energy cal
 
 ### Temporal Fields
 
-**SwitchInterval (int, optional)**  
+**SwitchInterval (int, optional)**
 - **Business Meaning**: Time interval in minutes for time-series data using this unit
 - **Usage**: Ensures compatible interval conversions for time-series aggregation
 - **Validation**: Must be 1-60 minutes for standard intervals, null for non-temporal units
@@ -107,7 +107,7 @@ The MeasurementUnit domain object represents units of measurement for energy cal
 
 ### Relationship Fields
 
-**MeterProductId (long, optional)**  
+**MeterProductId (long, optional)**
 - **Business Meaning**: Default meter product associated with this unit
 - **Usage**: Links units to metering equipment for data collection context
 - **Validation**: Must reference valid MeterProduct if specified
@@ -119,8 +119,8 @@ The MeasurementUnit domain object represents units of measurement for energy cal
 
 ### Self-Reference: Counter Unit
 
-**Relationship Type**: Optional self-reference for conversion symmetry  
-**Cardinality**: 0..1 (unit may or may not have a counter unit)  
+**Relationship Type**: Optional self-reference for conversion symmetry
+**Cardinality**: 0..1 (unit may or may not have a counter unit)
 **Purpose**: Validates bidirectional conversion mathematics
 
 ```
@@ -134,8 +134,8 @@ Validation: kWh.Factor * MWh.Factor ≈ 1.0
 
 ### Foreign Reference: MeterProduct
 
-**Relationship Type**: Many-to-one (many units can reference one meter product)  
-**Cardinality**: 0..1 (unit may be independent of meter products)  
+**Relationship Type**: Many-to-one (many units can reference one meter product)
+**Cardinality**: 0..1 (unit may be independent of meter products)
 **Purpose**: Associates units with specific metering equipment
 
 ```
@@ -149,8 +149,8 @@ MeterProduct (Electricity Meter)
 
 ### Inverse Reference: Profile.UnitId
 
-**Relationship Type**: One-to-many (one unit referenced by many profiles)  
-**Cardinality**: 1..* (profiles must specify a unit)  
+**Relationship Type**: One-to-many (one unit referenced by many profiles)
+**Cardinality**: 1..* (profiles must specify a unit)
 **Purpose**: Profiles use units for consumption pattern definitions
 
 ```
@@ -213,11 +213,11 @@ namespace Eneve.eBase.Foundation.Domain.Units
         // Identity fields
         public long Nr { get; private set; }
         public string Unit { get; set; } = string.Empty;
-        
+
         // Classification fields
         public UnitType UnitType { get; set; }
         public double? OrderNr { get; set; }
-        
+
         // Conversion fields
         private decimal _factor;
         public decimal Factor
@@ -230,38 +230,38 @@ namespace Eneve.eBase.Foundation.Domain.Units
                 _factor = value;
             }
         }
-        
+
         public long? CounterUnitId { get; set; }
         public virtual MeasurementUnit? CounterUnit { get; set; }
-        
+
         // Temporal fields
         public int? SwitchInterval { get; set; }
-        
+
         // Relationship fields
         public long? MeterProductId { get; set; }
         public virtual MeterProduct? MeterProduct { get; set; }
-        
+
         // Domain methods
         public bool CanConvertTo(MeasurementUnit target)
         {
             return this.UnitType == target.UnitType;
         }
-        
+
         public decimal ConvertValue(decimal value, MeasurementUnit target)
         {
             if (!CanConvertTo(target))
                 throw new InvalidOperationException(
                     $"Cannot convert between incompatible types: {UnitType} → {target.UnitType}"
                 );
-            
+
             // Convert to base unit, then to target unit
             return (value * this.Factor) / target.Factor;
         }
-        
+
         public void ValidateCounterUnitSymmetry()
         {
             if (CounterUnit == null) return;
-            
+
             const decimal tolerance = 0.000000001M;
             decimal product = this.Factor * CounterUnit.Factor;
             if (Math.Abs(product - 1.0M) > tolerance)
@@ -283,15 +283,15 @@ namespace Eneve.eBase.Foundation.Infrastructure.Units
         // Query by business keys
         Task<MeasurementUnit?> GetByUnitSymbolAsync(string unit);
         Task<IEnumerable<MeasurementUnit>> GetByUnitTypeAsync(UnitType unitType);
-        
+
         // Validation queries
         Task<bool> IsUnitSymbolUniqueAsync(string unit, long? excludeId = null);
         Task<bool> ExistsAsync(long nr);
-        
+
         // Relationship queries
         Task<MeasurementUnit?> GetWithCounterUnitAsync(long nr);
         Task<IEnumerable<MeasurementUnit>> GetByMeterProductAsync(long meterProductId);
-        
+
         // Conversion support
         Task<decimal> GetConversionFactorAsync(long sourceUnitId, long targetUnitId);
     }
@@ -306,52 +306,52 @@ public class MeasurementUnitConfiguration : IEntityTypeConfiguration<Measurement
     public void Configure(EntityTypeBuilder<MeasurementUnit> builder)
     {
         builder.ToTable("D_MEASUREMENTUNIT");
-        
+
         // Primary key
         builder.HasKey(e => e.Nr);
         builder.Property(e => e.Nr)
             .HasColumnName("NR")
             .ValueGeneratedOnAdd();
-        
+
         // Required fields
         builder.Property(e => e.Unit)
             .HasColumnName("UNIT")
             .HasMaxLength(20)
             .IsRequired();
-        
+
         builder.Property(e => e.UnitType)
             .HasColumnName("UNITTYPE")
             .IsRequired();
-        
+
         builder.Property(e => e.Factor)
             .HasColumnName("FACTOR")
             .HasColumnType("decimal(18,9)")
             .IsRequired();
-        
+
         // Optional fields
         builder.Property(e => e.OrderNr)
             .HasColumnName("ORDERNR");
-        
+
         builder.Property(e => e.SwitchInterval)
             .HasColumnName("SWITCHINTERVAL");
-        
+
         builder.Property(e => e.CounterUnitId)
             .HasColumnName("COUNTERUNITID");
-        
+
         builder.Property(e => e.MeterProductId)
             .HasColumnName("METERPRODUCTID");
-        
+
         // Unique constraint
         builder.HasIndex(e => e.Unit)
             .IsUnique()
             .HasDatabaseName("UX_MEASUREMENTUNIT_UNIT");
-        
+
         // Self-reference relationship
         builder.HasOne(e => e.CounterUnit)
             .WithMany()
             .HasForeignKey(e => e.CounterUnitId)
             .OnDelete(DeleteBehavior.SetNull);
-        
+
         // Foreign key to MeterProduct
         builder.HasOne(e => e.MeterProduct)
             .WithMany()
@@ -365,8 +365,8 @@ public class MeasurementUnitConfiguration : IEntityTypeConfiguration<Measurement
 
 ### Data Persistence
 
-**C++ Storage**: Database-backed using `D_MEASUREMENTUNIT` table  
-**C# Storage**: Entity Framework Core with SQL Server  
+**C++ Storage**: Database-backed using `D_MEASUREMENTUNIT` table
+**C# Storage**: Entity Framework Core with SQL Server
 **Migration Path**: Direct table mapping with data type conversions
 
 **Key Considerations**:
@@ -490,11 +490,11 @@ decimal backToKwh = mwhUnit.ConvertValue(valueInMwh, kwhUnit);
 
 ---
 
-**Migration Phase**: 2 - Specification Creation  
-**Generated by**: rule.migration.spec-create.v1  
-**Source System**: eBase C++ Units Module  
-**Analyzed Source**: eBase/Units/MeasurementUnit.h:45-58, eBase/Units/MeasurementUnit.cpp:89-456  
-**Created**: 2025-11-29  
-**Last Updated**: 2025-11-29  
-**Status**: Technical Review Complete  
+**Migration Phase**: 2 - Specification Creation
+**Generated by**: rule.migration.spec-create.v1
+**Source System**: eBase C++ Units Module
+**Analyzed Source**: eBase/Units/MeasurementUnit.h:45-58, eBase/Units/MeasurementUnit.cpp:89-456
+**Created**: 2025-11-29
+**Last Updated**: 2025-11-29
+**Status**: Technical Review Complete
 **Quality Gate**: Passed

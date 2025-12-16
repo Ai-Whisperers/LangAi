@@ -342,17 +342,16 @@ Save sync log to: `[target-repo]/.cursor/rules/sync-log.md` (append-only)
 - `.cursor/prompts/rule-authoring/create-new-rule.md` - Creating rules (if needed during merge)
 - `.cursor/prompts/rule-authoring/validate-rule-compliance.md` - Validating synced rules
 
-**Save Results To**: 
+**Save Results To**:
 - Sync analysis: Present in conversation or save to temp file
 - Sync log: `[TARGET_REPO]/.cursor/rules/sync-log.md` (append-only)
 - Updated rules: `[TARGET_REPO]/.cursor/rules/[domain]/` (in-place update)
 
 ---
 
-**Estimated Time**: 
+**Estimated Time**:
 - Full domain sync: 1-2 hours
 - Selective sync: 15-30 minutes per rule
 - Incremental sync: 30-60 minutes
 
 **Note**: This sync workflow ensures consistency across repositories while respecting local modifications and preventing data leaks.
-

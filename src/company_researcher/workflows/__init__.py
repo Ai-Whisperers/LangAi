@@ -27,31 +27,24 @@ Usage:
     companies = list_cached_companies()
 """
 
-from .basic_research import research_company, create_research_workflow
-
-from .comprehensive_research import (
-    research_company_comprehensive,
-    create_comprehensive_workflow,
-)
-
+from .basic_research import create_research_workflow, research_company
 from .cache_aware_workflow import (
-    research_with_cache,
-    research_gaps_only,
-    get_cached_report,
-    list_cached_companies,
     get_cache_summary,
+    get_cached_report,
     get_workflow_cache,
+    list_cached_companies,
+    research_gaps_only,
+    research_with_cache,
 )
+from .comprehensive_research import create_comprehensive_workflow, research_company_comprehensive
 
 __all__ = [
     # Basic workflow
     "research_company",
     "create_research_workflow",
-
     # Comprehensive workflow
     "research_company_comprehensive",
     "create_comprehensive_workflow",
-
     # Cache-aware workflow (recommended)
     "research_with_cache",
     "research_gaps_only",

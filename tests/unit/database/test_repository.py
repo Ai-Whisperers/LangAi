@@ -12,18 +12,13 @@ Tests the ResearchRepository class including:
 
 import pytest
 
-from company_researcher.database.models import (
-    Company,
-    ResearchRun,
-    AgentOutput,
-    Source,
-)
+from company_researcher.database.models import AgentOutput, Company, ResearchRun, Source
 from company_researcher.database.repository import ResearchRepository
-
 
 # ============================================================================
 # Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def in_memory_repo():
@@ -43,7 +38,7 @@ def sample_company():
         "company_type": "public",
         "website": "https://testcorp.com",
         "headquarters": "San Francisco, CA",
-        "founded_year": 2010
+        "founded_year": 2010,
     }
 
 
@@ -55,20 +50,20 @@ def sample_sources():
             "url": "https://example.com/article1",
             "title": "Article 1",
             "content": "Content about the company",
-            "score": 0.95
+            "score": 0.95,
         },
         {
             "url": "https://example.com/article2",
             "title": "Article 2",
             "content": "More content about the company",
-            "score": 0.85
+            "score": 0.85,
         },
         {
             "url": "https://example.com/article3",
             "title": "Article 3",
             "content": "Additional information",
-            "score": 0.75
-        }
+            "score": 0.75,
+        },
     ]
 
 
@@ -83,13 +78,14 @@ def sample_agent_output():
         "cost": 0.001,
         "input_tokens": 100,
         "output_tokens": 50,
-        "model": "gpt-4"
+        "model": "gpt-4",
     }
 
 
 # ============================================================================
 # Company Tests
 # ============================================================================
+
 
 class TestCompanyOperations:
     """Tests for company CRUD operations."""
@@ -124,10 +120,7 @@ class TestCompanyOperations:
 
     def test_company_with_ticker(self, in_memory_repo):
         """Test company creation with ticker."""
-        company = in_memory_repo.get_or_create_company(
-            "Apple Inc.",
-            ticker="AAPL"
-        )
+        company = in_memory_repo.get_or_create_company("Apple Inc.", ticker="AAPL")
 
         assert company.ticker == "AAPL"
 
@@ -135,6 +128,7 @@ class TestCompanyOperations:
 # ============================================================================
 # Research Run Tests
 # ============================================================================
+
 
 class TestResearchRunOperations:
     """Tests for research run management."""
@@ -172,7 +166,7 @@ class TestResearchRunOperations:
             total_cost=0.05,
             total_input_tokens=1000,
             total_output_tokens=500,
-            quality_score=85.5
+            quality_score=85.5,
         )
 
         # Verify metrics
@@ -201,6 +195,7 @@ class TestResearchRunOperations:
 # Agent Output Tests
 # ============================================================================
 
+
 class TestAgentOutputOperations:
     """Tests for agent output storage."""
 
@@ -218,7 +213,7 @@ class TestAgentOutputOperations:
             cost=sample_agent_output["cost"],
             input_tokens=sample_agent_output["input_tokens"],
             output_tokens=sample_agent_output["output_tokens"],
-            model=sample_agent_output["model"]
+            model=sample_agent_output["model"],
         )
 
         assert output_id is not None
@@ -235,7 +230,7 @@ class TestAgentOutputOperations:
             agent_name="test_agent",
             agent_type="test",
             analysis="Test analysis",
-            metadata=metadata  # Should be stored in extra_metadata column
+            metadata=metadata,  # Should be stored in extra_metadata column
         )
 
         assert output_id is not None
@@ -248,9 +243,7 @@ class TestAgentOutputOperations:
         # Save multiple outputs
         for agent in ["researcher", "financial", "market"]:
             in_memory_repo.save_agent_output(
-                research_run_id=run.id,
-                agent_name=agent,
-                analysis=f"Analysis from {agent}"
+                research_run_id=run.id, agent_name=agent, analysis=f"Analysis from {agent}"
             )
 
         # Get all outputs
@@ -266,6 +259,7 @@ class TestAgentOutputOperations:
 # ============================================================================
 # Source Bulk Operations Tests (N+1 Fix Verification)
 # ============================================================================
+
 
 class TestSourceBulkOperations:
     """Tests for source bulk operations including N+1 fix verification."""
@@ -294,7 +288,9 @@ class TestSourceBulkOperations:
         assert first_count == 3
         assert second_count == 0
 
-    def test_save_sources_bulk_partial_duplicates(self, in_memory_repo, sample_company, sample_sources):
+    def test_save_sources_bulk_partial_duplicates(
+        self, in_memory_repo, sample_company, sample_sources
+    ):
         """Test saving sources with some duplicates."""
         company = in_memory_repo.get_or_create_company(sample_company["name"])
         run = in_memory_repo.create_research_run(sample_company["name"])
@@ -305,7 +301,7 @@ class TestSourceBulkOperations:
         # Save batch with 1 duplicate and 1 new
         new_sources = [
             sample_sources[1],  # Duplicate
-            {"url": "https://example.com/article4", "title": "New Article"}
+            {"url": "https://example.com/article4", "title": "New Article"},
         ]
 
         second_count = in_memory_repo.save_sources_bulk(run.id, new_sources)
@@ -322,7 +318,9 @@ class TestSourceBulkOperations:
 
         assert saved_count == 0
 
-    def test_save_sources_bulk_updates_run_count(self, in_memory_repo, sample_company, sample_sources):
+    def test_save_sources_bulk_updates_run_count(
+        self, in_memory_repo, sample_company, sample_sources
+    ):
         """Test that bulk save updates research run source count."""
         company = in_memory_repo.get_or_create_company(sample_company["name"])
         run = in_memory_repo.create_research_run(sample_company["name"])
@@ -342,7 +340,7 @@ class TestSourceBulkOperations:
         sources = [
             {"title": "No URL"},
             {"url": "", "title": "Empty URL"},
-            {"url": "https://valid.com", "title": "Valid URL"}
+            {"url": "https://valid.com", "title": "Valid URL"},
         ]
 
         saved_count = in_memory_repo.save_sources_bulk(run.id, sources)
@@ -360,7 +358,7 @@ class TestSourceBulkOperations:
             {
                 "url": f"https://example.com/article{i}",
                 "title": f"Article {i}",
-                "content": f"Content for article {i}"
+                "content": f"Content for article {i}",
             }
             for i in range(source_count)
         ]
@@ -373,6 +371,7 @@ class TestSourceBulkOperations:
 # ============================================================================
 # Cost Logging Tests
 # ============================================================================
+
 
 class TestCostLogging:
     """Tests for cost logging operations."""
@@ -388,7 +387,7 @@ class TestCostLogging:
             agent_name="researcher",
             input_tokens=100,
             output_tokens=50,
-            cost=0.005
+            cost=0.005,
         )
 
         # Verify cost logged
@@ -411,7 +410,7 @@ class TestCostLogging:
                 agent_name=f"agent_{i}",
                 input_tokens=100,
                 output_tokens=50,
-                cost=cost
+                cost=cost,
             )
 
         total = in_memory_repo.get_total_cost(run.id)
@@ -422,6 +421,7 @@ class TestCostLogging:
 # ============================================================================
 # Connection Pool Tests
 # ============================================================================
+
 
 class TestConnectionPooling:
     """Tests for connection pooling configuration."""
@@ -442,6 +442,7 @@ class TestConnectionPooling:
 
             # Perform a simple query (SQLAlchemy 2.x requires text())
             from sqlalchemy import text
+
             result = session.execute(text("SELECT 1"))
             assert result is not None
 
@@ -449,6 +450,7 @@ class TestConnectionPooling:
 # ============================================================================
 # Model Tests
 # ============================================================================
+
 
 class TestModels:
     """Tests for SQLAlchemy models."""
@@ -514,7 +516,7 @@ class TestModels:
                 research_run_id=run.id,
                 agent_name="test",
                 analysis="Test",
-                extra_metadata={"test": "value"}  # Using renamed column
+                extra_metadata={"test": "value"},  # Using renamed column
             )
             session.add(output)
             session.commit()

@@ -102,8 +102,8 @@ EPIC-MODERN-REPORTING: Modernize Reporting Infrastructure
 Interactive sales dashboard providing real-time visibility into daily sales performance across all regions. Replaces legacy monthly reports with live PowerBI dashboard.
 
 ## User Value Proposition
-**As a** Sales Manager  
-**I can** view real-time sales metrics filtered by region, product, and time period  
+**As a** Sales Manager
+**I can** view real-time sales metrics filtered by region, product, and time period
 **So that** I can make data-driven decisions and respond quickly to performance trends
 
 ## Target Audience
@@ -173,9 +173,9 @@ Interactive sales dashboard providing real-time visibility into daily sales perf
 - Sales data ETL pipeline operational
 
 ## Risks & Mitigations
-- **Risk**: Legacy Crystal Reports data format incompatibility  
+- **Risk**: Legacy Crystal Reports data format incompatibility
   **Mitigation**: Data transformation layer in ETL pipeline
-- **Risk**: User adoption resistance to new tool  
+- **Risk**: User adoption resistance to new tool
   **Mitigation**: Training sessions and gradual rollout
 
 ## Success Metrics
@@ -208,8 +208,8 @@ EPIC-USER-AUTH: User Authentication System
 Self-service password reset capability allowing users to regain account access without IT support intervention.
 
 ## User Value Proposition
-**As a** System User  
-**I can** reset my password via email verification  
+**As a** System User
+**I can** reset my password via email verification
 **So that** I can regain account access immediately when I forget my password
 
 ## Functional Requirements
@@ -267,4 +267,3 @@ Self-service password reset capability allowing users to regain account access w
 ---
 
 **Provenance**: Created 2025-12-08 | Updated 2025-12-08 (PROMPTS-OPTIMIZE) | Pattern: Agile Documentation Generation
-

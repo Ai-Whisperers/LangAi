@@ -25,8 +25,8 @@ Usage:
 
 import asyncio
 
-from .models import QuotaStatus, QuotaInfo, QuotaReport
 from .checker import APIQuotaChecker
+from .models import QuotaInfo, QuotaReport, QuotaStatus
 
 
 def check_all_quotas() -> QuotaReport:

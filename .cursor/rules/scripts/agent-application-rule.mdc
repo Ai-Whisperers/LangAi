@@ -6,7 +6,7 @@ description: Agent guidance for when and how to apply reusable script standards.
 implements: scripts.agent-application
 requires: []
 model_hints: { temp: 0.2, top_p: 0.9 }
-provenance: 
+provenance:
   owner: team-devops
   last_review: 2025-12-07
   created: 2025-12-07
@@ -146,7 +146,7 @@ User request involves scripts?
 2. **Determine target quality level**
    - Use `rule.scripts.quality-levels.v1` to select appropriate level
    - **One-off script**: Basic (60/100)
-   - **Team tool**: Standard (70/100)  
+   - **Team tool**: Standard (70/100)
    - **CI/CD script**: Advanced (80/100)
    - **Production critical**: Production (90-100/100)
 

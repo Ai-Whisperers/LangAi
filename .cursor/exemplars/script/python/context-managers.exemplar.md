@@ -21,7 +21,7 @@ from pathlib import Path
 def temporary_workspace(prefix: str = "coverage_"):
     """
     Create temporary workspace with automatic cleanup.
-    
+
     Example:
         with temporary_workspace() as workspace:
             coverage_file = workspace / "coverage.xml"
@@ -30,7 +30,7 @@ def temporary_workspace(prefix: str = "coverage_"):
     """
     workspace = Path(tempfile.mkdtemp(prefix=prefix))
     logger.debug(f"Created temporary workspace: {workspace}")
-    
+
     try:
         yield workspace
     finally:
@@ -41,7 +41,7 @@ def temporary_workspace(prefix: str = "coverage_"):
 def coverage_session(config: CoverageConfig):
     """Context manager for coverage analysis session."""
     session = CoverageSession(config)
-    
+
     try:
         session.setup()
         yield session
@@ -70,4 +70,3 @@ with coverage_session(config) as session:
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

@@ -82,4 +82,3 @@ Table `CUST` (ID, NAME) and `ADDR` (ID, CUST_ID, CITY).
 **Applies Rules**:
 - `.cursor/rules/technical-specifications/entity-relationship-rule.mdc`
 - `.cursor/rules/technical-specifications/hybrid-documentation-architecture-rule.mdc`
-

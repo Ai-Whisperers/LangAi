@@ -12,18 +12,16 @@ import asyncio
 import json
 import os
 import sys
-import yaml
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
+import yaml
 
 # Import the main engine from src
-from src.company_researcher import (
-    execute_research,
-    ResearchDepth,
-)
-from src.company_researcher.graphs import research_graph
+from src.company_researcher import ResearchDepth, execute_research
 from src.company_researcher.config import get_config as get_src_config
+from src.company_researcher.graphs import research_graph
 
 
 def create_argument_parser() -> argparse.ArgumentParser:
@@ -50,70 +48,48 @@ Examples:
 
   # Show current configuration
   python run_research.py --show-config
-"""
+""",
     )
 
     # Input options
     input_group = parser.add_argument_group("Input Options")
+    input_group.add_argument("--company", "-c", type=str, help="Company name to research")
+    input_group.add_argument("--profile", "-p", type=str, help="Path to company YAML profile")
     input_group.add_argument(
-        "--company", "-c",
-        type=str,
-        help="Company name to research"
-    )
-    input_group.add_argument(
-        "--profile", "-p",
-        type=str,
-        help="Path to company YAML profile"
-    )
-    input_group.add_argument(
-        "--market", "-m",
-        type=str,
-        help="Path to market folder with YAML files"
+        "--market", "-m", type=str, help="Path to market folder with YAML files"
     )
 
     # Research options
     research_group = parser.add_argument_group("Research Options")
     research_group.add_argument(
-        "--depth", "-d",
+        "--depth",
+        "-d",
         type=str,
         choices=["quick", "standard", "comprehensive"],
         default="standard",
-        help="Research depth level (default: standard)"
+        help="Research depth level (default: standard)",
     )
     research_group.add_argument(
         "--use-graph",
         action="store_true",
-        help="Use LangGraph workflow instead of orchestration engine"
+        help="Use LangGraph workflow instead of orchestration engine",
     )
     research_group.add_argument(
-        "--output", "-o",
-        type=str,
-        default="outputs/research",
-        help="Output directory for reports"
+        "--output", "-o", type=str, default="outputs/research", help="Output directory for reports"
     )
     research_group.add_argument(
-        "--compare",
-        action="store_true",
-        help="Generate comparison report for market research"
+        "--compare", action="store_true", help="Generate comparison report for market research"
     )
 
     # Utility options
     util_group = parser.add_argument_group("Utility Options")
     util_group.add_argument(
-        "--show-config",
-        action="store_true",
-        help="Show current configuration and exit"
+        "--show-config", action="store_true", help="Show current configuration and exit"
     )
     util_group.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Preview what would happen without executing"
+        "--dry-run", action="store_true", help="Preview what would happen without executing"
     )
-    util_group.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        help="Enable verbose output"
-    )
+    util_group.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
 
     return parser
 
@@ -128,11 +104,7 @@ def get_depth_enum(depth_str: str) -> ResearchDepth:
     return mapping.get(depth_str, ResearchDepth.STANDARD)
 
 
-def save_report(
-    company_name: str,
-    result: Dict[str, Any],
-    output_dir: str
-) -> Path:
+def save_report(company_name: str, result: Dict[str, Any], output_dir: str) -> Path:
     """Save research report to file."""
     # Create output directory
     safe_name = company_name.lower().replace(" ", "_").replace("/", "_")
@@ -186,7 +158,7 @@ def run_graph_research(company_name: str, verbose: bool = False) -> Dict[str, An
         "report": "",
         "total_cost": 0.0,
         "total_tokens": 0,
-        "error": None
+        "error": None,
     }
 
     # Run the graph
@@ -202,9 +174,7 @@ def run_graph_research(company_name: str, verbose: bool = False) -> Dict[str, An
 
 
 def run_orchestration_research(
-    company_name: str,
-    depth: ResearchDepth,
-    verbose: bool = False
+    company_name: str, depth: ResearchDepth, verbose: bool = False
 ) -> Dict[str, Any]:
     """
     Run research using orchestration engine.
@@ -217,10 +187,7 @@ def run_orchestration_research(
     print(f"{'='*60}\n")
 
     # Execute research
-    result = execute_research(
-        company_name=company_name,
-        depth=depth
-    )
+    result = execute_research(company_name=company_name, depth=depth)
 
     # Convert WorkflowState to dict
     return {
@@ -316,6 +283,7 @@ async def run_cli(args: argparse.Namespace) -> int:
             print(f"\n❌ Research failed: {e}")
             if verbose:
                 import traceback
+
                 traceback.print_exc()
             return 1
 
@@ -404,6 +372,7 @@ def main():
     except Exception as e:
         print(f"\n[ERROR] {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

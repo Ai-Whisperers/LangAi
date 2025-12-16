@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, AsyncIterator, Dict, List, Optional, Set
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -24,11 +25,13 @@ def _utcnow() -> datetime:
     """Get current UTC time (timezone-aware)."""
     return datetime.now(timezone.utc)
 
+
 from .stream_wrapper import StreamChunk
 
 
 class EventType(str, Enum):
     """Types of stream events."""
+
     # Connection events
     CONNECTED = "connected"
     DISCONNECTED = "disconnected"
@@ -68,6 +71,7 @@ class StreamEvent:
         timestamp: When the event was created
         metadata: Additional event metadata
     """
+
     event_type: EventType
     data: Any
     event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
@@ -89,7 +93,7 @@ class StreamEvent:
             "metadata": self.metadata,
             "stream_id": self.stream_id,
             "chunk_index": self.chunk_index,
-            "is_final": self.is_final
+            "is_final": self.is_final,
         }
 
     def to_json(self) -> str:
@@ -101,7 +105,7 @@ class StreamEvent:
         lines = [
             f"id: {self.event_id}",
             f"event: {self.event_type.value}",
-            f"data: {self.to_json()}"
+            f"data: {self.to_json()}",
         ]
         return "\n".join(lines) + "\n\n"
 
@@ -114,7 +118,7 @@ class StreamEvent:
             stream_id=stream_id,
             chunk_index=chunk.index,
             is_final=chunk.is_final,
-            metadata=chunk.metadata
+            metadata=chunk.metadata,
         )
 
 
@@ -153,11 +157,7 @@ class EventStreamer(ABC):
                 sent += 1
         return sent
 
-    async def stream_chunks(
-        self,
-        chunks: AsyncIterator[StreamChunk],
-        stream_id: str
-    ) -> None:
+    async def stream_chunks(self, chunks: AsyncIterator[StreamChunk], stream_id: str) -> None:
         """
         Stream chunks as events.
 
@@ -166,11 +166,13 @@ class EventStreamer(ABC):
             stream_id: Identifier for this stream
         """
         # Send stream start event
-        await self.broadcast(StreamEvent(
-            event_type=EventType.STREAM_START,
-            data={"stream_id": stream_id},
-            stream_id=stream_id
-        ))
+        await self.broadcast(
+            StreamEvent(
+                event_type=EventType.STREAM_START,
+                data={"stream_id": stream_id},
+                stream_id=stream_id,
+            )
+        )
 
         try:
             async for chunk in chunks:
@@ -178,19 +180,23 @@ class EventStreamer(ABC):
                 await self.broadcast(event)
 
             # Send stream end event
-            await self.broadcast(StreamEvent(
-                event_type=EventType.STREAM_END,
-                data={"stream_id": stream_id},
-                stream_id=stream_id,
-                is_final=True
-            ))
+            await self.broadcast(
+                StreamEvent(
+                    event_type=EventType.STREAM_END,
+                    data={"stream_id": stream_id},
+                    stream_id=stream_id,
+                    is_final=True,
+                )
+            )
 
         except Exception as e:
-            await self.broadcast(StreamEvent(
-                event_type=EventType.ERROR,
-                data={"error": str(e), "stream_id": stream_id},
-                stream_id=stream_id
-            ))
+            await self.broadcast(
+                StreamEvent(
+                    event_type=EventType.ERROR,
+                    data={"error": str(e), "stream_id": stream_id},
+                    stream_id=stream_id,
+                )
+            )
             raise
 
     def get_connected_clients(self) -> Set[str]:
@@ -205,7 +211,7 @@ class EventStreamer(ABC):
         """Record event in history."""
         self._event_history.append(event)
         if len(self._event_history) > self._max_history:
-            self._event_history = self._event_history[-self._max_history:]
+            self._event_history = self._event_history[-self._max_history :]
 
 
 class WebSocketStreamer(EventStreamer):
@@ -232,8 +238,7 @@ class WebSocketStreamer(EventStreamer):
 
         # Send connected event
         await self.send_event(
-            StreamEvent(event_type=EventType.CONNECTED, data={"client_id": client_id}),
-            client_id
+            StreamEvent(event_type=EventType.CONNECTED, data={"client_id": client_id}), client_id
         )
         return True
 
@@ -242,7 +247,7 @@ class WebSocketStreamer(EventStreamer):
         if client_id in self._connections:
             try:
                 ws = self._connections[client_id]
-                if hasattr(ws, 'close'):
+                if hasattr(ws, "close"):
                     await ws.close()
             except Exception as e:
                 logger.warning(f"Error closing WebSocket for client {client_id}: {e}")
@@ -261,9 +266,9 @@ class WebSocketStreamer(EventStreamer):
             if client_id in self._connections:
                 try:
                     ws = self._connections[client_id]
-                    if hasattr(ws, 'send_json'):
+                    if hasattr(ws, "send_json"):
                         await ws.send_json(event.to_dict())
-                    elif hasattr(ws, 'send'):
+                    elif hasattr(ws, "send"):
                         await ws.send(event.to_json())
                     return True
                 except Exception as e:
@@ -350,9 +355,7 @@ class SSEStreamer(EventStreamer):
             await self.disconnect(client_id)
 
     async def get_events_with_timeout(
-        self,
-        client_id: str,
-        timeout: float = 30.0
+        self, client_id: str, timeout: float = 30.0
     ) -> AsyncIterator[StreamEvent]:
         """Get events with heartbeat timeout."""
         if client_id not in self._client_queues:
@@ -370,10 +373,7 @@ class SSEStreamer(EventStreamer):
                         break
                 except asyncio.TimeoutError:
                     # Send heartbeat/keep-alive
-                    yield StreamEvent(
-                        event_type=EventType.STATUS,
-                        data={"status": "heartbeat"}
-                    )
+                    yield StreamEvent(event_type=EventType.STATUS, data={"status": "heartbeat"})
         finally:
             await self.disconnect(client_id)
 
@@ -392,12 +392,7 @@ class SocketIOStreamer(EventStreamer):
         await streamer.stream_chunks(chunks, "stream-123")
     """
 
-    def __init__(
-        self,
-        sio: Any = None,
-        namespace: str = "/",
-        streamer_id: Optional[str] = None
-    ):
+    def __init__(self, sio: Any = None, namespace: str = "/", streamer_id: Optional[str] = None):
         super().__init__(streamer_id)
         self._sio = sio
         self._namespace = namespace
@@ -412,13 +407,12 @@ class SocketIOStreamer(EventStreamer):
                 self._rooms[room] = set()
             self._rooms[room].add(client_id)
 
-            if self._sio and hasattr(self._sio, 'enter_room'):
+            if self._sio and hasattr(self._sio, "enter_room"):
                 await self._sio.enter_room(client_id, room, namespace=self._namespace)
 
         # Emit connected event
         await self.send_event(
-            StreamEvent(event_type=EventType.CONNECTED, data={"client_id": client_id}),
-            client_id
+            StreamEvent(event_type=EventType.CONNECTED, data={"client_id": client_id}), client_id
         )
         return True
 
@@ -446,18 +440,11 @@ class SocketIOStreamer(EventStreamer):
             if client_id:
                 # Send to specific client
                 await self._sio.emit(
-                    event_name,
-                    event_data,
-                    to=client_id,
-                    namespace=self._namespace
+                    event_name, event_data, to=client_id, namespace=self._namespace
                 )
             else:
                 # Broadcast to all in namespace
-                await self._sio.emit(
-                    event_name,
-                    event_data,
-                    namespace=self._namespace
-                )
+                await self._sio.emit(event_name, event_data, namespace=self._namespace)
             return True
         except Exception as e:
             logger.warning(f"Error sending Socket.IO event: {e}")
@@ -472,10 +459,7 @@ class SocketIOStreamer(EventStreamer):
 
         try:
             await self._sio.emit(
-                event.event_type.value,
-                event.to_dict(),
-                room=room,
-                namespace=self._namespace
+                event.event_type.value, event.to_dict(), room=room, namespace=self._namespace
             )
             return True
         except Exception as e:
@@ -498,10 +482,7 @@ class SocketIOStreamer(EventStreamer):
         return self._rooms.get(room, set()).copy()
 
 
-def create_event_streamer(
-    streamer_type: str = "websocket",
-    **kwargs
-) -> EventStreamer:
+def create_event_streamer(streamer_type: str = "websocket", **kwargs) -> EventStreamer:
     """
     Factory function to create event streamer.
 

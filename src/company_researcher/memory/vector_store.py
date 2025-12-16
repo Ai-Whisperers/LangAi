@@ -12,15 +12,17 @@ This is the persistent storage layer for semantic search over research data.
 """
 
 import hashlib
-from datetime import datetime
-from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
 from ..utils import get_config, utc_now
 
 # Conditional imports for vector databases
 try:
     import chromadb
+
     CHROMADB_AVAILABLE = True
 except ImportError:
     CHROMADB_AVAILABLE = False
@@ -28,6 +30,7 @@ except ImportError:
 
 try:
     from openai import OpenAI
+
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
@@ -38,9 +41,11 @@ except ImportError:
 # Data Models
 # ============================================================================
 
+
 @dataclass
 class VectorDocument:
     """A document stored in the vector database."""
+
     id: str
     content: str
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -57,6 +62,7 @@ class VectorDocument:
 @dataclass
 class SearchResult:
     """A search result from vector store."""
+
     document: VectorDocument
     score: float
     distance: float
@@ -67,12 +73,13 @@ class SearchResult:
             "content": self.document.content,
             "metadata": self.document.metadata,
             "score": self.score,
-            "distance": self.distance
+            "distance": self.distance,
         }
 
 
 class EmbeddingModel(str, Enum):
     """Available embedding models."""
+
     OPENAI_SMALL = "text-embedding-3-small"
     OPENAI_LARGE = "text-embedding-3-large"
     OPENAI_ADA = "text-embedding-ada-002"
@@ -81,6 +88,7 @@ class EmbeddingModel(str, Enum):
 # ============================================================================
 # Embedding Generator
 # ============================================================================
+
 
 class EmbeddingGenerator:
     """
@@ -92,9 +100,7 @@ class EmbeddingGenerator:
     """
 
     def __init__(
-        self,
-        model: EmbeddingModel = EmbeddingModel.OPENAI_SMALL,
-        api_key: Optional[str] = None
+        self, model: EmbeddingModel = EmbeddingModel.OPENAI_SMALL, api_key: Optional[str] = None
     ):
         """
         Initialize embedding generator.
@@ -147,18 +153,12 @@ class EmbeddingGenerator:
 
     def _embed_openai(self, text: str) -> List[float]:
         """Generate embedding using OpenAI."""
-        response = self._client.embeddings.create(
-            model=self.model.value,
-            input=text
-        )
+        response = self._client.embeddings.create(model=self.model.value, input=text)
         return response.data[0].embedding
 
     def _embed_batch_openai(self, texts: List[str]) -> List[List[float]]:
         """Generate embeddings for batch using OpenAI."""
-        response = self._client.embeddings.create(
-            model=self.model.value,
-            input=texts
-        )
+        response = self._client.embeddings.create(model=self.model.value, input=texts)
         return [item.embedding for item in response.data]
 
     def _embed_fallback(self, text: str) -> List[float]:
@@ -170,6 +170,7 @@ class EmbeddingGenerator:
         """
         # Create a deterministic pseudo-embedding
         import hashlib
+
         hash_bytes = hashlib.sha256(text.encode()).digest()
 
         # Convert to 384-dim float vector (matches small model)
@@ -184,6 +185,7 @@ class EmbeddingGenerator:
 # ============================================================================
 # Vector Store
 # ============================================================================
+
 
 class VectorStore:
     """
@@ -201,7 +203,7 @@ class VectorStore:
         self,
         collection_name: str = "research_memory",
         persist_directory: Optional[str] = None,
-        embedding_model: EmbeddingModel = EmbeddingModel.OPENAI_SMALL
+        embedding_model: EmbeddingModel = EmbeddingModel.OPENAI_SMALL,
     ):
         """
         Initialize vector store.
@@ -216,9 +218,7 @@ class VectorStore:
         self._embedding_generator = EmbeddingGenerator(embedding_model)
 
         if not CHROMADB_AVAILABLE:
-            raise ImportError(
-                "ChromaDB not installed. Install with: pip install chromadb"
-            )
+            raise ImportError("ChromaDB not installed. Install with: pip install chromadb")
 
         # Initialize ChromaDB client
         if persist_directory:
@@ -228,8 +228,7 @@ class VectorStore:
 
         # Get or create collection
         self._collection = self._client.get_or_create_collection(
-            name=collection_name,
-            metadata={"hnsw:space": "cosine"}
+            name=collection_name, metadata={"hnsw:space": "cosine"}
         )
 
     @property
@@ -242,12 +241,7 @@ class VectorStore:
         """Check if real embeddings are available."""
         return self._embedding_generator.is_available
 
-    def add(
-        self,
-        id: str,
-        content: str,
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> None:
+    def add(self, id: str, content: str, metadata: Optional[Dict[str, Any]] = None) -> None:
         """
         Add document to vector store.
 
@@ -266,16 +260,10 @@ class VectorStore:
 
         # Add to collection
         self._collection.add(
-            ids=[id],
-            embeddings=[embedding],
-            documents=[content],
-            metadatas=[doc_metadata]
+            ids=[id], embeddings=[embedding], documents=[content], metadatas=[doc_metadata]
         )
 
-    def add_batch(
-        self,
-        documents: List[VectorDocument]
-    ) -> int:
+    def add_batch(self, documents: List[VectorDocument]) -> int:
         """
         Add multiple documents.
 
@@ -304,10 +292,7 @@ class VectorStore:
 
         # Add to collection
         self._collection.add(
-            ids=ids,
-            embeddings=embeddings,
-            documents=contents,
-            metadatas=metadatas
+            ids=ids, embeddings=embeddings, documents=contents, metadatas=metadatas
         )
 
         return len(documents)
@@ -317,7 +302,7 @@ class VectorStore:
         query: str,
         k: int = 5,
         where: Optional[Dict[str, Any]] = None,
-        where_document: Optional[Dict[str, Any]] = None
+        where_document: Optional[Dict[str, Any]] = None,
     ) -> List[SearchResult]:
         """
         Search for similar documents.
@@ -340,7 +325,7 @@ class VectorStore:
             n_results=k,
             where=where,
             where_document=where_document,
-            include=["documents", "metadatas", "distances"]
+            include=["documents", "metadatas", "distances"],
         )
 
         # Convert to SearchResult objects
@@ -350,17 +335,13 @@ class VectorStore:
                 doc = VectorDocument(
                     id=doc_id,
                     content=results["documents"][0][i],
-                    metadata=results["metadatas"][0][i] if results["metadatas"] else {}
+                    metadata=results["metadatas"][0][i] if results["metadatas"] else {},
                 )
                 distance = results["distances"][0][i] if results["distances"] else 0
                 # Convert distance to score (cosine: 1 - distance)
                 score = 1 - distance
 
-                search_results.append(SearchResult(
-                    document=doc,
-                    score=score,
-                    distance=distance
-                ))
+                search_results.append(SearchResult(document=doc, score=score, distance=distance))
 
         return search_results
 
@@ -374,16 +355,13 @@ class VectorStore:
         Returns:
             Document or None if not found
         """
-        results = self._collection.get(
-            ids=[id],
-            include=["documents", "metadatas"]
-        )
+        results = self._collection.get(ids=[id], include=["documents", "metadatas"])
 
         if results["ids"]:
             return VectorDocument(
                 id=results["ids"][0],
                 content=results["documents"][0],
-                metadata=results["metadatas"][0] if results["metadatas"] else {}
+                metadata=results["metadatas"][0] if results["metadatas"] else {},
             )
 
         return None
@@ -415,10 +393,7 @@ class VectorStore:
             Number deleted (approximate)
         """
         # Get matching IDs
-        results = self._collection.get(
-            where=where,
-            include=["documents"]
-        )
+        results = self._collection.get(where=where, include=["documents"])
 
         if results["ids"]:
             self._collection.delete(ids=results["ids"])
@@ -427,10 +402,7 @@ class VectorStore:
         return 0
 
     def update(
-        self,
-        id: str,
-        content: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        self, id: str, content: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None
     ) -> bool:
         """
         Update document.
@@ -469,8 +441,7 @@ class VectorStore:
         count = self.count
         self._client.delete_collection(self.collection_name)
         self._collection = self._client.create_collection(
-            name=self.collection_name,
-            metadata={"hnsw:space": "cosine"}
+            name=self.collection_name, metadata={"hnsw:space": "cosine"}
         )
         return count
 
@@ -478,6 +449,7 @@ class VectorStore:
 # ============================================================================
 # Research Vector Store
 # ============================================================================
+
 
 class ResearchVectorStore:
     """
@@ -492,12 +464,11 @@ class ResearchVectorStore:
     def __init__(
         self,
         persist_directory: str = "./data/vector_memory",
-        collection_name: str = "research_memory"
+        collection_name: str = "research_memory",
     ):
         """Initialize research vector store."""
         self._store = VectorStore(
-            collection_name=collection_name,
-            persist_directory=persist_directory
+            collection_name=collection_name, persist_directory=persist_directory
         )
 
     @property
@@ -510,7 +481,7 @@ class ResearchVectorStore:
         data_type: str,
         content: str,
         source_url: Optional[str] = None,
-        extra_metadata: Optional[Dict[str, Any]] = None
+        extra_metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Store research data.
@@ -526,26 +497,21 @@ class ResearchVectorStore:
             Document ID
         """
         doc_id = VectorDocument.generate_id(
-            f"{company_name}_{data_type}_{content[:50]}",
-            prefix=data_type
+            f"{company_name}_{data_type}_{content[:50]}", prefix=data_type
         )
 
         metadata = {
             "company": company_name.lower(),
             "data_type": data_type,
             "source_url": source_url or "",
-            **(extra_metadata or {})
+            **(extra_metadata or {}),
         }
 
         self._store.add(doc_id, content, metadata)
         return doc_id
 
     def search_company(
-        self,
-        company_name: str,
-        query: str,
-        k: int = 5,
-        data_type: Optional[str] = None
+        self, company_name: str, query: str, k: int = 5, data_type: Optional[str] = None
     ) -> List[SearchResult]:
         """
         Search research for a specific company.
@@ -566,10 +532,7 @@ class ResearchVectorStore:
         return self._store.search(query, k=k, where=where)
 
     def search_all(
-        self,
-        query: str,
-        k: int = 10,
-        data_type: Optional[str] = None
+        self, query: str, k: int = 10, data_type: Optional[str] = None
     ) -> List[SearchResult]:
         """
         Search all research data.
@@ -586,9 +549,7 @@ class ResearchVectorStore:
         return self._store.search(query, k=k, where=where)
 
     def get_company_data(
-        self,
-        company_name: str,
-        data_type: Optional[str] = None
+        self, company_name: str, data_type: Optional[str] = None
     ) -> List[VectorDocument]:
         """
         Get all stored data for a company.

@@ -113,7 +113,7 @@ Data not available from provided sources.
 
 ### Main Competitors
 - **SAP**: Major enterprise software competitor
-- **Oracle**: Database and enterprise applications competitor  
+- **Oracle**: Database and enterprise applications competitor
 - **Microsoft**: Dynamics CRM and enterprise software competitor
 - **Adobe**: Customer experience and marketing automation competitor
 

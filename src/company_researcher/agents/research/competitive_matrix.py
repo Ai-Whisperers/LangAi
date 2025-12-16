@@ -22,6 +22,7 @@ Usage:
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
@@ -29,6 +30,7 @@ logger = get_logger(__name__)
 
 class MatrixDimension(Enum):
     """Dimensions for competitive comparison."""
+
     MARKET_SHARE = "market_share"
     REVENUE = "revenue"
     PRICING = "pricing"
@@ -43,6 +45,7 @@ class MatrixDimension(Enum):
 
 class CompetitivePosition(Enum):
     """Strategic positioning categories."""
+
     LEADER = "leader"
     CHALLENGER = "challenger"
     FOLLOWER = "follower"
@@ -52,6 +55,7 @@ class CompetitivePosition(Enum):
 @dataclass
 class CompetitorProfile:
     """Profile of a competitor for matrix comparison."""
+
     name: str
     market_share: Optional[float] = None
     revenue: Optional[float] = None
@@ -67,6 +71,7 @@ class CompetitorProfile:
 @dataclass
 class CompetitiveMatrix:
     """Complete competitive matrix result."""
+
     company_name: str
     competitors: List[CompetitorProfile]
     dimensions: List[MatrixDimension]
@@ -86,52 +91,32 @@ class CompetitiveMatrixGenerator:
         MatrixDimension.MARKET_SHARE: {
             "weight": 0.15,
             "scale": "percentage",
-            "higher_is_better": True
+            "higher_is_better": True,
         },
-        MatrixDimension.REVENUE: {
-            "weight": 0.12,
-            "scale": "billions",
-            "higher_is_better": True
-        },
+        MatrixDimension.REVENUE: {"weight": 0.12, "scale": "billions", "higher_is_better": True},
         MatrixDimension.PRICING: {
             "weight": 0.10,
             "scale": "1-10",
-            "higher_is_better": False  # Lower price often better for customers
+            "higher_is_better": False,  # Lower price often better for customers
         },
-        MatrixDimension.PRODUCT_RANGE: {
-            "weight": 0.12,
-            "scale": "1-10",
-            "higher_is_better": True
-        },
+        MatrixDimension.PRODUCT_RANGE: {"weight": 0.12, "scale": "1-10", "higher_is_better": True},
         MatrixDimension.GEOGRAPHIC_REACH: {
             "weight": 0.10,
             "scale": "1-10",
-            "higher_is_better": True
+            "higher_is_better": True,
         },
-        MatrixDimension.TECHNOLOGY: {
-            "weight": 0.12,
-            "scale": "1-10",
-            "higher_is_better": True
-        },
-        MatrixDimension.BRAND_STRENGTH: {
-            "weight": 0.10,
-            "scale": "1-10",
-            "higher_is_better": True
-        },
+        MatrixDimension.TECHNOLOGY: {"weight": 0.12, "scale": "1-10", "higher_is_better": True},
+        MatrixDimension.BRAND_STRENGTH: {"weight": 0.10, "scale": "1-10", "higher_is_better": True},
         MatrixDimension.CUSTOMER_SERVICE: {
             "weight": 0.08,
             "scale": "1-10",
-            "higher_is_better": True
+            "higher_is_better": True,
         },
-        MatrixDimension.INNOVATION: {
-            "weight": 0.06,
-            "scale": "1-10",
-            "higher_is_better": True
-        },
+        MatrixDimension.INNOVATION: {"weight": 0.06, "scale": "1-10", "higher_is_better": True},
         MatrixDimension.FINANCIAL_STRENGTH: {
             "weight": 0.05,
             "scale": "1-10",
-            "higher_is_better": True
+            "higher_is_better": True,
         },
     }
 
@@ -144,7 +129,7 @@ class CompetitiveMatrixGenerator:
         company_name: str,
         company_data: Dict[str, Any],
         competitors_data: List[Dict[str, Any]],
-        dimensions: Optional[List[MatrixDimension]] = None
+        dimensions: Optional[List[MatrixDimension]] = None,
     ) -> CompetitiveMatrix:
         """
         Generate a competitive comparison matrix.
@@ -172,19 +157,13 @@ class CompetitiveMatrixGenerator:
         )
 
         # Identify strategic groups
-        strategic_groups = self._identify_strategic_groups(
-            company_name, company_data, competitors
-        )
+        strategic_groups = self._identify_strategic_groups(company_name, company_data, competitors)
 
         # Generate market position map
-        market_map = self._generate_market_map(
-            company_name, company_data, competitors
-        )
+        market_map = self._generate_market_map(company_name, company_data, competitors)
 
         # Generate insights
-        insights = self._generate_insights(
-            company_name, company_data, competitors, matrix_data
-        )
+        insights = self._generate_insights(company_name, company_data, competitors, matrix_data)
 
         # Generate recommendations
         recommendations = self._generate_recommendations(
@@ -192,9 +171,7 @@ class CompetitiveMatrixGenerator:
         )
 
         # Generate summary
-        summary = self._generate_summary(
-            company_name, competitors, insights
-        )
+        summary = self._generate_summary(company_name, competitors, insights)
 
         return CompetitiveMatrix(
             company_name=company_name,
@@ -205,12 +182,11 @@ class CompetitiveMatrixGenerator:
             market_map=market_map,
             insights=insights,
             recommendations=recommendations,
-            summary=summary
+            summary=summary,
         )
 
     def _build_competitor_profiles(
-        self,
-        competitors_data: List[Dict[str, Any]]
+        self, competitors_data: List[Dict[str, Any]]
     ) -> List[CompetitorProfile]:
         """Build competitor profile objects from raw data."""
         profiles = []
@@ -225,7 +201,7 @@ class CompetitiveMatrixGenerator:
                 weaknesses=comp_data.get("weaknesses", []),
                 products=comp_data.get("products", []),
                 threat_level=comp_data.get("threat_level", "moderate"),
-                scores=comp_data.get("scores", {})
+                scores=comp_data.get("scores", {}),
             )
 
             # Determine position
@@ -252,7 +228,7 @@ class CompetitiveMatrixGenerator:
         company_name: str,
         company_data: Dict[str, Any],
         competitors: List[CompetitorProfile],
-        dimensions: List[MatrixDimension]
+        dimensions: List[MatrixDimension],
     ) -> Dict[str, Dict[str, float]]:
         """Generate normalized scores for matrix comparison."""
         matrix = {}
@@ -270,9 +246,7 @@ class CompetitiveMatrixGenerator:
         return matrix
 
     def _score_company(
-        self,
-        company_data: Dict[str, Any],
-        dimensions: List[MatrixDimension]
+        self, company_data: Dict[str, Any], dimensions: List[MatrixDimension]
     ) -> Dict[str, float]:
         """Score target company on each dimension."""
         scores = {}
@@ -290,9 +264,7 @@ class CompetitiveMatrixGenerator:
         return scores
 
     def _score_competitor(
-        self,
-        competitor: CompetitorProfile,
-        dimensions: List[MatrixDimension]
+        self, competitor: CompetitorProfile, dimensions: List[MatrixDimension]
     ) -> Dict[str, float]:
         """Score competitor on each dimension."""
         scores = {}
@@ -313,17 +285,13 @@ class CompetitiveMatrixGenerator:
                     CompetitivePosition.LEADER: 8.0,
                     CompetitivePosition.CHALLENGER: 6.5,
                     CompetitivePosition.FOLLOWER: 5.0,
-                    CompetitivePosition.NICHE: 4.0
+                    CompetitivePosition.NICHE: 4.0,
                 }
                 scores[dim_name] = default_scores.get(competitor.position, 5.0)
 
         return scores
 
-    def _derive_score(
-        self,
-        data: Dict[str, Any],
-        dimension: MatrixDimension
-    ) -> Optional[float]:
+    def _derive_score(self, data: Dict[str, Any], dimension: MatrixDimension) -> Optional[float]:
         """Derive score from raw data."""
         if dimension == MatrixDimension.MARKET_SHARE:
             return data.get("market_share")
@@ -332,19 +300,19 @@ class CompetitiveMatrixGenerator:
             if revenue:
                 # Logarithmic scale for revenue
                 import math
+
                 return min(math.log10(max(revenue, 1)) * 2, 10)
         elif dimension == MatrixDimension.FINANCIAL_STRENGTH:
             # Use revenue or other financial metrics as proxy
             revenue = data.get("revenue")
             if revenue:
                 import math
+
                 return min(math.log10(max(revenue, 1)) * 2, 10)
         return None
 
     def _normalize_scores(
-        self,
-        matrix: Dict[str, Dict[str, float]],
-        dimensions: List[MatrixDimension]
+        self, matrix: Dict[str, Dict[str, float]], dimensions: List[MatrixDimension]
     ) -> Dict[str, Dict[str, float]]:
         """Normalize scores to 0-100 scale across all companies."""
         normalized = {}
@@ -367,18 +335,10 @@ class CompetitiveMatrixGenerator:
         return normalized
 
     def _identify_strategic_groups(
-        self,
-        company_name: str,
-        company_data: Dict[str, Any],
-        competitors: List[CompetitorProfile]
+        self, company_name: str, company_data: Dict[str, Any], competitors: List[CompetitorProfile]
     ) -> Dict[str, List[str]]:
         """Identify strategic groups based on similarity."""
-        groups = {
-            "premium": [],
-            "value": [],
-            "niche": [],
-            "broad_market": []
-        }
+        groups = {"premium": [], "value": [], "niche": [], "broad_market": []}
 
         # Classify company
         company_group = self._classify_strategic_group(company_data)
@@ -418,10 +378,7 @@ class CompetitiveMatrixGenerator:
             return "value"
 
     def _generate_market_map(
-        self,
-        company_name: str,
-        company_data: Dict[str, Any],
-        competitors: List[CompetitorProfile]
+        self, company_name: str, company_data: Dict[str, Any], competitors: List[CompetitorProfile]
     ) -> Dict[str, Tuple[float, float]]:
         """Generate market position map (x=price, y=quality)."""
         market_map = {}
@@ -444,7 +401,7 @@ class CompetitiveMatrixGenerator:
         company_name: str,
         company_data: Dict[str, Any],
         competitors: List[CompetitorProfile],
-        matrix: Dict[str, Dict[str, float]]
+        matrix: Dict[str, Dict[str, float]],
     ) -> List[str]:
         """Generate competitive insights from matrix analysis."""
         insights = []
@@ -472,14 +429,10 @@ class CompetitiveMatrixGenerator:
         challengers = [c for c in competitors if c.position == CompetitivePosition.CHALLENGER]
 
         if leaders:
-            insights.append(
-                f"Market leaders to watch: {', '.join(c.name for c in leaders[:2])}"
-            )
+            insights.append(f"Market leaders to watch: {', '.join(c.name for c in leaders[:2])}")
 
         if challengers:
-            insights.append(
-                f"Rising challengers: {', '.join(c.name for c in challengers[:2])}"
-            )
+            insights.append(f"Rising challengers: {', '.join(c.name for c in challengers[:2])}")
 
         # Threat assessment
         high_threat = [c for c in competitors if c.threat_level == "high"]
@@ -495,7 +448,7 @@ class CompetitiveMatrixGenerator:
         company_name: str,
         company_data: Dict[str, Any],
         competitors: List[CompetitorProfile],
-        matrix: Dict[str, Dict[str, float]]
+        matrix: Dict[str, Dict[str, float]],
     ) -> List[str]:
         """Generate strategic recommendations."""
         recommendations = []
@@ -518,23 +471,18 @@ class CompetitiveMatrixGenerator:
         niche_competitors = [c for c in competitors if c.position == CompetitivePosition.NICHE]
         if niche_competitors:
             recommendations.append(
-                "Monitor niche players for potential disruption: " +
-                ", ".join(c.name for c in niche_competitors[:2])
+                "Monitor niche players for potential disruption: "
+                + ", ".join(c.name for c in niche_competitors[:2])
             )
 
         # Competitive defense
         if any(c.threat_level == "high" for c in competitors):
-            recommendations.append(
-                "Develop defensive strategies for high-threat competitors"
-            )
+            recommendations.append("Develop defensive strategies for high-threat competitors")
 
         return recommendations[:5]  # Limit to top 5
 
     def _generate_summary(
-        self,
-        company_name: str,
-        competitors: List[CompetitorProfile],
-        insights: List[str]
+        self, company_name: str, competitors: List[CompetitorProfile], insights: List[str]
     ) -> str:
         """Generate executive summary of competitive analysis."""
         num_competitors = len(competitors)
@@ -556,9 +504,7 @@ class CompetitiveMatrixGenerator:
         return " ".join(summary_parts)
 
     def format_as_markdown_table(
-        self,
-        matrix: CompetitiveMatrix,
-        dimensions: Optional[List[str]] = None
+        self, matrix: CompetitiveMatrix, dimensions: Optional[List[str]] = None
     ) -> str:
         """Format competitive matrix as markdown table."""
         if dimensions is None:
@@ -582,21 +528,21 @@ def create_competitive_matrix(
     company_name: str,
     company_data: Dict[str, Any],
     competitors_data: List[Dict[str, Any]],
-    dimensions: Optional[List[MatrixDimension]] = None
+    dimensions: Optional[List[MatrixDimension]] = None,
 ) -> CompetitiveMatrix:
     """Factory function to generate competitive matrix."""
     generator = CompetitiveMatrixGenerator()
-    return generator.generate_matrix(
-        company_name, company_data, competitors_data, dimensions
-    )
+    return generator.generate_matrix(company_name, company_data, competitors_data, dimensions)
 
 
 # ============================================================================
 # Financial Comparison Table - Structured competitor financial metrics
 # ============================================================================
 
+
 class FinancialMetric(Enum):
     """Financial metrics for structured comparison."""
+
     REVENUE = "revenue"
     REVENUE_GROWTH = "revenue_growth"
     EBITDA = "ebitda"
@@ -616,6 +562,7 @@ class FinancialMetric(Enum):
 @dataclass
 class FinancialRow:
     """A row in the financial comparison table."""
+
     metric: FinancialMetric
     label: str
     unit: str  # e.g., "$M", "%", "x"
@@ -628,6 +575,7 @@ class FinancialRow:
 @dataclass
 class FinancialComparisonTable:
     """Structured financial comparison across competitors."""
+
     company_name: str
     competitors: List[str]
     as_of_date: str  # e.g., "2024"
@@ -652,7 +600,7 @@ class FinancialComparisonTable:
             f"*Currency: {self.currency}*",
             "",
             header,
-            separator
+            separator,
         ]
 
         # Data rows
@@ -731,67 +679,67 @@ class FinancialComparisonGenerator:
             "label": "Revenue",
             "unit": "$M",
             "higher_is_better": True,
-            "extract_keys": ["revenue", "annual_revenue", "total_revenue"]
+            "extract_keys": ["revenue", "annual_revenue", "total_revenue"],
         },
         FinancialMetric.REVENUE_GROWTH: {
             "label": "Revenue Growth",
             "unit": "%",
             "higher_is_better": True,
-            "extract_keys": ["revenue_growth", "growth_rate", "yoy_growth"]
+            "extract_keys": ["revenue_growth", "growth_rate", "yoy_growth"],
         },
         FinancialMetric.EBITDA: {
             "label": "EBITDA",
             "unit": "$M",
             "higher_is_better": True,
-            "extract_keys": ["ebitda", "operating_income"]
+            "extract_keys": ["ebitda", "operating_income"],
         },
         FinancialMetric.EBITDA_MARGIN: {
             "label": "EBITDA Margin",
             "unit": "%",
             "higher_is_better": True,
-            "extract_keys": ["ebitda_margin", "operating_margin"]
+            "extract_keys": ["ebitda_margin", "operating_margin"],
         },
         FinancialMetric.NET_INCOME: {
             "label": "Net Income",
             "unit": "$M",
             "higher_is_better": True,
-            "extract_keys": ["net_income", "profit", "earnings"]
+            "extract_keys": ["net_income", "profit", "earnings"],
         },
         FinancialMetric.PROFIT_MARGIN: {
             "label": "Net Profit Margin",
             "unit": "%",
             "higher_is_better": True,
-            "extract_keys": ["profit_margin", "net_margin"]
+            "extract_keys": ["profit_margin", "net_margin"],
         },
         FinancialMetric.DEBT_TO_EQUITY: {
             "label": "Debt/Equity",
             "unit": "x",
             "higher_is_better": False,
-            "extract_keys": ["debt_to_equity", "d_e_ratio", "leverage"]
+            "extract_keys": ["debt_to_equity", "d_e_ratio", "leverage"],
         },
         FinancialMetric.MARKET_CAP: {
             "label": "Market Cap",
             "unit": "$B",
             "higher_is_better": True,
-            "extract_keys": ["market_cap", "market_capitalization"]
+            "extract_keys": ["market_cap", "market_capitalization"],
         },
         FinancialMetric.PE_RATIO: {
             "label": "P/E Ratio",
             "unit": "x",
             "higher_is_better": None,  # Context-dependent
-            "extract_keys": ["pe_ratio", "price_earnings"]
+            "extract_keys": ["pe_ratio", "price_earnings"],
         },
         FinancialMetric.SUBSCRIBERS: {
             "label": "Subscribers",
             "unit": "M",
             "higher_is_better": True,
-            "extract_keys": ["subscribers", "customer_count", "users"]
+            "extract_keys": ["subscribers", "customer_count", "users"],
         },
         FinancialMetric.ARPU: {
             "label": "ARPU",
             "unit": "$",
             "higher_is_better": True,
-            "extract_keys": ["arpu", "average_revenue_per_user"]
+            "extract_keys": ["arpu", "average_revenue_per_user"],
         },
     }
 
@@ -806,7 +754,7 @@ class FinancialComparisonGenerator:
         competitors_data: List[Dict[str, Any]],
         metrics: Optional[List[FinancialMetric]] = None,
         currency: str = "USD",
-        as_of_date: str = "2024"
+        as_of_date: str = "2024",
     ) -> FinancialComparisonTable:
         """
         Generate a structured financial comparison table.
@@ -835,7 +783,9 @@ class FinancialComparisonGenerator:
                 FinancialMetric.MARKET_CAP,
             ]
 
-        competitor_names = [c.get("name", f"Competitor {i+1}") for i, c in enumerate(competitors_data)]
+        competitor_names = [
+            c.get("name", f"Competitor {i+1}") for i, c in enumerate(competitors_data)
+        ]
 
         # Build rows
         rows = []
@@ -862,14 +812,16 @@ class FinancialComparisonGenerator:
             if len(missing) > len(values) / 2:
                 data_quality_notes.append(f"{config['label']}: Limited data available")
 
-            rows.append(FinancialRow(
-                metric=metric,
-                label=config["label"],
-                unit=config["unit"],
-                values=values,
-                best_performer=best,
-                higher_is_better=config.get("higher_is_better", True)
-            ))
+            rows.append(
+                FinancialRow(
+                    metric=metric,
+                    label=config["label"],
+                    unit=config["unit"],
+                    values=values,
+                    best_performer=best,
+                    higher_is_better=config.get("higher_is_better", True),
+                )
+            )
 
         # Generate summaries
         summary = self._generate_summaries(company_name, competitor_names, rows)
@@ -882,14 +834,10 @@ class FinancialComparisonGenerator:
             rows=rows,
             summary=summary,
             data_sources=[],  # Would be populated from actual data sources
-            data_quality_notes=data_quality_notes
+            data_quality_notes=data_quality_notes,
         )
 
-    def _extract_metric(
-        self,
-        data: Dict[str, Any],
-        keys: List[str]
-    ) -> Optional[float]:
+    def _extract_metric(self, data: Dict[str, Any], keys: List[str]) -> Optional[float]:
         """Extract a metric value from data using multiple possible keys."""
         if not data:
             return None
@@ -933,9 +881,7 @@ class FinancialComparisonGenerator:
         return None
 
     def _find_best_performer(
-        self,
-        values: Dict[str, Optional[float]],
-        higher_is_better: Optional[bool]
+        self, values: Dict[str, Optional[float]], higher_is_better: Optional[bool]
     ) -> Optional[str]:
         """Find the best performer for a metric."""
         if higher_is_better is None:
@@ -951,10 +897,7 @@ class FinancialComparisonGenerator:
             return min(valid_values, key=valid_values.get)
 
     def _generate_summaries(
-        self,
-        company_name: str,
-        competitors: List[str],
-        rows: List[FinancialRow]
+        self, company_name: str, competitors: List[str], rows: List[FinancialRow]
     ) -> Dict[str, str]:
         """Generate brief assessment for each company."""
         summary = {}
@@ -981,10 +924,8 @@ def create_financial_comparison(
     company_name: str,
     company_data: Dict[str, Any],
     competitors_data: List[Dict[str, Any]],
-    metrics: Optional[List[FinancialMetric]] = None
+    metrics: Optional[List[FinancialMetric]] = None,
 ) -> FinancialComparisonTable:
     """Factory function to generate financial comparison table."""
     generator = FinancialComparisonGenerator()
-    return generator.generate_comparison(
-        company_name, company_data, competitors_data, metrics
-    )
+    return generator.generate_comparison(company_name, company_data, competitors_data, metrics)

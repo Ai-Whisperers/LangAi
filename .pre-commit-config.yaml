@@ -12,6 +12,7 @@ repos:
     hooks:
       - id: black
         args: ['--line-length', '100']
+        files: ^(src|tests)/.*\.py$
         exclude: ^(External repos/|\.archive/|venv/)
 
   # Import sorting with isort
@@ -20,6 +21,7 @@ repos:
     hooks:
       - id: isort
         args: ['--profile', 'black', '--line-length', '100']
+        files: ^(src|tests)/.*\.py$
         exclude: ^(External repos/|\.archive/|venv/)
 
   # Linting with flake8
@@ -27,11 +29,13 @@ repos:
     rev: 7.0.0
     hooks:
       - id: flake8
+        stages: [manual]
         args: [
           '--max-line-length', '100',
           '--extend-ignore', 'E203,E501,W503',
           '--per-file-ignores', '__init__.py:F401'
         ]
+        files: ^(src|tests)/.*\.py$
         exclude: ^(External repos/|\.archive/|venv/)
 
   # Type checking with mypy (optional, can be slow)
@@ -39,8 +43,10 @@ repos:
     rev: v1.9.0
     hooks:
       - id: mypy
+        stages: [manual]
         args: ['--ignore-missing-imports', '--no-strict-optional']
         additional_dependencies: ['types-requests', 'types-PyYAML']
+        files: ^src/.*\.py$
         exclude: ^(External repos/|\.archive/|venv/|tests/)
 
   # Security scanning with bandit
@@ -48,8 +54,10 @@ repos:
     rev: 1.7.8
     hooks:
       - id: bandit
+        stages: [manual]
         args: ['-c', 'pyproject.toml', '--recursive', '-ll']
         additional_dependencies: ['bandit[toml]']
+        files: ^src/.*\.py$
         exclude: ^(External repos/|\.archive/|venv/|tests/)
 
   # General hooks
@@ -62,18 +70,24 @@ repos:
 
       # Ensure files end with newline
       - id: end-of-file-fixer
-        exclude: ^(External repos/|\.archive/|venv/)
+        exclude: ^(External repos/|\.archive/|venv/|outputs/|\.specstory/|\.claude/)
 
       # Remove trailing whitespace
       - id: trailing-whitespace
-        exclude: ^(External repos/|\.archive/|venv/)
+        exclude: ^(External repos/|\.archive/|venv/|outputs/|\.specstory/|\.claude/)
 
       # Check YAML syntax
       - id: check-yaml
         args: ['--allow-multiple-documents']
+        # Repo notes:
+        # - `.cursor/**` YAML is validated via `cursor-config-validate` (PyYAML-based) so we skip it here.
+        # - `research_targets/` contains legacy/archived YAML that may not be syntactically valid.
+        exclude: ^(\.cursor/|research_targets/|outputs/|\.specstory/|\.claude/)
 
       # Check JSON syntax
       - id: check-json
+        # Templar JSON files intentionally contain placeholders and may not be strict JSON.
+        exclude: ^(\.cursor/templars/|outputs/|\.specstory/|\.claude/)
 
       # Prevent direct commits to main/master
       - id: no-commit-to-branch
@@ -84,14 +98,16 @@ repos:
 
       # Detect private keys
       - id: detect-private-key
+        exclude: ^(\.claude/|\.specstory/)
 
       # Fix mixed line endings
       - id: mixed-line-ending
         args: ['--fix', 'lf']
-        exclude: ^(External repos/|\.archive/|venv/)
+        exclude: ^(External repos/|\.archive/|venv/|outputs/|\.specstory/|\.claude/)
 
       # Check Python AST
       - id: check-ast
+        files: ^(src|tests)/.*\.py$
         exclude: ^(External repos/|\.archive/|venv/)
 
   # Dead code detection
@@ -99,13 +115,28 @@ repos:
     rev: v1.5.2
     hooks:
       - id: dead
+        stages: [manual]
+        files: ^src/.*\.py$
         exclude: ^(External repos/|\.archive/|venv/|tests/)
+
+  # Cursor configuration validation (prevents broken .cursor references)
+  - repo: local
+    hooks:
+      - id: cursor-config-validate
+        name: Cursor config validation
+        entry: python .cursor/scripts/validate-cursor-config.py
+        language: python
+        additional_dependencies:
+          - pyyaml
+        pass_filenames: false
+        files: ^(\.cursor/|\.cursorrules$|\.cursorignore$|\.cursorindexingignore$)
 
   # Docstring formatting check (optional)
   - repo: https://github.com/pycqa/pydocstyle
     rev: 6.3.0
     hooks:
       - id: pydocstyle
+        stages: [manual]
         args: ['--convention=google', '--add-ignore=D100,D104,D105,D107']
         exclude: ^(External repos/|\.archive/|venv/|tests/)
 

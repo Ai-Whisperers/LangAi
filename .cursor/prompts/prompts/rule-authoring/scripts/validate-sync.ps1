@@ -47,21 +47,21 @@ foreach ($rule in $syncedRules) {
         VersionMatch = $false
         Status = "FAIL"
     }
-    
+
     # Check if file exists
     if (Test-Path $rulePath) {
         $result.Exists = $true
-        
+
         # Read content and check front-matter
         $content = Get-Content $rulePath -Raw
         if ($content -match '(?s)^---\s*\n(.*?)\n---') {
             $result.HasFrontMatter = $true
             $frontMatter = $matches[1]
-            
+
             # Extract version
             if ($frontMatter -match 'version:\s*([^\s]+)') {
                 $result.Version = $matches[1]
-                
+
                 # Check version match
                 if ($result.Version -eq $result.ExpectedVersion) {
                     $result.VersionMatch = $true
@@ -82,7 +82,7 @@ foreach ($rule in $syncedRules) {
         $result.Status = "FILE MISSING"
         $allValid = $false
     }
-    
+
     $validationResults += $result
 }
 
@@ -115,4 +115,3 @@ if ($totalRulesCount -eq 100) {
     Write-Host "[WARN] Rule count mismatch (expected 100, found $totalRulesCount)" -ForegroundColor Yellow
     exit 1
 }
-

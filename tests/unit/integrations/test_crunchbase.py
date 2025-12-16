@@ -1,14 +1,15 @@
 """Tests for Crunchbase integration."""
 
-import pytest
 from datetime import datetime
 
+import pytest
+
 from company_researcher.integrations.crunchbase import (
-    FundingType,
-    FundingRound,
     CompanyProfile,
-    FundingHistory,
     CrunchbaseClient,
+    FundingHistory,
+    FundingRound,
+    FundingType,
     create_crunchbase_client,
 )
 
@@ -51,7 +52,7 @@ class TestFundingRound:
             announced_date=date,
             investors=["VC Firm A", "VC Firm B"],
             lead_investor="VC Firm A",
-            pre_money_valuation=40000000.0
+            pre_money_valuation=40000000.0,
         )
         assert round.round_type == FundingType.SERIES_A
         assert round.amount_usd == 10000000.0
@@ -92,7 +93,7 @@ class TestCompanyProfile:
             linkedin_url="https://linkedin.com/company/testcorp",
             twitter_url="https://twitter.com/testcorp",
             founders=["John Doe", "Jane Smith"],
-            categories=["SaaS", "Enterprise", "B2B"]
+            categories=["SaaS", "Enterprise", "B2B"],
         )
         assert profile.name == "TestCorp"
         assert profile.description == "A test company"
@@ -138,7 +139,7 @@ class TestFundingHistory:
             funding_rounds=rounds,
             last_funding_date=datetime(2024, 6, 1),
             ipo_status="private",
-            all_investors=["Angel", "VC Firm"]
+            all_investors=["Angel", "VC Firm"],
         )
         assert history.company_name == "TestCorp"
         assert history.total_funding_usd == 11000000.0
@@ -166,7 +167,7 @@ class TestFundingHistory:
             total_funding_usd=6000000.0,
             funding_rounds=rounds,
             ipo_status="private",
-            all_investors=["Investor A", "Investor B", "Investor C"]
+            all_investors=["Investor A", "Investor B", "Investor C"],
         )
         result = history.to_dict()
 
@@ -359,19 +360,13 @@ class TestFundingRoundEdgeCases:
 
     def test_large_amount(self):
         """FundingRound should handle large amounts."""
-        round = FundingRound(
-            round_type=FundingType.IPO,
-            amount_usd=1_000_000_000.0  # $1 billion
-        )
+        round = FundingRound(round_type=FundingType.IPO, amount_usd=1_000_000_000.0)  # $1 billion
         assert round.amount_usd == 1_000_000_000.0
 
     def test_many_investors(self):
         """FundingRound should handle many investors."""
         investors = [f"Investor {i}" for i in range(100)]
-        round = FundingRound(
-            round_type=FundingType.SERIES_C,
-            investors=investors
-        )
+        round = FundingRound(round_type=FundingType.SERIES_C, investors=investors)
         assert len(round.investors) == 100
 
 
@@ -405,12 +400,6 @@ class TestFundingHistoryEdgeCases:
 
     def test_many_funding_rounds(self):
         """FundingHistory should handle many rounds."""
-        rounds = [
-            FundingRound(round_type=FundingType.OTHER, amount_usd=1000000)
-            for _ in range(20)
-        ]
-        history = FundingHistory(
-            company_name="Well Funded",
-            funding_rounds=rounds
-        )
+        rounds = [FundingRound(round_type=FundingType.OTHER, amount_usd=1000000) for _ in range(20)]
+        history = FundingHistory(company_name="Well Funded", funding_rounds=rounds)
         assert len(history.funding_rounds) == 20

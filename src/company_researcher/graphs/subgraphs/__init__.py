@@ -22,23 +22,10 @@ Usage:
     main_graph.add_node("data_collection", create_data_collection_subgraph())
 """
 
-from .data_collection import (
-    create_data_collection_subgraph,
-    DataCollectionConfig,
-)
-from .analysis import (
-    create_analysis_subgraph,
-    create_parallel_analysis_subgraph,
-    AnalysisConfig,
-)
-from .quality import (
-    create_quality_subgraph,
-    QualityConfig,
-)
-from .output import (
-    create_output_subgraph,
-    OutputConfig,
-)
+from .analysis import AnalysisConfig, create_analysis_subgraph, create_parallel_analysis_subgraph
+from .data_collection import DataCollectionConfig, create_data_collection_subgraph
+from .output import OutputConfig, create_output_subgraph
+from .quality import QualityConfig, create_quality_subgraph
 
 __all__ = [
     # Data Collection

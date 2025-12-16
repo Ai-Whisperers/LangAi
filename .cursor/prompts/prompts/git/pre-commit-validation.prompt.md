@@ -1,12 +1,51 @@
 ---
 name: pre-commit-validation
-description: "Comprehensive pre-commit validation using CI/CD scripts to detect issues before pushing"
+description: "Pre-commit validation for this repo (Python-first + Cursor config integrity)."
 category: git
-tags: git, validation, CI/CD, quality, pre-commit
+tags: git, validation, CI, quality, pre-commit, python
 argument-hint: "Validation level (1=Quick, 2=Standard, 3=Full)"
 ---
 
 # Pre-Commit Validation
+
+Use these checks before committing to catch issues that would fail in CI.
+
+## Python repo validation (use this)
+
+### Level 1: Quick (config + fast checks)
+
+```powershell
+pre-commit run
+python .cursor/scripts/validate-cursor-config.py
+```
+
+### Level 2: Standard (all-files + tests)
+
+```powershell
+pre-commit run --all-files
+$env:PYTHONPATH = "."
+python -m pytest tests -v --tb=short
+```
+
+### Level 3: Full (best-effort local mirror of CI)
+
+```powershell
+pre-commit run --all-files
+$env:PYTHONPATH = "."
+python -m pytest tests -v --tb=short
+
+# Optional (only if installed/configured):
+mypy src
+ruff check src tests
+bandit -r src -ll
+pip-audit -r requirements.txt
+```
+
+---
+
+## Legacy (.NET) content (not applicable to this repo)
+
+The content below is kept for reference only and was authored for a different stack. Do not follow it in this repository.
 
 Run comprehensive validation checks before committing to catch issues that would fail in CI/CD pipeline.
 
@@ -176,7 +215,7 @@ dotnet format --verify-no-changes --severity warn
 
 ### Issue: Test Failures
 
-**Fix**: 
+**Fix**:
 1. Run tests locally to identify failures
 2. Debug and fix failing tests
 3. Ensure all tests pass before committing
@@ -191,7 +230,7 @@ dotnet format --verify-no-changes --severity warn
 
 **Warning**: API compatibility check shows breaking changes
 
-**Fix**: 
+**Fix**:
 - If intentional: Document in CHANGELOG and plan version bump
 - If unintentional: Refactor to maintain compatibility
 
@@ -313,4 +352,3 @@ Write-Host "✅ All validation checks passed!" -ForegroundColor Green
 - **Full documentation**: See `cicd/scripts/README.md`
 
 **Remember**: It's better to spend 5 minutes validating locally than 30 minutes debugging a failed CI/CD build!
-

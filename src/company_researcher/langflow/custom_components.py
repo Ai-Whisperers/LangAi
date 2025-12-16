@@ -9,10 +9,11 @@ To use:
 2. Components will appear in the sidebar under "Custom"
 """
 
-from langflow.custom import Component
-from langflow.io import MessageTextInput, Output, SecretStrInput, IntInput
-from langflow.schema import Data
 import json
+
+from langflow.custom import Component
+from langflow.io import IntInput, MessageTextInput, Output, SecretStrInput
+from langflow.schema import Data
 
 from ..llm.client_factory import safe_extract_text
 
@@ -66,12 +67,13 @@ Return ONLY a JSON array of strings:
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=512,
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
         )
 
         import re
+
         queries_text = safe_extract_text(response, agent_name="query_generator").strip()
-        json_match = re.search(r'\[.*\]', queries_text, re.DOTALL)
+        json_match = re.search(r"\[.*\]", queries_text, re.DOTALL)
 
         if json_match:
             queries = json.loads(json_match.group())
@@ -81,7 +83,7 @@ Return ONLY a JSON array of strings:
                 f"{company} revenue financials",
                 f"{company} products services",
                 f"{company} competitors",
-                f"{company} recent news"
+                f"{company} recent news",
             ]
 
         return Data(data={"queries": queries, "company_name": company})
@@ -136,14 +138,16 @@ class TavilyWebSearch(Component):
         for query in queries:
             response = client.search(query=query, max_results=self.max_results)
 
-            for result in response.get('results', []):
-                all_results.append({
-                    'query': query,
-                    'title': result.get('title', ''),
-                    'url': result.get('url', ''),
-                    'content': result.get('content', ''),
-                    'score': result.get('score', 0)
-                })
+            for result in response.get("results", []):
+                all_results.append(
+                    {
+                        "query": query,
+                        "title": result.get("title", ""),
+                        "url": result.get("url", ""),
+                        "content": result.get("content", ""),
+                        "score": result.get("score", 0),
+                    }
+                )
 
         return Data(data={"search_results": all_results})
 
@@ -182,8 +186,9 @@ class CompanyDataExtractor(Component):
 
     def extract_data(self) -> Data:
         """Extract structured data using Claude."""
-        import anthropic
         import re
+
+        import anthropic
 
         client = anthropic.Anthropic(api_key=self.anthropic_api_key)
 
@@ -193,10 +198,12 @@ class CompanyDataExtractor(Component):
             results = []
 
         # Combine search results
-        combined_content = "\n\n".join([
-            f"Source: {r.get('title', 'N/A')}\nURL: {r.get('url', 'N/A')}\n{r.get('content', '')[:500]}"
-            for r in results[:10]
-        ])
+        combined_content = "\n\n".join(
+            [
+                f"Source: {r.get('title', 'N/A')}\nURL: {r.get('url', 'N/A')}\n{r.get('content', '')[:500]}"
+                for r in results[:10]
+            ]
+        )
 
         prompt = f"""Extract structured information about {self.company_name} from these search results.
 
@@ -222,11 +229,11 @@ Return ONLY valid JSON."""
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=2048,
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
         )
 
         response_text = safe_extract_text(response, agent_name="data_extractor").strip()
-        json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+        json_match = re.search(r"\{.*\}", response_text, re.DOTALL)
 
         if json_match:
             extracted = json.loads(json_match.group())

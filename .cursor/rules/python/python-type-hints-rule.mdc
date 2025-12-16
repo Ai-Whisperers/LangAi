@@ -1,0 +1,49 @@
+---
+id: rule.python.type-hints.v1
+name: Python Type Hints
+version: 1.0.0
+description: Enforce type hints for all Python functions
+globs: ["**/*.py"]
+governs: ["**/*.py"]
+alwaysApply: false
+requires: []
+---
+
+# Python Type Hints Rule
+
+## Purpose
+Ensure all Python functions have proper type hints for better code clarity and IDE support.
+
+## Standards
+
+### Function Signatures
+- All functions MUST have type hints for parameters
+- All functions MUST have return type annotations
+- Use `-> None` for functions that don't return values
+- Use `Optional[T]` for nullable types
+- Use `Union[T1, T2]` for multiple types
+
+### Examples
+
+**Good:**
+```python
+def calculate_total(items: List[float], tax_rate: float) -> float:
+    """Calculate total with tax."""
+    subtotal = sum(items)
+    return subtotal * (1 + tax_rate)
+```
+
+**Bad:**
+```python
+def calculate_total(items, tax_rate):
+    """Calculate total with tax."""
+    subtotal = sum(items)
+    return subtotal * (1 + tax_rate)
+```
+
+## Validation Checklist
+- [ ] All function parameters have type hints
+- [ ] All functions have return type annotations
+- [ ] Complex types use `typing` module appropriately
+- [ ] Type hints are accurate and specific
+- [ ] No `Any` types without justification

@@ -13,19 +13,21 @@ This is the fast-access layer for frequently used research data.
 
 import threading
 from collections import OrderedDict
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
-from dataclasses import dataclass, field
-from ..utils import utc_now
 
+from ..utils import utc_now
 
 # ============================================================================
 # Data Models
 # ============================================================================
 
+
 @dataclass
 class CacheEntry:
     """An entry in the LRU cache."""
+
     key: str
     value: Any
     created_at: datetime = field(default_factory=utc_now)
@@ -70,13 +72,14 @@ class CacheStats:
             "expirations": self.expirations,
             "hit_rate": f"{self.hit_rate:.1f}%",
             "total_gets": self.total_gets,
-            "total_puts": self.total_puts
+            "total_puts": self.total_puts,
         }
 
 
 # ============================================================================
 # LRU Cache
 # ============================================================================
+
 
 class LRUCache:
     """
@@ -95,11 +98,7 @@ class LRUCache:
         value = cache.get("key")
     """
 
-    def __init__(
-        self,
-        max_size: int = 100,
-        default_ttl: Optional[int] = None
-    ):
+    def __init__(self, max_size: int = 100, default_ttl: Optional[int] = None):
         """
         Initialize LRU cache.
 
@@ -157,12 +156,7 @@ class LRUCache:
             self._stats.hits += 1
             return entry.value
 
-    def put(
-        self,
-        key: str,
-        value: Any,
-        ttl: Optional[int] = None
-    ) -> None:
+    def put(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
         """
         Put value in cache.
 
@@ -188,11 +182,7 @@ class LRUCache:
                 while len(self._cache) >= self.max_size:
                     self._evict_oldest()
 
-                self._cache[key] = CacheEntry(
-                    key=key,
-                    value=value,
-                    ttl_seconds=entry_ttl
-                )
+                self._cache[key] = CacheEntry(key=key, value=value, ttl_seconds=entry_ttl)
 
     def delete(self, key: str) -> bool:
         """
@@ -303,6 +293,7 @@ class LRUCache:
 # Typed LRU Cache
 # ============================================================================
 
+
 class TypedLRUCache:
     """
     Type-aware LRU cache with separate namespaces.
@@ -320,11 +311,7 @@ class TypedLRUCache:
         company = cache.get("company_info", "Tesla")
     """
 
-    def __init__(
-        self,
-        max_size_per_type: int = 100,
-        default_ttl: Optional[int] = None
-    ):
+    def __init__(self, max_size_per_type: int = 100, default_ttl: Optional[int] = None):
         """
         Initialize typed cache.
 
@@ -342,8 +329,7 @@ class TypedLRUCache:
         with self._lock:
             if type_name not in self._caches:
                 self._caches[type_name] = LRUCache(
-                    max_size=self._max_size,
-                    default_ttl=self._default_ttl
+                    max_size=self._max_size, default_ttl=self._default_ttl
                 )
             return self._caches[type_name]
 
@@ -371,13 +357,7 @@ class TypedLRUCache:
                     return result
         return default
 
-    def put(
-        self,
-        type_name: str,
-        key: str,
-        value: Any,
-        ttl: Optional[int] = None
-    ) -> None:
+    def put(self, type_name: str, key: str, value: Any, ttl: Optional[int] = None) -> None:
         """Put value in typed cache."""
         cache = self._get_cache(type_name)
         cache.put(key, value, ttl)
@@ -404,10 +384,7 @@ class TypedLRUCache:
 
     def get_stats(self) -> Dict[str, Dict[str, Any]]:
         """Get stats for all type caches."""
-        return {
-            type_name: cache.stats.to_dict()
-            for type_name, cache in self._caches.items()
-        }
+        return {type_name: cache.stats.to_dict() for type_name, cache in self._caches.items()}
 
     @property
     def types(self) -> List[str]:
@@ -418,6 +395,7 @@ class TypedLRUCache:
 # ============================================================================
 # Research-Specific Cache
 # ============================================================================
+
 
 class ResearchCache(TypedLRUCache):
     """
@@ -432,20 +410,9 @@ class ResearchCache(TypedLRUCache):
     - search: Search results
     """
 
-    CACHE_TYPES = [
-        "company",
-        "financial",
-        "market",
-        "product",
-        "competitive",
-        "search"
-    ]
+    CACHE_TYPES = ["company", "financial", "market", "product", "competitive", "search"]
 
-    def __init__(
-        self,
-        max_size_per_type: int = 50,
-        default_ttl: int = 3600  # 1 hour default
-    ):
+    def __init__(self, max_size_per_type: int = 50, default_ttl: int = 3600):  # 1 hour default
         """Initialize research cache."""
         super().__init__(max_size_per_type, default_ttl)
 
@@ -454,10 +421,7 @@ class ResearchCache(TypedLRUCache):
             self._get_cache(cache_type)
 
     def cache_company(
-        self,
-        company_name: str,
-        data: Dict[str, Any],
-        ttl: Optional[int] = None
+        self, company_name: str, data: Dict[str, Any], ttl: Optional[int] = None
     ) -> None:
         """Cache company overview data."""
         self.put("company", company_name.lower(), data, ttl)
@@ -467,10 +431,7 @@ class ResearchCache(TypedLRUCache):
         return self.get("company", company_name.lower())
 
     def cache_financial(
-        self,
-        company_name: str,
-        data: Dict[str, Any],
-        ttl: Optional[int] = None
+        self, company_name: str, data: Dict[str, Any], ttl: Optional[int] = None
     ) -> None:
         """Cache financial analysis."""
         self.put("financial", company_name.lower(), data, ttl)
@@ -480,10 +441,7 @@ class ResearchCache(TypedLRUCache):
         return self.get("financial", company_name.lower())
 
     def cache_search_results(
-        self,
-        query: str,
-        results: List[Dict[str, Any]],
-        ttl: int = 1800  # 30 minutes
+        self, query: str, results: List[Dict[str, Any]], ttl: int = 1800  # 30 minutes
     ) -> None:
         """Cache search results."""
         self.put("search", query.lower(), results, ttl)
@@ -492,11 +450,7 @@ class ResearchCache(TypedLRUCache):
         """Get cached search results."""
         return self.get("search", query.lower())
 
-    def has_recent_research(
-        self,
-        company_name: str,
-        max_age_hours: int = 24
-    ) -> bool:
+    def has_recent_research(self, company_name: str, max_age_hours: int = 24) -> bool:
         """Check if recent research exists."""
         entry = self._get_cache("company").get_entry(company_name.lower())
         if entry is None:

@@ -121,4 +121,4 @@ END CATCH
 4. **Documentation**
    - Follow header documentation format
    - Document any deviations from template
-   - Include business logic comments 
+   - Include business logic comments

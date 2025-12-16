@@ -24,21 +24,9 @@ Usage:
     safe_node = with_fallback(primary_node, fallback_node)
 """
 
-from .retry import (
-    with_retry,
-    RetryConfig,
-    RetryStrategy,
-)
-from .fallback import (
-    with_fallback,
-    create_error_boundary,
-    FallbackConfig,
-)
-from .circuit_breaker import (
-    CircuitBreaker,
-    CircuitState,
-    CircuitBreakerConfig,
-)
+from .circuit_breaker import CircuitBreaker, CircuitBreakerConfig, CircuitState
+from .fallback import FallbackConfig, create_error_boundary, with_fallback
+from .retry import RetryConfig, RetryStrategy, with_retry
 
 __all__ = [
     # Retry

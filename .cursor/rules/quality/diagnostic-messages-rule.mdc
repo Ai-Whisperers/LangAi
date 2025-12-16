@@ -8,7 +8,7 @@ governs: "**/*"
 implements: diagnostic-message-quality
 requires: []
 model_hints: { temp: 0.2, top_p: 0.9 }
-provenance: 
+provenance:
   owner: quality-standards
   last_review: 2025-12-07
   context: Extracted from zero-warnings-zero-errors rule to focus on diagnostic message quality
@@ -230,19 +230,19 @@ if ($missingDocs.Count -gt 0) {
     Write-Host "`n❌ ERROR: Missing XML documentation detected" -ForegroundColor Red
     Write-Host "`nExplanation: $($missingDocs.Count) public members lack XML documentation." -ForegroundColor Yellow
     Write-Host "This violates code quality standards and blocks IntelliSense generation.`n"
-    
+
     Write-Host "Affected files:" -ForegroundColor Cyan
     $missingDocs | ForEach-Object {
         Write-Host "  • $($_.File):$($_.Line) - $($_.Member)" -ForegroundColor Gray
     }
-    
+
     Write-Host "`nSolution:" -ForegroundColor Green
     Write-Host "  1. Run auto-fix: @prompts/cicd/fix-missing-documentation.md"
     Write-Host "  2. Or manually add XML comments to each member"
     Write-Host "  3. Then re-run: .\validate-code-quality.ps1`n"
-    
+
     Write-Host "Help: See .cursor/rules/documentation/documentation-standards-rule.mdc`n"
-    
+
     exit 1
 }
 ```
@@ -254,7 +254,7 @@ if ($missingDocs.Count -gt 0) {
 
 module.exports = {
   rules: {
-    'no-unused-vars': ['error', { 
+    'no-unused-vars': ['error', {
       args: 'none',
       // Custom message with explanation and solution
       message: 'Unused variable detected. Remove it or prefix with underscore (_var) if intentionally unused for future use.'
@@ -281,10 +281,10 @@ if ! dotnet build --no-restore > /dev/null 2>&1; then
     echo ""
     echo "Explanation: Project compilation failed. Check the errors below."
     echo ""
-    
+
     # Show actual build output
     dotnet build --no-restore
-    
+
     echo ""
     echo "Solution:"
     echo "  1. Review compiler errors above"
@@ -565,7 +565,7 @@ foreach ($issue in $issues) {
 # Report phase (detailed)
 if ($errors.Count -gt 0) {
     Write-Host "`n❌ ERRORS FOUND: $($errors.Count)" -ForegroundColor Red
-    
+
     foreach ($error in $errors) {
         Write-Host "`n$($error.Title)" -ForegroundColor Red
         Write-Host "`nExplanation: $($error.Explanation)" -ForegroundColor Yellow
@@ -574,13 +574,13 @@ if ($errors.Count -gt 0) {
         $error.Solution | ForEach-Object { Write-Host "  $_" -ForegroundColor Green }
         Write-Host "`nHelp: $($error.HelpLink)" -ForegroundColor Cyan
     }
-    
+
     exit 1
 }
 
 if ($warnings.Count -gt 0) {
     Write-Host "`n⚠ WARNINGS FOUND: $($warnings.Count)" -ForegroundColor Yellow
-    
+
     foreach ($warning in $warnings) {
         Write-Host "`n$($warning.Title)" -ForegroundColor Yellow
         Write-Host "`nImpact: $($warning.Impact)" -ForegroundColor Gray
@@ -588,11 +588,11 @@ if ($warnings.Count -gt 0) {
         $warning.Solution | ForEach-Object { Write-Host "  $_" -ForegroundColor Green }
         Write-Host "`nHelp: $($warning.HelpLink)" -ForegroundColor Cyan
     }
-    
+
     if (-not $AutoFix) {
         Write-Host "`nRun with -AutoFix to attempt automatic fixes" -ForegroundColor Cyan
     }
-    
+
     exit 1
 }
 
@@ -619,7 +619,7 @@ Warning: Fix this
 ```text
 ❌ ERROR: Build failed in PaymentService.cs
 
-Explanation: Compilation error at line 45 - method 'ProcessPayment' 
+Explanation: Compilation error at line 45 - method 'ProcessPayment'
 returns void but 'return result;' statement found.
 
 Solution:

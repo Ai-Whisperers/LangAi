@@ -4,9 +4,7 @@ Unit tests for ParsingMixin extraction utilities.
 Tests all extraction methods in the ParsingMixin class used by specialist agents.
 """
 
-
 from src.company_researcher.agents.base import ParsingMixin
-
 
 # Sample analysis texts for testing
 SAMPLE_ANALYSIS = """
@@ -90,32 +88,21 @@ class TestExtractEnumValue:
     def test_extract_basic_enum(self):
         """Test extracting enum value."""
         result = ParsingMixin.extract_enum_value(
-            SAMPLE_ANALYSIS,
-            "Brand Strength",
-            ["STRONG", "MODERATE", "WEAK"],
-            "MODERATE"
+            SAMPLE_ANALYSIS, "Brand Strength", ["STRONG", "MODERATE", "WEAK"], "MODERATE"
         )
         assert result == "strong"
 
     def test_extract_enum_not_found(self):
         """Test default when enum not found."""
         result = ParsingMixin.extract_enum_value(
-            SAMPLE_ANALYSIS,
-            "NonExistent",
-            ["HIGH", "MEDIUM", "LOW"],
-            "LOW"
+            SAMPLE_ANALYSIS, "NonExistent", ["HIGH", "MEDIUM", "LOW"], "LOW"
         )
         assert result == "low"
 
     def test_extract_enum_case_insensitive(self):
         """Test case insensitive matching."""
         text = "Severity: high"
-        result = ParsingMixin.extract_enum_value(
-            text,
-            "Severity",
-            ["HIGH", "MEDIUM", "LOW"],
-            "LOW"
-        )
+        result = ParsingMixin.extract_enum_value(text, "Severity", ["HIGH", "MEDIUM", "LOW"], "LOW")
         assert result == "high"
 
 
@@ -191,8 +178,7 @@ class TestExtractMetricsTable:
     def test_extract_metrics(self):
         """Test extracting metrics with scores and trends."""
         metrics = ParsingMixin.extract_metrics_table(
-            SAMPLE_ANALYSIS,
-            ["Brand Awareness", "Brand Trust", "Brand Loyalty"]
+            SAMPLE_ANALYSIS, ["Brand Awareness", "Brand Trust", "Brand Loyalty"]
         )
         assert "Brand Awareness" in metrics
         assert metrics["Brand Awareness"]["score"] == 80.0
@@ -282,10 +268,7 @@ class TestExtractBoolean:
         """Test custom true/false indicators."""
         text = "Status: enabled"
         result = ParsingMixin.extract_boolean(
-            text,
-            "Status",
-            true_indicators=["enabled"],
-            false_indicators=["disabled"]
+            text, "Status", true_indicators=["enabled"], false_indicators=["disabled"]
         )
         assert result is True
 

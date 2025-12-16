@@ -50,22 +50,24 @@ Usage:
         print(chunk, end="")
 """
 
-from typing import Optional, Dict, Any, List, Callable, AsyncGenerator, Union
+import asyncio
+import json
+import os
+import time
 from dataclasses import dataclass, field
 from enum import Enum
 from threading import Lock
-import asyncio
-import json
-import time
-import os
+from typing import Any, AsyncGenerator, Callable, Dict, List, Optional, Union
+
 from ..utils import get_config, get_logger
 
 logger = get_logger(__name__)
 
 # Try to import groq
 try:
-    from groq import Groq, AsyncGroq
     import httpx
+    from groq import AsyncGroq, Groq
+
     GROQ_AVAILABLE = True
 except ImportError:
     GROQ_AVAILABLE = False
@@ -76,16 +78,18 @@ except ImportError:
 # Task Types and Model Selection
 # =============================================================================
 
+
 class TaskType(Enum):
     """Task types for intelligent model selection."""
-    SPEED = "speed"              # Simple tasks, classification
-    BALANCED = "balanced"        # General purpose
-    QUALITY = "quality"          # Complex analysis
-    TOOL_USE = "tool_use"        # Function calling
-    VISION = "vision"            # Image analysis
+
+    SPEED = "speed"  # Simple tasks, classification
+    BALANCED = "balanced"  # General purpose
+    QUALITY = "quality"  # Complex analysis
+    TOOL_USE = "tool_use"  # Function calling
+    VISION = "vision"  # Image analysis
     LONG_CONTEXT = "long_context"  # Large documents
-    REASONING = "reasoning"      # Deep reasoning tasks
-    EXTRACTION = "extraction"    # Data extraction
+    REASONING = "reasoning"  # Deep reasoning tasks
+    EXTRACTION = "extraction"  # Data extraction
     CLASSIFICATION = "classification"  # Quick classification
 
 
@@ -104,72 +108,92 @@ class GroqModelSelector:
     MODELS = {
         # Ultra-fast models (best for simple tasks)
         "llama-3.2-1b-preview": {
-            "input": 0.04, "output": 0.04,
-            "speed": 2000, "context": 128000,
+            "input": 0.04,
+            "output": 0.04,
+            "speed": 2000,
+            "context": 128000,
             "tasks": [TaskType.SPEED, TaskType.CLASSIFICATION],
-            "quality": 0.6
+            "quality": 0.6,
         },
         "llama-3.2-3b-preview": {
-            "input": 0.06, "output": 0.06,
-            "speed": 1800, "context": 128000,
+            "input": 0.06,
+            "output": 0.06,
+            "speed": 1800,
+            "context": 128000,
             "tasks": [TaskType.SPEED, TaskType.EXTRACTION],
-            "quality": 0.7
+            "quality": 0.7,
         },
         # Fast balanced models
         "llama-3.1-8b-instant": {
-            "input": 0.05, "output": 0.08,
-            "speed": 1300, "context": 128000,
+            "input": 0.05,
+            "output": 0.08,
+            "speed": 1300,
+            "context": 128000,
             "tasks": [TaskType.BALANCED, TaskType.EXTRACTION],
-            "quality": 0.75
+            "quality": 0.75,
         },
         # High quality models
         "llama-3.3-70b-versatile": {
-            "input": 0.59, "output": 0.79,
-            "speed": 275, "context": 128000,
+            "input": 0.59,
+            "output": 0.79,
+            "speed": 275,
+            "context": 128000,
             "tasks": [TaskType.QUALITY, TaskType.TOOL_USE, TaskType.REASONING],
-            "quality": 0.95
+            "quality": 0.95,
         },
         "llama-3.1-70b-versatile": {
-            "input": 0.59, "output": 0.79,
-            "speed": 250, "context": 128000,
+            "input": 0.59,
+            "output": 0.79,
+            "speed": 250,
+            "context": 128000,
             "tasks": [TaskType.QUALITY, TaskType.TOOL_USE],
-            "quality": 0.9
+            "quality": 0.9,
         },
         # Vision models
         "meta-llama/llama-4-scout-17b-16e-instruct": {
-            "input": 0.11, "output": 0.34,
-            "speed": 500, "context": 131072,
+            "input": 0.11,
+            "output": 0.34,
+            "speed": 500,
+            "context": 131072,
             "tasks": [TaskType.VISION, TaskType.BALANCED],
             "quality": 0.85,
-            "vision": True
+            "vision": True,
         },
         # Long context models
         "meta-llama/llama-4-maverick-17b-128e-instruct": {
-            "input": 0.20, "output": 0.60,
-            "speed": 400, "context": 1048576,  # 1M tokens
+            "input": 0.20,
+            "output": 0.60,
+            "speed": 400,
+            "context": 1048576,  # 1M tokens
             "tasks": [TaskType.LONG_CONTEXT, TaskType.QUALITY],
-            "quality": 0.88
+            "quality": 0.88,
         },
         # Reasoning models
         "deepseek-r1-distill-llama-70b": {
-            "input": 0.75, "output": 0.99,
-            "speed": 200, "context": 128000,
+            "input": 0.75,
+            "output": 0.99,
+            "speed": 200,
+            "context": 128000,
             "tasks": [TaskType.REASONING, TaskType.QUALITY],
-            "quality": 0.92
+            "quality": 0.92,
         },
         # Mixtral (good balance)
         "mixtral-8x7b-32768": {
-            "input": 0.24, "output": 0.24,
-            "speed": 500, "context": 32768,
+            "input": 0.24,
+            "output": 0.24,
+            "speed": 500,
+            "context": 32768,
             "tasks": [TaskType.BALANCED],
-            "quality": 0.8
+            "quality": 0.8,
         },
         # Gemma (efficient)
         "gemma2-9b-it": {
-            "input": 0.20, "output": 0.20,
-            "speed": 600, "context": 8192,
+            "input": 0.20,
+            "output": 0.20,
+            "speed": 600,
+            "context": 8192,
             "tasks": [TaskType.BALANCED, TaskType.EXTRACTION],
-            "quality": 0.78
+            "quality": 0.78,
         },
     }
 
@@ -193,7 +217,7 @@ class GroqModelSelector:
         context_length: int = 0,
         require_vision: bool = False,
         max_cost_per_1m: float = 1.0,
-        prefer_speed: bool = False
+        prefer_speed: bool = False,
     ) -> str:
         """
         Select optimal model based on requirements.
@@ -257,12 +281,10 @@ class GroqModelSelector:
             "company_classification": TaskType.CLASSIFICATION,
             "query_generation": TaskType.SPEED,
             "quick_lookup": TaskType.SPEED,
-
             # Balanced tasks
             "data_extraction": TaskType.EXTRACTION,
             "summarization": TaskType.BALANCED,
             "news_analysis": TaskType.BALANCED,
-
             # Quality tasks
             "financial_analysis": TaskType.QUALITY,
             "market_analysis": TaskType.QUALITY,
@@ -270,11 +292,9 @@ class GroqModelSelector:
             "esg_analysis": TaskType.QUALITY,
             "investment_thesis": TaskType.REASONING,
             "risk_assessment": TaskType.REASONING,
-
             # Tool use tasks
             "data_retrieval": TaskType.TOOL_USE,
             "api_orchestration": TaskType.TOOL_USE,
-
             # Special tasks
             "chart_analysis": TaskType.VISION,
             "document_analysis": TaskType.LONG_CONTEXT,
@@ -295,9 +315,11 @@ class GroqModelSelector:
 # Response Models
 # =============================================================================
 
+
 @dataclass
 class GroqResponse:
     """Response from Groq API."""
+
     content: str
     input_tokens: int
     output_tokens: int
@@ -325,6 +347,7 @@ class GroqResponse:
 @dataclass
 class ToolDefinition:
     """Definition of a tool for function calling."""
+
     name: str
     description: str
     parameters: Dict[str, Any]
@@ -336,14 +359,15 @@ class ToolDefinition:
             "function": {
                 "name": self.name,
                 "description": self.description,
-                "parameters": self.parameters
-            }
+                "parameters": self.parameters,
+            },
         }
 
 
 @dataclass
 class BatchJob:
     """Batch processing job."""
+
     job_id: str
     status: str
     input_file_id: str
@@ -357,6 +381,7 @@ class BatchJob:
 # =============================================================================
 # Main Groq Client
 # =============================================================================
+
 
 class GroqClient:
     """
@@ -375,7 +400,7 @@ class GroqClient:
         api_key: Optional[str] = None,
         default_model: Optional[str] = None,
         max_retries: int = 3,
-        timeout: float = 60.0
+        timeout: float = 60.0,
     ):
         """
         Initialize Groq client.
@@ -394,16 +419,13 @@ class GroqClient:
             logger.warning("Groq API key not found. Set GROQ_API_KEY env var.")
 
         # Configure timeout
-        self._timeout = httpx.Timeout(
-            timeout=timeout,
-            connect=10.0
-        ) if GROQ_AVAILABLE else None
+        self._timeout = httpx.Timeout(timeout=timeout, connect=10.0) if GROQ_AVAILABLE else None
 
-        self.client = Groq(
-            api_key=self.api_key,
-            max_retries=max_retries,
-            timeout=self._timeout
-        ) if self.api_key else None
+        self.client = (
+            Groq(api_key=self.api_key, max_retries=max_retries, timeout=self._timeout)
+            if self.api_key
+            else None
+        )
 
         self.default_model = default_model or GroqModelSelector.TASK_DEFAULTS[TaskType.BALANCED]
         self._total_cost = 0.0
@@ -433,7 +455,7 @@ class GroqClient:
         task_type: TaskType = TaskType.BALANCED,
         max_tokens: int = 2000,
         temperature: float = 0.0,
-        json_mode: bool = False
+        json_mode: bool = False,
     ) -> GroqResponse:
         """
         Ultra-fast completion with intelligent model selection.
@@ -465,7 +487,7 @@ class GroqClient:
             "model": model,
             "messages": messages,
             "max_tokens": max_tokens,
-            "temperature": temperature
+            "temperature": temperature,
         }
 
         if json_mode:
@@ -492,7 +514,7 @@ class GroqClient:
             cost=cost,
             latency_ms=latency_ms,
             tokens_per_second=tokens_per_second,
-            finish_reason=response.choices[0].finish_reason
+            finish_reason=response.choices[0].finish_reason,
         )
 
     def query_with_tools(
@@ -504,7 +526,7 @@ class GroqClient:
         max_tokens: int = 4096,
         temperature: float = 0.0,
         tool_choice: str = "auto",
-        auto_execute: bool = True
+        auto_execute: bool = True,
     ) -> GroqResponse:
         """
         Query with tool use / function calling.
@@ -543,7 +565,7 @@ class GroqClient:
             tools=tools_schema,
             tool_choice=tool_choice,
             max_tokens=max_tokens,
-            temperature=temperature
+            temperature=temperature,
         )
 
         response_message = response.choices[0].message
@@ -565,24 +587,28 @@ class GroqClient:
                 if func_name in tool_funcs and tool_funcs[func_name]:
                     try:
                         func_result = tool_funcs[func_name](**func_args)
-                        result_str = json.dumps(func_result) if not isinstance(func_result, str) else func_result
+                        result_str = (
+                            json.dumps(func_result)
+                            if not isinstance(func_result, str)
+                            else func_result
+                        )
                     except Exception as e:
                         result_str = json.dumps({"error": str(e)})
                 else:
                     result_str = json.dumps({"error": f"Function {func_name} not available"})
 
-                messages.append({
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "name": func_name,
-                    "content": result_str
-                })
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "name": func_name,
+                        "content": result_str,
+                    }
+                )
 
             # Get final response
             final_response = self.client.chat.completions.create(
-                model=model,
-                messages=messages,
-                max_tokens=max_tokens
+                model=model, messages=messages, max_tokens=max_tokens
             )
 
             latency_ms = (time.time() - start_time) * 1000
@@ -600,11 +626,11 @@ class GroqClient:
                 model=model,
                 cost=cost,
                 latency_ms=latency_ms,
-                tool_calls=[{
-                    "name": tc.function.name,
-                    "arguments": json.loads(tc.function.arguments)
-                } for tc in tool_calls],
-                finish_reason=final_response.choices[0].finish_reason
+                tool_calls=[
+                    {"name": tc.function.name, "arguments": json.loads(tc.function.arguments)}
+                    for tc in tool_calls
+                ],
+                finish_reason=final_response.choices[0].finish_reason,
             )
 
         # No tool calls or auto_execute disabled
@@ -622,11 +648,15 @@ class GroqClient:
             model=model,
             cost=cost,
             latency_ms=latency_ms,
-            tool_calls=[{
-                "name": tc.function.name,
-                "arguments": json.loads(tc.function.arguments)
-            } for tc in tool_calls] if tool_calls else None,
-            finish_reason=response.choices[0].finish_reason
+            tool_calls=(
+                [
+                    {"name": tc.function.name, "arguments": json.loads(tc.function.arguments)}
+                    for tc in tool_calls
+                ]
+                if tool_calls
+                else None
+            ),
+            finish_reason=response.choices[0].finish_reason,
         )
 
     def stream_query(
@@ -636,7 +666,7 @@ class GroqClient:
         model: Optional[str] = None,
         task_type: TaskType = TaskType.BALANCED,
         max_tokens: int = 2000,
-        temperature: float = 0.0
+        temperature: float = 0.0,
     ):
         """
         Stream response tokens in real-time.
@@ -667,7 +697,7 @@ class GroqClient:
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
-            stream=True
+            stream=True,
         )
 
         for chunk in stream:
@@ -675,19 +705,13 @@ class GroqClient:
                 yield chunk.choices[0].delta.content
 
             # Track usage from final chunk
-            if hasattr(chunk, 'x_groq') and chunk.x_groq and hasattr(chunk.x_groq, 'usage'):
+            if hasattr(chunk, "x_groq") and chunk.x_groq and hasattr(chunk.x_groq, "usage"):
                 usage = chunk.x_groq.usage
-                cost = self._calculate_cost(
-                    model,
-                    usage.prompt_tokens,
-                    usage.completion_tokens
-                )
+                cost = self._calculate_cost(model, usage.prompt_tokens, usage.completion_tokens)
                 self._track_usage(cost, 0)
 
     def quick_company_info(
-        self,
-        company_name: str,
-        fields: Optional[List[str]] = None
+        self, company_name: str, fields: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Quick company information lookup using fastest model.
@@ -700,8 +724,13 @@ class GroqClient:
             Dict with company info
         """
         default_fields = [
-            "full_name", "industry", "founded", "headquarters",
-            "ceo", "employees", "description"
+            "full_name",
+            "industry",
+            "founded",
+            "headquarters",
+            "ceo",
+            "employees",
+            "description",
         ]
         fields = fields or default_fields
 
@@ -714,7 +743,7 @@ Use null for unknown fields. Be concise."""
             system="You are a company database. Return valid JSON only.",
             task_type=TaskType.SPEED,
             max_tokens=500,
-            json_mode=True
+            json_mode=True,
         )
 
         try:
@@ -723,21 +752,17 @@ Use null for unknown fields. Be concise."""
                 "latency_ms": response.latency_ms,
                 "tokens_per_second": response.tokens_per_second,
                 "cost": response.cost,
-                "model": response.model
+                "model": response.model,
             }
             return data
         except json.JSONDecodeError:
             return {
                 "error": "Failed to parse JSON",
                 "raw_content": response.content,
-                "_meta": {"latency_ms": response.latency_ms}
+                "_meta": {"latency_ms": response.latency_ms},
             }
 
-    def fast_classify(
-        self,
-        text: str,
-        categories: List[str]
-    ) -> Dict[str, Any]:
+    def fast_classify(self, text: str, categories: List[str]) -> Dict[str, Any]:
         """
         Ultra-fast text classification.
 
@@ -760,10 +785,7 @@ Return JSON with:
 - reasoning: brief explanation"""
 
         response = self.fast_query(
-            prompt=prompt,
-            task_type=TaskType.CLASSIFICATION,
-            max_tokens=200,
-            json_mode=True
+            prompt=prompt, task_type=TaskType.CLASSIFICATION, max_tokens=200, json_mode=True
         )
 
         try:
@@ -771,7 +793,7 @@ Return JSON with:
             result["_meta"] = {
                 "latency_ms": response.latency_ms,
                 "cost": response.cost,
-                "model": response.model
+                "model": response.model,
             }
             return result
         except json.JSONDecodeError:
@@ -779,7 +801,7 @@ Return JSON with:
                 "category": "unknown",
                 "confidence": 0,
                 "error": "Failed to parse response",
-                "_meta": {"latency_ms": response.latency_ms}
+                "_meta": {"latency_ms": response.latency_ms},
             }
 
     def get_stats(self) -> Dict[str, Any]:
@@ -791,7 +813,9 @@ Return JSON with:
                 "total_cost": self._total_cost,
                 "total_latency_ms": self._total_latency_ms,
                 "avg_latency_ms": avg_latency,
-                "avg_cost_per_call": self._total_cost / self._total_calls if self._total_calls > 0 else 0
+                "avg_cost_per_call": (
+                    self._total_cost / self._total_calls if self._total_calls > 0 else 0
+                ),
             }
 
     def reset_stats(self) -> None:
@@ -806,6 +830,7 @@ Return JSON with:
 # Async Groq Client
 # =============================================================================
 
+
 class AsyncGroqClient:
     """
     Async Groq client for concurrent operations.
@@ -818,7 +843,7 @@ class AsyncGroqClient:
         api_key: Optional[str] = None,
         default_model: Optional[str] = None,
         max_retries: int = 3,
-        timeout: float = 60.0
+        timeout: float = 60.0,
     ):
         """Initialize async client."""
         if not GROQ_AVAILABLE:
@@ -826,16 +851,13 @@ class AsyncGroqClient:
 
         self.api_key = api_key or get_config("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
 
-        self._timeout = httpx.Timeout(
-            timeout=timeout,
-            connect=10.0
-        ) if GROQ_AVAILABLE else None
+        self._timeout = httpx.Timeout(timeout=timeout, connect=10.0) if GROQ_AVAILABLE else None
 
-        self.client = AsyncGroq(
-            api_key=self.api_key,
-            max_retries=max_retries,
-            timeout=self._timeout
-        ) if self.api_key else None
+        self.client = (
+            AsyncGroq(api_key=self.api_key, max_retries=max_retries, timeout=self._timeout)
+            if self.api_key
+            else None
+        )
 
         self.default_model = default_model or GroqModelSelector.TASK_DEFAULTS[TaskType.BALANCED]
         self._total_cost = 0.0
@@ -863,7 +885,7 @@ class AsyncGroqClient:
         task_type: TaskType = TaskType.BALANCED,
         max_tokens: int = 2000,
         temperature: float = 0.0,
-        json_mode: bool = False
+        json_mode: bool = False,
     ) -> GroqResponse:
         """
         Async query with intelligent model selection.
@@ -894,7 +916,7 @@ class AsyncGroqClient:
             "model": model,
             "messages": messages,
             "max_tokens": max_tokens,
-            "temperature": temperature
+            "temperature": temperature,
         }
 
         if json_mode:
@@ -917,8 +939,10 @@ class AsyncGroqClient:
             model=model,
             cost=cost,
             latency_ms=latency_ms,
-            tokens_per_second=(input_tokens + output_tokens) / latency_ms * 1000 if latency_ms > 0 else 0,
-            finish_reason=response.choices[0].finish_reason
+            tokens_per_second=(
+                (input_tokens + output_tokens) / latency_ms * 1000 if latency_ms > 0 else 0
+            ),
+            finish_reason=response.choices[0].finish_reason,
         )
 
     async def concurrent_queries(
@@ -927,7 +951,7 @@ class AsyncGroqClient:
         system: Optional[str] = None,
         model: Optional[str] = None,
         task_type: TaskType = TaskType.BALANCED,
-        max_tokens: int = 1000
+        max_tokens: int = 1000,
     ) -> List[GroqResponse]:
         """
         Execute multiple queries concurrently (10x faster than sequential).
@@ -948,7 +972,7 @@ class AsyncGroqClient:
                 system=system,
                 model=model,
                 task_type=task_type,
-                max_tokens=max_tokens
+                max_tokens=max_tokens,
             )
             for prompt in prompts
         ]
@@ -962,7 +986,7 @@ class AsyncGroqClient:
         model: Optional[str] = None,
         task_type: TaskType = TaskType.BALANCED,
         max_tokens: int = 2000,
-        temperature: float = 0.0
+        temperature: float = 0.0,
     ) -> AsyncGenerator[str, None]:
         """
         Async streaming response.
@@ -993,7 +1017,7 @@ class AsyncGroqClient:
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
-            stream=True
+            stream=True,
         )
 
         async for chunk in stream:
@@ -1008,7 +1032,7 @@ class AsyncGroqClient:
         model: Optional[str] = None,
         max_tokens: int = 4096,
         temperature: float = 0.0,
-        tool_choice: str = "auto"
+        tool_choice: str = "auto",
     ) -> GroqResponse:
         """
         Async query with tool use.
@@ -1045,7 +1069,7 @@ class AsyncGroqClient:
             tools=tools_schema,
             tool_choice=tool_choice,
             max_tokens=max_tokens,
-            temperature=temperature
+            temperature=temperature,
         )
 
         latency_ms = (time.time() - start_time) * 1000
@@ -1066,11 +1090,15 @@ class AsyncGroqClient:
             model=model,
             cost=cost,
             latency_ms=latency_ms,
-            tool_calls=[{
-                "name": tc.function.name,
-                "arguments": json.loads(tc.function.arguments)
-            } for tc in tool_calls] if tool_calls else None,
-            finish_reason=response.choices[0].finish_reason
+            tool_calls=(
+                [
+                    {"name": tc.function.name, "arguments": json.loads(tc.function.arguments)}
+                    for tc in tool_calls
+                ]
+                if tool_calls
+                else None
+            ),
+            finish_reason=response.choices[0].finish_reason,
         )
 
     async def get_stats(self) -> Dict[str, Any]:
@@ -1079,7 +1107,9 @@ class AsyncGroqClient:
             return {
                 "total_calls": self._total_calls,
                 "total_cost": self._total_cost,
-                "avg_cost_per_call": self._total_cost / self._total_calls if self._total_calls > 0 else 0
+                "avg_cost_per_call": (
+                    self._total_cost / self._total_calls if self._total_calls > 0 else 0
+                ),
             }
 
     async def close(self) -> None:
@@ -1091,6 +1121,7 @@ class AsyncGroqClient:
 # =============================================================================
 # Batch Processing Client
 # =============================================================================
+
 
 class GroqBatchClient:
     """
@@ -1109,15 +1140,10 @@ class GroqBatchClient:
 
     def _get_headers(self) -> Dict[str, str]:
         """Get request headers."""
-        return {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
+        return {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
 
     def create_batch_file(
-        self,
-        requests: List[Dict[str, Any]],
-        output_path: str = "batch_input.jsonl"
+        self, requests: List[Dict[str, Any]], output_path: str = "batch_input.jsonl"
     ) -> str:
         """
         Create JSONL file for batch processing.
@@ -1139,8 +1165,8 @@ class GroqBatchClient:
                         "model": req.get("model", "llama-3.1-8b-instant"),
                         "messages": req.get("messages", []),
                         "max_tokens": req.get("max_tokens", 1000),
-                        "temperature": req.get("temperature", 0.0)
-                    }
+                        "temperature": req.get("temperature", 0.0),
+                    },
                 }
                 if req.get("json_mode"):
                     batch_req["body"]["response_format"] = {"type": "json_object"}
@@ -1168,17 +1194,13 @@ class GroqBatchClient:
                 url,
                 headers={"Authorization": f"Bearer {self.api_key}"},
                 files={"file": f},
-                data={"purpose": "batch"}
+                data={"purpose": "batch"},
             )
 
         response.raise_for_status()
         return response.json()["id"]
 
-    def submit_batch(
-        self,
-        input_file_id: str,
-        completion_window: str = "24h"
-    ) -> BatchJob:
+    def submit_batch(self, input_file_id: str, completion_window: str = "24h") -> BatchJob:
         """
         Submit batch job.
 
@@ -1199,8 +1221,8 @@ class GroqBatchClient:
             json={
                 "input_file_id": input_file_id,
                 "endpoint": "/v1/chat/completions",
-                "completion_window": completion_window
-            }
+                "completion_window": completion_window,
+            },
         )
 
         response.raise_for_status()
@@ -1210,7 +1232,7 @@ class GroqBatchClient:
             job_id=data["id"],
             status=data["status"],
             input_file_id=input_file_id,
-            created_at=data.get("created_at")
+            created_at=data.get("created_at"),
         )
 
     def get_batch_status(self, job_id: str) -> BatchJob:
@@ -1227,10 +1249,7 @@ class GroqBatchClient:
 
         url = f"{self.base_url}/batches/{job_id}"
 
-        response = requests.get(
-            url,
-            headers={"Authorization": f"Bearer {self.api_key}"}
-        )
+        response = requests.get(url, headers={"Authorization": f"Bearer {self.api_key}"})
 
         response.raise_for_status()
         data = response.json()
@@ -1243,7 +1262,7 @@ class GroqBatchClient:
             created_at=data.get("created_at"),
             completed_at=data.get("completed_at"),
             request_counts=data.get("request_counts"),
-            error=data.get("errors")
+            error=data.get("errors"),
         )
 
     def download_results(self, output_file_id: str) -> List[Dict[str, Any]]:
@@ -1260,10 +1279,7 @@ class GroqBatchClient:
 
         url = f"{self.base_url}/files/{output_file_id}/content"
 
-        response = requests.get(
-            url,
-            headers={"Authorization": f"Bearer {self.api_key}"}
-        )
+        response = requests.get(url, headers={"Authorization": f"Bearer {self.api_key}"})
 
         response.raise_for_status()
 
@@ -1278,7 +1294,7 @@ class GroqBatchClient:
         self,
         requests: List[Dict[str, Any]],
         wait_for_completion: bool = True,
-        poll_interval: int = 30
+        poll_interval: int = 30,
     ) -> Union[BatchJob, List[Dict[str, Any]]]:
         """
         Process batch end-to-end.
@@ -1295,7 +1311,7 @@ class GroqBatchClient:
         import tempfile
 
         # Create temp file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.jsonl', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
             temp_path = f.name
 
         try:
@@ -1378,11 +1394,9 @@ def reset_groq_clients() -> None:
 # Convenience Functions
 # =============================================================================
 
+
 def create_tool(
-    name: str,
-    description: str,
-    parameters: Dict[str, Any],
-    function: Optional[Callable] = None
+    name: str, description: str, parameters: Dict[str, Any], function: Optional[Callable] = None
 ) -> ToolDefinition:
     """
     Create a tool definition for function calling.
@@ -1411,16 +1425,14 @@ def create_tool(
         )
     """
     return ToolDefinition(
-        name=name,
-        description=description,
-        parameters=parameters,
-        function=function
+        name=name, description=description, parameters=parameters, function=function
     )
 
 
 # =============================================================================
 # Research-Specific Tools
 # =============================================================================
+
 
 def create_research_tools() -> List[ToolDefinition]:
     """
@@ -1438,30 +1450,25 @@ def create_research_tools() -> List[ToolDefinition]:
                 "properties": {
                     "company_name": {
                         "type": "string",
-                        "description": "Name of the company to search"
+                        "description": "Name of the company to search",
                     },
                     "data_type": {
                         "type": "string",
                         "enum": ["financial", "market", "news", "sec_filings", "competitors"],
-                        "description": "Type of data to retrieve"
-                    }
+                        "description": "Type of data to retrieve",
+                    },
                 },
-                "required": ["company_name", "data_type"]
-            }
+                "required": ["company_name", "data_type"],
+            },
         ),
         ToolDefinition(
             name="analyze_sentiment",
             description="Analyze sentiment of text content",
             parameters={
                 "type": "object",
-                "properties": {
-                    "text": {
-                        "type": "string",
-                        "description": "Text to analyze"
-                    }
-                },
-                "required": ["text"]
-            }
+                "properties": {"text": {"type": "string", "description": "Text to analyze"}},
+                "required": ["text"],
+            },
         ),
         ToolDefinition(
             name="extract_metrics",
@@ -1469,18 +1476,15 @@ def create_research_tools() -> List[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "text": {
-                        "type": "string",
-                        "description": "Text containing metrics"
-                    },
+                    "text": {"type": "string", "description": "Text containing metrics"},
                     "metric_types": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "Types of metrics to extract (revenue, profit, growth, etc.)"
-                    }
+                        "description": "Types of metrics to extract (revenue, profit, growth, etc.)",
+                    },
                 },
-                "required": ["text"]
-            }
+                "required": ["text"],
+            },
         ),
         ToolDefinition(
             name="compare_companies",
@@ -1491,15 +1495,15 @@ def create_research_tools() -> List[ToolDefinition]:
                     "companies": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "List of company names to compare"
+                        "description": "List of company names to compare",
                     },
                     "criteria": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "Comparison criteria (market_share, revenue, innovation, etc.)"
-                    }
+                        "description": "Comparison criteria (market_share, revenue, innovation, etc.)",
+                    },
                 },
-                "required": ["companies"]
-            }
-        )
+                "required": ["companies"],
+            },
+        ),
     ]

@@ -12,8 +12,8 @@ argument-hint: "Source repo path (e.g., datamigrator/.cursor/rules/) and target 
 
 Please analyze and sync improvements made to rules, prompts, and other artifacts from one repository to others, propagating best practices and new insights while respecting repository-specific differences.
 
-**Pattern**: Cross-Repository Synchronization Pattern ⭐⭐⭐⭐⭐  
-**Effectiveness**: Essential for maintaining consistency across multiple repos  
+**Pattern**: Cross-Repository Synchronization Pattern ⭐⭐⭐⭐⭐
+**Effectiveness**: Essential for maintaining consistency across multiple repos
 **Use When**: Monthly sync, after major improvements, or quarterly audits
 
 ---
@@ -46,7 +46,7 @@ This prompt enables intelligent, **analysis-driven** synchronization.
 ## Critical Principle
 
 > **⚠️ NEVER BLIND COPY**
-> 
+>
 > Always analyze diffs, understand changes, and decide what should sync.
 > Context matters. Repository-specific customizations are valid.
 
@@ -213,7 +213,7 @@ graph TD
    # For new artifacts (after analysis)
    cp [source-repo]/.cursor/rules/new-rule.mdc \
       [target-repo]/.cursor/rules/new-rule.mdc
-   
+
    # For modified artifacts (after merge/adaptation)
    # Use merge tool or manual edit
    code --diff [source-file] [target-file]
@@ -235,17 +235,17 @@ graph TD
 6. **Document Changes**:
    ```markdown
    # sync-log.md
-   
+
    ## Sync from [source-repo] on [date]
-   
+
    ### Artifacts Synced
    1. **[artifact-name]**: [reason]
    2. **[artifact-name]**: [reason]
-   
+
    ### Adaptations Made
    - [Adaptation 1]
    - [Adaptation 2]
-   
+
    ### Artifacts Skipped
    1. **[artifact-name]**: [reason for skipping]
    ```
@@ -254,15 +254,15 @@ graph TD
    ```bash
    git add .
    git commit -m "Sync improvements from [source-repo]
-   
+
    Synced artifacts:
    - [artifact-1]: [reason]
    - [artifact-2]: [reason]
-   
+
    Analysis performed on all diffs - no blind copies.
    Repository-specific elements adapted.
    All cross-references verified.
-   
+
    Source: [source-repo] @ [commit-hash]
    Sync Date: [date]"
    ```
@@ -338,7 +338,7 @@ cp [source-path] [target-path]
 **Why Changed**: [Problem solved or improvement made]
 
 **Recommendation**: PULL ✅
-**Rationale**: 
+**Rationale**:
 - ✅ Clear improvement
 - ✅ No conflicts with target repo
 - ✅ Applicable to target repo's context
@@ -356,7 +356,7 @@ Repository-specific customization in source
 ```
 
 **Recommendation**: SKIP ⚠️
-**Rationale**: 
+**Rationale**:
 - ⚠️ Source change is repository-specific
 - ⚠️ Target repo has valid customization
 - ⚠️ Not applicable to target context
@@ -402,7 +402,7 @@ Repository-specific customization in source
 - Moved to different location?
 
 **Recommendation**: INVESTIGATE 🔍
-**Action**: 
+**Action**:
 - Check source repo's git history
 - Determine if target should also delete/archive
 - Or if deletion was source-specific
@@ -820,6 +820,6 @@ Before completing sync:
 
 ---
 
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)

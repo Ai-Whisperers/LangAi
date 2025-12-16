@@ -19,4 +19,3 @@ description: Run the security scan gate before pushing.
    ```bash
    gh workflow run security-audit.yml --ref $(git branch --show-current)
    ```
-

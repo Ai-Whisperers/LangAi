@@ -16,19 +16,13 @@ from ..utils import get_logger
 
 logger = get_logger(__name__)
 
-from .base_mapper import (
-    BaseMapper,
-    FrameworkType,
-    MappedEdge,
-    MappedGraph,
-    MappedNode,
-    NodeType,
-)
+from .base_mapper import BaseMapper, FrameworkType, MappedEdge, MappedGraph, MappedNode, NodeType
 
 
 @dataclass
 class LangGraphNode:
     """Representation of a LangGraph node."""
+
     name: str
     function: Optional[Callable] = None
     function_name: Optional[str] = None
@@ -41,6 +35,7 @@ class LangGraphNode:
 @dataclass
 class LangGraphEdge:
     """Representation of a LangGraph edge."""
+
     source: str
     target: str
     is_conditional: bool = False
@@ -51,6 +46,7 @@ class LangGraphEdge:
 @dataclass
 class LangGraphState:
     """Representation of LangGraph state schema."""
+
     schema_class: Optional[Type] = None
     fields: Dict[str, Any] = field(default_factory=dict)
     reducers: Dict[str, str] = field(default_factory=dict)
@@ -87,10 +83,10 @@ class LangGraphMapper(BaseMapper):
             MappedGraph representation
         """
         # Handle compiled graph
-        if hasattr(source, 'get_graph'):
+        if hasattr(source, "get_graph"):
             return self._analyze_compiled(source)
         # Handle StateGraph
-        elif hasattr(source, 'nodes') and hasattr(source, 'edges'):
+        elif hasattr(source, "nodes") and hasattr(source, "edges"):
             return self._analyze_state_graph(source)
         else:
             raise ValueError(f"Unsupported source type: {type(source)}")
@@ -104,9 +100,9 @@ class LangGraphMapper(BaseMapper):
         graph_dict = compiled_graph.get_graph()
 
         # Extract nodes
-        for node_data in graph_dict.get('nodes', []):
-            node_id = node_data.get('id', str(len(nodes)))
-            node_name = node_data.get('name', node_id)
+        for node_data in graph_dict.get("nodes", []):
+            node_id = node_data.get("id", str(len(nodes)))
+            node_name = node_data.get("name", node_id)
 
             node_type = NodeType.CUSTOM
             if node_name == "__start__":
@@ -116,26 +112,30 @@ class LangGraphMapper(BaseMapper):
             elif "router" in node_name.lower():
                 node_type = NodeType.ROUTER
 
-            nodes.append(MappedNode(
-                id=node_id,
-                name=node_name,
-                node_type=node_type,
-                framework=FrameworkType.LANGGRAPH,
-                metadata=node_data.get('metadata', {})
-            ))
+            nodes.append(
+                MappedNode(
+                    id=node_id,
+                    name=node_name,
+                    node_type=node_type,
+                    framework=FrameworkType.LANGGRAPH,
+                    metadata=node_data.get("metadata", {}),
+                )
+            )
 
         # Extract edges
-        for edge_data in graph_dict.get('edges', []):
-            source = edge_data.get('source', '')
-            target = edge_data.get('target', '')
-            conditional = edge_data.get('conditional', False)
+        for edge_data in graph_dict.get("edges", []):
+            source = edge_data.get("source", "")
+            target = edge_data.get("target", "")
+            conditional = edge_data.get("conditional", False)
 
-            edges.append(MappedEdge(
-                source=source,
-                target=target,
-                edge_type="conditional" if conditional else "default",
-                metadata=edge_data.get('metadata', {})
-            ))
+            edges.append(
+                MappedEdge(
+                    source=source,
+                    target=target,
+                    edge_type="conditional" if conditional else "default",
+                    metadata=edge_data.get("metadata", {}),
+                )
+            )
 
         # Find entry and exit
         entry_point = None
@@ -147,12 +147,12 @@ class LangGraphMapper(BaseMapper):
                 exit_points.append(node.id)
 
         return MappedGraph(
-            name=getattr(compiled_graph, 'name', 'langgraph'),
+            name=getattr(compiled_graph, "name", "langgraph"),
             framework=FrameworkType.LANGGRAPH,
             nodes=nodes,
             edges=edges,
             entry_point=entry_point,
-            exit_points=exit_points
+            exit_points=exit_points,
         )
 
     def _analyze_state_graph(self, state_graph: Any) -> MappedGraph:
@@ -161,9 +161,9 @@ class LangGraphMapper(BaseMapper):
         edges = []
 
         # Extract nodes
-        for node_name, node_func in getattr(state_graph, 'nodes', {}).items():
+        for node_name, node_func in getattr(state_graph, "nodes", {}).items():
             # Get function info
-            func_name = getattr(node_func, '__name__', str(node_func))
+            func_name = getattr(node_func, "__name__", str(node_func))
             docstring = inspect.getdoc(node_func) if callable(node_func) else None
             is_async = inspect.iscoroutinefunction(node_func)
 
@@ -184,42 +184,42 @@ class LangGraphMapper(BaseMapper):
             elif "router" in node_name.lower() or "route" in node_name.lower():
                 node_type = NodeType.ROUTER
 
-            nodes.append(MappedNode(
-                id=node_name,
-                name=node_name,
-                node_type=node_type,
-                framework=FrameworkType.LANGGRAPH,
-                function=node_func if callable(node_func) else None,
-                function_name=func_name,
-                docstring=docstring,
-                source_file=source_file,
-                source_line=source_line,
-                config={"is_async": is_async}
-            ))
+            nodes.append(
+                MappedNode(
+                    id=node_name,
+                    name=node_name,
+                    node_type=node_type,
+                    framework=FrameworkType.LANGGRAPH,
+                    function=node_func if callable(node_func) else None,
+                    function_name=func_name,
+                    docstring=docstring,
+                    source_file=source_file,
+                    source_line=source_line,
+                    config={"is_async": is_async},
+                )
+            )
 
         # Extract edges
-        for edge_data in getattr(state_graph, 'edges', []):
+        for edge_data in getattr(state_graph, "edges", []):
             if isinstance(edge_data, tuple) and len(edge_data) >= 2:
                 source, target = edge_data[0], edge_data[1]
-                edges.append(MappedEdge(
-                    source=source,
-                    target=target,
-                    edge_type="default"
-                ))
+                edges.append(MappedEdge(source=source, target=target, edge_type="default"))
 
         # Extract conditional edges
-        for source, edge_info in getattr(state_graph, 'conditional_edges', {}).items():
+        for source, edge_info in getattr(state_graph, "conditional_edges", {}).items():
             if isinstance(edge_info, dict):
                 for condition, target in edge_info.items():
-                    edges.append(MappedEdge(
-                        source=source,
-                        target=target,
-                        edge_type="conditional",
-                        condition=str(condition)
-                    ))
+                    edges.append(
+                        MappedEdge(
+                            source=source,
+                            target=target,
+                            edge_type="conditional",
+                            condition=str(condition),
+                        )
+                    )
 
         # Extract state schema
-        state_schema = getattr(state_graph, 'schema', None)
+        state_schema = getattr(state_graph, "schema", None)
         state_fields = {}
         if state_schema:
             try:
@@ -229,19 +229,19 @@ class LangGraphMapper(BaseMapper):
                 logger.debug(f"Failed to extract state schema hints: {e}")
 
         # Get entry point
-        entry_point = getattr(state_graph, 'entry_point', None)
+        entry_point = getattr(state_graph, "entry_point", None)
         if not entry_point and nodes:
             entry_point = nodes[0].id
 
         return MappedGraph(
-            name=getattr(state_graph, 'name', 'langgraph'),
+            name=getattr(state_graph, "name", "langgraph"),
             framework=FrameworkType.LANGGRAPH,
             nodes=nodes,
             edges=edges,
             entry_point=entry_point,
             exit_points=["__end__"],
             state_schema=state_schema,
-            state_fields=state_fields
+            state_fields=state_fields,
         )
 
     def to_langgraph(self, graph: MappedGraph) -> Any:
@@ -252,12 +252,13 @@ class LangGraphMapper(BaseMapper):
         """
         if graph.framework == FrameworkType.LANGGRAPH:
             # Already LangGraph, return as-is if we have the original
-            return graph.metadata.get('original_graph')
+            return graph.metadata.get("original_graph")
 
         # Create new StateGraph
         try:
-            from langgraph.graph import StateGraph, END
             from typing import TypedDict
+
+            from langgraph.graph import END, StateGraph
         except ImportError:
             raise ImportError("langgraph is required for conversion")
 
@@ -278,7 +279,9 @@ class LangGraphMapper(BaseMapper):
                     def make_placeholder(n):
                         async def placeholder(state):
                             return {"messages": [], "data": {n.id: "completed"}}
+
                         return placeholder
+
                     workflow.add_node(node.id, make_placeholder(node))
 
         # Add edges
@@ -312,5 +315,5 @@ def analyze_langgraph(graph: Any) -> Dict[str, Any]:
         "graph": mapped.to_dict(),
         "statistics": mapper.get_statistics(mapped),
         "validation": mapper.validate(mapped),
-        "mermaid": mapped.to_mermaid()
+        "mermaid": mapped.to_mermaid(),
     }

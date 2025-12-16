@@ -10,8 +10,8 @@ Documentation: https://huggingface.co/docs/api-inference
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from .base_client import BaseAPIClient
 from ..utils import get_logger
+from .base_client import BaseAPIClient
 
 logger = get_logger(__name__)
 
@@ -19,20 +19,19 @@ logger = get_logger(__name__)
 @dataclass
 class SentimentResult:
     """Sentiment analysis result."""
+
     label: str
     score: float
 
     @classmethod
     def from_dict(cls, data: Dict) -> "SentimentResult":
-        return cls(
-            label=data.get("label", ""),
-            score=data.get("score", 0.0)
-        )
+        return cls(label=data.get("label", ""), score=data.get("score", 0.0))
 
 
 @dataclass
 class EntityResult:
     """Named entity recognition result."""
+
     entity: str
     word: str
     score: float
@@ -46,13 +45,14 @@ class EntityResult:
             word=data.get("word", ""),
             score=data.get("score", 0.0),
             start=data.get("start", 0),
-            end=data.get("end", 0)
+            end=data.get("end", 0),
         )
 
 
 @dataclass
 class ClassificationResult:
     """Zero-shot classification result."""
+
     labels: List[str]
     scores: List[float]
     sequence: str
@@ -62,7 +62,7 @@ class ClassificationResult:
         return cls(
             labels=data.get("labels", []),
             scores=data.get("scores", []),
-            sequence=data.get("sequence", "")
+            sequence=data.get("sequence", ""),
         )
 
 
@@ -91,7 +91,7 @@ class HuggingFaceClient(BaseAPIClient):
         "summarization": "facebook/bart-large-cnn",
         "zero_shot": "facebook/bart-large-mnli",
         "text_generation": "gpt2",
-        "financial_sentiment": "ProsusAI/finbert"
+        "financial_sentiment": "ProsusAI/finbert",
     }
 
     def __init__(self, api_key: Optional[str] = None):
@@ -100,7 +100,7 @@ class HuggingFaceClient(BaseAPIClient):
             env_var="HUGGINGFACE_API_KEY",
             cache_ttl=3600,
             rate_limit_calls=30,
-            rate_limit_period=60.0
+            rate_limit_period=60.0,
         )
 
     def _get_headers(self) -> Dict[str, str]:
@@ -115,7 +115,7 @@ class HuggingFaceClient(BaseAPIClient):
         model: str,
         inputs: Any,
         parameters: Optional[Dict] = None,
-        options: Optional[Dict] = None
+        options: Optional[Dict] = None,
     ) -> Any:
         """
         Make inference request to a model.
@@ -142,13 +142,11 @@ class HuggingFaceClient(BaseAPIClient):
             url,
             method="POST",
             json_data=payload,
-            use_cache=False  # Inference results shouldn't be cached
+            use_cache=False,  # Inference results shouldn't be cached
         )
 
     async def sentiment_analysis(
-        self,
-        text: str,
-        model: Optional[str] = None
+        self, text: str, model: Optional[str] = None
     ) -> List[SentimentResult]:
         """
         Analyze sentiment of text.
@@ -161,11 +159,7 @@ class HuggingFaceClient(BaseAPIClient):
             List of SentimentResult with POSITIVE/NEGATIVE scores
         """
         model = model or self.MODELS["sentiment"]
-        result = await self._inference(
-            model,
-            text,
-            options={"wait_for_model": True}
-        )
+        result = await self._inference(model, text, options={"wait_for_model": True})
 
         if isinstance(result, list) and len(result) > 0:
             if isinstance(result[0], list):
@@ -173,10 +167,7 @@ class HuggingFaceClient(BaseAPIClient):
             return [SentimentResult.from_dict(r) for r in result]
         return []
 
-    async def financial_sentiment(
-        self,
-        text: str
-    ) -> List[SentimentResult]:
+    async def financial_sentiment(self, text: str) -> List[SentimentResult]:
         """
         Analyze financial sentiment using FinBERT.
 
@@ -189,9 +180,7 @@ class HuggingFaceClient(BaseAPIClient):
         return await self.sentiment_analysis(text, self.MODELS["financial_sentiment"])
 
     async def named_entity_recognition(
-        self,
-        text: str,
-        model: Optional[str] = None
+        self, text: str, model: Optional[str] = None
     ) -> List[EntityResult]:
         """
         Extract named entities from text.
@@ -208,22 +197,14 @@ class HuggingFaceClient(BaseAPIClient):
             - MISC (miscellaneous)
         """
         model = model or self.MODELS["ner"]
-        result = await self._inference(
-            model,
-            text,
-            options={"wait_for_model": True}
-        )
+        result = await self._inference(model, text, options={"wait_for_model": True})
 
         if isinstance(result, list):
             return [EntityResult.from_dict(r) for r in result]
         return []
 
     async def summarize(
-        self,
-        text: str,
-        max_length: int = 150,
-        min_length: int = 30,
-        model: Optional[str] = None
+        self, text: str, max_length: int = 150, min_length: int = 30, model: Optional[str] = None
     ) -> str:
         """
         Summarize long text.
@@ -241,11 +222,8 @@ class HuggingFaceClient(BaseAPIClient):
         result = await self._inference(
             model,
             text,
-            parameters={
-                "max_length": max_length,
-                "min_length": min_length
-            },
-            options={"wait_for_model": True}
+            parameters={"max_length": max_length, "min_length": min_length},
+            options={"wait_for_model": True},
         )
 
         if isinstance(result, list) and len(result) > 0:
@@ -253,11 +231,7 @@ class HuggingFaceClient(BaseAPIClient):
         return ""
 
     async def zero_shot_classification(
-        self,
-        text: str,
-        labels: List[str],
-        model: Optional[str] = None,
-        multi_label: bool = False
+        self, text: str, labels: List[str], model: Optional[str] = None, multi_label: bool = False
     ) -> ClassificationResult:
         """
         Classify text into custom categories.
@@ -281,12 +255,8 @@ class HuggingFaceClient(BaseAPIClient):
         model = model or self.MODELS["zero_shot"]
         result = await self._inference(
             model,
-            {
-                "text": text,
-                "candidate_labels": labels,
-                "multi_label": multi_label
-            },
-            options={"wait_for_model": True}
+            {"text": text, "candidate_labels": labels, "multi_label": multi_label},
+            options={"wait_for_model": True},
         )
 
         if isinstance(result, dict):
@@ -294,9 +264,7 @@ class HuggingFaceClient(BaseAPIClient):
         return ClassificationResult(labels=[], scores=[], sequence=text)
 
     async def analyze_company_news(
-        self,
-        articles: List[str],
-        categories: Optional[List[str]] = None
+        self, articles: List[str], categories: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Analyze company news sentiment and categories.
@@ -313,14 +281,14 @@ class HuggingFaceClient(BaseAPIClient):
             "financial risk",
             "market opportunity",
             "competitive threat",
-            "regulatory concern"
+            "regulatory concern",
         ]
 
         results = {
             "sentiment": {"positive": 0, "negative": 0, "neutral": 0},
             "category_scores": {cat: [] for cat in categories},
             "entities": [],
-            "article_count": len(articles)
+            "article_count": len(articles),
         }
 
         for article in articles[:10]:  # Limit to avoid rate limits

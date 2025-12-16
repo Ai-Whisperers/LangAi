@@ -12,32 +12,34 @@ This agent applies structured reasoning to research data
 to generate insights and strategic recommendations.
 """
 
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 from ...config import get_config
 from ...llm.smart_client import smart_completion
 from ...state import OverallState
-from ..base import get_agent_logger, create_empty_result
-
+from ..base import create_empty_result, get_agent_logger
 
 # ============================================================================
 # Data Models
 # ============================================================================
 
+
 class ReasoningType(str, Enum):
     """Types of reasoning approaches."""
-    CAUSAL = "causal"           # Cause and effect
+
+    CAUSAL = "causal"  # Cause and effect
     COMPARATIVE = "comparative"  # Compare entities
-    DEDUCTIVE = "deductive"     # General to specific
-    INDUCTIVE = "inductive"     # Specific to general
-    ABDUCTIVE = "abductive"     # Best explanation
-    ANALOGICAL = "analogical"   # Pattern matching
+    DEDUCTIVE = "deductive"  # General to specific
+    INDUCTIVE = "inductive"  # Specific to general
+    ABDUCTIVE = "abductive"  # Best explanation
+    ANALOGICAL = "analogical"  # Pattern matching
 
 
 class InsightType(str, Enum):
     """Types of insights generated."""
+
     OPPORTUNITY = "opportunity"
     RISK = "risk"
     TREND = "trend"
@@ -49,6 +51,7 @@ class InsightType(str, Enum):
 @dataclass
 class Hypothesis:
     """A hypothesis generated during reasoning."""
+
     statement: str
     confidence: float  # 0-1
     supporting_evidence: List[str] = field(default_factory=list)
@@ -61,13 +64,14 @@ class Hypothesis:
             "confidence": round(self.confidence, 2),
             "supporting": len(self.supporting_evidence),
             "contradicting": len(self.contradicting_evidence),
-            "status": self.status
+            "status": self.status,
         }
 
 
 @dataclass
 class Insight:
     """An insight derived from reasoning."""
+
     content: str
     insight_type: InsightType
     confidence: float
@@ -82,13 +86,14 @@ class Insight:
             "confidence": round(self.confidence, 2),
             "reasoning_steps": len(self.reasoning_chain),
             "implications": self.implications,
-            "actions": self.action_items
+            "actions": self.action_items,
         }
 
 
 @dataclass
 class ReasoningResult:
     """Complete result of reasoning analysis."""
+
     hypotheses: List[Hypothesis] = field(default_factory=list)
     insights: List[Insight] = field(default_factory=list)
     conclusions: List[str] = field(default_factory=list)
@@ -101,7 +106,7 @@ class ReasoningResult:
             "insights": [i.to_dict() for i in self.insights],
             "conclusions": self.conclusions,
             "recommendations": self.recommendations,
-            "confidence_score": round(self.confidence_score, 2)
+            "confidence_score": round(self.confidence_score, 2),
         }
 
 
@@ -236,6 +241,7 @@ Provide numbered insights with confidence levels and reasoning."""
 # Reasoning Agent
 # ============================================================================
 
+
 class ReasoningAgent:
     """
     Reasoning Agent for strategic analysis.
@@ -263,7 +269,7 @@ class ReasoningAgent:
         self,
         company_name: str,
         research_data: Dict[str, Any],
-        reasoning_types: Optional[List[ReasoningType]] = None
+        reasoning_types: Optional[List[ReasoningType]] = None,
     ) -> ReasoningResult:
         """
         Apply structured reasoning to research data.
@@ -276,10 +282,7 @@ class ReasoningAgent:
         Returns:
             ReasoningResult with insights and recommendations
         """
-        reasoning_types = reasoning_types or [
-            ReasoningType.CAUSAL,
-            ReasoningType.DEDUCTIVE
-        ]
+        reasoning_types = reasoning_types or [ReasoningType.CAUSAL, ReasoningType.DEDUCTIVE]
 
         total_cost = 0.0
         result = ReasoningResult()
@@ -300,8 +303,7 @@ class ReasoningAgent:
             print(f"[Reasoning] Testing {len(result.hypotheses)} hypotheses...")
             for hypothesis in result.hypotheses[:3]:  # Test top 3
                 test_result = self._test_hypothesis(
-                    hypothesis.statement,
-                    self._format_evidence(research_data)
+                    hypothesis.statement, self._format_evidence(research_data)
                 )
                 total_cost += test_result["cost"]
 
@@ -323,66 +325,45 @@ class ReasoningAgent:
         return result
 
     def _primary_reasoning(
-        self,
-        company_name: str,
-        research_data: Dict[str, Any]
+        self, company_name: str, research_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Perform primary reasoning analysis."""
         formatted_data = self._format_research_data(research_data)
 
-        prompt = REASONING_PROMPT.format(
-            company_name=company_name,
-            research_data=formatted_data
-        )
+        prompt = REASONING_PROMPT.format(company_name=company_name, research_data=formatted_data)
 
         # Use smart_completion - routes to DeepSeek V3 for analysis
         result = smart_completion(
             prompt=prompt,
             task_type="analysis",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=self._config.reasoning_max_tokens,
-            temperature=self._config.reasoning_temperature
+            temperature=self._config.reasoning_temperature,
         )
 
-        return {
-            "analysis": result.content,
-            "cost": result.cost
-        }
+        return {"analysis": result.content, "cost": result.cost}
 
-    def _test_hypothesis(
-        self,
-        hypothesis: str,
-        evidence: str
-    ) -> Dict[str, Any]:
+    def _test_hypothesis(self, hypothesis: str, evidence: str) -> Dict[str, Any]:
         """Test a hypothesis against evidence."""
-        prompt = HYPOTHESIS_TESTING_PROMPT.format(
-            hypothesis=hypothesis,
-            evidence=evidence
-        )
+        prompt = HYPOTHESIS_TESTING_PROMPT.format(hypothesis=hypothesis, evidence=evidence)
 
         # Use smart_completion - routes to DeepSeek V3 for analysis
         result = smart_completion(
             prompt=prompt,
             task_type="analysis",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=self._config.reasoning_hypothesis_max_tokens,
-            temperature=self._config.reasoning_hypothesis_temperature
+            temperature=self._config.reasoning_hypothesis_temperature,
         )
 
-        return {
-            "analysis": result.content,
-            "cost": result.cost
-        }
+        return {"analysis": result.content, "cost": result.cost}
 
     def _strategic_inference(
-        self,
-        company_name: str,
-        research_data: Dict[str, Any]
+        self, company_name: str, research_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Generate strategic inferences."""
         formatted_data = self._format_research_data(research_data)
 
         prompt = STRATEGIC_INFERENCE_PROMPT.format(
-            company_name=company_name,
-            data=formatted_data[:3000]  # Limit data
+            company_name=company_name, data=formatted_data[:3000]  # Limit data
         )
 
         # Use smart_completion - routes to DeepSeek V3 for analysis
@@ -390,13 +371,10 @@ class ReasoningAgent:
             prompt=prompt,
             task_type="analysis",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=self._config.reasoning_inference_max_tokens,
-            temperature=self._config.reasoning_inference_temperature
+            temperature=self._config.reasoning_inference_temperature,
         )
 
-        return {
-            "analysis": result.content,
-            "cost": result.cost
-        }
+        return {"analysis": result.content, "cost": result.cost}
 
     def _format_research_data(self, data: Dict[str, Any]) -> str:
         """Format research data for prompts."""
@@ -447,10 +425,7 @@ class ReasoningAgent:
                 # Remove markdown formatting
                 statement = statement.replace("**", "").replace("*", "")
 
-                current_hypothesis = Hypothesis(
-                    statement=statement,
-                    confidence=0.5  # Default
-                )
+                current_hypothesis = Hypothesis(statement=statement, confidence=0.5)  # Default
 
             elif current_hypothesis:
                 if "confidence" in line.lower():
@@ -493,16 +468,14 @@ class ReasoningAgent:
 
                 # Extract confidence
                 confidence = 0.6  # Default
-                if "high" in lines[i:i+3]:
+                if "high" in lines[i : i + 3]:
                     confidence = 0.8
-                elif "low" in lines[i:i+3]:
+                elif "low" in lines[i : i + 3]:
                     confidence = 0.4
 
-                insights.append(Insight(
-                    content=content[:200],
-                    insight_type=insight_type,
-                    confidence=confidence
-                ))
+                insights.append(
+                    Insight(content=content[:200], insight_type=insight_type, confidence=confidence)
+                )
 
         return insights[:10]
 
@@ -513,7 +486,7 @@ class ReasoningAgent:
         # Look for conclusion section
         if "Conclusion" in analysis:
             section_start = analysis.find("Conclusion")
-            section = analysis[section_start:section_start+1000]
+            section = analysis[section_start : section_start + 1000]
 
             for line in section.split("\n"):
                 line = line.strip()
@@ -537,7 +510,9 @@ class ReasoningAgent:
             line = line.strip()
 
             # Look for recommendation patterns
-            if any(marker in line.lower() for marker in ["recommend", "should", "suggest", "action"]):
+            if any(
+                marker in line.lower() for marker in ["recommend", "should", "suggest", "action"]
+            ):
                 if len(line) > 30:
                     # Clean up
                     if line.startswith(("-", "•", "*")):
@@ -593,6 +568,7 @@ class ReasoningAgent:
 # Agent Node Function
 # ============================================================================
 
+
 def reasoning_agent_node(state: OverallState) -> Dict[str, Any]:
     """
     Reasoning Agent Node for workflow integration.
@@ -616,10 +592,7 @@ def reasoning_agent_node(state: OverallState) -> Dict[str, Any]:
 
         # Run reasoning agent
         agent = ReasoningAgent()
-        result = agent.reason(
-            company_name=company_name,
-            research_data=agent_outputs
-        )
+        result = agent.reason(company_name=company_name, research_data=agent_outputs)
 
         logger.info(f"Generated {len(result.hypotheses)} hypotheses")
         logger.info(f"Generated {len(result.insights)} insights")
@@ -628,10 +601,7 @@ def reasoning_agent_node(state: OverallState) -> Dict[str, Any]:
 
         return {
             "agent_outputs": {
-                "reasoning": {
-                    **result.to_dict(),
-                    "analysis": _format_result_text(result)
-                }
+                "reasoning": {**result.to_dict(), "analysis": _format_result_text(result)}
             }
         }
 
@@ -666,6 +636,7 @@ def _format_result_text(result: ReasoningResult) -> str:
 # ============================================================================
 # Factory Function
 # ============================================================================
+
 
 def create_reasoning_agent() -> ReasoningAgent:
     """Create a Reasoning Agent instance."""

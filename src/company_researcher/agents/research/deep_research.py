@@ -12,42 +12,45 @@ This agent performs deep, multi-iteration research to gather
 comprehensive information about a company.
 """
 
-from typing import Dict, Any, List
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List
 
 from ...config import get_config
 from ...llm.smart_client import smart_completion
 from ...state import OverallState
-from ..base import get_agent_logger, create_empty_result
 from ...utils import utc_now
-
+from ..base import create_empty_result, get_agent_logger
 
 # ============================================================================
 # Data Models
 # ============================================================================
 
+
 class ResearchDepth(str, Enum):
     """Depth levels for research."""
-    SURFACE = "surface"      # Quick overview
-    STANDARD = "standard"    # Normal research
-    DEEP = "deep"           # Comprehensive
+
+    SURFACE = "surface"  # Quick overview
+    STANDARD = "standard"  # Normal research
+    DEEP = "deep"  # Comprehensive
     EXHAUSTIVE = "exhaustive"  # Maximum depth
 
 
 class DataQuality(str, Enum):
     """Quality levels for extracted data."""
-    VERIFIED = "verified"      # Cross-validated
-    HIGH = "high"             # Single reliable source
-    MEDIUM = "medium"         # Somewhat reliable
-    LOW = "low"               # Uncertain
+
+    VERIFIED = "verified"  # Cross-validated
+    HIGH = "high"  # Single reliable source
+    MEDIUM = "medium"  # Somewhat reliable
+    LOW = "low"  # Uncertain
     UNVERIFIED = "unverified"  # Not validated
 
 
 @dataclass
 class ResearchIteration:
     """A single iteration of deep research."""
+
     iteration_number: int
     queries_executed: int
     facts_extracted: int
@@ -59,6 +62,7 @@ class ResearchIteration:
 @dataclass
 class ResearchQuery:
     """A research query with metadata."""
+
     query: str
     priority: int  # 1-10
     category: str
@@ -71,6 +75,7 @@ class ResearchQuery:
 @dataclass
 class ExtractedFact:
     """A fact extracted during research."""
+
     content: str
     category: str
     source: str
@@ -84,13 +89,14 @@ class ExtractedFact:
             "category": self.category,
             "source": self.source,
             "confidence": self.confidence,
-            "quality": self.quality.value
+            "quality": self.quality.value,
         }
 
 
 @dataclass
 class ResearchState:
     """State tracking for deep research."""
+
     company_name: str
     queries: List[ResearchQuery] = field(default_factory=list)
     facts: List[ExtractedFact] = field(default_factory=list)
@@ -101,11 +107,7 @@ class ResearchState:
 
     def add_query(self, query: str, priority: int, category: str) -> None:
         """Add a research query."""
-        self.queries.append(ResearchQuery(
-            query=query,
-            priority=priority,
-            category=category
-        ))
+        self.queries.append(ResearchQuery(query=query, priority=priority, category=category))
 
     def add_fact(self, fact: ExtractedFact) -> None:
         """Add an extracted fact."""
@@ -209,6 +211,7 @@ Focus on queries that will yield specific, verifiable data."""
 # Deep Research Agent
 # ============================================================================
 
+
 class DeepResearchAgent:
     """
     Deep Research Agent for comprehensive company research.
@@ -238,7 +241,7 @@ class DeepResearchAgent:
         company_name: str,
         search_results: List[Dict[str, Any]],
         depth: ResearchDepth = ResearchDepth.STANDARD,
-        max_iterations: int = 2
+        max_iterations: int = 2,
     ) -> Dict[str, Any]:
         """
         Perform deep research on a company.
@@ -256,7 +259,7 @@ class DeepResearchAgent:
         state = ResearchState(
             company_name=company_name,
             max_iterations=max_iterations,
-            total_sources=len(search_results)
+            total_sources=len(search_results),
         )
 
         total_cost = 0.0
@@ -269,9 +272,7 @@ class DeepResearchAgent:
 
             # Perform research iteration
             result = self._research_iteration(
-                state=state,
-                search_results=search_results,
-                depth=depth
+                state=state, search_results=search_results, depth=depth
             )
 
             total_cost += result["cost"]
@@ -301,14 +302,11 @@ class DeepResearchAgent:
             "data_quality": self._assess_overall_quality(state),
             "summary": self._generate_summary(state),
             "cost": total_cost,
-            "tokens": total_tokens
+            "tokens": total_tokens,
         }
 
     def _research_iteration(
-        self,
-        state: ResearchState,
-        search_results: List[Dict[str, Any]],
-        depth: ResearchDepth
+        self, state: ResearchState, search_results: List[Dict[str, Any]], depth: ResearchDepth
     ) -> Dict[str, Any]:
         """Perform single research iteration."""
         # Format existing facts
@@ -327,7 +325,7 @@ class DeepResearchAgent:
             max_iterations=state.max_iterations,
             search_results=formatted_results,
             existing_facts=existing_facts,
-            gaps=gaps
+            gaps=gaps,
         )
 
         # Use smart_completion - routes to DeepSeek V3 for analysis
@@ -335,23 +333,16 @@ class DeepResearchAgent:
             prompt=prompt,
             task_type="analysis",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=self._config.deep_research_max_tokens,
-            temperature=self._config.deep_research_temperature
+            temperature=self._config.deep_research_temperature,
         )
 
         return {
             "analysis": result.content,
             "cost": result.cost,
-            "tokens": {
-                "input": result.input_tokens,
-                "output": result.output_tokens
-            }
+            "tokens": {"input": result.input_tokens, "output": result.output_tokens},
         }
 
-    def _extract_facts_from_analysis(
-        self,
-        state: ResearchState,
-        analysis: str
-    ) -> None:
+    def _extract_facts_from_analysis(self, state: ResearchState, analysis: str) -> None:
         """Extract structured facts from analysis text."""
         lines = analysis.split("\n")
         current_category = "general"
@@ -375,17 +366,25 @@ class DeepResearchAgent:
 
                 # Determine confidence
                 confidence = 0.7  # Default
-                if "HIGH" in analysis[analysis.find(fact_content):analysis.find(fact_content)+200]:
+                if (
+                    "HIGH"
+                    in analysis[analysis.find(fact_content) : analysis.find(fact_content) + 200]
+                ):
                     confidence = 0.9
-                elif "LOW" in analysis[analysis.find(fact_content):analysis.find(fact_content)+200]:
+                elif (
+                    "LOW"
+                    in analysis[analysis.find(fact_content) : analysis.find(fact_content) + 200]
+                ):
                     confidence = 0.5
 
-                state.add_fact(ExtractedFact(
-                    content=fact_content,
-                    category=current_category,
-                    source="deep_research",
-                    confidence=confidence
-                ))
+                state.add_fact(
+                    ExtractedFact(
+                        content=fact_content,
+                        category=current_category,
+                        source="deep_research",
+                        confidence=confidence,
+                    )
+                )
 
             # Extract gaps
             if "Gap" in line or "missing" in line.lower() or "unclear" in line.lower():
@@ -406,7 +405,7 @@ class DeepResearchAgent:
         prompt = QUERY_GENERATION_PROMPT.format(
             company_name=state.company_name,
             gaps="\n".join(f"- {g}" for g in state.gaps[:5]),
-            previous_queries=prev or "None"
+            previous_queries=prev or "None",
         )
 
         # Use smart_completion - routes to DeepSeek V3 for extraction
@@ -414,7 +413,7 @@ class DeepResearchAgent:
             prompt=prompt,
             task_type="extraction",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=self._config.deep_research_query_max_tokens,
-            temperature=self._config.deep_research_query_temperature
+            temperature=self._config.deep_research_query_temperature,
         )
 
         # Parse queries from response
@@ -437,11 +436,9 @@ class DeepResearchAgent:
                         if "Category" in part:
                             category = part.split(":")[1].strip().lower()
 
-                    queries.append(ResearchQuery(
-                        query=query_text,
-                        priority=priority,
-                        category=category
-                    ))
+                    queries.append(
+                        ResearchQuery(query=query_text, priority=priority, category=category)
+                    )
 
         return queries[:5]  # Limit queries
 
@@ -485,7 +482,7 @@ class DeepResearchAgent:
             ResearchDepth.SURFACE: 5,
             ResearchDepth.STANDARD: 10,
             ResearchDepth.DEEP: 20,
-            ResearchDepth.EXHAUSTIVE: 30
+            ResearchDepth.EXHAUSTIVE: 30,
         }
 
         return len(state.facts) >= min_facts.get(depth, 10)
@@ -512,7 +509,7 @@ class DeepResearchAgent:
             f"Deep research completed for {state.company_name}.",
             f"Iterations: {state.iterations}",
             f"Facts extracted: {len(state.facts)}",
-            f"Data gaps remaining: {len(state.gaps)}"
+            f"Data gaps remaining: {len(state.gaps)}",
         ]
 
         # Add top facts
@@ -528,6 +525,7 @@ class DeepResearchAgent:
 # ============================================================================
 # Agent Node Function
 # ============================================================================
+
 
 def deep_research_agent_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -556,26 +554,24 @@ def deep_research_agent_node(state: OverallState) -> Dict[str, Any]:
         # Run deep research
         agent = DeepResearchAgent()
         result = agent.research(
-            company_name=company_name,
-            search_results=search_results,
-            depth=depth,
-            max_iterations=2
+            company_name=company_name, search_results=search_results, depth=depth, max_iterations=2
         )
 
         logger.info(f"Extracted {len(result['facts'])} facts")
         logger.info(f"Identified {len(result['gaps'])} gaps")
-        logger.complete(cost=result['cost'])
+        logger.complete(cost=result["cost"])
 
         return {
             "agent_outputs": {"deep_research": result},
             "total_cost": result["cost"],
-            "total_tokens": result["tokens"]
+            "total_tokens": result["tokens"],
         }
 
 
 # ============================================================================
 # Factory Function
 # ============================================================================
+
 
 def create_deep_research_agent() -> DeepResearchAgent:
     """Create a Deep Research Agent instance."""

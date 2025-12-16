@@ -7,23 +7,25 @@ Pydantic models for API validation:
 - Error models
 """
 
-from typing import Dict, Any, List, Optional
+import ipaddress
+import re
+import socket
 from datetime import datetime
 from enum import Enum
-import re
-
-import ipaddress
-import socket
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
+
 from ..utils import utc_now
 
 try:
     from pydantic import BaseModel, Field, field_validator
+
     PYDANTIC_AVAILABLE = True
 except ImportError:
     PYDANTIC_AVAILABLE = False
     # Fallback to dataclass-like behavior
     from dataclasses import dataclass as BaseModel
+
     def Field(*args, **kwargs):
         return kwargs.get("default")
 
@@ -32,8 +34,10 @@ except ImportError:
 # Enums
 # ============================================================================
 
+
 class ResearchDepthEnum(str, Enum):
     """Research depth levels."""
+
     QUICK = "quick"
     STANDARD = "standard"
     COMPREHENSIVE = "comprehensive"
@@ -41,6 +45,7 @@ class ResearchDepthEnum(str, Enum):
 
 class TaskStatusEnum(str, Enum):
     """Task status."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -54,47 +59,50 @@ class TaskStatusEnum(str, Enum):
 
 if PYDANTIC_AVAILABLE:
     # Pattern for valid company names (alphanumeric, spaces, common punctuation)
-    COMPANY_NAME_PATTERN = re.compile(r'^[\w\s\.\,\&\-\(\)\'\"]+$', re.UNICODE)
+    COMPANY_NAME_PATTERN = re.compile(r"^[\w\s\.\,\&\-\(\)\'\"]+$", re.UNICODE)
     # Pattern for valid URLs
     URL_PATTERN = re.compile(
-        r'^https?://'  # http:// or https://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain
-        r'localhost|'  # localhost
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # or IP
-        r'(?::\d+)?'  # optional port
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE
+        r"^https?://"  # http:// or https://
+        r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|"  # domain
+        r"localhost|"  # localhost
+        r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # or IP
+        r"(?::\d+)?"  # optional port
+        r"(?:/?|[/?]\S+)$",
+        re.IGNORECASE,
     )
 
     # Error message constants
-    ERR_INVALID_URL_FORMAT = 'Invalid webhook URL format. Must be a valid HTTP/HTTPS URL.'
-    ERR_HTTPS_REQUIRED = 'Webhook URL must use HTTPS for security (localhost exceptions allowed)'
-    ERR_SSRF_BLOCKED = 'Webhook URL points to internal/private network (SSRF protection)'
-    HTTPS_PREFIX = 'https://'
+    ERR_INVALID_URL_FORMAT = "Invalid webhook URL format. Must be a valid HTTP/HTTPS URL."
+    ERR_HTTPS_REQUIRED = "Webhook URL must use HTTPS for security (localhost exceptions allowed)"
+    ERR_SSRF_BLOCKED = "Webhook URL points to internal/private network (SSRF protection)"
+    HTTPS_PREFIX = "https://"
 
     # SSRF Protection: Private/internal IP ranges to block
     BLOCKED_IP_NETWORKS = [
-        ipaddress.ip_network('10.0.0.0/8'),       # Private Class A
-        ipaddress.ip_network('172.16.0.0/12'),    # Private Class B
-        ipaddress.ip_network('192.168.0.0/16'),   # Private Class C
-        ipaddress.ip_network('127.0.0.0/8'),      # Loopback
-        ipaddress.ip_network('169.254.0.0/16'),   # Link-local (AWS metadata)
-        ipaddress.ip_network('0.0.0.0/8'),        # Current network
-        ipaddress.ip_network('100.64.0.0/10'),    # Carrier-grade NAT
-        ipaddress.ip_network('192.0.0.0/24'),     # IETF Protocol Assignments
-        ipaddress.ip_network('192.0.2.0/24'),     # TEST-NET-1
-        ipaddress.ip_network('198.51.100.0/24'),  # TEST-NET-2
-        ipaddress.ip_network('203.0.113.0/24'),   # TEST-NET-3
-        ipaddress.ip_network('224.0.0.0/4'),      # Multicast
-        ipaddress.ip_network('240.0.0.0/4'),      # Reserved
+        ipaddress.ip_network("10.0.0.0/8"),  # Private Class A
+        ipaddress.ip_network("172.16.0.0/12"),  # Private Class B
+        ipaddress.ip_network("192.168.0.0/16"),  # Private Class C
+        ipaddress.ip_network("127.0.0.0/8"),  # Loopback
+        ipaddress.ip_network("169.254.0.0/16"),  # Link-local (AWS metadata)
+        ipaddress.ip_network("0.0.0.0/8"),  # Current network
+        ipaddress.ip_network("100.64.0.0/10"),  # Carrier-grade NAT
+        ipaddress.ip_network("192.0.0.0/24"),  # IETF Protocol Assignments
+        ipaddress.ip_network("192.0.2.0/24"),  # TEST-NET-1
+        ipaddress.ip_network("198.51.100.0/24"),  # TEST-NET-2
+        ipaddress.ip_network("203.0.113.0/24"),  # TEST-NET-3
+        ipaddress.ip_network("224.0.0.0/4"),  # Multicast
+        ipaddress.ip_network("240.0.0.0/4"),  # Reserved
     ]
 
     # Blocked hostnames (case-insensitive)
-    BLOCKED_HOSTNAMES = frozenset([
-        'metadata.google.internal',
-        'metadata.google',
-        'metadata',
-        'instance-data',
-    ])
+    BLOCKED_HOSTNAMES = frozenset(
+        [
+            "metadata.google.internal",
+            "metadata.google",
+            "metadata",
+            "instance-data",
+        ]
+    )
 
     def _is_internal_ip(ip_str: str) -> bool:
         """Check if an IP address is in a blocked internal range."""
@@ -156,8 +164,8 @@ if PYDANTIC_AVAILABLE:
         # SSRF Protection: Block internal networks
         # Allow localhost only in development (for testing)
         parsed = urlparse(url)
-        hostname = parsed.hostname or ''
-        is_localhost = hostname in ('localhost', '127.0.0.1', '::1')
+        hostname = parsed.hostname or ""
+        is_localhost = hostname in ("localhost", "127.0.0.1", "::1")
 
         if not is_localhost and _is_ssrf_target(url):
             raise ValueError(ERR_SSRF_BLOCKED)
@@ -170,8 +178,13 @@ if PYDANTIC_AVAILABLE:
 
     class ResearchRequest(BaseModel):
         """Request to start company research."""
-        company_name: str = Field(..., min_length=1, max_length=200, description="Company name to research")
-        depth: ResearchDepthEnum = Field(default=ResearchDepthEnum.STANDARD, description="Research depth level")
+
+        company_name: str = Field(
+            ..., min_length=1, max_length=200, description="Company name to research"
+        )
+        depth: ResearchDepthEnum = Field(
+            default=ResearchDepthEnum.STANDARD, description="Research depth level"
+        )
         include_financial: bool = Field(default=True, description="Include financial analysis")
         include_market: bool = Field(default=True, description="Include market analysis")
         include_competitive: bool = Field(default=True, description="Include competitive analysis")
@@ -180,32 +193,34 @@ if PYDANTIC_AVAILABLE:
         include_social: bool = Field(default=False, description="Include social media analysis")
         include_sales: bool = Field(default=False, description="Include sales intelligence")
         include_investment: bool = Field(default=False, description="Include investment analysis")
-        webhook_url: Optional[str] = Field(default=None, description="Webhook URL for completion notification")
+        webhook_url: Optional[str] = Field(
+            default=None, description="Webhook URL for completion notification"
+        )
         metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
 
-        @field_validator('company_name')
+        @field_validator("company_name")
         @classmethod
         def validate_company_name(cls, v: str) -> str:
             """Validate and sanitize company name."""
             # Strip whitespace
             v = v.strip()
             if not v:
-                raise ValueError('Company name cannot be empty')
+                raise ValueError("Company name cannot be empty")
             # Check for valid characters
             if not COMPANY_NAME_PATTERN.match(v):
                 raise ValueError(
-                    'Company name contains invalid characters. '
-                    'Only alphanumeric, spaces, and common punctuation allowed.'
+                    "Company name contains invalid characters. "
+                    "Only alphanumeric, spaces, and common punctuation allowed."
                 )
             # Prevent potential injection patterns
-            suspicious_patterns = ['<script', 'javascript:', 'data:', '{{', '{%', '${{']
+            suspicious_patterns = ["<script", "javascript:", "data:", "{{", "{%", "${{"]
             v_lower = v.lower()
             for pattern in suspicious_patterns:
                 if pattern in v_lower:
-                    raise ValueError('Company name contains suspicious content')
+                    raise ValueError("Company name contains suspicious content")
             return v
 
-        @field_validator('webhook_url')
+        @field_validator("webhook_url")
         @classmethod
         def validate_webhook_url(cls, v: Optional[str]) -> Optional[str]:
             """Validate webhook URL format."""
@@ -219,44 +234,46 @@ if PYDANTIC_AVAILABLE:
                     "include_financial": True,
                     "include_market": True,
                     "include_competitive": True,
-                    "include_news": True
+                    "include_news": True,
                 }
             }
 
-
     class BatchRequest(BaseModel):
         """Request for batch research."""
-        companies: List[str] = Field(..., min_length=1, max_length=100, description="List of company names")
+
+        companies: List[str] = Field(
+            ..., min_length=1, max_length=100, description="List of company names"
+        )
         depth: ResearchDepthEnum = Field(default=ResearchDepthEnum.STANDARD)
         priority: int = Field(default=3, ge=1, le=5, description="Priority (1=highest)")
         webhook_url: Optional[str] = None
         metadata: Dict[str, Any] = Field(default_factory=dict)
 
-        @field_validator('companies')
+        @field_validator("companies")
         @classmethod
         def validate_companies(cls, v: List[str]) -> List[str]:
             """Validate list of company names."""
             if not v:
-                raise ValueError('Companies list cannot be empty')
+                raise ValueError("Companies list cannot be empty")
             validated = []
             for i, company in enumerate(v):
                 company = company.strip()
                 if not company:
-                    raise ValueError(f'Company at index {i} cannot be empty')
+                    raise ValueError(f"Company at index {i} cannot be empty")
                 if len(company) > 200:
-                    raise ValueError(f'Company name at index {i} exceeds 200 characters')
+                    raise ValueError(f"Company name at index {i} exceeds 200 characters")
                 if not COMPANY_NAME_PATTERN.match(company):
                     raise ValueError(
-                        f'Company name at index {i} contains invalid characters. '
-                        'Only alphanumeric, spaces, and common punctuation allowed.'
+                        f"Company name at index {i} contains invalid characters. "
+                        "Only alphanumeric, spaces, and common punctuation allowed."
                     )
                 # Check for duplicates
                 if company.lower() in [c.lower() for c in validated]:
-                    raise ValueError(f'Duplicate company name: {company}')
+                    raise ValueError(f"Duplicate company name: {company}")
                 validated.append(company)
             return validated
 
-        @field_validator('webhook_url')
+        @field_validator("webhook_url")
         @classmethod
         def validate_webhook_url(cls, v: Optional[str]) -> Optional[str]:
             """Validate webhook URL format."""
@@ -267,51 +284,51 @@ if PYDANTIC_AVAILABLE:
                 "example": {
                     "companies": ["Tesla", "Apple", "Microsoft"],
                     "depth": "standard",
-                    "priority": 2
+                    "priority": 2,
                 }
             }
 
-
     class WebhookConfig(BaseModel):
         """Webhook configuration."""
+
         url: str = Field(..., description="Webhook URL")
         events: List[str] = Field(default=["completed", "failed"], description="Events to notify")
         secret: Optional[str] = Field(default=None, description="Webhook signing secret")
         retry_count: int = Field(default=3, ge=0, le=10)
 
-        @field_validator('url')
+        @field_validator("url")
         @classmethod
         def validate_url(cls, v: str) -> str:
             """Validate webhook URL."""
             v = v.strip()
             if not v:
-                raise ValueError('Webhook URL cannot be empty')
+                raise ValueError("Webhook URL cannot be empty")
             # Use shared validation (returns None for empty, but we already checked)
             result = _validate_webhook_url(v)
             if result is None:
-                raise ValueError('Webhook URL cannot be empty')
+                raise ValueError("Webhook URL cannot be empty")
             return result
 
-        @field_validator('events')
+        @field_validator("events")
         @classmethod
         def validate_events(cls, v: List[str]) -> List[str]:
             """Validate webhook events."""
-            valid_events = {'completed', 'failed', 'started', 'progress', 'cancelled'}
+            valid_events = {"completed", "failed", "started", "progress", "cancelled"}
             for event in v:
                 if event not in valid_events:
                     raise ValueError(
-                        f'Invalid event: {event}. '
+                        f"Invalid event: {event}. "
                         f'Valid events: {", ".join(sorted(valid_events))}'
                     )
             return v
 
-
-# ============================================================================
-# Response Models
-# ============================================================================
+    # ============================================================================
+    # Response Models
+    # ============================================================================
 
     class ResearchResponse(BaseModel):
         """Response for research request."""
+
         task_id: str = Field(..., description="Unique task identifier")
         company_name: str
         status: TaskStatusEnum
@@ -329,13 +346,13 @@ if PYDANTIC_AVAILABLE:
                     "depth": "standard",
                     "created_at": "2024-01-15T10:30:00Z",
                     "estimated_duration_seconds": 120,
-                    "message": "Research task created"
+                    "message": "Research task created",
                 }
             }
 
-
     class ResearchResult(BaseModel):
         """Complete research result."""
+
         task_id: str
         company_name: str
         status: TaskStatusEnum
@@ -348,9 +365,9 @@ if PYDANTIC_AVAILABLE:
         quality_score: Optional[float] = None
         error: Optional[str] = None
 
-
     class BatchResponse(BaseModel):
         """Response for batch request."""
+
         batch_id: str
         total_companies: int
         status: TaskStatusEnum
@@ -358,9 +375,9 @@ if PYDANTIC_AVAILABLE:
         task_ids: List[str]
         message: str = "Batch research started"
 
-
     class BatchResult(BaseModel):
         """Complete batch result."""
+
         batch_id: str
         total_companies: int
         completed: int
@@ -372,9 +389,9 @@ if PYDANTIC_AVAILABLE:
         results: Dict[str, Any]
         errors: Dict[str, str]
 
-
     class TaskStatus(BaseModel):
         """Task status response."""
+
         task_id: str
         company_name: str
         status: TaskStatusEnum
@@ -385,9 +402,9 @@ if PYDANTIC_AVAILABLE:
         started_at: Optional[datetime] = None
         estimated_completion: Optional[datetime] = None
 
-
     class HealthResponse(BaseModel):
         """Health check response."""
+
         status: str = "healthy"
         version: str = "1.0.0"
         timestamp: datetime
@@ -402,14 +419,14 @@ if PYDANTIC_AVAILABLE:
                     "services": {
                         "database": "connected",
                         "cache": "connected",
-                        "search": "connected"
-                    }
+                        "search": "connected",
+                    },
                 }
             }
 
-
     class ErrorResponse(BaseModel):
         """Error response."""
+
         error: str
         detail: Optional[str] = None
         code: str = "UNKNOWN_ERROR"
@@ -421,41 +438,41 @@ if PYDANTIC_AVAILABLE:
                     "error": "Company not found",
                     "detail": "No data available for the requested company",
                     "code": "NOT_FOUND",
-                    "timestamp": "2024-01-15T10:30:00Z"
+                    "timestamp": "2024-01-15T10:30:00Z",
                 }
             }
 
-
     class RateLimitResponse(BaseModel):
         """Rate limit exceeded response."""
+
         error: str = "Rate limit exceeded"
         retry_after: int = Field(..., description="Seconds until rate limit resets")
         limit: int = Field(..., description="Request limit")
         remaining: int = Field(default=0, description="Remaining requests")
 
-
-# ============================================================================
-# WebSocket Models
-# ============================================================================
+    # ============================================================================
+    # WebSocket Models
+    # ============================================================================
 
     class WSMessage(BaseModel):
         """WebSocket message."""
+
         type: str  # "subscribe", "unsubscribe", "ping"
         task_id: Optional[str] = None
         data: Dict[str, Any] = Field(default_factory=dict)
 
-
     class WSUpdate(BaseModel):
         """WebSocket update message."""
+
         type: str  # "status", "progress", "completed", "error"
         task_id: str
         timestamp: datetime
         data: Dict[str, Any]
 
-
 else:
     # Fallback when Pydantic not available
-    from dataclasses import dataclass, field as dc_field
+    from dataclasses import dataclass
+    from dataclasses import field as dc_field
 
     @dataclass
     class ResearchRequest:

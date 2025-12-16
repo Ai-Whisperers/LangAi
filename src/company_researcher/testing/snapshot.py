@@ -13,12 +13,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
+
 from ..utils import utc_now
 
 
 @dataclass
 class Snapshot:
     """A saved snapshot for comparison."""
+
     name: str
     data: Any
     created_at: datetime
@@ -32,7 +34,7 @@ class Snapshot:
             "data": self.data,
             "created_at": self.created_at.isoformat(),
             "checksum": self.checksum,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     @classmethod
@@ -49,7 +51,7 @@ class Snapshot:
             data=data.get("data"),
             created_at=created_at,
             checksum=data.get("checksum", ""),
-            metadata=data.get("metadata", {})
+            metadata=data.get("metadata", {}),
         )
 
 
@@ -68,11 +70,7 @@ class SnapshotManager:
         manager.update("test_workflow", new_result)
     """
 
-    def __init__(
-        self,
-        snapshot_dir: str = "tests/snapshots",
-        auto_update: bool = False
-    ):
+    def __init__(self, snapshot_dir: str = "tests/snapshots", auto_update: bool = False):
         self.snapshot_dir = Path(snapshot_dir)
         self.auto_update = auto_update
         self._snapshots: Dict[str, Snapshot] = {}
@@ -92,11 +90,12 @@ class SnapshotManager:
 
     def _serialize(self, data: Any) -> Any:
         """Serialize data for storage."""
-        if hasattr(data, 'to_dict'):
+        if hasattr(data, "to_dict"):
             return data.to_dict()
-        elif hasattr(data, '__dict__'):
-            return {k: self._serialize(v) for k, v in data.__dict__.items()
-                    if not k.startswith('_')}
+        elif hasattr(data, "__dict__"):
+            return {
+                k: self._serialize(v) for k, v in data.__dict__.items() if not k.startswith("_")
+            }
         elif isinstance(data, dict):
             return {k: self._serialize(v) for k, v in data.items()}
         elif isinstance(data, (list, tuple)):
@@ -125,12 +124,12 @@ class SnapshotManager:
             data=serialized,
             created_at=utc_now(),
             checksum=checksum,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         # Save to file
         path = self._get_snapshot_path(name)
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             json.dump(snapshot.to_dict(), f, indent=2, default=str)
 
         self._snapshots[name] = snapshot
@@ -155,7 +154,7 @@ class SnapshotManager:
         if not path.exists():
             return None
 
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             data = json.load(f)
 
         snapshot = Snapshot.from_dict(data)
@@ -205,11 +204,13 @@ class SnapshotManager:
         diff = {"path": path, "differences": []}
 
         if type(expected) != type(actual):
-            diff["differences"].append({
-                "type": "type_mismatch",
-                "expected_type": type(expected).__name__,
-                "actual_type": type(actual).__name__
-            })
+            diff["differences"].append(
+                {
+                    "type": "type_mismatch",
+                    "expected_type": type(expected).__name__,
+                    "actual_type": type(actual).__name__,
+                }
+            )
             return diff
 
         if isinstance(expected, dict):
@@ -218,37 +219,37 @@ class SnapshotManager:
                 key_path = f"{path}.{key}" if path else key
 
                 if key not in expected:
-                    diff["differences"].append({
-                        "path": key_path,
-                        "type": "added",
-                        "value": actual[key]
-                    })
+                    diff["differences"].append(
+                        {"path": key_path, "type": "added", "value": actual[key]}
+                    )
                 elif key not in actual:
-                    diff["differences"].append({
-                        "path": key_path,
-                        "type": "removed",
-                        "value": expected[key]
-                    })
+                    diff["differences"].append(
+                        {"path": key_path, "type": "removed", "value": expected[key]}
+                    )
                 elif expected[key] != actual[key]:
                     if isinstance(expected[key], (dict, list)):
                         sub_diff = self._find_diff(expected[key], actual[key], key_path)
                         diff["differences"].extend(sub_diff.get("differences", []))
                     else:
-                        diff["differences"].append({
-                            "path": key_path,
-                            "type": "changed",
-                            "expected": expected[key],
-                            "actual": actual[key]
-                        })
+                        diff["differences"].append(
+                            {
+                                "path": key_path,
+                                "type": "changed",
+                                "expected": expected[key],
+                                "actual": actual[key],
+                            }
+                        )
 
         elif isinstance(expected, list):
             if len(expected) != len(actual):
-                diff["differences"].append({
-                    "path": path,
-                    "type": "length_mismatch",
-                    "expected_length": len(expected),
-                    "actual_length": len(actual)
-                })
+                diff["differences"].append(
+                    {
+                        "path": path,
+                        "type": "length_mismatch",
+                        "expected_length": len(expected),
+                        "actual_length": len(actual),
+                    }
+                )
             for i, (e, a) in enumerate(zip(expected, actual)):
                 if e != a:
                     item_path = f"{path}[{i}]"
@@ -256,29 +257,18 @@ class SnapshotManager:
                         sub_diff = self._find_diff(e, a, item_path)
                         diff["differences"].extend(sub_diff.get("differences", []))
                     else:
-                        diff["differences"].append({
-                            "path": item_path,
-                            "type": "changed",
-                            "expected": e,
-                            "actual": a
-                        })
+                        diff["differences"].append(
+                            {"path": item_path, "type": "changed", "expected": e, "actual": a}
+                        )
 
         elif expected != actual:
-            diff["differences"].append({
-                "path": path or "root",
-                "type": "changed",
-                "expected": expected,
-                "actual": actual
-            })
+            diff["differences"].append(
+                {"path": path or "root", "type": "changed", "expected": expected, "actual": actual}
+            )
 
         return diff
 
-    def assert_match(
-        self,
-        name: str,
-        data: Any,
-        update: bool = False
-    ) -> None:
+    def assert_match(self, name: str, data: Any, update: bool = False) -> None:
         """
         Assert that data matches snapshot.
 
@@ -296,9 +286,7 @@ class SnapshotManager:
 
         matches, diff = self.compare(name, data)
         if not matches:
-            raise AssertionError(
-                f"Snapshot mismatch for '{name}':\n{json.dumps(diff, indent=2)}"
-            )
+            raise AssertionError(f"Snapshot mismatch for '{name}':\n{json.dumps(diff, indent=2)}")
 
     def update(self, name: str, data: Any) -> Snapshot:
         """Update an existing snapshot."""
@@ -306,10 +294,7 @@ class SnapshotManager:
 
     def list_snapshots(self) -> List[str]:
         """List all snapshot names."""
-        return [
-            p.stem.replace(".snap", "")
-            for p in self.snapshot_dir.glob("*.snap.json")
-        ]
+        return [p.stem.replace(".snap", "") for p in self.snapshot_dir.glob("*.snap.json")]
 
 
 # Global snapshot manager
@@ -333,19 +318,21 @@ def snapshot_test(name: str):
         def test_workflow():
             return workflow()
     """
+
     def decorator(func: Callable) -> Callable:
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
             manager = _get_snapshot_manager()
             manager.assert_match(name, result)
             return result
+
         return wrapper
+
     return decorator
 
 
 def update_snapshots(
-    snapshot_dir: str = "tests/snapshots",
-    names: Optional[List[str]] = None
+    snapshot_dir: str = "tests/snapshots", names: Optional[List[str]] = None
 ) -> int:
     """
     Update snapshots interactively.

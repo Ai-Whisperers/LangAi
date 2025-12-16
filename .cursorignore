@@ -14,9 +14,40 @@
 **/.ssh/**
 **/id_rsa*
 **/id_ed25519*
+**/id_dsa*
+**/known_hosts
+**/authorized_keys
+.netrc
+.npmrc
+.pypirc
+
+# Credentials & tokens (common patterns)
+**/credentials.json
+**/credentials.yml
+**/credentials.yaml
+**/*credentials*.json
+**/*credentials*.yml
+**/*credentials*.yaml
+**/service-account.json
+**/*service-account*.json
+**/firebase-*.json
+**/google-credentials.json
+**/aws-credentials.json
+**/*.token
+**/token.txt
+**/tokens.json
+**/*.secret
+**/*.secrets
+**/secrets/**
+
+# Certificates / private keys
+**/*.key
+**/*.pem
+**/*.crt
+**/*.cer
+**/*.p12
+**/*.pfx
 
 # Local virtual environments
 .venv/
 venv/
-
-

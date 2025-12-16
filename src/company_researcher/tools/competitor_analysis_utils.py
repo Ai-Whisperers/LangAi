@@ -9,41 +9,45 @@ Provides frameworks for:
 - Patent and review analysis
 """
 
-from typing import Dict, List, Tuple
-from enum import Enum
 from datetime import datetime, timedelta
-from ..utils import utc_now
+from enum import Enum
+from typing import Dict, List, Tuple
 
+from ..utils import utc_now
 
 # ==============================================================================
 # Enums and Constants
 # ==============================================================================
 
+
 class CompetitorType(str, Enum):
     """Competitor classification types."""
-    DIRECT = "DIRECT"              # Same product/service, same market
-    INDIRECT = "INDIRECT"          # Different approach, same problem
-    POTENTIAL = "POTENTIAL"        # Could enter market
-    SUBSTITUTE = "SUBSTITUTE"      # Alternative solution
+
+    DIRECT = "DIRECT"  # Same product/service, same market
+    INDIRECT = "INDIRECT"  # Different approach, same problem
+    POTENTIAL = "POTENTIAL"  # Could enter market
+    SUBSTITUTE = "SUBSTITUTE"  # Alternative solution
 
 
 class ThreatLevel(str, Enum):
     """Competitive threat assessment."""
-    CRITICAL = "CRITICAL"          # Immediate major threat
-    HIGH = "HIGH"                  # Significant threat
-    MODERATE = "MODERATE"          # Manageable threat
-    LOW = "LOW"                    # Minor threat
-    EMERGING = "EMERGING"          # Future potential threat
+
+    CRITICAL = "CRITICAL"  # Immediate major threat
+    HIGH = "HIGH"  # Significant threat
+    MODERATE = "MODERATE"  # Manageable threat
+    LOW = "LOW"  # Minor threat
+    EMERGING = "EMERGING"  # Future potential threat
 
 
 # ==============================================================================
 # Competitor Identification
 # ==============================================================================
 
+
 def classify_competitor(
     market_overlap: float,  # 0-100%
     product_similarity: float,  # 0-100%
-    target_customer_overlap: float  # 0-100%
+    target_customer_overlap: float,  # 0-100%
 ) -> CompetitorType:
     """
     Classify competitor type based on overlap metrics.
@@ -80,7 +84,7 @@ def assess_threat_level(
     growth_rate: float,  # Competitor's growth rate %
     funding_strength: float,  # 0-10 scale
     product_quality: float,  # 0-10 scale
-    brand_strength: float  # 0-10 scale
+    brand_strength: float,  # 0-10 scale
 ) -> ThreatLevel:
     """
     Assess competitive threat level.
@@ -97,11 +101,11 @@ def assess_threat_level(
     """
     # Calculate threat score (weighted)
     threat_score = (
-        market_share * 0.3 +      # Current position
-        (growth_rate / 10) * 0.25 +  # Growth trajectory
-        funding_strength * 0.15 +  # Resources
-        product_quality * 0.15 +   # Product strength
-        brand_strength * 0.15      # Brand power
+        market_share * 0.3  # Current position
+        + (growth_rate / 10) * 0.25  # Growth trajectory
+        + funding_strength * 0.15  # Resources
+        + product_quality * 0.15  # Product strength
+        + brand_strength * 0.15  # Brand power
     )
 
     # Normalize to 0-10
@@ -124,6 +128,7 @@ def assess_threat_level(
 # Tech Stack Analysis
 # ==============================================================================
 
+
 class TechStackAnalyzer:
     """
     Analyze competitor technology stacks.
@@ -144,7 +149,7 @@ class TechStackAnalyzer:
         "cloud": ["AWS", "GCP", "Azure", "DigitalOcean", "Heroku"],
         "analytics": ["Google Analytics", "Mixpanel", "Amplitude", "Segment"],
         "cdn": ["Cloudflare", "Fastly", "Akamai", "CloudFront"],
-        "monitoring": ["Datadog", "New Relic", "Sentry", "PagerDuty"]
+        "monitoring": ["Datadog", "New Relic", "Sentry", "PagerDuty"],
     }
 
     def __init__(self):
@@ -182,9 +187,7 @@ class TechStackAnalyzer:
         return categorized
 
     def compare_stacks(
-        self,
-        stack_a: Dict[str, List[str]],
-        stack_b: Dict[str, List[str]]
+        self, stack_a: Dict[str, List[str]], stack_b: Dict[str, List[str]]
     ) -> Dict[str, any]:
         """
         Compare two technology stacks.
@@ -225,13 +228,14 @@ class TechStackAnalyzer:
             "unique_to_a": list(unique_a),
             "unique_to_b": list(unique_b),
             "total_technologies_a": len(techs_a),
-            "total_technologies_b": len(techs_b)
+            "total_technologies_b": len(techs_b),
         }
 
 
 # ==============================================================================
 # GitHub Activity Metrics
 # ==============================================================================
+
 
 class GitHubMetrics:
     """
@@ -246,10 +250,7 @@ class GitHubMetrics:
     """
 
     @staticmethod
-    def calculate_commit_frequency(
-        commits: List[datetime],
-        period_days: int = 30
-    ) -> float:
+    def calculate_commit_frequency(commits: List[datetime], period_days: int = 30) -> float:
         """
         Calculate commit frequency (commits per day).
 
@@ -271,11 +272,7 @@ class GitHubMetrics:
 
     @staticmethod
     def calculate_repository_health(
-        stars: int,
-        forks: int,
-        open_issues: int,
-        closed_issues: int,
-        last_commit_days_ago: int
+        stars: int, forks: int, open_issues: int, closed_issues: int, last_commit_days_ago: int
     ) -> Dict[str, any]:
         """
         Calculate repository health score.
@@ -297,11 +294,9 @@ class GitHubMetrics:
         # Popularity score (0-100)
         # Logarithmic scale for stars and forks
         import math
+
         if stars > 0 or forks > 0:
-            popularity = min(
-                (math.log10(max(stars, 1)) * 20 + math.log10(max(forks, 1)) * 10),
-                100
-            )
+            popularity = min((math.log10(max(stars, 1)) * 20 + math.log10(max(forks, 1)) * 10), 100)
         else:
             popularity = 0
 
@@ -328,24 +323,17 @@ class GitHubMetrics:
             maintenance = 50  # Neutral if no issues
 
         # Overall health score (weighted average)
-        health_score = (
-            popularity * 0.3 +
-            activity * 0.4 +
-            maintenance * 0.3
-        )
+        health_score = popularity * 0.3 + activity * 0.4 + maintenance * 0.3
 
         return {
             "health_score": round(health_score, 2),
             "popularity_score": round(popularity, 2),
             "activity_score": round(activity, 2),
-            "maintenance_score": round(maintenance, 2)
+            "maintenance_score": round(maintenance, 2),
         }
 
     @staticmethod
-    def estimate_team_size(
-        contributors: int,
-        commit_frequency: float
-    ) -> Tuple[int, int]:
+    def estimate_team_size(contributors: int, commit_frequency: float) -> Tuple[int, int]:
         """
         Estimate team size from GitHub metrics.
 
@@ -389,11 +377,12 @@ class GitHubMetrics:
 # Competitive Positioning
 # ==============================================================================
 
+
 def analyze_competitive_positioning(
     company_strengths: List[str],
     company_weaknesses: List[str],
     competitor_strengths: List[str],
-    competitor_weaknesses: List[str]
+    competitor_weaknesses: List[str],
 ) -> Dict[str, any]:
     """
     Analyze competitive positioning between company and competitor.
@@ -421,16 +410,13 @@ def analyze_competitive_positioning(
     opportunities = [w for w in competitor_weaknesses if w not in company_weaknesses]
 
     # Threats (competitor strengths that exploit company weaknesses)
-    threats = [
-        s for s in competitor_strengths
-        if any(w in s for w in company_weaknesses)
-    ]
+    threats = [s for s in competitor_strengths if any(w in s for w in company_weaknesses)]
 
     return {
         "advantages": advantages,
         "disadvantages": disadvantages,
         "opportunities": opportunities,
-        "threats": threats
+        "threats": threats,
     }
 
 
@@ -438,10 +424,9 @@ def analyze_competitive_positioning(
 # Patent and Review Analysis
 # ==============================================================================
 
+
 def analyze_patent_portfolio(
-    patent_count: int,
-    recent_filings: int,  # Last 12 months
-    key_categories: List[str]
+    patent_count: int, recent_filings: int, key_categories: List[str]  # Last 12 months
 ) -> Dict[str, any]:
     """
     Analyze patent portfolio strength.
@@ -475,13 +460,11 @@ def analyze_patent_portfolio(
         "total_patents": patent_count,
         "recent_filings": recent_filings,
         "innovation_velocity": velocity,  # patents per month
-        "key_areas": key_categories
+        "key_areas": key_categories,
     }
 
 
-def aggregate_review_sentiment(
-    reviews: List[Dict[str, any]]
-) -> Dict[str, any]:
+def aggregate_review_sentiment(reviews: List[Dict[str, any]]) -> Dict[str, any]:
     """
     Aggregate customer review sentiment.
 
@@ -495,10 +478,7 @@ def aggregate_review_sentiment(
         - sentiment: POSITIVE/NEUTRAL/NEGATIVE
     """
     if not reviews:
-        return {
-            "available": False,
-            "reason": "No reviews available"
-        }
+        return {"available": False, "reason": "No reviews available"}
 
     # Calculate average rating
     ratings = [r.get("rating", 0) for r in reviews]
@@ -510,7 +490,7 @@ def aggregate_review_sentiment(
         "4_star": sum(1 for r in ratings if r == 4),
         "3_star": sum(1 for r in ratings if r == 3),
         "2_star": sum(1 for r in ratings if r == 2),
-        "1_star": sum(1 for r in ratings if r == 1)
+        "1_star": sum(1 for r in ratings if r == 1),
     }
 
     # Sentiment
@@ -526,5 +506,5 @@ def aggregate_review_sentiment(
         "average_rating": round(avg_rating, 2),
         "total_reviews": len(reviews),
         "rating_distribution": distribution,
-        "sentiment": sentiment
+        "sentiment": sentiment,
     }

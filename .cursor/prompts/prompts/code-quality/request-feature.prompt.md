@@ -10,8 +10,8 @@ argument-hint: "Feature description in <feature_request> tags"
 
 This prompt requests new features or enhancements by providing clear description, rationale, and examples.
 
-**Pattern**: Feature Request Pattern ⭐⭐⭐⭐  
-**Effectiveness**: 4-5 stars with examples and constraints  
+**Pattern**: Feature Request Pattern ⭐⭐⭐⭐
+**Effectiveness**: 4-5 stars with examples and constraints
 **Use When**: Requesting new features, enhancements, functionality changes
 
 ---
@@ -409,8 +409,7 @@ For AI implementation, verify:
 
 ---
 
-**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)  
-**Pattern ID**: #8 Feature Request Pattern  
-**Evidence**: conversations/JP/extracted/pattern-discovery-report.md  
+**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)
+**Pattern ID**: #8 Feature Request Pattern
+**Evidence**: conversations/JP/extracted/pattern-discovery-report.md
 **Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
-

@@ -11,25 +11,26 @@ Excel workbook generation with:
 Supports both openpyxl and xlsxwriter with fallback.
 """
 
-from typing import Dict, Any, List, Optional
+import os
 from dataclasses import dataclass, field
 from enum import Enum
-import os
+from typing import Any, Dict, List, Optional
+
 from ..utils import utc_now
 
 # Try to import Excel libraries
 try:
     import openpyxl
-    from openpyxl.styles import (
-        Font, PatternFill, Border, Side, Alignment, NamedStyle
-    )
+    from openpyxl.styles import Alignment, Border, Font, NamedStyle, PatternFill, Side
     from openpyxl.utils import get_column_letter
+
     OPENPYXL_AVAILABLE = True
 except ImportError:
     OPENPYXL_AVAILABLE = False
 
 try:
     import xlsxwriter
+
     XLSXWRITER_AVAILABLE = True
 except ImportError:
     XLSXWRITER_AVAILABLE = False
@@ -39,8 +40,10 @@ except ImportError:
 # Data Models
 # ============================================================================
 
+
 class SheetType(str, Enum):
     """Types of worksheets."""
+
     SUMMARY = "summary"
     FINANCIAL = "financial"
     MARKET = "market"
@@ -52,22 +55,26 @@ class SheetType(str, Enum):
 @dataclass
 class ExcelConfig:
     """Configuration for Excel export."""
+
     company_name: str
     include_charts: bool = True
     include_raw_data: bool = False
-    sheet_types: List[SheetType] = field(default_factory=lambda: [
-        SheetType.SUMMARY,
-        SheetType.FINANCIAL,
-        SheetType.MARKET,
-        SheetType.COMPETITIVE,
-        SheetType.METRICS
-    ])
+    sheet_types: List[SheetType] = field(
+        default_factory=lambda: [
+            SheetType.SUMMARY,
+            SheetType.FINANCIAL,
+            SheetType.MARKET,
+            SheetType.COMPETITIVE,
+            SheetType.METRICS,
+        ]
+    )
     date: str = field(default_factory=lambda: utc_now().strftime("%Y-%m-%d"))
 
 
 # ============================================================================
 # Excel Exporter
 # ============================================================================
+
 
 class ExcelExporter:
     """
@@ -90,7 +97,7 @@ class ExcelExporter:
         "accent": "2B6CB0",
         "success": "38A169",
         "warning": "D69E2E",
-        "danger": "E53E3E"
+        "danger": "E53E3E",
     }
 
     def __init__(self):
@@ -99,10 +106,7 @@ class ExcelExporter:
         self._styles_created = False
 
     def export(
-        self,
-        research_data: Dict[str, Any],
-        config: ExcelConfig,
-        output_path: Optional[str] = None
+        self, research_data: Dict[str, Any], config: ExcelConfig, output_path: Optional[str] = None
     ) -> str:
         """
         Export research data to Excel.
@@ -129,12 +133,7 @@ class ExcelExporter:
         else:
             return self._export_csv_fallback(research_data, config, output_path)
 
-    def _export_openpyxl(
-        self,
-        data: Dict[str, Any],
-        config: ExcelConfig,
-        output_path: str
-    ) -> str:
+    def _export_openpyxl(self, data: Dict[str, Any], config: ExcelConfig, output_path: str) -> str:
         """Export using openpyxl."""
         wb = openpyxl.Workbook()
 
@@ -173,30 +172,21 @@ class ExcelExporter:
         style.fill = PatternFill(
             start_color=self.COLORS["header_bg"],
             end_color=self.COLORS["header_bg"],
-            fill_type="solid"
+            fill_type="solid",
         )
         style.alignment = Alignment(horizontal="center", vertical="center")
-        style.border = Border(
-            bottom=Side(style="thin", color=self.COLORS["border"])
-        )
+        style.border = Border(bottom=Side(style="thin", color=self.COLORS["border"]))
         return style
 
     def _create_data_style(self) -> NamedStyle:
         """Create data cell style."""
         style = NamedStyle(name="data_style")
         style.alignment = Alignment(horizontal="left", vertical="center")
-        style.border = Border(
-            bottom=Side(style="thin", color=self.COLORS["border"])
-        )
+        style.border = Border(bottom=Side(style="thin", color=self.COLORS["border"]))
         return style
 
     def _create_summary_sheet(
-        self,
-        wb,
-        data: Dict[str, Any],
-        config: ExcelConfig,
-        header_style,
-        data_style
+        self, wb, data: Dict[str, Any], config: ExcelConfig, header_style, data_style
     ):
         """Create summary worksheet."""
         ws = wb.create_sheet("Summary")
@@ -224,7 +214,7 @@ class ExcelExporter:
             cell.fill = PatternFill(
                 start_color=self.COLORS["header_bg"],
                 end_color=self.COLORS["header_bg"],
-                fill_type="solid"
+                fill_type="solid",
             )
 
         # Extract and add metrics
@@ -261,7 +251,7 @@ class ExcelExporter:
             cell.fill = PatternFill(
                 start_color=self.COLORS["header_bg"],
                 end_color=self.COLORS["header_bg"],
-                fill_type="solid"
+                fill_type="solid",
             )
 
         # Add financial data
@@ -270,7 +260,13 @@ class ExcelExporter:
             ("Revenue", "Total Revenue", financial_data.get("revenue", "N/A"), "", ""),
             ("Revenue", "Revenue Growth", financial_data.get("growth_rate", "N/A"), "", ""),
             ("Profitability", "Gross Margin", financial_data.get("gross_margin", "N/A"), "", ""),
-            ("Profitability", "Operating Margin", financial_data.get("operating_margin", "N/A"), "", ""),
+            (
+                "Profitability",
+                "Operating Margin",
+                financial_data.get("operating_margin", "N/A"),
+                "",
+                "",
+            ),
             ("Profitability", "Net Margin", financial_data.get("net_margin", "N/A"), "", ""),
             ("Health", "Debt-to-Equity", financial_data.get("debt_to_equity", "N/A"), "", ""),
             ("Health", "Current Ratio", financial_data.get("current_ratio", "N/A"), "", ""),
@@ -307,13 +303,28 @@ class ExcelExporter:
             cell.fill = PatternFill(
                 start_color=self.COLORS["header_bg"],
                 end_color=self.COLORS["header_bg"],
-                fill_type="solid"
+                fill_type="solid",
             )
 
         market_segments = [
-            ("TAM", market_data.get("tam", "N/A"), market_data.get("tam_growth", ""), "Total Addressable Market"),
-            ("SAM", market_data.get("sam", "N/A"), market_data.get("sam_growth", ""), "Serviceable Addressable Market"),
-            ("SOM", market_data.get("som", "N/A"), market_data.get("som_growth", ""), "Serviceable Obtainable Market"),
+            (
+                "TAM",
+                market_data.get("tam", "N/A"),
+                market_data.get("tam_growth", ""),
+                "Total Addressable Market",
+            ),
+            (
+                "SAM",
+                market_data.get("sam", "N/A"),
+                market_data.get("sam_growth", ""),
+                "Serviceable Addressable Market",
+            ),
+            (
+                "SOM",
+                market_data.get("som", "N/A"),
+                market_data.get("som_growth", ""),
+                "Serviceable Obtainable Market",
+            ),
         ]
 
         for segment in market_segments:
@@ -341,7 +352,7 @@ class ExcelExporter:
             cell.fill = PatternFill(
                 start_color=self.COLORS["header_bg"],
                 end_color=self.COLORS["header_bg"],
-                fill_type="solid"
+                fill_type="solid",
             )
 
         # Add competitor data if available
@@ -354,12 +365,7 @@ class ExcelExporter:
             ws.column_dimensions[get_column_letter(col)].width = 18
 
     def _create_metrics_sheet(
-        self,
-        wb,
-        data: Dict[str, Any],
-        config: ExcelConfig,
-        header_style,
-        data_style
+        self, wb, data: Dict[str, Any], config: ExcelConfig, header_style, data_style
     ):
         """Create metrics dashboard worksheet."""
         ws = wb.create_sheet("Metrics Dashboard")
@@ -378,7 +384,7 @@ class ExcelExporter:
             cell.fill = PatternFill(
                 start_color=self.COLORS["header_bg"],
                 end_color=self.COLORS["header_bg"],
-                fill_type="solid"
+                fill_type="solid",
             )
 
         for metric_name, metric_data in metrics.items():
@@ -431,7 +437,10 @@ class ExcelExporter:
             if "growth_rate" in fin:
                 metrics["Revenue Growth"] = {"value": fin["growth_rate"], "category": "Financial"}
             if "cost" in fin:
-                metrics["Analysis Cost"] = {"value": f"${fin['cost']:.4f}", "category": "Operational"}
+                metrics["Analysis Cost"] = {
+                    "value": f"${fin['cost']:.4f}",
+                    "category": "Operational",
+                }
 
         # Market metrics
         if "market" in data:
@@ -447,13 +456,19 @@ class ExcelExporter:
             if "brand_score" in brand:
                 metrics["Brand Score"] = {"value": brand["brand_score"], "category": "Brand"}
             if "overall_strength" in brand:
-                metrics["Brand Strength"] = {"value": brand["overall_strength"], "category": "Brand"}
+                metrics["Brand Strength"] = {
+                    "value": brand["overall_strength"],
+                    "category": "Brand",
+                }
 
         # Investment metrics
         if "investment" in data:
             inv = data["investment"]
             if "investment_rating" in inv:
-                metrics["Investment Rating"] = {"value": inv["investment_rating"], "category": "Investment"}
+                metrics["Investment Rating"] = {
+                    "value": inv["investment_rating"],
+                    "category": "Investment",
+                }
             if "overall_risk" in inv:
                 metrics["Risk Level"] = {"value": inv["overall_risk"], "category": "Investment"}
 
@@ -466,21 +481,15 @@ class ExcelExporter:
         return metrics
 
     def _export_xlsxwriter(
-        self,
-        data: Dict[str, Any],
-        config: ExcelConfig,
-        output_path: str
+        self, data: Dict[str, Any], config: ExcelConfig, output_path: str
     ) -> str:
         """Export using xlsxwriter (alternative)."""
         workbook = xlsxwriter.Workbook(output_path)
 
         # Create formats
-        header_format = workbook.add_format({
-            'bold': True,
-            'bg_color': '#2C5282',
-            'font_color': 'white',
-            'align': 'center'
-        })
+        header_format = workbook.add_format(
+            {"bold": True, "bg_color": "#2C5282", "font_color": "white", "align": "center"}
+        )
 
         # Add summary sheet
         summary_ws = workbook.add_worksheet("Summary")
@@ -491,10 +500,7 @@ class ExcelExporter:
         return output_path
 
     def _export_csv_fallback(
-        self,
-        data: Dict[str, Any],
-        config: ExcelConfig,
-        output_path: str
+        self, data: Dict[str, Any], config: ExcelConfig, output_path: str
     ) -> str:
         """Export to CSV as fallback."""
         import csv
@@ -523,11 +529,12 @@ class ExcelExporter:
 # Factory Function
 # ============================================================================
 
+
 def export_to_excel(
     research_data: Dict[str, Any],
     company_name: str,
     output_path: Optional[str] = None,
-    include_charts: bool = True
+    include_charts: bool = True,
 ) -> str:
     """
     Export research data to Excel.
@@ -541,10 +548,7 @@ def export_to_excel(
     Returns:
         Path to generated Excel file
     """
-    config = ExcelConfig(
-        company_name=company_name,
-        include_charts=include_charts
-    )
+    config = ExcelConfig(company_name=company_name, include_charts=include_charts)
 
     exporter = ExcelExporter()
     return exporter.export(research_data, config, output_path)

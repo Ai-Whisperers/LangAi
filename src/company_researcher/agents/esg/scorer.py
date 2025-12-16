@@ -6,14 +6,7 @@ Scoring logic for ESG metrics and ratings.
 
 from typing import List
 
-from .models import (
-    ESGCategory,
-    ESGRating,
-    ESGMetric,
-    Controversy,
-    ControversySeverity,
-    ESGScore,
-)
+from .models import Controversy, ControversySeverity, ESGCategory, ESGMetric, ESGRating, ESGScore
 
 
 class ESGScorer:
@@ -63,9 +56,7 @@ class ESGScorer:
         self.base_score = base_score
 
     def calculate_score(
-        self,
-        metrics: List[ESGMetric],
-        controversies: List[Controversy]
+        self, metrics: List[ESGMetric], controversies: List[Controversy]
     ) -> ESGScore:
         """
         Calculate ESG scores from metrics and controversies.
@@ -114,9 +105,9 @@ class ESGScorer:
 
         # Calculate weighted overall score
         overall = (
-            env_score * self.CATEGORY_WEIGHTS[ESGCategory.ENVIRONMENTAL] +
-            social_score * self.CATEGORY_WEIGHTS[ESGCategory.SOCIAL] +
-            gov_score * self.CATEGORY_WEIGHTS[ESGCategory.GOVERNANCE]
+            env_score * self.CATEGORY_WEIGHTS[ESGCategory.ENVIRONMENTAL]
+            + social_score * self.CATEGORY_WEIGHTS[ESGCategory.SOCIAL]
+            + gov_score * self.CATEGORY_WEIGHTS[ESGCategory.GOVERNANCE]
         )
 
         # Determine rating
@@ -131,7 +122,7 @@ class ESGScorer:
             environmental_score=round(env_score, 1),
             social_score=round(social_score, 1),
             governance_score=round(gov_score, 1),
-            confidence=confidence
+            confidence=confidence,
         )
 
     def _metric_to_adjustment(self, metric: ESGMetric) -> float:
@@ -181,9 +172,7 @@ class ESGScorer:
         return ESGRating.C
 
     def _calculate_confidence(
-        self,
-        metrics: List[ESGMetric],
-        controversies: List[Controversy]
+        self, metrics: List[ESGMetric], controversies: List[Controversy]
     ) -> float:
         """
         Calculate confidence level based on data availability.
@@ -217,9 +206,7 @@ class ESGScorer:
         return min(1.0, confidence)
 
     def identify_strengths_risks(
-        self,
-        metrics: List[ESGMetric],
-        controversies: List[Controversy]
+        self, metrics: List[ESGMetric], controversies: List[Controversy]
     ) -> tuple:
         """
         Identify ESG strengths and risks.
@@ -251,17 +238,12 @@ class ESGScorer:
         # Add controversies as risks
         for controversy in controversies:
             if controversy.severity in [ControversySeverity.SEVERE, ControversySeverity.HIGH]:
-                risks.append(
-                    f"{controversy.category.value.title()}: {controversy.title}"
-                )
+                risks.append(f"{controversy.category.value.title()}: {controversy.title}")
 
         return strengths[:5], risks[:5]
 
     def generate_recommendations(
-        self,
-        metrics: List[ESGMetric],
-        score: ESGScore,
-        risks: List[str]
+        self, metrics: List[ESGMetric], score: ESGScore, risks: List[str]
     ) -> List[str]:
         """
         Generate ESG improvement recommendations.
@@ -280,23 +262,15 @@ class ESGScorer:
         categories_covered = set(m.category for m in metrics)
         for category in ESGCategory:
             if category not in categories_covered:
-                recommendations.append(
-                    f"Improve {category.value} disclosure and tracking"
-                )
+                recommendations.append(f"Improve {category.value} disclosure and tracking")
 
         # Score-based recommendations
         if score.environmental_score < 50:
-            recommendations.append(
-                "Strengthen environmental initiatives and reporting"
-            )
+            recommendations.append("Strengthen environmental initiatives and reporting")
         if score.social_score < 50:
-            recommendations.append(
-                "Enhance social responsibility programs"
-            )
+            recommendations.append("Enhance social responsibility programs")
         if score.governance_score < 50:
-            recommendations.append(
-                "Improve governance practices and transparency"
-            )
+            recommendations.append("Improve governance practices and transparency")
 
         # Risk-based recommendations
         for risk in risks[:3]:

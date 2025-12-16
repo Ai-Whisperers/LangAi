@@ -5,9 +5,10 @@ This module defines the state schemas used by LangGraph to manage
 the research workflow state transitions.
 """
 
-from typing import TypedDict, Annotated, List, Dict, Any, Optional
 from datetime import datetime
 from operator import add
+from typing import Annotated, Any, Dict, List, Optional, TypedDict
+
 from ..utils import utc_now
 
 
@@ -42,13 +43,14 @@ def add_tokens(left: Dict[str, int], right: Dict[str, int]) -> Dict[str, int]:
     """
     return {
         "input": left.get("input", 0) + right.get("input", 0),
-        "output": left.get("output", 0) + right.get("output", 0)
+        "output": left.get("output", 0) + right.get("output", 0),
     }
 
 
 # ============================================================================
 # Input State
 # ============================================================================
+
 
 class InputState(TypedDict):
     """
@@ -57,12 +59,14 @@ class InputState(TypedDict):
     Attributes:
         company_name: Name of the company to research
     """
+
     company_name: str
 
 
 # ============================================================================
 # Overall State
 # ============================================================================
+
 
 class OverallState(TypedDict):
     """
@@ -136,6 +140,7 @@ class OverallState(TypedDict):
 # Output State
 # ============================================================================
 
+
 class OutputState(TypedDict):
     """
     Final output from the research workflow.
@@ -146,6 +151,7 @@ class OutputState(TypedDict):
         metrics: Performance metrics (time, cost, tokens)
         success: Whether research completed successfully
     """
+
     company_name: str
     report_path: str
     metrics: Dict[str, Any]
@@ -155,6 +161,7 @@ class OutputState(TypedDict):
 # ============================================================================
 # Helper Functions
 # ============================================================================
+
 
 def create_initial_state(company_name: str) -> OverallState:
     """
@@ -199,7 +206,7 @@ def create_initial_state(company_name: str) -> OverallState:
         "start_time": utc_now(),
         "total_cost": 0.0,
         "total_tokens": {"input": 0, "output": 0},
-        "report_path": None
+        "report_path": None,
     }
 
 
@@ -224,7 +231,7 @@ def create_output_state(state: OverallState) -> OutputState:
             "tokens": state.get("total_tokens", {"input": 0, "output": 0}),
             "sources_count": len(state.get("sources", [])),
             "quality_score": state.get("quality_score", 0.0),
-            "iterations": state.get("iteration_count", 0)
+            "iterations": state.get("iteration_count", 0),
         },
-        "success": state.get("report_path") is not None
+        "success": state.get("report_path") is not None,
     }

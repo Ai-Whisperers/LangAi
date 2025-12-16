@@ -107,4 +107,3 @@ update Users set Active = 0 where Id = 1
 - `.cursor/rules/database-standards/sql-coding-standards-rule.mdc`
 - `.cursor/rules/database-standards/mssql-standards-rule.mdc`
 - `.cursor/rules/database-standards/development-workflow-rule.mdc`
-

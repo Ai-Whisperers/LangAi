@@ -32,7 +32,8 @@ Usage:
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -42,22 +43,22 @@ logger = get_logger(__name__)
 # Import Enhanced Modules
 # ============================================================================
 
-# Quality modules
-from .quality import UnifiedQualityScorer, QualityResult
-from .gaps import SemanticGapDetector, GapAssessment
-from .search import QueryDiversifier
-
-# Validation
-from ..validation.ground_truth import GroundTruthValidator, ValidationReport
-
 # Contradiction detection
 from ..quality.enhanced_contradiction_detector import (
+    ContradictionReport,
     EnhancedContradictionDetector,
-    ContradictionReport
 )
 
 # Source selection
 from ..retrieval.source_selector import SemanticSourceSelector
+
+# Validation
+from ..validation.ground_truth import GroundTruthValidator, ValidationReport
+from .gaps import GapAssessment, SemanticGapDetector
+
+# Quality modules
+from .quality import QualityResult, UnifiedQualityScorer
+from .search import QueryDiversifier
 
 # Prompts
 
@@ -68,9 +69,11 @@ from ..retrieval.source_selector import SemanticSourceSelector
 # Result Models
 # ============================================================================
 
+
 @dataclass
 class EnhancedAnalysisResult:
     """Complete result from enhanced analysis pipeline."""
+
     company_name: str
 
     # Quality Assessment
@@ -104,7 +107,7 @@ class EnhancedAnalysisResult:
             "contradicted_claims": self.contradicted_claims,
             "has_critical_contradictions": self.has_critical_contradictions,
             "processing_time_seconds": round(self.processing_time_seconds, 2),
-            "timestamp": self.timestamp.isoformat()
+            "timestamp": self.timestamp.isoformat(),
         }
 
     @property
@@ -123,6 +126,7 @@ class EnhancedAnalysisResult:
 # Pipeline Components
 # ============================================================================
 
+
 class QualityPipeline:
     """
     Quality assessment pipeline combining multiple validators.
@@ -138,10 +142,7 @@ class QualityPipeline:
         self.validator = GroundTruthValidator()
 
     def assess(
-        self,
-        research_output: Dict[str, Any],
-        company_name: str,
-        ticker: Optional[str] = None
+        self, research_output: Dict[str, Any], company_name: str, ticker: Optional[str] = None
     ) -> Tuple[QualityResult, Optional[ValidationReport]]:
         """
         Run full quality assessment.
@@ -155,10 +156,7 @@ class QualityPipeline:
             Tuple of (QualityResult, ValidationReport or None)
         """
         # Run unified quality scoring
-        quality_result = self.scorer.score_comprehensive(
-            research_output,
-            company_name
-        )
+        quality_result = self.scorer.score_comprehensive(research_output, company_name)
 
         # Run ground truth validation if ticker available
         validation_report = None
@@ -167,8 +165,7 @@ class QualityPipeline:
                 ground_truth = self.validator.fetch_ground_truth(ticker)
                 if ground_truth:
                     validation_report = self.validator.validate_claims(
-                        research_output,
-                        ground_truth
+                        research_output, ground_truth
                     )
             except Exception as e:
                 logger.warning(f"Ground truth validation failed: {e}")
@@ -184,11 +181,7 @@ class GapDetectionPipeline:
     def __init__(self):
         self.detector = SemanticGapDetector()
 
-    def detect(
-        self,
-        research_output: Dict[str, Any],
-        company_name: str
-    ) -> GapAssessment:
+    def detect(self, research_output: Dict[str, Any], company_name: str) -> GapAssessment:
         """
         Detect gaps in research coverage.
 
@@ -208,7 +201,7 @@ class GapDetectionPipeline:
             content=content,
             sources=sources,
             company_name=company_name,
-            agent_reported_gaps=agent_gaps
+            agent_reported_gaps=agent_gaps,
         )
 
     def _extract_content(self, research_output: Dict) -> str:
@@ -258,10 +251,7 @@ class ContradictionPipeline:
     def __init__(self, use_embeddings: bool = True):
         self.detector = EnhancedContradictionDetector(use_embeddings=use_embeddings)
 
-    def analyze(
-        self,
-        research_output: Dict[str, Any]
-    ) -> ContradictionReport:
+    def analyze(self, research_output: Dict[str, Any]) -> ContradictionReport:
         """
         Analyze research output for contradictions.
 
@@ -292,9 +282,12 @@ class ContradictionPipeline:
                 total_claims_analyzed=0,
                 contradiction_rate=0.0,
                 severity_distribution={
-                    "critical": 0, "significant": 0, "minor": 0, "negligible": 0
+                    "critical": 0,
+                    "significant": 0,
+                    "minor": 0,
+                    "negligible": 0,
                 },
-                has_critical=False
+                has_critical=False,
             )
 
         return self.detector.analyze_multi_source(sources)
@@ -310,9 +303,7 @@ class SearchOptimizationPipeline:
         self.source_selector = SemanticSourceSelector()
 
     def generate_queries(
-        self,
-        company_name: str,
-        focus_areas: Optional[List[str]] = None
+        self, company_name: str, focus_areas: Optional[List[str]] = None
     ) -> List[str]:
         """
         Generate diversified search queries.
@@ -325,16 +316,10 @@ class SearchOptimizationPipeline:
             List of diversified search queries
         """
         return self.diversifier.generate_queries(
-            company_name,
-            focus_areas or ["financial", "market", "product", "competitive"]
+            company_name, focus_areas or ["financial", "market", "product", "competitive"]
         )
 
-    def select_sources(
-        self,
-        query: str,
-        sources: List[Dict],
-        max_sources: int = 5
-    ) -> List[Dict]:
+    def select_sources(self, query: str, sources: List[Dict], max_sources: int = 5) -> List[Dict]:
         """
         Select most relevant and diverse sources.
 
@@ -347,15 +332,14 @@ class SearchOptimizationPipeline:
             Selected sources optimized for relevance and diversity
         """
         return self.source_selector.select_sources(
-            query=query,
-            sources=sources,
-            max_sources=max_sources
+            query=query, sources=sources, max_sources=max_sources
         )
 
 
 # ============================================================================
 # Main Pipeline
 # ============================================================================
+
 
 class EnhancedResearchPipeline:
     """
@@ -365,10 +349,7 @@ class EnhancedResearchPipeline:
     """
 
     def __init__(
-        self,
-        company_name: str,
-        ticker: Optional[str] = None,
-        use_embeddings: bool = True
+        self, company_name: str, ticker: Optional[str] = None, use_embeddings: bool = True
     ):
         self.company_name = company_name
         self.ticker = ticker
@@ -379,10 +360,7 @@ class EnhancedResearchPipeline:
         self.contradiction_pipeline = ContradictionPipeline(use_embeddings)
         self.search_pipeline = SearchOptimizationPipeline()
 
-    def run_full_analysis(
-        self,
-        research_output: Dict[str, Any]
-    ) -> EnhancedAnalysisResult:
+    def run_full_analysis(self, research_output: Dict[str, Any]) -> EnhancedAnalysisResult:
         """
         Run complete enhanced analysis on research output.
 
@@ -399,9 +377,7 @@ class EnhancedResearchPipeline:
         # 1. Quality Assessment
         try:
             quality_result, validation_report = self.quality_pipeline.assess(
-                research_output,
-                self.company_name,
-                self.ticker
+                research_output, self.company_name, self.ticker
             )
             result.quality_result = quality_result
             result.quality_score = quality_result.overall_score
@@ -416,13 +392,11 @@ class EnhancedResearchPipeline:
 
         # 2. Gap Detection
         try:
-            gap_assessment = self.gap_pipeline.detect(
-                research_output,
-                self.company_name
-            )
+            gap_assessment = self.gap_pipeline.detect(research_output, self.company_name)
             result.gap_assessment = gap_assessment
             result.critical_gaps = [
-                g.field for g in gap_assessment.gaps
+                g.field
+                for g in gap_assessment.gaps
                 if g.confidence.value in ["confirmed", "likely"]
             ]
 
@@ -431,9 +405,7 @@ class EnhancedResearchPipeline:
 
         # 3. Contradiction Analysis
         try:
-            contradiction_report = self.contradiction_pipeline.analyze(
-                research_output
-            )
+            contradiction_report = self.contradiction_pipeline.analyze(research_output)
             result.contradiction_report = contradiction_report
             result.has_critical_contradictions = contradiction_report.has_critical
 
@@ -441,16 +413,11 @@ class EnhancedResearchPipeline:
             logger.error(f"Contradiction analysis failed: {e}")
 
         # Calculate processing time
-        result.processing_time_seconds = (
-            utc_now() - start_time
-        ).total_seconds()
+        result.processing_time_seconds = (utc_now() - start_time).total_seconds()
 
         return result
 
-    def get_quality_improvements(
-        self,
-        result: EnhancedAnalysisResult
-    ) -> List[str]:
+    def get_quality_improvements(self, result: EnhancedAnalysisResult) -> List[str]:
         """
         Get actionable suggestions to improve research quality.
 
@@ -470,17 +437,13 @@ class EnhancedResearchPipeline:
         if result.contradiction_report:
             for c in result.contradiction_report.contradictions:
                 if c.severity.value in ["critical", "significant"]:
-                    suggestions.append(
-                        f"Resolve contradiction: {c.explanation}"
-                    )
+                    suggestions.append(f"Resolve contradiction: {c.explanation}")
 
         # Quality-based suggestions
         if result.quality_result:
             for dim, score in result.quality_result.dimension_scores.items():
                 if score.score < 0.5:
-                    suggestions.append(
-                        f"Improve {dim.value}: {score.details}"
-                    )
+                    suggestions.append(f"Improve {dim.value}: {score.details}")
 
         return suggestions[:10]  # Limit to top 10 suggestions
 
@@ -489,10 +452,9 @@ class EnhancedResearchPipeline:
 # Convenience Functions
 # ============================================================================
 
+
 def run_quality_pipeline(
-    research_output: Dict[str, Any],
-    company_name: str,
-    ticker: Optional[str] = None
+    research_output: Dict[str, Any], company_name: str, ticker: Optional[str] = None
 ) -> Tuple[QualityResult, Optional[ValidationReport]]:
     """
     Convenience function to run quality assessment.
@@ -509,10 +471,7 @@ def run_quality_pipeline(
     return pipeline.assess(research_output, company_name, ticker)
 
 
-def run_gap_detection(
-    research_output: Dict[str, Any],
-    company_name: str
-) -> GapAssessment:
+def run_gap_detection(research_output: Dict[str, Any], company_name: str) -> GapAssessment:
     """
     Convenience function to run gap detection.
 
@@ -528,8 +487,7 @@ def run_gap_detection(
 
 
 def run_contradiction_analysis(
-    research_output: Dict[str, Any],
-    use_embeddings: bool = True
+    research_output: Dict[str, Any], use_embeddings: bool = True
 ) -> ContradictionReport:
     """
     Convenience function to run contradiction analysis.
@@ -545,10 +503,7 @@ def run_contradiction_analysis(
     return pipeline.analyze(research_output)
 
 
-def get_optimized_queries(
-    company_name: str,
-    focus_areas: Optional[List[str]] = None
-) -> List[str]:
+def get_optimized_queries(company_name: str, focus_areas: Optional[List[str]] = None) -> List[str]:
     """
     Get diversified search queries for a company.
 
@@ -563,11 +518,7 @@ def get_optimized_queries(
     return pipeline.generate_queries(company_name, focus_areas)
 
 
-def select_best_sources(
-    query: str,
-    sources: List[Dict],
-    max_sources: int = 5
-) -> List[Dict]:
+def select_best_sources(query: str, sources: List[Dict], max_sources: int = 5) -> List[Dict]:
     """
     Select best sources using semantic relevance and diversity.
 

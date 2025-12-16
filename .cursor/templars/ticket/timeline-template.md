@@ -30,4 +30,3 @@ provenance: { owner: team-ticket, last_review: 2025-12-06 }
 **Work Hours**: {{start_time}} to {{end_time}} ({{duration}})
 **Key Milestones**:
 - {{milestone_1}}
-

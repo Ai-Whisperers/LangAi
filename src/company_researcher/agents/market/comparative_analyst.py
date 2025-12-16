@@ -19,12 +19,13 @@ Usage:
     comparison = await analyst.compare_companies(companies_data)
 """
 
-from enum import Enum
-from typing import Dict, Any, List, Optional, Tuple, Set
+import statistics
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from collections import defaultdict
-import statistics
+from enum import Enum
+from typing import Any, Dict, List, Optional, Set, Tuple
+
 from ...utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -32,6 +33,7 @@ logger = get_logger(__name__)
 
 class ComparisonCategory(Enum):
     """Categories for comparison."""
+
     FINANCIAL = "financial"
     MARKET = "market"
     PRODUCT = "product"
@@ -44,14 +46,16 @@ class ComparisonCategory(Enum):
 
 class MetricType(Enum):
     """Type of metric (higher is better or lower is better)."""
-    HIGHER_BETTER = "higher_better"   # Revenue, market share
-    LOWER_BETTER = "lower_better"     # Debt ratio, churn
-    NEUTRAL = "neutral"               # Size metrics
+
+    HIGHER_BETTER = "higher_better"  # Revenue, market share
+    LOWER_BETTER = "lower_better"  # Debt ratio, churn
+    NEUTRAL = "neutral"  # Size metrics
 
 
 @dataclass
 class CompanyProfile:
     """Profile of a company for comparison."""
+
     name: str
     ticker: Optional[str] = None
     industry: Optional[str] = None
@@ -65,12 +69,13 @@ class CompanyProfile:
 @dataclass
 class MetricComparison:
     """Comparison of a single metric across companies."""
+
     metric_name: str
     category: ComparisonCategory
     metric_type: MetricType
-    values: Dict[str, float]          # company -> value
-    rankings: Dict[str, int]          # company -> rank
-    percentiles: Dict[str, float]     # company -> percentile
+    values: Dict[str, float]  # company -> value
+    rankings: Dict[str, int]  # company -> rank
+    percentiles: Dict[str, float]  # company -> percentile
     industry_average: Optional[float] = None
     best_performer: Optional[str] = None
     worst_performer: Optional[str] = None
@@ -80,6 +85,7 @@ class MetricComparison:
 @dataclass
 class SWOT:
     """SWOT analysis for a company."""
+
     company: str
     strengths: List[str]
     weaknesses: List[str]
@@ -91,11 +97,12 @@ class SWOT:
 @dataclass
 class CompetitivePosition:
     """Competitive positioning analysis."""
+
     company: str
-    market_position: str              # Leader, Challenger, Follower, Niche
+    market_position: str  # Leader, Challenger, Follower, Niche
     competitive_advantages: List[str]
     competitive_disadvantages: List[str]
-    strategic_fit: Dict[str, str]     # Category -> position
+    strategic_fit: Dict[str, str]  # Category -> position
     overall_rank: int
     score: float
 
@@ -103,6 +110,7 @@ class CompetitivePosition:
 @dataclass
 class ComparativeAnalysis:
     """Complete comparative analysis result."""
+
     target_company: str
     comparison_date: datetime
     companies_analyzed: List[str]
@@ -127,44 +135,87 @@ class ComparativeAnalystAgent:
     METRIC_DEFINITIONS = {
         # Financial
         "revenue": (ComparisonCategory.FINANCIAL, MetricType.HIGHER_BETTER, "Revenue ($B)"),
-        "revenue_growth": (ComparisonCategory.FINANCIAL, MetricType.HIGHER_BETTER, "Revenue Growth (%)"),
-        "gross_margin": (ComparisonCategory.FINANCIAL, MetricType.HIGHER_BETTER, "Gross Margin (%)"),
-        "operating_margin": (ComparisonCategory.FINANCIAL, MetricType.HIGHER_BETTER, "Operating Margin (%)"),
+        "revenue_growth": (
+            ComparisonCategory.FINANCIAL,
+            MetricType.HIGHER_BETTER,
+            "Revenue Growth (%)",
+        ),
+        "gross_margin": (
+            ComparisonCategory.FINANCIAL,
+            MetricType.HIGHER_BETTER,
+            "Gross Margin (%)",
+        ),
+        "operating_margin": (
+            ComparisonCategory.FINANCIAL,
+            MetricType.HIGHER_BETTER,
+            "Operating Margin (%)",
+        ),
         "net_margin": (ComparisonCategory.FINANCIAL, MetricType.HIGHER_BETTER, "Net Margin (%)"),
-        "debt_to_equity": (ComparisonCategory.FINANCIAL, MetricType.LOWER_BETTER, "Debt/Equity Ratio"),
+        "debt_to_equity": (
+            ComparisonCategory.FINANCIAL,
+            MetricType.LOWER_BETTER,
+            "Debt/Equity Ratio",
+        ),
         "current_ratio": (ComparisonCategory.FINANCIAL, MetricType.HIGHER_BETTER, "Current Ratio"),
-
         # Market
         "market_cap": (ComparisonCategory.MARKET, MetricType.HIGHER_BETTER, "Market Cap ($B)"),
         "market_share": (ComparisonCategory.MARKET, MetricType.HIGHER_BETTER, "Market Share (%)"),
         "pe_ratio": (ComparisonCategory.MARKET, MetricType.NEUTRAL, "P/E Ratio"),
         "ev_revenue": (ComparisonCategory.MARKET, MetricType.NEUTRAL, "EV/Revenue"),
-
         # Growth
-        "employee_growth": (ComparisonCategory.GROWTH, MetricType.HIGHER_BETTER, "Employee Growth (%)"),
-        "customer_growth": (ComparisonCategory.GROWTH, MetricType.HIGHER_BETTER, "Customer Growth (%)"),
-        "geographic_expansion": (ComparisonCategory.GROWTH, MetricType.HIGHER_BETTER, "Geographic Reach"),
-
+        "employee_growth": (
+            ComparisonCategory.GROWTH,
+            MetricType.HIGHER_BETTER,
+            "Employee Growth (%)",
+        ),
+        "customer_growth": (
+            ComparisonCategory.GROWTH,
+            MetricType.HIGHER_BETTER,
+            "Customer Growth (%)",
+        ),
+        "geographic_expansion": (
+            ComparisonCategory.GROWTH,
+            MetricType.HIGHER_BETTER,
+            "Geographic Reach",
+        ),
         # Operations
         "employee_count": (ComparisonCategory.OPERATIONS, MetricType.NEUTRAL, "Employees"),
-        "revenue_per_employee": (ComparisonCategory.OPERATIONS, MetricType.HIGHER_BETTER, "Revenue/Employee ($K)"),
-        "operational_efficiency": (ComparisonCategory.OPERATIONS, MetricType.HIGHER_BETTER, "Op. Efficiency Score"),
-
+        "revenue_per_employee": (
+            ComparisonCategory.OPERATIONS,
+            MetricType.HIGHER_BETTER,
+            "Revenue/Employee ($K)",
+        ),
+        "operational_efficiency": (
+            ComparisonCategory.OPERATIONS,
+            MetricType.HIGHER_BETTER,
+            "Op. Efficiency Score",
+        ),
         # Technology
-        "r_and_d_spend": (ComparisonCategory.TECHNOLOGY, MetricType.HIGHER_BETTER, "R&D Spending ($M)"),
-        "r_and_d_ratio": (ComparisonCategory.TECHNOLOGY, MetricType.HIGHER_BETTER, "R&D as % Revenue"),
+        "r_and_d_spend": (
+            ComparisonCategory.TECHNOLOGY,
+            MetricType.HIGHER_BETTER,
+            "R&D Spending ($M)",
+        ),
+        "r_and_d_ratio": (
+            ComparisonCategory.TECHNOLOGY,
+            MetricType.HIGHER_BETTER,
+            "R&D as % Revenue",
+        ),
         "patent_count": (ComparisonCategory.TECHNOLOGY, MetricType.HIGHER_BETTER, "Patents"),
-
         # Risk
-        "customer_concentration": (ComparisonCategory.RISK, MetricType.LOWER_BETTER, "Customer Concentration (%)"),
-        "regulatory_risk": (ComparisonCategory.RISK, MetricType.LOWER_BETTER, "Regulatory Risk Score"),
+        "customer_concentration": (
+            ComparisonCategory.RISK,
+            MetricType.LOWER_BETTER,
+            "Customer Concentration (%)",
+        ),
+        "regulatory_risk": (
+            ComparisonCategory.RISK,
+            MetricType.LOWER_BETTER,
+            "Regulatory Risk Score",
+        ),
     }
 
-    def __init__(
-        self,
-        target_company: str,
-        industry: Optional[str] = None
-    ):
+    def __init__(self, target_company: str, industry: Optional[str] = None):
         self.target_company = target_company
         self.industry = industry
         self.companies: Dict[str, CompanyProfile] = {}
@@ -176,7 +227,7 @@ class ComparativeAnalystAgent:
         metrics: Dict[str, float],
         qualitative: Optional[Dict[str, str]] = None,
         ticker: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         """Add a company to the comparison set."""
         profile = CompanyProfile(
@@ -185,7 +236,7 @@ class ComparativeAnalystAgent:
             industry=self.industry,
             metrics=metrics,
             qualitative=qualitative or {},
-            metadata=kwargs
+            metadata=kwargs,
         )
         self.companies[name] = profile
         logger.info(f"Added company: {name} with {len(metrics)} metrics")
@@ -195,8 +246,7 @@ class ComparativeAnalystAgent:
         self.industry_benchmarks[metric] = value
 
     def compare_companies(
-        self,
-        metrics_to_compare: Optional[List[str]] = None
+        self, metrics_to_compare: Optional[List[str]] = None
     ) -> ComparativeAnalysis:
         """
         Perform comprehensive comparative analysis.
@@ -225,8 +275,7 @@ class ComparativeAnalystAgent:
 
         # Generate SWOT for each company
         swot_analyses = {
-            name: self._generate_swot(name, metric_comparisons)
-            for name in self.companies
+            name: self._generate_swot(name, metric_comparisons) for name in self.companies
         }
 
         # Calculate competitive positions
@@ -259,7 +308,7 @@ class ComparativeAnalystAgent:
             overall_rankings=rankings,
             key_insights=insights,
             recommendations=recommendations,
-            confidence=confidence
+            confidence=confidence,
         )
 
     def _get_common_metrics(self) -> Set[str]:
@@ -296,9 +345,7 @@ class ComparativeAnalystAgent:
 
         # Calculate rankings
         sorted_items = sorted(
-            values.items(),
-            key=lambda x: x[1],
-            reverse=(metric_type == MetricType.HIGHER_BETTER)
+            values.items(), key=lambda x: x[1], reverse=(metric_type == MetricType.HIGHER_BETTER)
         )
         rankings = {name: rank + 1 for rank, (name, _) in enumerate(sorted_items)}
 
@@ -328,8 +375,12 @@ class ComparativeAnalystAgent:
                         gap_analysis[name] = 100 if value > 0 else 0
 
         # Identify best/worst
-        best = sorted_items[0][0] if metric_type == MetricType.HIGHER_BETTER else sorted_items[-1][0]
-        worst = sorted_items[-1][0] if metric_type == MetricType.HIGHER_BETTER else sorted_items[0][0]
+        best = (
+            sorted_items[0][0] if metric_type == MetricType.HIGHER_BETTER else sorted_items[-1][0]
+        )
+        worst = (
+            sorted_items[-1][0] if metric_type == MetricType.HIGHER_BETTER else sorted_items[0][0]
+        )
 
         return MetricComparison(
             metric_name=metric,
@@ -341,14 +392,10 @@ class ComparativeAnalystAgent:
             industry_average=self.industry_benchmarks.get(metric),
             best_performer=best,
             worst_performer=worst,
-            gap_analysis=gap_analysis
+            gap_analysis=gap_analysis,
         )
 
-    def _generate_swot(
-        self,
-        company_name: str,
-        comparisons: List[MetricComparison]
-    ) -> SWOT:
+    def _generate_swot(self, company_name: str, comparisons: List[MetricComparison]) -> SWOT:
         """Generate SWOT analysis for a company."""
         strengths = []
         weaknesses = []
@@ -367,29 +414,21 @@ class ComparativeAnalystAgent:
 
             # Top performer = Strength
             if rank == 1 or percentile >= 0.8:
-                strengths.append(
-                    f"Strong {comparison.metric_name} (Rank #{rank}/{num_companies})"
-                )
+                strengths.append(f"Strong {comparison.metric_name} (Rank #{rank}/{num_companies})")
 
             # Bottom performer = Weakness
             elif rank == num_companies or percentile <= 0.2:
-                weaknesses.append(
-                    f"Weak {comparison.metric_name} (Rank #{rank}/{num_companies})"
-                )
+                weaknesses.append(f"Weak {comparison.metric_name} (Rank #{rank}/{num_companies})")
 
             # Below industry average
             if comparison.industry_average:
                 value = comparison.values[company_name]
                 if comparison.metric_type == MetricType.HIGHER_BETTER:
                     if value < comparison.industry_average * 0.9:
-                        weaknesses.append(
-                            f"{comparison.metric_name} below industry average"
-                        )
+                        weaknesses.append(f"{comparison.metric_name} below industry average")
                 elif comparison.metric_type == MetricType.LOWER_BETTER:
                     if value > comparison.industry_average * 1.1:
-                        weaknesses.append(
-                            f"{comparison.metric_name} above industry average"
-                        )
+                        weaknesses.append(f"{comparison.metric_name} above industry average")
 
         # Add qualitative strengths/weaknesses
         strengths.extend(profile.strengths)
@@ -397,14 +436,14 @@ class ComparativeAnalystAgent:
 
         # Generate opportunities based on weaknesses (room to improve)
         for weakness in weaknesses[:3]:
-            opportunities.append(f"Improve {weakness.split()[1] if len(weakness.split()) > 1 else weakness}")
+            opportunities.append(
+                f"Improve {weakness.split()[1] if len(weakness.split()) > 1 else weakness}"
+            )
 
         # Generate threats based on competitors' strengths
         for comparison in comparisons:
             if comparison.best_performer and comparison.best_performer != company_name:
-                threats.append(
-                    f"{comparison.best_performer} leads in {comparison.metric_name}"
-                )
+                threats.append(f"{comparison.best_performer} leads in {comparison.metric_name}")
 
         # Limit lists
         strengths = strengths[:5]
@@ -423,14 +462,11 @@ class ComparativeAnalystAgent:
             weaknesses=weaknesses,
             opportunities=opportunities,
             threats=threats,
-            overall_score=overall_score
+            overall_score=overall_score,
         )
 
     def _calculate_position(
-        self,
-        company_name: str,
-        comparisons: List[MetricComparison],
-        swot: SWOT
+        self, company_name: str, comparisons: List[MetricComparison], swot: SWOT
     ) -> CompetitivePosition:
         """Calculate competitive position for a company."""
         # Calculate average ranking
@@ -451,7 +487,7 @@ class ComparativeAnalystAgent:
                 competitive_disadvantages=[],
                 strategic_fit={},
                 overall_rank=999,
-                score=0
+                score=0,
             )
 
         avg_rank = statistics.mean(ranks)
@@ -501,13 +537,10 @@ class ComparativeAnalystAgent:
             competitive_disadvantages=disadvantages[:5],
             strategic_fit=strategic_fit,
             overall_rank=int(avg_rank),
-            score=score
+            score=score,
         )
 
-    def _calculate_rankings(
-        self,
-        comparisons: List[MetricComparison]
-    ) -> List[Tuple[str, float]]:
+    def _calculate_rankings(self, comparisons: List[MetricComparison]) -> List[Tuple[str, float]]:
         """Calculate overall company rankings."""
         scores = defaultdict(list)
 
@@ -517,16 +550,13 @@ class ComparativeAnalystAgent:
 
         # Average percentile = overall score
         final_scores = [
-            (company, statistics.mean(percentiles) * 100)
-            for company, percentiles in scores.items()
+            (company, statistics.mean(percentiles) * 100) for company, percentiles in scores.items()
         ]
 
         return sorted(final_scores, key=lambda x: x[1], reverse=True)
 
     def _generate_insights(
-        self,
-        comparisons: List[MetricComparison],
-        rankings: List[Tuple[str, float]]
+        self, comparisons: List[MetricComparison], rankings: List[Tuple[str, float]]
     ) -> List[str]:
         """Generate key insights from the analysis."""
         insights = []
@@ -538,8 +568,7 @@ class ComparativeAnalystAgent:
 
         # Target company position
         target_rank = next(
-            (i + 1 for i, (name, _) in enumerate(rankings) if name == self.target_company),
-            None
+            (i + 1 for i, (name, _) in enumerate(rankings) if name == self.target_company), None
         )
         if target_rank:
             insights.append(
@@ -571,7 +600,7 @@ class ComparativeAnalystAgent:
         self,
         comparisons: List[MetricComparison],
         swots: Dict[str, SWOT],
-        positions: Dict[str, CompetitivePosition]
+        positions: Dict[str, CompetitivePosition],
     ) -> List[str]:
         """Generate strategic recommendations."""
         recommendations = []
@@ -592,7 +621,9 @@ class ComparativeAnalystAgent:
 
         # Position-based recommendations
         if target_position.market_position == "Leader":
-            recommendations.append("Defend market position through innovation and customer retention")
+            recommendations.append(
+                "Defend market position through innovation and customer retention"
+            )
         elif target_position.market_position == "Challenger":
             recommendations.append("Target leader's weaknesses to gain market share")
         elif target_position.market_position == "Follower":
@@ -629,7 +660,7 @@ class ComparativeAnalystAgent:
                 benchmark_factor = 1.0
                 break
 
-        return (metric_factor * 0.4 + company_factor * 0.4 + benchmark_factor * 0.2)
+        return metric_factor * 0.4 + company_factor * 0.4 + benchmark_factor * 0.2
 
 
 async def comparative_analyst_node(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -638,10 +669,7 @@ async def comparative_analyst_node(state: Dict[str, Any]) -> Dict[str, Any]:
     competitors = state.get("competitors", [])
     company_data = state.get("company_data", {})
 
-    analyst = ComparativeAnalystAgent(
-        target_company=target_company,
-        industry=state.get("industry")
-    )
+    analyst = ComparativeAnalystAgent(target_company=target_company, industry=state.get("industry"))
 
     # Add target company
     analyst.add_company(target_company, company_data.get("metrics", {}))
@@ -649,10 +677,7 @@ async def comparative_analyst_node(state: Dict[str, Any]) -> Dict[str, Any]:
     # Add competitors
     for competitor in competitors:
         if isinstance(competitor, dict):
-            analyst.add_company(
-                competitor.get("name", "Unknown"),
-                competitor.get("metrics", {})
-            )
+            analyst.add_company(competitor.get("name", "Unknown"), competitor.get("metrics", {}))
 
     # Perform analysis
     try:
@@ -663,8 +688,7 @@ async def comparative_analyst_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 "target": target_company,
                 "companies_compared": analysis.companies_analyzed,
                 "rankings": [
-                    {"company": name, "score": score}
-                    for name, score in analysis.overall_rankings
+                    {"company": name, "score": score} for name, score in analysis.overall_rankings
                 ],
                 "key_insights": analysis.key_insights,
                 "recommendations": analysis.recommendations,
@@ -674,10 +698,10 @@ async def comparative_analyst_node(state: Dict[str, Any]) -> Dict[str, Any]:
                         "strengths": swot.strengths,
                         "weaknesses": swot.weaknesses,
                         "opportunities": swot.opportunities,
-                        "threats": swot.threats
+                        "threats": swot.threats,
                     }
                     for name, swot in analysis.swot_analyses.items()
-                }
+                },
             }
         }
     except ValueError as e:
@@ -685,11 +709,7 @@ async def comparative_analyst_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def create_comparative_analyst(
-    target_company: str,
-    industry: Optional[str] = None
+    target_company: str, industry: Optional[str] = None
 ) -> ComparativeAnalystAgent:
     """Factory function to create a comparative analyst."""
-    return ComparativeAnalystAgent(
-        target_company=target_company,
-        industry=industry
-    )
+    return ComparativeAnalystAgent(target_company=target_company, industry=industry)

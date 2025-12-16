@@ -184,13 +184,13 @@ Follow Keep a Changelog categories:
 
 ### Good Examples
 
-✅ **Good**: "Added bulk import feature supporting CSV and Excel files up to 10MB"  
+✅ **Good**: "Added bulk import feature supporting CSV and Excel files up to 10MB"
 ❌ **Bad**: "feat: import stuff"
 
-✅ **Good**: "Fixed memory leak in data processing causing crashes with large datasets"  
+✅ **Good**: "Fixed memory leak in data processing causing crashes with large datasets"
 ❌ **Bad**: "fix: memory thing"
 
-✅ **Good**: "Changed default timeout from 30s to 60s to prevent timeout errors on slow connections"  
+✅ **Good**: "Changed default timeout from 30s to 60s to prevent timeout errors on slow connections"
 ❌ **Bad**: "refactor: timeout"
 
 ## Conventional Commits Mapping
@@ -244,10 +244,10 @@ cd cicd/scripts
 
 ## Success Criteria
 
-✅ CHANGELOG entry complete  
-✅ All changes documented  
-✅ User-focused descriptions  
-✅ Validation passes  
+✅ CHANGELOG entry complete
+✅ All changes documented
+✅ User-focused descriptions
+✅ Validation passes
 ✅ Ready for release tag
 
 ## Related Prompts
@@ -268,7 +268,6 @@ cd cicd/scripts
 
 ---
 
-**Created**: 2024-11-15 (Original prompt creation)  
-**Updated**: 2025-12-08 (PROMPTS-OPTIMIZE: Added Pattern metadata, Purpose, User Process, Related Prompts/Rules, Fixed frontmatter YAML)  
+**Created**: 2024-11-15 (Original prompt creation)
+**Updated**: 2025-12-08 (PROMPTS-OPTIMIZE: Added Pattern metadata, Purpose, User Process, Related Prompts/Rules, Fixed frontmatter YAML)
 **Rule**: `rule.prompts.creation.v1`, `rule.prompts.registry-integration.v1`
-

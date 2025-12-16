@@ -13,13 +13,7 @@ from ...utils import get_logger
 
 logger = get_logger(__name__)
 
-from .models import (
-    ESGCategory,
-    ControversySeverity,
-    ESGMetric,
-    Controversy,
-    ESGAnalysis,
-)
+from .models import Controversy, ControversySeverity, ESGAnalysis, ESGCategory, ESGMetric
 from .scorer import ESGScorer
 
 
@@ -47,7 +41,7 @@ class ESGAgent:
         self,
         llm_client: Any,
         search_tool: Optional[SearchToolType] = None,
-        enable_controversy_detection: bool = True
+        enable_controversy_detection: bool = True,
     ):
         """
         Initialize ESG agent.
@@ -114,7 +108,7 @@ class ESGAgent:
             strengths=strengths,
             risks=risks,
             recommendations=recommendations,
-            data_sources=[r.get("url", "") for r in search_results[:10]]
+            data_sources=[r.get("url", "") for r in search_results[:10]],
         )
 
     async def _search_esg_data(self, company_name: str) -> List[Dict]:
@@ -128,7 +122,7 @@ class ESGAgent:
             f"{company_name} diversity inclusion workforce",
             f"{company_name} corporate governance board",
             f"{company_name} sustainability initiatives",
-            f"{company_name} ESG rating score"
+            f"{company_name} ESG rating score",
         ]
 
         all_results = []
@@ -144,17 +138,14 @@ class ESGAgent:
         return all_results
 
     async def _extract_metrics(
-        self,
-        company_name: str,
-        search_results: List[Dict]
+        self, company_name: str, search_results: List[Dict]
     ) -> List[ESGMetric]:
         """Extract ESG metrics from search results."""
         metrics = []
 
         # Use LLM to extract metrics
         context = "\n".join(
-            r.get("content", r.get("snippet", ""))[:500]
-            for r in search_results[:10]
+            r.get("content", r.get("snippet", ""))[:500] for r in search_results[:10]
         )
 
         if not context.strip():
@@ -183,11 +174,15 @@ Focus on quantitative metrics like:
 Return ONLY the metrics found with factual data. Do not estimate or make up numbers."""
 
         try:
-            if hasattr(self.llm, 'ainvoke'):
-                response = await self.llm.ainvoke([
-                    SystemMessage(content="You are an ESG analyst extracting metrics from reports."),
-                    HumanMessage(content=prompt)
-                ])
+            if hasattr(self.llm, "ainvoke"):
+                response = await self.llm.ainvoke(
+                    [
+                        SystemMessage(
+                            content="You are an ESG analyst extracting metrics from reports."
+                        ),
+                        HumanMessage(content=prompt),
+                    ]
+                )
                 metrics_text = response.content
                 metrics = self._parse_metrics_response(metrics_text)
         except Exception as e:
@@ -213,22 +208,22 @@ Return ONLY the metrics found with factual data. Do not estimate or make up numb
                 category = ESGCategory.GOVERNANCE
 
             # Look for percentage values
-            pct_match = re.search(r'(\d+(?:\.\d+)?)\s*%', line)
+            pct_match = re.search(r"(\d+(?:\.\d+)?)\s*%", line)
             if pct_match:
-                metrics.append(ESGMetric(
-                    name=line[:50],
-                    category=category,
-                    value=float(pct_match.group(1)),
-                    unit="%",
-                    source="research"
-                ))
+                metrics.append(
+                    ESGMetric(
+                        name=line[:50],
+                        category=category,
+                        value=float(pct_match.group(1)),
+                        unit="%",
+                        source="research",
+                    )
+                )
 
         return metrics[:20]  # Limit to 20 metrics
 
     async def _detect_controversies(
-        self,
-        company_name: str,
-        search_results: List[Dict]
+        self, company_name: str, search_results: List[Dict]
     ) -> List[Controversy]:
         """Detect ESG controversies."""
         controversies = []
@@ -238,7 +233,7 @@ Return ONLY the metrics found with factual data. Do not estimate or make up numb
             f"{company_name} lawsuit scandal",
             f"{company_name} environmental violation fine",
             f"{company_name} labor dispute controversy",
-            f"{company_name} ethics investigation"
+            f"{company_name} ethics investigation",
         ]
 
         controversy_results = []
@@ -257,8 +252,7 @@ Return ONLY the metrics found with factual data. Do not estimate or make up numb
 
         # Analyze for controversies
         context = "\n".join(
-            r.get("content", r.get("snippet", ""))[:300]
-            for r in controversy_results[:10]
+            r.get("content", r.get("snippet", ""))[:300] for r in controversy_results[:10]
         )
 
         prompt = f"""Identify any ESG controversies for {company_name} from this information:
@@ -275,11 +269,15 @@ For each controversy found, identify:
 Only report factual controversies with evidence. Do not speculate."""
 
         try:
-            if hasattr(self.llm, 'ainvoke'):
-                response = await self.llm.ainvoke([
-                    SystemMessage(content="You are an ESG analyst identifying company controversies."),
-                    HumanMessage(content=prompt)
-                ])
+            if hasattr(self.llm, "ainvoke"):
+                response = await self.llm.ainvoke(
+                    [
+                        SystemMessage(
+                            content="You are an ESG analyst identifying company controversies."
+                        ),
+                        HumanMessage(content=prompt),
+                    ]
+                )
                 controversies = self._parse_controversies(response.content)
         except Exception as e:
             logger.warning(f"Failed to detect controversies for {company_name}: {e}")
@@ -307,12 +305,14 @@ Only report factual controversies with evidence. Do not speculate."""
             if any(w in section.lower() for w in ["severe", "major", "significant"]):
                 severity = ControversySeverity.HIGH
 
-            controversies.append(Controversy(
-                title=section.split("\n")[0][:100],
-                description=section[:300],
-                category=category,
-                severity=severity
-            ))
+            controversies.append(
+                Controversy(
+                    title=section.split("\n")[0][:100],
+                    description=section[:300],
+                    category=category,
+                    severity=severity,
+                )
+            )
 
         return controversies
 
@@ -321,7 +321,7 @@ Only report factual controversies with evidence. Do not speculate."""
         company_name: str,
         category: ESGCategory,
         metrics: List[ESGMetric],
-        search_results: List[Dict]
+        search_results: List[Dict],
     ) -> str:
         """Generate summary for ESG category."""
         category_metrics = [m for m in metrics if m.category == category]
@@ -329,9 +329,7 @@ Only report factual controversies with evidence. Do not speculate."""
         if not category_metrics:
             return f"Limited {category.value} data available for {company_name}."
 
-        metrics_text = "\n".join(
-            f"- {m.name}: {m.value} {m.unit}" for m in category_metrics
-        )
+        metrics_text = "\n".join(f"- {m.name}: {m.value} {m.unit}" for m in category_metrics)
 
         prompt = f"""Summarize {company_name}'s {category.value} ESG performance in 2-3 sentences.
 
@@ -341,11 +339,13 @@ Metrics:
 Be factual and concise."""
 
         try:
-            if hasattr(self.llm, 'ainvoke'):
-                response = await self.llm.ainvoke([
-                    SystemMessage(content="You are an ESG analyst writing concise summaries."),
-                    HumanMessage(content=prompt)
-                ])
+            if hasattr(self.llm, "ainvoke"):
+                response = await self.llm.ainvoke(
+                    [
+                        SystemMessage(content="You are an ESG analyst writing concise summaries."),
+                        HumanMessage(content=prompt),
+                    ]
+                )
                 return response.content[:500]
         except Exception as e:
             logger.warning(f"Failed to generate {category.value} summary for {company_name}: {e}")
@@ -356,6 +356,7 @@ Be factual and concise."""
 # ============================================================================
 # LangGraph Node Function
 # ============================================================================
+
 
 async def esg_agent_node(state: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -382,26 +383,18 @@ async def esg_agent_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
     try:
         analysis = await agent.analyze(company_name)
-        return {
-            "agent_outputs": {
-                "esg": analysis.to_dict()
-            }
-        }
+        return {"agent_outputs": {"esg": analysis.to_dict()}}
     except Exception as e:
-        return {
-            "agent_outputs": {
-                "esg": {"error": str(e)}
-            }
-        }
+        return {"agent_outputs": {"esg": {"error": str(e)}}}
 
 
 # ============================================================================
 # Factory Function
 # ============================================================================
 
+
 def create_esg_agent(
-    llm_client: Any,
-    search_tool: Optional[ESGAgent.SearchToolType] = None
+    llm_client: Any, search_tool: Optional[ESGAgent.SearchToolType] = None
 ) -> ESGAgent:
     """Create an ESG agent."""
     return ESGAgent(llm_client, search_tool)

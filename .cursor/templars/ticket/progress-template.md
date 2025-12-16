@@ -29,4 +29,3 @@ provenance: { owner: team-ticket, last_review: 2025-12-06 }
 
 ### Validation
 - {{validation_step_1}}: {{result}}
-

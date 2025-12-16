@@ -7,7 +7,7 @@ foreach ($file in $files) {
         continue
     }
     $content = Get-Content -Path $file.FullName -Raw
-    
+
     # Skip if already has front-matter
     if ($content -match '(?s)^\s*---\r?\n') {
         Write-Host "Skipping $($file.Name) - already has front-matter"
@@ -35,4 +35,3 @@ provenance:
     Set-Content -Path $file.FullName -Value $newContent -Encoding UTF8
     Write-Host "Updated $($file.Name)"
 }
-

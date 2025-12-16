@@ -11,7 +11,9 @@ Firecrawl converts websites to clean, LLM-ready markdown with support for:
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
+
 from pydantic import BaseModel
+
 from ..utils import get_config, get_logger
 
 logger = get_logger(__name__)
@@ -20,6 +22,7 @@ logger = get_logger(__name__)
 @dataclass
 class ScrapedPage:
     """Result from scraping a single page."""
+
     url: str
     markdown: str = ""
     html: str = ""
@@ -40,6 +43,7 @@ class ScrapedPage:
 @dataclass
 class CrawlResult:
     """Result from crawling a website."""
+
     base_url: str
     pages: List[ScrapedPage] = field(default_factory=list)
     total_pages: int = 0
@@ -49,14 +53,14 @@ class CrawlResult:
     def get_all_markdown(self, separator: str = "\n\n---\n\n") -> str:
         """Combine all pages' markdown into one string."""
         return separator.join(
-            f"# {p.title or p.url}\n\n{p.markdown}"
-            for p in self.pages if p.success and p.markdown
+            f"# {p.title or p.url}\n\n{p.markdown}" for p in self.pages if p.success and p.markdown
         )
 
 
 @dataclass
 class MapResult:
     """Result from mapping a website's URLs."""
+
     base_url: str
     urls: List[str] = field(default_factory=list)
     success: bool = True
@@ -66,6 +70,7 @@ class MapResult:
 @dataclass
 class SearchResult:
     """Result from web search."""
+
     query: str
     results: List[ScrapedPage] = field(default_factory=list)
     success: bool = True
@@ -75,6 +80,7 @@ class SearchResult:
 @dataclass
 class ExtractedData:
     """Result from structured extraction."""
+
     url: str
     data: Dict[str, Any] = field(default_factory=dict)
     success: bool = True
@@ -125,6 +131,7 @@ class FirecrawlClient:
                     "Firecrawl API key required. Set FIRECRAWL_API_KEY env var or pass api_key parameter."
                 )
             from firecrawl import FirecrawlApp
+
             self._app = FirecrawlApp(api_key=self.api_key)
         return self._app
 
@@ -236,14 +243,16 @@ class FirecrawlClient:
 
             pages = []
             for item in result.get("data", []):
-                pages.append(ScrapedPage(
-                    url=item.get("url", url),
-                    markdown=item.get("markdown", ""),
-                    html=item.get("html", ""),
-                    metadata=item.get("metadata", {}),
-                    links=item.get("links", []),
-                    success=True,
-                ))
+                pages.append(
+                    ScrapedPage(
+                        url=item.get("url", url),
+                        markdown=item.get("markdown", ""),
+                        html=item.get("html", ""),
+                        metadata=item.get("metadata", {}),
+                        links=item.get("links", []),
+                        success=True,
+                    )
+                )
 
             return CrawlResult(
                 base_url=url,
@@ -328,22 +337,28 @@ class FirecrawlClient:
 
             params = {
                 "limit": num_results,
-                "scrapeOptions": {
-                    "formats": ["markdown"],
-                    "onlyMainContent": True,
-                } if scrape_results else None,
+                "scrapeOptions": (
+                    {
+                        "formats": ["markdown"],
+                        "onlyMainContent": True,
+                    }
+                    if scrape_results
+                    else None
+                ),
             }
 
             result = app.search(query, params=params)
 
             pages = []
             for item in result.get("data", []):
-                pages.append(ScrapedPage(
-                    url=item.get("url", ""),
-                    markdown=item.get("markdown", ""),
-                    metadata=item.get("metadata", {}),
-                    success=True,
-                ))
+                pages.append(
+                    ScrapedPage(
+                        url=item.get("url", ""),
+                        markdown=item.get("markdown", ""),
+                        metadata=item.get("metadata", {}),
+                        success=True,
+                    )
+                )
 
             return SearchResult(
                 query=query,
@@ -392,11 +407,13 @@ class FirecrawlClient:
 
             extracted = []
             for i, data in enumerate(result.get("data", [])):
-                extracted.append(ExtractedData(
-                    url=urls[i] if i < len(urls) else "",
-                    data=data,
-                    success=True,
-                ))
+                extracted.append(
+                    ExtractedData(
+                        url=urls[i] if i < len(urls) else "",
+                        data=data,
+                        success=True,
+                    )
+                )
 
             return extracted
 
@@ -436,13 +453,15 @@ def format_firecrawl_for_research(pages: List[ScrapedPage]) -> List[Dict[str, An
         if not page.success:
             continue
 
-        formatted.append({
-            "title": page.title or page.url,
-            "url": page.url,
-            "content": page.markdown[:4000],  # Truncate for API limits
-            "score": 0.85,  # High score for direct scraping
-            "source": "firecrawl",
-            "metadata": page.metadata,
-        })
+        formatted.append(
+            {
+                "title": page.title or page.url,
+                "url": page.url,
+                "content": page.markdown[:4000],  # Truncate for API limits
+                "score": 0.85,  # High score for direct scraping
+                "source": "firecrawl",
+                "metadata": page.metadata,
+            }
+        )
 
     return formatted

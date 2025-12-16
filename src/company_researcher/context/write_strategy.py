@@ -11,31 +11,34 @@ The WRITE strategy allows agents to persist working notes
 that can be read by subsequent agents in the workflow.
 """
 
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from ..utils import utc_now
+from typing import Any, Dict, List, Optional
 
+from ..utils import utc_now
 
 # ============================================================================
 # Enums and Data Models
 # ============================================================================
 
+
 class NoteType(str, Enum):
     """Types of scratchpad notes."""
-    OBSERVATION = "observation"      # Raw observation from research
-    HYPOTHESIS = "hypothesis"        # Working hypothesis
-    QUESTION = "question"            # Question to investigate
-    FINDING = "finding"              # Confirmed finding
-    TODO = "todo"                    # Action item
-    INSIGHT = "insight"              # Key insight
+
+    OBSERVATION = "observation"  # Raw observation from research
+    HYPOTHESIS = "hypothesis"  # Working hypothesis
+    QUESTION = "question"  # Question to investigate
+    FINDING = "finding"  # Confirmed finding
+    TODO = "todo"  # Action item
+    INSIGHT = "insight"  # Key insight
     CONTRADICTION = "contradiction"  # Contradictory information
-    SUMMARY = "summary"              # Summary note
+    SUMMARY = "summary"  # Summary note
 
 
 class NotePriority(str, Enum):
     """Priority levels for notes."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -45,6 +48,7 @@ class NotePriority(str, Enum):
 @dataclass
 class ScratchpadNote:
     """A single note in the scratchpad."""
+
     id: str
     content: str
     note_type: NoteType
@@ -65,7 +69,7 @@ class ScratchpadNote:
             "tags": self.tags,
             "metadata": self.metadata,
             "created_at": self.created_at.isoformat(),
-            "references": self.references
+            "references": self.references,
         }
 
     @classmethod
@@ -78,14 +82,19 @@ class ScratchpadNote:
             priority=NotePriority(data.get("priority", "medium")),
             tags=data.get("tags", []),
             metadata=data.get("metadata", {}),
-            created_at=datetime.fromisoformat(data["created_at"]) if isinstance(data.get("created_at"), str) else utc_now(),
-            references=data.get("references", [])
+            created_at=(
+                datetime.fromisoformat(data["created_at"])
+                if isinstance(data.get("created_at"), str)
+                else utc_now()
+            ),
+            references=data.get("references", []),
         )
 
 
 @dataclass
 class WorkingMemory:
     """Working memory state for an agent."""
+
     agent_name: str
     current_focus: str = ""
     context_window: List[str] = field(default_factory=list)
@@ -114,13 +123,14 @@ class WorkingMemory:
             "current_focus": self.current_focus,
             "context_window": self.context_window,
             "variables": self.variables,
-            "chain_of_thought": self.chain_of_thought
+            "chain_of_thought": self.chain_of_thought,
         }
 
 
 # ============================================================================
 # Scratchpad
 # ============================================================================
+
 
 class Scratchpad:
     """
@@ -182,7 +192,7 @@ class Scratchpad:
         priority: NotePriority = NotePriority.MEDIUM,
         tags: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None,
-        references: Optional[List[str]] = None
+        references: Optional[List[str]] = None,
     ) -> str:
         """
         Write a note to the scratchpad.
@@ -209,7 +219,7 @@ class Scratchpad:
             priority=priority,
             tags=tags or [],
             metadata=metadata or {},
-            references=references or []
+            references=references or [],
         )
 
         self._notes[note_id] = note
@@ -221,17 +231,11 @@ class Scratchpad:
         return note_id
 
     def write_observation(
-        self,
-        content: str,
-        agent_source: str,
-        tags: Optional[List[str]] = None
+        self, content: str, agent_source: str, tags: Optional[List[str]] = None
     ) -> str:
         """Write an observation note."""
         return self.write(
-            content=content,
-            note_type=NoteType.OBSERVATION,
-            agent_source=agent_source,
-            tags=tags
+            content=content, note_type=NoteType.OBSERVATION, agent_source=agent_source, tags=tags
         )
 
     def write_finding(
@@ -239,7 +243,7 @@ class Scratchpad:
         content: str,
         agent_source: str,
         priority: NotePriority = NotePriority.HIGH,
-        tags: Optional[List[str]] = None
+        tags: Optional[List[str]] = None,
     ) -> str:
         """Write a confirmed finding."""
         return self.write(
@@ -247,28 +251,20 @@ class Scratchpad:
             note_type=NoteType.FINDING,
             agent_source=agent_source,
             priority=priority,
-            tags=tags
+            tags=tags,
         )
 
-    def write_hypothesis(
-        self,
-        content: str,
-        agent_source: str,
-        confidence: float = 0.5
-    ) -> str:
+    def write_hypothesis(self, content: str, agent_source: str, confidence: float = 0.5) -> str:
         """Write a hypothesis with confidence level."""
         return self.write(
             content=content,
             note_type=NoteType.HYPOTHESIS,
             agent_source=agent_source,
-            metadata={"confidence": confidence}
+            metadata={"confidence": confidence},
         )
 
     def write_contradiction(
-        self,
-        content: str,
-        agent_source: str,
-        conflicting_note_ids: Optional[List[str]] = None
+        self, content: str, agent_source: str, conflicting_note_ids: Optional[List[str]] = None
     ) -> str:
         """Write a contradiction note."""
         return self.write(
@@ -276,28 +272,22 @@ class Scratchpad:
             note_type=NoteType.CONTRADICTION,
             agent_source=agent_source,
             priority=NotePriority.HIGH,
-            references=conflicting_note_ids
+            references=conflicting_note_ids,
         )
 
     def write_question(
-        self,
-        content: str,
-        agent_source: str,
-        priority: NotePriority = NotePriority.MEDIUM
+        self, content: str, agent_source: str, priority: NotePriority = NotePriority.MEDIUM
     ) -> str:
         """Write a question to investigate."""
         return self.write(
             content=content,
             note_type=NoteType.QUESTION,
             agent_source=agent_source,
-            priority=priority
+            priority=priority,
         )
 
     def write_summary(
-        self,
-        content: str,
-        agent_source: str,
-        summarized_note_ids: Optional[List[str]] = None
+        self, content: str, agent_source: str, summarized_note_ids: Optional[List[str]] = None
     ) -> str:
         """Write a summary note."""
         return self.write(
@@ -305,7 +295,7 @@ class Scratchpad:
             note_type=NoteType.SUMMARY,
             agent_source=agent_source,
             priority=NotePriority.HIGH,
-            references=summarized_note_ids
+            references=summarized_note_ids,
         )
 
     # ==========================================================================
@@ -318,7 +308,7 @@ class Scratchpad:
         agent_source: Optional[str] = None,
         priority: Optional[NotePriority] = None,
         tags: Optional[List[str]] = None,
-        limit: int = 50
+        limit: int = 50,
     ) -> List[ScratchpadNote]:
         """
         Read notes matching criteria.
@@ -353,12 +343,10 @@ class Scratchpad:
             NotePriority.CRITICAL: 0,
             NotePriority.HIGH: 1,
             NotePriority.MEDIUM: 2,
-            NotePriority.LOW: 3
+            NotePriority.LOW: 3,
         }
 
-        results.sort(
-            key=lambda n: (priority_order[n.priority], -n.created_at.timestamp())
-        )
+        results.sort(key=lambda n: (priority_order[n.priority], -n.created_at.timestamp()))
 
         return results[:limit]
 
@@ -413,7 +401,7 @@ class Scratchpad:
         agent_name: str,
         focus: Optional[str] = None,
         thought: Optional[str] = None,
-        variable: Optional[tuple] = None
+        variable: Optional[tuple] = None,
     ) -> WorkingMemory:
         """
         Update agent's working memory.
@@ -449,7 +437,7 @@ class Scratchpad:
         notes_list.sort(
             key=lambda n: (
                 0 if n.priority in (NotePriority.CRITICAL, NotePriority.HIGH) else 1,
-                n.created_at.timestamp()
+                n.created_at.timestamp(),
             )
         )
 
@@ -475,8 +463,7 @@ class Scratchpad:
             return count
 
         to_remove = [
-            note_id for note_id, note in self._notes.items()
-            if note.note_type == note_type
+            note_id for note_id, note in self._notes.items() if note.note_type == note_type
         ]
 
         for note_id in to_remove:
@@ -492,9 +479,8 @@ class Scratchpad:
             "note_count": len(self._notes),
             "notes": [note.to_dict() for note in self._notes.values()],
             "working_memories": {
-                name: memory.to_dict()
-                for name, memory in self._working_memories.items()
-            }
+                name: memory.to_dict() for name, memory in self._working_memories.items()
+            },
         }
 
     def get_summary(self) -> Dict[str, Any]:
@@ -513,13 +499,11 @@ class Scratchpad:
             "by_type": by_type,
             "by_agent": by_agent,
             "by_priority": by_priority,
-            "working_memories": list(self._working_memories.keys())
+            "working_memories": list(self._working_memories.keys()),
         }
 
     def format_for_context(
-        self,
-        note_types: Optional[List[NoteType]] = None,
-        max_length: int = 4000
+        self, note_types: Optional[List[NoteType]] = None, max_length: int = 4000
     ) -> str:
         """
         Format scratchpad notes for inclusion in LLM context.
@@ -563,6 +547,7 @@ class Scratchpad:
 # ============================================================================
 # Factory Functions
 # ============================================================================
+
 
 def create_scratchpad(company_name: str) -> Scratchpad:
     """Create a new scratchpad for a company."""

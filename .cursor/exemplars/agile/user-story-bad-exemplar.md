@@ -28,4 +28,3 @@ Add a search box to the page so people can search.
 
 ## Definition of Done
 - Code written
-

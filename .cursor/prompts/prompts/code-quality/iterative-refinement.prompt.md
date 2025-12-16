@@ -10,8 +10,8 @@ argument-hint: "Specific issue description in <issue> tags"
 
 This prompt requests focused fixes for specific issues without rebuilding everything.
 
-**Pattern**: Iterative Refinement Pattern ⭐⭐⭐⭐  
-**Effectiveness**: Fast iteration, focused fixes  
+**Pattern**: Iterative Refinement Pattern ⭐⭐⭐⭐
+**Effectiveness**: Fast iteration, focused fixes
 **Use When**: Fixing specific issues, adjusting details, correcting previous implementation
 
 ---
@@ -160,7 +160,7 @@ When reporting multiple related issues:
 
 ```
 Issue 1: [FIRST ISSUE]
-Issue 2: [SECOND ISSUE]  
+Issue 2: [SECOND ISSUE]
 Issue 3: [THIRD ISSUE]
 
 These are all in [LOCATION/FILE]
@@ -179,11 +179,11 @@ These are all in the Market export
 
 ## What This Pattern Does
 
-✅ Focused scope - fix X, not rebuild everything  
-✅ Builds on previous work  
-✅ Specific problem statement  
-✅ Fast iteration cycle  
-✅ Preserves working features  
+✅ Focused scope - fix X, not rebuild everything
+✅ Builds on previous work
+✅ Specific problem statement
+✅ Fast iteration cycle
+✅ Preserves working features
 
 ---
 
@@ -323,7 +323,7 @@ Now date format should be YYYY-MM-DD only
 2. Refinement 1: Fix values
    ↓
 3. Refinement 2: Adjust ordering
-   ↓  
+   ↓
 4. Refinement 3: Polish formatting
    ↓
 5. Final: Test and validate
@@ -466,8 +466,7 @@ Third fix: Date format should be YYYY-MM-DD only
 
 ---
 
-**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)  
-**Pattern ID**: #9 Iterative Refinement Pattern  
-**Evidence**: conversations/JP/extracted/pattern-discovery-report.md  
+**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)
+**Pattern ID**: #9 Iterative Refinement Pattern
+**Evidence**: conversations/JP/extracted/pattern-discovery-report.md
 **Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
-

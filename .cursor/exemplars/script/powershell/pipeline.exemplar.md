@@ -17,7 +17,7 @@ PowerShell pipeline support with `ValueFromPipeline` enables scripts to accept i
 param(
     [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
     [string[]]$ProjectPath,
-    
+
     [Parameter(Mandatory=$false)]
     [string]$Configuration = "Release"
 )
@@ -95,7 +95,7 @@ foreach ($path in $ProjectPath) {
 param(
     [Parameter(ValueFromPipelineByPropertyName=$true)]
     [string]$Name,
-    
+
     [Parameter(ValueFromPipelineByPropertyName=$true)]
     [string]$Path
 )
@@ -140,14 +140,14 @@ process {
 param(
     [Parameter(ValueFromPipeline=$true)]
     [PSObject]$InputObject,
-    
+
     [switch]$PassThru
 )
 
 process {
     # Process input
     $result = Process-Object $InputObject
-    
+
     # Return original object if PassThru specified
     if ($PassThru) {
         $InputObject
@@ -178,4 +178,3 @@ Get-ChildItem | .\process.ps1 -PassThru | Where-Object { $_.Length -gt 1MB }
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

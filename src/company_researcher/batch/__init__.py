@@ -10,8 +10,8 @@ from .batch_researcher import (
     BatchResearcher,
     BatchResearchResult,
     CompanyResearchResult,
+    compare_companies,
     research_companies,
-    compare_companies
 )
 
 __all__ = [
@@ -19,5 +19,5 @@ __all__ = [
     "BatchResearchResult",
     "CompanyResearchResult",
     "research_companies",
-    "compare_companies"
+    "compare_companies",
 ]

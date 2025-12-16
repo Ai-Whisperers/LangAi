@@ -23,51 +23,21 @@ Usage:
     )
 """
 
-from .models import (
-    SpanContext,
-    SpanEvent,
-    Span,
-    MetricPoint,
-)
-
-from .exporters import (
-    SpanExporter,
-    ConsoleSpanExporter,
-    OTLPSpanExporter,
-    InMemorySpanExporter,
-)
-
-from .tracing import (
-    TracerProvider,
-    Tracer,
-)
-
-from .metrics import (
-    Instrument,
-    Counter,
-    UpDownCounter,
-    Histogram,
-    Gauge,
-    Meter,
-    MeterProvider,
-)
-
-from .decorators import (
-    trace,
-    timed,
-    counted,
-)
-
+from .decorators import counted, timed, trace
+from .exporters import ConsoleSpanExporter, InMemorySpanExporter, OTLPSpanExporter, SpanExporter
 from .globals import (
-    set_tracer_provider,
-    get_tracer_provider,
-    get_tracer,
-    set_meter_provider,
-    get_meter_provider,
-    get_meter,
-    create_tracer_provider,
     create_meter_provider,
+    create_tracer_provider,
+    get_meter,
+    get_meter_provider,
+    get_tracer,
+    get_tracer_provider,
+    set_meter_provider,
+    set_tracer_provider,
 )
+from .metrics import Counter, Gauge, Histogram, Instrument, Meter, MeterProvider, UpDownCounter
+from .models import MetricPoint, Span, SpanContext, SpanEvent
+from .tracing import Tracer, TracerProvider
 
 __all__ = [
     # Models

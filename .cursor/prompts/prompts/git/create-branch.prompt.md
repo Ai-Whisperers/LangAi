@@ -48,10 +48,10 @@ Provide:
    # Ensure source is up to date
    git checkout [source-branch]
    git pull origin [source-branch]
-   
+
    # Create and checkout new branch
    git checkout -b [branch-name]
-   
+
    # Push to remote (after first commit)
    git push -u origin [branch-name]
    ```
@@ -61,4 +61,3 @@ Apply branch naming standards from:
 - `.cursor/rules/git/branch-naming-rule.mdc`
 - `.cursor/rules/git/branch-structure-rule.mdc`
 - `.cursor/rules/git/branch-lifecycle-rule.mdc`
-

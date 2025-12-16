@@ -1,13 +1,14 @@
 """Migration utilities for transitioning from legacy to AI."""
-from typing import Callable, Any, Dict, List
-from functools import wraps
-import random
+
 import asyncio
+import random
 from dataclasses import dataclass, field
 from datetime import datetime
+from functools import wraps
+from typing import Any, Callable, Dict, List
 
-from .config import get_ai_config
 from ..utils import get_logger, utc_now
+from .config import get_ai_config
 
 logger = get_logger(__name__)
 
@@ -15,6 +16,7 @@ logger = get_logger(__name__)
 @dataclass
 class ComparisonResult:
     """Result of comparing AI vs legacy output."""
+
     component: str
     timestamp: datetime
     ai_result: Any
@@ -38,10 +40,7 @@ class ComparisonResult:
         }
 
 
-def gradual_rollout(
-    component_name: str,
-    rollout_percentage: float = 100.0
-) -> Callable:
+def gradual_rollout(component_name: str, rollout_percentage: float = 100.0) -> Callable:
     """
     Decorator for gradual rollout of AI components.
 
@@ -56,6 +55,7 @@ def gradual_rollout(
         async def analyze_sentiment(text):
             return await ai_analyzer.analyze(text)
     """
+
     def decorator(ai_func: Callable) -> Callable:
         @wraps(ai_func)
         async def wrapper(*args, **kwargs):
@@ -78,7 +78,9 @@ def gradual_rollout(
                 return None  # Signal to use legacy
 
             return await ai_func(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -108,11 +110,7 @@ class MigrationValidator:
         self._max_history = 1000  # Limit stored comparisons
 
     async def validate(
-        self,
-        ai_func: Callable,
-        legacy_func: Callable,
-        *args,
-        **kwargs
+        self, ai_func: Callable, legacy_func: Callable, *args, **kwargs
     ) -> ComparisonResult:
         """
         Run both AI and legacy, compare results.
@@ -158,22 +156,18 @@ class MigrationValidator:
             similarity_score=similarity,
             differences=differences,
             ai_latency_ms=ai_latency,
-            legacy_latency_ms=legacy_latency
+            legacy_latency_ms=legacy_latency,
         )
 
         self.comparisons.append(comparison)
 
         # Trim history
         if len(self.comparisons) > self._max_history:
-            self.comparisons = self.comparisons[-self._max_history:]
+            self.comparisons = self.comparisons[-self._max_history :]
 
         return comparison
 
-    def _compare_results(
-        self,
-        ai_result: Any,
-        legacy_result: Any
-    ) -> tuple:
+    def _compare_results(self, ai_result: Any, legacy_result: Any) -> tuple:
         """Compare AI and legacy results."""
         differences = []
 
@@ -182,7 +176,9 @@ class MigrationValidator:
             return True, 1.0, []
 
         if ai_result is None or legacy_result is None:
-            differences.append(f"One result is None: AI={ai_result is not None}, Legacy={legacy_result is not None}")
+            differences.append(
+                f"One result is None: AI={ai_result is not None}, Legacy={legacy_result is not None}"
+            )
             return False, 0.0, differences
 
         # Direct equality
@@ -210,15 +206,12 @@ class MigrationValidator:
             return similarity > 0.9, similarity, differences
 
         # Type mismatch
-        differences.append(f"Type mismatch: {type(ai_result).__name__} vs {type(legacy_result).__name__}")
+        differences.append(
+            f"Type mismatch: {type(ai_result).__name__} vs {type(legacy_result).__name__}"
+        )
         return False, 0.0, differences
 
-    def _compare_dicts(
-        self,
-        d1: Dict,
-        d2: Dict,
-        differences: List[str]
-    ) -> float:
+    def _compare_dicts(self, d1: Dict, d2: Dict, differences: List[str]) -> float:
         """Compare two dicts and return similarity score."""
         all_keys = set(d1.keys()) | set(d2.keys())
         if not all_keys:
@@ -240,12 +233,7 @@ class MigrationValidator:
 
         return matching / len(all_keys)
 
-    def _compare_lists(
-        self,
-        l1: List,
-        l2: List,
-        differences: List[str]
-    ) -> float:
+    def _compare_lists(self, l1: List, l2: List, differences: List[str]) -> float:
         """Compare two lists and return similarity score."""
         if not l1 and not l2:
             return 1.0
@@ -264,12 +252,7 @@ class MigrationValidator:
 
         return overlap / total if total > 0 else 0.0
 
-    def _compare_strings(
-        self,
-        s1: str,
-        s2: str,
-        differences: List[str]
-    ) -> float:
+    def _compare_strings(self, s1: str, s2: str, differences: List[str]) -> float:
         """Compare two strings and return similarity score."""
         if s1.lower().strip() == s2.lower().strip():
             return 1.0
@@ -288,12 +271,7 @@ class MigrationValidator:
 
         return 0.0
 
-    def _compare_numbers(
-        self,
-        n1: float,
-        n2: float,
-        differences: List[str]
-    ) -> float:
+    def _compare_numbers(self, n1: float, n2: float, differences: List[str]) -> float:
         """Compare two numbers and return similarity score."""
         if n1 == n2:
             return 1.0
@@ -315,7 +293,9 @@ class MigrationValidator:
         matches = sum(1 for c in self.comparisons if c.match)
         avg_similarity = sum(c.similarity_score for c in self.comparisons) / len(self.comparisons)
         avg_ai_latency = sum(c.ai_latency_ms for c in self.comparisons) / len(self.comparisons)
-        avg_legacy_latency = sum(c.legacy_latency_ms for c in self.comparisons) / len(self.comparisons)
+        avg_legacy_latency = sum(c.legacy_latency_ms for c in self.comparisons) / len(
+            self.comparisons
+        )
 
         return {
             "component": self.component_name,
@@ -325,7 +305,7 @@ class MigrationValidator:
             "avg_ai_latency_ms": avg_ai_latency,
             "avg_legacy_latency_ms": avg_legacy_latency,
             "ai_faster": avg_ai_latency < avg_legacy_latency,
-            "latency_diff_ms": avg_legacy_latency - avg_ai_latency
+            "latency_diff_ms": avg_legacy_latency - avg_ai_latency,
         }
 
     def get_recent_differences(self, n: int = 10) -> List[Dict]:
@@ -336,7 +316,7 @@ class MigrationValidator:
                 "timestamp": c.timestamp.isoformat(),
                 "match": c.match,
                 "similarity": c.similarity_score,
-                "differences": c.differences[:5]  # Limit
+                "differences": c.differences[:5],  # Limit
             }
             for c in recent
             if not c.match
@@ -366,10 +346,7 @@ class MigrationRegistry:
 
     def get_all_stats(self) -> Dict[str, Any]:
         """Get stats for all validators."""
-        return {
-            name: validator.get_stats()
-            for name, validator in self._validators.items()
-        }
+        return {name: validator.get_stats() for name, validator in self._validators.items()}
 
     def get_summary(self) -> Dict[str, Any]:
         """Get summary across all validators."""
@@ -380,16 +357,21 @@ class MigrationRegistry:
 
         total_validations = sum(s["validations"] for s in all_stats.values())
         avg_match_rate = (
-            sum(s["match_rate"] * s["validations"] for s in all_stats.values() if s["validations"] > 0)
+            sum(
+                s["match_rate"] * s["validations"]
+                for s in all_stats.values()
+                if s["validations"] > 0
+            )
             / total_validations
-            if total_validations > 0 else 0
+            if total_validations > 0
+            else 0
         )
 
         return {
             "total_validations": total_validations,
             "avg_match_rate": avg_match_rate,
             "components": list(all_stats.keys()),
-            "component_stats": all_stats
+            "component_stats": all_stats,
         }
 
     def clear_all_history(self):

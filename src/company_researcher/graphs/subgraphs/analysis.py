@@ -13,25 +13,23 @@ LangGraph automatically parallelizes agents that have no dependencies
 between them, maximizing throughput.
 """
 
-from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
-from langgraph.graph import StateGraph, START, END
+from typing import Any, Dict, List, Optional
 
-from ...state.workflow import OverallState
-from ...agents import (
-    # Core specialist agents
+from langgraph.graph import END, START, StateGraph
+
+from ...agents import (  # Core specialist agents; Optional agents; Synthesizer
+    brand_auditor_agent_node,
+    competitor_scout_agent_node,
+    esg_agent_node,
     financial_agent_node,
     market_agent_node,
     product_agent_node,
-    competitor_scout_agent_node,
-    # Optional agents
-    esg_agent_node,
-    brand_auditor_agent_node,
-    social_media_agent_node,
     sales_intelligence_agent_node,
-    # Synthesizer
+    social_media_agent_node,
     synthesizer_agent_node,
 )
+from ...state.workflow import OverallState
 from ...utils import get_logger
 
 logger = get_logger(__name__)
@@ -113,6 +111,7 @@ class AnalysisConfig:
 # Helper Nodes
 # ============================================================================
 
+
 def prepare_analysis_node(state: OverallState) -> Dict[str, Any]:
     """
     Prepare state for parallel analysis.
@@ -166,26 +165,21 @@ def merge_agent_outputs_node(state: OverallState) -> Dict[str, Any]:
 
     # Count successful agents
     successful_agents = sum(
-        1 for output in agent_outputs.values()
+        1
+        for output in agent_outputs.values()
         if output.get("status") == "success" or output.get("data_extracted", False)
     )
 
     total_agents = len(agent_outputs)
 
     # Calculate total analysis cost
-    total_analysis_cost = sum(
-        output.get("cost", 0.0) for output in agent_outputs.values()
-    )
+    total_analysis_cost = sum(output.get("cost", 0.0) for output in agent_outputs.values())
 
     # Calculate total tokens
     total_analysis_tokens = {
-        "input": sum(
-            output.get("tokens", {}).get("input", 0)
-            for output in agent_outputs.values()
-        ),
+        "input": sum(output.get("tokens", {}).get("input", 0) for output in agent_outputs.values()),
         "output": sum(
-            output.get("tokens", {}).get("output", 0)
-            for output in agent_outputs.values()
+            output.get("tokens", {}).get("output", 0) for output in agent_outputs.values()
         ),
     }
 
@@ -208,9 +202,8 @@ def merge_agent_outputs_node(state: OverallState) -> Dict[str, Any]:
 # Subgraph Creation
 # ============================================================================
 
-def create_analysis_subgraph(
-    config: Optional[AnalysisConfig] = None
-) -> StateGraph:
+
+def create_analysis_subgraph(config: Optional[AnalysisConfig] = None) -> StateGraph:
     """
     Create the analysis subgraph with parallel agent execution.
 
@@ -330,9 +323,7 @@ def create_analysis_subgraph(
     return graph.compile()
 
 
-def create_parallel_analysis_subgraph(
-    agents: Optional[List[str]] = None
-) -> StateGraph:
+def create_parallel_analysis_subgraph(agents: Optional[List[str]] = None) -> StateGraph:
     """
     Create a custom parallel analysis subgraph with specified agents.
 
@@ -408,6 +399,7 @@ def create_parallel_analysis_subgraph(
 # Specialized Analysis Subgraphs
 # ============================================================================
 
+
 def create_financial_focus_subgraph() -> StateGraph:
     """
     Create a subgraph focused on financial analysis.
@@ -417,9 +409,7 @@ def create_financial_focus_subgraph() -> StateGraph:
     Returns:
         Compiled StateGraph
     """
-    return create_parallel_analysis_subgraph(
-        agents=["financial", "market"]
-    )
+    return create_parallel_analysis_subgraph(agents=["financial", "market"])
 
 
 def create_competitive_focus_subgraph() -> StateGraph:
@@ -431,9 +421,7 @@ def create_competitive_focus_subgraph() -> StateGraph:
     Returns:
         Compiled StateGraph
     """
-    return create_parallel_analysis_subgraph(
-        agents=["market", "competitor", "product"]
-    )
+    return create_parallel_analysis_subgraph(agents=["market", "competitor", "product"])
 
 
 def create_esg_focus_subgraph() -> StateGraph:
@@ -445,6 +433,4 @@ def create_esg_focus_subgraph() -> StateGraph:
     Returns:
         Compiled StateGraph
     """
-    return create_parallel_analysis_subgraph(
-        agents=["esg", "brand", "social_media"]
-    )
+    return create_parallel_analysis_subgraph(agents=["esg", "brand", "social_media"])

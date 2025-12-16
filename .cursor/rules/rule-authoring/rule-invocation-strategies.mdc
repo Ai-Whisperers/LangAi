@@ -80,7 +80,7 @@ governs: ""
 alwaysApply: false
 ```
 
-**CRITICAL**: 
+**CRITICAL**:
 - Set `alwaysApply: false` to prevent auto-triggering
 - Use comma-separated format (NOT YAML `-` syntax, NOT JSON `[]` brackets)
 
@@ -197,13 +197,13 @@ What type of rule are you creating?
 
 1. **Coordination/Guidance**: Maps user intent to operational rules
    - -> **Strategy 2**: Description-triggered agentic
-   
+
 2. **File Generation/Modification**: Creates or updates specific files
    - -> **Strategy 1**: File-mask triggered
-   
+
 3. **File Validation/Reading**: Reads and validates specific files
    - -> **Strategy 1**: File-mask triggered
-   
+
 4. **Universal Validation**: Scans all files for violations (RARE)
    - -> **Strategy 3**: Always-apply (with extreme caution)
 
@@ -392,7 +392,7 @@ Coordination Layer (1 per domain)
    `--- Maps user intent -> Correct domain rule
 ```
 
-**Key Principle**: 
+**Key Principle**:
 - **Many operational rules** (Strategy 1) do the actual work
 - **One agent-application rule per domain** (Strategy 2) coordinates them
 - Agent-application rules are **small, focused, high-quality**

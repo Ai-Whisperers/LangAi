@@ -1,11 +1,12 @@
 """AI-powered query generation module."""
+
 from .generator import AIQueryGenerator, get_query_generator
 from .models import (
-    QueryPurpose,
     CompanyContext,
     GeneratedQuery,
     QueryGenerationResult,
-    QueryRefinementResult
+    QueryPurpose,
+    QueryRefinementResult,
 )
 
 __all__ = [

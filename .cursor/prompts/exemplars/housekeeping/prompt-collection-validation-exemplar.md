@@ -117,4 +117,3 @@ items:
 - Add `prompt/improve-prompt.prompt.md` to prompt.collection.yml
 - Create script.collection.yml using stub above
 ```
-

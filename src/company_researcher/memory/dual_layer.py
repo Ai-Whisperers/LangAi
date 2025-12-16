@@ -21,25 +21,23 @@ Usage:
 """
 
 import asyncio
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
-from .lru_cache import ResearchCache
-from .vector_store import (
-    ResearchVectorStore,
-    CHROMADB_AVAILABLE
-)
 from ..utils import utc_now
-
+from .lru_cache import ResearchCache
+from .vector_store import CHROMADB_AVAILABLE, ResearchVectorStore
 
 # ============================================================================
 # Enums and Data Models
 # ============================================================================
 
+
 class MemoryLayer(str, Enum):
     """Memory layer identifiers."""
+
     HOT = "hot"
     COLD = "cold"
     BOTH = "both"
@@ -47,14 +45,16 @@ class MemoryLayer(str, Enum):
 
 class PromotionPolicy(str, Enum):
     """Policies for promoting cold items to hot."""
+
     AGGRESSIVE = "aggressive"  # Promote on first access
-    MODERATE = "moderate"      # Promote after 2+ accesses
+    MODERATE = "moderate"  # Promote after 2+ accesses
     CONSERVATIVE = "conservative"  # Promote only frequently accessed
 
 
 @dataclass
 class MemoryItem:
     """A unified memory item across layers."""
+
     key: str
     content: str
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -71,13 +71,14 @@ class MemoryItem:
             "layer": self.layer.value,
             "access_count": self.access_count,
             "last_accessed": self.last_accessed.isoformat(),
-            "score": self.score
+            "score": self.score,
         }
 
 
 @dataclass
 class DualLayerStats:
     """Statistics for dual-layer memory."""
+
     hot_stats: Dict[str, Any]  # Dict from TypedLRUCache.get_stats()
     cold_count: int
     total_recalls: int = 0
@@ -108,13 +109,14 @@ class DualLayerStats:
             "hit_rate": round(self.hit_rate, 3),
             "hot_hit_rate": round(self.hot_hit_rate, 3),
             "promotions": self.promotions,
-            "demotions": self.demotions
+            "demotions": self.demotions,
         }
 
 
 # ============================================================================
 # Dual-Layer Memory System
 # ============================================================================
+
 
 class DualLayerMemory:
     """
@@ -156,7 +158,7 @@ class DualLayerMemory:
         cold_persist_dir: str = "./data/vector_memory",
         cold_collection: str = "research_memory",
         promotion_policy: PromotionPolicy = PromotionPolicy.MODERATE,
-        promotion_threshold: int = 2
+        promotion_threshold: int = 2,
     ):
         """
         Initialize dual-layer memory.
@@ -179,8 +181,7 @@ class DualLayerMemory:
         if CHROMADB_AVAILABLE:
             try:
                 self._cold = ResearchVectorStore(
-                    persist_directory=cold_persist_dir,
-                    collection_name=cold_collection
+                    persist_directory=cold_persist_dir, collection_name=cold_collection
                 )
                 self._cold_available = True
             except Exception as e:
@@ -215,7 +216,7 @@ class DualLayerMemory:
             hot_hits=self._hot_hits,
             cold_hits=self._cold_hits,
             promotions=self._promotions,
-            demotions=self._demotions
+            demotions=self._demotions,
         )
 
     # ==========================================================================
@@ -230,7 +231,7 @@ class DualLayerMemory:
         layer: MemoryLayer = MemoryLayer.BOTH,
         company_name: Optional[str] = None,
         data_type: Optional[str] = None,
-        hot_ttl: Optional[int] = None
+        hot_ttl: Optional[int] = None,
     ) -> None:
         """
         Store content in memory.
@@ -251,11 +252,7 @@ class DualLayerMemory:
 
         # Store in hot layer
         if layer in (MemoryLayer.HOT, MemoryLayer.BOTH):
-            hot_data = {
-                "content": content,
-                "metadata": meta,
-                "stored_at": utc_now().isoformat()
-            }
+            hot_data = {"content": content, "metadata": meta, "stored_at": utc_now().isoformat()}
             self._hot.put(dtype, key, hot_data, ttl=hot_ttl)
 
         # Store in cold layer
@@ -268,7 +265,7 @@ class DualLayerMemory:
                 data_type=dtype,
                 content=content,
                 source_url=meta.get("source_url"),
-                extra_metadata={**meta, "memory_key": key}
+                extra_metadata={**meta, "memory_key": key},
             )
 
     def recall_key(self, key: str) -> Optional[MemoryItem]:
@@ -296,16 +293,13 @@ class DualLayerMemory:
                 content=hot_data["content"],
                 metadata=hot_data.get("metadata", {}),
                 layer=MemoryLayer.HOT,
-                access_count=self._access_counts[key]
+                access_count=self._access_counts[key],
             )
 
         # Check cold layer
         if self._cold_available:
             # Search for exact key in metadata
-            results = self._cold.search_all(
-                query=key,  # Use key as query
-                k=1
-            )
+            results = self._cold.search_all(query=key, k=1)  # Use key as query
 
             for result in results:
                 if result.document.metadata.get("memory_key") == key:
@@ -318,7 +312,7 @@ class DualLayerMemory:
                         metadata=result.document.metadata,
                         layer=MemoryLayer.COLD,
                         access_count=self._access_counts[key],
-                        score=result.score
+                        score=result.score,
                     )
 
                     # Consider promotion
@@ -335,7 +329,7 @@ class DualLayerMemory:
         k: int = 5,
         company_name: Optional[str] = None,
         data_type: Optional[str] = None,
-        promote_top: bool = False
+        promote_top: bool = False,
     ) -> List[MemoryItem]:
         """
         Recall similar content using semantic search.
@@ -360,17 +354,10 @@ class DualLayerMemory:
         # Perform semantic search
         if company_name:
             results = self._cold.search_company(
-                company_name=company_name,
-                query=query,
-                k=k,
-                data_type=data_type
+                company_name=company_name, query=query, k=k, data_type=data_type
             )
         else:
-            results = self._cold.search_all(
-                query=query,
-                k=k,
-                data_type=data_type
-            )
+            results = self._cold.search_all(query=query, k=k, data_type=data_type)
 
         # Convert to MemoryItems
         items = []
@@ -384,7 +371,7 @@ class DualLayerMemory:
                 metadata=result.document.metadata,
                 layer=MemoryLayer.COLD,
                 access_count=self._access_counts[key],
-                score=result.score
+                score=result.score,
             )
             items.append(item)
 
@@ -461,7 +448,7 @@ class DualLayerMemory:
         data_type: str,
         content: str,
         source_url: Optional[str] = None,
-        extra_metadata: Optional[Dict[str, Any]] = None
+        extra_metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Store research data with company context.
@@ -483,7 +470,7 @@ class DualLayerMemory:
             "company": company_name.lower(),
             "data_type": data_type,
             "source_url": source_url or "",
-            **(extra_metadata or {})
+            **(extra_metadata or {}),
         }
 
         self.remember(
@@ -491,7 +478,7 @@ class DualLayerMemory:
             content=content,
             metadata=metadata,
             company_name=company_name,
-            data_type=data_type
+            data_type=data_type,
         )
 
         return key
@@ -501,7 +488,7 @@ class DualLayerMemory:
         company_name: str,
         query: Optional[str] = None,
         data_type: Optional[str] = None,
-        k: int = 10
+        k: int = 10,
     ) -> List[MemoryItem]:
         """
         Recall all memory for a company.
@@ -520,45 +507,39 @@ class DualLayerMemory:
         items = []
 
         if hot_data:
-            items.append(MemoryItem(
-                key=f"company:{company_name.lower()}",
-                content=str(hot_data),
-                metadata={"company": company_name, "source": "hot_cache"},
-                layer=MemoryLayer.HOT
-            ))
+            items.append(
+                MemoryItem(
+                    key=f"company:{company_name.lower()}",
+                    content=str(hot_data),
+                    metadata={"company": company_name, "source": "hot_cache"},
+                    layer=MemoryLayer.HOT,
+                )
+            )
 
         # Search cold layer
         if self._cold_available:
             if query:
                 results = self._cold.search_company(
-                    company_name=company_name,
-                    query=query,
-                    k=k,
-                    data_type=data_type
+                    company_name=company_name, query=query, k=k, data_type=data_type
                 )
             else:
                 # Get all company data
-                docs = self._cold.get_company_data(
-                    company_name=company_name,
-                    data_type=data_type
-                )
+                docs = self._cold.get_company_data(company_name=company_name, data_type=data_type)
                 results = [
-                    type('SearchResult', (), {
-                        'document': doc,
-                        'score': 1.0,
-                        'distance': 0.0
-                    })()
+                    type("SearchResult", (), {"document": doc, "score": 1.0, "distance": 0.0})()
                     for doc in docs[:k]
                 ]
 
             for result in results:
-                items.append(MemoryItem(
-                    key=result.document.metadata.get("memory_key", result.document.id),
-                    content=result.document.content,
-                    metadata=result.document.metadata,
-                    layer=MemoryLayer.COLD,
-                    score=getattr(result, 'score', 1.0)
-                ))
+                items.append(
+                    MemoryItem(
+                        key=result.document.metadata.get("memory_key", result.document.id),
+                        content=result.document.content,
+                        metadata=result.document.metadata,
+                        layer=MemoryLayer.COLD,
+                        score=getattr(result, "score", 1.0),
+                    )
+                )
 
         return items
 
@@ -585,7 +566,7 @@ class DualLayerMemory:
             "content": item.content,
             "metadata": item.metadata,
             "promoted_at": utc_now().isoformat(),
-            "original_layer": "cold"
+            "original_layer": "cold",
         }
 
         self._hot.put(item.key, hot_data)
@@ -631,6 +612,7 @@ class DualLayerMemory:
 # Async Wrapper for Concurrent Operations
 # ============================================================================
 
+
 class AsyncDualLayerMemory:
     """
     Async wrapper for DualLayerMemory.
@@ -650,11 +632,7 @@ class AsyncDualLayerMemory:
         self._lock = asyncio.Lock()
 
     async def remember(
-        self,
-        key: str,
-        content: str,
-        metadata: Optional[Dict[str, Any]] = None,
-        **kwargs
+        self, key: str, content: str, metadata: Optional[Dict[str, Any]] = None, **kwargs
     ) -> None:
         """Async remember operation."""
         async with self._lock:
@@ -665,12 +643,7 @@ class AsyncDualLayerMemory:
         async with self._lock:
             return self._memory.recall_key(key)
 
-    async def recall_similar(
-        self,
-        query: str,
-        k: int = 5,
-        **kwargs
-    ) -> List[MemoryItem]:
+    async def recall_similar(self, query: str, k: int = 5, **kwargs) -> List[MemoryItem]:
         """Async semantic search."""
         async with self._lock:
             return self._memory.recall_similar(query, k, **kwargs)
@@ -689,11 +662,12 @@ class AsyncDualLayerMemory:
 # Factory Function
 # ============================================================================
 
+
 def create_research_memory(
     persist_dir: str = "./data/research_memory",
     hot_size: int = 500,
     hot_ttl: int = 7200,
-    promotion_policy: str = "moderate"
+    promotion_policy: str = "moderate",
 ) -> DualLayerMemory:
     """
     Create a configured research memory system.
@@ -710,12 +684,12 @@ def create_research_memory(
     policy_map = {
         "aggressive": PromotionPolicy.AGGRESSIVE,
         "moderate": PromotionPolicy.MODERATE,
-        "conservative": PromotionPolicy.CONSERVATIVE
+        "conservative": PromotionPolicy.CONSERVATIVE,
     }
 
     return DualLayerMemory(
         hot_max_size=hot_size,
         hot_ttl=hot_ttl,
         cold_persist_dir=persist_dir,
-        promotion_policy=policy_map.get(promotion_policy, PromotionPolicy.MODERATE)
+        promotion_policy=policy_map.get(promotion_policy, PromotionPolicy.MODERATE),
     )

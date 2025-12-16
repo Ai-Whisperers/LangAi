@@ -4,36 +4,36 @@ Specialized Agents - Domain-specific research agents.
 
 from .brand_auditor import (
     BrandAuditorAgent,
+    BrandHealth,
+    BrandStrength,
     brand_auditor_agent_node,
     create_brand_auditor,
-    BrandStrength,
-    BrandHealth,
 )
-from .social_media import (
-    SocialMediaAgent,
-    social_media_agent_node,
-    create_social_media_agent,
-    SocialPlatform,
-    PlatformMetrics,
-)
-from .sales_intelligence import (
-    SalesIntelligenceAgent,
-    sales_intelligence_agent_node,
-    create_sales_intelligence_agent,
-    LeadScore,
-    BuyingSignal,
-)
-from .product import ProductAgent, product_agent_node, create_product_agent
+from .product import ProductAgent, create_product_agent, product_agent_node
 from .regulatory_compliance import (
-    RegulatoryComplianceAgent,
-    regulatory_compliance_agent_node,
-    create_regulatory_compliance_agent,
-    RegulatoryBody,
+    ComplianceAnalysis,
     ComplianceStatus,
     FilingType,
     LegalMatterType,
+    RegulatoryBody,
+    RegulatoryComplianceAgent,
     RiskLevel,
-    ComplianceAnalysis,
+    create_regulatory_compliance_agent,
+    regulatory_compliance_agent_node,
+)
+from .sales_intelligence import (
+    BuyingSignal,
+    LeadScore,
+    SalesIntelligenceAgent,
+    create_sales_intelligence_agent,
+    sales_intelligence_agent_node,
+)
+from .social_media import (
+    PlatformMetrics,
+    SocialMediaAgent,
+    SocialPlatform,
+    create_social_media_agent,
+    social_media_agent_node,
 )
 
 __all__ = [

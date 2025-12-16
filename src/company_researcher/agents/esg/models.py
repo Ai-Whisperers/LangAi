@@ -8,11 +8,13 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
 from ...utils import utc_now
 
 
 class ESGCategory(str, Enum):
     """ESG categories."""
+
     ENVIRONMENTAL = "environmental"
     SOCIAL = "social"
     GOVERNANCE = "governance"
@@ -20,6 +22,7 @@ class ESGCategory(str, Enum):
 
 class ESGRating(str, Enum):
     """ESG rating levels."""
+
     AAA = "AAA"  # Leader
     AA = "AA"
     A = "A"
@@ -33,6 +36,7 @@ class ESGRating(str, Enum):
 
 class ControversySeverity(str, Enum):
     """Controversy severity levels."""
+
     SEVERE = "severe"
     HIGH = "high"
     MODERATE = "moderate"
@@ -43,6 +47,7 @@ class ControversySeverity(str, Enum):
 @dataclass
 class ESGMetric:
     """An ESG metric."""
+
     name: str
     category: ESGCategory
     value: Any
@@ -62,13 +67,14 @@ class ESGMetric:
             "year": self.year,
             "trend": self.trend,
             "benchmark": self.benchmark,
-            "source": self.source
+            "source": self.source,
         }
 
 
 @dataclass
 class Controversy:
     """An ESG controversy."""
+
     title: str
     description: str
     category: ESGCategory
@@ -88,13 +94,14 @@ class Controversy:
             "date": self.date.isoformat() if self.date else None,
             "resolved": self.resolved,
             "impact": self.impact,
-            "sources": self.sources
+            "sources": self.sources,
         }
 
 
 @dataclass
 class ESGScore:
     """ESG score breakdown."""
+
     overall_score: float  # 0-100
     overall_rating: ESGRating
     environmental_score: float
@@ -110,13 +117,14 @@ class ESGScore:
             "environmental_score": self.environmental_score,
             "social_score": self.social_score,
             "governance_score": self.governance_score,
-            "confidence": self.confidence
+            "confidence": self.confidence,
         }
 
 
 @dataclass
 class ESGAnalysis:
     """Complete ESG analysis result."""
+
     company_name: str
     score: ESGScore
     metrics: List[ESGMetric]
@@ -144,7 +152,7 @@ class ESGAnalysis:
             "risks": self.risks,
             "recommendations": self.recommendations,
             "data_sources": self.data_sources,
-            "analysis_date": self.analysis_date.isoformat()
+            "analysis_date": self.analysis_date.isoformat(),
         }
 
 
@@ -156,97 +164,93 @@ ENVIRONMENTAL_INDICATORS = {
     "carbon_emissions": {
         "name": "Carbon Emissions",
         "unit": "tCO2e",
-        "description": "Scope 1 + 2 greenhouse gas emissions"
+        "description": "Scope 1 + 2 greenhouse gas emissions",
     },
     "carbon_intensity": {
         "name": "Carbon Intensity",
         "unit": "tCO2e/M revenue",
-        "description": "Emissions relative to revenue"
+        "description": "Emissions relative to revenue",
     },
     "renewable_energy": {
         "name": "Renewable Energy Usage",
         "unit": "%",
-        "description": "Percentage of energy from renewable sources"
+        "description": "Percentage of energy from renewable sources",
     },
     "water_usage": {
         "name": "Water Usage",
         "unit": "megalitres",
-        "description": "Total water consumption"
+        "description": "Total water consumption",
     },
     "waste_recycled": {
         "name": "Waste Recycled",
         "unit": "%",
-        "description": "Percentage of waste diverted from landfill"
+        "description": "Percentage of waste diverted from landfill",
     },
     "environmental_fines": {
         "name": "Environmental Fines",
         "unit": "$",
-        "description": "Environmental regulatory penalties"
-    }
+        "description": "Environmental regulatory penalties",
+    },
 }
 
 SOCIAL_INDICATORS = {
     "employee_turnover": {
         "name": "Employee Turnover",
         "unit": "%",
-        "description": "Annual voluntary turnover rate"
+        "description": "Annual voluntary turnover rate",
     },
     "diversity_leadership": {
         "name": "Leadership Diversity",
         "unit": "%",
-        "description": "Women and minorities in leadership"
+        "description": "Women and minorities in leadership",
     },
     "gender_pay_gap": {
         "name": "Gender Pay Gap",
         "unit": "%",
-        "description": "Pay difference between genders"
+        "description": "Pay difference between genders",
     },
     "safety_incidents": {
         "name": "Safety Incidents",
         "unit": "TRIR",
-        "description": "Total recordable incident rate"
+        "description": "Total recordable incident rate",
     },
     "community_investment": {
         "name": "Community Investment",
         "unit": "$",
-        "description": "Annual community giving"
+        "description": "Annual community giving",
     },
     "customer_satisfaction": {
         "name": "Customer Satisfaction",
         "unit": "NPS",
-        "description": "Net Promoter Score"
-    }
+        "description": "Net Promoter Score",
+    },
 }
 
 GOVERNANCE_INDICATORS = {
     "board_independence": {
         "name": "Board Independence",
         "unit": "%",
-        "description": "Independent board members"
+        "description": "Independent board members",
     },
-    "board_diversity": {
-        "name": "Board Diversity",
-        "unit": "%",
-        "description": "Women on board"
-    },
+    "board_diversity": {"name": "Board Diversity", "unit": "%", "description": "Women on board"},
     "ceo_pay_ratio": {
         "name": "CEO Pay Ratio",
         "unit": "x",
-        "description": "CEO to median employee pay"
+        "description": "CEO to median employee pay",
     },
     "ethics_violations": {
         "name": "Ethics Violations",
         "unit": "count",
-        "description": "Reported ethics violations"
+        "description": "Reported ethics violations",
     },
     "data_breaches": {
         "name": "Data Breaches",
         "unit": "count",
-        "description": "Significant data security incidents"
+        "description": "Significant data security incidents",
     },
     "political_contributions": {
         "name": "Political Contributions",
         "unit": "$",
-        "description": "Political spending and lobbying"
-    }
+        "description": "Political spending and lobbying",
+    },
 }

@@ -463,17 +463,17 @@ Accept current state, document that alwaysApply is "implied false" when missing.
    - Update file-structure.v1 canonical schema FIRST
    - Then retroactively apply to ALL existing rules
    - Update ALL domain validation reports
-   
+
 2. **Cross-Domain Synchronization**:
    - When one domain updates, check if change applies to others
    - Maintain consistency across all domains
    - Regular cross-domain audits
-   
+
 3. **Automated Validation**:
    - Create validation script checking front-matter completeness
    - Run against all domains periodically
    - Block rule PRs that don't pass validation
-   
+
 4. **Documentation**:
    - Keep file-structure.v1 as single source of truth
    - All examples must match current canonical schema
@@ -495,7 +495,7 @@ Accept current state, document that alwaysApply is "implied false" when missing.
 - ✅ Is necessary (distinguishes Strategy 1/2/3)
 - ✅ Already documented in our own framework
 
-**This validates our approach**: 
+**This validates our approach**:
 - ✅ Add fields extracted from practice (alwaysApply)
 - ❌ Reject fields from academic theory (authorized_agents, etc.)
 
@@ -539,4 +539,3 @@ Accept current state, document that alwaysApply is "implied false" when missing.
 **Domains Validated**: 5 (rule-authoring, agile, migration, technical-specifications, ticket)
 **Rules Validated**: 47
 **Next Action**: Await approval to implement systematic update
-

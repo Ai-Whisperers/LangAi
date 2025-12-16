@@ -37,13 +37,14 @@ Usage:
     stats = router.get_stats()
 """
 
-import json
 import hashlib
-from pathlib import Path
-from typing import Optional, Dict, Any, List, Literal
+import json
 from dataclasses import dataclass, field
-from threading import Lock
 from datetime import datetime, timedelta
+from pathlib import Path
+from threading import Lock
+from typing import Any, Dict, List, Literal, Optional
+
 from ..utils import get_config, get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -56,6 +57,7 @@ QualityTier = Literal["free", "standard", "premium"]
 @dataclass
 class SearchResult:
     """Normalized search result."""
+
     title: str
     url: str
     snippet: str
@@ -70,7 +72,7 @@ class SearchResult:
             "snippet": self.snippet,
             "source": self.source,
             "score": self.score,
-            "published_date": self.published_date
+            "published_date": self.published_date,
         }
 
     @classmethod
@@ -81,13 +83,14 @@ class SearchResult:
             snippet=data.get("snippet", ""),
             source=data.get("source", ""),
             score=data.get("score", 0.0),
-            published_date=data.get("published_date")
+            published_date=data.get("published_date"),
         )
 
 
 @dataclass
 class SearchResponse:
     """Response from search operation."""
+
     query: str
     results: List[SearchResult] = field(default_factory=list)
     provider: str = ""
@@ -108,7 +111,7 @@ class SearchResponse:
             "cached": self.cached,
             "success": self.success,
             "error": self.error,
-            "cache_timestamp": self.cache_timestamp
+            "cache_timestamp": self.cache_timestamp,
         }
 
     @classmethod
@@ -123,7 +126,7 @@ class SearchResponse:
             cached=data.get("cached", False),
             success=data.get("success", True),
             error=data.get("error"),
-            cache_timestamp=data.get("cache_timestamp")
+            cache_timestamp=data.get("cache_timestamp"),
         )
 
 
@@ -175,7 +178,7 @@ class PersistentCache:
 
         try:
             with self._lock:
-                with open(cache_path, 'r', encoding='utf-8') as f:
+                with open(cache_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
 
             # Check expiry
@@ -216,7 +219,7 @@ class PersistentCache:
             data["cache_timestamp"] = utc_now().isoformat()
 
             with self._lock:
-                with open(cache_path, 'w', encoding='utf-8') as f:
+                with open(cache_path, "w", encoding="utf-8") as f:
                     json.dump(data, f, indent=2, ensure_ascii=False)
 
             logger.debug(f"[CACHE SAVE] Query: '{query[:40]}...'")
@@ -244,7 +247,7 @@ class PersistentCache:
             "cache_entries": len(cache_files),
             "cache_size_mb": round(total_size / (1024 * 1024), 2),
             "cache_dir": str(self.cache_dir),
-            "ttl_days": self.ttl_days
+            "ttl_days": self.ttl_days,
         }
 
 
@@ -259,28 +262,26 @@ class SearchRouter:
 
     # Provider costs per query (sorted cheapest to most expensive)
     PROVIDER_COSTS = {
-        "duckduckgo": 0.0,      # FREE (unlimited)
-        "brave": 0.0,          # FREE (2000/month free tier)
-        "serper": 0.001,       # $0.001/query ($50/50K)
-        "tavily": 0.005,       # $0.005/query (best quality)
+        "duckduckgo": 0.0,  # FREE (unlimited)
+        "brave": 0.0,  # FREE (2000/month free tier)
+        "serper": 0.001,  # $0.001/query ($50/50K)
+        "tavily": 0.005,  # $0.005/query (best quality)
     }
 
     # Provider quality scores (for reference)
     PROVIDER_QUALITY = {
-        "tavily": 0.95,     # Best for research
-        "serper": 0.90,     # Google results
-        "brave": 0.85,      # Good with AI summaries
-        "duckduckgo": 0.75, # Good for most queries
+        "tavily": 0.95,  # Best for research
+        "serper": 0.90,  # Google results
+        "brave": 0.85,  # Good with AI summaries
+        "duckduckgo": 0.75,  # Good for most queries
     }
 
     # COST-FIRST tier ordering (cheapest first, paid only as fallback)
     TIER_PROVIDERS = {
         # FREE tier: Only free providers
         "free": ["duckduckgo"],
-
         # STANDARD tier: Free first, then cheap paid as fallback
         "standard": ["duckduckgo", "brave", "serper"],
-
         # PREMIUM tier: Free first, then escalate through all paid options
         "premium": ["duckduckgo", "brave", "serper", "tavily"],
     }
@@ -295,7 +296,7 @@ class SearchRouter:
         brave_api_key: Optional[str] = None,
         default_tier: QualityTier = "standard",
         cache_dir: str = ".cache/search",
-        cache_ttl_days: int = 30
+        cache_ttl_days: int = 30,
     ):
         """
         Initialize search router.
@@ -314,17 +315,12 @@ class SearchRouter:
         self.default_tier = default_tier
 
         # Track usage and costs
-        self._usage: Dict[str, int] = {
-            "duckduckgo": 0,
-            "brave": 0,
-            "serper": 0,
-            "tavily": 0
-        }
+        self._usage: Dict[str, int] = {"duckduckgo": 0, "brave": 0, "serper": 0, "tavily": 0}
         self._costs: Dict[str, float] = {
             "duckduckgo": 0.0,
             "brave": 0.0,
             "serper": 0.0,
-            "tavily": 0.0
+            "tavily": 0.0,
         }
         self._errors: Dict[str, int] = {}
         self._cache_hits: int = 0
@@ -361,7 +357,7 @@ class SearchRouter:
         provider: Optional[str] = None,
         max_results: int = 10,
         use_cache: bool = True,
-        min_results: Optional[int] = None
+        min_results: Optional[int] = None,
     ) -> SearchResponse:
         """
         Search using COST-FIRST provider selection.
@@ -414,7 +410,9 @@ class SearchRouter:
 
                     # If we got enough results, stop here (save money!)
                     if len(result.results) >= min_results:
-                        logger.info(f"[OK] {prov}: {len(result.results)} results (sufficient, not escalating)")
+                        logger.info(
+                            f"[OK] {prov}: {len(result.results)} results (sufficient, not escalating)"
+                        )
 
                         # Save to persistent cache
                         if use_cache:
@@ -425,7 +423,9 @@ class SearchRouter:
                     # Got some results but not enough - save as best so far
                     if best_result is None or len(result.results) > len(best_result.results):
                         best_result = result
-                        logger.info(f"[PARTIAL] {prov}: {len(result.results)} results (below threshold, trying next)")
+                        logger.info(
+                            f"[PARTIAL] {prov}: {len(result.results)} results (below threshold, trying next)"
+                        )
                 else:
                     last_error = result.error
                     logger.warning(f"[FAIL] {prov}: {result.error}")
@@ -438,7 +438,9 @@ class SearchRouter:
 
         # 4. Return best result we got (even if below threshold)
         if best_result:
-            logger.info(f"[DONE] Returning best result: {len(best_result.results)} from {best_result.provider}")
+            logger.info(
+                f"[DONE] Returning best result: {len(best_result.results)} from {best_result.provider}"
+            )
             if use_cache:
                 self._persistent_cache.set(query, max_results, best_result)
             return best_result
@@ -449,7 +451,7 @@ class SearchRouter:
             provider="none",
             quality_tier=quality,
             success=False,
-            error=f"All providers failed. Last error: {last_error}"
+            error=f"All providers failed. Last error: {last_error}",
         )
 
     def _get_provider_order(self, quality: QualityTier) -> List[str]:
@@ -460,12 +462,7 @@ class SearchRouter:
         # Filter to available providers, maintaining COST-FIRST order
         return [p for p in tier_providers if p in available]
 
-    def _search_provider(
-        self,
-        provider: str,
-        query: str,
-        max_results: int
-    ) -> SearchResponse:
+    def _search_provider(self, provider: str, query: str, max_results: int) -> SearchResponse:
         """Execute search on specific provider."""
         if provider == "duckduckgo":
             return self._search_duckduckgo(query, max_results)
@@ -477,10 +474,7 @@ class SearchRouter:
             return self._search_tavily(query, max_results)
         else:
             return SearchResponse(
-                query=query,
-                provider=provider,
-                success=False,
-                error=f"Unknown provider: {provider}"
+                query=query, provider=provider, success=False, error=f"Unknown provider: {provider}"
             )
 
     def _search_duckduckgo(self, query: str, max_results: int) -> SearchResponse:
@@ -491,12 +485,14 @@ class SearchRouter:
             results = []
             with DDGS() as ddgs:
                 for r in ddgs.text(query, max_results=max_results):
-                    results.append(SearchResult(
-                        title=r.get("title", ""),
-                        url=r.get("href", ""),
-                        snippet=r.get("body", ""),
-                        source="duckduckgo"
-                    ))
+                    results.append(
+                        SearchResult(
+                            title=r.get("title", ""),
+                            url=r.get("href", ""),
+                            snippet=r.get("body", ""),
+                            source="duckduckgo",
+                        )
+                    )
 
             cost = self.PROVIDER_COSTS["duckduckgo"]
             with self._lock:
@@ -504,30 +500,18 @@ class SearchRouter:
                 self._costs["duckduckgo"] += cost
 
             return SearchResponse(
-                query=query,
-                results=results,
-                provider="duckduckgo",
-                cost=cost,
-                success=True
+                query=query, results=results, provider="duckduckgo", cost=cost, success=True
             )
 
         except Exception as e:
             logger.error(f"DuckDuckGo search error: {e}")
-            return SearchResponse(
-                query=query,
-                provider="duckduckgo",
-                success=False,
-                error=str(e)
-            )
+            return SearchResponse(query=query, provider="duckduckgo", success=False, error=str(e))
 
     def _search_brave(self, query: str, max_results: int) -> SearchResponse:
         """Search using Brave Search API (FREE tier: 2000/month)."""
         if not self.brave_api_key:
             return SearchResponse(
-                query=query,
-                provider="brave",
-                success=False,
-                error="Brave API key not configured"
+                query=query, provider="brave", success=False, error="Brave API key not configured"
             )
 
         try:
@@ -535,29 +519,24 @@ class SearchRouter:
 
             response = requests.get(
                 "https://api.search.brave.com/res/v1/web/search",
-                headers={
-                    "X-Subscription-Token": self.brave_api_key,
-                    "Accept": "application/json"
-                },
-                params={
-                    "q": query,
-                    "count": max_results,
-                    "safesearch": "moderate"
-                },
-                timeout=10
+                headers={"X-Subscription-Token": self.brave_api_key, "Accept": "application/json"},
+                params={"q": query, "count": max_results, "safesearch": "moderate"},
+                timeout=10,
             )
             response.raise_for_status()
             data = response.json()
 
             results = []
             for r in data.get("web", {}).get("results", [])[:max_results]:
-                results.append(SearchResult(
-                    title=r.get("title", ""),
-                    url=r.get("url", ""),
-                    snippet=r.get("description", ""),
-                    source="brave",
-                    score=r.get("relevance_score", 0.0)
-                ))
+                results.append(
+                    SearchResult(
+                        title=r.get("title", ""),
+                        url=r.get("url", ""),
+                        snippet=r.get("description", ""),
+                        source="brave",
+                        score=r.get("relevance_score", 0.0),
+                    )
+                )
 
             cost = self.PROVIDER_COSTS["brave"]
             with self._lock:
@@ -565,30 +544,18 @@ class SearchRouter:
                 self._costs["brave"] += cost
 
             return SearchResponse(
-                query=query,
-                results=results,
-                provider="brave",
-                cost=cost,
-                success=True
+                query=query, results=results, provider="brave", cost=cost, success=True
             )
 
         except Exception as e:
             logger.error(f"Brave search error: {e}")
-            return SearchResponse(
-                query=query,
-                provider="brave",
-                success=False,
-                error=str(e)
-            )
+            return SearchResponse(query=query, provider="brave", success=False, error=str(e))
 
     def _search_serper(self, query: str, max_results: int) -> SearchResponse:
         """Search using Serper.dev (Google results, $0.001/query)."""
         if not self.serper_api_key:
             return SearchResponse(
-                query=query,
-                provider="serper",
-                success=False,
-                error="Serper API key not configured"
+                query=query, provider="serper", success=False, error="Serper API key not configured"
             )
 
         try:
@@ -598,20 +565,22 @@ class SearchRouter:
                 "https://google.serper.dev/search",
                 headers={"X-API-KEY": self.serper_api_key},
                 json={"q": query, "num": max_results},
-                timeout=10
+                timeout=10,
             )
             response.raise_for_status()
             data = response.json()
 
             results = []
             for r in data.get("organic", [])[:max_results]:
-                results.append(SearchResult(
-                    title=r.get("title", ""),
-                    url=r.get("link", ""),
-                    snippet=r.get("snippet", ""),
-                    source="serper",
-                    score=r.get("position", 0)
-                ))
+                results.append(
+                    SearchResult(
+                        title=r.get("title", ""),
+                        url=r.get("link", ""),
+                        snippet=r.get("snippet", ""),
+                        source="serper",
+                        score=r.get("position", 0),
+                    )
+                )
 
             cost = self.PROVIDER_COSTS["serper"]
             with self._lock:
@@ -619,30 +588,18 @@ class SearchRouter:
                 self._costs["serper"] += cost
 
             return SearchResponse(
-                query=query,
-                results=results,
-                provider="serper",
-                cost=cost,
-                success=True
+                query=query, results=results, provider="serper", cost=cost, success=True
             )
 
         except Exception as e:
             logger.error(f"Serper search error: {e}")
-            return SearchResponse(
-                query=query,
-                provider="serper",
-                success=False,
-                error=str(e)
-            )
+            return SearchResponse(query=query, provider="serper", success=False, error=str(e))
 
     def _search_tavily(self, query: str, max_results: int) -> SearchResponse:
         """Search using Tavily (premium, best quality, $0.005/query)."""
         if not self.tavily_api_key:
             return SearchResponse(
-                query=query,
-                provider="tavily",
-                success=False,
-                error="Tavily API key not configured"
+                query=query, provider="tavily", success=False, error="Tavily API key not configured"
             )
 
         try:
@@ -653,14 +610,16 @@ class SearchRouter:
 
             results = []
             for r in response.get("results", []):
-                results.append(SearchResult(
-                    title=r.get("title", ""),
-                    url=r.get("url", ""),
-                    snippet=r.get("content", ""),
-                    source="tavily",
-                    score=r.get("score", 0.0),
-                    published_date=r.get("published_date")
-                ))
+                results.append(
+                    SearchResult(
+                        title=r.get("title", ""),
+                        url=r.get("url", ""),
+                        snippet=r.get("content", ""),
+                        source="tavily",
+                        score=r.get("score", 0.0),
+                        published_date=r.get("published_date"),
+                    )
+                )
 
             cost = self.PROVIDER_COSTS["tavily"]
             with self._lock:
@@ -668,27 +627,15 @@ class SearchRouter:
                 self._costs["tavily"] += cost
 
             return SearchResponse(
-                query=query,
-                results=results,
-                provider="tavily",
-                cost=cost,
-                success=True
+                query=query, results=results, provider="tavily", cost=cost, success=True
             )
 
         except Exception as e:
             logger.error(f"Tavily search error: {e}")
-            return SearchResponse(
-                query=query,
-                provider="tavily",
-                success=False,
-                error=str(e)
-            )
+            return SearchResponse(query=query, provider="tavily", success=False, error=str(e))
 
     def search_news(
-        self,
-        query: str,
-        quality: Optional[QualityTier] = None,
-        max_results: int = 10
+        self, query: str, quality: Optional[QualityTier] = None, max_results: int = 10
     ) -> SearchResponse:
         """Search for news articles."""
         news_query = f"{query} news latest"
@@ -699,7 +646,7 @@ class SearchRouter:
         company_name: str,
         search_type: str = "general",
         quality: Optional[QualityTier] = None,
-        max_results: int = 10
+        max_results: int = 10,
     ) -> SearchResponse:
         """Search for company information."""
         query_templates = {
@@ -732,13 +679,13 @@ class SearchRouter:
                     provider: {
                         "queries": self._usage[provider],
                         "cost": round(self._costs[provider], 4),
-                        "errors": self._errors.get(provider, 0)
+                        "errors": self._errors.get(provider, 0),
                     }
                     for provider in self._usage.keys()
                 },
                 "available_providers": self._get_available_providers(),
                 "default_tier": self.default_tier,
-                "persistent_cache": self._persistent_cache.get_stats()
+                "persistent_cache": self._persistent_cache.get_stats(),
             }
 
     def reset_stats(self) -> None:
@@ -754,10 +701,7 @@ class SearchRouter:
         """Clear all caches (memory and disk)."""
         self._memory_cache.clear()
         disk_cleared = self._persistent_cache.clear()
-        return {
-            "memory_cleared": True,
-            "disk_entries_cleared": disk_cleared
-        }
+        return {"memory_cleared": True, "disk_entries_cleared": disk_cleared}
 
     def set_default_tier(self, tier: QualityTier) -> None:
         """Set default quality tier."""
@@ -772,7 +716,7 @@ _router_lock = Lock()
 def get_search_router(
     tavily_api_key: Optional[str] = None,
     serper_api_key: Optional[str] = None,
-    brave_api_key: Optional[str] = None
+    brave_api_key: Optional[str] = None,
 ) -> SearchRouter:
     """Get singleton search router instance."""
     global _search_router
@@ -782,7 +726,7 @@ def get_search_router(
                 _search_router = SearchRouter(
                     tavily_api_key=tavily_api_key,
                     serper_api_key=serper_api_key,
-                    brave_api_key=brave_api_key
+                    brave_api_key=brave_api_key,
                 )
     return _search_router
 
@@ -795,9 +739,7 @@ def reset_search_router() -> None:
 
 # Convenience functions
 def smart_search(
-    query: str,
-    quality: QualityTier = "standard",
-    max_results: int = 10
+    query: str, quality: QualityTier = "standard", max_results: int = 10
 ) -> List[Dict[str, Any]]:
     """Quick function to perform smart search."""
     router = get_search_router()

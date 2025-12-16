@@ -6,14 +6,11 @@ This module contains nodes that fetch data from external sources:
 - News providers (with fallback chain)
 """
 
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
-from ...state import OverallState
 from ...config import get_config
-from ...integrations import (
-    create_financial_provider,
-    create_news_provider,
-)
+from ...integrations import create_financial_provider, create_news_provider
+from ...state import OverallState
 from ...utils import get_logger
 
 logger = get_logger(__name__)
@@ -22,6 +19,7 @@ logger = get_logger(__name__)
 # =============================================================================
 # Data Collection Nodes
 # =============================================================================
+
 
 def fetch_financial_data_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -44,11 +42,10 @@ def fetch_financial_data_node(state: OverallState) -> Dict[str, Any]:
         financial_data = provider.get_financial_data(ticker)
 
         if financial_data:
-            logger.info(f"[OK] Got {financial_data.data_quality} financial data from {', '.join(financial_data.data_sources)}")
-            return {
-                "financial_data": financial_data.to_dict(),
-                "ticker": ticker
-            }
+            logger.info(
+                f"[OK] Got {financial_data.data_quality} financial data from {', '.join(financial_data.data_sources)}"
+            )
+            return {"financial_data": financial_data.to_dict(), "ticker": ticker}
     except Exception as e:
         logger.warning(f"Financial data fetch failed: {e}")
 
@@ -69,11 +66,10 @@ def fetch_news_node(state: OverallState) -> Dict[str, Any]:
         news_result = provider.get_company_news(company_name, max_results=15, days_back=30)
 
         if news_result.articles:
-            logger.info(f"[OK] Got {len(news_result.articles)} articles from {', '.join(news_result.sources_used)}")
-            return {
-                "news_articles": news_result.to_dict(),
-                "news_count": len(news_result.articles)
-            }
+            logger.info(
+                f"[OK] Got {len(news_result.articles)} articles from {', '.join(news_result.sources_used)}"
+            )
+            return {"news_articles": news_result.to_dict(), "news_count": len(news_result.articles)}
     except Exception as e:
         logger.warning(f"News fetch failed: {e}")
 
@@ -83,6 +79,7 @@ def fetch_news_node(state: OverallState) -> Dict[str, Any]:
 # =============================================================================
 # Helper Functions
 # =============================================================================
+
 
 def _guess_ticker(company_name: str) -> Optional[str]:
     """Try to guess ticker from company name."""

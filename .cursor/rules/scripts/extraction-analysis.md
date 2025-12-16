@@ -552,5 +552,3 @@ eneve.domain/.cursor/rules/scripts/
    - **Recommendation**: Extract advanced patterns, keep very simple examples inline
 4. Should config file exemplars be JSON/YAML files or markdown?
    - **Recommendation**: Use actual file formats (.json, .yaml) for templars, markdown for documentation
-
-

@@ -51,59 +51,39 @@ Usage:
     )
 """
 
-# Core modules
-from . import agents, workflows, tools, graphs
-
 # Centralized types (shared enums and dataclasses)
-from . import types
-from .types import (
-    # Research types
-    ResearchDepth as ResearchDepthType,
-    DataQuality,
-    ReasoningType,
-    InsightType,
-    # Quality types
-    ConfidenceLevel,
-    SourceQuality,
-    FreshnessLevel,
-    # Infrastructure types
-    TaskStatus,
-    EventType,
-    HealthStatus,
-    # Common dataclasses
-    TokenUsage,
-    AgentMetrics,
-    SourceInfo,
-)
+# Core modules
+from . import agents, graphs, tools, types, workflows
 
 # Initialize observability on import
 from .observability import init_observability
+from .types import (
+    AgentMetrics,
+    ConfidenceLevel,
+    DataQuality,
+    EventType,
+    FreshnessLevel,
+    HealthStatus,
+    InsightType,
+    ReasoningType,
+)
+from .types import (
+    ResearchDepth as ResearchDepthType,  # Research types; Quality types; Infrastructure types; Common dataclasses
+)
+from .types import SourceInfo, SourceQuality, TaskStatus, TokenUsage
+
 init_observability()
 
-# Quality module (Phases 10-11)
-from . import quality
-
-# Memory module (Phase 11)
-from . import memory
-
-# Context module (Phase 12)
-from . import context
-
-# Output module (Phase 16)
-from . import output
-
-# Orchestration module (Phase 17)
-from . import orchestration
-from .orchestration import execute_research, ResearchDepth
-
-# API module (Phase 18)
-from . import api
-
-# Monitoring module (Phase 19)
-from . import monitoring
-
 # Production module (Phase 20)
-from . import production
+# Monitoring module (Phase 19)
+# API module (Phase 18)
+# Orchestration module (Phase 17)
+# Output module (Phase 16)
+# Context module (Phase 12)
+# Memory module (Phase 11)
+# Quality module (Phases 10-11)
+from . import api, context, memory, monitoring, orchestration, output, production, quality
+from .orchestration import ResearchDepth, execute_research
 
 __all__ = [
     # Core

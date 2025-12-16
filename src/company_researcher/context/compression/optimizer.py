@@ -4,10 +4,10 @@ Context Window Optimizer Module.
 Optimizes content to fit within context window limits.
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
-from .models import ContentType
 from .compressor import TextCompressor
+from .models import ContentType
 
 
 class ContextWindowOptimizer:
@@ -33,9 +33,7 @@ class ContextWindowOptimizer:
         self._compressor = TextCompressor()
 
     def optimize(
-        self,
-        contents: List[Dict[str, Any]],
-        priorities: Optional[List[float]] = None
+        self, contents: List[Dict[str, Any]], priorities: Optional[List[float]] = None
     ) -> str:
         """
         Optimize multiple content pieces for context window.
@@ -56,10 +54,7 @@ class ContextWindowOptimizer:
 
         # Calculate space allocation
         total_priority = sum(priorities)
-        allocations = [
-            int(self._max_chars * (p / total_priority))
-            for p in priorities
-        ]
+        allocations = [int(self._max_chars * (p / total_priority)) for p in priorities]
 
         # Compress each piece to allocation
         optimized_parts = []
@@ -72,9 +67,7 @@ class ContextWindowOptimizer:
                 optimized_parts.append(text)
             else:
                 result = self._compressor.compress(
-                    text,
-                    target_length=allocation,
-                    content_type=content_type
+                    text, target_length=allocation, content_type=content_type
                 )
                 optimized_parts.append(result.compressed_text)
 
@@ -83,15 +76,11 @@ class ContextWindowOptimizer:
 
         # Final check and trim if needed
         if len(combined) > self._max_chars:
-            combined = combined[:self._max_chars - 100] + "\n\n[Content truncated]"
+            combined = combined[: self._max_chars - 100] + "\n\n[Content truncated]"
 
         return combined
 
-    def fit_to_window(
-        self,
-        text: str,
-        reserved_tokens: int = 1000
-    ) -> str:
+    def fit_to_window(self, text: str, reserved_tokens: int = 1000) -> str:
         """
         Fit text to available context window.
 
@@ -107,10 +96,7 @@ class ContextWindowOptimizer:
         if len(text) <= available_chars:
             return text
 
-        result = self._compressor.compress(
-            text,
-            target_length=available_chars
-        )
+        result = self._compressor.compress(text, target_length=available_chars)
 
         return result.compressed_text
 
@@ -143,10 +129,8 @@ class ContextWindowOptimizer:
 # Factory Function
 # ============================================================================
 
-def optimize_for_context(
-    contents: List[str],
-    max_tokens: int = 8000
-) -> str:
+
+def optimize_for_context(contents: List[str], max_tokens: int = 8000) -> str:
     """
     Optimize multiple texts for context window.
 

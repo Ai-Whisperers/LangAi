@@ -20,4 +20,3 @@ items:
     kind: prompt
   - path: prompts/prompt/validate-prompt.prompt.md
     kind: prompt
-

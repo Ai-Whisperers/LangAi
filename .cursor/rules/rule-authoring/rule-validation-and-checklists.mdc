@@ -361,36 +361,36 @@ import re
 
 def validate_plan(file_path):
     content = read_file(file_path)
-    
+
     # Check 1: OPSEC
     opsec_violations = check_opsec(content)
     assert len(opsec_violations) == 0, f"OPSEC violations: {opsec_violations}"
-    
+
     # Check 2: Structure
     assert "## Objective" in content, "Missing Objective section"
     assert "## Acceptance Criteria" in content, "Missing Criteria section"
     assert "## Complexity" in content, "Missing Complexity section"
-    
+
     # Check 3: Provenance
     assert "Produced-by:" in content, "Missing provenance footer"
-    
+
     print("[X] All validations passed")
 
 def check_opsec(content):
     violations = []
-    
+
     # Check for secrets
     if re.search(r'(password|token|api[_-]?key)\s*[:=]\s*\S+', content, re.I):
         violations.append("Potential secret found")
-    
+
     # Check for emails
     if re.search(r'\b[\w.+-]+@[\w-]+\.\w+\b', content):
         violations.append("Email address found")
-    
+
     # Check for internal URLs
     if re.search(r'https?://internal\.|\.local', content):
         violations.append("Internal URL found")
-    
+
     return violations
 ```
 
@@ -427,11 +427,11 @@ Manual:
 def validate_plan_hybrid(file_path):
     # Automated checks
     automated_passed = run_automated_checks(file_path)
-    
+
     if not automated_passed:
         print("[X] Automated checks failed, fix before manual review")
         return False
-    
+
     print("[X] Automated checks passed")
     print("\nManual review required:")
     print("  - [ ] Complexity rationale is sound")
@@ -501,35 +501,35 @@ import re
 def validate_rule_file(file_path):
     with open(file_path) as f:
         content = f.read()
-    
+
     # 1. Parse front-matter
     fm_match = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
     assert fm_match, "Missing front-matter"
-    
+
     front_matter = yaml.safe_load(fm_match.group(1))
-    
+
     # 2. Validate required fields
-    required = ['id', 'kind', 'version', 'description', 'globs', 'governs', 
+    required = ['id', 'kind', 'version', 'description', 'globs', 'governs',
                 'implements', 'requires', 'provenance']
     for field in required:
         assert field in front_matter, f"Missing field: {field}"
-    
+
     # 3. Validate ID format
     assert re.match(r'^(rule|templar|exemplar)\.\w+\.\w+\.v\d+$', front_matter['id']), \
         f"Invalid ID format: {front_matter['id']}"
-    
+
     # 4. Check for final checklist
     assert "## FINAL MUST-PASS CHECKLIST" in content, "Missing final checklist"
-    
+
     # 5. Verify checklist is last section
     sections = re.findall(r'^## (.+)$', content, re.MULTILINE)
     assert sections[-1] == "FINAL MUST-PASS CHECKLIST", "Checklist not last section"
-    
+
     # 6. Count checklist items
     checklist_match = re.search(r'## FINAL MUST-PASS CHECKLIST\n\n(.*)', content, re.DOTALL)
     items = re.findall(r'- \[ \]', checklist_match.group(1))
     assert 3 <= len(items) <= 7, f"Checklist should have 3-7 items, has {len(items)}"
-    
+
     print(f"[X] {file_path} validated successfully")
 ```
 
@@ -598,10 +598,10 @@ def test_plan_rule_golden():
     inputs = {"ticket_id": "TEST-123", "objective": "Test objective"}
     output = execute_rule("rule.ticket.plan.update.v1", inputs)
     golden = read_file("tests/golden/plan-TEST-123.md")
-    
+
     # Validate output matches golden (ignoring timestamps)
     assert normalize(output) == normalize(golden)
-    
+
     # Validate checklist items
     assert validate_plan(output), "Checklist validation failed"
 ```
@@ -614,7 +614,7 @@ Test that checklist catches violations:
 def test_plan_rule_opsec_violation():
     inputs = {"ticket_id": "TEST-123", "objective": "password=secret123"}
     output = execute_rule("rule.ticket.plan.update.v1", inputs)
-    
+
     # Should fail OPSEC check
     with pytest.raises(AssertionError, match="OPSEC violation"):
         validate_plan(output)

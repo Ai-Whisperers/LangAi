@@ -7,7 +7,7 @@ globs: ""
 governs: ""
 implements: scripts.navigation
 requires: []
-provenance: 
+provenance:
   owner: team-devops
   last_review: 2025-12-07
   created: 2025-12-07
@@ -59,30 +59,30 @@ This modular design:
 ### 📋 Coordination Rule
 
 #### `rule.scripts.agent-application.v1`
-**File**: `agent-application-rule.mdc`  
-**Purpose**: Agent guidance for when and how to apply script standards  
-**Kind**: Meta-rule (description-triggered, no globs/governs)  
-**Triggers**: User requests involving scripts, "create script", "PowerShell", "Python"  
+**File**: `agent-application-rule.mdc`
+**Purpose**: Agent guidance for when and how to apply script standards
+**Kind**: Meta-rule (description-triggered, no globs/governs)
+**Triggers**: User requests involving scripts, "create script", "PowerShell", "Python"
 **Status**: ✅ Active
 
 ### 🌍 Core Principles Rule
 
 #### `rule.scripts.core-principles.v1`
-**File**: `core-principles-rule.mdc`  
-**Purpose**: Language-agnostic core principles (portability, parameterization, error handling, configuration, reusability through modules)  
-**Governs**: `**/*.ps1`, `**/*.py`  
-**Applies to**: ALL scripts regardless of language  
-**Status**: ✅ Active  
+**File**: `core-principles-rule.mdc`
+**Purpose**: Language-agnostic core principles (portability, parameterization, error handling, configuration, reusability through modules)
+**Governs**: `**/*.ps1`, `**/*.py`
+**Applies to**: ALL scripts regardless of language
+**Status**: ✅ Active
 **Updated**: 2025-12-07 - Added Core Principle 7: Reusability Through Modules
 
 ### 🔷 PowerShell Standards Rule
 
 #### `rule.scripts.powershell-standards.v1`
-**File**: `powershell-standards-rule.mdc`  
-**Purpose**: PowerShell-specific standards and advanced features  
-**Governs**: `**/*.ps1`  
-**Requires**: `rule.scripts.core-principles.v1`  
-**Status**: ✅ Active  
+**File**: `powershell-standards-rule.mdc`
+**Purpose**: PowerShell-specific standards and advanced features
+**Governs**: `**/*.ps1`
+**Requires**: `rule.scripts.core-principles.v1`
+**Status**: ✅ Active
 **Updated**: 2025-12-07 - Added Shared Modules and Conditional Unicode sections
 
 **Covers**:
@@ -107,11 +107,11 @@ This modular design:
 ### 🐍 Python Standards Rule
 
 #### `rule.scripts.python-standards.v1`
-**File**: `python-standards-rule.mdc`  
-**Purpose**: Python-specific standards and advanced features  
-**Governs**: `**/*.py`  
-**Requires**: `rule.scripts.core-principles.v1`  
-**Status**: ✅ Active  
+**File**: `python-standards-rule.mdc`
+**Purpose**: Python-specific standards and advanced features
+**Governs**: `**/*.py`
+**Requires**: `rule.scripts.core-principles.v1`
+**Status**: ✅ Active
 **Updated**: 2025-12-07 - Added Shared Modules section
 
 **Covers**:
@@ -138,17 +138,17 @@ This modular design:
 ### 📊 Quality Levels Rule
 
 #### `rule.scripts.quality-levels.v1`
-**File**: `script-quality-levels-rule.mdc`  
-**Purpose**: Quality assessment framework with 4 levels and measurable criteria  
-**Governs**: `` (assessment only, no file writes)  
-**Requires**: `rule.scripts.core-principles.v1`  
-**Status**: ✅ Active  
+**File**: `script-quality-levels-rule.mdc`
+**Purpose**: Quality assessment framework with 4 levels and measurable criteria
+**Governs**: `` (assessment only, no file writes)
+**Requires**: `rule.scripts.core-principles.v1`
+**Status**: ✅ Active
 **Updated**: 2025-12-07 - Added shared modules and conditional Unicode to Standard Level requirements
 
 **Covers**:
 - **Basic (60/100)**: Core principles + argparse + basic logging
 - **Standard (70/100)**: Add type hints + unit tests + error handling + **shared modules** + **conditional Unicode**
-- **Advanced (80/100)**: Add retry logic + caching + progress reporting  
+- **Advanced (80/100)**: Add retry logic + caching + progress reporting
 - **Production (90-100/100)**: Add async/parallel + webhooks + comprehensive testing
 - Assessment checklists for each level
 - Progression paths from basic to production

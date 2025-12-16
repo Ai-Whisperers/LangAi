@@ -25,12 +25,12 @@ Create a new reusable prompt that is registry-ready, concise, and standards-comp
 - Expected output shape; optional examples
 
 ## Deterministic Steps
-1) Define Purpose & Scope (what/why/when; boundaries)  
-2) Choose Category & Name (kebab-case; avoid redundant prefixes)  
-3) Write Frontmatter (minimal required fields; YAML compliant)  
-4) Draft Body (Purpose, Required Context, Process, Examples, Expected Output, Quality Criteria, Related)  
-5) Validate (prompt-creation-rule + registry integration; YAML check)  
-6) Test (run once in chat; adjust)  
+1) Define Purpose & Scope (what/why/when; boundaries)
+2) Choose Category & Name (kebab-case; avoid redundant prefixes)
+3) Write Frontmatter (minimal required fields; YAML compliant)
+4) Draft Body (Purpose, Required Context, Process, Examples, Expected Output, Quality Criteria, Related)
+5) Validate (prompt-creation-rule + registry integration; YAML check)
+6) Test (run once in chat; adjust)
 
 ## Structure to Produce
 - Frontmatter: name, description (“Please …”), category, tags, argument-hint (if input needed)
@@ -58,4 +58,3 @@ Create a new reusable prompt that is registry-ready, concise, and standards-comp
 ```
 @create-new-prompt "validate-openapi" "Please validate OpenAPI specs" --category api-testing
 ```
-

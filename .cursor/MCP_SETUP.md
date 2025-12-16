@@ -20,5 +20,3 @@ This repository does not commit `mcp.json` by default because MCP server URLs ar
 
 - Keep `mcp.json` **free of secrets**. If your MCP provider requires tokens, prefer environment-variable based configuration or a local-only file that is git-ignored.
 - If you also use Claude Code, compare with `.claude/mcp/*.json` to reuse the same server endpoints where appropriate.
-
-

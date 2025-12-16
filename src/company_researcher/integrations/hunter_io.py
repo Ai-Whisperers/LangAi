@@ -10,8 +10,8 @@ Documentation: https://hunter.io/api-documentation
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from .base_client import BaseAPIClient
 from ..utils import get_logger
+from .base_client import BaseAPIClient
 
 logger = get_logger(__name__)
 
@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 @dataclass
 class EmailResult:
     """Email search result."""
+
     email: str
     first_name: str
     last_name: str
@@ -42,13 +43,14 @@ class EmailResult:
             twitter=data.get("twitter"),
             phone=data.get("phone_number"),
             confidence=data.get("confidence", 0),
-            sources=data.get("sources", [])
+            sources=data.get("sources", []),
         )
 
 
 @dataclass
 class DomainSearchResult:
     """Domain search result."""
+
     domain: str
     organization: str
     emails: List[EmailResult]
@@ -65,13 +67,14 @@ class DomainSearchResult:
             emails=emails,
             total_emails=data.get("emails_count", len(emails)),
             webmail=data.get("webmail", False),
-            pattern=data.get("pattern")
+            pattern=data.get("pattern"),
         )
 
 
 @dataclass
 class EmailVerification:
     """Email verification result."""
+
     email: str
     result: str
     score: int
@@ -101,7 +104,7 @@ class EmailVerification:
             smtp_check=data.get("smtp_check", False),
             accept_all=data.get("accept_all", False),
             block=data.get("block", False),
-            sources=data.get("sources", [])
+            sources=data.get("sources", []),
         )
 
 
@@ -127,15 +130,10 @@ class HunterClient(BaseAPIClient):
             env_var="HUNTER_API_KEY",
             cache_ttl=86400,  # 24 hour cache (data doesn't change often)
             rate_limit_calls=10,
-            rate_limit_period=1.0
+            rate_limit_period=1.0,
         )
 
-    async def _request(
-        self,
-        endpoint: str,
-        params: Optional[Dict] = None,
-        **kwargs
-    ):
+    async def _request(self, endpoint: str, params: Optional[Dict] = None, **kwargs):
         """Override to add API key and handle response format."""
         params = params or {}
         params["api_key"] = self.api_key
@@ -143,11 +141,7 @@ class HunterClient(BaseAPIClient):
         return data.get("data", data) if data else None
 
     async def domain_search(
-        self,
-        domain: str,
-        department: Optional[str] = None,
-        limit: int = 10,
-        offset: int = 0
+        self, domain: str, department: Optional[str] = None, limit: int = 10, offset: int = 0
     ) -> Optional[DomainSearchResult]:
         """
         Find all emails associated with a domain.
@@ -165,11 +159,7 @@ class HunterClient(BaseAPIClient):
             - executive, it, finance, management
             - sales, legal, support, hr, marketing, communication
         """
-        params = {
-            "domain": domain,
-            "limit": limit,
-            "offset": offset
-        }
+        params = {"domain": domain, "limit": limit, "offset": offset}
 
         if department:
             params["department"] = department
@@ -184,7 +174,7 @@ class HunterClient(BaseAPIClient):
         domain: str,
         first_name: Optional[str] = None,
         last_name: Optional[str] = None,
-        full_name: Optional[str] = None
+        full_name: Optional[str] = None,
     ) -> Optional[EmailResult]:
         """
         Find a specific person's email.
@@ -247,9 +237,7 @@ class HunterClient(BaseAPIClient):
         return await self._request("email-count", {"domain": domain}) or {}
 
     async def get_executive_emails(
-        self,
-        domain: str,
-        limit: int = 5
+        self, domain: str, limit: int = 5
     ) -> Optional[DomainSearchResult]:
         """
         Get executive/leadership emails.
@@ -263,11 +251,7 @@ class HunterClient(BaseAPIClient):
         """
         return await self.domain_search(domain, department="executive", limit=limit)
 
-    async def find_decision_makers(
-        self,
-        domain: str,
-        limit: int = 10
-    ) -> List[EmailResult]:
+    async def find_decision_makers(self, domain: str, limit: int = 10) -> List[EmailResult]:
         """
         Find decision-maker contacts (executives, management, sales).
 
@@ -281,11 +265,7 @@ class HunterClient(BaseAPIClient):
         contacts = []
 
         for dept in ["executive", "management", "sales"]:
-            result = await self.domain_search(
-                domain,
-                department=dept,
-                limit=limit // 3
-            )
+            result = await self.domain_search(domain, department=dept, limit=limit // 3)
             if result:
                 contacts.extend(result.emails)
 

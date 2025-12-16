@@ -153,7 +153,7 @@ See individual file rules for specific formatting:
 - Includes: Code files, tests, documentation, all ticket files, sanitized conversations
 - Complete `recap.md`, `rca.md` (if needed), and `timeline.md` before closure commit
 - Copy referenced conversation files from `specstory/history/` to `conversations/[USER INITIALS]/` folder (sanitized for OPSEC)
-- Commit message format: `"Doc/Fix/Feat/Chore [TICKET-123] : [Summary] - complete description of all 
+- Commit message format: `"Doc/Fix/Feat/Chore [TICKET-123] : [Summary] - complete description of all
 changes"`
 - Purpose: Atomic commit of entire ticket implementation with full traceability
 
@@ -162,7 +162,7 @@ changes"`
 ### Files to Track
 **Step Commits (ticket documentation):**
 - `tickets/TICKET-123/plan.md`
-- `tickets/TICKET-123/context.md` 
+- `tickets/TICKET-123/context.md`
 - `tickets/TICKET-123/progress.md`
 - `tickets/TICKET-123/references.md`
 - `tickets/TICKET-123/timeline.md`
@@ -346,5 +346,3 @@ All ticket system rules (this is the hub):
 - [ ] All commits follow commit discipline
 - [ ] JIRA synced with ticket documentation
 - [ ] Complete audit trail from initiation to closure
-
-

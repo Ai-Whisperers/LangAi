@@ -14,8 +14,8 @@ rules:
 
 Please take an existing prompt and enhance it with advanced features, better examples, improved structure, and additional capabilities.
 
-**Pattern**: Enhancement Workflow Pattern ⭐⭐⭐⭐  
-**Effectiveness**: Essential for maturing prompts from basic to production-ready  
+**Pattern**: Enhancement Workflow Pattern ⭐⭐⭐⭐
+**Effectiveness**: Essential for maturing prompts from basic to production-ready
 **Use When**: Prompt works correctly but lacks examples, clarity, or advanced features
 
 ---
@@ -348,7 +348,6 @@ This prompt demonstrates exceptional quality and has been extracted into:
 
 ---
 
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)
-

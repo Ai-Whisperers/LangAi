@@ -5,25 +5,23 @@ Provides decorators and base functions to eliminate duplication
 across the 19 agent node functions.
 """
 
-from typing import Dict, Any, Callable, TypeVar, List, cast
-from functools import wraps
 from dataclasses import dataclass
+from functools import wraps
+from typing import Any, Callable, Dict, List, TypeVar, cast
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
+from ...llm.client_factory import calculate_cost, get_anthropic_client, safe_extract_text
 from ...state import OverallState
-from .types import (
-    AgentResult, AgentStatus, create_empty_result, create_agent_result
-)
 from .logger import get_agent_logger
+from .types import AgentResult, AgentStatus, create_agent_result, create_empty_result
 
-
-F = TypeVar('F', bound=Callable[..., Dict[str, Any]])
+F = TypeVar("F", bound=Callable[..., Dict[str, Any]])
 
 
 @dataclass
 class NodeConfig:
     """Configuration for an agent node."""
+
     agent_name: str
     max_tokens: int = 1000
     temperature: float = 0.0
@@ -33,9 +31,7 @@ class NodeConfig:
 
 
 def format_search_results(
-    results: List[Dict[str, Any]],
-    max_sources: int = 15,
-    content_length: int = 500
+    results: List[Dict[str, Any]], max_sources: int = 15, content_length: int = 500
 ) -> str:
     """
     Format search results for LLM analysis.
@@ -58,11 +54,7 @@ def format_search_results(
         if isinstance(content, str) and len(content) > content_length:
             content = content[:content_length] + "..."
 
-        formatted.append(
-            f"Source {i+1}: {title}\n"
-            f"URL: {url}\n"
-            f"Content: {content}"
-        )
+        formatted.append(f"Source {i+1}: {title}\n" f"URL: {url}\n" f"Content: {content}")
 
     return "\n\n".join(formatted)
 
@@ -73,7 +65,7 @@ def agent_node(
     temperature: float = 0.0,
     max_sources: int = 15,
     content_truncate_length: int = 500,
-    require_search_results: bool = True
+    require_search_results: bool = True,
 ):
     """
     Decorator for creating standardized agent node functions.
@@ -104,6 +96,7 @@ def agent_node(
     Returns:
         Decorated function
     """
+
     def decorator(func: F) -> Callable[[OverallState], AgentResult]:
         @wraps(func)
         def wrapper(state: OverallState) -> AgentResult:
@@ -124,9 +117,7 @@ def agent_node(
 
                 # Format search results
                 formatted_results = format_search_results(
-                    search_results,
-                    max_sources=max_sources,
-                    content_length=content_truncate_length
+                    search_results, max_sources=max_sources, content_length=content_truncate_length
                 )
 
                 # Create node config
@@ -135,7 +126,7 @@ def agent_node(
                     max_tokens=max_tokens,
                     temperature=temperature,
                     max_sources=max_sources,
-                    content_truncate_length=content_truncate_length
+                    content_truncate_length=content_truncate_length,
                 )
 
                 try:
@@ -147,7 +138,7 @@ def agent_node(
                         config=app_config,
                         node_config=node_config,
                         formatted_results=formatted_results,
-                        company_name=company_name
+                        company_name=company_name,
                     )
 
                     # If result is just a string (analysis text), wrap it
@@ -160,16 +151,13 @@ def agent_node(
                             input_tokens=0,
                             output_tokens=0,
                             cost=0.0,
-                            sources_used=len(search_results)
+                            sources_used=len(search_results),
                         )
 
                     # If result is a response object with usage
-                    if hasattr(result, 'content') and hasattr(result, 'usage'):
+                    if hasattr(result, "content") and hasattr(result, "usage"):
                         analysis = result.content[0].text
-                        cost = calculate_cost(
-                            result.usage.input_tokens,
-                            result.usage.output_tokens
-                        )
+                        cost = calculate_cost(result.usage.input_tokens, result.usage.output_tokens)
                         logger.complete(cost=cost)
 
                         return create_agent_result(
@@ -178,7 +166,7 @@ def agent_node(
                             input_tokens=result.usage.input_tokens,
                             output_tokens=result.usage.output_tokens,
                             cost=cost,
-                            sources_used=min(len(search_results), max_sources)
+                            sources_used=min(len(search_results), max_sources),
                         )
 
                     # If result is already an AgentResult dict
@@ -192,12 +180,11 @@ def agent_node(
                 except Exception as e:
                     logger.error(f"Agent execution failed: {e}", exc_info=True)
                     return create_empty_result(
-                        agent_name,
-                        f"Agent error: {str(e)}",
-                        status=AgentStatus.ERROR
+                        agent_name, f"Agent error: {str(e)}", status=AgentStatus.ERROR
                     )
 
         return wrapper
+
     return decorator
 
 
@@ -254,7 +241,7 @@ class BaseAgentNode:
             formatted_results = format_search_results(
                 search_results,
                 max_sources=self.max_sources,
-                content_length=self.content_truncate_length
+                content_length=self.content_truncate_length,
             )
 
             try:
@@ -266,14 +253,11 @@ class BaseAgentNode:
                     model=self.config.llm_model,
                     max_tokens=self.max_tokens,
                     temperature=self.temperature,
-                    messages=[{"role": "user", "content": prompt}]
+                    messages=[{"role": "user", "content": prompt}],
                 )
 
                 # Calculate cost
-                cost = calculate_cost(
-                    response.usage.input_tokens,
-                    response.usage.output_tokens
-                )
+                cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
 
                 # Process response
                 response_text = safe_extract_text(response, agent_name=self.agent_name)
@@ -287,13 +271,11 @@ class BaseAgentNode:
                     input_tokens=response.usage.input_tokens,
                     output_tokens=response.usage.output_tokens,
                     cost=cost,
-                    sources_used=min(len(search_results), self.max_sources)
+                    sources_used=min(len(search_results), self.max_sources),
                 )
 
             except Exception as e:
                 self.logger.error(f"Agent execution failed: {e}", exc_info=True)
                 return create_empty_result(
-                    self.agent_name,
-                    f"Agent error: {str(e)}",
-                    status=AgentStatus.ERROR
+                    self.agent_name, f"Agent error: {str(e)}", status=AgentStatus.ERROR
                 )

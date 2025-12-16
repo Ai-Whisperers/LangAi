@@ -41,29 +41,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .models import (
-    SourceQuality,
-    DataCompleteness,
-    CachedSource,
-    CachedCompanyData,
-)
 from ..utils import get_logger
+from .models import CachedCompanyData, CachedSource, DataCompleteness, SourceQuality
 
 # Support both package and standalone imports
 try:
+    from .data_completeness import CompletenessChecker, CompletenessReport, DataSection
     from .url_registry import URLRegistry, URLStatus
-    from .data_completeness import (
-        CompletenessChecker,
-        CompletenessReport,
-        DataSection,
-    )
 except ImportError:
+    from data_completeness import CompletenessChecker, CompletenessReport, DataSection
     from url_registry import URLRegistry, URLStatus
-    from data_completeness import (
-        CompletenessChecker,
-        CompletenessReport,
-        DataSection,
-    )
 
 logger = get_logger(__name__)
 
@@ -186,9 +173,7 @@ class ResearchCache:
 
         if not cached_data:
             # No data at all - everything is a gap
-            return self.completeness_checker.check_completeness(
-                company_name, {}
-            )
+            return self.completeness_checker.check_completeness(company_name, {})
 
         # Convert cached data to dict for completeness check
         data_dict = {
@@ -212,9 +197,7 @@ class ResearchCache:
             "risks_updated": cached_data.section_updated.get("risks"),
         }
 
-        return self.completeness_checker.check_completeness(
-            company_name, data_dict
-        )
+        return self.completeness_checker.check_completeness(company_name, data_dict)
 
     def get_research_priority(self, company_name: str) -> Dict[str, Any]:
         """
@@ -456,8 +439,7 @@ class ResearchCache:
             if key in section_mapping and data:
                 section = section_mapping[key]
                 section_sources = [
-                    s for s in sources
-                    if section in s.get("used_for", []) or not s.get("used_for")
+                    s for s in sources if section in s.get("used_for", []) or not s.get("used_for")
                 ]
                 self.store_company_data(
                     company_name=company_name,
@@ -487,11 +469,13 @@ class ResearchCache:
             except Exception as e:
                 logger.debug(f"Failed to load history for {company_name}: {e}")
 
-        history.append({
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "sections_updated": list(data.keys()),
-            "sources_count": len(sources),
-        })
+        history.append(
+            {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "sections_updated": list(data.keys()),
+                "sources_count": len(sources),
+            }
+        )
 
         # Keep last 100 entries
         history = history[-100:]
@@ -507,6 +491,7 @@ class ResearchCache:
         """Extract domain from URL."""
         try:
             from urllib.parse import urlparse
+
             return urlparse(url).netloc.lower()
         except Exception:
             return ""
@@ -574,12 +559,12 @@ class ResearchCache:
         print(f"Storage: {stats['storage_path']}")
         print(f"\nCompanies cached: {stats['companies']['total_companies']}")
 
-        for name in list(stats['companies']['companies'])[:10]:
+        for name in list(stats["companies"]["companies"])[:10]:
             data = self.get_company_data(name.replace("_", " "))
             if data:
                 print(f"  - {data.company_name}: {data.completeness.value}")
 
-        if stats['companies']['total_companies'] > 10:
+        if stats["companies"]["total_companies"] > 10:
             print(f"  ... and {stats['companies']['total_companies'] - 10} more")
 
         print(f"\nURLs tracked: {stats['urls']['total_urls']}")

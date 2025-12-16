@@ -13,35 +13,36 @@ to ensure research quality and accuracy.
 """
 
 from typing import Any, Callable, Dict, List, Optional
+
 from ...utils import get_logger, utc_now
 
 logger = get_logger(__name__)
 
-from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
-from ...state import OverallState
+from dataclasses import dataclass
+from enum import Enum
+
 # AI models for extraction
 from ...ai.extraction import ExtractedFact, FactCategory, FactType
-from ...quality.contradiction_detector import (
-    ContradictionDetector,
-    ContradictionReport
-)
-from enum import Enum
-from dataclasses import dataclass
+from ...config import get_config
+from ...llm.client_factory import calculate_cost, get_anthropic_client, safe_extract_text
+from ...quality.contradiction_detector import ContradictionDetector, ContradictionReport
+from ...state import OverallState
 
 
 class IssueSeverity(str, Enum):
     """Severity levels for quality issues."""
+
     CRITICAL = "critical"  # Major contradiction or error
-    HIGH = "high"         # Significant issue
-    MEDIUM = "medium"     # Moderate concern
-    LOW = "low"           # Minor issue
-    INFO = "info"         # Informational only
+    HIGH = "high"  # Significant issue
+    MEDIUM = "medium"  # Moderate concern
+    LOW = "low"  # Minor issue
+    INFO = "info"  # Informational only
 
 
 @dataclass
 class QualityIssue:
     """A quality issue found in research."""
+
     issue_type: str
     severity: IssueSeverity
     description: str
@@ -74,33 +75,29 @@ REQUIRED_SECTIONS = {
     "company_overview": {
         "name": "Company Overview",
         "fields": ["description", "headquarters", "founded", "employees"],
-        "weight": 0.15
+        "weight": 0.15,
     },
     "financial": {
         "name": "Financial Analysis",
         "fields": ["revenue", "profitability", "funding", "valuation"],
-        "weight": 0.25
+        "weight": 0.25,
     },
     "market": {
         "name": "Market Analysis",
         "fields": ["market_size", "market_share", "trends", "competitors"],
-        "weight": 0.20
+        "weight": 0.20,
     },
     "product": {
         "name": "Product Analysis",
         "fields": ["products", "technology", "features"],
-        "weight": 0.15
+        "weight": 0.15,
     },
     "competitive": {
         "name": "Competitive Intelligence",
         "fields": ["competitors", "positioning", "threats"],
-        "weight": 0.15
+        "weight": 0.15,
     },
-    "leadership": {
-        "name": "Leadership",
-        "fields": ["executives", "team"],
-        "weight": 0.10
-    }
+    "leadership": {"name": "Leadership", "fields": ["executives", "team"], "weight": 0.10},
 }
 
 
@@ -108,15 +105,12 @@ REQUIRED_SECTIONS = {
 # Gap Identification
 # ============================================================================
 
+
 class ResearchGap:
     """Represents a gap in research coverage."""
 
     def __init__(
-        self,
-        section: str,
-        field: str,
-        severity: str = "medium",
-        recommendation: str = ""
+        self, section: str, field: str, severity: str = "medium", recommendation: str = ""
     ):
         self.section = section
         self.field = field
@@ -128,13 +122,14 @@ class ResearchGap:
             "section": self.section,
             "field": self.field,
             "severity": self.severity,
-            "recommendation": self.recommendation
+            "recommendation": self.recommendation,
         }
 
 
 # ============================================================================
 # Simple Fact Extractor (uses AI models, no LLM calls)
 # ============================================================================
+
 
 def extract_facts_from_agent_output(output: Dict[str, Any], agent_name: str) -> List[ExtractedFact]:
     """
@@ -196,21 +191,20 @@ def extract_facts_from_agent_output(output: Dict[str, Any], agent_name: str) -> 
             elif "market" in field_lower:
                 fact_type = FactType.MARKET_POSITION
 
-            facts.append(ExtractedFact(
-                category=category,
-                fact_type=fact_type,
-                value=value,
-                source_text=value[:500],  # Truncate long values
-                confidence=0.7,  # Default confidence for extracted facts
-            ))
+            facts.append(
+                ExtractedFact(
+                    category=category,
+                    fact_type=fact_type,
+                    value=value,
+                    source_text=value[:500],  # Truncate long values
+                    confidence=0.7,  # Default confidence for extracted facts
+                )
+            )
 
     return facts
 
 
-def identify_gaps(
-    facts: List[ExtractedFact],
-    agent_outputs: Dict[str, Any]
-) -> List[ResearchGap]:
+def identify_gaps(facts: List[ExtractedFact], agent_outputs: Dict[str, Any]) -> List[ResearchGap]:
     """
     Identify gaps in research coverage.
 
@@ -226,7 +220,7 @@ def identify_gaps(
     # Group facts by category
     facts_by_category = {}
     for fact in facts:
-        cat = fact.category.value if hasattr(fact.category, 'value') else fact.category
+        cat = fact.category.value if hasattr(fact.category, "value") else fact.category
         if cat not in facts_by_category:
             facts_by_category[cat] = []
         facts_by_category[cat].append(fact)
@@ -237,26 +231,30 @@ def identify_gaps(
 
         # Check if section has enough coverage
         if len(section_facts) < 3:  # Minimum facts per section
-            gaps.append(ResearchGap(
-                section=section_info["name"],
-                field="general",
-                severity="high" if section_info["weight"] > 0.15 else "medium",
-                recommendation=f"Need more facts for {section_info['name']} section"
-            ))
+            gaps.append(
+                ResearchGap(
+                    section=section_info["name"],
+                    field="general",
+                    severity="high" if section_info["weight"] > 0.15 else "medium",
+                    recommendation=f"Need more facts for {section_info['name']} section",
+                )
+            )
 
         # Check specific fields
         for field in section_info["fields"]:
             field_covered = any(
-                field in getattr(fact, 'content', getattr(fact, 'source_text', '')).lower()
+                field in getattr(fact, "content", getattr(fact, "source_text", "")).lower()
                 for fact in section_facts
             )
             if not field_covered:
-                gaps.append(ResearchGap(
-                    section=section_info["name"],
-                    field=field,
-                    severity="medium",
-                    recommendation=f"Missing {field} information in {section_info['name']}"
-                ))
+                gaps.append(
+                    ResearchGap(
+                        section=section_info["name"],
+                        field=field,
+                        severity="medium",
+                        recommendation=f"Missing {field} information in {section_info['name']}",
+                    )
+                )
 
     return gaps
 
@@ -265,10 +263,9 @@ def identify_gaps(
 # Quality Scoring
 # ============================================================================
 
+
 def calculate_comprehensive_quality(
-    facts: List[ExtractedFact],
-    contradiction_report: ContradictionReport,
-    gaps: List[ResearchGap]
+    facts: List[ExtractedFact], contradiction_report: ContradictionReport, gaps: List[ResearchGap]
 ) -> Dict[str, Any]:
     """
     Calculate comprehensive quality score.
@@ -317,7 +314,9 @@ def calculate_comprehensive_quality(
     gap_score = max(0, min(100, gap_score))
 
     # Confidence score
-    high_confidence = sum(1 for f in facts if getattr(f, 'confidence_hint', getattr(f, 'confidence', 0.5)) > 0.7)
+    high_confidence = sum(
+        1 for f in facts if getattr(f, "confidence_hint", getattr(f, "confidence", 0.5)) > 0.7
+    )
     if total_facts > 0:
         confidence_score = (high_confidence / total_facts) * 100
     else:
@@ -325,10 +324,7 @@ def calculate_comprehensive_quality(
 
     # Overall weighted score
     overall_score = (
-        fact_score * 0.25 +
-        contradiction_score * 0.30 +
-        gap_score * 0.25 +
-        confidence_score * 0.20
+        fact_score * 0.25 + contradiction_score * 0.30 + gap_score * 0.25 + confidence_score * 0.20
     )
 
     return {
@@ -342,7 +338,7 @@ def calculate_comprehensive_quality(
         "critical_contradictions": critical_count,
         "high_gaps": high_gaps,
         "medium_gaps": medium_gaps,
-        "passed": overall_score >= 75
+        "passed": overall_score >= 75,
     }
 
 
@@ -422,7 +418,9 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
     contradiction_report = detector.detect(all_facts)
 
     if contradiction_report.total_count > 0:
-        logger.info(f"Found {contradiction_report.total_count} contradictions (Critical: {contradiction_report.critical_count}, High: {contradiction_report.high_count})")
+        logger.info(
+            f"Found {contradiction_report.total_count} contradictions (Critical: {contradiction_report.critical_count}, High: {contradiction_report.high_count})"
+        )
     else:
         logger.debug("No contradictions detected")
 
@@ -438,11 +436,7 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
 
     # Step 4: Calculate quality score
     logger.debug("Step 4: Calculating quality score")
-    quality_metrics = calculate_comprehensive_quality(
-        all_facts,
-        contradiction_report,
-        gaps
-    )
+    quality_metrics = calculate_comprehensive_quality(all_facts, contradiction_report, gaps)
     logger.info(f"Quality Score: {quality_metrics['overall_score']}/100")
 
     # Step 5: Generate LLM recommendations
@@ -464,7 +458,7 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
         fact_count=len(all_facts),
         contradiction_count=contradiction_report.total_count,
         gap_count=len(gaps),
-        quality_score=quality_metrics['overall_score']
+        quality_score=quality_metrics["overall_score"],
     )
 
     client = get_anthropic_client()
@@ -472,14 +466,11 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
         model=config.llm_model,
         max_tokens=config.logic_critic_max_tokens,
         temperature=config.logic_critic_temperature,
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
     )
 
     critic_analysis = safe_extract_text(response, agent_name="logic_critic")
-    cost = calculate_cost(
-        response.usage.input_tokens,
-        response.usage.output_tokens
-    )
+    cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
 
     duration = (utc_now() - start_time).total_seconds()
 
@@ -499,34 +490,31 @@ def logic_critic_agent_node(state: OverallState) -> Dict[str, Any]:
                     "id": c.id,
                     "topic": c.topic,
                     "severity": c.severity.value,
-                    "explanation": c.explanation
+                    "explanation": c.explanation,
                 }
                 for c in contradiction_report.contradictions[:5]  # Top 5
-            ]
+            ],
         },
         "gaps": {
             "total": len(gaps),
             "high_severity": len(high_gaps),
-            "items": [g.to_dict() for g in gaps[:10]]  # Top 10
+            "items": [g.to_dict() for g in gaps[:10]],  # Top 10
         },
         "recommendations": extract_recommendations(critic_analysis),
-        "passed": quality_metrics['passed'],
+        "passed": quality_metrics["passed"],
         "cost": cost,
         "duration_seconds": duration,
-        "tokens": {
-            "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
-        }
+        "tokens": {"input": response.usage.input_tokens, "output": response.usage.output_tokens},
     }
 
     return {
         "agent_outputs": {"logic_critic": agent_output},
-        "quality_score": quality_metrics['overall_score'],
+        "quality_score": quality_metrics["overall_score"],
         "total_cost": cost,
         "total_tokens": {
             "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
-        }
+            "output": response.usage.output_tokens,
+        },
     }
 
 
@@ -535,17 +523,17 @@ def extract_recommendations(analysis_text: str) -> List[str]:
     recommendations = []
 
     # Look for recommendation section
-    lines = analysis_text.split('\n')
+    lines = analysis_text.split("\n")
     in_recommendations = False
 
     for line in lines:
         line = line.strip()
-        if 'recommendation' in line.lower() or 'action' in line.lower():
+        if "recommendation" in line.lower() or "action" in line.lower():
             in_recommendations = True
             continue
 
-        if in_recommendations and line.startswith(('-', '•', '*', '1', '2', '3')):
-            rec = line.lstrip('-•*0123456789. ')
+        if in_recommendations and line.startswith(("-", "•", "*", "1", "2", "3")):
+            rec = line.lstrip("-•*0123456789. ")
             if len(rec) > 10:
                 recommendations.append(rec)
 
@@ -555,6 +543,7 @@ def extract_recommendations(analysis_text: str) -> List[str]:
 # ============================================================================
 # Alternative: Quick Critic (No LLM)
 # ============================================================================
+
 
 def quick_logic_critic_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -581,9 +570,7 @@ def quick_logic_critic_node(state: OverallState) -> Dict[str, Any]:
     gaps = identify_gaps(all_facts, agent_outputs)
 
     # Calculate quality
-    quality_metrics = calculate_comprehensive_quality(
-        all_facts, contradiction_report, gaps
-    )
+    quality_metrics = calculate_comprehensive_quality(all_facts, contradiction_report, gaps)
 
     logger.info(f"Logic Critic (Quick) Score: {quality_metrics['overall_score']}/100")
 
@@ -594,9 +581,9 @@ def quick_logic_critic_node(state: OverallState) -> Dict[str, Any]:
                 "facts_analyzed": len(all_facts),
                 "contradictions": contradiction_report.total_count,
                 "gaps": len(gaps),
-                "passed": quality_metrics['passed'],
-                "cost": 0.0
+                "passed": quality_metrics["passed"],
+                "cost": 0.0,
             }
         },
-        "quality_score": quality_metrics['overall_score']
+        "quality_score": quality_metrics["overall_score"],
     }

@@ -8,10 +8,10 @@ argument-hint: "[repository-path]"
 
 # Prompt: Implement Tag-Based Versioning CI/CD Pipeline
 
-**Category:** CI/CD Implementation  
-**Type:** Step-by-Step Implementation Prompt  
-**Complexity:** Medium  
-**Time Estimate:** 2-3 hours  
+**Category:** CI/CD Implementation
+**Type:** Step-by-Step Implementation Prompt
+**Complexity:** Medium
+**Time Estimate:** 2-3 hours
 **Version:** 4.0.0 (60/60 Gold Standard with Two-Stage RC)
 
 ---
@@ -324,9 +324,8 @@ copy .cursor\templars\cicd\TAGGING-GUIDE.md cicd\docs\TAGGING-GUIDE.md
 
 ---
 
-**Prompt Version:** 4.0.0  
-**Last Updated:** 2025-12-05  
-**Implementation Target:** 60/60 (Gold Standard with Two-Stage RC)  
-**Reference:** eneve.domain  
+**Prompt Version:** 4.0.0
+**Last Updated:** 2025-12-05
+**Implementation Target:** 60/60 (Gold Standard with Two-Stage RC)
+**Reference:** eneve.domain
 **Related Rule:** `rule.cicd.tag-based-versioning.v2`
-

@@ -31,17 +31,20 @@ Usage:
 
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
-from ..utils import utc_now
+from typing import Any, Dict, List, Optional
 
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from ..utils import utc_now
 
 # ============================================================================
 # Enums for Categorical Fields
 # ============================================================================
 
+
 class CompanySize(str, Enum):
     """Company size categories."""
+
     STARTUP = "startup"  # < 50 employees
     SMALL = "small"  # 50-200
     MEDIUM = "medium"  # 200-1000
@@ -51,6 +54,7 @@ class CompanySize(str, Enum):
 
 class IndustryCategory(str, Enum):
     """Major industry categories."""
+
     TECHNOLOGY = "technology"
     FINANCE = "finance"
     HEALTHCARE = "healthcare"
@@ -65,6 +69,7 @@ class IndustryCategory(str, Enum):
 
 class DataFreshness(str, Enum):
     """Data freshness indicators."""
+
     CURRENT = "current"  # < 7 days
     RECENT = "recent"  # < 30 days
     DATED = "dated"  # < 90 days
@@ -74,6 +79,7 @@ class DataFreshness(str, Enum):
 
 class ConfidenceLevel(str, Enum):
     """Confidence in data accuracy."""
+
     VERIFIED = "verified"  # Cross-validated from multiple sources
     HIGH = "high"  # From authoritative source
     MEDIUM = "medium"  # From reliable source
@@ -85,8 +91,10 @@ class ConfidenceLevel(str, Enum):
 # Source Models
 # ============================================================================
 
+
 class SourceReference(BaseModel):
     """A reference to a source document."""
+
     model_config = ConfigDict(frozen=True)
 
     url: str = Field(..., description="Source URL")
@@ -105,6 +113,7 @@ class SourceReference(BaseModel):
         url = info.data.get("url", "")
         if url:
             from urllib.parse import urlparse
+
             try:
                 return urlparse(url).netloc
             except:
@@ -114,6 +123,7 @@ class SourceReference(BaseModel):
 
 class CitedClaim(BaseModel):
     """A claim with source attribution."""
+
     claim: str = Field(..., description="The factual claim")
     value: Optional[Any] = Field(default=None, description="Extracted value if applicable")
     sources: List[SourceReference] = Field(default_factory=list)
@@ -125,30 +135,26 @@ class CitedClaim(BaseModel):
 # Financial Models
 # ============================================================================
 
+
 class FinancialMetrics(BaseModel):
     """Strongly-typed financial metrics."""
+
     model_config = ConfigDict(validate_assignment=True)
 
     # Revenue
     revenue: Optional[float] = Field(
-        default=None,
-        ge=0,
-        description="Annual revenue in base currency units"
+        default=None, ge=0, description="Annual revenue in base currency units"
     )
     revenue_currency: str = Field(default="USD")
     revenue_year: Optional[int] = Field(default=None, ge=1900, le=2100)
     revenue_growth_yoy: Optional[float] = Field(
-        default=None,
-        description="Year-over-year revenue growth as decimal (0.15 = 15%)"
+        default=None, description="Year-over-year revenue growth as decimal (0.15 = 15%)"
     )
 
     # Profitability
     net_income: Optional[float] = Field(default=None, description="Net income")
     profit_margin: Optional[float] = Field(
-        default=None,
-        ge=-10,
-        le=1,
-        description="Net profit margin as decimal"
+        default=None, ge=-10, le=1, description="Net profit margin as decimal"
     )
     gross_margin: Optional[float] = Field(default=None, ge=-10, le=1)
     operating_margin: Optional[float] = Field(default=None, ge=-10, le=1)
@@ -227,14 +233,12 @@ class FinancialMetrics(BaseModel):
 
 class MarketMetrics(BaseModel):
     """Market positioning and competitive metrics."""
+
     model_config = ConfigDict(validate_assignment=True)
 
     # Market Position
     market_share: Optional[float] = Field(
-        default=None,
-        ge=0,
-        le=1,
-        description="Market share as decimal"
+        default=None, ge=0, le=1, description="Market share as decimal"
     )
     market_size: Optional[float] = Field(default=None, ge=0)
     market_growth_rate: Optional[float] = Field(default=None)
@@ -263,6 +267,7 @@ class MarketMetrics(BaseModel):
 
 class ProductMetrics(BaseModel):
     """Product and service information."""
+
     model_config = ConfigDict(validate_assignment=True)
 
     # Products
@@ -272,12 +277,10 @@ class ProductMetrics(BaseModel):
 
     # Revenue breakdown
     product_revenue_breakdown: Dict[str, float] = Field(
-        default_factory=dict,
-        description="Product name to revenue percentage"
+        default_factory=dict, description="Product name to revenue percentage"
     )
     segment_revenue_breakdown: Dict[str, float] = Field(
-        default_factory=dict,
-        description="Segment name to revenue percentage"
+        default_factory=dict, description="Segment name to revenue percentage"
     )
 
     # Technology
@@ -298,6 +301,7 @@ class ProductMetrics(BaseModel):
 
 class CompanyProfile(BaseModel):
     """Basic company profile information."""
+
     model_config = ConfigDict(validate_assignment=True)
 
     # Identity
@@ -325,8 +329,7 @@ class CompanyProfile(BaseModel):
     ceo_name: Optional[str] = Field(default=None)
     ceo_since: Optional[int] = Field(default=None)
     key_executives: Dict[str, str] = Field(
-        default_factory=dict,
-        description="Title to name mapping"
+        default_factory=dict, description="Title to name mapping"
     )
 
     # Classification
@@ -343,11 +346,7 @@ class CompanyProfile(BaseModel):
     @property
     def headquarters_full(self) -> str:
         """Get full headquarters string."""
-        parts = [
-            self.headquarters_city,
-            self.headquarters_state,
-            self.headquarters_country
-        ]
+        parts = [self.headquarters_city, self.headquarters_state, self.headquarters_country]
         return ", ".join(p for p in parts if p)
 
 
@@ -355,8 +354,10 @@ class CompanyProfile(BaseModel):
 # Agent Output Models
 # ============================================================================
 
+
 class AgentOutput(BaseModel):
     """Output from a specialized research agent."""
+
     model_config = ConfigDict(validate_assignment=True)
 
     agent_name: str = Field(..., description="Name of the agent")
@@ -387,24 +388,28 @@ class AgentOutput(BaseModel):
 
 class FinancialAgentOutput(AgentOutput):
     """Output from the Financial Agent."""
+
     agent_type: str = Field(default="financial", frozen=True)
     metrics: FinancialMetrics = Field(default_factory=FinancialMetrics)
 
 
 class MarketAgentOutput(AgentOutput):
     """Output from the Market Agent."""
+
     agent_type: str = Field(default="market", frozen=True)
     metrics: MarketMetrics = Field(default_factory=MarketMetrics)
 
 
 class ProductAgentOutput(AgentOutput):
     """Output from the Product Agent."""
+
     agent_type: str = Field(default="product", frozen=True)
     metrics: ProductMetrics = Field(default_factory=ProductMetrics)
 
 
 class CompetitorAgentOutput(AgentOutput):
     """Output from the Competitor Agent."""
+
     agent_type: str = Field(default="competitor", frozen=True)
     competitors: List[CompanyProfile] = Field(default_factory=list)
     competitive_analysis: Dict[str, Any] = Field(default_factory=dict)
@@ -414,8 +419,10 @@ class CompetitorAgentOutput(AgentOutput):
 # Quality Models
 # ============================================================================
 
+
 class QualityAssessment(BaseModel):
     """Quality assessment of research output."""
+
     model_config = ConfigDict(validate_assignment=True)
 
     # Scores
@@ -440,8 +447,10 @@ class QualityAssessment(BaseModel):
 # Complete Research State
 # ============================================================================
 
+
 class TypedAgentOutputs(BaseModel):
     """Container for all agent outputs with type safety."""
+
     model_config = ConfigDict(validate_assignment=True)
 
     financial: Optional[FinancialAgentOutput] = Field(default=None)
@@ -460,7 +469,7 @@ class TypedAgentOutputs(BaseModel):
             "financial": self.financial,
             "market": self.market,
             "product": self.product,
-            "competitor": self.competitor
+            "competitor": self.competitor,
         }
         return mapping.get(agent_type)
 
@@ -472,6 +481,7 @@ class TypedResearchState(BaseModel):
     This replaces the loose Dict[str, Any] approach with validated models.
     Can be used alongside existing TypedDict state during migration.
     """
+
     model_config = ConfigDict(validate_assignment=True)
 
     # Input
@@ -552,19 +562,16 @@ class TypedResearchState(BaseModel):
                     "financial": self.agent_outputs.financial,
                     "market": self.agent_outputs.market,
                     "product": self.agent_outputs.product,
-                    "competitor": self.agent_outputs.competitor
+                    "competitor": self.agent_outputs.competitor,
                 }.items()
             },
             "quality_score": self.quality_score,
             "iteration_count": self.iteration_count,
             "total_cost": self.total_cost_usd,
-            "total_tokens": {
-                "input": self.total_tokens_input,
-                "output": self.total_tokens_output
-            },
+            "total_tokens": {"input": self.total_tokens_input, "output": self.total_tokens_output},
             "start_time": self.started_at,
             "report_path": self.report_path,
-            "sources": [s.model_dump() for s in self.all_sources]
+            "sources": [s.model_dump() for s in self.all_sources],
         }
 
     @classmethod
@@ -576,7 +583,7 @@ class TypedResearchState(BaseModel):
             iteration_count=data.get("iteration_count", 0),
             total_cost_usd=data.get("total_cost", 0),
             started_at=data.get("start_time", utc_now()),
-            report_path=data.get("report_path")
+            report_path=data.get("report_path"),
         )
 
         # Parse tokens

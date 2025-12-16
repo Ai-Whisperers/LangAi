@@ -30,10 +30,11 @@ Usage:
     )
 """
 
-from typing import Optional, Dict, Any, List
+import asyncio
 from dataclasses import dataclass, field
 from threading import Lock
-import asyncio
+from typing import Any, Dict, List, Optional
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -41,6 +42,7 @@ logger = get_logger(__name__)
 # Try to import crawl4ai
 try:
     from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig
+
     CRAWL4AI_AVAILABLE = True
 except ImportError:
     CRAWL4AI_AVAILABLE = False
@@ -50,6 +52,7 @@ except ImportError:
 @dataclass
 class CrawlResult:
     """Result from a crawl operation."""
+
     url: str
     markdown: str
     html: Optional[str] = None
@@ -73,7 +76,7 @@ class CrawlResult:
             "extracted_data": self.extracted_data,
             "success": self.success,
             "error": self.error,
-            "crawl_time_ms": self.crawl_time_ms
+            "crawl_time_ms": self.crawl_time_ms,
         }
 
 
@@ -92,10 +95,7 @@ class Crawl4AIClient:
     """
 
     def __init__(
-        self,
-        headless: bool = True,
-        timeout: int = 30000,
-        user_agent: Optional[str] = None
+        self, headless: bool = True, timeout: int = 30000, user_agent: Optional[str] = None
     ):
         """
         Initialize Crawl4AI client.
@@ -106,11 +106,15 @@ class Crawl4AIClient:
             user_agent: Custom user agent string
         """
         if not CRAWL4AI_AVAILABLE:
-            raise ImportError("crawl4ai not installed. Run: pip install crawl4ai && playwright install")
+            raise ImportError(
+                "crawl4ai not installed. Run: pip install crawl4ai && playwright install"
+            )
 
         self.headless = headless
         self.timeout = timeout
-        self.user_agent = user_agent or "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        self.user_agent = (
+            user_agent or "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        )
 
         self._total_crawls = 0
         self._total_time_ms = 0
@@ -121,7 +125,7 @@ class Crawl4AIClient:
         url: str,
         wait_for: Optional[str] = None,
         remove_selectors: Optional[List[str]] = None,
-        only_main_content: bool = True
+        only_main_content: bool = True,
     ) -> CrawlResult:
         """
         Scrape a URL and convert to markdown.
@@ -136,19 +140,18 @@ class Crawl4AIClient:
             CrawlResult with markdown and metadata
         """
         import time
+
         start_time = time.time()
 
         try:
-            browser_config = BrowserConfig(
-                headless=self.headless,
-                user_agent=self.user_agent
-            )
+            browser_config = BrowserConfig(headless=self.headless, user_agent=self.user_agent)
 
             run_config = CrawlerRunConfig(
                 wait_for=wait_for,
-                remove_selectors=remove_selectors or ["nav", "footer", "aside", ".ads", "#cookie-banner"],
+                remove_selectors=remove_selectors
+                or ["nav", "footer", "aside", ".ads", "#cookie-banner"],
                 word_count_threshold=10,
-                only_text=False
+                only_text=False,
             )
 
             async with AsyncWebCrawler(config=browser_config) as crawler:
@@ -163,17 +166,27 @@ class Crawl4AIClient:
 
                 return CrawlResult(
                     url=url,
-                    markdown=result.markdown if hasattr(result, 'markdown') else result.extracted_content,
-                    html=result.html if hasattr(result, 'html') else None,
-                    title=result.title if hasattr(result, 'title') else None,
-                    links=result.links.get('internal', []) + result.links.get('external', []) if hasattr(result, 'links') and result.links else [],
-                    images=result.media.get('images', []) if hasattr(result, 'media') and result.media else [],
+                    markdown=(
+                        result.markdown if hasattr(result, "markdown") else result.extracted_content
+                    ),
+                    html=result.html if hasattr(result, "html") else None,
+                    title=result.title if hasattr(result, "title") else None,
+                    links=(
+                        result.links.get("internal", []) + result.links.get("external", [])
+                        if hasattr(result, "links") and result.links
+                        else []
+                    ),
+                    images=(
+                        result.media.get("images", [])
+                        if hasattr(result, "media") and result.media
+                        else []
+                    ),
                     metadata={
                         "word_count": len(result.markdown.split()) if result.markdown else 0,
-                        "crawl_time_ms": crawl_time
+                        "crawl_time_ms": crawl_time,
                     },
-                    success=result.success if hasattr(result, 'success') else True,
-                    crawl_time_ms=crawl_time
+                    success=result.success if hasattr(result, "success") else True,
+                    crawl_time_ms=crawl_time,
                 )
 
         except Exception as e:
@@ -183,14 +196,10 @@ class Crawl4AIClient:
                 markdown="",
                 success=False,
                 error=str(e),
-                crawl_time_ms=(time.time() - start_time) * 1000
+                crawl_time_ms=(time.time() - start_time) * 1000,
             )
 
-    async def scrape_multiple(
-        self,
-        urls: List[str],
-        max_concurrent: int = 5
-    ) -> List[CrawlResult]:
+    async def scrape_multiple(self, urls: List[str], max_concurrent: int = 5) -> List[CrawlResult]:
         """
         Scrape multiple URLs concurrently.
 
@@ -211,10 +220,7 @@ class Crawl4AIClient:
         return await asyncio.gather(*tasks)
 
     async def extract_structured(
-        self,
-        url: str,
-        schema: Dict[str, str],
-        instructions: Optional[str] = None
+        self, url: str, schema: Dict[str, str], instructions: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Extract structured data from a URL using CSS selectors or LLM.
@@ -241,8 +247,8 @@ class Crawl4AIClient:
             "title": result.title,
             "_meta": {
                 "word_count": result.metadata.get("word_count", 0),
-                "crawl_time_ms": result.crawl_time_ms
-            }
+                "crawl_time_ms": result.crawl_time_ms,
+            },
         }
 
         return extracted
@@ -252,7 +258,7 @@ class Crawl4AIClient:
         start_url: str,
         max_pages: int = 10,
         same_domain_only: bool = True,
-        url_pattern: Optional[str] = None
+        url_pattern: Optional[str] = None,
     ) -> List[CrawlResult]:
         """
         Crawl multiple pages from a website.
@@ -266,8 +272,8 @@ class Crawl4AIClient:
         Returns:
             List of CrawlResults
         """
-        from urllib.parse import urlparse
         import re
+        from urllib.parse import urlparse
 
         crawled_urls = set()
         results = []
@@ -301,11 +307,7 @@ class Crawl4AIClient:
 
         return results
 
-    async def scrape_company_page(
-        self,
-        url: str,
-        page_type: str = "about"
-    ) -> CrawlResult:
+    async def scrape_company_page(self, url: str, page_type: str = "about") -> CrawlResult:
         """
         Scrape a company page with optimized settings.
 
@@ -318,11 +320,17 @@ class Crawl4AIClient:
         """
         # Remove common non-content elements
         remove_selectors = [
-            "nav", "footer", "aside",
-            ".cookie-banner", "#cookie-consent",
-            ".social-share", ".newsletter-signup",
-            ".ads", ".advertisement",
-            "script", "style"
+            "nav",
+            "footer",
+            "aside",
+            ".cookie-banner",
+            "#cookie-consent",
+            ".social-share",
+            ".newsletter-signup",
+            ".ads",
+            ".advertisement",
+            "script",
+            "style",
         ]
 
         # Wait for common content containers
@@ -330,14 +338,14 @@ class Crawl4AIClient:
             "about": "main, article, .about-content, .company-info",
             "team": ".team, .leadership, .executives",
             "careers": ".jobs, .careers, .openings",
-            "investors": ".investor-relations, .financials"
+            "investors": ".investor-relations, .financials",
         }
 
         result = await self.scrape_url(
             url=url,
             wait_for=wait_for_map.get(page_type),
             remove_selectors=remove_selectors,
-            only_main_content=True
+            only_main_content=True,
         )
 
         # Add page type to metadata
@@ -351,8 +359,10 @@ class Crawl4AIClient:
             return {
                 "total_crawls": self._total_crawls,
                 "total_time_ms": self._total_time_ms,
-                "avg_time_ms": self._total_time_ms / self._total_crawls if self._total_crawls > 0 else 0,
-                "cost": 0.0  # FREE!
+                "avg_time_ms": (
+                    self._total_time_ms / self._total_crawls if self._total_crawls > 0 else 0
+                ),
+                "cost": 0.0,  # FREE!
             }
 
     def reset_stats(self) -> None:

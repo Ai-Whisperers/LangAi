@@ -5,9 +5,9 @@ This module evaluates the quality of research and identifies gaps.
 Uses smart routing to select cheapest appropriate model for classification.
 """
 
-import re
 import json
-from typing import Dict, Any, List, Set
+import re
+from typing import Any, Dict, List, Set
 
 from ..prompts import QUALITY_CHECK_PROMPT, format_sources_for_extraction
 from ..utils import get_logger
@@ -22,21 +22,17 @@ REQUIRED_FIELDS = {
     "founded": ["founded", "established", "incorporated"],
     "industry": ["industry", "sector", "business segment"],
     "employees": ["employees", "workforce", "staff count", "headcount"],
-
     # Leadership
     "ceo": ["ceo", "chief executive", "managing director", "general manager"],
     "leadership_team": ["leadership", "management team", "board", "executives"],
-
     # Financial metrics
     "revenue": ["revenue", "sales", "turnover", "annual revenue"],
     "profit_margin": ["profit margin", "net margin", "operating margin"],
     "market_cap": ["market cap", "market capitalization", "valuation"],
-
     # Market position
     "market_share": ["market share", "share of market", "% of market"],
     "subscribers": ["subscribers", "customers", "users", "client base"],
     "competitors": ["competitor", "rival", "competing", "market player"],
-
     # Operational
     "products_services": ["product", "service", "offering", "solution"],
     "geographic_presence": ["geographic", "countries", "regions", "operations in"],
@@ -93,14 +89,12 @@ def check_field_completeness(extracted_data: str) -> Dict[str, Any]:
             "total": total_fields,
             "present": present_count,
             "missing": len(missing_fields),
-        }
+        },
     }
 
 
 def check_research_quality(
-    company_name: str,
-    extracted_data: str,
-    sources: List[Dict[str, str]]
+    company_name: str, extracted_data: str, sources: List[Dict[str, str]]
 ) -> Dict[str, Any]:
     """
     Check the quality of research output (cost-optimized).
@@ -147,9 +141,7 @@ def check_research_quality(
 
     # Create quality check prompt
     prompt = QUALITY_CHECK_PROMPT.format(
-        company_name=company_name,
-        extracted_data=extracted_data,
-        sources=formatted_sources
+        company_name=company_name, extracted_data=extracted_data, sources=formatted_sources
     )
 
     # Use smart_completion - routes to DeepSeek V3 for classification tasks
@@ -157,7 +149,7 @@ def check_research_quality(
         prompt=prompt,
         task_type="classification",  # Routes to DeepSeek V3 ($0.14/1M)
         max_tokens=1500,
-        temperature=0.0
+        temperature=0.0,
     )
 
     content = result.content
@@ -174,11 +166,11 @@ def check_research_quality(
         content = content.strip()
 
         # Try to find the JSON object boundaries
-        start_idx = content.find('{')
-        end_idx = content.rfind('}')
+        start_idx = content.find("{")
+        end_idx = content.rfind("}")
 
         if start_idx >= 0 and end_idx >= 0:
-            json_str = content[start_idx:end_idx+1]
+            json_str = content[start_idx : end_idx + 1]
             quality_data = json.loads(json_str)
         else:
             quality_data = json.loads(content)
@@ -188,7 +180,9 @@ def check_research_quality(
 
         # Calculate composite quality score (60% LLM assessment, 40% field completeness)
         # Field score matters more when critical fields are missing
-        critical_penalty = len(field_results["critical_missing"]) * 5  # -5 points per critical field
+        critical_penalty = (
+            len(field_results["critical_missing"]) * 5
+        )  # -5 points per critical field
         composite_score = (llm_quality_score * 0.6) + (field_score * 0.4) - critical_penalty
         composite_score = max(0, min(100, composite_score))  # Clamp to 0-100
 
@@ -215,10 +209,7 @@ def check_research_quality(
             "strengths": quality_data.get("strengths", []),
             "recommended_queries": all_queries,
             "cost": cost,
-            "tokens": {
-                "input": result.input_tokens,
-                "output": result.output_tokens
-            }
+            "tokens": {"input": result.input_tokens, "output": result.output_tokens},
         }
 
         logger.debug(
@@ -256,17 +247,12 @@ def check_research_quality(
             "strengths": [],
             "recommended_queries": field_based_queries,
             "cost": cost,
-            "tokens": {
-                "input": result.input_tokens,
-                "output": result.output_tokens
-            }
+            "tokens": {"input": result.input_tokens, "output": result.output_tokens},
         }
 
 
 def _generate_queries_for_missing_fields(
-    company_name: str,
-    critical_missing: List[str],
-    important_missing: List[str]
+    company_name: str, critical_missing: List[str], important_missing: List[str]
 ) -> List[str]:
     """
     Generate targeted search queries based on missing fields.
@@ -285,16 +271,23 @@ def _generate_queries_for_missing_fields(
     query_templates = {
         # Critical fields
         "company_name": ["{company} official name legal entity"],
-        "revenue": ["{company} annual revenue financial results", "{company} revenue earnings report"],
-        "ceo": ["{company} CEO chief executive officer name", "{company} leadership management team"],
-        "market_share": ["{company} market share industry position", "{company} market position competitors"],
-
+        "revenue": [
+            "{company} annual revenue financial results",
+            "{company} revenue earnings report",
+        ],
+        "ceo": [
+            "{company} CEO chief executive officer name",
+            "{company} leadership management team",
+        ],
+        "market_share": [
+            "{company} market share industry position",
+            "{company} market position competitors",
+        ],
         # Important fields
         "headquarters": ["{company} headquarters location address"],
         "employees": ["{company} number of employees workforce size", "{company} headcount staff"],
         "competitors": ["{company} competitors competitive landscape", "{company} industry rivals"],
         "subscribers": ["{company} customers subscribers users base", "{company} customer count"],
-
         # Other fields
         "founded": ["{company} founded established history"],
         "industry": ["{company} industry sector business segment"],

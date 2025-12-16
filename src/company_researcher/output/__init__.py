@@ -43,55 +43,50 @@ Usage:
     )
 """
 
-# PDF Generation
-from .pdf_generator import (
-    PDFReportGenerator,
-    ReportConfig,
-    ReportStyle,
-    ReportSection,
-    generate_pdf_report,
-    REPORTLAB_AVAILABLE,
-)
-
-# Excel Export
-from .excel_exporter import (
-    ExcelExporter,
-    ExcelConfig,
-    SheetType,
-    export_to_excel,
-    OPENPYXL_AVAILABLE,
-    XLSXWRITER_AVAILABLE,
-)
-
-# Presentation Generation
-from .presentation_generator import (
-    PresentationGenerator,
-    PresentationConfig,
-    PresentationStyle,
-    SlideContent,
-    SlideType,
-    generate_presentation,
-    PPTX_AVAILABLE,
-)
-
 # Comparison Reports
 from .comparison_report import (
-    ComparisonReportGenerator,
-    ComparisonReport,
     CompanyData,
-    MetricComparison,
-    ComparisonMetric,
     ComparisonCategory,
+    ComparisonMetric,
+    ComparisonReport,
+    ComparisonReportGenerator,
+    MetricComparison,
     compare_companies,
     create_comparison_generator,
 )
 
+# Excel Export
+from .excel_exporter import (
+    OPENPYXL_AVAILABLE,
+    XLSXWRITER_AVAILABLE,
+    ExcelConfig,
+    ExcelExporter,
+    SheetType,
+    export_to_excel,
+)
+
+# PDF Generation
+from .pdf_generator import (
+    REPORTLAB_AVAILABLE,
+    PDFReportGenerator,
+    ReportConfig,
+    ReportSection,
+    ReportStyle,
+    generate_pdf_report,
+)
+
 # Report Pipeline (unified generation)
-from .pipeline import (
-    ReportPipeline,
-    GeneratedReport,
-    get_report_pipeline,
-    reset_report_pipeline,
+from .pipeline import GeneratedReport, ReportPipeline, get_report_pipeline, reset_report_pipeline
+
+# Presentation Generation
+from .presentation_generator import (
+    PPTX_AVAILABLE,
+    PresentationConfig,
+    PresentationGenerator,
+    PresentationStyle,
+    SlideContent,
+    SlideType,
+    generate_presentation,
 )
 
 __all__ = [

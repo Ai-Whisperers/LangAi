@@ -12,10 +12,11 @@ Usage:
     python examples/hello_research.py "OpenAI"
 """
 
+import asyncio
 import os
 import sys
-import asyncio
 from datetime import datetime
+
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -73,17 +74,13 @@ async def hello_research(company_name: str) -> dict:
     search_queries = [
         f"{company_name} company overview",
         f"{company_name} revenue 2024",
-        f"{company_name} products services"
+        f"{company_name} products services",
     ]
 
     all_results = []
     for query in search_queries:
         print(f"  [SEARCH] Searching: {query}")
-        results = await asyncio.to_thread(
-            tavily_client.search,
-            query=query,
-            max_results=3
-        )
+        results = await asyncio.to_thread(tavily_client.search, query=query, max_results=3)
         all_results.append(results)
 
     # Collect sources
@@ -92,11 +89,9 @@ async def hello_research(company_name: str) -> dict:
 
     for result_set in all_results:
         for item in result_set.get("results", []):
-            sources.append({
-                "title": item.get("title"),
-                "url": item.get("url"),
-                "score": item.get("score", 0)
-            })
+            sources.append(
+                {"title": item.get("title"), "url": item.get("url"), "score": item.get("score", 0)}
+            )
             search_content.append(f"Title: {item.get('title')}\nContent: {item.get('content')}\n")
 
     print(f"  [OK] Found {len(sources)} sources\n")
@@ -123,12 +118,7 @@ Format as clean markdown."""
         model="claude-3-5-haiku-20241022",
         max_tokens=2000,
         temperature=0.0,
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
+        messages=[{"role": "user", "content": prompt}],
     )
 
     summary = response.content[0].text
@@ -183,7 +173,7 @@ Format as clean markdown."""
         "Duration < 5 minutes": duration < 300,
         "Cost < $0.50": total_cost < 0.50,
         "Found sources": len(sources) > 0,
-        "Generated summary": len(summary) > 100
+        "Generated summary": len(summary) > 100,
     }
 
     for criterion, passed in checks.items():
@@ -208,9 +198,9 @@ Format as clean markdown."""
             "cost_usd": total_cost,
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
-            "source_count": len(sources)
+            "source_count": len(sources),
         },
-        "success": all_passed
+        "success": all_passed,
     }
 
 
@@ -241,6 +231,7 @@ def main():
     except Exception as e:
         print(f"\n\n[ERROR] Error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

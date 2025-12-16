@@ -2,10 +2,10 @@
 Confidence Scoring - Per-fact confidence.
 """
 
+import re
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List
-import re
 
 
 class ConfidenceLevel(str, Enum):
@@ -50,7 +50,11 @@ class ScoredFact:
     explanation: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"claim": self.claim, "confidence": self.confidence, "level": self.confidence_level.value}
+        return {
+            "claim": self.claim,
+            "confidence": self.confidence,
+            "level": self.confidence_level.value,
+        }
 
 
 class ConfidenceScorer:
@@ -58,7 +62,14 @@ class ConfidenceScorer:
     CONFIDENT_WORDS = {"confirmed", "official", "announced", "stated"}
 
     def __init__(self, weights: Dict[str, float] = None):
-        self.weights = weights or {"source_count": 0.2, "source_agreement": 0.25, "source_authority": 0.2, "recency": 0.15, "specificity": 0.1, "language_certainty": 0.1}
+        self.weights = weights or {
+            "source_count": 0.2,
+            "source_agreement": 0.25,
+            "source_authority": 0.2,
+            "recency": 0.15,
+            "specificity": 0.1,
+            "language_certainty": 0.1,
+        }
 
     def score_fact(self, claim: str, sources: List[Dict] = None) -> ScoredFact:
         sources = sources or []
@@ -69,11 +80,18 @@ class ConfidenceScorer:
             source_authority=self._calculate_authority(source_infos),
             recency=0.7,
             specificity=self._calculate_specificity(claim),
-            language_certainty=self._calculate_language_certainty(claim)
+            language_certainty=self._calculate_language_certainty(claim),
         )
         confidence = self._calculate_overall(factors)
         level = self._classify_confidence(confidence)
-        return ScoredFact(claim=claim, confidence=confidence, confidence_level=level, factors=factors, sources=source_infos, explanation=f"Confidence: {confidence:.0%}")
+        return ScoredFact(
+            claim=claim,
+            confidence=confidence,
+            confidence_level=level,
+            factors=factors,
+            sources=source_infos,
+            explanation=f"Confidence: {confidence:.0%}",
+        )
 
     def _parse_source(self, source: Dict) -> SourceInfo:
         url = source.get("url", "")
@@ -82,7 +100,11 @@ class ConfidenceScorer:
             source_type = SourceType.OFFICIAL
         elif any(d in url.lower() for d in ["reuters", "bloomberg"]):
             source_type = SourceType.NEWS
-        authority = 0.8 if source_type == SourceType.OFFICIAL else 0.6 if source_type == SourceType.NEWS else 0.4
+        authority = (
+            0.8
+            if source_type == SourceType.OFFICIAL
+            else 0.6 if source_type == SourceType.NEWS else 0.4
+        )
         return SourceInfo(url=url, source_type=source_type, authority_score=authority)
 
     def _calculate_authority(self, sources: List[SourceInfo]) -> float:
@@ -103,14 +125,18 @@ class ConfidenceScorer:
 
     def _calculate_overall(self, factors: ConfidenceFactors) -> float:
         sc_factor = min(factors.source_count / 3, 1.0)
-        return max(0.0, min(
-            self.weights["source_count"] * sc_factor +
-            self.weights["source_agreement"] * factors.source_agreement +
-            self.weights["source_authority"] * factors.source_authority +
-            self.weights["recency"] * factors.recency +
-            self.weights["specificity"] * factors.specificity +
-            self.weights["language_certainty"] * factors.language_certainty
-        , 1.0))
+        return max(
+            0.0,
+            min(
+                self.weights["source_count"] * sc_factor
+                + self.weights["source_agreement"] * factors.source_agreement
+                + self.weights["source_authority"] * factors.source_authority
+                + self.weights["recency"] * factors.recency
+                + self.weights["specificity"] * factors.specificity
+                + self.weights["language_certainty"] * factors.language_certainty,
+                1.0,
+            ),
+        )
 
     def _classify_confidence(self, score: float) -> ConfidenceLevel:
         if score >= 0.85:

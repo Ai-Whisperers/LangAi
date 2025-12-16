@@ -13,12 +13,14 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
 from ..utils import utc_now
 
 
 @dataclass
 class Checkpoint:
     """A saved checkpoint of workflow state."""
+
     id: str
     thread_id: str
     state: Dict[str, Any]
@@ -36,7 +38,7 @@ class Checkpoint:
             "created_at": self.created_at.isoformat(),
             "metadata": self.metadata,
             "step": self.step,
-            "parent_id": self.parent_id
+            "parent_id": self.parent_id,
         }
 
     @classmethod
@@ -55,7 +57,7 @@ class Checkpoint:
             created_at=created_at,
             metadata=data.get("metadata", {}),
             step=data.get("step", 0),
-            parent_id=data.get("parent_id")
+            parent_id=data.get("parent_id"),
         )
 
 
@@ -87,7 +89,7 @@ class CheckpointManager:
         state: Dict[str, Any],
         step: int = 0,
         parent_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> Checkpoint:
         """
         Create a new checkpoint.
@@ -109,7 +111,7 @@ class CheckpointManager:
             created_at=utc_now(),
             metadata=metadata or {},
             step=step,
-            parent_id=parent_id
+            parent_id=parent_id,
         )
 
         # Save to storage
@@ -124,7 +126,7 @@ class CheckpointManager:
         thread_dir.mkdir(parents=True, exist_ok=True)
 
         filepath = thread_dir / f"{checkpoint.id}.json"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(checkpoint.to_dict(), f, indent=2, default=str)
 
     def load(self, checkpoint_id: str) -> Optional[Checkpoint]:
@@ -135,7 +137,7 @@ class CheckpointManager:
 
         # Search storage
         for filepath in self.storage_dir.glob(f"*/{checkpoint_id}.json"):
-            with open(filepath, 'r') as f:
+            with open(filepath, "r") as f:
                 data = json.load(f)
             checkpoint = Checkpoint.from_dict(data)
             self._checkpoints[checkpoint_id] = checkpoint
@@ -158,11 +160,7 @@ class CheckpointManager:
             return checkpoint.state.copy()
         return None
 
-    def list_for_thread(
-        self,
-        thread_id: str,
-        limit: int = 100
-    ) -> List[Checkpoint]:
+    def list_for_thread(self, thread_id: str, limit: int = 100) -> List[Checkpoint]:
         """
         List checkpoints for a thread.
 
@@ -179,7 +177,7 @@ class CheckpointManager:
 
         checkpoints = []
         for filepath in thread_dir.glob("*.json"):
-            with open(filepath, 'r') as f:
+            with open(filepath, "r") as f:
                 data = json.load(f)
             checkpoints.append(Checkpoint.from_dict(data))
 
@@ -219,11 +217,7 @@ class CheckpointManager:
 
         return count
 
-    def cleanup_old(
-        self,
-        thread_id: str,
-        keep_count: int = 10
-    ) -> int:
+    def cleanup_old(self, thread_id: str, keep_count: int = 10) -> int:
         """
         Cleanup old checkpoints, keeping only the most recent.
 
@@ -248,10 +242,7 @@ class CheckpointManager:
 
 # Convenience functions
 def create_checkpoint(
-    thread_id: str,
-    state: Dict[str, Any],
-    storage_dir: str = "checkpoints",
-    **kwargs
+    thread_id: str, state: Dict[str, Any], storage_dir: str = "checkpoints", **kwargs
 ) -> Checkpoint:
     """Create a checkpoint."""
     manager = CheckpointManager(storage_dir)
@@ -259,8 +250,7 @@ def create_checkpoint(
 
 
 def restore_checkpoint(
-    checkpoint_id: str,
-    storage_dir: str = "checkpoints"
+    checkpoint_id: str, storage_dir: str = "checkpoints"
 ) -> Optional[Dict[str, Any]]:
     """Restore state from checkpoint."""
     manager = CheckpointManager(storage_dir)
@@ -268,9 +258,7 @@ def restore_checkpoint(
 
 
 def list_checkpoints(
-    thread_id: str,
-    storage_dir: str = "checkpoints",
-    limit: int = 100
+    thread_id: str, storage_dir: str = "checkpoints", limit: int = 100
 ) -> List[Checkpoint]:
     """List checkpoints for a thread."""
     manager = CheckpointManager(storage_dir)

@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
+
 from ..utils import get_config, get_logger
 
 logger = get_logger(__name__)
@@ -29,6 +30,7 @@ def _utcnow() -> datetime:
 
 class NewsSentiment(str, Enum):
     """News article sentiment."""
+
     POSITIVE = "positive"
     NEGATIVE = "negative"
     NEUTRAL = "neutral"
@@ -37,6 +39,7 @@ class NewsSentiment(str, Enum):
 
 class NewsCategory(str, Enum):
     """News categories."""
+
     BUSINESS = "business"
     TECHNOLOGY = "technology"
     FINANCE = "finance"
@@ -48,6 +51,7 @@ class NewsCategory(str, Enum):
 @dataclass
 class NewsArticle:
     """A news article."""
+
     title: str
     description: str
     url: str
@@ -87,13 +91,14 @@ class NewsArticle:
             "sentiment_score": self.sentiment_score,
             "relevance_score": self.relevance_score,
             "keywords": self.keywords,
-            "age_hours": round(self.age_hours, 1)
+            "age_hours": round(self.age_hours, 1),
         }
 
 
 @dataclass
 class NewsSearchResult:
     """Result of a news search."""
+
     query: str
     total_results: int
     articles: List[NewsArticle]
@@ -123,7 +128,7 @@ class NewsSearchResult:
             "article_count": len(self.articles),
             "sentiment_summary": self.sentiment_summary,
             "average_sentiment": self.get_average_sentiment(),
-            "articles": [a.to_dict() for a in self.articles]
+            "articles": [a.to_dict() for a in self.articles],
         }
 
 
@@ -131,17 +136,57 @@ class SimpleSentimentAnalyzer:
     """Simple rule-based sentiment analyzer."""
 
     POSITIVE_WORDS = {
-        "growth", "profit", "success", "gain", "rise", "surge", "boost",
-        "beat", "exceed", "strong", "positive", "optimistic", "bullish",
-        "innovation", "breakthrough", "milestone", "expand", "increase",
-        "record", "high", "best", "leading", "outperform"
+        "growth",
+        "profit",
+        "success",
+        "gain",
+        "rise",
+        "surge",
+        "boost",
+        "beat",
+        "exceed",
+        "strong",
+        "positive",
+        "optimistic",
+        "bullish",
+        "innovation",
+        "breakthrough",
+        "milestone",
+        "expand",
+        "increase",
+        "record",
+        "high",
+        "best",
+        "leading",
+        "outperform",
     }
 
     NEGATIVE_WORDS = {
-        "loss", "decline", "fall", "drop", "miss", "weak", "negative",
-        "pessimistic", "bearish", "layoff", "lawsuit", "fine", "penalty",
-        "investigation", "scandal", "crisis", "recall", "fail", "concern",
-        "warning", "risk", "threat", "downturn", "cut", "reduce"
+        "loss",
+        "decline",
+        "fall",
+        "drop",
+        "miss",
+        "weak",
+        "negative",
+        "pessimistic",
+        "bearish",
+        "layoff",
+        "lawsuit",
+        "fine",
+        "penalty",
+        "investigation",
+        "scandal",
+        "crisis",
+        "recall",
+        "fail",
+        "concern",
+        "warning",
+        "risk",
+        "threat",
+        "downturn",
+        "cut",
+        "reduce",
     }
 
     def analyze(self, text: str) -> tuple:
@@ -155,7 +200,7 @@ class SimpleSentimentAnalyzer:
             return NewsSentiment.NEUTRAL, 0.0
 
         text_lower = text.lower()
-        words = set(re.findall(r'\w+', text_lower))
+        words = set(re.findall(r"\w+", text_lower))
 
         positive_count = len(words & self.POSITIVE_WORDS)
         negative_count = len(words & self.NEGATIVE_WORDS)
@@ -199,12 +244,7 @@ class NewsAPIClient:
 
     BASE_URL = "https://newsapi.org/v2"
 
-    def __init__(
-        self,
-        api_key: str = None,
-        timeout: float = 30.0,
-        enable_sentiment: bool = True
-    ):
+    def __init__(self, api_key: str = None, timeout: float = 30.0, enable_sentiment: bool = True):
         self.api_key = api_key or get_config("NEWS_API_KEY", default="")
         self.timeout = timeout
         self.enable_sentiment = enable_sentiment
@@ -218,7 +258,7 @@ class NewsAPIClient:
         language: str = "en",
         sort_by: str = "relevancy",
         page_size: int = 20,
-        page: int = 1
+        page: int = 1,
     ) -> NewsSearchResult:
         """
         Search for news articles.
@@ -241,7 +281,7 @@ class NewsAPIClient:
             "sortBy": sort_by,
             "pageSize": min(page_size, 100),
             "page": page,
-            "apiKey": self.api_key
+            "apiKey": self.api_key,
         }
 
         if from_date:
@@ -253,10 +293,7 @@ class NewsAPIClient:
         return self._parse_search_result(query, data)
 
     async def search_company(
-        self,
-        company_name: str,
-        days_back: int = 7,
-        page_size: int = 20
+        self, company_name: str, days_back: int = 7, page_size: int = 20
     ) -> NewsSearchResult:
         """
         Search for company-specific news.
@@ -271,18 +308,11 @@ class NewsAPIClient:
         """
         from_date = _utcnow() - timedelta(days=days_back)
         return await self.search(
-            query=company_name,
-            from_date=from_date,
-            sort_by="publishedAt",
-            page_size=page_size
+            query=company_name, from_date=from_date, sort_by="publishedAt", page_size=page_size
         )
 
     async def get_headlines(
-        self,
-        country: str = "us",
-        category: str = None,
-        query: str = None,
-        page_size: int = 20
+        self, country: str = "us", category: str = None, query: str = None, page_size: int = 20
     ) -> NewsSearchResult:
         """
         Get top headlines.
@@ -296,11 +326,7 @@ class NewsAPIClient:
         Returns:
             NewsSearchResult object
         """
-        params = {
-            "country": country,
-            "pageSize": min(page_size, 100),
-            "apiKey": self.api_key
-        }
+        params = {"country": country, "pageSize": min(page_size, 100), "apiKey": self.api_key}
 
         if category:
             params["category"] = category
@@ -312,26 +338,22 @@ class NewsAPIClient:
 
     async def _request(self, endpoint: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """Make API request."""
-        import urllib.request
-        import urllib.parse
-        import urllib.error
         import socket
+        import urllib.error
+        import urllib.parse
+        import urllib.request
 
         url = f"{self.BASE_URL}/{endpoint}?{urllib.parse.urlencode(params)}"
 
         try:
-            request = urllib.request.Request(
-                url,
-                headers={"User-Agent": "CompanyResearcher/1.0"}
-            )
+            request = urllib.request.Request(url, headers={"User-Agent": "CompanyResearcher/1.0"})
 
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(
-                None,
-                lambda: urllib.request.urlopen(request, timeout=self.timeout)
+                None, lambda: urllib.request.urlopen(request, timeout=self.timeout)
             )
 
-            return json.loads(response.read().decode('utf-8'))
+            return json.loads(response.read().decode("utf-8"))
 
         except socket.timeout:
             logger.warning(f"NewsAPI timeout for {endpoint} (timeout={self.timeout}s)")
@@ -339,7 +361,7 @@ class NewsAPIClient:
                 "status": "error",
                 "message": "Request timeout",
                 "totalResults": 0,
-                "articles": []
+                "articles": [],
             }
         except urllib.error.HTTPError as e:
             logger.error(f"NewsAPI HTTP error for {endpoint}: {e.code} {e.reason}")
@@ -347,7 +369,7 @@ class NewsAPIClient:
                 "status": "error",
                 "message": f"HTTP {e.code}: {e.reason}",
                 "totalResults": 0,
-                "articles": []
+                "articles": [],
             }
         except urllib.error.URLError as e:
             logger.warning(f"NewsAPI connection error for {endpoint}: {e.reason}")
@@ -355,7 +377,7 @@ class NewsAPIClient:
                 "status": "error",
                 "message": f"Connection error: {e.reason}",
                 "totalResults": 0,
-                "articles": []
+                "articles": [],
             }
         except json.JSONDecodeError as e:
             logger.error(f"NewsAPI invalid JSON response for {endpoint}: {e}")
@@ -363,16 +385,11 @@ class NewsAPIClient:
                 "status": "error",
                 "message": "Invalid JSON response",
                 "totalResults": 0,
-                "articles": []
+                "articles": [],
             }
         except Exception as e:
             logger.error(f"NewsAPI unexpected error for {endpoint}: {type(e).__name__}: {e}")
-            return {
-                "status": "error",
-                "message": str(e),
-                "totalResults": 0,
-                "articles": []
-            }
+            return {"status": "error", "message": str(e), "totalResults": 0, "articles": []}
 
     def _parse_search_result(self, query: str, data: Dict[str, Any]) -> NewsSearchResult:
         """Parse API response into NewsSearchResult."""
@@ -388,7 +405,7 @@ class NewsAPIClient:
             query=query,
             total_results=data.get("totalResults", 0),
             articles=articles,
-            sentiment_summary=sentiment_counts
+            sentiment_summary=sentiment_counts,
         )
 
     def _parse_article(self, data: Dict[str, Any]) -> NewsArticle:
@@ -421,7 +438,7 @@ class NewsAPIClient:
             image_url=data.get("urlToImage"),
             sentiment=sentiment,
             sentiment_score=score,
-            keywords=keywords
+            keywords=keywords,
         )
 
     def _extract_keywords(self, text: str, max_keywords: int = 5) -> List[str]:
@@ -430,7 +447,7 @@ class NewsAPIClient:
             return []
 
         # Simple keyword extraction
-        words = re.findall(r'\b[A-Z][a-z]+\b', text)
+        words = re.findall(r"\b[A-Z][a-z]+\b", text)
         word_counts = {}
         for word in words:
             if len(word) > 3:
@@ -462,7 +479,7 @@ class NewsMonitor:
         self,
         client: NewsAPIClient,
         check_interval: float = 300,  # 5 minutes
-        max_seen_articles_per_company: int = 10000  # Prevent memory leaks
+        max_seen_articles_per_company: int = 10000,  # Prevent memory leaks
     ):
         self.client = client
         self.check_interval = check_interval
@@ -473,10 +490,7 @@ class NewsMonitor:
         self._running = False
 
     def add_company(
-        self,
-        company_name: str,
-        alert_keywords: List[str] = None,
-        sentiment_threshold: float = -0.5
+        self, company_name: str, alert_keywords: List[str] = None, sentiment_threshold: float = -0.5
     ) -> None:
         """
         Add company to monitor.
@@ -488,7 +502,7 @@ class NewsMonitor:
         """
         self._companies[company_name] = {
             "keywords": alert_keywords or [],
-            "sentiment_threshold": sentiment_threshold
+            "sentiment_threshold": sentiment_threshold,
         }
         self._seen_articles[company_name] = set()
 
@@ -536,7 +550,7 @@ class NewsMonitor:
             if len(self._seen_articles[company_name]) > self._max_seen_articles:
                 # Keep only half when limit exceeded (FIFO approximation for sets)
                 seen_list = list(self._seen_articles[company_name])
-                self._seen_articles[company_name] = set(seen_list[len(seen_list) // 2:])
+                self._seen_articles[company_name] = set(seen_list[len(seen_list) // 2 :])
 
             # Check for alerts
             should_alert = False
@@ -559,18 +573,13 @@ class NewsMonitor:
             if should_alert:
                 await self._trigger_alert(company_name, article, alert_reason)
 
-    async def _trigger_alert(
-        self,
-        company_name: str,
-        article: NewsArticle,
-        reason: str
-    ) -> None:
+    async def _trigger_alert(self, company_name: str, article: NewsArticle, reason: str) -> None:
         """Trigger alert callbacks."""
         alert_data = {
             "company": company_name,
             "article": article.to_dict(),
             "reason": reason,
-            "timestamp": _utcnow().isoformat()
+            "timestamp": _utcnow().isoformat(),
         }
 
         for callback in self._alert_callbacks:
@@ -602,20 +611,12 @@ class NewsSummarizer:
             Summary dictionary
         """
         if not result.articles:
-            return {
-                "query": result.query,
-                "total_articles": 0,
-                "summary": "No articles found."
-            }
+            return {"query": result.query, "total_articles": 0, "summary": "No articles found."}
 
         # Calculate metrics
         avg_sentiment = result.get_average_sentiment()
-        positive_pct = (
-            result.sentiment_summary.get("positive", 0) / len(result.articles) * 100
-        )
-        negative_pct = (
-            result.sentiment_summary.get("negative", 0) / len(result.articles) * 100
-        )
+        positive_pct = result.sentiment_summary.get("positive", 0) / len(result.articles) * 100
+        negative_pct = result.sentiment_summary.get("negative", 0) / len(result.articles) * 100
 
         # Get top sources
         sources = {}
@@ -633,7 +634,9 @@ class NewsSummarizer:
         top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:10]
 
         # Generate text summary
-        sentiment_label = "positive" if avg_sentiment > 0.2 else "negative" if avg_sentiment < -0.2 else "neutral"
+        sentiment_label = (
+            "positive" if avg_sentiment > 0.2 else "negative" if avg_sentiment < -0.2 else "neutral"
+        )
 
         summary_text = (
             f"Found {result.total_results} articles about '{result.query}'. "
@@ -655,11 +658,12 @@ class NewsSummarizer:
             "recent_headlines": [
                 {"title": a.title, "source": a.source_name, "sentiment": a.sentiment.value}
                 for a in result.articles[:5]
-            ]
+            ],
         }
 
 
 # Convenience functions
+
 
 def create_news_client(api_key: str = None) -> NewsAPIClient:
     """Create a NewsAPI client."""
@@ -667,19 +671,14 @@ def create_news_client(api_key: str = None) -> NewsAPIClient:
 
 
 async def search_company_news(
-    company_name: str,
-    api_key: str = None,
-    days_back: int = 7
+    company_name: str, api_key: str = None, days_back: int = 7
 ) -> NewsSearchResult:
     """Search for company news."""
     client = NewsAPIClient(api_key=api_key)
     return await client.search_company(company_name, days_back=days_back)
 
 
-def create_news_monitor(
-    api_key: str = None,
-    check_interval: float = 300
-) -> NewsMonitor:
+def create_news_monitor(api_key: str = None, check_interval: float = 300) -> NewsMonitor:
     """Create a news monitor."""
     client = NewsAPIClient(api_key=api_key)
     return NewsMonitor(client, check_interval=check_interval)

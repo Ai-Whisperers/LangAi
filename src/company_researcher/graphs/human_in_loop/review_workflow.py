@@ -20,30 +20,30 @@ Usage:
     result = await approve_and_continue(thread_id)
 """
 
-from typing import Dict, Any, Optional, List, Literal, Tuple
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-import uuid
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
-from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import END, StateGraph
 
 from ...state.workflow import (
-    OverallState,
     InputState,
     OutputState,
+    OverallState,
     create_initial_state,
     create_output_state,
 )
-from ..subgraphs import (
-    create_data_collection_subgraph,
-    create_analysis_subgraph,
-    create_quality_subgraph,
-    create_output_subgraph,
-)
-from ..persistence import get_checkpointer
 from ...utils import get_logger, utc_now
+from ..persistence import get_checkpointer
+from ..subgraphs import (
+    create_analysis_subgraph,
+    create_data_collection_subgraph,
+    create_output_subgraph,
+    create_quality_subgraph,
+)
 
 logger = get_logger(__name__)
 
@@ -94,6 +94,7 @@ class HumanReviewConfig:
 # Review Nodes
 # ============================================================================
 
+
 def human_review_node(state: OverallState) -> Dict[str, Any]:
     """
     Node that prepares data for human review.
@@ -130,7 +131,9 @@ def human_review_node(state: OverallState) -> Dict[str, Any]:
     if company_overview:
         # First 500 chars of overview
         summary_parts.append("Overview Preview:")
-        summary_parts.append(company_overview[:500] + "..." if len(company_overview) > 500 else company_overview)
+        summary_parts.append(
+            company_overview[:500] + "..." if len(company_overview) > 500 else company_overview
+        )
 
     summary = "\n".join(summary_parts)
 
@@ -145,10 +148,7 @@ def human_review_node(state: OverallState) -> Dict[str, Any]:
 
     # Sources preview
     sources = state.get("sources", [])[:5]  # First 5 sources
-    sources_preview = [
-        {"title": s.get("title", ""), "url": s.get("url", "")}
-        for s in sources
-    ]
+    sources_preview = [{"title": s.get("title", ""), "url": s.get("url", "")} for s in sources]
 
     review_data = {
         "summary": summary,
@@ -205,6 +205,7 @@ def apply_human_decision_node(state: OverallState) -> Dict[str, Any]:
 # ============================================================================
 # Routing Functions
 # ============================================================================
+
 
 def route_after_review(state: OverallState) -> str:
     """
@@ -263,6 +264,7 @@ def should_require_review(state: OverallState) -> str:
 # ============================================================================
 # Workflow Creation
 # ============================================================================
+
 
 def create_human_reviewed_workflow(
     config: Optional[HumanReviewConfig] = None,
@@ -330,7 +332,7 @@ def create_human_reviewed_workflow(
             {
                 "review": "human_review",
                 "skip": "output",
-            }
+            },
         )
     else:
         graph.add_edge("quality", "human_review")
@@ -346,7 +348,7 @@ def create_human_reviewed_workflow(
             "output": "output",
             "revise": "data_collection",
             "reject": "rejection",
-        }
+        },
     )
 
     # Endings
@@ -365,6 +367,7 @@ def create_human_reviewed_workflow(
 # ============================================================================
 # Research Functions
 # ============================================================================
+
 
 def research_with_review(
     company_name: str,
@@ -418,7 +421,9 @@ def research_with_review(
 
         # Auto-approve if quality is high
         if quality_score >= auto_approve_threshold:
-            print(f"\n[AUTO] Quality {quality_score:.1f} >= {auto_approve_threshold}, auto-approving...")
+            print(
+                f"\n[AUTO] Quality {quality_score:.1f} >= {auto_approve_threshold}, auto-approving..."
+            )
             decision = ReviewDecision.APPROVE.value
         else:
             # Prompt for decision
@@ -441,11 +446,7 @@ def research_with_review(
                 decision = ReviewDecision.APPROVE.value
 
         # Update state with decision
-        workflow.update_state(
-            config,
-            {"human_decision": decision},
-            as_node="human_review"
-        )
+        workflow.update_state(config, {"human_decision": decision}, as_node="human_review")
 
         # Continue execution
         result = workflow.invoke(None, config=config)

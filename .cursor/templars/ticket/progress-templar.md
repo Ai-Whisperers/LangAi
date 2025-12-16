@@ -34,4 +34,3 @@ provenance: { owner: team-ticket, last_review: 2025-11-04 }
 {{#next_steps}}
 - {{next_step}}
 {{/next_steps}}
-

@@ -13,9 +13,9 @@ Refactored to use @agent_node decorator for reduced boilerplate.
 
 from typing import Any, Callable, Dict, List, Optional
 
-from ..base import agent_node, AgentResult
 from ...config import ResearchConfig
 from ...state import OverallState
+from ..base import AgentResult, agent_node
 
 
 class ProductAgent:
@@ -25,7 +25,9 @@ class ProductAgent:
         self.search_tool = search_tool
         self.llm_client = llm_client
 
-    def analyze(self, company_name: str, search_results: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+    def analyze(
+        self, company_name: str, search_results: Optional[List[Dict[str, Any]]] = None
+    ) -> Dict[str, Any]:
         """
         Analyze products and services for a company.
 
@@ -38,7 +40,9 @@ class ProductAgent:
         return product_agent_node(state)
 
 
-def create_product_agent(search_tool: Optional[Callable] = None, llm_client: Optional[Any] = None) -> ProductAgent:
+def create_product_agent(
+    search_tool: Optional[Callable] = None, llm_client: Optional[Any] = None
+) -> ProductAgent:
     """Factory function to create a ProductAgent."""
     return ProductAgent(search_tool=search_tool, llm_client=llm_client)
 
@@ -81,7 +85,7 @@ Extract the product data now:"""
     max_tokens=1000,
     temperature=0.0,
     max_sources=15,
-    content_truncate_length=500
+    content_truncate_length=500,
 )
 def product_agent_node(
     state: OverallState,
@@ -90,7 +94,7 @@ def product_agent_node(
     config: ResearchConfig,
     node_config,
     formatted_results: str,
-    company_name: str
+    company_name: str,
 ) -> AgentResult:
     """
     Product Agent Node: Analyze products and technology.
@@ -119,8 +123,7 @@ def product_agent_node(
     """
     # Create prompt with pre-formatted results
     prompt = PRODUCT_ANALYSIS_PROMPT.format(
-        company_name=company_name,
-        search_results=formatted_results
+        company_name=company_name, search_results=formatted_results
     )
 
     # Call Claude for product analysis
@@ -129,5 +132,5 @@ def product_agent_node(
         model=config.llm_model,
         max_tokens=node_config.max_tokens,
         temperature=node_config.temperature,
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
     )

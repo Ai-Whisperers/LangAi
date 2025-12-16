@@ -10,12 +10,14 @@ Provides:
 import uuid
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
+
 from ..utils import utc_now
 
 
 @dataclass
 class MockLLMConfig:
     """Configuration for mock LLM."""
+
     default_response: str = "This is a mock response."
     response_delay: float = 0.0  # seconds
     fail_rate: float = 0.0  # 0-1, rate of simulated failures
@@ -61,11 +63,9 @@ class MockLLM:
         import time
 
         self._call_count += 1
-        self._call_history.append({
-            "prompt": prompt,
-            "kwargs": kwargs,
-            "timestamp": utc_now().isoformat()
-        })
+        self._call_history.append(
+            {"prompt": prompt, "kwargs": kwargs, "timestamp": utc_now().isoformat()}
+        )
 
         # Simulate delay
         if self.config.response_delay > 0:
@@ -122,11 +122,7 @@ class MockTool:
         result = tool.invoke("query")
     """
 
-    def __init__(
-        self,
-        name: str,
-        default_response: Optional[Any] = None
-    ):
+    def __init__(self, name: str, default_response: Optional[Any] = None):
         self.name = name
         self.description = f"Mock {name} tool"
         self._default_response = default_response or {"status": "success"}
@@ -147,11 +143,9 @@ class MockTool:
 
     def invoke(self, input: Any, **kwargs) -> Any:
         """Invoke the mock tool."""
-        self._call_history.append({
-            "input": input,
-            "kwargs": kwargs,
-            "timestamp": utc_now().isoformat()
-        })
+        self._call_history.append(
+            {"input": input, "kwargs": kwargs, "timestamp": utc_now().isoformat()}
+        )
 
         # Check queue
         if self._response_queue:
@@ -183,7 +177,7 @@ class MockTool:
 def mock_llm_response(
     content: str = "Mock response",
     model: str = "mock-model",
-    usage: Optional[Dict[str, int]] = None
+    usage: Optional[Dict[str, int]] = None,
 ) -> Dict[str, Any]:
     """
     Create a mock LLM response structure.
@@ -204,26 +198,15 @@ def mock_llm_response(
         "choices": [
             {
                 "index": 0,
-                "message": {
-                    "role": "assistant",
-                    "content": content
-                },
-                "finish_reason": "stop"
+                "message": {"role": "assistant", "content": content},
+                "finish_reason": "stop",
             }
         ],
-        "usage": usage or {
-            "prompt_tokens": 50,
-            "completion_tokens": 100,
-            "total_tokens": 150
-        }
+        "usage": usage or {"prompt_tokens": 50, "completion_tokens": 100, "total_tokens": 150},
     }
 
 
-def mock_tool_result(
-    tool_name: str,
-    result: Any,
-    success: bool = True
-) -> Dict[str, Any]:
+def mock_tool_result(tool_name: str, result: Any, success: bool = True) -> Dict[str, Any]:
     """
     Create a mock tool result structure.
 
@@ -240,7 +223,7 @@ def mock_tool_result(
         "tool_call_id": f"call_{uuid.uuid4()}",
         "result": result,
         "success": success,
-        "timestamp": utc_now().isoformat()
+        "timestamp": utc_now().isoformat(),
     }
 
 
@@ -248,7 +231,7 @@ def mock_research_state(
     company_name: str = "TestCorp",
     include_financials: bool = True,
     include_competitors: bool = True,
-    include_news: bool = True
+    include_news: bool = True,
 ) -> Dict[str, Any]:
     """
     Create a mock research state for testing.
@@ -271,7 +254,7 @@ def mock_research_state(
                 "description": f"Mock description for {company_name}",
                 "industry": "Technology",
                 "founded": "2020",
-                "headquarters": "San Francisco, CA"
+                "headquarters": "San Francisco, CA",
             }
         },
         "quality_score": 0.85,
@@ -280,10 +263,10 @@ def mock_research_state(
             {
                 "url": f"https://example.com/{company_name.lower()}",
                 "title": f"{company_name} Overview",
-                "quality": "high"
+                "quality": "high",
             }
         ],
-        "timestamp": utc_now().isoformat()
+        "timestamp": utc_now().isoformat(),
     }
 
     if include_financials:
@@ -291,14 +274,14 @@ def mock_research_state(
             "revenue": "$1B",
             "profit": "$100M",
             "growth_rate": "15%",
-            "market_cap": "$10B"
+            "market_cap": "$10B",
         }
 
     if include_competitors:
         state["research_data"]["competitors"] = [
             {"name": "Competitor A", "market_share": "30%"},
             {"name": "Competitor B", "market_share": "25%"},
-            {"name": "Competitor C", "market_share": "20%"}
+            {"name": "Competitor C", "market_share": "20%"},
         ]
 
     if include_news:
@@ -306,13 +289,13 @@ def mock_research_state(
             {
                 "title": f"{company_name} announces new product",
                 "date": "2024-01-15",
-                "sentiment": "positive"
+                "sentiment": "positive",
             },
             {
                 "title": f"{company_name} Q4 earnings beat expectations",
                 "date": "2024-01-10",
-                "sentiment": "positive"
-            }
+                "sentiment": "positive",
+            },
         ]
 
     return state

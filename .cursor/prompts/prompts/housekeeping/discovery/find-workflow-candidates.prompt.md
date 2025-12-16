@@ -27,7 +27,7 @@ Identify prompts/scripts that should participate in workflow chains (pre/post ha
 - Access to housekeeping scan scripts (if any) or read access to the target tree.
 
 ## Inputs
-- **Targets**: One or more roots to scan.  
+- **Targets**: One or more roots to scan.
 - **Signals**:
   - Prompts that end with “next”, “follow-up”, or reference another prompt.
   - Prompts that generate data consumed elsewhere (JSON/CSV paths, ticket payloads).
@@ -41,22 +41,22 @@ Identify prompts/scripts that should participate in workflow chains (pre/post ha
    - Traverse target root for `.prompt.md` (and companion scripts under `.cursor/scripts/housekeeping` if present).
    - **Include uncommitted changes**: Check `git status` for uncommitted prompt files that might form new workflows.
    - Note filename, category, tags, and any references to other prompts/scripts.
-2. **Detect Chain Signals**  
-   - Look for “next”, “follow-up”, “post step”, “handoff”, “invoke [prompt]”, data paths, or ticket handoffs.  
+2. **Detect Chain Signals**
+   - Look for “next”, “follow-up”, “post step”, “handoff”, “invoke [prompt]”, data paths, or ticket handoffs.
    - Group by domain (condense, extraction, scripting, validation) to spot natural sequences.
-3. **Detect Workflow Clusters**  
-   - Cluster by shared tags/category and cross-references; propose workflow names (e.g., “Condense Flow”, “Extraction Flow”, “Script Standards Flow”).  
+3. **Detect Workflow Clusters**
+   - Cluster by shared tags/category and cross-references; propose workflow names (e.g., “Condense Flow”, “Extraction Flow”, “Script Standards Flow”).
    - Identify typical phases: Producer (scan), Processor (triage/chain), Launcher (ticket/start), Terminal (final validation/recap).
-3. **Rank & Classify**  
-   - Rank by strength of chain/workflow signals and reuse potential.  
-   - Classify each as **Producer** (emits data), **Processor** (consumes/transforms), **Launcher** (starts tickets), or **Terminal** (final step).  
-4. **Recommend Chain**  
-   - Propose pre/post links (e.g., Scan → Chain → Start-Ticket).  
-   - Note required artifacts to pass (JSON path, ticket ID, root path).  
-   - Suggest follow-up prompt names for each candidate.  
+3. **Rank & Classify**
+   - Rank by strength of chain/workflow signals and reuse potential.
+   - Classify each as **Producer** (emits data), **Processor** (consumes/transforms), **Launcher** (starts tickets), or **Terminal** (final step).
+4. **Recommend Chain**
+   - Propose pre/post links (e.g., Scan → Chain → Start-Ticket).
+   - Note required artifacts to pass (JSON path, ticket ID, root path).
+   - Suggest follow-up prompt names for each candidate.
    - Assign candidate workflows for grouped items.
-5. **Output**  
-   - Emit table and actions per Output Format.  
+5. **Output**
+   - Emit table and actions per Output Format.
    - Include paths to any referenced scripts.
 
 ## Output Format
@@ -73,11 +73,11 @@ Identify prompts/scripts that should participate in workflow chains (pre/post ha
 ```
 
 ## Validation Checklist
-- [ ] Targets and thresholds recorded.  
-- [ ] Chain signals captured with rationale.  
-- [ ] Role assigned (Producer/Processor/Launcher/Terminal).  
-- [ ] Workflow grouping proposed (name + members).  
-- [ ] Pre/post links proposed with required artifacts.  
+- [ ] Targets and thresholds recorded.
+- [ ] Chain signals captured with rationale.
+- [ ] Role assigned (Producer/Processor/Launcher/Terminal).
+- [ ] Workflow grouping proposed (name + members).
+- [ ] Pre/post links proposed with required artifacts.
 - [ ] Report saved/linked for follow-up work.
 
 ## Related Prompts
@@ -85,4 +85,3 @@ Identify prompts/scripts that should participate in workflow chains (pre/post ha
 - `housekeeping/find-extraction-candidates.prompt.md`
 - `housekeeping/find-script-extraction-candidates.prompt.md`
 - `housekeeping/workflow-link-prompt.prompt.md`
-

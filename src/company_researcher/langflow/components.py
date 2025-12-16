@@ -11,7 +11,8 @@ Components follow LangFlow's custom component pattern:
 - Implement build() method for component logic
 """
 
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -20,17 +21,22 @@ logger = get_logger(__name__)
 try:
     from langflow.custom import CustomComponent
     from langflow.field_typing import Data
+
     LANGFLOW_AVAILABLE = True
 except ImportError:
     LANGFLOW_AVAILABLE = False
+
     # Create stub classes for when LangFlow is not installed
     class CustomComponent:
         """Stub CustomComponent when LangFlow not installed."""
+
         def __init__(self):
             self.display_name = ""
             self.description = ""
+
         def build(self, *args, **kwargs):
             raise NotImplementedError("LangFlow not installed")
+
     Data = Dict[str, Any]
 
 
@@ -179,8 +185,12 @@ class FinancialAgentComponent(CustomComponent):
             # Build state from context
             state: OverallState = {
                 "company_name": company_name,
-                "company_overview": research_context.get("company_overview", "") if research_context else "",
-                "search_results": research_context.get("search_results", "") if research_context else "",
+                "company_overview": (
+                    research_context.get("company_overview", "") if research_context else ""
+                ),
+                "search_results": (
+                    research_context.get("search_results", "") if research_context else ""
+                ),
                 "sources": research_context.get("sources", []) if research_context else [],
             }
 
@@ -263,8 +273,12 @@ class MarketAgentComponent(CustomComponent):
 
             state: OverallState = {
                 "company_name": company_name,
-                "company_overview": research_context.get("company_overview", "") if research_context else "",
-                "search_results": research_context.get("search_results", "") if research_context else "",
+                "company_overview": (
+                    research_context.get("company_overview", "") if research_context else ""
+                ),
+                "search_results": (
+                    research_context.get("search_results", "") if research_context else ""
+                ),
                 "sources": research_context.get("sources", []) if research_context else [],
             }
 
@@ -331,8 +345,12 @@ class ProductAgentComponent(CustomComponent):
 
             state: OverallState = {
                 "company_name": company_name,
-                "company_overview": research_context.get("company_overview", "") if research_context else "",
-                "search_results": research_context.get("search_results", "") if research_context else "",
+                "company_overview": (
+                    research_context.get("company_overview", "") if research_context else ""
+                ),
+                "search_results": (
+                    research_context.get("search_results", "") if research_context else ""
+                ),
                 "sources": research_context.get("sources", []) if research_context else [],
             }
 
@@ -499,8 +517,12 @@ class CompetitorScoutComponent(CustomComponent):
 
             state: OverallState = {
                 "company_name": company_name,
-                "company_overview": research_context.get("company_overview", "") if research_context else "",
-                "search_results": research_context.get("search_results", "") if research_context else "",
+                "company_overview": (
+                    research_context.get("company_overview", "") if research_context else ""
+                ),
+                "search_results": (
+                    research_context.get("search_results", "") if research_context else ""
+                ),
                 "sources": research_context.get("sources", []) if research_context else [],
             }
 
@@ -578,7 +600,7 @@ class QualityCheckerComponent(CustomComponent):
             result = check_research_quality(
                 company_name=company_name,
                 extracted_data=str(research_data),
-                sources=research_data.get("sources", [])
+                sources=research_data.get("sources", []),
             )
 
             quality_score = result["quality_score"]

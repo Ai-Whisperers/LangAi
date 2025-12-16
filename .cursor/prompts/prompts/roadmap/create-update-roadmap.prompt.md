@@ -125,4 +125,3 @@ Use this when a ticket folder or a single ticket with multiple subtickets/tasks 
 - `.cursor/rules/ticket/status-rule.mdc`
 - `.cursor/rules/ticket/timeline-tracking-rule.mdc`
 - `.cursor/prompts/roadmap/catalog-roadmaps.prompt.md`
-

@@ -18,16 +18,16 @@ param(
     [Parameter(Mandatory=$false, HelpMessage="Build configuration to use")]
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release",
-    
+
     # Output directory for reports (defaults to temp directory if not specified)
     [Parameter(Mandatory=$false, HelpMessage="Directory to write output files")]
     [string]$OutputPath = "$env:TEMP/coverage-report",
-    
+
     # Minimum coverage threshold percentage
     [Parameter(Mandatory=$false, HelpMessage="Minimum line coverage percentage required")]
     [ValidateRange(0, 100)]
     [int]$MinLineCoverage = 80,
-    
+
     # Whether to fail the script if threshold not met
     [Parameter(Mandatory=$false, HelpMessage="Fail script if coverage below threshold")]
     [switch]$FailOnThreshold
@@ -47,10 +47,10 @@ param(
 param(
     # ❌ No validation
     [string]$Configuration = "Release",
-    
+
     # ❌ Hardcoded Azure Pipelines variable
     [string]$OutputPath = "$(Build.ArtifactStagingDirectory)/report",
-    
+
     # ❌ No range validation
     [int]$MinLineCoverage = 80
 )
@@ -115,4 +115,3 @@ param(
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

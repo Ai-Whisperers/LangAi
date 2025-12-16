@@ -5,11 +5,13 @@ A minimal graph for testing LangGraph Studio connectivity.
 """
 
 from typing import TypedDict
-from langgraph.graph import StateGraph, END
+
+from langgraph.graph import END, StateGraph
 
 
 class SimpleState(TypedDict):
     """Simple state for testing."""
+
     company_name: str
     result: str
     step_count: int
@@ -17,25 +19,19 @@ class SimpleState(TypedDict):
 
 def start_node(state: SimpleState) -> dict:
     """Initial node."""
-    return {
-        "result": f"Starting research for: {state['company_name']}",
-        "step_count": 1
-    }
+    return {"result": f"Starting research for: {state['company_name']}", "step_count": 1}
 
 
 def process_node(state: SimpleState) -> dict:
     """Processing node."""
-    return {
-        "result": f"Processing: {state['company_name']}",
-        "step_count": state["step_count"] + 1
-    }
+    return {"result": f"Processing: {state['company_name']}", "step_count": state["step_count"] + 1}
 
 
 def finish_node(state: SimpleState) -> dict:
     """Final node."""
     return {
         "result": f"Completed research for: {state['company_name']} in {state['step_count']} steps",
-        "step_count": state["step_count"] + 1
+        "step_count": state["step_count"] + 1,
     }
 
 

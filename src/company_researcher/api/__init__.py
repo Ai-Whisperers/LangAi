@@ -20,13 +20,13 @@ Usage:
 
 # Streaming (works without FastAPI)
 from .streaming import (
+    EventType,
     ProgressTracker,
     StreamEvent,
-    EventType,
     StreamingResearchContext,
-    stream_sse,
     create_progress_tracker,
     create_streaming_context,
+    stream_sse,
 )
 
 # Check for FastAPI availability
@@ -36,10 +36,7 @@ except ImportError:
     FASTAPI_AVAILABLE = False
 
 if FASTAPI_AVAILABLE:
-    from .app import (
-        create_app,
-        get_app,
-    )
+    from .app import create_app, get_app
 
     __all__ = [
         # Streaming (always available)

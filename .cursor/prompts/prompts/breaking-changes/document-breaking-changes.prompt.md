@@ -135,7 +135,6 @@ See [CHANGELOG.md](CHANGELOG.md) for complete details.
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: 2025-12-06  
+**Version**: 1.0.0
+**Last Updated**: 2025-12-06
 **Triggered by**: `check-breaking-changes.ps1` failures
-

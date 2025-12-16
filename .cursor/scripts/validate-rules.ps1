@@ -24,7 +24,7 @@ function Test-CursorFile {
     }
 
     $frontMatter = $matches[1]
-    
+
     # Extract ID and Kind for specific checks
     $id = ""
     $kind = ""
@@ -33,13 +33,13 @@ function Test-CursorFile {
 
     # Common Required fields
     $requiredFields = @('id', 'kind', 'version', 'description', 'provenance')
-    
+
     # Specific requirements based on Kind
     switch ($kind) {
         "rule" {
             $requiredFields += 'implements'
             $requiredFields += 'requires'
-            
+
             # Strategy 2 exception: Agent application rules don't need globs/governs
             if ($fileName -notlike "*agent-application-rule.mdc") {
                 $requiredFields += 'globs'
@@ -63,7 +63,7 @@ function Test-CursorFile {
             if ($content -notmatch '## FINAL MUST-PASS CHECKLIST') {
                 $errors += "Missing '## FINAL MUST-PASS CHECKLIST' section"
             }
-            
+
             # Check checklist position
             $lastSectionMatch = $content | Select-String -Pattern '(?m)^##\s+(.+)$' -AllMatches
             if ($lastSectionMatch) {
@@ -110,9 +110,9 @@ function Test-CursorFile {
 
 function Validate-Index-Consistency {
     param([string]$IndexFile, [string]$RulesDir, [string]$TemplarsDir, [string]$ExemplarsDir)
-    
+
     $indexContent = Get-Content -Path $IndexFile -Raw
-    
+
     # Gather all files that SHOULD be indexed
     $filesToIndex = @()
     if (Test-Path $RulesDir) { $filesToIndex += Get-ChildItem -Path $RulesDir -Recurse -Filter "*-rule.mdc" }
@@ -136,7 +136,7 @@ function Validate-Index-Consistency {
         $content = Get-Content -Path $file.FullName -Raw
         if ($content -match 'id:\s*([^\s]+)') {
             $id = $matches[1].Trim()
-            
+
             # Check if ID is in index map
             if (-not $indexMap.ContainsKey($id)) {
                 $relPath = $file.FullName.Substring($PWD.Path.Length + 1).Replace("\", "/")
@@ -150,7 +150,7 @@ function Validate-Index-Consistency {
     foreach ($line in $indexLines) {
         if ($line -match ':\s*(.+)$' -and $line -notmatch '^\s*#') {
             $path = $matches[1].Trim()
-            
+
             # Logic to resolve path
             if ($path -like ".cursor*") {
                 # Path is relative to repo root (e.g. .cursor/templars/...)
@@ -230,4 +230,3 @@ if ($failedCount -gt 0) {
 } else {
     exit 0
 }
-

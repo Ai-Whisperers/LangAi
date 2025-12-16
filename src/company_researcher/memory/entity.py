@@ -21,6 +21,7 @@ def _utcnow() -> datetime:
 
 class EntityType(str, Enum):
     """Types of entities."""
+
     COMPANY = "company"
     PERSON = "person"
     PRODUCT = "product"
@@ -35,6 +36,7 @@ class EntityType(str, Enum):
 
 class RelationType(str, Enum):
     """Types of relationships between entities."""
+
     # Organizational
     OWNS = "owns"
     SUBSIDIARY_OF = "subsidiary_of"
@@ -72,6 +74,7 @@ class RelationType(str, Enum):
 @dataclass
 class Entity:
     """A stored entity."""
+
     id: str
     name: str
     entity_type: EntityType
@@ -93,7 +96,7 @@ class Entity:
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "source": self.source,
-            "confidence": self.confidence
+            "confidence": self.confidence,
         }
 
     def matches_name(self, query: str) -> bool:
@@ -110,6 +113,7 @@ class Entity:
 @dataclass
 class Relationship:
     """A relationship between two entities."""
+
     source_id: str
     target_id: str
     relation_type: RelationType
@@ -127,7 +131,7 @@ class Relationship:
             "attributes": self.attributes,
             "confidence": self.confidence,
             "source_doc": self.source_doc,
-            "created_at": self.created_at.isoformat()
+            "created_at": self.created_at.isoformat(),
         }
 
 
@@ -165,7 +169,7 @@ class EntityMemory:
         attributes: Dict[str, Any] = None,
         aliases: List[str] = None,
         entity_id: str = None,
-        **kwargs
+        **kwargs,
     ) -> Entity:
         """
         Add or update an entity.
@@ -200,7 +204,7 @@ class EntityMemory:
             entity_type=entity_type,
             attributes=attributes or {},
             aliases=aliases or [],
-            **kwargs
+            **kwargs,
         )
 
         self._entities[eid] = entity
@@ -220,11 +224,7 @@ class EntityMemory:
         """Get entity by ID."""
         return self._entities.get(entity_id)
 
-    def get_by_name(
-        self,
-        name: str,
-        entity_type: EntityType = None
-    ) -> Optional[Entity]:
+    def get_by_name(self, name: str, entity_type: EntityType = None) -> Optional[Entity]:
         """Get entity by name."""
         entity_ids = self._name_index.get(name.lower(), set())
         for eid in entity_ids:
@@ -234,12 +234,7 @@ class EntityMemory:
                     return entity
         return None
 
-    def search(
-        self,
-        query: str,
-        entity_type: EntityType = None,
-        limit: int = 10
-    ) -> List[Entity]:
+    def search(self, query: str, entity_type: EntityType = None, limit: int = 10) -> List[Entity]:
         """
         Search for entities.
 
@@ -280,7 +275,7 @@ class EntityMemory:
         relation_type: RelationType,
         attributes: Dict[str, Any] = None,
         bidirectional: bool = False,
-        **kwargs
+        **kwargs,
     ) -> Relationship:
         """
         Add a relationship between entities.
@@ -300,7 +295,7 @@ class EntityMemory:
             target_id=target_id,
             relation_type=relation_type,
             attributes=attributes or {},
-            **kwargs
+            **kwargs,
         )
         self._relationships.append(relationship)
 
@@ -310,7 +305,7 @@ class EntityMemory:
                 target_id=source_id,
                 relation_type=relation_type,
                 attributes=attributes or {},
-                **kwargs
+                **kwargs,
             )
             self._relationships.append(reverse)
 
@@ -321,7 +316,7 @@ class EntityMemory:
         entity_id: str,
         relation_type: RelationType = None,
         as_source: bool = True,
-        as_target: bool = True
+        as_target: bool = True,
     ) -> List[Relationship]:
         """
         Get relationships for an entity.
@@ -349,7 +344,7 @@ class EntityMemory:
         self,
         entity_id: str,
         relation_type: RelationType = None,
-        direction: str = "outgoing"  # outgoing, incoming, both
+        direction: str = "outgoing",  # outgoing, incoming, both
     ) -> List[Entity]:
         """
         Get entities related to a given entity.
@@ -376,10 +371,7 @@ class EntityMemory:
         return [self._entities[eid] for eid in related_ids if eid in self._entities]
 
     def get_entity_graph(
-        self,
-        entity_id: str,
-        depth: int = 2,
-        relation_types: List[RelationType] = None
+        self, entity_id: str, depth: int = 2, relation_types: List[RelationType] = None
     ) -> Dict[str, Any]:
         """
         Get subgraph around an entity.
@@ -428,13 +420,10 @@ class EntityMemory:
         return {
             "nodes": {nid: n.to_dict() for nid, n in nodes.items()},
             "edges": [e.to_dict() for e in edges],
-            "root": entity_id
+            "root": entity_id,
         }
 
-    def get_all_entities(
-        self,
-        entity_type: EntityType = None
-    ) -> List[Entity]:
+    def get_all_entities(self, entity_type: EntityType = None) -> List[Entity]:
         """Get all entities, optionally filtered by type."""
         if entity_type is None:
             return list(self._entities.values())
@@ -453,19 +442,14 @@ class EntityMemory:
 
         # Remove relationships
         self._relationships = [
-            r for r in self._relationships
-            if r.source_id != entity_id and r.target_id != entity_id
+            r for r in self._relationships if r.source_id != entity_id and r.target_id != entity_id
         ]
 
         # Remove entity
         del self._entities[entity_id]
         return True
 
-    def merge_entities(
-        self,
-        entity_id1: str,
-        entity_id2: str
-    ) -> Optional[Entity]:
+    def merge_entities(self, entity_id1: str, entity_id2: str) -> Optional[Entity]:
         """Merge two entities into one."""
         e1 = self._entities.get(entity_id1)
         e2 = self._entities.get(entity_id2)
@@ -497,7 +481,7 @@ class EntityMemory:
         """Export memory as dictionary."""
         return {
             "entities": {eid: e.to_dict() for eid, e in self._entities.items()},
-            "relationships": [r.to_dict() for r in self._relationships]
+            "relationships": [r.to_dict() for r in self._relationships],
         }
 
     def clear(self) -> None:

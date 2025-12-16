@@ -47,4 +47,3 @@ Keep Python code consistent, testable, and easy to maintain.
 - [ ] Code is Black-friendly and Ruff-friendly (no obvious style/lint issues)
 - [ ] Exceptions/errors are actionable and not vague
 - [ ] No secrets/tokens are introduced or logged
-

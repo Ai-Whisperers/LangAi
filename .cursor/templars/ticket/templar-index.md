@@ -17,39 +17,39 @@ This index lists all templars (templates) used by ticket management rules. Templ
 ## Ticket File Templars
 
 ### `templar.plan.v1`
-**File**: `plan-templar.md`  
-**Used by**: `rule.ticket.plan.v1`  
-**Governs**: Structure of `plan.md` files  
+**File**: `plan-templar.md`
+**Used by**: `rule.ticket.plan.v1`
+**Governs**: Structure of `plan.md` files
 **Sections**: Objective, Requirements, Acceptance Criteria, Implementation Strategy, Complexity Assessment, Status, Testing Strategy, Notes
 
 ### `templar.context.v1`
-**File**: `context-templar.md`  
-**Used by**: `rule.ticket.context.v1`  
-**Governs**: Structure of `context.md` files  
+**File**: `context-templar.md`
+**Used by**: `rule.ticket.context.v1`
+**Governs**: Structure of `context.md` files
 **Sections**: Technical Background, Current Focus, Key Components, Outstanding Issues, Next Steps, Active Constraints, Current Hypotheses
 
 ### `templar.progress.v1`
-**File**: `progress-templar.md`  
-**Used by**: `rule.ticket.progress.v1`  
-**Governs**: Structure of `progress.md` entries  
+**File**: `progress-templar.md`
+**Used by**: `rule.ticket.progress.v1`
+**Governs**: Structure of `progress.md` entries
 **Sections**: Entry date/summary, Time, Action/Decision/Milestone, Details, Links, Outcome, Next Steps
 
 ### `templar.timeline.v1`
-**File**: `timeline-templar.md`  
-**Used by**: `rule.ticket.timeline.v1`  
-**Governs**: Structure of `timeline.md` files  
+**File**: `timeline-templar.md`
+**Used by**: `rule.ticket.timeline.v1`
+**Governs**: Structure of `timeline.md` files
 **Sections**: Conversation Timeline, Git Commit Timeline, Daily Event Timeline, Daily Summary
 
 ### `templar.recap.v1`
-**File**: `recap-templar.md`  
-**Used by**: `rule.ticket.recap.v1`  
-**Governs**: Structure of `recap.md` files  
+**File**: `recap-templar.md`
+**Used by**: `rule.ticket.recap.v1`
+**Governs**: Structure of `recap.md` files
 **Sections**: Summary, What Was Accomplished, How, Key Learnings, What's Next, Value Delivered, Success Criteria, Recommendations
 
 ### `templar.rca.v1`
-**File**: `rca-templar.md`  
-**Used by**: `rule.ticket.rca.v1`  
-**Governs**: Structure of `rca.md` files  
+**File**: `rca-templar.md`
+**Used by**: `rule.ticket.rca.v1`
+**Governs**: Structure of `rca.md` files
 **Sections**: Problem Statement, Impact Assessment, Timeline of Events, Investigation, Root Cause, Contributing Factors, Resolution, Prevention, Process Improvements, Lessons Learned
 
 ## Placeholder Syntax
@@ -83,4 +83,3 @@ All templars use Mustache-style placeholders:
 - User-facing example files
 - May be copied as starting points
 - Less formal, more practical examples
-

@@ -46,4 +46,3 @@ Describe "Script-Name Tests" {
 
 ---
 Produced-by: prompt.scripts.add-tests.v1 | ts=2025-12-07T00:00:00Z
-

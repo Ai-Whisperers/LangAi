@@ -33,4 +33,3 @@ items:
     kind: prompt
   - path: prompts/tracker/update-tracker.prompt.md
     kind: prompt
-

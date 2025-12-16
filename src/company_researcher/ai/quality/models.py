@@ -1,11 +1,14 @@
 """Pydantic models for AI quality assessment."""
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Tuple
+
 from enum import Enum
+from typing import Dict, List, Optional, Tuple
+
+from pydantic import BaseModel, Field
 
 
 class QualityLevel(str, Enum):
     """Quality level classification."""
+
     EXCELLENT = "excellent"  # 90-100
     GOOD = "good"  # 75-89
     ACCEPTABLE = "acceptable"  # 60-74
@@ -39,7 +42,7 @@ class QualityLevel(str, Enum):
             QualityLevel.GOOD: (75, 89),
             QualityLevel.ACCEPTABLE: (60, 74),
             QualityLevel.POOR: (40, 59),
-            QualityLevel.INSUFFICIENT: (0, 39)
+            QualityLevel.INSUFFICIENT: (0, 39),
         }
         return ranges[self]  # All enum values covered, safe to index directly
 
@@ -51,6 +54,7 @@ class QualityLevel(str, Enum):
 
 class SourceType(str, Enum):
     """Type of information source."""
+
     OFFICIAL = "official"  # Company website, IR
     REGULATORY = "regulatory"  # SEC, government filings
     NEWS_MAJOR = "news_major"  # Reuters, Bloomberg
@@ -72,46 +76,28 @@ class ContentQualityAssessment(BaseModel):
 
     # Quality dimensions
     factual_density: float = Field(
-        ge=0.0, le=1.0,
-        description="Ratio of concrete facts to total content"
+        ge=0.0, le=1.0, description="Ratio of concrete facts to total content"
     )
-    specificity: float = Field(
-        ge=0.0, le=1.0,
-        description="How specific vs vague the content is"
-    )
-    completeness: float = Field(
-        ge=0.0, le=1.0,
-        description="Coverage of expected topics"
-    )
+    specificity: float = Field(ge=0.0, le=1.0, description="How specific vs vague the content is")
+    completeness: float = Field(ge=0.0, le=1.0, description="Coverage of expected topics")
     accuracy_indicators: float = Field(
-        ge=0.0, le=1.0,
+        ge=0.0,
+        le=1.0,
         default=0.5,
-        description="Indicators of accuracy (sources cited, dates, etc.)"
+        description="Indicators of accuracy (sources cited, dates, etc.)",
     )
-    recency: float = Field(
-        ge=0.0, le=1.0,
-        default=0.5,
-        description="How recent the information is"
-    )
+    recency: float = Field(ge=0.0, le=1.0, default=0.5, description="How recent the information is")
 
     # Issues and strengths
-    issues: List[str] = Field(
-        default_factory=list,
-        description="Identified quality issues"
-    )
-    strengths: List[str] = Field(
-        default_factory=list,
-        description="Content strengths"
-    )
+    issues: List[str] = Field(default_factory=list, description="Identified quality issues")
+    strengths: List[str] = Field(default_factory=list, description="Content strengths")
     improvement_suggestions: List[str] = Field(
-        default_factory=list,
-        description="Suggestions for improvement"
+        default_factory=list, description="Suggestions for improvement"
     )
 
     # Missing information
     missing_topics: List[str] = Field(
-        default_factory=list,
-        description="Expected topics not covered"
+        default_factory=list, description="Expected topics not covered"
     )
 
     class Config:
@@ -129,38 +115,19 @@ class SourceQualityAssessment(BaseModel):
     source_type: SourceType = Field(description="Type of source")
 
     # Quality scores
-    authority_score: float = Field(
-        ge=0.0, le=1.0,
-        description="Source authority/trustworthiness"
-    )
-    recency_score: float = Field(
-        ge=0.0, le=1.0,
-        description="How recent the source is"
-    )
-    relevance_score: float = Field(
-        ge=0.0, le=1.0,
-        description="Relevance to the research topic"
-    )
+    authority_score: float = Field(ge=0.0, le=1.0, description="Source authority/trustworthiness")
+    recency_score: float = Field(ge=0.0, le=1.0, description="How recent the source is")
+    relevance_score: float = Field(ge=0.0, le=1.0, description="Relevance to the research topic")
     depth_score: float = Field(
-        ge=0.0, le=1.0,
-        default=0.5,
-        description="Depth of information provided"
+        ge=0.0, le=1.0, default=0.5, description="Depth of information provided"
     )
 
     # Classification
-    is_primary_source: bool = Field(
-        description="Whether this is a primary/official source"
-    )
-    is_paywalled: bool = Field(
-        default=False,
-        description="Whether content is behind paywall"
-    )
+    is_primary_source: bool = Field(description="Whether this is a primary/official source")
+    is_paywalled: bool = Field(default=False, description="Whether content is behind paywall")
 
     # Reasoning
-    reasoning: str = Field(
-        default="",
-        description="Explanation for the assessment"
-    )
+    reasoning: str = Field(default="", description="Explanation for the assessment")
 
     class Config:
         use_enum_values = True
@@ -175,27 +142,21 @@ class ConfidenceAssessment(BaseModel):
 
     # Supporting evidence
     supporting_sources: int = Field(
-        default=0,
-        description="Number of sources supporting this claim"
+        default=0, description="Number of sources supporting this claim"
     )
     contradicting_sources: int = Field(
-        default=0,
-        description="Number of sources contradicting this claim"
+        default=0, description="Number of sources contradicting this claim"
     )
     source_quality_avg: float = Field(
-        ge=0.0, le=1.0,
-        default=0.5,
-        description="Average quality of supporting sources"
+        ge=0.0, le=1.0, default=0.5, description="Average quality of supporting sources"
     )
 
     # Uncertainty analysis
     uncertainty_indicators: List[str] = Field(
-        default_factory=list,
-        description="Words/phrases indicating uncertainty"
+        default_factory=list, description="Words/phrases indicating uncertainty"
     )
     verification_status: str = Field(
-        default="unverified",
-        description="verified, unverified, conflicting, or uncertain"
+        default="unverified", description="verified, unverified, conflicting, or uncertain"
     )
 
     reasoning: str = Field(default="", description="Explanation")
@@ -232,25 +193,17 @@ class OverallQualityReport(BaseModel):
     total_source_count: int = Field(default=0)
 
     # Issues and recommendations
-    key_gaps: List[str] = Field(
-        default_factory=list,
-        description="Major information gaps"
-    )
-    critical_issues: List[str] = Field(
-        default_factory=list,
-        description="Critical quality issues"
-    )
+    key_gaps: List[str] = Field(default_factory=list, description="Major information gaps")
+    critical_issues: List[str] = Field(default_factory=list, description="Critical quality issues")
     recommendations: List[str] = Field(
-        default_factory=list,
-        description="Recommendations for improvement"
+        default_factory=list, description="Recommendations for improvement"
     )
 
     # Decision support
     ready_for_delivery: bool = Field(description="Whether report meets quality bar")
     iteration_needed: bool = Field(description="Whether more research is needed")
     focus_areas_for_iteration: List[str] = Field(
-        default_factory=list,
-        description="Areas to focus on if iterating"
+        default_factory=list, description="Areas to focus on if iterating"
     )
 
     # Metadata
@@ -262,10 +215,7 @@ class OverallQualityReport(BaseModel):
 
     def get_failing_sections(self) -> List[str]:
         """Get sections below acceptable quality."""
-        return [
-            s.section_name for s in self.section_assessments
-            if s.score < 60
-        ]
+        return [s.section_name for s in self.section_assessments if s.score < 60]
 
     def get_section_score(self, section_name: str) -> Optional[float]:
         """Get score for a specific section."""

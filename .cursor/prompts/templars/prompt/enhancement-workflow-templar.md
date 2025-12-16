@@ -331,7 +331,7 @@ Before [action]:
 ## Customization Points
 
 ### Enhancement Categories
-**Placeholder**: `[Enhancement Category N]`  
+**Placeholder**: `[Enhancement Category N]`
 **Guidance**: Define 3-4 enhancement dimensions relevant to your artifact type. Common patterns:
 - **Structure** (organization, sections, hierarchy)
 - **Content** (completeness, examples, clarity)
@@ -341,28 +341,28 @@ Before [action]:
 Adjust based on what artifacts you're enhancing.
 
 ### Decision Tree
-**Placeholder**: `[Gap Type N]`, `[Enhancement Category N]`  
+**Placeholder**: `[Gap Type N]`, `[Enhancement Category N]`
 **Guidance**: Map common gaps to enhancement categories. Include time-based scoping (quick/medium/deep).
 
 ### Patterns
-**Placeholder**: `[Section Type]`, `[Feature Type]`, etc.  
+**Placeholder**: `[Section Type]`, `[Feature Type]`, etc.
 **Guidance**: Provide concrete examples of common enhancement patterns users can apply. Show actual structure, not just descriptions.
 
 ### Before/After Example
-**Placeholder**: `[Basic artifact]` / `[Enhanced artifact]`  
+**Placeholder**: `[Basic artifact]` / `[Enhanced artifact]`
 **Guidance**: Show real transformation with impact quantification. Use percentages to demonstrate improvement magnitude.
 
 ### Impact Assessment
-**Placeholder**: `[Quality Dimension N]`  
+**Placeholder**: `[Quality Dimension N]`
 **Guidance**: Define how to measure improvement. Examples: Usability, Clarity, Capability, Completeness, Maintainability.
 
 ## Example Usage (Applying This Templar)
 
 ### Creating "Enhance Unit Test" Prompt
 
-**Category 1 - Structure**: Add AAA sections, group related tests  
-**Category 2 - Content**: Add edge cases, error scenarios  
-**Category 3 - Features**: Add parameterized tests, test fixtures  
+**Category 1 - Structure**: Add AAA sections, group related tests
+**Category 2 - Content**: Add edge cases, error scenarios
+**Category 3 - Features**: Add parameterized tests, test fixtures
 **Category 4 - Documentation**: Add XML docs, inline comments
 
 **Decision Tree**: Missing coverage → Content | Poor organization → Structure | No assertions → Content
@@ -407,4 +407,3 @@ Good application of this pattern achieves:
 ---
 
 **Pattern Provenance**: Extracted from `enhance-prompt.prompt.md` which demonstrates exceptional enhancement categorization with decision trees, time-based scoping, comprehensive before/after examples, and quantified impact assessment.
-

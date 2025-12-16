@@ -89,22 +89,22 @@ When user provides request, categorize:
 
 1. **Start New Ticket**: "Start ticket PROJ-123" or "Work on PROJ-123"
    - Execute Scenario A (Starting New Ticket)
-   
+
 2. **Switch Tickets**: "Switch to PROJ-456" or "Pause this and work on PROJ-456"
    - Execute Scenario B (Switching Tickets)
-   
+
 3. **Update Ticket State**: "Update context" or "sync"
    - Apply `rule.ticket.context.v1` + `rule.ticket.progress.v1` + `rule.ticket.timeline.v1`
-   
+
 4. **Complete Ticket**: "Ticket is done" or "Ready to close"
    - Execute Scenario C (Completing Ticket) with validation discipline
-   
+
 5. **User Claims Work Complete**: "Done", "Finished", "Complete"
    - **STOP - Execute Scenario D (Completion Discipline) BEFORE accepting**
-   
+
 6. **Create/Update Plan**: "Create plan" or "Update plan"
    - Apply `rule.ticket.plan.v1` + `rule.ticket.complexity-assessment.v1`
-   
+
 7. **Root Cause Analysis**: "Create RCA" or "Analyze defect"
    - Apply `rule.ticket.rca.v1`
 
@@ -142,7 +142,7 @@ When creating plan.md, **MUST apply complexity assessment**:
 Assess ticket against Simple Fix criteria:
   - ALL criteria met? - Simple Fix Track
       - Direct implementation, minimal planning
-  
+
   - ANY criterion failed? - Complex Implementation Track
       - Comprehensive planning required
 ```

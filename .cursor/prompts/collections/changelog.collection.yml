@@ -14,4 +14,3 @@ items:
     kind: prompt
   - path: prompts/changelog/quick-changelog-update.prompt.md
     kind: prompt
-

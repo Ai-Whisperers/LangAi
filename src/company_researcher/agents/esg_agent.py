@@ -25,30 +25,25 @@ warnings.warn(
     "company_researcher.agents.esg_agent is deprecated. "
     "Use company_researcher.agents.esg instead.",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )
 
 # Re-export all public API from the esg package for backward compatibility
-from .esg import (
-    # Enums
-    ESGCategory,
-    ESGRating,
-    ControversySeverity,
-    # Dataclasses
-    ESGMetric,
-    Controversy,
-    ESGScore,
-    ESGAnalysis,
-    # Indicator frameworks
+from .esg import (  # Enums; Dataclasses; Indicator frameworks; Classes; Functions
     ENVIRONMENTAL_INDICATORS,
-    SOCIAL_INDICATORS,
     GOVERNANCE_INDICATORS,
-    # Classes
-    ESGScorer,
+    SOCIAL_INDICATORS,
+    Controversy,
+    ControversySeverity,
     ESGAgent,
-    # Functions
-    esg_agent_node,
+    ESGAnalysis,
+    ESGCategory,
+    ESGMetric,
+    ESGRating,
+    ESGScore,
+    ESGScorer,
     create_esg_agent,
+    esg_agent_node,
 )
 
 __all__ = [

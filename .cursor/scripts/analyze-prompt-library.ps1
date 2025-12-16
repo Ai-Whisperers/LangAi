@@ -29,17 +29,17 @@
 
 .EXAMPLE
     .\analyze-prompt-library.ps1
-    
+
     Analyze prompts with default settings (console output)
 
 .EXAMPLE
     .\analyze-prompt-library.ps1 -TopN 20 -OutputFormat Markdown -OutputFile analysis-report.md
-    
+
     Generate markdown report with top 20 results
 
 .EXAMPLE
     .\analyze-prompt-library.ps1 -MinExamples 5 -OutputFormat Json
-    
+
     Show only prompts with 5+ examples, output as JSON
 
 .NOTES
@@ -89,7 +89,7 @@ function Get-PromptMetrics {
 
     $content = Get-Content $File.FullName -Raw
     $lines = (Get-Content $File.FullName | Measure-Object -Line).Lines
-    
+
     # Count examples using multiple patterns
     $examplePatterns = @(
         '(?m)^### Example',           # H3 examples
@@ -98,15 +98,15 @@ function Get-PromptMetrics {
         '(?m)^Example \d+:',           # Plain numbered examples
         '(?im)^\*\*Input\*\*:\s*$'     # Input/Output pattern
     )
-    
+
     $exampleCount = 0
     foreach ($pattern in $examplePatterns) {
         $exampleCount += ([regex]::Matches($content, $pattern)).Count
     }
-    
+
     # Get relative path from prompts root
     $relativePath = $File.FullName.Replace("$PromptsPath\", '').Replace("$PromptsPath/", '')
-    
+
     [PSCustomObject]@{
         Name = $File.Name
         Category = $File.Directory.Name
@@ -121,13 +121,13 @@ function Get-PromptMetrics {
 
 function Write-ConsoleReport {
     param($Data, $Statistics)
-    
+
     Write-Host ''
     Write-Host ('=' * 80) -ForegroundColor Cyan
     Write-Host 'PROMPT LIBRARY ANALYSIS' -ForegroundColor Cyan
     Write-Host ('=' * 80) -ForegroundColor Cyan
     Write-Host ''
-    
+
     # Overall stats
     Write-Host 'Overall Statistics' -ForegroundColor Yellow
     Write-Host "  Total Prompts: $($Statistics.TotalPrompts)"
@@ -136,17 +136,17 @@ function Write-ConsoleReport {
     Write-Host "  Average Lines per Prompt: $($Statistics.AvgLines)"
     Write-Host "  Prompts with Examples: $($Statistics.PromptsWithExamples) ($($Statistics.PercentWithExamples)%)"
     Write-Host ''
-    
+
     # Largest prompts
     Write-Host "Top $TopN Largest Prompts (by line count)" -ForegroundColor Yellow
     $Data.LargestPrompts | Format-Table -AutoSize Name, Category, Lines, Examples, @{Label='Size(KB)';Expression={$_.SizeKB}}
     Write-Host ''
-    
+
     # Most examples
     Write-Host "Top $TopN Prompts with Most Examples" -ForegroundColor Yellow
     $Data.MostExamples | Format-Table -AutoSize Name, Category, Examples, Lines, @{Label='Density%';Expression={$_.ExampleDensity}}
     Write-Host ''
-    
+
     # Sweet spot
     Write-Host "Large Prompts with Many Examples ($MinLinesForSweetSpot+ lines, $MinExamples+ examples)" -ForegroundColor Yellow
     if ($Data.SweetSpot.Count -gt 0) {
@@ -155,20 +155,20 @@ function Write-ConsoleReport {
         Write-Host "  (none found)" -ForegroundColor Gray
     }
     Write-Host ''
-    
+
     # Category breakdown
     Write-Host 'Category Breakdown' -ForegroundColor Yellow
     $Data.CategoryStats | Format-Table -AutoSize Category, Count, @{Label='Avg Lines';Expression={$_.AvgLines}}, @{Label='Avg Examples';Expression={$_.AvgExamples}}, @{Label='Total Size(KB)';Expression={$_.TotalSizeKB}}
     Write-Host ''
-    
+
     Write-Host ('=' * 80) -ForegroundColor Cyan
 }
 
 function Write-MarkdownReport {
     param($Data, $Statistics, $OutputPath)
-    
+
     $generatedDate = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-    
+
     $content = @()
     $content += '# Prompt Library Analysis Report'
     $content += ''
@@ -215,7 +215,7 @@ function Write-MarkdownReport {
     $content += ''
     $content += "Prompts with $MinLinesForSweetSpot+ lines AND $MinExamples+ examples:"
     $content += ''
-    
+
     if ($Data.SweetSpot.Count -gt 0) {
         $content += '| Prompt | Category | Lines | Examples | Size (KB) |'
         $content += '|--------|----------|-------|----------|-----------|'
@@ -276,14 +276,14 @@ function Write-MarkdownReport {
 
 function Write-CsvReport {
     param($Data, $OutputPath)
-    
+
     $Data.AllPrompts | Export-Csv -Path $OutputPath -NoTypeInformation -Encoding UTF8
     Write-Host "CSV data exported to: $OutputPath" -ForegroundColor Green
 }
 
 function Write-JsonReport {
     param($Data, $Statistics, $OutputPath)
-    
+
     $report = @{
         GeneratedAt = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
         Location = $PromptsPath
@@ -294,7 +294,7 @@ function Write-JsonReport {
         CategoryStats = $Data.CategoryStats
         AllPrompts = $Data.AllPrompts
     }
-    
+
     $report | ConvertTo-Json -Depth 10 | Out-File -FilePath $OutputPath -Encoding UTF8
     Write-Host "JSON report saved to: $OutputPath" -ForegroundColor Green
 }

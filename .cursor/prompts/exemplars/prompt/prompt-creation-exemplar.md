@@ -47,11 +47,11 @@ Use to quickly sanity-check an OpenAPI document for structural issues and common
 
 ## Examples
 ### Example 1: Happy Path
-Input: minimal valid spec  
+Input: minimal valid spec
 Expected Output: PASS summary + zero issues
 
 ### Example 2: Edge (Missing Responses)
-Input: spec missing 2xx/4xx on an operation  
+Input: spec missing 2xx/4xx on an operation
 Expected Output: FAIL with two issues and suggested fixes
 
 ## Expected Output
@@ -74,4 +74,3 @@ Expected Output: FAIL with two issues and suggested fixes
 
 ## When to Reference
 Use this when designing new prompts to see a concise, production-ready structure that meets registry and quality standards without unnecessary bulk.
-

@@ -14,35 +14,34 @@ Usage:
     python run_paraguay_telecom_research_v2.py
 """
 
+import json
+import logging
 import os
 import sys
-import json
-import yaml
-import logging
 import time
-from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
+
+import yaml
 
 # Add project root to path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
 def load_company_profile(profile_path: str) -> Dict[str, Any]:
     """Load company profile from YAML file."""
-    with open(profile_path, 'r', encoding='utf-8') as f:
+    with open(profile_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -50,85 +49,99 @@ def create_comprehensive_queries(company_data: Dict[str, Any]) -> List[str]:
     """Generate comprehensive search queries from profile."""
     queries = []
 
-    company = company_data.get('company', {})
-    research = company_data.get('research', {})
-    competitors = company_data.get('competitors', [])
+    company = company_data.get("company", {})
+    research = company_data.get("research", {})
+    competitors = company_data.get("competitors", [])
 
-    company_name = company.get('name', '')
-    legal_name = company.get('legal_name', '')
-    parent_company = company.get('details', {}).get('parent_company', '')
-    country = company.get('country', '')
-    website = company.get('website', '')
-    sectors = company.get('sectors', [])
-    services = company.get('services', [])
+    company_name = company.get("name", "")
+    legal_name = company.get("legal_name", "")
+    parent_company = company.get("details", {}).get("parent_company", "")
+    country = company.get("country", "")
+    website = company.get("website", "")
+    sectors = company.get("sectors", [])
+    services = company.get("services", [])
 
     # 1. Priority queries from profile
-    priority_queries = research.get('priority_queries', [])
+    priority_queries = research.get("priority_queries", [])
     queries.extend(priority_queries)
 
     # 2. Company overview queries (Spanish + English)
-    queries.extend([
-        f"{company_name} empresa información general",
-        f"{company_name} company overview profile",
-        f"{company_name} historia fundación",
-        f"{company_name} history founded",
-        f"{company_name} sede oficinas",
-        f"{company_name} headquarters locations",
-    ])
+    queries.extend(
+        [
+            f"{company_name} empresa información general",
+            f"{company_name} company overview profile",
+            f"{company_name} historia fundación",
+            f"{company_name} history founded",
+            f"{company_name} sede oficinas",
+            f"{company_name} headquarters locations",
+        ]
+    )
 
     # 3. Financial queries
-    queries.extend([
-        f"{company_name} ingresos revenue 2024",
-        f"{company_name} ingresos revenue 2023",
-        f"{company_name} financial results earnings",
-        f"{company_name} resultados financieros",
-        f"{company_name} annual report informe anual",
-        f"{company_name} EBITDA profit margins",
-        f"{company_name} inversiones investments",
-    ])
+    queries.extend(
+        [
+            f"{company_name} ingresos revenue 2024",
+            f"{company_name} ingresos revenue 2023",
+            f"{company_name} financial results earnings",
+            f"{company_name} resultados financieros",
+            f"{company_name} annual report informe anual",
+            f"{company_name} EBITDA profit margins",
+            f"{company_name} inversiones investments",
+        ]
+    )
 
     # 4. Market position queries
-    queries.extend([
-        f"{company_name} market share {country}",
-        f"{company_name} participación de mercado",
-        f"{company_name} position ranking {country}",
-        f"{company_name} subscribers usuarios abonados",
-        f"{company_name} customer base clientes",
-        f"telecommunications {country} market analysis 2024",
-        f"telecomunicaciones {country} estadísticas",
-    ])
+    queries.extend(
+        [
+            f"{company_name} market share {country}",
+            f"{company_name} participación de mercado",
+            f"{company_name} position ranking {country}",
+            f"{company_name} subscribers usuarios abonados",
+            f"{company_name} customer base clientes",
+            f"telecommunications {country} market analysis 2024",
+            f"telecomunicaciones {country} estadísticas",
+        ]
+    )
 
     # 5. Network/infrastructure queries
-    queries.extend([
-        f"{company_name} network coverage cobertura",
-        f"{company_name} 4G LTE red",
-        f"{company_name} 5G rollout plan",
-        f"{company_name} fiber optic fibra óptica",
-        f"{company_name} infrastructure investments",
-    ])
+    queries.extend(
+        [
+            f"{company_name} network coverage cobertura",
+            f"{company_name} 4G LTE red",
+            f"{company_name} 5G rollout plan",
+            f"{company_name} fiber optic fibra óptica",
+            f"{company_name} infrastructure investments",
+        ]
+    )
 
     # 6. Competitive queries
     for competitor in competitors:
-        comp_name = competitor.get('name', competitor) if isinstance(competitor, dict) else competitor
+        comp_name = (
+            competitor.get("name", competitor) if isinstance(competitor, dict) else competitor
+        )
         queries.append(f"{company_name} vs {comp_name} comparison")
         queries.append(f"{company_name} {comp_name} competencia mercado")
 
     # 7. Parent company queries
     if parent_company:
-        queries.extend([
-            f"{parent_company} {country} operations",
-            f"{parent_company} annual report {country} segment",
-            f"{parent_company} {company_name} financial results",
-            f"{parent_company} strategy {country}",
-        ])
+        queries.extend(
+            [
+                f"{parent_company} {country} operations",
+                f"{parent_company} annual report {country} segment",
+                f"{parent_company} {company_name} financial results",
+                f"{parent_company} strategy {country}",
+            ]
+        )
 
     # 8. Legal name queries
     if legal_name and legal_name != company_name:
-        queries.extend([
-            f"{legal_name} financial results",
-            f"{legal_name} annual report",
-            f'"{legal_name}" company',
-        ])
+        queries.extend(
+            [
+                f"{legal_name} financial results",
+                f"{legal_name} annual report",
+                f'"{legal_name}" company',
+            ]
+        )
 
     # 9. Services/products queries
     for service in services[:5]:  # Top 5 services
@@ -139,32 +152,40 @@ def create_comprehensive_queries(company_data: Dict[str, Any]) -> List[str]:
         queries.append(f"{company_name} {sector} market")
 
     # 11. News queries
-    queries.extend([
-        f"{company_name} news noticias 2024",
-        f"{company_name} latest news recent",
-        f"{company_name} announcements press releases",
-    ])
+    queries.extend(
+        [
+            f"{company_name} news noticias 2024",
+            f"{company_name} latest news recent",
+            f"{company_name} announcements press releases",
+        ]
+    )
 
     # 12. Leadership queries
-    queries.extend([
-        f"{company_name} CEO director general",
-        f"{company_name} management team executives",
-        f"{company_name} board directors",
-    ])
+    queries.extend(
+        [
+            f"{company_name} CEO director general",
+            f"{company_name} management team executives",
+            f"{company_name} board directors",
+        ]
+    )
 
     # 13. Regulatory queries
-    queries.extend([
-        f"CONATEL {country} telecommunications statistics",
-        f"{country} telecommunications regulator report",
-        f"{company_name} regulatory compliance",
-    ])
+    queries.extend(
+        [
+            f"CONATEL {country} telecommunications statistics",
+            f"{country} telecommunications regulator report",
+            f"{company_name} regulatory compliance",
+        ]
+    )
 
     # 14. Industry reports
-    queries.extend([
-        f"GSMA {country} mobile market report",
-        f"telecommunications {country} industry analysis",
-        f"mobile operators {country} market 2024",
-    ])
+    queries.extend(
+        [
+            f"GSMA {country} mobile market report",
+            f"telecommunications {country} industry analysis",
+            f"mobile operators {country} market 2024",
+        ]
+    )
 
     # Remove duplicates while preserving order
     seen = set()
@@ -200,21 +221,25 @@ def search_with_router(queries: List[str], max_results_per_query: int = 10) -> L
                 query=query,
                 quality="standard",  # Will fallback to free if needed
                 max_results=max_results_per_query,
-                use_cache=True
+                use_cache=True,
             )
 
             if response.success:
                 for result in response.results:
-                    all_results.append({
-                        'query': query,
-                        'title': result.title,
-                        'url': result.url,
-                        'content': result.snippet,
-                        'source': response.provider,
-                        'score': result.score
-                    })
+                    all_results.append(
+                        {
+                            "query": query,
+                            "title": result.title,
+                            "url": result.url,
+                            "content": result.snippet,
+                            "source": response.provider,
+                            "score": result.score,
+                        }
+                    )
 
-                logger.info(f"[{i+1}/{len(queries)}] {response.provider}: {len(response.results)} results for: {query[:50]}...")
+                logger.info(
+                    f"[{i+1}/{len(queries)}] {response.provider}: {len(response.results)} results for: {query[:50]}..."
+                )
             else:
                 logger.warning(f"[{i+1}/{len(queries)}] Failed: {response.error}")
 
@@ -237,7 +262,7 @@ def deduplicate_sources(sources: List[Dict]) -> List[Dict]:
     unique = []
 
     for source in sources:
-        url = source.get('url', '')
+        url = source.get("url", "")
         if url and url not in seen_urls:
             seen_urls.add(url)
             unique.append(source)
@@ -276,10 +301,7 @@ Return as JSON with these sections. Use "unknown" if information not found.
 
     try:
         result = smart_completion(
-            prompt=prompt,
-            task_type="extraction",
-            max_tokens=2000,
-            temperature=0.0
+            prompt=prompt, task_type="extraction", max_tokens=2000, temperature=0.0
         )
 
         # Parse JSON from response
@@ -290,17 +312,17 @@ Return as JSON with these sections. Use "unknown" if information not found.
             content = content.split("```")[1].split("```")[0]
 
         # Find JSON
-        start = content.find('{')
-        end = content.rfind('}')
+        start = content.find("{")
+        end = content.rfind("}")
         if start >= 0 and end >= 0:
-            extracted = json.loads(content[start:end+1])
+            extracted = json.loads(content[start : end + 1])
         else:
             extracted = {"raw_text": content}
 
         return {
             "extracted_data": extracted,
             "cost": result.cost,
-            "tokens": result.input_tokens + result.output_tokens
+            "tokens": result.input_tokens + result.output_tokens,
         }
 
     except Exception as e:
@@ -309,15 +331,12 @@ Return as JSON with these sections. Use "unknown" if information not found.
 
 
 def generate_report(
-    company_name: str,
-    extracted_data: Dict,
-    sources: List[Dict],
-    profile_data: Dict
+    company_name: str, extracted_data: Dict, sources: List[Dict], profile_data: Dict
 ) -> str:
     """Generate comprehensive research report."""
     from src.company_researcher.llm.smart_client import smart_completion
 
-    company = profile_data.get('company', {})
+    company = profile_data.get("company", {})
 
     # Build context
     context = f"""
@@ -383,10 +402,7 @@ Make it comprehensive and professional.
 
     try:
         result = smart_completion(
-            prompt=prompt,
-            task_type="synthesis",
-            max_tokens=4000,
-            temperature=0.1
+            prompt=prompt, task_type="synthesis", max_tokens=4000, temperature=0.1
         )
         return result.content
     except Exception as e:
@@ -427,17 +443,14 @@ Return JSON:
 
     try:
         result = smart_completion(
-            prompt=prompt,
-            task_type="classification",
-            max_tokens=1000,
-            temperature=0.0
+            prompt=prompt, task_type="classification", max_tokens=1000, temperature=0.0
         )
 
         content = result.content
-        start = content.find('{')
-        end = content.rfind('}')
+        start = content.find("{")
+        end = content.rfind("}")
         if start >= 0 and end >= 0:
-            return json.loads(content[start:end+1])
+            return json.loads(content[start : end + 1])
         return {"quality_score": 50, "error": "Could not parse quality response"}
 
     except Exception as e:
@@ -452,7 +465,7 @@ def save_report(
     extracted_data: Dict,
     quality: Dict,
     profile_data: Dict,
-    output_dir: Path
+    output_dir: Path,
 ) -> Path:
     """Save all research outputs."""
     safe_name = company_name.lower().replace(" ", "_").replace("/", "_")
@@ -463,22 +476,24 @@ def save_report(
 
     # 1. Save full report
     report_path = company_dir / "00_full_report.md"
-    report_path.write_text(report, encoding='utf-8')
+    report_path.write_text(report, encoding="utf-8")
 
     # 2. Save metrics
     metrics = {
         "company_name": company_name,
         "timestamp": timestamp,
         "total_sources": len(sources),
-        "quality_score": quality.get('quality_score', 0),
-        "completeness_score": quality.get('completeness_score', 0),
+        "quality_score": quality.get("quality_score", 0),
+        "completeness_score": quality.get("completeness_score", 0),
         "profile_data": {
-            "industry": profile_data.get('company', {}).get('industry', ''),
-            "country": profile_data.get('company', {}).get('country', ''),
-            "parent_company": profile_data.get('company', {}).get('details', {}).get('parent_company', ''),
-        }
+            "industry": profile_data.get("company", {}).get("industry", ""),
+            "country": profile_data.get("company", {}).get("country", ""),
+            "parent_company": profile_data.get("company", {})
+            .get("details", {})
+            .get("parent_company", ""),
+        },
     }
-    (company_dir / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding='utf-8')
+    (company_dir / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
 
     # 3. Save sources
     sources_md = f"# Sources for {company_name}\n\n"
@@ -487,7 +502,7 @@ def save_report(
     # Group by domain
     domains = {}
     for source in sources:
-        url = source.get('url', '')
+        url = source.get("url", "")
         if url:
             try:
                 domain = urlparse(url).netloc
@@ -502,15 +517,15 @@ def save_report(
     for domain, domain_sources in sorted(domains.items(), key=lambda x: -len(x[1])):
         sources_md += f"\n## {domain} ({len(domain_sources)} sources)\n\n"
         for source in domain_sources[:15]:
-            title = source.get('title', 'Untitled')[:80]
-            url = source.get('url', '')
+            title = source.get("title", "Untitled")[:80]
+            url = source.get("url", "")
             sources_md += f"- [{title}]({url})\n"
 
-    (company_dir / "07_sources.md").write_text(sources_md, encoding='utf-8')
+    (company_dir / "07_sources.md").write_text(sources_md, encoding="utf-8")
 
     # 4. Save extracted data
     (company_dir / "extracted_data.json").write_text(
-        json.dumps(extracted_data, indent=2), encoding='utf-8'
+        json.dumps(extracted_data, indent=2), encoding="utf-8"
     )
 
     # 5. Save quality assessment
@@ -522,18 +537,18 @@ def save_report(
     quality_md += f"| Source Diversity | {quality.get('source_diversity_score', 0)}/100 |\n\n"
 
     quality_md += "## Strengths\n"
-    for s in quality.get('strengths', []):
+    for s in quality.get("strengths", []):
         quality_md += f"- {s}\n"
 
     quality_md += "\n## Missing Information\n"
-    for m in quality.get('missing_information', []):
+    for m in quality.get("missing_information", []):
         quality_md += f"- {m}\n"
 
     quality_md += "\n## Recommendations\n"
-    for r in quality.get('recommendations', []):
+    for r in quality.get("recommendations", []):
         quality_md += f"- {r}\n"
 
-    (company_dir / "quality_assessment.md").write_text(quality_md, encoding='utf-8')
+    (company_dir / "quality_assessment.md").write_text(quality_md, encoding="utf-8")
 
     # 6. Create README
     readme = f"""# {company_name} Research Report
@@ -556,7 +571,7 @@ def save_report(
 - [extracted_data.json](extracted_data.json) - Structured data
 - [quality_assessment.md](quality_assessment.md) - Quality analysis
 """
-    (company_dir / "README.md").write_text(readme, encoding='utf-8')
+    (company_dir / "README.md").write_text(readme, encoding="utf-8")
 
     return company_dir
 
@@ -567,7 +582,7 @@ def research_company(
     output_dir: Path,
     target_quality: float = 90.0,
     target_sources: int = 200,
-    max_iterations: int = 3
+    max_iterations: int = 3,
 ) -> Dict[str, Any]:
     """
     Research a company comprehensively.
@@ -633,9 +648,9 @@ def research_company(
     # Extract data
     logger.info("\nExtracting structured data...")
     extraction_result = extract_data_from_sources(company_name, all_sources)
-    extracted_data = extraction_result.get('extracted_data', {})
-    total_cost += extraction_result.get('cost', 0)
-    total_tokens += extraction_result.get('tokens', 0)
+    extracted_data = extraction_result.get("extracted_data", {})
+    total_cost += extraction_result.get("cost", 0)
+    total_tokens += extraction_result.get("tokens", 0)
 
     # Generate report
     logger.info("Generating comprehensive report...")
@@ -644,7 +659,7 @@ def research_company(
     # Check quality
     logger.info("Checking research quality...")
     quality = check_quality(company_name, report, all_sources)
-    quality_score = quality.get('quality_score', 0)
+    quality_score = quality.get("quality_score", 0)
 
     logger.info(f"\nQuality Score: {quality_score}/100")
     logger.info(f"Total Sources: {len(all_sources)}")
@@ -657,7 +672,7 @@ def research_company(
         extracted_data=extraction_result,
         quality=quality,
         profile_data=profile_data,
-        output_dir=output_dir
+        output_dir=output_dir,
     )
 
     duration = time.time() - start_time
@@ -671,20 +686,20 @@ def research_company(
         "total_tokens": total_tokens,
         "duration_seconds": duration,
         "report_dir": str(report_dir),
-        "quality_details": quality
+        "quality_details": quality,
     }
 
 
 def main():
     """Main entry point."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("  PARAGUAY TELECOM COMPREHENSIVE RESEARCH V2")
     print("  Using Smart Search Router with Fallback")
     print("  Target: 200+ sources, 90% quality per company")
-    print("="*70 + "\n")
+    print("=" * 70 + "\n")
 
     # Check for API key (at least need Anthropic for LLM)
-    if not os.getenv('ANTHROPIC_API_KEY'):
+    if not os.getenv("ANTHROPIC_API_KEY"):
         print("ERROR: ANTHROPIC_API_KEY not set")
         sys.exit(1)
 
@@ -713,7 +728,7 @@ def main():
                 output_dir=output_dir,
                 target_quality=90.0,
                 target_sources=200,
-                max_iterations=3
+                max_iterations=3,
             )
 
             results.append(result)
@@ -729,41 +744,38 @@ def main():
         except Exception as e:
             logger.error(f"Failed to research {company_name}: {e}")
             import traceback
+
             traceback.print_exc()
-            results.append({
-                "company_name": company_name,
-                "success": False,
-                "error": str(e)
-            })
+            results.append({"company_name": company_name, "success": False, "error": str(e)})
 
     # Final summary
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("  FINAL SUMMARY")
-    print("="*70)
+    print("=" * 70)
 
-    successful = [r for r in results if r.get('success')]
+    successful = [r for r in results if r.get("success")]
 
     for r in results:
-        status = "" if r.get('success') else ""
+        status = "" if r.get("success") else ""
         print(f"\n{status} {r['company_name']}:")
-        if r.get('success'):
+        if r.get("success"):
             print(f"   Quality: {r['quality_score']}/100")
             print(f"   Sources: {r['total_sources']}")
-            meets_quality = "" if r['quality_score'] >= 90 else ""
-            meets_sources = "" if r['total_sources'] >= 200 else ""
+            meets_quality = "" if r["quality_score"] >= 90 else ""
+            meets_sources = "" if r["total_sources"] >= 200 else ""
             print(f"   Quality Target (90%): {meets_quality}")
             print(f"   Sources Target (200): {meets_sources}")
         else:
             print(f"   Error: {r.get('error', 'Unknown')}")
 
     if successful:
-        total_sources = sum(r['total_sources'] for r in successful)
-        avg_quality = sum(r['quality_score'] for r in successful) / len(successful)
+        total_sources = sum(r["total_sources"] for r in successful)
+        avg_quality = sum(r["quality_score"] for r in successful) / len(successful)
         print(f"\nTotals:")
         print(f"  Total Sources: {total_sources}")
         print(f"  Average Quality: {avg_quality:.1f}/100")
 
-    print("\n" + "="*70 + "\n")
+    print("\n" + "=" * 70 + "\n")
 
 
 if __name__ == "__main__":

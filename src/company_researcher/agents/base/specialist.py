@@ -31,19 +31,20 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
-from ...config import get_config, ResearchConfig
-from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
+from ...config import ResearchConfig, get_config
+from ...llm.client_factory import calculate_cost, get_anthropic_client, safe_extract_text
 from ...utils import get_logger
 
 logger = get_logger(__name__)
 
 # Generic type for result dataclass
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 @dataclass
 class AnalysisMetrics:
     """Metrics from an analysis run."""
+
     input_tokens: int = 0
     output_tokens: int = 0
     cost: float = 0.0
@@ -128,44 +129,29 @@ class BaseSpecialistAgent(ABC, Generic[T]):
         if not results:
             return "No search results available"
 
-        max_sources = getattr(self._config, f'{self.agent_name}_max_sources', 12)
+        max_sources = getattr(self._config, f"{self.agent_name}_max_sources", 12)
         content_length = self._config.content_truncate_length
 
         formatted = []
         for i, r in enumerate(results[:max_sources], 1):
-            title = r.get('title', 'N/A')
-            content = r.get('content', '')
+            title = r.get("title", "N/A")
+            content = r.get("content", "")
             if len(content) > content_length:
-                content = content[:content_length] + '...'
+                content = content[:content_length] + "..."
 
-            formatted.append(
-                f"Source {i}: {title}\n"
-                f"Content: {content}\n"
-            )
+            formatted.append(f"Source {i}: {title}\n" f"Content: {content}\n")
 
         return "\n".join(formatted)
 
     def _get_max_tokens(self) -> int:
         """Get max tokens for this agent from config."""
-        return getattr(
-            self._config,
-            f'{self.agent_name}_max_tokens',
-            self._config.llm_max_tokens
-        )
+        return getattr(self._config, f"{self.agent_name}_max_tokens", self._config.llm_max_tokens)
 
     def _get_temperature(self) -> float:
         """Get temperature for this agent from config."""
-        return getattr(
-            self._config,
-            f'{self.agent_name}_temperature',
-            self._config.llm_temperature
-        )
+        return getattr(self._config, f"{self.agent_name}_temperature", self._config.llm_temperature)
 
-    def analyze(
-        self,
-        company_name: str,
-        search_results: List[Dict[str, Any]]
-    ) -> T:
+    def analyze(self, company_name: str, search_results: List[Dict[str, Any]]) -> T:
         """
         Perform analysis on a company.
 
@@ -190,15 +176,12 @@ class BaseSpecialistAgent(ABC, Generic[T]):
             model=self._config.llm_model,
             max_tokens=self._get_max_tokens(),
             temperature=self._get_temperature(),
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
         )
 
         # Extract and parse
         analysis = safe_extract_text(response, agent_name=self.agent_name)
-        cost = calculate_cost(
-            response.usage.input_tokens,
-            response.usage.output_tokens
-        )
+        cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
 
         self._logger.info(f"{self.agent_name} complete - cost: ${cost:.4f}")
 
@@ -207,15 +190,13 @@ class BaseSpecialistAgent(ABC, Generic[T]):
 
         # Store analysis text and metrics if result has those attributes
         # (hasattr check ensures runtime safety; type-ignore for generic T)
-        if hasattr(result, 'analysis'):
+        if hasattr(result, "analysis"):
             result.analysis = analysis  # type: ignore[union-attr]
 
         return result
 
     def analyze_with_metrics(
-        self,
-        company_name: str,
-        search_results: List[Dict[str, Any]]
+        self, company_name: str, search_results: List[Dict[str, Any]]
     ) -> tuple[T, AnalysisMetrics]:
         """
         Perform analysis and return metrics separately.
@@ -242,21 +223,18 @@ class BaseSpecialistAgent(ABC, Generic[T]):
             model=self._config.llm_model,
             max_tokens=self._get_max_tokens(),
             temperature=self._get_temperature(),
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
         )
 
         # Extract and calculate
         analysis = safe_extract_text(response, agent_name=self.agent_name)
-        cost = calculate_cost(
-            response.usage.input_tokens,
-            response.usage.output_tokens
-        )
+        cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
 
         metrics = AnalysisMetrics(
             input_tokens=response.usage.input_tokens,
             output_tokens=response.usage.output_tokens,
             cost=cost,
-            sources_used=min(len(search_results), 12)
+            sources_used=min(len(search_results), 12),
         )
 
         self._logger.info(f"{self.agent_name} complete - cost: ${cost:.4f}")
@@ -265,7 +243,7 @@ class BaseSpecialistAgent(ABC, Generic[T]):
         result = self._parse_analysis(company_name, analysis)
 
         # (hasattr check ensures runtime safety; type-ignore for generic T)
-        if hasattr(result, 'analysis'):
+        if hasattr(result, "analysis"):
             result.analysis = analysis  # type: ignore[union-attr]
 
         return result, metrics
@@ -303,7 +281,7 @@ class ParsingMixin:
         """
         if keyword in analysis:
             start = analysis.find(keyword)
-            section = analysis[start:start + max_length]
+            section = analysis[start : start + max_length]
             lines = section.split("\n")[1:4]
             for line in lines:
                 if line.strip() and len(line.strip()) > 20:
@@ -316,7 +294,7 @@ class ParsingMixin:
         section_keyword: str,
         max_items: int = 5,
         min_item_length: int = 5,
-        max_item_length: int = 150
+        max_item_length: int = 150,
     ) -> List[str]:
         """
         Extract list items from a section.
@@ -348,7 +326,7 @@ class ParsingMixin:
                 colon_idx = stripped.find(":")
                 if colon_idx > 0:
                     # Check if there's significant content after the colon on same line
-                    after_colon = stripped[colon_idx + 1:].strip()
+                    after_colon = stripped[colon_idx + 1 :].strip()
                     # If there's content after colon that's not just closing **, it's a key-value pair
                     if after_colon and after_colon not in ("**", ""):
                         # This is a key-value pair, not a section header - skip it
@@ -357,7 +335,9 @@ class ParsingMixin:
                 continue
 
             if in_section:
-                if stripped.startswith(("1.", "2.", "3.", "4.", "5.", "6.", "7.", "8.", "9.", "-", "•")):
+                if stripped.startswith(
+                    ("1.", "2.", "3.", "4.", "5.", "6.", "7.", "8.", "9.", "-", "•")
+                ):
                     item = stripped.lstrip("0123456789.-•* ").strip()
                     if item and len(item) > min_item_length:
                         items.append(item[:max_item_length])
@@ -369,10 +349,7 @@ class ParsingMixin:
 
     @staticmethod
     def extract_score(
-        analysis: str,
-        keyword: str,
-        default: float = 50.0,
-        max_value: float = 100.0
+        analysis: str, keyword: str, default: float = 50.0, max_value: float = 100.0
     ) -> float:
         """
         Extract a numeric score near a keyword.
@@ -399,7 +376,7 @@ class ParsingMixin:
             # Table format: "| Brand Awareness | 80 |" - keyword followed by | number |
             rf"{escaped_keyword}\s*\|\s*(\d{{1,3}})",
             # Fallback: just find XX/100 pattern
-            r"(\d{1,3})\s*/\s*100"
+            r"(\d{1,3})\s*/\s*100",
         ]
 
         for pattern in patterns:
@@ -412,11 +389,7 @@ class ParsingMixin:
 
     @staticmethod
     def extract_enum_value(
-        analysis: str,
-        keyword: str,
-        options: List[str],
-        default: str,
-        context_window: int = 200
+        analysis: str, keyword: str, options: List[str], default: str, context_window: int = 200
     ) -> str:
         """
         Extract an enum-like value near a keyword.
@@ -435,7 +408,7 @@ class ParsingMixin:
 
         if keyword.upper() in analysis_upper:
             start = analysis_upper.find(keyword.upper())
-            context = analysis_upper[start:start + context_window]
+            context = analysis_upper[start : start + context_window]
 
             for option in options:
                 if option.upper() in context:
@@ -445,10 +418,7 @@ class ParsingMixin:
 
     @staticmethod
     def extract_table_rows(
-        analysis: str,
-        header_keyword: str,
-        min_columns: int = 2,
-        max_rows: int = 10
+        analysis: str, header_keyword: str, min_columns: int = 2, max_rows: int = 10
     ) -> List[List[str]]:
         """
         Extract rows from a markdown table.
@@ -482,11 +452,7 @@ class ParsingMixin:
         return rows[:max_rows]
 
     @staticmethod
-    def extract_keyword_list(
-        analysis: str,
-        keyword: str,
-        max_items: int = 5
-    ) -> List[str]:
+    def extract_keyword_list(analysis: str, keyword: str, max_items: int = 5) -> List[str]:
         """
         Extract items from lines containing a keyword.
 
@@ -513,10 +479,7 @@ class ParsingMixin:
         return items[:max_items]
 
     @staticmethod
-    def extract_metrics_table(
-        analysis: str,
-        metric_names: List[str]
-    ) -> Dict[str, Dict[str, Any]]:
+    def extract_metrics_table(analysis: str, metric_names: List[str]) -> Dict[str, Dict[str, Any]]:
         """
         Extract metric values from analysis.
 
@@ -528,6 +491,7 @@ class ParsingMixin:
             Dict mapping metric name to {score, trend, notes}
         """
         import re
+
         metrics = {}
 
         for name in metric_names:
@@ -556,18 +520,13 @@ class ParsingMixin:
                 elif "↓" in line_context or "declining" in line_lower:
                     trend = "declining"
 
-                metrics[name] = {
-                    "score": min(100, score),
-                    "trend": trend
-                }
+                metrics[name] = {"score": min(100, score), "trend": trend}
 
         return metrics
 
     @staticmethod
     def extract_count(
-        analysis: str,
-        keyword: str,
-        multipliers: Optional[Dict[str, int]] = None
+        analysis: str, keyword: str, multipliers: Optional[Dict[str, int]] = None
     ) -> int:
         """
         Extract a count/number with support for K/M suffixes.
@@ -621,15 +580,16 @@ class ParsingMixin:
             One of: positive, negative, neutral, mixed
         """
         import re
+
         analysis_lower = analysis.lower()
 
         # Check for explicit sentiment mentions (use word boundaries to avoid partial matches)
         # Check "mixed" first since it's most specific
-        if re.search(r'\bmixed\b', analysis_lower) and "sentiment" in analysis_lower:
+        if re.search(r"\bmixed\b", analysis_lower) and "sentiment" in analysis_lower:
             return "mixed"
-        elif re.search(r'\bpositive\b', analysis_lower) and "sentiment" in analysis_lower:
+        elif re.search(r"\bpositive\b", analysis_lower) and "sentiment" in analysis_lower:
             return "positive"
-        elif re.search(r'\bnegative\b', analysis_lower) and "sentiment" in analysis_lower:
+        elif re.search(r"\bnegative\b", analysis_lower) and "sentiment" in analysis_lower:
             return "negative"
 
         # Fallback to word counting
@@ -654,7 +614,7 @@ class ParsingMixin:
         keyword: str,
         true_indicators: Optional[List[str]] = None,
         false_indicators: Optional[List[str]] = None,
-        default: bool = False
+        default: bool = False,
     ) -> bool:
         """
         Extract a boolean value near a keyword.
@@ -678,7 +638,7 @@ class ParsingMixin:
 
         if keyword.lower() in analysis_lower:
             idx = analysis_lower.find(keyword.lower())
-            context = analysis_lower[idx:idx + 100]
+            context = analysis_lower[idx : idx + 100]
 
             # Check false_indicators FIRST - they take precedence over true_indicators
             # This handles cases like "Active: No" where the keyword matches a true_indicator
@@ -693,11 +653,7 @@ class ParsingMixin:
         return default
 
     @staticmethod
-    def extract_percentage(
-        analysis: str,
-        keyword: str,
-        default: float = 0.0
-    ) -> float:
+    def extract_percentage(analysis: str, keyword: str, default: float = 0.0) -> float:
         """
         Extract a percentage value near a keyword.
 

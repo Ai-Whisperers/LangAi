@@ -51,7 +51,7 @@ This rule applies to ALL technical specification types:
 
 ### **Domain Layer Specifications**
 - Domain Objects
-- Business Rules  
+- Business Rules
 - Enumerations
 - Domain Overviews
 
@@ -178,7 +178,7 @@ CREATE INDEX IX_FORMULAPARAMETER_VALIDITY ON FormulaParameter(ValidFrom, ValidTo
 ### Constraint Implementation
 
 ```sql
-CONSTRAINT FK_FORMULAPARAMETER_METER 
+CONSTRAINT FK_FORMULAPARAMETER_METER
     FOREIGN KEY (MeterReference) REFERENCES Meter(Id);
 -- ... copying all constraint definitions
 ```
@@ -351,11 +351,11 @@ CONSTRAINT FK_FORMULAPARAMETER_METER
 
 ### **Anti-Patterns to Avoid**
 
-❌ **Copy-Paste Anti-Pattern**: Copying detailed content from other specifications  
-❌ **Broken Reference Anti-Pattern**: References to non-existent sections or files  
-❌ **Over-Reference Anti-Pattern**: Referencing everything without adding specific value  
-❌ **Under-Context Anti-Pattern**: Only references without specification-specific context  
-❌ **Authority Confusion Anti-Pattern**: Unclear which specification is authoritative for information  
+❌ **Copy-Paste Anti-Pattern**: Copying detailed content from other specifications
+❌ **Broken Reference Anti-Pattern**: References to non-existent sections or files
+❌ **Over-Reference Anti-Pattern**: Referencing everything without adding specific value
+❌ **Under-Context Anti-Pattern**: Only references without specification-specific context
+❌ **Authority Confusion Anti-Pattern**: Unclear which specification is authoritative for information
 
 ## Enforcement
 

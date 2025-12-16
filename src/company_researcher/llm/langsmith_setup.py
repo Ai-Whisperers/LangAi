@@ -15,8 +15,9 @@ Environment Variables Required:
 """
 
 import os
-from typing import Optional, Dict, Any
 from contextlib import contextmanager
+from typing import Any, Dict, Optional
+
 from ..utils import get_config, get_logger
 
 logger = get_logger(__name__)
@@ -29,6 +30,7 @@ _project_name: Optional[str] = None
 try:
     from langsmith import Client as LangSmithClient
     from langsmith.run_trees import RunTree
+
     LANGSMITH_SDK_AVAILABLE = True
 except ImportError:
     LANGSMITH_SDK_AVAILABLE = False
@@ -40,7 +42,7 @@ def init_langsmith(
     api_key: Optional[str] = None,
     project: str = "langai-research",
     endpoint: str = "https://api.smith.langchain.com",
-    force: bool = False
+    force: bool = False,
 ) -> Dict[str, Any]:
     """
     Initialize LangSmith tracing.
@@ -71,7 +73,7 @@ def init_langsmith(
             "project": _project_name,
             "endpoint": get_config("LANGCHAIN_ENDPOINT", default=endpoint),
             "sdk_available": LANGSMITH_SDK_AVAILABLE,
-            "message": "Already initialized"
+            "message": "Already initialized",
         }
 
     # Get API key from argument or environment
@@ -84,7 +86,7 @@ def init_langsmith(
             "project": None,
             "endpoint": None,
             "sdk_available": LANGSMITH_SDK_AVAILABLE,
-            "message": "No API key provided"
+            "message": "No API key provided",
         }
 
     # Set environment variables for automatic LangChain tracing
@@ -98,22 +100,23 @@ def init_langsmith(
     _project_name = project
 
     logger.info(f"[LANGSMITH] Tracing enabled for project: {project}")
-    logger.info(f"[LANGSMITH] Dashboard: https://smith.langchain.com/o/default/projects/p/{project}")
+    logger.info(
+        f"[LANGSMITH] Dashboard: https://smith.langchain.com/o/default/projects/p/{project}"
+    )
 
     return {
         "enabled": True,
         "project": project,
         "endpoint": endpoint,
         "sdk_available": LANGSMITH_SDK_AVAILABLE,
-        "message": "LangSmith tracing initialized successfully"
+        "message": "LangSmith tracing initialized successfully",
     }
 
 
 def is_langsmith_enabled() -> bool:
     """Check if LangSmith tracing is enabled."""
-    return (
-        get_config("LANGCHAIN_TRACING_V2", default="").lower() == "true"
-        and bool(get_config("LANGSMITH_API_KEY") or get_config("LANGCHAIN_API_KEY"))
+    return get_config("LANGCHAIN_TRACING_V2", default="").lower() == "true" and bool(
+        get_config("LANGSMITH_API_KEY") or get_config("LANGCHAIN_API_KEY")
     )
 
 
@@ -166,7 +169,7 @@ def create_run_tree(
     run_type: str = "chain",
     inputs: Optional[Dict[str, Any]] = None,
     tags: Optional[list] = None,
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = None,
 ):
     """
     Create a custom run tree for complex operations.
@@ -191,11 +194,9 @@ def create_run_tree(
     """
     if not LANGSMITH_SDK_AVAILABLE or not is_langsmith_enabled():
         # Yield a dummy object if LangSmith not available
-        yield type('DummyRun', (), {
-            'end': lambda **kwargs: None,
-            'post': lambda: None,
-            'id': None
-        })()
+        yield type(
+            "DummyRun", (), {"end": lambda **kwargs: None, "post": lambda: None, "id": None}
+        )()
         return
 
     project = get_config("LANGCHAIN_PROJECT", default="langai-research")
@@ -248,10 +249,7 @@ def flush_traces(timeout_seconds: float = 10.0) -> bool:
         return False
 
 
-def get_trace_stats(
-    project: Optional[str] = None,
-    days: int = 7
-) -> Optional[Dict[str, Any]]:
+def get_trace_stats(project: Optional[str] = None, days: int = 7) -> Optional[Dict[str, Any]]:
     """
     Get trace statistics from LangSmith.
 
@@ -270,11 +268,11 @@ def get_trace_stats(
 
     try:
         # Get recent runs
-        runs = list(client.list_runs(
-            project_name=project,
-            execution_order=1,  # Top-level runs only
-            limit=100
-        ))
+        runs = list(
+            client.list_runs(
+                project_name=project, execution_order=1, limit=100  # Top-level runs only
+            )
+        )
 
         if not runs:
             return {"total_runs": 0, "message": "No runs found"}
@@ -285,11 +283,7 @@ def get_trace_stats(
         failed = sum(1 for r in runs if r.status == "error")
 
         # Calculate costs if available
-        total_cost = sum(
-            r.total_cost or 0
-            for r in runs
-            if hasattr(r, 'total_cost')
-        )
+        total_cost = sum(r.total_cost or 0 for r in runs if hasattr(r, "total_cost"))
 
         return {
             "total_runs": total_runs,
@@ -299,7 +293,7 @@ def get_trace_stats(
             "total_cost_usd": total_cost,
             "avg_cost_per_run": total_cost / total_runs if total_runs > 0 else 0,
             "project": project,
-            "dashboard_url": get_langsmith_url()
+            "dashboard_url": get_langsmith_url(),
         }
     except Exception as e:
         logger.error(f"[LANGSMITH] Failed to get stats: {e}")

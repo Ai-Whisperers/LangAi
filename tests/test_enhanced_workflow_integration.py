@@ -10,44 +10,37 @@ Tests the complete workflow including:
 - Report generation
 """
 
-import pytest
 from datetime import datetime
 from unittest.mock import patch
 
-# Import workflow components
-from company_researcher.state import (
-    create_initial_state,
-    create_output_state,
-)
+import pytest
 
 # Import analysis modules from consolidated package
-from company_researcher.agents.research import (
-    # Multilingual search
-    create_multilingual_generator,
-    Language,
-    Region,
-    # Competitive matrix
-    create_competitive_matrix,
-    MatrixDimension,
+from company_researcher.agents.research import (  # Multilingual search; Competitive matrix; Risk quantifier; Investment thesis; News sentiment (AI-powered)
     CompetitivePosition,
-    # Risk quantifier
-    create_risk_quantifier,
+    InvestmentHorizon,
+    InvestmentRecommendation,
+    Language,
+    MatrixDimension,
+    NewsCategory,
+    Region,
     RiskCategory,
     RiskLevel,
-    # Investment thesis
-    create_thesis_generator,
-    InvestmentRecommendation,
-    InvestmentHorizon,
-    # News sentiment (AI-powered)
-    create_sentiment_analyzer,
     SentimentLevel,
-    NewsCategory,
+    create_competitive_matrix,
+    create_multilingual_generator,
+    create_risk_quantifier,
+    create_sentiment_analyzer,
+    create_thesis_generator,
 )
 
+# Import workflow components
+from company_researcher.state import create_initial_state, create_output_state
 
 # ============================================================================
 # Test Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def sample_company_name():
@@ -138,6 +131,7 @@ def sample_competitors_data():
 # Multilingual Search Integration Tests
 # ============================================================================
 
+
 class TestMultilingualSearchIntegration:
     """Integration tests for multilingual search."""
 
@@ -167,7 +161,10 @@ class TestMultilingualSearchIntegration:
 
         # Check that queries contain company name
         for query in queries:
-            assert sample_company_name.lower() in query.query.lower() or "petrobras" in query.query.lower()
+            assert (
+                sample_company_name.lower() in query.query.lower()
+                or "petrobras" in query.query.lower()
+            )
 
     def test_parent_company_lookup(self):
         """Test parent company lookup for subsidiaries."""
@@ -203,6 +200,7 @@ class TestMultilingualSearchIntegration:
 # News Sentiment Integration Tests
 # ============================================================================
 
+
 class TestNewsSentimentIntegration:
     """Integration tests for news sentiment analysis."""
 
@@ -210,39 +208,40 @@ class TestNewsSentimentIntegration:
     def mock_sentiment_response(self):
         """Mock LLM response for sentiment analysis."""
         import json
-        return json.dumps({
-            "overall_sentiment": "positive",
-            "overall_score": 0.6,
-            "overall_confidence": 0.85,
-            "target_company_sentiment": "positive",
-            "target_company_confidence": 0.8,
-            "entity_sentiments": [
-                {
-                    "entity_name": "Petrobras",
-                    "entity_type": "company",
-                    "sentiment": "positive",
-                    "confidence": 0.85,
-                    "reasoning": "Strong earnings reported",
-                    "context_snippet": "record revenue growth",
-                    "is_target_company": True
-                }
-            ],
-            "key_factors": ["Strong Q3 earnings", "Strategic partnerships", "Market expansion"],
-            "detected_language": "en",
-            "has_negations": False,
-            "has_uncertainty": False,
-            "has_sarcasm": False,
-            "news_category": "financial",
-            "secondary_categories": ["partnership"],
-            "summary": "Positive news about company performance"
-        })
+
+        return json.dumps(
+            {
+                "overall_sentiment": "positive",
+                "overall_score": 0.6,
+                "overall_confidence": 0.85,
+                "target_company_sentiment": "positive",
+                "target_company_confidence": 0.8,
+                "entity_sentiments": [
+                    {
+                        "entity_name": "Petrobras",
+                        "entity_type": "company",
+                        "sentiment": "positive",
+                        "confidence": 0.85,
+                        "reasoning": "Strong earnings reported",
+                        "context_snippet": "record revenue growth",
+                        "is_target_company": True,
+                    }
+                ],
+                "key_factors": ["Strong Q3 earnings", "Strategic partnerships", "Market expansion"],
+                "detected_language": "en",
+                "has_negations": False,
+                "has_uncertainty": False,
+                "has_sarcasm": False,
+                "news_category": "financial",
+                "secondary_categories": ["partnership"],
+                "summary": "Positive news about company performance",
+            }
+        )
 
     def test_analyze_search_results(self, sample_company_name, sample_search_results):
         """Test sentiment analysis from search results."""
         analyzer = create_sentiment_analyzer()
-        profile = analyzer.analyze_from_search_results(
-            sample_company_name, sample_search_results
-        )
+        profile = analyzer.analyze_from_search_results(sample_company_name, sample_search_results)
 
         assert profile.company_name == sample_company_name
         assert profile.total_articles > 0
@@ -255,20 +254,20 @@ class TestNewsSentimentIntegration:
         analyzer = create_sentiment_analyzer()
 
         # Mock the _call_llm method with lambda to ensure synchronous return
-        with patch.object(analyzer, '_call_llm', lambda *args, **kwargs: mock_sentiment_response):
-            profile = analyzer.analyze_from_search_results(
-                "Petrobras", sample_search_results
-            )
+        with patch.object(analyzer, "_call_llm", lambda *args, **kwargs: mock_sentiment_response):
+            profile = analyzer.analyze_from_search_results("Petrobras", sample_search_results)
 
         # Should detect relevant topics
         assert len(profile.key_topics) > 0
 
-    def test_positive_and_negative_highlights(self, sample_company_name, sample_search_results, mock_sentiment_response):
+    def test_positive_and_negative_highlights(
+        self, sample_company_name, sample_search_results, mock_sentiment_response
+    ):
         """Test extraction of positive and negative highlights."""
         analyzer = create_sentiment_analyzer()
 
         # Mock the _call_llm method with lambda to ensure synchronous return
-        with patch.object(analyzer, '_call_llm', lambda *args, **kwargs: mock_sentiment_response):
+        with patch.object(analyzer, "_call_llm", lambda *args, **kwargs: mock_sentiment_response):
             profile = analyzer.analyze_from_search_results(
                 sample_company_name, sample_search_results
             )
@@ -280,9 +279,7 @@ class TestNewsSentimentIntegration:
     def test_category_breakdown(self, sample_company_name, sample_search_results):
         """Test category breakdown of news."""
         analyzer = create_sentiment_analyzer()
-        profile = analyzer.analyze_from_search_results(
-            sample_company_name, sample_search_results
-        )
+        profile = analyzer.analyze_from_search_results(sample_company_name, sample_search_results)
 
         # Should have category breakdown
         assert len(profile.category_breakdown) > 0
@@ -292,12 +289,11 @@ class TestNewsSentimentIntegration:
 # Competitive Matrix Integration Tests
 # ============================================================================
 
+
 class TestCompetitiveMatrixIntegration:
     """Integration tests for competitive matrix generation."""
 
-    def test_generate_competitive_matrix(
-        self, sample_company_data, sample_competitors_data
-    ):
+    def test_generate_competitive_matrix(self, sample_company_data, sample_competitors_data):
         """Test competitive matrix generation."""
         matrix = create_competitive_matrix(
             company_name=sample_company_data["name"],
@@ -309,9 +305,7 @@ class TestCompetitiveMatrixIntegration:
         assert len(matrix.competitors) == len(sample_competitors_data)
         assert len(matrix.dimensions) > 0
 
-    def test_competitive_insights_generation(
-        self, sample_company_data, sample_competitors_data
-    ):
+    def test_competitive_insights_generation(self, sample_company_data, sample_competitors_data):
         """Test generation of competitive insights."""
         matrix = create_competitive_matrix(
             company_name=sample_company_data["name"],
@@ -322,9 +316,7 @@ class TestCompetitiveMatrixIntegration:
         # Should generate insights
         assert len(matrix.insights) > 0
 
-    def test_strategic_groups_identification(
-        self, sample_company_data, sample_competitors_data
-    ):
+    def test_strategic_groups_identification(self, sample_company_data, sample_competitors_data):
         """Test identification of strategic groups."""
         matrix = create_competitive_matrix(
             company_name=sample_company_data["name"],
@@ -340,6 +332,7 @@ class TestCompetitiveMatrixIntegration:
 # Risk Quantifier Integration Tests
 # ============================================================================
 
+
 class TestRiskQuantifierIntegration:
     """Integration tests for risk quantification."""
 
@@ -347,8 +340,7 @@ class TestRiskQuantifierIntegration:
         """Test risk assessment."""
         quantifier = create_risk_quantifier()
         risk_profile = quantifier.assess_risks(
-            company_name=sample_company_data["name"],
-            company_data=sample_company_data
+            company_name=sample_company_data["name"], company_data=sample_company_data
         )
 
         assert risk_profile.company_name == sample_company_data["name"]
@@ -370,7 +362,7 @@ class TestRiskQuantifierIntegration:
         risk_profile = quantifier.assess_risks(
             company_name=sample_company_data["name"],
             company_data=sample_company_data,
-            content=content
+            content=content,
         )
 
         # Should have risks detected from content
@@ -387,15 +379,13 @@ class TestRiskQuantifierIntegration:
         # Conservative
         conservative = create_risk_quantifier(risk_tolerance="conservative")
         profile_conservative = conservative.assess_risks(
-            company_name=sample_company_data["name"],
-            company_data=sample_company_data
+            company_name=sample_company_data["name"], company_data=sample_company_data
         )
 
         # Aggressive
         aggressive = create_risk_quantifier(risk_tolerance="aggressive")
         profile_aggressive = aggressive.assess_risks(
-            company_name=sample_company_data["name"],
-            company_data=sample_company_data
+            company_name=sample_company_data["name"], company_data=sample_company_data
         )
 
         # Both should produce valid results
@@ -407,6 +397,7 @@ class TestRiskQuantifierIntegration:
 # Investment Thesis Integration Tests
 # ============================================================================
 
+
 class TestInvestmentThesisIntegration:
     """Integration tests for investment thesis generation."""
 
@@ -417,8 +408,7 @@ class TestInvestmentThesisIntegration:
         # First create risk profile
         quantifier = create_risk_quantifier()
         risk_profile = quantifier.assess_risks(
-            company_name=sample_company_data["name"],
-            company_data=sample_company_data
+            company_name=sample_company_data["name"], company_data=sample_company_data
         )
 
         # Convert to dict format expected by thesis generator
@@ -431,7 +421,7 @@ class TestInvestmentThesisIntegration:
         thesis = generator.generate_thesis(
             company_name=sample_company_data["name"],
             company_data=sample_company_data,
-            risk_assessment=risk_dict
+            risk_assessment=risk_dict,
         )
 
         assert thesis.company_name == sample_company_data["name"]
@@ -442,8 +432,7 @@ class TestInvestmentThesisIntegration:
         """Test bull and bear case generation."""
         generator = create_thesis_generator()
         thesis = generator.generate_thesis(
-            company_name=sample_company_data["name"],
-            company_data=sample_company_data
+            company_name=sample_company_data["name"], company_data=sample_company_data
         )
 
         # Should have bull case
@@ -458,8 +447,7 @@ class TestInvestmentThesisIntegration:
         """Test suitable investor profile identification."""
         generator = create_thesis_generator()
         thesis = generator.generate_thesis(
-            company_name=sample_company_data["name"],
-            company_data=sample_company_data
+            company_name=sample_company_data["name"], company_data=sample_company_data
         )
 
         # Should identify suitable investor profiles
@@ -469,6 +457,7 @@ class TestInvestmentThesisIntegration:
 # ============================================================================
 # Full Pipeline Integration Tests
 # ============================================================================
+
 
 class TestFullPipelineIntegration:
     """Integration tests for the complete analysis pipeline."""
@@ -508,8 +497,7 @@ class TestFullPipelineIntegration:
         # Step 4: Risk quantification
         risk_quantifier_inst = create_risk_quantifier()
         risk_profile = risk_quantifier_inst.assess_risks(
-            company_name=sample_company_data["name"],
-            company_data=sample_company_data
+            company_name=sample_company_data["name"], company_data=sample_company_data
         )
 
         assert risk_profile.overall_risk_score >= 0
@@ -523,7 +511,7 @@ class TestFullPipelineIntegration:
         thesis = thesis_generator.generate_thesis(
             company_name=sample_company_data["name"],
             company_data=sample_company_data,
-            risk_assessment=risk_dict
+            risk_assessment=risk_dict,
         )
 
         assert thesis.recommendation is not None
@@ -533,10 +521,14 @@ class TestFullPipelineIntegration:
         print(f"Company: {sample_company_name}")
         print(f"Region: {region.value}, Language: {language.value}")
         print(f"Queries Generated: {len(queries)}")
-        print(f"News Sentiment: {sentiment_profile.sentiment_level.value} ({sentiment_profile.sentiment_score:.2f})")
+        print(
+            f"News Sentiment: {sentiment_profile.sentiment_level.value} ({sentiment_profile.sentiment_score:.2f})"
+        )
         print(f"Competitors analyzed: {len(matrix.competitors)}")
         print(f"Risk Grade: {risk_profile.risk_grade} ({risk_profile.overall_risk_score:.1f}/100)")
-        print(f"Investment Recommendation: {thesis.recommendation.value} ({thesis.confidence:.0f}% confidence)")
+        print(
+            f"Investment Recommendation: {thesis.recommendation.value} ({thesis.confidence:.0f}% confidence)"
+        )
 
     def test_state_initialization(self, sample_company_name):
         """Test workflow state initialization."""
@@ -569,6 +561,7 @@ class TestFullPipelineIntegration:
 # Edge Cases and Error Handling
 # ============================================================================
 
+
 class TestEdgeCasesAndErrors:
     """Test edge cases and error handling."""
 
@@ -588,17 +581,13 @@ class TestEdgeCasesAndErrors:
         # Risk assessment should still work
         quantifier = create_risk_quantifier()
         risk_profile = quantifier.assess_risks(
-            company_name="MinimalCorp",
-            company_data=minimal_data
+            company_name="MinimalCorp", company_data=minimal_data
         )
         assert risk_profile.company_name == "MinimalCorp"
 
         # Thesis generation should still work
         generator = create_thesis_generator()
-        thesis = generator.generate_thesis(
-            company_name="MinimalCorp",
-            company_data=minimal_data
-        )
+        thesis = generator.generate_thesis(company_name="MinimalCorp", company_data=minimal_data)
         assert thesis.company_name == "MinimalCorp"
 
     def test_unknown_company_region(self):

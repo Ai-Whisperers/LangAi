@@ -13,4 +13,3 @@ description: Stage, commit, and push the current branch following git governance
    - `gh workflow run ci-commit-branch-guard.yml --ref $(git branch --show-current)`
    - `gh workflow run ci-quality-gate.yml --ref $(git branch --show-current)`
 7. Wait for both workflows to finish (`gh run watch --workflow ci-quality-gate.yml`) before opening a pull request.
-

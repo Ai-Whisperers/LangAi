@@ -24,7 +24,7 @@ Please analyze the conversation transcript below and extract all reusable prompt
 For each user prompt found in the conversation, assign:
 
 - **ID**: PROMPT-001, PROMPT-002, etc.
-- **Type**: 
+- **Type**:
   - Initial Request
   - Refinement
   - Exploration
@@ -232,4 +232,3 @@ For full details on extraction process, see:
 - `.cursor/rules/prompts/prompts-rules-index.mdc` - Overview and navigation
 
 **Note**: This extraction helps identify successful prompt patterns to reuse in future conversations and improves overall interaction effectiveness.
-

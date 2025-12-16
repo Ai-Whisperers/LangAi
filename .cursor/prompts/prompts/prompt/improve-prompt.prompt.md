@@ -14,8 +14,8 @@ rules:
 
 Please analyze and improve the provided prompt according to prompt creation rules and best practices.
 
-**Pattern**: Quality Improvement Pattern ⭐⭐⭐⭐⭐  
-**Effectiveness**: Essential for systematic prompt optimization  
+**Pattern**: Quality Improvement Pattern ⭐⭐⭐⭐⭐
+**Effectiveness**: Essential for systematic prompt optimization
 **Use When**: Prompt has issues, inconsistencies, or doesn't follow standards
 
 ---
@@ -298,7 +298,6 @@ Prompt has no examples section, instructions are clear otherwise
 
 ---
 
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket - meta-improvement!)
-

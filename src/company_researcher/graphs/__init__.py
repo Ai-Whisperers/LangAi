@@ -51,124 +51,104 @@ Usage:
 """
 
 # ============================================================================
-# Legacy Graphs (backward compatibility)
+# Error Handling (Phase 16)
 # ============================================================================
-from .research_graph import (
-    graph as research_graph,
-    ResearchState,
-    node_generate_queries,
-    node_search_web,
-    node_extract_data,
-    node_generate_report,
-)
-
-from .simple_graph import (
-    graph as simple_graph,
-    SimpleState,
-)
-
-# ============================================================================
-# Main Workflows (Phase 11+)
-# ============================================================================
-from .main_graph import (
-    # Configurations
-    WorkflowConfig,
-    # Workflow creation
-    create_research_workflow,
-    create_quick_workflow,
-    create_comprehensive_workflow,
-    create_adaptive_workflow,
-    # Research functions
-    research_company,
-    research_company_adaptive,
-)
-
-# ============================================================================
-# Subgraphs (Phase 11)
-# ============================================================================
-from .subgraphs import (
-    # Data Collection
-    create_data_collection_subgraph,
-    DataCollectionConfig,
-    # Analysis
-    create_analysis_subgraph,
-    create_parallel_analysis_subgraph,
-    AnalysisConfig,
-    # Quality
-    create_quality_subgraph,
-    QualityConfig,
-    # Output
-    create_output_subgraph,
-    OutputConfig,
-)
-
-# ============================================================================
-# Persistence (Phase 12)
-# ============================================================================
-from .persistence import (
-    # Checkpointer
-    get_checkpointer,
-    get_memory_checkpointer,
-    CheckpointerConfig,
-    create_checkpointed_workflow,
-    # Resume
-    research_with_checkpoint,
-    resume_research,
-    get_workflow_state,
-    list_checkpoints,
-    delete_checkpoint,
-    CheckpointInfo,
-)
-
-# ============================================================================
-# Streaming (Phase 13)
-# ============================================================================
-from .streaming import (
-    # Event streaming
-    stream_research,
-    stream_research_events,
-    StreamEvent,
-    StreamConfig,
-    # WebSocket
-    create_websocket_router,
-    WebSocketManager,
-    research_websocket_handler,
+from .error_handling import (  # Retry; Fallback; Circuit Breaker
+    CircuitBreaker,
+    CircuitBreakerConfig,
+    CircuitState,
+    FallbackConfig,
+    RetryConfig,
+    RetryStrategy,
+    create_error_boundary,
+    with_fallback,
+    with_retry,
 )
 
 # ============================================================================
 # Human-in-the-Loop (Phase 15)
 # ============================================================================
-from .human_in_loop import (
-    # Workflow
-    create_human_reviewed_workflow,
-    # Research functions
-    research_with_review,
-    approve_and_continue,
-    reject_and_revise,
-    modify_and_continue,
-    get_pending_reviews,
-    # Types
+from .human_in_loop import (  # Workflow; Research functions; Types
     HumanReviewConfig,
-    ReviewDecision,
     PendingReview,
+    ReviewDecision,
+    approve_and_continue,
+    create_human_reviewed_workflow,
+    get_pending_reviews,
+    modify_and_continue,
+    reject_and_revise,
+    research_with_review,
 )
 
 # ============================================================================
-# Error Handling (Phase 16)
+# Main Workflows (Phase 11+)
 # ============================================================================
-from .error_handling import (
-    # Retry
-    with_retry,
-    RetryConfig,
-    RetryStrategy,
-    # Fallback
-    with_fallback,
-    create_error_boundary,
-    FallbackConfig,
-    # Circuit Breaker
-    CircuitBreaker,
-    CircuitState,
-    CircuitBreakerConfig,
+from .main_graph import (  # Configurations; Workflow creation; Research functions
+    WorkflowConfig,
+    create_adaptive_workflow,
+    create_comprehensive_workflow,
+    create_quick_workflow,
+    create_research_workflow,
+    research_company,
+    research_company_adaptive,
+)
+
+# ============================================================================
+# Persistence (Phase 12)
+# ============================================================================
+from .persistence import (  # Checkpointer; Resume
+    CheckpointerConfig,
+    CheckpointInfo,
+    create_checkpointed_workflow,
+    delete_checkpoint,
+    get_checkpointer,
+    get_memory_checkpointer,
+    get_workflow_state,
+    list_checkpoints,
+    research_with_checkpoint,
+    resume_research,
+)
+
+# ============================================================================
+# Legacy Graphs (backward compatibility)
+# ============================================================================
+from .research_graph import ResearchState
+from .research_graph import graph as research_graph
+from .research_graph import (
+    node_extract_data,
+    node_generate_queries,
+    node_generate_report,
+    node_search_web,
+)
+from .simple_graph import SimpleState
+from .simple_graph import graph as simple_graph
+
+# ============================================================================
+# Streaming (Phase 13)
+# ============================================================================
+from .streaming import (  # Event streaming; WebSocket
+    StreamConfig,
+    StreamEvent,
+    WebSocketManager,
+    create_websocket_router,
+    research_websocket_handler,
+    stream_research,
+    stream_research_events,
+)
+
+# ============================================================================
+# Subgraphs (Phase 11)
+# ============================================================================
+from .subgraphs import (  # Data Collection; Analysis; Quality; Output
+    AnalysisConfig,
+    DataCollectionConfig,
+    OutputConfig,
+    QualityConfig,
+    create_analysis_subgraph,
+    create_data_collection_subgraph,
+    create_output_subgraph,
+    create_parallel_analysis_subgraph,
+    create_quality_subgraph,
 )
 
 __all__ = [

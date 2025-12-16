@@ -107,4 +107,3 @@ Transform a selected script into reusable templar/exemplar assets with clear pla
 
 - `housekeeping/find-script-extraction-candidates.prompt.md`
 - `script/validate-script-standards.prompt.md`
-

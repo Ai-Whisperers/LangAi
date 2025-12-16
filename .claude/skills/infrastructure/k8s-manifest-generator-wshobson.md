@@ -212,9 +212,7 @@ stringData:
     ...
     -----END CERTIFICATE-----
   tls.key: |
-    -----BEGIN PRIVATE KEY-----
-    ...
-    -----END PRIVATE KEY-----
+    [REDACTED: do not paste private keys into manifests or documentation]
 ```
 
 **Security considerations:**

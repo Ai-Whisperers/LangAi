@@ -7,16 +7,16 @@ Core workflow orchestration engine.
 import time
 from typing import Any, Callable, Dict, Optional
 
+from ...utils import utc_now
+from .executor import NodeExecutor
 from .models import (
-    NodeType,
-    ExecutionStatus,
-    RouteCondition,
-    NodeConfig,
     ExecutionResult,
+    ExecutionStatus,
+    NodeConfig,
+    NodeType,
+    RouteCondition,
     WorkflowState,
 )
-from .executor import NodeExecutor
-from ...utils import utc_now
 
 
 class WorkflowEngine:
@@ -48,10 +48,7 @@ class WorkflowEngine:
     """
 
     def __init__(
-        self,
-        max_parallel: int = 4,
-        default_timeout: int = 300,
-        enable_retries: bool = True
+        self, max_parallel: int = 4, default_timeout: int = 300, enable_retries: bool = True
     ):
         """
         Initialize workflow engine.
@@ -74,7 +71,7 @@ class WorkflowEngine:
             self._executor = NodeExecutor(
                 nodes=self._nodes,
                 max_parallel=self._max_parallel,
-                enable_retries=self._enable_retries
+                enable_retries=self._enable_retries,
             )
         return self._executor
 
@@ -113,11 +110,7 @@ class WorkflowEngine:
         return self
 
     def add_conditional_route(
-        self,
-        from_node: str,
-        to_node: str,
-        condition: RouteCondition,
-        condition_value: Any = None
+        self, from_node: str, to_node: str, condition: RouteCondition, condition_value: Any = None
     ) -> "WorkflowEngine":
         """Add conditional routing."""
         self.connect(from_node, to_node)
@@ -133,9 +126,7 @@ class WorkflowEngine:
     # ==========================================================================
 
     def execute(
-        self,
-        initial_data: Dict[str, Any],
-        workflow_id: Optional[str] = None
+        self, initial_data: Dict[str, Any], workflow_id: Optional[str] = None
     ) -> WorkflowState:
         """
         Execute the workflow synchronously.
@@ -150,7 +141,7 @@ class WorkflowEngine:
         state = WorkflowState(
             workflow_id=workflow_id or f"wf_{int(time.time())}",
             data=initial_data.copy(),
-            start_time=utc_now()
+            start_time=utc_now(),
         )
 
         state.status = ExecutionStatus.RUNNING
@@ -166,15 +157,13 @@ class WorkflowEngine:
         return state
 
     async def execute_async(
-        self,
-        initial_data: Dict[str, Any],
-        workflow_id: Optional[str] = None
+        self, initial_data: Dict[str, Any], workflow_id: Optional[str] = None
     ) -> WorkflowState:
         """Execute workflow asynchronously."""
         state = WorkflowState(
             workflow_id=workflow_id or f"wf_{int(time.time())}",
             data=initial_data.copy(),
-            start_time=utc_now()
+            start_time=utc_now(),
         )
 
         state.status = ExecutionStatus.RUNNING
@@ -201,8 +190,7 @@ class WorkflowEngine:
         # Check condition
         if not executor.check_condition(node, state):
             state.results[node_name] = ExecutionResult(
-                node_name=node_name,
-                status=ExecutionStatus.SKIPPED
+                node_name=node_name, status=ExecutionStatus.SKIPPED
             )
             return
 
@@ -212,9 +200,7 @@ class WorkflowEngine:
         elif node.node_type == NodeType.PARALLEL:
             result = executor.execute_parallel_nodes(node, state)
         elif node.node_type == NodeType.SEQUENCE:
-            result = executor.execute_sequence_nodes(
-                node, state, self._execute_from_node
-            )
+            result = executor.execute_sequence_nodes(node, state, self._execute_from_node)
         elif node.node_type == NodeType.ROUTER:
             result = executor.execute_router_node(
                 node, state, executor.check_condition, self._execute_from_node
@@ -224,10 +210,7 @@ class WorkflowEngine:
         elif node.node_type == NodeType.CHECKPOINT:
             result = executor.execute_checkpoint_node(node, state)
         elif node.node_type == NodeType.END:
-            result = ExecutionResult(
-                node_name=node_name,
-                status=ExecutionStatus.COMPLETED
-            )
+            result = ExecutionResult(node_name=node_name, status=ExecutionStatus.COMPLETED)
         else:
             result = executor.execute_agent_node(node, state)
 
@@ -253,8 +236,7 @@ class WorkflowEngine:
 
         if not executor.check_condition(node, state):
             state.results[node_name] = ExecutionResult(
-                node_name=node_name,
-                status=ExecutionStatus.SKIPPED
+                node_name=node_name, status=ExecutionStatus.SKIPPED
             )
             return
 
@@ -299,11 +281,11 @@ class WorkflowEngine:
                 name: {
                     "type": node.node_type.value,
                     "children": node.children,
-                    "condition": node.condition.value if node.condition else None
+                    "condition": node.condition.value if node.condition else None,
                 }
                 for name, node in self._nodes.items()
             },
-            "start_node": self._start_node
+            "start_node": self._start_node,
         }
 
     def shutdown(self):
@@ -316,12 +298,7 @@ class WorkflowEngine:
 # Factory Functions
 # ============================================================================
 
-def create_workflow_engine(
-    max_parallel: int = 4,
-    enable_retries: bool = True
-) -> WorkflowEngine:
+
+def create_workflow_engine(max_parallel: int = 4, enable_retries: bool = True) -> WorkflowEngine:
     """Create a workflow engine instance."""
-    return WorkflowEngine(
-        max_parallel=max_parallel,
-        enable_retries=enable_retries
-    )
+    return WorkflowEngine(max_parallel=max_parallel, enable_retries=enable_retries)

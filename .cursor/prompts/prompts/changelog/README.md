@@ -51,7 +51,7 @@ Reference for:
 
 ### 1. Pipeline Failed - Missing CHANGELOG Entry
 
-**Symptom**: 
+**Symptom**:
 ```
 ❌ CHANGELOG.md missing entry for version 0.1.0-rc34!
 ```
@@ -75,22 +75,22 @@ git push origin release-0.1.0-rc34
 **Scenario**: RC30 through RC34 were quick iterations, need one entry for RC35
 
 ```
-AI: Generate consolidated CHANGELOG entry for 0.1.0-rc35 that 
-summarizes all changes from 0.1.0-rc30 through 0.1.0-rc34. 
+AI: Generate consolidated CHANGELOG entry for 0.1.0-rc35 that
+summarizes all changes from 0.1.0-rc30 through 0.1.0-rc34.
 Archive intermediate test releases.
 ```
 
 ### 3. Setting Up CHANGELOG for First Time
 
 ```
-AI: Create CHANGELOG.md for this project and generate entries 
+AI: Create CHANGELOG.md for this project and generate entries
 for all existing release tags, archiving experimental early releases.
 ```
 
 ### 4. Preparing for GA Release
 
 ```
-AI: Generate CHANGELOG entry for version 0.1.0 (GA release) that 
+AI: Generate CHANGELOG entry for version 0.1.0 (GA release) that
 consolidates all RC releases with focus on user-facing changes.
 ```
 
@@ -284,7 +284,7 @@ Get-Date -Format "yyyy-MM-dd"
 ### Test Releases (0.1.0-rc20 through 0.1.0-rc33) - 2025-11-15 to 2025-12-04
 Brief summary of what this phase accomplished:
 - CI/CD pipeline refinement
-- Build optimization experiments  
+- Build optimization experiments
 - Azure DevOps configuration testing
 
 View all tags: [releases](https://dev.azure.com/Energy21/NuGet%20Packages/_git/eneve.domain/tags)
@@ -307,14 +307,14 @@ View tags: [0.1.0-rc1](link) | [0.1.0-rc2](link) | ... [0.1.0-rc19](link)
 ```
 Categorize these commits for CHANGELOG:
 - abc1234: Add cache feature → Added
-- def5678: Fix null reference → Fixed  
+- def5678: Fix null reference → Fixed
 - ghi9012: Refactor validation → Changed
 ```
 
 ### Issue: "Too many entries, CHANGELOG cluttered"
 **Solution**: Use consolidation
 ```
-Generate single consolidated entry for version 0.1.0-rc35 
+Generate single consolidated entry for version 0.1.0-rc35
 that summarizes rc30-rc34, archiving intermediate releases.
 ```
 
@@ -333,7 +333,7 @@ Pay attention to:
 ### Issue: "Git history too large"
 **Solution**: Process in batches
 ```
-Generate CHANGELOG entries for releases between 
+Generate CHANGELOG entries for releases between
 2025-11-01 and 2025-12-06 only.
 ```
 
@@ -367,7 +367,6 @@ See [`generate-changelog-from-git.prompt.md`](./generate-changelog-from-git.prom
 
 ---
 
-**Last Updated**: 2025-12-06  
-**Maintainer**: Development Team  
+**Last Updated**: 2025-12-06
+**Maintainer**: Development Team
 **Questions**: See `agent-application-rule.md` or ask the AI
-

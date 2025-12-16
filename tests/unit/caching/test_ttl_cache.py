@@ -1,9 +1,10 @@
 """Tests for TTL cache implementation."""
 
-import pytest
-import time
 import threading
+import time
 from unittest.mock import MagicMock
+
+import pytest
 
 from company_researcher.caching.ttl_cache import (
     TTLCache,
@@ -33,7 +34,7 @@ class TestTTLCacheConfig:
             max_size=1000,
             cleanup_interval=30.0,
             sliding_expiration=True,
-            on_expire=callback
+            on_expire=callback,
         )
         assert config.default_ttl == 60.0
         assert config.max_size == 1000
@@ -53,7 +54,7 @@ class TestTTLCacheItem:
             expires_at=now + 300,
             ttl=300,
             access_count=1,
-            last_accessed=now
+            last_accessed=now,
         )
         assert item.value == "test_value"
         assert item.ttl == 300
@@ -256,10 +257,7 @@ class TestTTLCacheSlidingExpiration:
     @pytest.fixture
     def sliding_cache(self):
         """Create cache with sliding expiration."""
-        config = TTLCacheConfig(
-            default_ttl=0.2,  # 200ms
-            sliding_expiration=True
-        )
+        config = TTLCacheConfig(default_ttl=0.2, sliding_expiration=True)  # 200ms
         return TTLCache(config)
 
     def test_sliding_expiration_extends_ttl(self, sliding_cache):
@@ -291,10 +289,7 @@ class TestTTLCacheThreadSafety:
             except Exception as e:
                 errors.append(e)
 
-        threads = [
-            threading.Thread(target=put_items, args=(f"t{i}", 100))
-            for i in range(5)
-        ]
+        threads = [threading.Thread(target=put_items, args=(f"t{i}", 100)) for i in range(5)]
 
         for t in threads:
             t.start()
@@ -325,9 +320,7 @@ class TestTTLCacheThreadSafety:
             except Exception as e:
                 errors.append(e)
 
-        threads = [
-            threading.Thread(target=reader) for _ in range(3)
-        ] + [
+        threads = [threading.Thread(target=reader) for _ in range(3)] + [
             threading.Thread(target=writer) for _ in range(2)
         ]
 

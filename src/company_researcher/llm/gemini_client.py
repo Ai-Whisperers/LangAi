@@ -50,12 +50,13 @@ Usage:
     result = client.query_with_tools("Get financial data for Apple", tools=tools)
 """
 
-from typing import Optional, Dict, Any, List, Callable, Union, AsyncGenerator, Generator
-from dataclasses import dataclass, field
-from threading import Lock
-from enum import Enum
 import asyncio
 import json
+from dataclasses import dataclass, field
+from enum import Enum
+from threading import Lock
+from typing import Any, AsyncGenerator, Callable, Dict, Generator, List, Optional, Union
+
 from ..utils import get_config, get_logger
 
 logger = get_logger(__name__)
@@ -64,6 +65,7 @@ logger = get_logger(__name__)
 try:
     import google.generativeai as genai
     from google.generativeai import types as genai_types
+
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
@@ -122,9 +124,7 @@ GEMINI_PRICING = {
         "cache_discount": 0.75,
         "speed": 900,
     },
-    "grounding": {
-        "per_1k_queries": 35.00  # Free during preview
-    }
+    "grounding": {"per_1k_queries": 35.00},  # Free during preview
 }
 
 
@@ -132,16 +132,18 @@ GEMINI_PRICING = {
 # Task Types for Model Selection
 # =============================================================================
 
+
 class GeminiTaskType(Enum):
     """Task types for intelligent model selection."""
-    SPEED = "speed"                # Fast responses - use Flash-8B
-    BALANCED = "balanced"          # General purpose - use 1.5 Flash
-    QUALITY = "quality"            # Best quality - use 1.5 Pro
+
+    SPEED = "speed"  # Fast responses - use Flash-8B
+    BALANCED = "balanced"  # General purpose - use 1.5 Flash
+    QUALITY = "quality"  # Best quality - use 1.5 Pro
     LONG_CONTEXT = "long_context"  # Large documents - use 1.5 Pro (2M)
-    GROUNDING = "grounding"        # Search with citations
-    EXTRACTION = "extraction"      # Data extraction - use Flash-8B
-    ANALYSIS = "analysis"          # Analysis - use 1.5 Flash
-    LATEST = "latest"              # Use 2.0 Flash
+    GROUNDING = "grounding"  # Search with citations
+    EXTRACTION = "extraction"  # Data extraction - use Flash-8B
+    ANALYSIS = "analysis"  # Analysis - use 1.5 Flash
+    LATEST = "latest"  # Use 2.0 Flash
 
 
 class GeminiModelSelector:
@@ -164,7 +166,7 @@ class GeminiModelSelector:
         task_type: GeminiTaskType = GeminiTaskType.BALANCED,
         context_length: int = 0,
         require_grounding: bool = False,
-        max_cost_per_1m: Optional[float] = None
+        max_cost_per_1m: Optional[float] = None,
     ) -> str:
         """
         Select optimal model based on task type and constraints.
@@ -216,9 +218,11 @@ class GeminiModelSelector:
 # Data Classes
 # =============================================================================
 
+
 @dataclass
 class GeminiSource:
     """Source from grounding."""
+
     title: str
     uri: str
     snippet: Optional[str] = None
@@ -227,6 +231,7 @@ class GeminiSource:
 @dataclass
 class GeminiCache:
     """Cached content reference."""
+
     name: str
     model: str
     display_name: Optional[str] = None
@@ -237,6 +242,7 @@ class GeminiCache:
 @dataclass
 class GeminiResponse:
     """Response from Gemini API."""
+
     content: str
     sources: List[GeminiSource] = field(default_factory=list)
     grounding_used: bool = False
@@ -250,20 +256,23 @@ class GeminiResponse:
     def to_dict(self) -> Dict[str, Any]:
         return {
             "content": self.content,
-            "sources": [{"title": s.title, "uri": s.uri, "snippet": s.snippet} for s in self.sources],
+            "sources": [
+                {"title": s.title, "uri": s.uri, "snippet": s.snippet} for s in self.sources
+            ],
             "grounding_used": self.grounding_used,
             "input_tokens": self.input_tokens,
             "output_tokens": self.output_tokens,
             "cached_tokens": self.cached_tokens,
             "model": self.model,
             "cost": self.cost,
-            "tool_calls": self.tool_calls
+            "tool_calls": self.tool_calls,
         }
 
 
 @dataclass
 class ToolDefinition:
     """Definition of a tool for function calling."""
+
     name: str
     description: str
     parameters: Dict[str, Any]
@@ -271,16 +280,13 @@ class ToolDefinition:
 
     def to_gemini_format(self) -> Dict[str, Any]:
         """Convert to Gemini function declaration format."""
-        return {
-            "name": self.name,
-            "description": self.description,
-            "parameters": self.parameters
-        }
+        return {"name": self.name, "description": self.description, "parameters": self.parameters}
 
 
 # =============================================================================
 # Sync Client
 # =============================================================================
+
 
 class GeminiClient:
     """
@@ -295,11 +301,7 @@ class GeminiClient:
     - Long document analysis (up to 2M tokens)
     """
 
-    def __init__(
-        self,
-        api_key: Optional[str] = None,
-        default_model: str = "gemini-1.5-flash"
-    ):
+    def __init__(self, api_key: Optional[str] = None, default_model: str = "gemini-1.5-flash"):
         """
         Initialize Gemini client.
 
@@ -308,7 +310,9 @@ class GeminiClient:
             default_model: Default model to use
         """
         if not GEMINI_AVAILABLE:
-            raise ImportError("google-generativeai not installed. Run: pip install google-generativeai")
+            raise ImportError(
+                "google-generativeai not installed. Run: pip install google-generativeai"
+            )
 
         self.api_key = api_key or get_config("GOOGLE_API_KEY")
         if not self.api_key:
@@ -332,7 +336,7 @@ class GeminiClient:
         input_tokens: int,
         output_tokens: int,
         cached_tokens: int = 0,
-        grounding_used: bool = False
+        grounding_used: bool = False,
     ) -> float:
         """Calculate cost for a request."""
         pricing = GEMINI_PRICING.get(model, GEMINI_PRICING["gemini-1.5-flash"])
@@ -367,7 +371,7 @@ class GeminiClient:
         task_type: GeminiTaskType = GeminiTaskType.BALANCED,
         max_tokens: int = 4000,
         temperature: float = 0.0,
-        json_mode: bool = False
+        json_mode: bool = False,
     ) -> GeminiResponse:
         """
         Query Gemini with task-based model selection.
@@ -386,25 +390,28 @@ class GeminiClient:
         """
         model_name = model or GeminiModelSelector.select_model(task_type)
 
-        generation_config = {
-            "max_output_tokens": max_tokens,
-            "temperature": temperature
-        }
+        generation_config = {"max_output_tokens": max_tokens, "temperature": temperature}
 
         if json_mode:
             generation_config["response_mime_type"] = "application/json"
 
         model_instance = genai.GenerativeModel(
-            model_name,
-            system_instruction=system,
-            generation_config=generation_config
+            model_name, system_instruction=system, generation_config=generation_config
         )
 
         response = model_instance.generate_content(prompt)
 
         # Get usage
-        input_tokens = getattr(response.usage_metadata, 'prompt_token_count', len(prompt) // 4) if hasattr(response, 'usage_metadata') else len(prompt) // 4
-        output_tokens = getattr(response.usage_metadata, 'candidates_token_count', len(response.text) // 4) if hasattr(response, 'usage_metadata') else len(response.text) // 4
+        input_tokens = (
+            getattr(response.usage_metadata, "prompt_token_count", len(prompt) // 4)
+            if hasattr(response, "usage_metadata")
+            else len(prompt) // 4
+        )
+        output_tokens = (
+            getattr(response.usage_metadata, "candidates_token_count", len(response.text) // 4)
+            if hasattr(response, "usage_metadata")
+            else len(response.text) // 4
+        )
 
         cost = self._calculate_cost(model_name, input_tokens, output_tokens)
 
@@ -417,7 +424,7 @@ class GeminiClient:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             model=model_name,
-            cost=cost
+            cost=cost,
         )
 
     def search_with_grounding(
@@ -425,7 +432,7 @@ class GeminiClient:
         query: str,
         context: Optional[str] = None,
         model: Optional[str] = None,
-        max_tokens: int = 4000
+        max_tokens: int = 4000,
     ) -> GeminiResponse:
         """
         Search with Google grounding - returns citations.
@@ -450,7 +457,7 @@ class GeminiClient:
         model_instance = genai.GenerativeModel(
             model_name,
             tools=[genai.Tool(google_search=genai.GoogleSearch())],
-            generation_config={"max_output_tokens": max_tokens}
+            generation_config={"max_output_tokens": max_tokens},
         )
 
         prompt = query
@@ -465,26 +472,38 @@ class GeminiClient:
         sources = []
         grounding_used = False
 
-        if hasattr(response, 'candidates') and response.candidates:
+        if hasattr(response, "candidates") and response.candidates:
             candidate = response.candidates[0]
-            if hasattr(candidate, 'grounding_metadata') and candidate.grounding_metadata:
+            if hasattr(candidate, "grounding_metadata") and candidate.grounding_metadata:
                 grounding_used = True
                 grounding = candidate.grounding_metadata
 
-                if hasattr(grounding, 'grounding_chunks'):
+                if hasattr(grounding, "grounding_chunks"):
                     for chunk in grounding.grounding_chunks:
-                        if hasattr(chunk, 'web'):
-                            sources.append(GeminiSource(
-                                title=getattr(chunk.web, 'title', 'Unknown'),
-                                uri=getattr(chunk.web, 'uri', ''),
-                                snippet=getattr(chunk, 'text', None)
-                            ))
+                        if hasattr(chunk, "web"):
+                            sources.append(
+                                GeminiSource(
+                                    title=getattr(chunk.web, "title", "Unknown"),
+                                    uri=getattr(chunk.web, "uri", ""),
+                                    snippet=getattr(chunk, "text", None),
+                                )
+                            )
 
         # Get usage
-        input_tokens = getattr(response.usage_metadata, 'prompt_token_count', len(prompt) // 4) if hasattr(response, 'usage_metadata') else len(prompt) // 4
-        output_tokens = getattr(response.usage_metadata, 'candidates_token_count', len(response.text) // 4) if hasattr(response, 'usage_metadata') else len(response.text) // 4
+        input_tokens = (
+            getattr(response.usage_metadata, "prompt_token_count", len(prompt) // 4)
+            if hasattr(response, "usage_metadata")
+            else len(prompt) // 4
+        )
+        output_tokens = (
+            getattr(response.usage_metadata, "candidates_token_count", len(response.text) // 4)
+            if hasattr(response, "usage_metadata")
+            else len(response.text) // 4
+        )
 
-        cost = self._calculate_cost(model_name, input_tokens, output_tokens, grounding_used=grounding_used)
+        cost = self._calculate_cost(
+            model_name, input_tokens, output_tokens, grounding_used=grounding_used
+        )
 
         with self._lock:
             self._total_cost += cost
@@ -499,7 +518,7 @@ class GeminiClient:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             model=model_name,
-            cost=cost
+            cost=cost,
         )
 
     def create_cache(
@@ -508,7 +527,7 @@ class GeminiClient:
         system_instruction: Optional[str] = None,
         model: str = "gemini-2.0-flash-001",
         display_name: Optional[str] = None,
-        ttl_seconds: int = 300
+        ttl_seconds: int = 300,
     ) -> GeminiCache:
         """
         Create a context cache for repeated queries.
@@ -541,20 +560,21 @@ class GeminiClient:
             display_name=display_name,
             system_instruction=system_instruction,
             contents=contents,
-            ttl=f"{ttl_seconds}s"
+            ttl=f"{ttl_seconds}s",
         )
 
-        cache = client.caches.create(
-            model=f"models/{model}",
-            config=cache_config
-        )
+        cache = client.caches.create(model=f"models/{model}", config=cache_config)
 
         gemini_cache = GeminiCache(
             name=cache.name,
             model=model,
             display_name=display_name,
-            token_count=getattr(cache.usage_metadata, 'total_token_count', 0) if hasattr(cache, 'usage_metadata') else 0,
-            expire_time=str(cache.expire_time) if hasattr(cache, 'expire_time') else None
+            token_count=(
+                getattr(cache.usage_metadata, "total_token_count", 0)
+                if hasattr(cache, "usage_metadata")
+                else 0
+            ),
+            expire_time=str(cache.expire_time) if hasattr(cache, "expire_time") else None,
         )
 
         # Store locally
@@ -570,7 +590,7 @@ class GeminiClient:
         cache_name: str,
         model: Optional[str] = None,
         max_tokens: int = 4000,
-        temperature: float = 0.0
+        temperature: float = 0.0,
     ) -> GeminiResponse:
         """
         Query using cached content.
@@ -598,17 +618,21 @@ class GeminiClient:
             model=model_name,
             contents=prompt,
             config=types.GenerateContentConfig(
-                cached_content=cache_name,
-                max_output_tokens=max_tokens,
-                temperature=temperature
-            )
+                cached_content=cache_name, max_output_tokens=max_tokens, temperature=temperature
+            ),
         )
 
         # Extract usage with cached tokens
-        usage = response.usage_metadata if hasattr(response, 'usage_metadata') else None
-        input_tokens = getattr(usage, 'prompt_token_count', len(prompt) // 4) if usage else len(prompt) // 4
-        output_tokens = getattr(usage, 'candidates_token_count', len(response.text) // 4) if usage else len(response.text) // 4
-        cached_tokens = getattr(usage, 'cached_content_token_count', 0) if usage else 0
+        usage = response.usage_metadata if hasattr(response, "usage_metadata") else None
+        input_tokens = (
+            getattr(usage, "prompt_token_count", len(prompt) // 4) if usage else len(prompt) // 4
+        )
+        output_tokens = (
+            getattr(usage, "candidates_token_count", len(response.text) // 4)
+            if usage
+            else len(response.text) // 4
+        )
+        cached_tokens = getattr(usage, "cached_content_token_count", 0) if usage else 0
 
         cost = self._calculate_cost(model_name, input_tokens, output_tokens, cached_tokens)
 
@@ -624,7 +648,7 @@ class GeminiClient:
             output_tokens=output_tokens,
             cached_tokens=cached_tokens,
             model=model_name,
-            cost=cost
+            cost=cost,
         )
 
     def query_with_tools(
@@ -635,7 +659,7 @@ class GeminiClient:
         model: Optional[str] = None,
         max_tokens: int = 4000,
         temperature: float = 0.0,
-        auto_execute: bool = False
+        auto_execute: bool = False,
     ) -> GeminiResponse:
         """
         Query with tool use / function calling.
@@ -662,10 +686,7 @@ class GeminiClient:
             model_name,
             system_instruction=system,
             tools=gemini_tools,
-            generation_config={
-                "max_output_tokens": max_tokens,
-                "temperature": temperature
-            }
+            generation_config={"max_output_tokens": max_tokens, "temperature": temperature},
         )
 
         response = model_instance.generate_content(prompt)
@@ -677,15 +698,12 @@ class GeminiClient:
         if response.candidates:
             candidate = response.candidates[0]
             for part in candidate.content.parts:
-                if hasattr(part, 'function_call') and part.function_call:
+                if hasattr(part, "function_call") and part.function_call:
                     fc = part.function_call
                     if tool_calls is None:
                         tool_calls = []
 
-                    tool_call = {
-                        "name": fc.name,
-                        "arguments": dict(fc.args) if fc.args else {}
-                    }
+                    tool_call = {"name": fc.name, "arguments": dict(fc.args) if fc.args else {}}
 
                     # Auto-execute if enabled
                     if auto_execute:
@@ -698,12 +716,20 @@ class GeminiClient:
                                     tool_call["error"] = str(e)
 
                     tool_calls.append(tool_call)
-                elif hasattr(part, 'text') and part.text:
+                elif hasattr(part, "text") and part.text:
                     content += part.text
 
         # Get usage
-        input_tokens = getattr(response.usage_metadata, 'prompt_token_count', len(prompt) // 4) if hasattr(response, 'usage_metadata') else len(prompt) // 4
-        output_tokens = getattr(response.usage_metadata, 'candidates_token_count', len(content) // 4) if hasattr(response, 'usage_metadata') else len(content) // 4
+        input_tokens = (
+            getattr(response.usage_metadata, "prompt_token_count", len(prompt) // 4)
+            if hasattr(response, "usage_metadata")
+            else len(prompt) // 4
+        )
+        output_tokens = (
+            getattr(response.usage_metadata, "candidates_token_count", len(content) // 4)
+            if hasattr(response, "usage_metadata")
+            else len(content) // 4
+        )
 
         cost = self._calculate_cost(model_name, input_tokens, output_tokens)
 
@@ -717,7 +743,7 @@ class GeminiClient:
             output_tokens=output_tokens,
             model=model_name,
             cost=cost,
-            tool_calls=tool_calls
+            tool_calls=tool_calls,
         )
 
     def stream_query(
@@ -727,7 +753,7 @@ class GeminiClient:
         model: Optional[str] = None,
         task_type: GeminiTaskType = GeminiTaskType.BALANCED,
         max_tokens: int = 4000,
-        temperature: float = 0.0
+        temperature: float = 0.0,
     ) -> Generator[str, None, GeminiResponse]:
         """
         Stream response tokens in real-time.
@@ -751,10 +777,7 @@ class GeminiClient:
         model_instance = genai.GenerativeModel(
             model_name,
             system_instruction=system,
-            generation_config={
-                "max_output_tokens": max_tokens,
-                "temperature": temperature
-            }
+            generation_config={"max_output_tokens": max_tokens, "temperature": temperature},
         )
 
         response = model_instance.generate_content(prompt, stream=True)
@@ -779,14 +802,11 @@ class GeminiClient:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             model=model_name,
-            cost=cost
+            cost=cost,
         )
 
     def analyze_long_document(
-        self,
-        document: str,
-        analysis_prompt: str,
-        model: str = "gemini-1.5-pro"
+        self, document: str, analysis_prompt: str, model: str = "gemini-1.5-pro"
     ) -> GeminiResponse:
         """
         Analyze documents up to 2M tokens.
@@ -801,10 +821,7 @@ class GeminiClient:
         Returns:
             GeminiResponse with analysis
         """
-        model_instance = genai.GenerativeModel(
-            model,
-            generation_config={"max_output_tokens": 8000}
-        )
+        model_instance = genai.GenerativeModel(model, generation_config={"max_output_tokens": 8000})
 
         full_prompt = f"""{analysis_prompt}
 
@@ -813,8 +830,16 @@ Document:
 
         response = model_instance.generate_content(full_prompt)
 
-        input_tokens = getattr(response.usage_metadata, 'prompt_token_count', len(full_prompt) // 4) if hasattr(response, 'usage_metadata') else len(full_prompt) // 4
-        output_tokens = getattr(response.usage_metadata, 'candidates_token_count', len(response.text) // 4) if hasattr(response, 'usage_metadata') else len(response.text) // 4
+        input_tokens = (
+            getattr(response.usage_metadata, "prompt_token_count", len(full_prompt) // 4)
+            if hasattr(response, "usage_metadata")
+            else len(full_prompt) // 4
+        )
+        output_tokens = (
+            getattr(response.usage_metadata, "candidates_token_count", len(response.text) // 4)
+            if hasattr(response, "usage_metadata")
+            else len(response.text) // 4
+        )
 
         cost = self._calculate_cost(model, input_tokens, output_tokens)
 
@@ -827,15 +852,12 @@ Document:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             model=model,
-            cost=cost
+            cost=cost,
         )
 
     # Convenience methods for research
     def research_company_news(
-        self,
-        company_name: str,
-        topics: Optional[List[str]] = None,
-        days_back: int = 30
+        self, company_name: str, topics: Optional[List[str]] = None, days_back: int = 30
     ) -> GeminiResponse:
         """Get latest news for a company with citations."""
         topics_str = ", ".join(topics) if topics else "latest news and developments"
@@ -855,9 +877,7 @@ Include specific dates for all news items."""
         return self.search_with_grounding(query, context)
 
     def get_competitive_intelligence(
-        self,
-        company_name: str,
-        competitors: List[str]
+        self, company_name: str, competitors: List[str]
     ) -> GeminiResponse:
         """Get competitive analysis with citations."""
         competitors_str = ", ".join(competitors)
@@ -883,7 +903,9 @@ Use the most recent data available and cite all sources."""
                 "grounding_queries": self._grounding_queries,
                 "cache_hits": self._cache_hits,
                 "active_caches": len(self._caches),
-                "avg_cost_per_call": self._total_cost / self._total_calls if self._total_calls > 0 else 0
+                "avg_cost_per_call": (
+                    self._total_cost / self._total_calls if self._total_calls > 0 else 0
+                ),
             }
 
     def reset_stats(self) -> None:
@@ -899,6 +921,7 @@ Use the most recent data available and cite all sources."""
 # Async Client
 # =============================================================================
 
+
 class AsyncGeminiClient:
     """
     Async Gemini client for concurrent operations.
@@ -909,11 +932,7 @@ class AsyncGeminiClient:
     - Need non-blocking I/O
     """
 
-    def __init__(
-        self,
-        api_key: Optional[str] = None,
-        default_model: str = "gemini-1.5-flash"
-    ):
+    def __init__(self, api_key: Optional[str] = None, default_model: str = "gemini-1.5-flash"):
         """Initialize async client."""
         if not GEMINI_AVAILABLE:
             raise ImportError("google-generativeai not installed.")
@@ -935,30 +954,33 @@ class AsyncGeminiClient:
         task_type: GeminiTaskType = GeminiTaskType.BALANCED,
         max_tokens: int = 4000,
         temperature: float = 0.0,
-        json_mode: bool = False
+        json_mode: bool = False,
     ) -> GeminiResponse:
         """Async query with task-based model selection."""
         model_name = model or GeminiModelSelector.select_model(task_type)
 
-        generation_config = {
-            "max_output_tokens": max_tokens,
-            "temperature": temperature
-        }
+        generation_config = {"max_output_tokens": max_tokens, "temperature": temperature}
 
         if json_mode:
             generation_config["response_mime_type"] = "application/json"
 
         model_instance = genai.GenerativeModel(
-            model_name,
-            system_instruction=system,
-            generation_config=generation_config
+            model_name, system_instruction=system, generation_config=generation_config
         )
 
         # Use async generate
         response = await model_instance.generate_content_async(prompt)
 
-        input_tokens = getattr(response.usage_metadata, 'prompt_token_count', len(prompt) // 4) if hasattr(response, 'usage_metadata') else len(prompt) // 4
-        output_tokens = getattr(response.usage_metadata, 'candidates_token_count', len(response.text) // 4) if hasattr(response, 'usage_metadata') else len(response.text) // 4
+        input_tokens = (
+            getattr(response.usage_metadata, "prompt_token_count", len(prompt) // 4)
+            if hasattr(response, "usage_metadata")
+            else len(prompt) // 4
+        )
+        output_tokens = (
+            getattr(response.usage_metadata, "candidates_token_count", len(response.text) // 4)
+            if hasattr(response, "usage_metadata")
+            else len(response.text) // 4
+        )
 
         pricing = GEMINI_PRICING.get(model_name, GEMINI_PRICING["gemini-1.5-flash"])
         input_price = pricing["input_long"] if input_tokens > 128_000 else pricing["input"]
@@ -974,7 +996,7 @@ class AsyncGeminiClient:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             model=model_name,
-            cost=cost
+            cost=cost,
         )
 
     async def concurrent_queries(
@@ -983,7 +1005,7 @@ class AsyncGeminiClient:
         system: Optional[str] = None,
         model: Optional[str] = None,
         task_type: GeminiTaskType = GeminiTaskType.BALANCED,
-        max_tokens: int = 4000
+        max_tokens: int = 4000,
     ) -> List[GeminiResponse]:
         """
         Execute multiple queries concurrently.
@@ -1004,7 +1026,7 @@ class AsyncGeminiClient:
                 system=system,
                 model=model,
                 task_type=task_type,
-                max_tokens=max_tokens
+                max_tokens=max_tokens,
             )
             for prompt in prompts
         ]
@@ -1018,7 +1040,7 @@ class AsyncGeminiClient:
         model: Optional[str] = None,
         task_type: GeminiTaskType = GeminiTaskType.BALANCED,
         max_tokens: int = 4000,
-        temperature: float = 0.0
+        temperature: float = 0.0,
     ) -> AsyncGenerator[str, None]:
         """Async streaming query."""
         model_name = model or GeminiModelSelector.select_model(task_type)
@@ -1026,10 +1048,7 @@ class AsyncGeminiClient:
         model_instance = genai.GenerativeModel(
             model_name,
             system_instruction=system,
-            generation_config={
-                "max_output_tokens": max_tokens,
-                "temperature": temperature
-            }
+            generation_config={"max_output_tokens": max_tokens, "temperature": temperature},
         )
 
         response = await model_instance.generate_content_async(prompt, stream=True)
@@ -1039,17 +1058,13 @@ class AsyncGeminiClient:
                 yield chunk.text
 
     async def search_with_grounding(
-        self,
-        query: str,
-        context: Optional[str] = None,
-        model: Optional[str] = None
+        self, query: str, context: Optional[str] = None, model: Optional[str] = None
     ) -> GeminiResponse:
         """Async search with Google grounding."""
         model_name = model or "gemini-1.5-flash"
 
         model_instance = genai.GenerativeModel(
-            model_name,
-            tools=[genai.Tool(google_search=genai.GoogleSearch())]
+            model_name, tools=[genai.Tool(google_search=genai.GoogleSearch())]
         )
 
         prompt = f"{context}\n\nSearch for: {query}" if context else query
@@ -1060,25 +1075,29 @@ class AsyncGeminiClient:
         sources = []
         grounding_used = False
 
-        if hasattr(response, 'candidates') and response.candidates:
+        if hasattr(response, "candidates") and response.candidates:
             candidate = response.candidates[0]
-            if hasattr(candidate, 'grounding_metadata') and candidate.grounding_metadata:
+            if hasattr(candidate, "grounding_metadata") and candidate.grounding_metadata:
                 grounding_used = True
                 grounding = candidate.grounding_metadata
 
-                if hasattr(grounding, 'grounding_chunks'):
+                if hasattr(grounding, "grounding_chunks"):
                     for chunk in grounding.grounding_chunks:
-                        if hasattr(chunk, 'web'):
-                            sources.append(GeminiSource(
-                                title=getattr(chunk.web, 'title', 'Unknown'),
-                                uri=getattr(chunk.web, 'uri', ''),
-                                snippet=getattr(chunk, 'text', None)
-                            ))
+                        if hasattr(chunk, "web"):
+                            sources.append(
+                                GeminiSource(
+                                    title=getattr(chunk.web, "title", "Unknown"),
+                                    uri=getattr(chunk.web, "uri", ""),
+                                    snippet=getattr(chunk, "text", None),
+                                )
+                            )
 
         input_tokens = len(prompt) // 4
         output_tokens = len(response.text) // 4
         pricing = GEMINI_PRICING.get(model_name, GEMINI_PRICING["gemini-1.5-flash"])
-        cost = (input_tokens / 1_000_000) * pricing["input"] + (output_tokens / 1_000_000) * pricing["output"]
+        cost = (input_tokens / 1_000_000) * pricing["input"] + (
+            output_tokens / 1_000_000
+        ) * pricing["output"]
 
         async with self._lock:
             self._total_cost += cost
@@ -1091,7 +1110,7 @@ class AsyncGeminiClient:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             model=model_name,
-            cost=cost
+            cost=cost,
         )
 
     async def get_stats(self) -> Dict[str, Any]:
@@ -1100,7 +1119,9 @@ class AsyncGeminiClient:
             return {
                 "total_calls": self._total_calls,
                 "total_cost": self._total_cost,
-                "avg_cost_per_call": self._total_cost / self._total_calls if self._total_calls > 0 else 0
+                "avg_cost_per_call": (
+                    self._total_cost / self._total_calls if self._total_calls > 0 else 0
+                ),
             }
 
 
@@ -1108,18 +1129,13 @@ class AsyncGeminiClient:
 # Tool Creation Helpers
 # =============================================================================
 
+
 def create_tool(
-    name: str,
-    description: str,
-    parameters: Dict[str, Any],
-    function: Optional[Callable] = None
+    name: str, description: str, parameters: Dict[str, Any], function: Optional[Callable] = None
 ) -> ToolDefinition:
     """Create a tool definition for function calling."""
     return ToolDefinition(
-        name=name,
-        description=description,
-        parameters=parameters,
-        function=function
+        name=name, description=description, parameters=parameters, function=function
     )
 
 
@@ -1136,11 +1152,11 @@ def create_gemini_research_tools() -> List[ToolDefinition]:
                     "info_type": {
                         "type": "string",
                         "enum": ["financial", "news", "products", "leadership", "competitors"],
-                        "description": "Type of information to find"
-                    }
+                        "description": "Type of information to find",
+                    },
                 },
-                "required": ["company_name"]
-            }
+                "required": ["company_name"],
+            },
         ),
         ToolDefinition(
             name="extract_metrics",
@@ -1152,11 +1168,11 @@ def create_gemini_research_tools() -> List[ToolDefinition]:
                     "metric_types": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "Types of metrics to extract"
-                    }
+                        "description": "Types of metrics to extract",
+                    },
                 },
-                "required": ["text"]
-            }
+                "required": ["text"],
+            },
         ),
         ToolDefinition(
             name="compare_companies",
@@ -1167,17 +1183,17 @@ def create_gemini_research_tools() -> List[ToolDefinition]:
                     "companies": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "List of company names"
+                        "description": "List of company names",
                     },
                     "dimensions": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "Comparison dimensions"
-                    }
+                        "description": "Comparison dimensions",
+                    },
                 },
-                "required": ["companies"]
-            }
-        )
+                "required": ["companies"],
+            },
+        ),
     ]
 
 

@@ -8,20 +8,22 @@ Aggregate and analyze operational data:
 - Reporting
 """
 
-from typing import Dict, Any, List, Optional
+import statistics
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-import statistics
-from ..utils import utc_now
+from typing import Any, Dict, List, Optional
 
+from ..utils import utc_now
 
 # ============================================================================
 # Enums and Data Models
 # ============================================================================
 
+
 class TimeRange(str, Enum):
     """Time range for analytics."""
+
     HOUR = "hour"
     DAY = "day"
     WEEK = "week"
@@ -32,6 +34,7 @@ class TimeRange(str, Enum):
 @dataclass
 class UsageStats:
     """Usage statistics."""
+
     total_researches: int = 0
     completed: int = 0
     failed: int = 0
@@ -59,13 +62,14 @@ class UsageStats:
             "avg_duration_seconds": round(self.avg_duration_seconds, 2),
             "total_cost": round(self.total_cost, 4),
             "avg_cost": round(self.avg_cost, 4),
-            "period": self.period
+            "period": self.period,
         }
 
 
 @dataclass
 class AgentStats:
     """Statistics for an agent."""
+
     agent_name: str
     call_count: int = 0
     total_duration: float = 0.0
@@ -82,13 +86,14 @@ class AgentStats:
             "avg_duration": round(self.avg_duration, 2),
             "avg_tokens": round(self.avg_tokens, 0),
             "total_cost": round(self.total_cost, 4),
-            "success_rate": round(self.success_rate, 2)
+            "success_rate": round(self.success_rate, 2),
         }
 
 
 @dataclass
 class TrendPoint:
     """A single point in a trend."""
+
     timestamp: datetime
     value: float
     label: str = ""
@@ -97,13 +102,14 @@ class TrendPoint:
         return {
             "timestamp": self.timestamp.isoformat(),
             "value": round(self.value, 4),
-            "label": self.label
+            "label": self.label,
         }
 
 
 @dataclass
 class DashboardData:
     """Complete dashboard data."""
+
     usage: UsageStats
     agent_stats: List[AgentStats]
     cost_trend: List[TrendPoint]
@@ -122,13 +128,14 @@ class DashboardData:
             "top_companies": self.top_companies,
             "performance_summary": self.performance_summary,
             "alerts": self.alerts,
-            "generated_at": self.generated_at.isoformat()
+            "generated_at": self.generated_at.isoformat(),
         }
 
 
 # ============================================================================
 # Analytics Aggregator
 # ============================================================================
+
 
 class AnalyticsAggregator:
     """
@@ -176,7 +183,7 @@ class AnalyticsAggregator:
         duration_seconds: float,
         cost: float,
         depth: str = "standard",
-        agent_stats: Optional[Dict[str, Any]] = None
+        agent_stats: Optional[Dict[str, Any]] = None,
     ):
         """Record a completed research."""
         event = {
@@ -185,7 +192,7 @@ class AnalyticsAggregator:
             "duration": duration_seconds,
             "cost": cost,
             "depth": depth,
-            "timestamp": utc_now()
+            "timestamp": utc_now(),
         }
 
         self._research_events.append(event)
@@ -196,34 +203,28 @@ class AnalyticsAggregator:
         # Record agent stats
         if agent_stats:
             for agent_name, stats in agent_stats.items():
-                self._agent_events.append({
-                    "agent_name": agent_name,
-                    "duration": stats.get("duration", 0),
-                    "tokens": stats.get("tokens", 0),
-                    "cost": stats.get("cost", 0),
-                    "success": stats.get("success", True),
-                    "timestamp": utc_now()
-                })
+                self._agent_events.append(
+                    {
+                        "agent_name": agent_name,
+                        "duration": stats.get("duration", 0),
+                        "tokens": stats.get("tokens", 0),
+                        "cost": stats.get("cost", 0),
+                        "success": stats.get("success", True),
+                        "timestamp": utc_now(),
+                    }
+                )
 
         # Record cost
-        self._cost_events.append({
-            "amount": cost,
-            "timestamp": utc_now()
-        })
+        self._cost_events.append({"amount": cost, "timestamp": utc_now()})
 
-    def record_research_failed(
-        self,
-        company_name: str,
-        error: str,
-        duration_seconds: float = 0
-    ):
+    def record_research_failed(self, company_name: str, error: str, duration_seconds: float = 0):
         """Record a failed research."""
         event = {
             "type": "failed",
             "company_name": company_name,
             "error": error,
             "duration": duration_seconds,
-            "timestamp": utc_now()
+            "timestamp": utc_now(),
         }
         self._research_events.append(event)
 
@@ -231,10 +232,7 @@ class AnalyticsAggregator:
     # Usage Statistics
     # ==========================================================================
 
-    def get_usage_stats(
-        self,
-        time_range: TimeRange = TimeRange.DAY
-    ) -> UsageStats:
+    def get_usage_stats(self, time_range: TimeRange = TimeRange.DAY) -> UsageStats:
         """Get usage statistics for a time range."""
         cutoff = self._get_cutoff(time_range)
         events = [e for e in self._research_events if e["timestamp"] >= cutoff]
@@ -277,10 +275,7 @@ class AnalyticsAggregator:
     # Agent Statistics
     # ==========================================================================
 
-    def get_agent_stats(
-        self,
-        time_range: TimeRange = TimeRange.DAY
-    ) -> List[AgentStats]:
+    def get_agent_stats(self, time_range: TimeRange = TimeRange.DAY) -> List[AgentStats]:
         """Get statistics for all agents."""
         cutoff = self._get_cutoff(time_range)
         events = [e for e in self._agent_events if e["timestamp"] >= cutoff]
@@ -301,16 +296,18 @@ class AnalyticsAggregator:
             costs = [e["cost"] for e in agent_events]
             successes = sum(1 for e in agent_events if e["success"])
 
-            stats.append(AgentStats(
-                agent_name=agent_name,
-                call_count=len(agent_events),
-                total_duration=sum(durations),
-                avg_duration=statistics.mean(durations) if durations else 0,
-                total_tokens=sum(tokens),
-                avg_tokens=statistics.mean(tokens) if tokens else 0,
-                total_cost=sum(costs),
-                success_rate=successes / len(agent_events) if agent_events else 1.0
-            ))
+            stats.append(
+                AgentStats(
+                    agent_name=agent_name,
+                    call_count=len(agent_events),
+                    total_duration=sum(durations),
+                    avg_duration=statistics.mean(durations) if durations else 0,
+                    total_tokens=sum(tokens),
+                    avg_tokens=statistics.mean(tokens) if tokens else 0,
+                    total_cost=sum(costs),
+                    success_rate=successes / len(agent_events) if agent_events else 1.0,
+                )
+            )
 
         # Sort by call count
         stats.sort(key=lambda s: s.call_count, reverse=True)
@@ -321,30 +318,19 @@ class AnalyticsAggregator:
     # ==========================================================================
 
     def get_cost_trend(
-        self,
-        time_range: TimeRange = TimeRange.WEEK,
-        interval: str = "day"
+        self, time_range: TimeRange = TimeRange.WEEK, interval: str = "day"
     ) -> List[TrendPoint]:
         """Get cost trend over time."""
         cutoff = self._get_cutoff(time_range)
         events = [e for e in self._cost_events if e["timestamp"] >= cutoff]
 
         # Group by interval
-        points = self._group_by_interval(
-            events,
-            interval,
-            value_key="amount"
-        )
+        points = self._group_by_interval(events, interval, value_key="amount")
 
-        return [
-            TrendPoint(timestamp=ts, value=val, label=interval)
-            for ts, val in points.items()
-        ]
+        return [TrendPoint(timestamp=ts, value=val, label=interval) for ts, val in points.items()]
 
     def get_research_trend(
-        self,
-        time_range: TimeRange = TimeRange.WEEK,
-        interval: str = "day"
+        self, time_range: TimeRange = TimeRange.WEEK, interval: str = "day"
     ) -> List[TrendPoint]:
         """Get research count trend over time."""
         cutoff = self._get_cutoff(time_range)
@@ -362,10 +348,7 @@ class AnalyticsAggregator:
         ]
 
     def _group_by_interval(
-        self,
-        events: List[Dict],
-        interval: str,
-        value_key: str
+        self, events: List[Dict], interval: str, value_key: str
     ) -> Dict[datetime, float]:
         """Group events by time interval."""
         grouped: Dict[datetime, float] = {}
@@ -396,9 +379,7 @@ class AnalyticsAggregator:
     def get_top_companies(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Get most researched companies."""
         sorted_companies = sorted(
-            self._company_research_counts.items(),
-            key=lambda x: x[1],
-            reverse=True
+            self._company_research_counts.items(), key=lambda x: x[1], reverse=True
         )
 
         return [
@@ -410,10 +391,7 @@ class AnalyticsAggregator:
     # Dashboard Data
     # ==========================================================================
 
-    def get_dashboard_data(
-        self,
-        time_range: TimeRange = TimeRange.DAY
-    ) -> DashboardData:
+    def get_dashboard_data(self, time_range: TimeRange = TimeRange.DAY) -> DashboardData:
         """Get complete dashboard data."""
         return DashboardData(
             usage=self.get_usage_stats(time_range),
@@ -422,7 +400,7 @@ class AnalyticsAggregator:
             research_trend=self.get_research_trend(TimeRange.WEEK, "day"),
             top_companies=self.get_top_companies(10),
             performance_summary=self._get_performance_summary(),
-            alerts=self._get_active_alerts()
+            alerts=self._get_active_alerts(),
         )
 
     def _get_performance_summary(self) -> Dict[str, Any]:
@@ -440,7 +418,7 @@ class AnalyticsAggregator:
             "avg_duration": round(statistics.mean(durations), 2),
             "min_duration": round(min(durations), 2),
             "max_duration": round(max(durations), 2),
-            "total_researches": len(self._research_events)
+            "total_researches": len(self._research_events),
         }
 
     def _get_active_alerts(self) -> List[Dict[str, Any]]:
@@ -450,11 +428,13 @@ class AnalyticsAggregator:
         # Check for high failure rate
         stats = self.get_usage_stats(TimeRange.HOUR)
         if stats.success_rate < 0.9 and stats.total_researches > 5:
-            alerts.append({
-                "type": "high_failure_rate",
-                "severity": "warning",
-                "message": f"High failure rate: {1 - stats.success_rate:.1%}"
-            })
+            alerts.append(
+                {
+                    "type": "high_failure_rate",
+                    "severity": "warning",
+                    "message": f"High failure rate: {1 - stats.success_rate:.1%}",
+                }
+            )
 
         return alerts
 

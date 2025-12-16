@@ -7,19 +7,21 @@ Real-time updates via WebSocket:
 - Live agent status
 """
 
-import re
-import threading
-from typing import Dict, Any, Optional, Set
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
 import json
 import logging
+import re
+import threading
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from typing import Any, Dict, Optional, Set
 
 try:
     from fastapi import WebSocket
+
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
+
     class WebSocket:
         pass
 
@@ -37,7 +39,7 @@ def _utcnow() -> datetime:
 VALID_MESSAGE_TYPES = {"subscribe", "unsubscribe", "ping", "list_subscriptions"}
 
 # Task ID pattern (alphanumeric with underscores)
-TASK_ID_PATTERN = re.compile(r'^[a-zA-Z0-9_-]{1,100}$')
+TASK_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_-]{1,100}$")
 
 # Maximum message size (10KB)
 MAX_MESSAGE_SIZE = 10 * 1024
@@ -49,6 +51,7 @@ MAX_SUBSCRIPTIONS_PER_CONNECTION = 50
 @dataclass
 class ValidationResult:
     """Result of message validation."""
+
     valid: bool
     error: Optional[str] = None
     sanitized: Optional[Dict[str, Any]] = None
@@ -87,8 +90,7 @@ def validate_websocket_message(message: Any, max_size: int = MAX_MESSAGE_SIZE) -
 
     if msg_type not in VALID_MESSAGE_TYPES:
         return ValidationResult(
-            valid=False,
-            error=f"Invalid message type. Allowed: {', '.join(VALID_MESSAGE_TYPES)}"
+            valid=False, error=f"Invalid message type. Allowed: {', '.join(VALID_MESSAGE_TYPES)}"
         )
 
     # Validate task_id if present
@@ -100,7 +102,7 @@ def validate_websocket_message(message: Any, max_size: int = MAX_MESSAGE_SIZE) -
         if not TASK_ID_PATTERN.match(task_id):
             return ValidationResult(
                 valid=False,
-                error="Invalid task_id format (alphanumeric, underscore, hyphen only, max 100 chars)"
+                error="Invalid task_id format (alphanumeric, underscore, hyphen only, max 100 chars)",
             )
 
     # Return sanitized message with only allowed fields
@@ -115,9 +117,11 @@ def validate_websocket_message(message: Any, max_size: int = MAX_MESSAGE_SIZE) -
 # Rate Limiting for WebSocket
 # ============================================================================
 
+
 @dataclass
 class ConnectionRateState:
     """Rate limiting state for a connection."""
+
     message_count: int = 0
     window_start: datetime = field(default_factory=_utcnow)
     violations: int = 0
@@ -133,10 +137,7 @@ class WebSocketRateLimiter:
     """
 
     def __init__(
-        self,
-        messages_per_second: int = 10,
-        max_connections: int = 100,
-        ban_threshold: int = 5
+        self, messages_per_second: int = 10, max_connections: int = 100, ban_threshold: int = 5
     ):
         self.messages_per_second = messages_per_second
         self.max_connections = max_connections
@@ -196,7 +197,9 @@ class WebSocketRateLimiter:
                 # Ban if too many violations
                 if state.violations >= self.ban_threshold:
                     self._banned_connections.add(connection_id)
-                    self._logger.warning(f"Connection {connection_id} banned for rate limit violations")
+                    self._logger.warning(
+                        f"Connection {connection_id} banned for rate limit violations"
+                    )
                     return False, "Connection banned due to repeated rate limit violations"
 
                 return False, f"Rate limit exceeded ({self.messages_per_second}/sec)"
@@ -210,13 +213,14 @@ class WebSocketRateLimiter:
             return {
                 "active_connections": len(self._connection_states),
                 "banned_connections": len(self._banned_connections),
-                "max_connections": self.max_connections
+                "max_connections": self.max_connections,
             }
 
 
 # ============================================================================
 # WebSocket Manager
 # ============================================================================
+
 
 class WebSocketManager:
     """
@@ -249,7 +253,7 @@ class WebSocketManager:
         self,
         heartbeat_interval: int = 30,
         messages_per_second: int = 10,
-        max_connections: int = 100
+        max_connections: int = 100,
     ):
         """
         Initialize WebSocket manager.
@@ -268,8 +272,7 @@ class WebSocketManager:
 
         # Rate limiting
         self._rate_limiter = WebSocketRateLimiter(
-            messages_per_second=messages_per_second,
-            max_connections=max_connections
+            messages_per_second=messages_per_second, max_connections=max_connections
         )
 
     async def connect(self, websocket: WebSocket) -> Optional[str]:
@@ -304,11 +307,14 @@ class WebSocketManager:
         self._logger.info(f"WebSocket connected: {connection_id}")
 
         # Send welcome message
-        await self._send_to_connection(connection_id, {
-            "type": "connected",
-            "connection_id": connection_id,
-            "timestamp": _utcnow().isoformat()
-        })
+        await self._send_to_connection(
+            connection_id,
+            {
+                "type": "connected",
+                "connection_id": connection_id,
+                "timestamp": _utcnow().isoformat(),
+            },
+        )
 
         return connection_id
 
@@ -336,11 +342,7 @@ class WebSocketManager:
 
             self._logger.info(f"WebSocket disconnected: {connection_id}")
 
-    async def handle_message(
-        self,
-        websocket: WebSocket,
-        message: Dict[str, Any]
-    ):
+    async def handle_message(self, websocket: WebSocket, message: Dict[str, Any]):
         """
         Handle incoming WebSocket message with validation and rate limiting.
 
@@ -358,21 +360,18 @@ class WebSocketManager:
         # Check rate limit
         allowed, error = self._rate_limiter.is_message_allowed(connection_id)
         if not allowed:
-            await self._send_to_connection(connection_id, {
-                "type": "error",
-                "error": error,
-                "timestamp": _utcnow().isoformat()
-            })
+            await self._send_to_connection(
+                connection_id, {"type": "error", "error": error, "timestamp": _utcnow().isoformat()}
+            )
             return
 
         # Validate message
         validation = validate_websocket_message(message)
         if not validation.valid:
-            await self._send_to_connection(connection_id, {
-                "type": "error",
-                "error": validation.error,
-                "timestamp": _utcnow().isoformat()
-            })
+            await self._send_to_connection(
+                connection_id,
+                {"type": "error", "error": validation.error, "timestamp": _utcnow().isoformat()},
+            )
             self._logger.warning(f"Invalid message from {connection_id}: {validation.error}")
             return
 
@@ -391,28 +390,29 @@ class WebSocketManager:
                 await self._unsubscribe(connection_id, task_id)
 
         elif msg_type == "ping":
-            await self._send_to_connection(connection_id, {
-                "type": "pong",
-                "timestamp": _utcnow().isoformat()
-            })
+            await self._send_to_connection(
+                connection_id, {"type": "pong", "timestamp": _utcnow().isoformat()}
+            )
 
         elif msg_type == "list_subscriptions":
             tasks = list(self._connection_tasks.get(connection_id, set()))
-            await self._send_to_connection(connection_id, {
-                "type": "subscriptions",
-                "task_ids": tasks
-            })
+            await self._send_to_connection(
+                connection_id, {"type": "subscriptions", "task_ids": tasks}
+            )
 
     async def _subscribe(self, connection_id: str, task_id: str):
         """Subscribe connection to task updates."""
         # Check subscription limit
         current_subscriptions = self._connection_tasks.get(connection_id, set())
         if len(current_subscriptions) >= MAX_SUBSCRIPTIONS_PER_CONNECTION:
-            await self._send_to_connection(connection_id, {
-                "type": "error",
-                "error": f"Max subscriptions reached ({MAX_SUBSCRIPTIONS_PER_CONNECTION})",
-                "timestamp": _utcnow().isoformat()
-            })
+            await self._send_to_connection(
+                connection_id,
+                {
+                    "type": "error",
+                    "error": f"Max subscriptions reached ({MAX_SUBSCRIPTIONS_PER_CONNECTION})",
+                    "timestamp": _utcnow().isoformat(),
+                },
+            )
             return
 
         if task_id not in self._subscriptions:
@@ -421,10 +421,7 @@ class WebSocketManager:
         self._subscriptions[task_id].add(connection_id)
         self._connection_tasks[connection_id].add(task_id)
 
-        await self._send_to_connection(connection_id, {
-            "type": "subscribed",
-            "task_id": task_id
-        })
+        await self._send_to_connection(connection_id, {"type": "subscribed", "task_id": task_id})
 
         self._logger.debug(f"{connection_id} subscribed to {task_id}")
 
@@ -436,20 +433,14 @@ class WebSocketManager:
         if connection_id in self._connection_tasks:
             self._connection_tasks[connection_id].discard(task_id)
 
-        await self._send_to_connection(connection_id, {
-            "type": "unsubscribed",
-            "task_id": task_id
-        })
+        await self._send_to_connection(connection_id, {"type": "unsubscribed", "task_id": task_id})
 
     # ==========================================================================
     # Sending Updates
     # ==========================================================================
 
     async def send_task_update(
-        self,
-        task_id: str,
-        data: Dict[str, Any],
-        update_type: str = "update"
+        self, task_id: str, data: Dict[str, Any], update_type: str = "update"
     ):
         """
         Send update to all subscribers of a task.
@@ -465,60 +456,40 @@ class WebSocketManager:
             "type": update_type,
             "task_id": task_id,
             "timestamp": _utcnow().isoformat(),
-            "data": data
+            "data": data,
         }
 
         for connection_id in subscribers:
             await self._send_to_connection(connection_id, message)
 
     async def send_progress(
-        self,
-        task_id: str,
-        progress: float,
-        stage: str,
-        details: Optional[Dict[str, Any]] = None
+        self, task_id: str, progress: float, stage: str, details: Optional[Dict[str, Any]] = None
     ):
         """Send progress update."""
-        await self.send_task_update(task_id, {
-            "progress": progress,
-            "stage": stage,
-            "details": details or {}
-        }, update_type="progress")
+        await self.send_task_update(
+            task_id,
+            {"progress": progress, "stage": stage, "details": details or {}},
+            update_type="progress",
+        )
 
-    async def send_status_change(
-        self,
-        task_id: str,
-        status: str,
-        message: Optional[str] = None
-    ):
+    async def send_status_change(self, task_id: str, status: str, message: Optional[str] = None):
         """Send status change update."""
-        await self.send_task_update(task_id, {
-            "status": status,
-            "message": message
-        }, update_type="status")
+        await self.send_task_update(
+            task_id, {"status": status, "message": message}, update_type="status"
+        )
 
-    async def send_completion(
-        self,
-        task_id: str,
-        result: Dict[str, Any]
-    ):
+    async def send_completion(self, task_id: str, result: Dict[str, Any]):
         """Send task completion notification."""
         await self.send_task_update(task_id, result, update_type="completed")
 
         # Clean up subscriptions
         self._subscriptions.pop(task_id, None)
 
-    async def send_error(
-        self,
-        task_id: str,
-        error: str,
-        details: Optional[Dict[str, Any]] = None
-    ):
+    async def send_error(self, task_id: str, error: str, details: Optional[Dict[str, Any]] = None):
         """Send error notification."""
-        await self.send_task_update(task_id, {
-            "error": error,
-            "details": details or {}
-        }, update_type="error")
+        await self.send_task_update(
+            task_id, {"error": error, "details": details or {}}, update_type="error"
+        )
 
     async def broadcast(self, message: Dict[str, Any]):
         """Broadcast message to all connections."""
@@ -527,11 +498,7 @@ class WebSocketManager:
         for connection_id in list(self._connections.keys()):
             await self._send_to_connection(connection_id, message)
 
-    async def _send_to_connection(
-        self,
-        connection_id: str,
-        message: Dict[str, Any]
-    ):
+    async def _send_to_connection(self, connection_id: str, message: Dict[str, Any]):
         """Send message to specific connection."""
         websocket = self._connections.get(connection_id)
         if websocket:
@@ -559,7 +526,7 @@ class WebSocketManager:
             "total_connections": len(self._connections),
             "active_subscriptions": sum(len(s) for s in self._subscriptions.values()),
             "tasks_being_watched": len(self._subscriptions),
-            "rate_limiter": self._rate_limiter.get_stats()
+            "rate_limiter": self._rate_limiter.get_stats(),
         }
 
 
@@ -567,10 +534,9 @@ class WebSocketManager:
 # Factory Function
 # ============================================================================
 
+
 def create_websocket_manager(
-    heartbeat_interval: int = 30,
-    messages_per_second: int = 10,
-    max_connections: int = 100
+    heartbeat_interval: int = 30, messages_per_second: int = 10, max_connections: int = 100
 ) -> WebSocketManager:
     """
     Create a WebSocket manager instance.
@@ -586,5 +552,5 @@ def create_websocket_manager(
     return WebSocketManager(
         heartbeat_interval=heartbeat_interval,
         messages_per_second=messages_per_second,
-        max_connections=max_connections
+        max_connections=max_connections,
     )

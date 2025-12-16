@@ -7,8 +7,8 @@ Tests the research cache system including:
 - Research cache storage and retrieval
 """
 
-import sys
 import os
+import sys
 
 # Setup path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -18,9 +18,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 def test_cache_functionality():
     """Test the research cache functionality."""
     # Import using standard package imports
-    from src.company_researcher.cache.url_registry import URLRegistry, URLStatus
     from src.company_researcher.cache.data_completeness import CompletenessChecker
     from src.company_researcher.cache.research_cache import ResearchCache, get_cache
+    from src.company_researcher.cache.url_registry import URLRegistry, URLStatus
 
     print("Testing Research Cache...")
     print()
@@ -120,7 +120,12 @@ def test_cache_functionality():
             "headquarters": "Redmond, WA",
         },
         sources=[
-            {"url": "https://microsoft.com", "title": "Microsoft", "score": 0.95, "quality": "primary"},
+            {
+                "url": "https://microsoft.com",
+                "title": "Microsoft",
+                "score": 0.95,
+                "quality": "primary",
+            },
         ],
     )
     print("   [OK] Stored overview data")

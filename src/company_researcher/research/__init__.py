@@ -16,26 +16,11 @@ This package provides modules to improve research report quality:
 """
 
 from ..agents.research.multilingual_search import (
-    MultilingualSearchGenerator,
     Language,
+    MultilingualSearchGenerator,
     RegionalSource,
     create_multilingual_generator,
 )
-
-from .metrics_validator import (
-    MetricsValidator,
-    MetricPriority,
-    MetricStatus,
-    CompanyType,
-    DataCategory,
-    MetricDefinition,
-    MetricValidation,
-    ValidationReport,
-    ValidationReport as ValidationResult,  # Alias for backward compatibility
-    validate_research_metrics,
-    create_metrics_validator,
-)
-
 from .data_threshold import (
     DataThresholdChecker,
     RetryStrategy,
@@ -43,46 +28,55 @@ from .data_threshold import (
     check_data_threshold,
     should_generate_report,
 )
-
 from .enhanced_fact_extraction import (
-    EnhancedFactExtractor,
-    FactType,
     Currency,
+    EnhancedFactExtractor,
     ExtractedFact,
+    FactType,
     extract_facts,
     extract_facts_from_sources,
 )
-
 from .historical_trends import (
     HistoricalTrendAnalyzer,
+    TrendAnalysis,
     TrendDirection,
     TrendMetric,
-    TrendAnalysis,
     TrendTable,
     create_trend_analyzer,
 )
-
-from .source_tracker import (
-    SourceUtilizationTracker,
-    SourceType,
-    FactCategory,
-    ExtractedFact as TrackedFact,
-    SourceInfo,
-    ExtractionCoverage,
-    create_source_tracker,
+from .metrics_validator import (
+    CompanyType,
+    DataCategory,
+    MetricDefinition,
+    MetricPriority,
+    MetricStatus,
+    MetricsValidator,
+    MetricValidation,
 )
-
+from .metrics_validator import ValidationReport
+from .metrics_validator import (
+    ValidationReport as ValidationResult,  # Alias for backward compatibility
+)
+from .metrics_validator import create_metrics_validator, validate_research_metrics
 from .quality_enforcer import (
-    ReportQualityEnforcer,
-    QualityLevel,
-    SectionType,
-    IssueType,
     IssueSeverity,
+    IssueType,
     QualityIssue,
+    QualityLevel,
     QualityReport,
+    ReportQualityEnforcer,
+    SectionType,
     create_quality_enforcer,
 )
-
+from .source_tracker import ExtractedFact as TrackedFact
+from .source_tracker import (
+    ExtractionCoverage,
+    FactCategory,
+    SourceInfo,
+    SourceType,
+    SourceUtilizationTracker,
+    create_source_tracker,
+)
 
 __all__ = [
     # Multilingual Search
@@ -90,7 +84,6 @@ __all__ = [
     "Language",
     "RegionalSource",
     "create_multilingual_generator",
-
     # Metrics Validation
     "MetricsValidator",
     "MetricPriority",
@@ -98,14 +91,12 @@ __all__ = [
     "MetricDefinition",
     "ValidationReport",
     "validate_research_metrics",
-
     # Data Threshold
     "DataThresholdChecker",
     "RetryStrategy",
     "ThresholdResult",
     "check_data_threshold",
     "should_generate_report",
-
     # Fact Extraction
     "EnhancedFactExtractor",
     "FactType",
@@ -113,7 +104,6 @@ __all__ = [
     "ExtractedFact",
     "extract_facts",
     "extract_facts_from_sources",
-
     # Historical Trends
     "HistoricalTrendAnalyzer",
     "TrendDirection",
@@ -121,7 +111,6 @@ __all__ = [
     "TrendAnalysis",
     "TrendTable",
     "create_trend_analyzer",
-
     # Source Tracking
     "SourceUtilizationTracker",
     "SourceType",
@@ -130,7 +119,6 @@ __all__ = [
     "SourceInfo",
     "ExtractionCoverage",
     "create_source_tracker",
-
     # Quality Enforcement
     "ReportQualityEnforcer",
     "QualityLevel",

@@ -23,6 +23,7 @@ def _utcnow() -> datetime:
 
 class AuditEventType(str, Enum):
     """Types of audit events."""
+
     # Authentication
     LOGIN = "auth.login"
     LOGOUT = "auth.logout"
@@ -73,6 +74,7 @@ class AuditEventType(str, Enum):
 
 class AuditSeverity(str, Enum):
     """Severity levels for audit events."""
+
     DEBUG = "debug"
     INFO = "info"
     WARNING = "warning"
@@ -87,6 +89,7 @@ class AuditEntry:
 
     Follows structured logging best practices for compliance.
     """
+
     id: str
     timestamp: datetime
     event_type: AuditEventType
@@ -118,7 +121,7 @@ class AuditEntry:
             "ip_address": self.ip_address,
             "user_agent": self.user_agent,
             "session_id": self.session_id,
-            "request_id": self.request_id
+            "request_id": self.request_id,
         }
 
     def to_json(self) -> str:
@@ -148,13 +151,14 @@ class AuditEntry:
             ip_address=data.get("ip_address"),
             user_agent=data.get("user_agent"),
             session_id=data.get("session_id"),
-            request_id=data.get("request_id")
+            request_id=data.get("request_id"),
         )
 
 
 @dataclass
 class AuditConfig:
     """Configuration for audit logging."""
+
     enabled: bool = True
     log_file: Optional[str] = None
     log_to_console: bool = False

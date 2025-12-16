@@ -387,14 +387,14 @@ def verify_reproducibility(rule_id, inputs):
     # Run rule twice with same inputs
     output1 = execute_rule(rule_id, inputs)
     output2 = execute_rule(rule_id, inputs)
-    
+
     # Extract provenance
     prov1 = extract_provenance(output1)
     prov2 = extract_provenance(output2)
-    
+
     # Compare outputs (ignoring timestamps)
     assert normalize(output1) == normalize(output2), "Not reproducible"
-    
+
     # Verify input hashes match
     assert prov1['hash'] == prov2['hash'], "Input hash mismatch"
 ```

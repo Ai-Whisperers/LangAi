@@ -18,7 +18,8 @@ from typing import Any, Dict, Optional
 
 import aiohttp
 from cachetools import TTLCache
-from ..utils import get_logger, utc_now, get_config
+
+from ..utils import get_config, get_logger, utc_now
 
 logger = get_logger(__name__)
 
@@ -33,8 +34,9 @@ class RateLimitError(APIError):
 
 class CircuitState(Enum):
     """Circuit breaker states."""
-    CLOSED = "closed"      # Normal operation
-    OPEN = "open"          # Blocking requests
+
+    CLOSED = "closed"  # Normal operation
+    OPEN = "open"  # Blocking requests
     HALF_OPEN = "half_open"  # Testing recovery
 
 
@@ -46,6 +48,7 @@ class CircuitBreaker:
     Prevents cascading failures by temporarily blocking requests
     to a failing service.
     """
+
     failure_threshold: int = 5
     recovery_timeout: int = 60
     success_threshold: int = 3
@@ -80,8 +83,9 @@ class CircuitBreaker:
             return True
 
         if self.state == CircuitState.OPEN:
-            if self.last_failure_time and \
-               utc_now() - self.last_failure_time > timedelta(seconds=self.recovery_timeout):
+            if self.last_failure_time and utc_now() - self.last_failure_time > timedelta(
+                seconds=self.recovery_timeout
+            ):
                 self.state = CircuitState.HALF_OPEN
                 self.success_count = 0
                 logger.info("Circuit breaker half-open - testing recovery")
@@ -117,10 +121,7 @@ class RateLimiter:
             elapsed = (now - self.last_update).total_seconds()
 
             # Refill tokens
-            self.tokens = min(
-                self.calls,
-                self.tokens + (elapsed * self.calls / self.period)
-            )
+            self.tokens = min(self.calls, self.tokens + (elapsed * self.calls / self.period))
             self.last_update = now
 
             if self.tokens < 1:
@@ -153,7 +154,7 @@ class BaseAPIClient(ABC):
         cache_ttl: int = 3600,
         cache_maxsize: int = 100,
         rate_limit_calls: int = 60,
-        rate_limit_period: float = 60.0
+        rate_limit_period: float = 60.0,
     ):
         """
         Initialize the API client.
@@ -180,18 +181,12 @@ class BaseAPIClient(ABC):
         """Get or create aiohttp session."""
         if self._session is None or self._session.closed:
             timeout = aiohttp.ClientTimeout(total=30, connect=10)
-            self._session = aiohttp.ClientSession(
-                headers=self._get_headers(),
-                timeout=timeout
-            )
+            self._session = aiohttp.ClientSession(headers=self._get_headers(), timeout=timeout)
         return self._session
 
     def _get_headers(self) -> Dict[str, str]:
         """Get default headers. Override in subclasses."""
-        return {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        }
+        return {"Content-Type": "application/json", "Accept": "application/json"}
 
     async def _request(
         self,
@@ -199,7 +194,7 @@ class BaseAPIClient(ABC):
         params: Optional[Dict] = None,
         method: str = "GET",
         use_cache: bool = True,
-        json_data: Optional[Dict] = None
+        json_data: Optional[Dict] = None,
     ) -> Any:
         """
         Make API request with caching and error handling.
@@ -237,18 +232,11 @@ class BaseAPIClient(ABC):
         try:
             session = await self._get_session()
 
-            async with session.request(
-                method,
-                url,
-                params=params,
-                json=json_data
-            ) as response:
+            async with session.request(method, url, params=params, json=json_data) as response:
 
                 if response.status == 429:
                     self._circuit_breaker.record_failure()
-                    raise RateLimitError(
-                        f"Rate limit exceeded for {self.__class__.__name__}"
-                    )
+                    raise RateLimitError(f"Rate limit exceeded for {self.__class__.__name__}")
 
                 if response.status >= 400:
                     self._circuit_breaker.record_failure()

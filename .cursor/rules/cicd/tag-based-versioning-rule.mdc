@@ -557,7 +557,7 @@ variables:
   buildConfiguration: 'Release'
   dotnetVersion: '9.x'
   solution: '**/*.sln'
-  
+
   # Dynamic coverage threshold
   ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/tags/release-')) }}:
     coverageThreshold: 80
@@ -691,7 +691,7 @@ Azure DevOps Feeds:
 
 **Documentation Validation:**
 - `validate-documentation.ps1` - XML documentation completeness with dynamic framework detection
-- `verify-xml-files.ps1` - Documentation file existence verification  
+- `verify-xml-files.ps1` - Documentation file existence verification
 - `generate-doc-report.ps1` - Documentation coverage reporting with metrics
 
 **Pipeline Support:**
@@ -1192,7 +1192,7 @@ This rule supports a **phased approach**:
 
 **Related Rules:**
 - `.cursor/rules/git/branch-structure-rule.mdc` - Branch strategy
-- `.cursor/rules/git/branch-lifecycle-rule.mdc` - Branch workflows  
+- `.cursor/rules/git/branch-lifecycle-rule.mdc` - Branch workflows
 - `.cursor/rules/git/branch-naming-rule.mdc` - Naming conventions
 - `.cursor/rules/documentation/documentation-standards-rule.mdc` - Documentation validation
 

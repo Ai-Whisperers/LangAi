@@ -13,19 +13,13 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
-from .base_mapper import (
-    BaseMapper,
-    FrameworkType,
-    MappedEdge,
-    MappedGraph,
-    MappedNode,
-    NodeType,
-)
+from .base_mapper import BaseMapper, FrameworkType, MappedEdge, MappedGraph, MappedNode, NodeType
 
 
 @dataclass
 class MCPTool:
     """Representation of an MCP tool."""
+
     name: str
     description: str
     input_schema: Dict[str, Any] = field(default_factory=dict)
@@ -35,6 +29,7 @@ class MCPTool:
 @dataclass
 class MCPResource:
     """Representation of an MCP resource."""
+
     uri: str
     name: str
     description: str = ""
@@ -45,6 +40,7 @@ class MCPResource:
 @dataclass
 class MCPPrompt:
     """Representation of an MCP prompt template."""
+
     name: str
     description: str = ""
     arguments: List[Dict[str, Any]] = field(default_factory=list)
@@ -53,6 +49,7 @@ class MCPPrompt:
 @dataclass
 class MCPServer:
     """Representation of an MCP server configuration."""
+
     name: str
     command: str
     args: List[str] = field(default_factory=list)
@@ -117,7 +114,7 @@ class MCPMapper(BaseMapper):
             env=config.get("env", {}),
             tools=[self._parse_tool(t) for t in config.get("tools", [])],
             resources=[self._parse_resource(r) for r in config.get("resources", [])],
-            prompts=[self._parse_prompt(p) for p in config.get("prompts", [])]
+            prompts=[self._parse_prompt(p) for p in config.get("prompts", [])],
         )
 
     def _parse_tool(self, tool_config: Dict[str, Any]) -> MCPTool:
@@ -126,7 +123,7 @@ class MCPMapper(BaseMapper):
             name=tool_config.get("name", ""),
             description=tool_config.get("description", ""),
             input_schema=tool_config.get("inputSchema", tool_config.get("input_schema", {})),
-            annotations=tool_config.get("annotations", {})
+            annotations=tool_config.get("annotations", {}),
         )
 
     def _parse_resource(self, resource_config: Dict[str, Any]) -> MCPResource:
@@ -136,7 +133,7 @@ class MCPMapper(BaseMapper):
             name=resource_config.get("name", ""),
             description=resource_config.get("description", ""),
             mime_type=resource_config.get("mimeType", "text/plain"),
-            annotations=resource_config.get("annotations", {})
+            annotations=resource_config.get("annotations", {}),
         )
 
     def _parse_prompt(self, prompt_config: Dict[str, Any]) -> MCPPrompt:
@@ -144,7 +141,7 @@ class MCPMapper(BaseMapper):
         return MCPPrompt(
             name=prompt_config.get("name", ""),
             description=prompt_config.get("description", ""),
-            arguments=prompt_config.get("arguments", [])
+            arguments=prompt_config.get("arguments", []),
         )
 
     def _extract_server(self, server: Any) -> MCPServer:
@@ -154,40 +151,46 @@ class MCPMapper(BaseMapper):
         prompts = []
 
         # Extract tools
-        for tool in getattr(server, 'tools', []):
-            if hasattr(tool, 'name'):
-                tools.append(MCPTool(
-                    name=tool.name,
-                    description=getattr(tool, 'description', ''),
-                    input_schema=getattr(tool, 'inputSchema', {})
-                ))
+        for tool in getattr(server, "tools", []):
+            if hasattr(tool, "name"):
+                tools.append(
+                    MCPTool(
+                        name=tool.name,
+                        description=getattr(tool, "description", ""),
+                        input_schema=getattr(tool, "inputSchema", {}),
+                    )
+                )
 
         # Extract resources
-        for resource in getattr(server, 'resources', []):
-            if hasattr(resource, 'uri'):
-                resources.append(MCPResource(
-                    uri=resource.uri,
-                    name=getattr(resource, 'name', ''),
-                    description=getattr(resource, 'description', '')
-                ))
+        for resource in getattr(server, "resources", []):
+            if hasattr(resource, "uri"):
+                resources.append(
+                    MCPResource(
+                        uri=resource.uri,
+                        name=getattr(resource, "name", ""),
+                        description=getattr(resource, "description", ""),
+                    )
+                )
 
         # Extract prompts
-        for prompt in getattr(server, 'prompts', []):
-            if hasattr(prompt, 'name'):
-                prompts.append(MCPPrompt(
-                    name=prompt.name,
-                    description=getattr(prompt, 'description', ''),
-                    arguments=getattr(prompt, 'arguments', [])
-                ))
+        for prompt in getattr(server, "prompts", []):
+            if hasattr(prompt, "name"):
+                prompts.append(
+                    MCPPrompt(
+                        name=prompt.name,
+                        description=getattr(prompt, "description", ""),
+                        arguments=getattr(prompt, "arguments", []),
+                    )
+                )
 
         return MCPServer(
-            name=getattr(server, 'name', 'mcp_server'),
-            command=getattr(server, 'command', ''),
-            args=getattr(server, 'args', []),
-            env=getattr(server, 'env', {}),
+            name=getattr(server, "name", "mcp_server"),
+            command=getattr(server, "command", ""),
+            args=getattr(server, "args", []),
+            env=getattr(server, "env", {}),
             tools=tools,
             resources=resources,
-            prompts=prompts
+            prompts=prompts,
         )
 
     def _build_graph(self, servers: List[MCPServer]) -> MappedGraph:
@@ -204,11 +207,7 @@ class MCPMapper(BaseMapper):
                 framework=FrameworkType.MCP,
                 description=f"MCP Server: {server.command}",
                 tools=[t.name for t in server.tools],
-                config={
-                    "command": server.command,
-                    "args": server.args,
-                    "env": server.env
-                }
+                config={"command": server.command, "args": server.args, "env": server.env},
             )
             nodes.append(server_node)
 
@@ -220,18 +219,15 @@ class MCPMapper(BaseMapper):
                     node_type=NodeType.TOOL,
                     framework=FrameworkType.MCP,
                     description=tool.description,
-                    config={
-                        "input_schema": tool.input_schema,
-                        "annotations": tool.annotations
-                    }
+                    config={"input_schema": tool.input_schema, "annotations": tool.annotations},
                 )
                 nodes.append(tool_node)
 
-                edges.append(MappedEdge(
-                    source=server_node.id,
-                    target=tool_node.id,
-                    edge_type="provides_tool"
-                ))
+                edges.append(
+                    MappedEdge(
+                        source=server_node.id, target=tool_node.id, edge_type="provides_tool"
+                    )
+                )
 
             # Add resource nodes
             for resource in server.resources:
@@ -241,18 +237,17 @@ class MCPMapper(BaseMapper):
                     node_type=NodeType.TOOL,  # Resources as tools
                     framework=FrameworkType.MCP,
                     description=resource.description,
-                    config={
-                        "uri": resource.uri,
-                        "mime_type": resource.mime_type
-                    }
+                    config={"uri": resource.uri, "mime_type": resource.mime_type},
                 )
                 nodes.append(resource_node)
 
-                edges.append(MappedEdge(
-                    source=server_node.id,
-                    target=resource_node.id,
-                    edge_type="provides_resource"
-                ))
+                edges.append(
+                    MappedEdge(
+                        source=server_node.id,
+                        target=resource_node.id,
+                        edge_type="provides_resource",
+                    )
+                )
 
         entry_point = nodes[0].id if nodes else None
 
@@ -262,15 +257,16 @@ class MCPMapper(BaseMapper):
             nodes=nodes,
             edges=edges,
             entry_point=entry_point,
-            exit_points=[]
+            exit_points=[],
         )
 
     def to_langgraph(self, graph: MappedGraph) -> Any:
         """Convert to LangGraph StateGraph with MCP tools."""
         try:
-            from langgraph.graph import StateGraph, END
-            from typing import TypedDict, Annotated
             import operator
+            from typing import Annotated, TypedDict
+
+            from langgraph.graph import END, StateGraph
         except ImportError:
             raise ImportError("langgraph is required for conversion")
 
@@ -284,12 +280,16 @@ class MCPMapper(BaseMapper):
         server_nodes = [n for n in graph.nodes if n.node_type == NodeType.AGENT]
 
         for node in server_nodes:
+
             def make_server_node(server_node: MappedNode):
                 async def server_func(state: MCPState) -> MCPState:
                     return {
-                        "messages": [{"role": "assistant", "content": f"MCP Server {server_node.name}"}],
-                        "tool_results": {}
+                        "messages": [
+                            {"role": "assistant", "content": f"MCP Server {server_node.name}"}
+                        ],
+                        "tool_results": {},
                     }
+
                 return server_func
 
             workflow.add_node(node.id, make_server_node(node))
@@ -340,13 +340,14 @@ class MCPMapper(BaseMapper):
                 def tool_func(**kwargs) -> str:
                     # Placeholder - actual MCP call would happen here
                     return f"Called MCP tool {tool_node.name} with {kwargs}"
+
                 return tool_func
 
             tool = StructuredTool.from_function(
                 func=make_tool_func(node),
                 name=node.name,
                 description=node.description or f"MCP tool: {node.name}",
-                args_schema=InputModel
+                args_schema=InputModel,
             )
             tools.append(tool)
 
@@ -360,7 +361,7 @@ class MCPMapper(BaseMapper):
             "number": float,
             "boolean": bool,
             "array": list,
-            "object": dict
+            "object": dict,
         }
         return type_map.get(json_type, str)
 
@@ -384,10 +385,7 @@ class MCPClient:
         self._pending: Dict[int, asyncio.Future] = {}
 
     async def connect(
-        self,
-        command: str,
-        args: List[str] = None,
-        env: Dict[str, str] = None
+        self, command: str, args: List[str] = None, env: Dict[str, str] = None
     ) -> None:
         """Connect to an MCP server."""
         import os
@@ -402,21 +400,21 @@ class MCPClient:
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            env=process_env
+            env=process_env,
         )
 
         # Start reading responses
         asyncio.create_task(self._read_responses())
 
         # Initialize connection
-        await self._send_request("initialize", {
-            "protocolVersion": "2024-11-05",
-            "capabilities": {},
-            "clientInfo": {
-                "name": "company-researcher",
-                "version": "1.0.0"
-            }
-        })
+        await self._send_request(
+            "initialize",
+            {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {},
+                "clientInfo": {"name": "company-researcher", "version": "1.0.0"},
+            },
+        )
 
     async def _read_responses(self) -> None:
         """Read responses from MCP server."""
@@ -447,12 +445,7 @@ class MCPClient:
         self._request_id += 1
         request_id = self._request_id
 
-        request = {
-            "jsonrpc": "2.0",
-            "id": request_id,
-            "method": method,
-            "params": params or {}
-        }
+        request = {"jsonrpc": "2.0", "id": request_id, "method": method, "params": params or {}}
 
         # Create future for response
         future: asyncio.Future = asyncio.get_event_loop().create_future()
@@ -476,20 +469,21 @@ class MCPClient:
         tools = []
 
         for tool_data in result.get("tools", []):
-            tools.append(MCPTool(
-                name=tool_data.get("name", ""),
-                description=tool_data.get("description", ""),
-                input_schema=tool_data.get("inputSchema", {})
-            ))
+            tools.append(
+                MCPTool(
+                    name=tool_data.get("name", ""),
+                    description=tool_data.get("description", ""),
+                    input_schema=tool_data.get("inputSchema", {}),
+                )
+            )
 
         return tools
 
     async def call_tool(self, name: str, arguments: Dict[str, Any] = None) -> Any:
         """Call a tool on the MCP server."""
-        result = await self._send_request("tools/call", {
-            "name": name,
-            "arguments": arguments or {}
-        })
+        result = await self._send_request(
+            "tools/call", {"name": name, "arguments": arguments or {}}
+        )
         return result.get("content", [])
 
     async def list_resources(self) -> List[MCPResource]:
@@ -498,12 +492,14 @@ class MCPClient:
         resources = []
 
         for resource_data in result.get("resources", []):
-            resources.append(MCPResource(
-                uri=resource_data.get("uri", ""),
-                name=resource_data.get("name", ""),
-                description=resource_data.get("description", ""),
-                mime_type=resource_data.get("mimeType", "text/plain")
-            ))
+            resources.append(
+                MCPResource(
+                    uri=resource_data.get("uri", ""),
+                    name=resource_data.get("name", ""),
+                    description=resource_data.get("description", ""),
+                    mime_type=resource_data.get("mimeType", "text/plain"),
+                )
+            )
 
         return resources
 
@@ -518,20 +514,21 @@ class MCPClient:
         prompts = []
 
         for prompt_data in result.get("prompts", []):
-            prompts.append(MCPPrompt(
-                name=prompt_data.get("name", ""),
-                description=prompt_data.get("description", ""),
-                arguments=prompt_data.get("arguments", [])
-            ))
+            prompts.append(
+                MCPPrompt(
+                    name=prompt_data.get("name", ""),
+                    description=prompt_data.get("description", ""),
+                    arguments=prompt_data.get("arguments", []),
+                )
+            )
 
         return prompts
 
     async def get_prompt(self, name: str, arguments: Dict[str, str] = None) -> Dict[str, Any]:
         """Get a prompt from the MCP server."""
-        result = await self._send_request("prompts/get", {
-            "name": name,
-            "arguments": arguments or {}
-        })
+        result = await self._send_request(
+            "prompts/get", {"name": name, "arguments": arguments or {}}
+        )
         return result
 
     async def disconnect(self) -> None:
@@ -542,10 +539,7 @@ class MCPClient:
             self._process = None
 
 
-def map_mcp_to_langgraph(
-    config: Union[Dict[str, Any], MCPServer],
-    compile: bool = False
-) -> Any:
+def map_mcp_to_langgraph(config: Union[Dict[str, Any], MCPServer], compile: bool = False) -> Any:
     """
     Convenience function to map MCP config to LangGraph.
 

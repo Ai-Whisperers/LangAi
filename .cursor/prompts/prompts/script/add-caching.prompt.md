@@ -36,4 +36,3 @@ See [PowerShell caching exemplar](../../exemplars/script/powershell/caching.exem
 
 ---
 Produced-by: prompt.scripts.add-caching.v1 | ts=2025-12-07T00:00:00Z
-

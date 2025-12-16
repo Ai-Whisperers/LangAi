@@ -28,4 +28,3 @@ Would you like to upload or share the specific research sources you intended to 
 ---
 
 ## Sources
-

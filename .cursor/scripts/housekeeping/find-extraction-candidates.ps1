@@ -65,4 +65,3 @@ if ($AsJson) {
 } else {
     $results | Format-Table -AutoSize
 }
-

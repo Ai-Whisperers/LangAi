@@ -29,7 +29,7 @@ Lead all aspects of regulatory submissions from pre-submission through post-mark
 
 2. **Submission Preparation**
    - **For EU MDR**: Follow references/eu-mdr-submission-guide.md
-   - **For FDA**: Follow references/fda-submission-guide.md  
+   - **For FDA**: Follow references/fda-submission-guide.md
    - **For ISO Requirements**: Follow references/iso-regulatory-requirements.md
    - **For Global Markets**: Follow references/global-regulatory-pathways.md
 

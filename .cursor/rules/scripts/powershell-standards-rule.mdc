@@ -10,7 +10,7 @@ requires:
   - rule.scripts.core-principles.v1
   - rule.scripts.quality-levels.v1
 model_hints: { temp: 0.2, top_p: 0.9 }
-provenance: 
+provenance:
   owner: team-devops
   last_review: 2025-12-07
   created: 2025-12-07
@@ -49,9 +49,9 @@ PowerShell script with:
 
 ### 0. Runtime Baseline (Mandatory)
 
-- All Standard+ scripts MUST target PowerShell 7.2+ (Core).  
-- Add at top of every script and shared module:  
-  - `#Requires -Version 7.2`  
+- All Standard+ scripts MUST target PowerShell 7.2+ (Core).
+- Add at top of every script and shared module:
+  - `#Requires -Version 7.2`
   - `#Requires -PSEdition Core`
 
 ### 1. Comment-Based Help (Mandatory)
@@ -203,14 +203,14 @@ function Test-Unicode {
     <#
     .SYNOPSIS
         Detects if the environment supports Unicode output.
-    
+
     .DESCRIPTION
         Checks PowerShell version, Azure Pipelines environment, and
         console encoding to determine Unicode support.
-    
+
     .OUTPUTS
         [bool] True if Unicode is supported, False otherwise.
-    
+
     .EXAMPLE
         if (Test-Unicode) {
             Write-Host "✅ Unicode supported"
@@ -219,11 +219,11 @@ function Test-Unicode {
     [CmdletBinding()]
     [OutputType([bool])]
     param()
-    
+
     $psVersion = $PSVersionTable.PSVersion.Major
     $inAzure = $env:AGENT_TEMPDIRECTORY -ne $null
     $isUtf8Console = [Console]::OutputEncoding.CodePage -eq 65001
-    
+
     return ($psVersion -ge 7) -or $inAzure -or $isUtf8Console
 }
 
@@ -231,13 +231,13 @@ function Get-StatusEmoji {
     <#
     .SYNOPSIS
         Gets status indicator emoji or ASCII fallback.
-    
+
     .PARAMETER Status
         Status type: 'success', 'warning', 'error', 'info'
-    
+
     .OUTPUTS
         [string] Emoji or ASCII representation of status.
-    
+
     .EXAMPLE
         $checkmark = Get-StatusEmoji 'success'
         Write-Host "$checkmark All tests passed!" -ForegroundColor Green
@@ -249,7 +249,7 @@ function Get-StatusEmoji {
         [ValidateSet('success', 'warning', 'error', 'info')]
         [string]$Status
     )
-    
+
     if (Test-Unicode) {
         $emojis = @{
             'success' = '✅'
@@ -265,7 +265,7 @@ function Get-StatusEmoji {
             'info'    = '[INFO]'
         }
     }
-    
+
     return $emojis[$Status]
 }
 
@@ -372,23 +372,23 @@ function Test-Unicode {
     [CmdletBinding()]
     [OutputType([bool])]
     param()
-    
+
     # PowerShell 7+ always supports Unicode
     $psVersion = $PSVersionTable.PSVersion.Major
     if ($psVersion -ge 7) {
         return $true
     }
-    
+
     # Azure Pipelines supports Unicode
     if ($env:AGENT_TEMPDIRECTORY -ne $null) {
         return $true
     }
-    
+
     # Check if console encoding is UTF-8
     if ([Console]::OutputEncoding.CodePage -eq 65001) {
         return $true
     }
-    
+
     # Fallback to ASCII
     return $false
 }
@@ -401,8 +401,8 @@ function Test-Unicode {
 ```powershell
 # Detect Unicode support once at script start
 $supportsUnicode = (
-    ($PSVersionTable.PSVersion.Major -ge 7) -or 
-    ($env:AGENT_TEMPDIRECTORY -ne $null) -or 
+    ($PSVersionTable.PSVersion.Major -ge 7) -or
+    ($env:AGENT_TEMPDIRECTORY -ne $null) -or
     ([Console]::OutputEncoding.CodePage -eq 65001)
 )
 
@@ -468,15 +468,15 @@ Import-Module $ModulePath -Force
 try {
     $info = Get-StatusEmoji 'info'
     Write-Host "$info Building project in $Configuration mode..." -ForegroundColor Cyan
-    
+
     dotnet build --configuration $Configuration
-    
+
     if ($LASTEXITCODE -ne 0) {
         $error = Get-StatusEmoji 'error'
         Write-Host "$error Build failed with exit code $LASTEXITCODE" -ForegroundColor Red
         exit 1
     }
-    
+
     $success = Get-StatusEmoji 'success'
     Write-Host "$success Build completed successfully!" -ForegroundColor Green
     exit 0
@@ -518,8 +518,8 @@ Choose 2+ features for Advanced quality level.
 
 Process multiple independent items concurrently (PowerShell 7+).
 
-**When to use**: 10+ independent items, each taking >1 second  
-**Performance**: 3-10x speedup  
+**When to use**: 10+ independent items, each taking >1 second
+**Performance**: 3-10x speedup
 **Detailed Examples**: See [Parallel Processing Pattern Exemplar](../../exemplars/script/powershell/parallel.exemplar.md)
 
 **Key Pattern**:
@@ -533,14 +533,14 @@ $results = $items | ForEach-Object -Parallel {
 
 Show progress bar for long-running operations.
 
-**When to use**: Operations >10 seconds  
+**When to use**: Operations >10 seconds
 **Detailed Examples**: See [Progress Reporting Pattern Exemplar](../../exemplars/script/powershell/progress.exemplar.md)
 
 ### Structured Logging (Write-Log)
 
 Logging with severity levels (INFO, WARN, ERROR, DEBUG, SUCCESS).
 
-**When to use**: Advanced+ quality level, production scripts  
+**When to use**: Advanced+ quality level, production scripts
 **Detailed Examples**: See [Logging Pattern Exemplar](../../exemplars/script/powershell/logging.exemplar.md)
 
 **Features**:
@@ -553,15 +553,15 @@ Logging with severity levels (INFO, WARN, ERROR, DEBUG, SUCCESS).
 
 Skip analysis of unchanged items using file hashing.
 
-**When to use**: Repeated analysis, large datasets  
-**Performance**: 50-80% speedup on unchanged codebases  
+**When to use**: Repeated analysis, large datasets
+**Performance**: 50-80% speedup on unchanged codebases
 **Detailed Examples**: See [Caching Pattern Exemplar](../../exemplars/script/powershell/caching.exemplar.md)
 
 ### Retry Logic
 
 Automatic retry with exponential backoff for transient failures.
 
-**When to use**: Network operations, API calls  
+**When to use**: Network operations, API calls
 **Detailed Examples**: See [Retry Logic Pattern Exemplar](../../exemplars/script/powershell/retry.exemplar.md)
 
 **Key Pattern**:
@@ -575,7 +575,7 @@ Invoke-WithRetry {
 
 Accept input from PowerShell pipeline.
 
-**When to use**: Reusable utilities, cmdlet-style scripts  
+**When to use**: Reusable utilities, cmdlet-style scripts
 **Detailed Examples**: See [Pipeline Support Pattern Exemplar](../../exemplars/script/powershell/pipeline.exemplar.md)
 
 ---
@@ -588,7 +588,7 @@ Choose 2+ features for Production quality level (in addition to Advanced feature
 
 Send notifications to Microsoft Teams or Slack.
 
-**When to use**: Production scripts, critical automation  
+**When to use**: Production scripts, critical automation
 **Detailed Examples**: See [Webhooks Pattern Exemplar](../../exemplars/script/powershell/webhooks.exemplar.md)
 
 **Key Requirements**:
@@ -600,7 +600,7 @@ Send notifications to Microsoft Teams or Slack.
 
 Store metrics over time for trend analysis.
 
-**When to use**: Performance tracking, quality metrics  
+**When to use**: Performance tracking, quality metrics
 **Pattern**: CSV or SQLite database for metrics storage
 
 ### Performance Profiling

@@ -66,7 +66,7 @@ python scripts/tech_debt_analyzer.py
 
 # Allocate capacity
 - Critical debt: 40% capacity
-- High debt: 25% capacity  
+- High debt: 25% capacity
 - Medium debt: 15% capacity
 - Low debt: Ongoing maintenance
 ```
@@ -366,16 +366,16 @@ Detailed metrics attached.
 - **Development**: GitHub, GitLab, Bitbucket
 
 ### Key Resources
-- **Books**: 
+- **Books**:
   - "The Manager's Path" - Camille Fournier
   - "Accelerate" - Nicole Forsgren
   - "Team Topologies" - Skelton & Pais
-  
+
 - **Frameworks**:
   - DORA metrics
   - SPACE framework
   - Team Topologies
-  
+
 - **Communities**:
   - CTO Craft
   - Engineering Leadership Slack
@@ -403,11 +403,11 @@ Detailed metrics attached.
 
 ## Red Flags to Watch
 
-⚠️ Increasing technical debt  
-⚠️ Rising attrition rate  
-⚠️ Slowing velocity  
-⚠️ Growing incidents  
-⚠️ Team morale declining  
-⚠️ Budget overruns  
-⚠️ Vendor dependencies  
+⚠️ Increasing technical debt
+⚠️ Rising attrition rate
+⚠️ Slowing velocity
+⚠️ Growing incidents
+⚠️ Team morale declining
+⚠️ Budget overruns
+⚠️ Vendor dependencies
 ⚠️ Security vulnerabilities

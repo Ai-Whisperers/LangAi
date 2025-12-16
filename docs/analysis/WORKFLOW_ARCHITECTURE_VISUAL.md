@@ -837,4 +837,3 @@ The architecture balances three concerns:
    - Cost-aware iteration (stops when not worth it)
    - Region/language awareness
    - Result: Works globally, adapts dynamically
-

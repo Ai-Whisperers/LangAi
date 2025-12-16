@@ -6,8 +6,8 @@ Compresses text while preserving essential information.
 
 from typing import List, Optional
 
-from .models import CompressionLevel, ContentType, CompressionResult
 from .extractor import KeyPointExtractor
+from .models import CompressionLevel, CompressionResult, ContentType
 
 
 class TextCompressor:
@@ -31,7 +31,7 @@ class TextCompressor:
         level: CompressionLevel = CompressionLevel.MODERATE,
         target_length: Optional[int] = None,
         content_type: ContentType = ContentType.GENERAL,
-        preserve_entities: Optional[List[str]] = None
+        preserve_entities: Optional[List[str]] = None,
     ) -> CompressionResult:
         """
         Compress text to target length or compression level.
@@ -54,7 +54,7 @@ class TextCompressor:
                 CompressionLevel.MINIMAL: 0.7,
                 CompressionLevel.MODERATE: 0.4,
                 CompressionLevel.AGGRESSIVE: 0.2,
-                CompressionLevel.EXTREME: 0.1
+                CompressionLevel.EXTREME: 0.1,
             }
             target_length = int(original_length * target_ratios[level])
 
@@ -66,15 +66,11 @@ class TextCompressor:
                 original_length=original_length,
                 compressed_length=original_length,
                 compression_ratio=1.0,
-                compression_level=level
+                compression_level=level,
             )
 
         # Extract key points
-        key_points = self._key_extractor.extract(
-            text,
-            max_points=20,
-            content_type=content_type
-        )
+        key_points = self._key_extractor.extract(text, max_points=20, content_type=content_type)
 
         # Build compressed text from key points
         compressed_parts = []
@@ -112,14 +108,11 @@ class TextCompressor:
             compression_ratio=len(compressed_text) / original_length if original_length > 0 else 0,
             key_points=[p.content for p in key_points[:10]],
             preserved_entities=list(preserved),
-            compression_level=level
+            compression_level=level,
         )
 
     def compress_to_bullets(
-        self,
-        text: str,
-        max_bullets: int = 10,
-        content_type: ContentType = ContentType.GENERAL
+        self, text: str, max_bullets: int = 10, content_type: ContentType = ContentType.GENERAL
     ) -> List[str]:
         """
         Compress text to bullet points.
@@ -133,9 +126,7 @@ class TextCompressor:
             List of bullet point strings
         """
         key_points = self._key_extractor.extract(
-            text,
-            max_points=max_bullets,
-            content_type=content_type
+            text, max_points=max_bullets, content_type=content_type
         )
 
         bullets = []
@@ -184,10 +175,9 @@ class TextCompressor:
 # Factory Function
 # ============================================================================
 
+
 def compress_text(
-    text: str,
-    level: str = "moderate",
-    target_length: Optional[int] = None
+    text: str, level: str = "moderate", target_length: Optional[int] = None
 ) -> CompressionResult:
     """
     Compress text with specified level.
@@ -201,8 +191,4 @@ def compress_text(
         CompressionResult
     """
     compressor = TextCompressor()
-    return compressor.compress(
-        text,
-        level=CompressionLevel(level),
-        target_length=target_length
-    )
+    return compressor.compress(text, level=CompressionLevel(level), target_length=target_length)

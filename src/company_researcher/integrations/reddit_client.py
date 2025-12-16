@@ -11,8 +11,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from .base_client import BaseAPIClient
 from ..utils import get_config, get_logger
+from .base_client import BaseAPIClient
 
 logger = get_logger(__name__)
 
@@ -20,6 +20,7 @@ logger = get_logger(__name__)
 @dataclass
 class RedditPost:
     """Reddit post/submission data."""
+
     id: str
     title: str
     selftext: str
@@ -49,7 +50,7 @@ class RedditPost:
             created_utc=post_data.get("created_utc", 0),
             url=post_data.get("url", ""),
             permalink=f"https://reddit.com{post_data.get('permalink', '')}",
-            is_self=post_data.get("is_self", False)
+            is_self=post_data.get("is_self", False),
         )
 
     @property
@@ -60,6 +61,7 @@ class RedditPost:
 @dataclass
 class SubredditInfo:
     """Subreddit information."""
+
     name: str
     display_name: str
     title: str
@@ -80,7 +82,7 @@ class SubredditInfo:
             subscribers=sub_data.get("subscribers", 0),
             active_users=sub_data.get("accounts_active", 0),
             created_utc=sub_data.get("created_utc", 0),
-            url=f"https://reddit.com{sub_data.get('url', '')}"
+            url=f"https://reddit.com{sub_data.get('url', '')}",
         )
 
 
@@ -103,20 +105,30 @@ class RedditClient(BaseAPIClient):
 
     # Relevant subreddits for company/market research
     FINANCE_SUBREDDITS = [
-        "stocks", "investing", "wallstreetbets", "stockmarket",
-        "finance", "options", "SecurityAnalysis"
+        "stocks",
+        "investing",
+        "wallstreetbets",
+        "stockmarket",
+        "finance",
+        "options",
+        "SecurityAnalysis",
     ]
 
     TECH_SUBREDDITS = [
-        "technology", "programming", "startups", "entrepreneur",
-        "business", "SaaS", "artificial"
+        "technology",
+        "programming",
+        "startups",
+        "entrepreneur",
+        "business",
+        "SaaS",
+        "artificial",
     ]
 
     def __init__(
         self,
         client_id: Optional[str] = None,
         client_secret: Optional[str] = None,
-        user_agent: str = "CompanyResearcher/1.0"
+        user_agent: str = "CompanyResearcher/1.0",
     ):
         self.client_id = client_id or get_config("REDDIT_CLIENT_ID")
         self.client_secret = client_secret or get_config("REDDIT_CLIENT_SECRET")
@@ -128,7 +140,7 @@ class RedditClient(BaseAPIClient):
             api_key=self.client_id,  # Use client_id as API key placeholder
             cache_ttl=300,  # 5 min cache
             rate_limit_calls=100,
-            rate_limit_period=60.0
+            rate_limit_period=60.0,
         )
 
     def is_available(self) -> bool:
@@ -137,8 +149,9 @@ class RedditClient(BaseAPIClient):
 
     async def _get_access_token(self) -> Optional[str]:
         """Get OAuth access token."""
-        import time
         import base64
+        import time
+
         import aiohttp
 
         # Return cached token if valid
@@ -149,26 +162,18 @@ class RedditClient(BaseAPIClient):
             return None
 
         # Request new token
-        auth = base64.b64encode(
-            f"{self.client_id}:{self.client_secret}".encode()
-        ).decode()
+        auth = base64.b64encode(f"{self.client_id}:{self.client_secret}".encode()).decode()
 
         headers = {
             "Authorization": f"Basic {auth}",
             "User-Agent": self.user_agent,
-            "Content-Type": "application/x-www-form-urlencoded"
+            "Content-Type": "application/x-www-form-urlencoded",
         }
 
-        data = {
-            "grant_type": "client_credentials"
-        }
+        data = {"grant_type": "client_credentials"}
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(
-                self.AUTH_URL,
-                headers=headers,
-                data=data
-            ) as response:
+            async with session.post(self.AUTH_URL, headers=headers, data=data) as response:
                 if response.status == 200:
                     result = await response.json()
                     self._access_token = result.get("access_token")
@@ -180,19 +185,12 @@ class RedditClient(BaseAPIClient):
 
     def _get_headers(self) -> Dict[str, str]:
         """Get headers with auth token."""
-        headers = {
-            "User-Agent": self.user_agent
-        }
+        headers = {"User-Agent": self.user_agent}
         if self._access_token:
             headers["Authorization"] = f"Bearer {self._access_token}"
         return headers
 
-    async def _request(
-        self,
-        endpoint: str,
-        params: Optional[Dict] = None,
-        **kwargs
-    ) -> Any:
+    async def _request(self, endpoint: str, params: Optional[Dict] = None, **kwargs) -> Any:
         """Make authenticated request."""
         # Ensure we have a token
         token = await self._get_access_token()
@@ -212,7 +210,7 @@ class RedditClient(BaseAPIClient):
         subreddit: Optional[str] = None,
         sort: str = "relevance",
         time_filter: str = "month",
-        limit: int = 25
+        limit: int = 25,
     ) -> List[RedditPost]:
         """
         Search for posts.
@@ -237,7 +235,7 @@ class RedditClient(BaseAPIClient):
             "sort": sort,
             "t": time_filter,
             "limit": min(limit, 100),
-            "restrict_sr": "true" if subreddit else "false"
+            "restrict_sr": "true" if subreddit else "false",
         }
 
         data = await self._request(endpoint, params)
@@ -267,11 +265,7 @@ class RedditClient(BaseAPIClient):
         return None
 
     async def get_subreddit_posts(
-        self,
-        subreddit: str,
-        sort: str = "hot",
-        time_filter: str = "week",
-        limit: int = 25
+        self, subreddit: str, sort: str = "hot", time_filter: str = "week", limit: int = 25
     ) -> List[RedditPost]:
         """
         Get posts from a subreddit.
@@ -306,7 +300,7 @@ class RedditClient(BaseAPIClient):
         self,
         company_name: str,
         ticker: Optional[str] = None,
-        subreddits: Optional[List[str]] = None
+        subreddits: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Analyze Reddit sentiment about a company.
@@ -334,10 +328,7 @@ class RedditClient(BaseAPIClient):
         for subreddit in subreddits[:5]:  # Limit to avoid rate limits
             for query in queries:
                 posts = await self.search_posts(
-                    query=query,
-                    subreddit=subreddit,
-                    time_filter="month",
-                    limit=20
+                    query=query, subreddit=subreddit, time_filter="month", limit=20
                 )
                 for post in posts:
                     if post.id not in seen_ids:
@@ -349,7 +340,7 @@ class RedditClient(BaseAPIClient):
                 "company": company_name,
                 "ticker": ticker,
                 "total_posts": 0,
-                "error": "No posts found"
+                "error": "No posts found",
             }
 
         # Calculate metrics
@@ -377,13 +368,13 @@ class RedditClient(BaseAPIClient):
             "metrics": {
                 "average_score": round(avg_score, 1),
                 "average_upvote_ratio": round(avg_ratio, 2),
-                "total_comments": total_comments
+                "total_comments": total_comments,
             },
             "sentiment": {
                 "positive": positive,
                 "negative": negative,
                 "neutral": neutral,
-                "positive_ratio": round(positive / len(all_posts), 2) if all_posts else 0
+                "positive_ratio": round(positive / len(all_posts), 2) if all_posts else 0,
             },
             "top_subreddits": dict(
                 sorted(subreddit_counts.items(), key=lambda x: x[1], reverse=True)[:5]
@@ -394,16 +385,13 @@ class RedditClient(BaseAPIClient):
                     "score": p.score,
                     "comments": p.num_comments,
                     "subreddit": p.subreddit,
-                    "url": p.permalink
+                    "url": p.permalink,
                 }
                 for p in top_posts
-            ]
+            ],
         }
 
-    async def get_market_sentiment(
-        self,
-        limit_per_sub: int = 10
-    ) -> Dict[str, Any]:
+    async def get_market_sentiment(self, limit_per_sub: int = 10) -> Dict[str, Any]:
         """
         Get overall market sentiment from finance subreddits.
 
@@ -416,11 +404,7 @@ class RedditClient(BaseAPIClient):
         all_posts = []
 
         for subreddit in self.FINANCE_SUBREDDITS[:4]:
-            posts = await self.get_subreddit_posts(
-                subreddit,
-                sort="hot",
-                limit=limit_per_sub
-            )
+            posts = await self.get_subreddit_posts(subreddit, sort="hot", limit=limit_per_sub)
             all_posts.extend(posts)
 
         if not all_posts:
@@ -431,14 +415,16 @@ class RedditClient(BaseAPIClient):
         return {
             "total_posts": len(all_posts),
             "average_upvote_ratio": round(avg_ratio, 2),
-            "sentiment": "bullish" if avg_ratio > 0.6 else "bearish" if avg_ratio < 0.4 else "neutral",
+            "sentiment": (
+                "bullish" if avg_ratio > 0.6 else "bearish" if avg_ratio < 0.4 else "neutral"
+            ),
             "top_discussions": [
                 {
                     "title": p.title[:80],
                     "subreddit": p.subreddit,
                     "score": p.score,
-                    "comments": p.num_comments
+                    "comments": p.num_comments,
                 }
                 for p in sorted(all_posts, key=lambda x: x.score, reverse=True)[:5]
-            ]
+            ],
         }

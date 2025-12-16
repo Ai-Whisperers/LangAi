@@ -46,7 +46,7 @@ Apply when:
 
 ### 1. Specificity Over Generality
 
-**Good**: 
+**Good**:
 ```
 Analyze XML documentation coverage in [FOLDER_PATH] and identify:
 - Classes without XML comments
@@ -124,7 +124,7 @@ Use imperative verbs and numbered steps:
 
 ## Examples (Few-Shot)
 
-**Input**: 
+**Input**:
 [Example Input]
 
 **Reasoning**:
@@ -175,7 +175,7 @@ Use these consistent patterns:
 1. **Use UPPER_CASE inside brackets**: `[LIKE_THIS]`
 2. **Be specific**: `[DATABASE_CONNECTION_STRING]` not `[VALUE]`
 3. **Provide examples** in comments: `[THRESHOLD] # e.g., 80%`
-4. **Use XML Delimiters for Robustness**: 
+4. **Use XML Delimiters for Robustness**:
    Wrap variable content in XML tags to prevent context bleeding.
    ```markdown
    Analyze the code:
@@ -220,7 +220,7 @@ Analyze the test coverage
 - Consistent with observed effective prompt patterns
 - Makes prompts feel like requests, not commands
 
-**Exceptions**: 
+**Exceptions**:
 - Very short utility prompts where "please" is implicit (e.g., "continue")
 - Declarative statements providing information (not making requests)
 
@@ -270,7 +270,7 @@ Analyze [TARGET] for:
 1. **[Aspect 1]**:
    - Look for: [CRITERIA]
    - Report: [FORMAT]
-   
+
 2. **[Aspect 2]**:
    - Look for: [CRITERIA]
    - Report: [FORMAT]

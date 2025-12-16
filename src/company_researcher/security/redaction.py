@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional, Pattern, Tuple
 
 class RedactionType(str, Enum):
     """Types of sensitive data to redact."""
+
     EMAIL = "email"
     PHONE = "phone"
     SSN = "ssn"
@@ -32,6 +33,7 @@ class RedactionType(str, Enum):
 @dataclass
 class RedactionPattern:
     """A pattern for detecting sensitive data."""
+
     name: str
     pattern: str
     replacement: str = "[REDACTED]"
@@ -64,6 +66,7 @@ class RedactionPattern:
 @dataclass
 class RedactionConfig:
     """Configuration for content redaction."""
+
     patterns: List[RedactionPattern] = field(default_factory=list)
     preserve_format: bool = False  # Use format-preserving redaction
     log_redactions: bool = True
@@ -74,53 +77,53 @@ class RedactionConfig:
 BUILTIN_PATTERNS = {
     RedactionType.EMAIL: RedactionPattern(
         name="email",
-        pattern=r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
+        pattern=r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
         replacement="[EMAIL]",
-        redaction_type=RedactionType.EMAIL
+        redaction_type=RedactionType.EMAIL,
     ),
     RedactionType.PHONE: RedactionPattern(
         name="phone",
-        pattern=r'\b(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}\b',
+        pattern=r"\b(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}\b",
         replacement="[PHONE]",
-        redaction_type=RedactionType.PHONE
+        redaction_type=RedactionType.PHONE,
     ),
     RedactionType.SSN: RedactionPattern(
         name="ssn",
-        pattern=r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b',
+        pattern=r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
         replacement="[SSN]",
-        redaction_type=RedactionType.SSN
+        redaction_type=RedactionType.SSN,
     ),
     RedactionType.CREDIT_CARD: RedactionPattern(
         name="credit_card",
-        pattern=r'\b(?:\d{4}[-\s]?){3}\d{4}\b',
+        pattern=r"\b(?:\d{4}[-\s]?){3}\d{4}\b",
         replacement="[CREDIT_CARD]",
-        redaction_type=RedactionType.CREDIT_CARD
+        redaction_type=RedactionType.CREDIT_CARD,
     ),
     RedactionType.IP_ADDRESS: RedactionPattern(
         name="ip_address",
-        pattern=r'\b(?:\d{1,3}\.){3}\d{1,3}\b',
+        pattern=r"\b(?:\d{1,3}\.){3}\d{1,3}\b",
         replacement="[IP]",
-        redaction_type=RedactionType.IP_ADDRESS
+        redaction_type=RedactionType.IP_ADDRESS,
     ),
     RedactionType.DATE_OF_BIRTH: RedactionPattern(
         name="dob",
-        pattern=r'\b(?:0?[1-9]|1[0-2])[/-](?:0?[1-9]|[12]\d|3[01])[/-](?:19|20)\d{2}\b',
+        pattern=r"\b(?:0?[1-9]|1[0-2])[/-](?:0?[1-9]|[12]\d|3[01])[/-](?:19|20)\d{2}\b",
         replacement="[DOB]",
-        redaction_type=RedactionType.DATE_OF_BIRTH
+        redaction_type=RedactionType.DATE_OF_BIRTH,
     ),
     RedactionType.API_KEY: RedactionPattern(
         name="api_key",
-        pattern=r'\b(?:sk[-_]|api[-_]?key[-_]?|apikey[-_]?|key[-_]?)[a-zA-Z0-9]{20,}\b',
+        pattern=r"\b(?:sk[-_]|api[-_]?key[-_]?|apikey[-_]?|key[-_]?)[a-zA-Z0-9]{20,}\b",
         replacement="[API_KEY]",
         redaction_type=RedactionType.API_KEY,
-        case_sensitive=False
+        case_sensitive=False,
     ),
     RedactionType.PASSWORD: RedactionPattern(
         name="password",
         pattern=r'(?:password|passwd|pwd)\s*[=:]\s*["\']?([^"\'\s]+)["\']?',
         replacement="password=[REDACTED]",
         redaction_type=RedactionType.PASSWORD,
-        case_sensitive=False
+        case_sensitive=False,
     ),
 }
 
@@ -128,6 +131,7 @@ BUILTIN_PATTERNS = {
 @dataclass
 class RedactionResult:
     """Result of a redaction operation."""
+
     original_length: int
     redacted_length: int
     redaction_count: int
@@ -162,9 +166,7 @@ class ContentRedactor:
         self._redaction_log: List[Dict[str, Any]] = []
 
     def add_pattern(
-        self,
-        pattern_type: RedactionType = None,
-        pattern: RedactionPattern = None
+        self, pattern_type: RedactionType = None, pattern: RedactionPattern = None
     ) -> None:
         """
         Add a redaction pattern.
@@ -178,19 +180,16 @@ class ContentRedactor:
         elif pattern_type and pattern_type in BUILTIN_PATTERNS:
             self._patterns.append(BUILTIN_PATTERNS[pattern_type])
 
-    def add_custom_pattern(
-        self,
-        name: str,
-        pattern: str,
-        replacement: str = "[REDACTED]"
-    ) -> None:
+    def add_custom_pattern(self, name: str, pattern: str, replacement: str = "[REDACTED]") -> None:
         """Add a custom redaction pattern."""
-        self._patterns.append(RedactionPattern(
-            name=name,
-            pattern=pattern,
-            replacement=replacement,
-            redaction_type=RedactionType.CUSTOM
-        ))
+        self._patterns.append(
+            RedactionPattern(
+                name=name,
+                pattern=pattern,
+                replacement=replacement,
+                redaction_type=RedactionType.CUSTOM,
+            )
+        )
 
     def redact(self, text: str) -> str:
         """
@@ -226,25 +225,18 @@ class ContentRedactor:
                 type_counts[pattern.name] = type_counts.get(pattern.name, 0) + count
 
                 if self.config.log_redactions:
-                    self._redaction_log.append({
-                        "pattern": pattern.name,
-                        "count": count
-                    })
+                    self._redaction_log.append({"pattern": pattern.name, "count": count})
 
         result = RedactionResult(
             original_length=original_length,
             redacted_length=len(text),
             redaction_count=total_count,
-            redacted_types=type_counts
+            redacted_types=type_counts,
         )
 
         return text, result
 
-    def redact_dict(
-        self,
-        data: Dict[str, Any],
-        recursive: bool = True
-    ) -> Dict[str, Any]:
+    def redact_dict(self, data: Dict[str, Any], recursive: bool = True) -> Dict[str, Any]:
         """
         Redact sensitive data from a dictionary.
 
@@ -281,12 +273,14 @@ class ContentRedactor:
         for pattern in self._patterns:
             matches = pattern.find_matches(text)
             for start, end, matched in matches:
-                findings.append({
-                    "type": pattern.name,
-                    "start": start,
-                    "end": end,
-                    "preview": matched[:3] + "..." if len(matched) > 3 else matched
-                })
+                findings.append(
+                    {
+                        "type": pattern.name,
+                        "start": start,
+                        "end": end,
+                        "preview": matched[:3] + "..." if len(matched) > 3 else matched,
+                    }
+                )
         return findings
 
     def get_redaction_log(self) -> List[Dict[str, Any]]:
@@ -312,11 +306,7 @@ class ContentRedactor:
 # Format-preserving redaction
 
 
-def format_preserving_redact(
-    text: str,
-    pattern: Pattern,
-    redaction_char: str = "X"
-) -> str:
+def format_preserving_redact(text: str, pattern: Pattern, redaction_char: str = "X") -> str:
     """
     Redact while preserving format (same length, similar structure).
 
@@ -328,6 +318,7 @@ def format_preserving_redact(
     Returns:
         Redacted text with preserved format
     """
+
     def replacer(match):
         original = match.group()
         redacted = ""
@@ -347,9 +338,7 @@ def format_preserving_redact(
 
 
 def redact_text(
-    text: str,
-    patterns: List[RedactionType] = None,
-    custom_patterns: List[RedactionPattern] = None
+    text: str, patterns: List[RedactionType] = None, custom_patterns: List[RedactionPattern] = None
 ) -> str:
     """
     Quick text redaction.
@@ -364,10 +353,10 @@ def redact_text(
     """
     redactor = ContentRedactor()
 
-    for pattern_type in (patterns or []):
+    for pattern_type in patterns or []:
         redactor.add_pattern(pattern_type)
 
-    for pattern in (custom_patterns or []):
+    for pattern in custom_patterns or []:
         redactor.add_pattern(pattern=pattern)
 
     if not redactor._patterns:
@@ -376,10 +365,7 @@ def redact_text(
     return redactor.redact(text)
 
 
-def redact_dict(
-    data: Dict[str, Any],
-    patterns: List[RedactionType] = None
-) -> Dict[str, Any]:
+def redact_dict(data: Dict[str, Any], patterns: List[RedactionType] = None) -> Dict[str, Any]:
     """
     Quick dictionary redaction.
 
@@ -391,7 +377,7 @@ def redact_dict(
         Redacted dictionary
     """
     redactor = ContentRedactor()
-    for pattern_type in (patterns or []):
+    for pattern_type in patterns or []:
         redactor.add_pattern(pattern_type)
 
     if not redactor._patterns:

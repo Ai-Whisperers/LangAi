@@ -61,4 +61,3 @@ Categorize gaps by:
 4. Suggested test cases for top 5-10 gaps
 
 Apply standards from `.cursor/rules/unit-testing/unit-test-coverage-rule.mdc`.
-

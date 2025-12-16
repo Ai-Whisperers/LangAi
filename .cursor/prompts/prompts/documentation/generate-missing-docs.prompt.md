@@ -44,4 +44,3 @@ Please add comprehensive XML documentation to the following file(s):
 Follow the standards defined in `.cursor/rules/documentation/documentation-standards-rule.mdc`.
 
 Process files one at a time, showing each complete file with documentation added.
-

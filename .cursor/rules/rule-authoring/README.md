@@ -1,8 +1,8 @@
 # Rule Authoring Framework
 
-**Version**: 1.1.0  
-**Status**: Production Ready  
-**Last Updated**: 2025-11-04  
+**Version**: 1.1.0
+**Status**: Production Ready
+**Last Updated**: 2025-11-04
 **Latest**: Added extraction-from-practice as 8th core rule (PRIMARY recommended approach)
 
 ## Quick Links
@@ -22,7 +22,7 @@ A comprehensive, self-consistent framework for authoring rules that:
 ## The Eight Core Rules
 
 ### 0. [Extraction from Practice](rule-extraction-from-practice.mdc) - **PRIMARY APPROACH**
-**ID**: `rule.authoring.extraction-from-practice.v1`  
+**ID**: `rule.authoring.extraction-from-practice.v1`
 **File**: `rule-extraction-from-practice.mdc`
 
 **What it defines**:
@@ -311,4 +311,3 @@ This framework is designed for internal organizational use. Adapt as needed for 
 ---
 
 **Remember**: Start with [Rule Authoring Overview](rule-authoring-overview.mdc) for the best introduction to this framework.
-

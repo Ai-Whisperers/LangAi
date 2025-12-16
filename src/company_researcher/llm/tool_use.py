@@ -23,14 +23,13 @@ Usage:
     )
 """
 
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 from threading import Lock
+from typing import Any, Dict, List, Optional
 
 from anthropic import Anthropic
 
 from .client_factory import get_anthropic_client
-
 
 # =============================================================================
 # Tool Definitions
@@ -45,20 +44,17 @@ FINANCIAL_EXTRACTION_TOOLS = [
             "properties": {
                 "annual_revenue": {
                     "type": "number",
-                    "description": "Annual revenue in USD (use billions format, e.g., 96.8 for $96.8B)"
+                    "description": "Annual revenue in USD (use billions format, e.g., 96.8 for $96.8B)",
                 },
-                "revenue_year": {
-                    "type": "integer",
-                    "description": "Year of the revenue figure"
-                },
+                "revenue_year": {"type": "integer", "description": "Year of the revenue figure"},
                 "revenue_unit": {
                     "type": "string",
                     "enum": ["millions", "billions"],
-                    "description": "Unit of revenue figure"
+                    "description": "Unit of revenue figure",
                 },
                 "yoy_growth_rate": {
                     "type": "number",
-                    "description": "Year-over-year growth rate as percentage"
+                    "description": "Year-over-year growth rate as percentage",
                 },
                 "quarterly_revenues": {
                     "type": "array",
@@ -67,19 +63,19 @@ FINANCIAL_EXTRACTION_TOOLS = [
                         "properties": {
                             "quarter": {"type": "string"},
                             "amount": {"type": "number"},
-                            "year": {"type": "integer"}
-                        }
+                            "year": {"type": "integer"},
+                        },
                     },
-                    "description": "Quarterly revenue figures if available"
+                    "description": "Quarterly revenue figures if available",
                 },
                 "revenue_sources": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "Sources for revenue data"
-                }
+                    "description": "Sources for revenue data",
+                },
             },
-            "required": ["annual_revenue", "revenue_year"]
-        }
+            "required": ["annual_revenue", "revenue_year"],
+        },
     },
     {
         "name": "extract_funding",
@@ -87,42 +83,33 @@ FINANCIAL_EXTRACTION_TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
-                "total_funding": {
-                    "type": "number",
-                    "description": "Total funding raised in USD"
-                },
+                "total_funding": {"type": "number", "description": "Total funding raised in USD"},
                 "funding_unit": {
                     "type": "string",
                     "enum": ["millions", "billions"],
-                    "description": "Unit of funding figure"
+                    "description": "Unit of funding figure",
                 },
                 "latest_round": {
                     "type": "string",
-                    "description": "Latest funding round (e.g., Series A, B, C)"
+                    "description": "Latest funding round (e.g., Series A, B, C)",
                 },
                 "latest_round_amount": {
                     "type": "number",
-                    "description": "Amount raised in latest round"
+                    "description": "Amount raised in latest round",
                 },
                 "latest_round_date": {
                     "type": "string",
-                    "description": "Date of latest round (YYYY-MM format)"
+                    "description": "Date of latest round (YYYY-MM format)",
                 },
-                "valuation": {
-                    "type": "number",
-                    "description": "Latest valuation in USD"
-                },
-                "valuation_unit": {
-                    "type": "string",
-                    "enum": ["millions", "billions"]
-                },
+                "valuation": {"type": "number", "description": "Latest valuation in USD"},
+                "valuation_unit": {"type": "string", "enum": ["millions", "billions"]},
                 "key_investors": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "List of key investors"
-                }
-            }
-        }
+                    "description": "List of key investors",
+                },
+            },
+        },
     },
     {
         "name": "extract_market_position",
@@ -130,17 +117,14 @@ FINANCIAL_EXTRACTION_TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
-                "market_share": {
-                    "type": "number",
-                    "description": "Market share as percentage"
-                },
+                "market_share": {"type": "number", "description": "Market share as percentage"},
                 "market_rank": {
                     "type": "integer",
-                    "description": "Rank in the market (1 = leader)"
+                    "description": "Rank in the market (1 = leader)",
                 },
                 "total_addressable_market": {
                     "type": "number",
-                    "description": "TAM in USD billions"
+                    "description": "TAM in USD billions",
                 },
                 "competitors": {
                     "type": "array",
@@ -149,18 +133,18 @@ FINANCIAL_EXTRACTION_TOOLS = [
                         "properties": {
                             "name": {"type": "string"},
                             "market_share": {"type": "number"},
-                            "is_direct": {"type": "boolean"}
-                        }
+                            "is_direct": {"type": "boolean"},
+                        },
                     },
-                    "description": "List of competitors"
+                    "description": "List of competitors",
                 },
                 "competitive_advantages": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "Key competitive advantages"
-                }
-            }
-        }
+                    "description": "Key competitive advantages",
+                },
+            },
+        },
     },
     {
         "name": "extract_products",
@@ -176,27 +160,24 @@ FINANCIAL_EXTRACTION_TOOLS = [
                             "name": {"type": "string"},
                             "category": {"type": "string"},
                             "description": {"type": "string"},
-                            "revenue_contribution": {"type": "number"}
-                        }
+                            "revenue_contribution": {"type": "number"},
+                        },
                     },
-                    "description": "Main products/services"
+                    "description": "Main products/services",
                 },
                 "target_customers": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "Target customer segments"
+                    "description": "Target customer segments",
                 },
-                "pricing_model": {
-                    "type": "string",
-                    "description": "Business/pricing model"
-                },
+                "pricing_model": {"type": "string", "description": "Business/pricing model"},
                 "key_features": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "Key product features"
-                }
-            }
-        }
+                    "description": "Key product features",
+                },
+            },
+        },
     },
     {
         "name": "extract_company_overview",
@@ -213,25 +194,23 @@ FINANCIAL_EXTRACTION_TOOLS = [
                 "sub_industry": {"type": "string"},
                 "company_type": {
                     "type": "string",
-                    "enum": ["public", "private", "startup", "subsidiary"]
+                    "enum": ["public", "private", "startup", "subsidiary"],
                 },
                 "stock_ticker": {"type": "string"},
                 "stock_exchange": {"type": "string"},
                 "website": {"type": "string"},
-                "description": {
-                    "type": "string",
-                    "description": "Brief company description"
-                }
+                "description": {"type": "string", "description": "Brief company description"},
             },
-            "required": ["company_name"]
-        }
-    }
+            "required": ["company_name"],
+        },
+    },
 ]
 
 
 @dataclass
 class ExtractionResult:
     """Result from structured extraction."""
+
     tool_name: str
     data: Dict[str, Any]
     model: str
@@ -244,7 +223,7 @@ class ExtractionResult:
             "data": self.data,
             "model": self.model,
             "input_tokens": self.input_tokens,
-            "output_tokens": self.output_tokens
+            "output_tokens": self.output_tokens,
         }
 
 
@@ -270,7 +249,7 @@ class StructuredExtractor:
         content: str,
         company_name: str,
         model: str = "claude-sonnet-4-20250514",
-        max_tokens: int = 1000
+        max_tokens: int = 1000,
     ) -> Dict[str, Any]:
         """
         Extract structured financial data from text.
@@ -294,15 +273,17 @@ class StructuredExtractor:
             model=model,
             max_tokens=max_tokens,
             tools=FINANCIAL_EXTRACTION_TOOLS,
-            messages=[{
-                "role": "user",
-                "content": f"""Extract financial and company information for {company_name} from the following content.
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"""Extract financial and company information for {company_name} from the following content.
 Use the available tools to extract structured data for any information you find.
 Call multiple tools if different types of information are present.
 
 Content:
-{content}"""
-            }]
+{content}""",
+                }
+            ],
         )
 
         # Process all tool calls
@@ -318,8 +299,8 @@ Content:
             "tools_used": list(extracted_data.keys()),
             "usage": {
                 "input_tokens": response.usage.input_tokens,
-                "output_tokens": response.usage.output_tokens
-            }
+                "output_tokens": response.usage.output_tokens,
+            },
         }
 
     def extract_with_schema(
@@ -330,7 +311,7 @@ Content:
         description: str,
         model: str = "claude-sonnet-4-20250514",
         max_tokens: int = 1000,
-        force_tool: bool = True
+        force_tool: bool = True,
     ) -> ExtractionResult:
         """
         Extract data using a custom schema.
@@ -347,20 +328,15 @@ Content:
         Returns:
             ExtractionResult object
         """
-        tool = {
-            "name": tool_name,
-            "description": description,
-            "input_schema": schema
-        }
+        tool = {"name": tool_name, "description": description, "input_schema": schema}
 
         params = {
             "model": model,
             "max_tokens": max_tokens,
             "tools": [tool],
-            "messages": [{
-                "role": "user",
-                "content": f"Extract the requested information from:\n\n{content}"
-            }]
+            "messages": [
+                {"role": "user", "content": f"Extract the requested information from:\n\n{content}"}
+            ],
         }
 
         if force_tool:
@@ -376,7 +352,7 @@ Content:
                     data=block.input,
                     model=model,
                     input_tokens=response.usage.input_tokens,
-                    output_tokens=response.usage.output_tokens
+                    output_tokens=response.usage.output_tokens,
                 )
 
         # No tool use found
@@ -385,14 +361,11 @@ Content:
             data={},
             model=model,
             input_tokens=response.usage.input_tokens,
-            output_tokens=response.usage.output_tokens
+            output_tokens=response.usage.output_tokens,
         )
 
     def extract_entities(
-        self,
-        content: str,
-        entity_types: List[str] = None,
-        model: str = "claude-sonnet-4-20250514"
+        self, content: str, entity_types: List[str] = None, model: str = "claude-sonnet-4-20250514"
     ) -> Dict[str, List[str]]:
         """
         Extract named entities from text.
@@ -414,10 +387,10 @@ Content:
                 entity_type: {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": f"List of {entity_type} mentioned"
+                    "description": f"List of {entity_type} mentioned",
                 }
                 for entity_type in entity_types
-            }
+            },
         }
 
         result = self.extract_with_schema(
@@ -425,16 +398,13 @@ Content:
             schema=schema,
             tool_name="extract_entities",
             description="Extract named entities from the text",
-            model=model
+            model=model,
         )
 
         return result.data
 
     def extract_key_metrics(
-        self,
-        content: str,
-        metric_types: List[str] = None,
-        model: str = "claude-sonnet-4-20250514"
+        self, content: str, metric_types: List[str] = None, model: str = "claude-sonnet-4-20250514"
     ) -> List[Dict[str, Any]]:
         """
         Extract key metrics with values and context.
@@ -449,8 +419,13 @@ Content:
         """
         if metric_types is None:
             metric_types = [
-                "revenue", "profit", "growth_rate", "market_share",
-                "employee_count", "customer_count", "valuation"
+                "revenue",
+                "profit",
+                "growth_rate",
+                "market_share",
+                "employee_count",
+                "customer_count",
+                "valuation",
             ]
 
         schema = {
@@ -461,20 +436,17 @@ Content:
                     "items": {
                         "type": "object",
                         "properties": {
-                            "metric_type": {
-                                "type": "string",
-                                "enum": metric_types
-                            },
+                            "metric_type": {"type": "string", "enum": metric_types},
                             "value": {"type": "number"},
                             "unit": {"type": "string"},
                             "time_period": {"type": "string"},
                             "context": {"type": "string"},
-                            "source_text": {"type": "string"}
+                            "source_text": {"type": "string"},
                         },
-                        "required": ["metric_type", "value"]
-                    }
+                        "required": ["metric_type", "value"],
+                    },
                 }
-            }
+            },
         }
 
         result = self.extract_with_schema(
@@ -482,16 +454,13 @@ Content:
             schema=schema,
             tool_name="extract_metrics",
             description="Extract numerical metrics with their values and context",
-            model=model
+            model=model,
         )
 
         return result.data.get("metrics", [])
 
     def extract_competitive_intel(
-        self,
-        content: str,
-        company_name: str,
-        model: str = "claude-sonnet-4-20250514"
+        self, content: str, company_name: str, model: str = "claude-sonnet-4-20250514"
     ) -> Dict[str, Any]:
         """
         Extract competitive intelligence data.
@@ -508,31 +477,16 @@ Content:
             "type": "object",
             "properties": {
                 "company": {"type": "string"},
-                "strengths": {
-                    "type": "array",
-                    "items": {"type": "string"}
-                },
-                "weaknesses": {
-                    "type": "array",
-                    "items": {"type": "string"}
-                },
-                "opportunities": {
-                    "type": "array",
-                    "items": {"type": "string"}
-                },
-                "threats": {
-                    "type": "array",
-                    "items": {"type": "string"}
-                },
+                "strengths": {"type": "array", "items": {"type": "string"}},
+                "weaknesses": {"type": "array", "items": {"type": "string"}},
+                "opportunities": {"type": "array", "items": {"type": "string"}},
+                "threats": {"type": "array", "items": {"type": "string"}},
                 "competitive_position": {
                     "type": "string",
-                    "enum": ["leader", "challenger", "follower", "niche"]
+                    "enum": ["leader", "challenger", "follower", "niche"],
                 },
-                "key_differentiators": {
-                    "type": "array",
-                    "items": {"type": "string"}
-                }
-            }
+                "key_differentiators": {"type": "array", "items": {"type": "string"}},
+            },
         }
 
         result = self.extract_with_schema(
@@ -540,7 +494,7 @@ Content:
             schema=schema,
             tool_name="extract_competitive_intel",
             description=f"Extract competitive intelligence for {company_name}",
-            model=model
+            model=model,
         )
 
         return result.data

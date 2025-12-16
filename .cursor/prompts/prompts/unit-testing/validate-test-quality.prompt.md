@@ -74,4 +74,3 @@ Provide:
 4. Suggested refactorings (show before/after)
 
 Apply standards from `.cursor/rules/unit-testing/` rules.
-

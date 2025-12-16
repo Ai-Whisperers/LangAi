@@ -13,17 +13,19 @@ import threading
 import time
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Generic, Optional, TypeVar
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
 
-K = TypeVar('K')
-V = TypeVar('V')
+K = TypeVar("K")
+V = TypeVar("V")
 
 
 @dataclass
 class TTLCacheConfig:
     """Configuration for TTL cache."""
+
     default_ttl: float = 300.0  # seconds
     max_size: int = 10000
     cleanup_interval: float = 60.0  # seconds
@@ -34,6 +36,7 @@ class TTLCacheConfig:
 @dataclass
 class TTLCacheItem(Generic[V]):
     """Cache item with TTL."""
+
     value: V
     created_at: float  # timestamp
     expires_at: float  # timestamp
@@ -157,7 +160,7 @@ class TTLCache(Generic[K, V]):
                 expires_at=now + actual_ttl,
                 ttl=actual_ttl,
                 access_count=1,
-                last_accessed=now
+                last_accessed=now,
             )
             self._cache[key] = item
 
@@ -228,10 +231,7 @@ class TTLCache(Generic[K, V]):
     def _evict_expired(self) -> int:
         """Remove all expired items."""
         now = time.time()
-        expired_keys = [
-            k for k, v in self._cache.items()
-            if v.expires_at <= now
-        ]
+        expired_keys = [k for k, v in self._cache.items() if v.expires_at <= now]
 
         for key in expired_keys:
             item = self._cache[key]
@@ -244,10 +244,7 @@ class TTLCache(Generic[K, V]):
         if not self._cache:
             return
 
-        oldest_key = min(
-            self._cache.keys(),
-            key=lambda k: self._cache[k].created_at
-        )
+        oldest_key = min(self._cache.keys(), key=lambda k: self._cache[k].created_at)
         item = self._cache.pop(oldest_key)
         self._expirations += 1
 
@@ -295,9 +292,7 @@ class TTLCache(Generic[K, V]):
             # Get TTL distribution
             now = time.time()
             ttl_values = [
-                item.expires_at - now
-                for item in self._cache.values()
-                if item.expires_at > now
+                item.expires_at - now for item in self._cache.values() if item.expires_at > now
             ]
 
             return {
@@ -310,17 +305,14 @@ class TTLCache(Generic[K, V]):
                 "hit_rate": hit_rate,
                 "min_remaining_ttl": min(ttl_values) if ttl_values else None,
                 "max_remaining_ttl": max(ttl_values) if ttl_values else None,
-                "avg_remaining_ttl": sum(ttl_values) / len(ttl_values) if ttl_values else None
+                "avg_remaining_ttl": sum(ttl_values) / len(ttl_values) if ttl_values else None,
             }
 
     def get_keys(self) -> list:
         """Get all non-expired keys."""
         with self._lock:
             now = time.time()
-            return [
-                k for k, v in self._cache.items()
-                if v.expires_at > now
-            ]
+            return [k for k, v in self._cache.items() if v.expires_at > now]
 
 
 def create_ttl_cache(
@@ -328,7 +320,7 @@ def create_ttl_cache(
     max_size: int = 10000,
     sliding_expiration: bool = False,
     cleanup_interval: float = 60.0,
-    on_expire: Optional[Callable] = None
+    on_expire: Optional[Callable] = None,
 ) -> TTLCache:
     """
     Factory function to create TTL cache.
@@ -348,6 +340,6 @@ def create_ttl_cache(
         max_size=max_size,
         sliding_expiration=sliding_expiration,
         cleanup_interval=cleanup_interval,
-        on_expire=on_expire
+        on_expire=on_expire,
     )
     return TTLCache(config)

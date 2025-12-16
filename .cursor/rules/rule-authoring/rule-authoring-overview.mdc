@@ -95,7 +95,7 @@ Every rule ends with binary validation criteria:
 The rule authoring framework consists of nine core rules:
 
 ### 0. [Extraction from Practice](rule-extraction-from-practice.mdc) - **START HERE**
-**ID**: `rule.authoring.extraction-from-practice.v1`  
+**ID**: `rule.authoring.extraction-from-practice.v1`
 **File**: `rule-extraction-from-practice.mdc`
 
 **What it defines**:
@@ -110,7 +110,7 @@ The rule authoring framework consists of nine core rules:
 
 ### 1. File Structure
 
-**ID**: `rule.authoring.file-structure.v1`  
+**ID**: `rule.authoring.file-structure.v1`
 **File**: `file-structure-rule.mdc`
 
 **What it defines**:
@@ -125,7 +125,7 @@ The rule authoring framework consists of nine core rules:
 
 ### 2. Naming Conventions
 
-**ID**: `rule.authoring.naming-conventions.v1`  
+**ID**: `rule.authoring.naming-conventions.v1`
 **File**: `naming-conventions-rule.mdc`
 
 **What it defines**:
@@ -140,7 +140,7 @@ The rule authoring framework consists of nine core rules:
 
 ### 3. Invocation Strategies - **CRITICAL ARCHITECTURAL DECISION**
 
-**ID**: `rule.authoring.invocation-strategies.v1`  
+**ID**: `rule.authoring.invocation-strategies.v1`
 **File**: `rule-invocation-strategies.mdc`
 
 **What it defines**:
@@ -155,7 +155,7 @@ The rule authoring framework consists of nine core rules:
 
 ### 4. Contracts and Scope
 
-**ID**: `rule.authoring.contracts-and-scope.v1`  
+**ID**: `rule.authoring.contracts-and-scope.v1`
 **File**: `contracts-and-scope-rule.mdc`
 
 **What it defines**:
@@ -170,7 +170,7 @@ The rule authoring framework consists of nine core rules:
 
 ### 5. Cross-References
 
-**ID**: `rule.authoring.cross-references.v1`  
+**ID**: `rule.authoring.cross-references.v1`
 **File**: `cross-references-rule.mdc`
 
 **What it defines**:
@@ -185,7 +185,7 @@ The rule authoring framework consists of nine core rules:
 
 ### 6. Templars and Exemplars
 
-**ID**: `rule.authoring.templars-and-exemplars.v1`  
+**ID**: `rule.authoring.templars-and-exemplars.v1`
 **File**: `templars-and-exemplars-rule.mdc`
 
 **What it defines**:
@@ -200,7 +200,7 @@ The rule authoring framework consists of nine core rules:
 
 ### 7. Provenance and Versioning
 
-**ID**: `rule.authoring.provenance-and-versioning.v1`  
+**ID**: `rule.authoring.provenance-and-versioning.v1`
 **File**: `provenance-and-versioning-rule.mdc`
 
 **What it defines**:
@@ -215,7 +215,7 @@ The rule authoring framework consists of nine core rules:
 
 ### 8. Validation and Checklists
 
-**ID**: `rule.authoring.validation-and-checklists.v1`  
+**ID**: `rule.authoring.validation-and-checklists.v1`
 **File**: `validation-and-checklists-rule.mdc`
 
 **What it defines**:

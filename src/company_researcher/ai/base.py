@@ -1,12 +1,15 @@
 """Base classes and utilities for AI components."""
+
 from abc import ABC, abstractmethod
-from typing import TypeVar, Generic, Optional, Any, Dict
+from typing import Any, Dict, Generic, Optional, TypeVar
+
 from pydantic import BaseModel
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
 
-T = TypeVar('T', bound=BaseModel)
+T = TypeVar("T", bound=BaseModel)
 
 
 class AIComponent(ABC, Generic[T]):
@@ -41,6 +44,7 @@ class AIComponent(ABC, Generic[T]):
         """Lazy-load the smart client."""
         if self._client is None:
             from ..llm import get_smart_client
+
             self._client = get_smart_client()
         return self._client
 
@@ -52,7 +56,7 @@ class AIComponent(ABC, Generic[T]):
         response_model: Optional[type] = None,
         max_tokens: Optional[int] = None,
         system: Optional[str] = None,
-        json_mode: bool = False
+        json_mode: bool = False,
     ) -> Any:
         """
         Call LLM with standard handling.
@@ -89,9 +93,9 @@ class AIComponent(ABC, Generic[T]):
 
         # Track usage
         self._call_count += 1
-        self._total_cost += getattr(result, 'cost', 0.0)
-        self._total_input_tokens += getattr(result, 'input_tokens', 0)
-        self._total_output_tokens += getattr(result, 'output_tokens', 0)
+        self._total_cost += getattr(result, "cost", 0.0)
+        self._total_input_tokens += getattr(result, "input_tokens", 0)
+        self._total_output_tokens += getattr(result, "output_tokens", 0)
 
         # Parse response if model provided
         if response_model:
@@ -113,7 +117,7 @@ class AIComponent(ABC, Generic[T]):
             "total_cost": self._total_cost,
             "total_input_tokens": self._total_input_tokens,
             "total_output_tokens": self._total_output_tokens,
-            "avg_cost_per_call": self._total_cost / self._call_count if self._call_count > 0 else 0
+            "avg_cost_per_call": self._total_cost / self._call_count if self._call_count > 0 else 0,
         }
 
     def reset_stats(self):

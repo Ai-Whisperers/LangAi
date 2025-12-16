@@ -9,41 +9,46 @@ Data models and enums for context isolation:
 - AgentContext dataclass
 """
 
-from typing import Dict, Any, List, Optional, Set
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional, Set
+
 from ...utils import utc_now
 
 
 class IsolationLevel(str, Enum):
     """Levels of context isolation between agents."""
-    NONE = "none"            # Full context sharing
-    MINIMAL = "minimal"      # Share most, isolate sensitive
-    MODERATE = "moderate"    # Share relevant, isolate unrelated
-    STRICT = "strict"        # Share only explicitly allowed
-    COMPLETE = "complete"    # No sharing between agents
+
+    NONE = "none"  # Full context sharing
+    MINIMAL = "minimal"  # Share most, isolate sensitive
+    MODERATE = "moderate"  # Share relevant, isolate unrelated
+    STRICT = "strict"  # Share only explicitly allowed
+    COMPLETE = "complete"  # No sharing between agents
 
 
 class SharePolicy(str, Enum):
     """Policies for sharing information between agents."""
-    INHERIT = "inherit"      # Child inherits parent context
-    EXPLICIT = "explicit"    # Only share explicitly shared items
-    FILTERED = "filtered"    # Share through filter
-    NONE = "none"           # No sharing
+
+    INHERIT = "inherit"  # Child inherits parent context
+    EXPLICIT = "explicit"  # Only share explicitly shared items
+    FILTERED = "filtered"  # Share through filter
+    NONE = "none"  # No sharing
 
 
 class ContextVisibility(str, Enum):
     """Visibility levels for context items."""
-    GLOBAL = "global"        # Visible to all agents
-    TEAM = "team"           # Visible to related agents
-    PRIVATE = "private"      # Only visible to owner
+
+    GLOBAL = "global"  # Visible to all agents
+    TEAM = "team"  # Visible to related agents
+    PRIVATE = "private"  # Only visible to owner
     RESTRICTED = "restricted"  # Visible with permission
 
 
 @dataclass
 class ContextItem:
     """A single item in agent context."""
+
     key: str
     value: Any
     visibility: ContextVisibility = ContextVisibility.TEAM
@@ -77,13 +82,14 @@ class ContextItem:
             "value": self.value,
             "visibility": self.visibility.value,
             "owner": self.owner_agent,
-            "tags": self.tags
+            "tags": self.tags,
         }
 
 
 @dataclass
 class AgentContext:
     """Context container for a single agent."""
+
     agent_name: str
     agent_type: str
     items: Dict[str, ContextItem] = field(default_factory=dict)
@@ -97,7 +103,7 @@ class AgentContext:
         key: str,
         value: Any,
         visibility: ContextVisibility = ContextVisibility.TEAM,
-        tags: Optional[List[str]] = None
+        tags: Optional[List[str]] = None,
     ) -> None:
         """Add item to context."""
         self.items[key] = ContextItem(
@@ -105,7 +111,7 @@ class AgentContext:
             value=value,
             visibility=visibility,
             owner_agent=self.agent_name,
-            tags=tags or []
+            tags=tags or [],
         )
 
     def get(self, key: str, default: Any = None) -> Any:
@@ -124,11 +130,7 @@ class AgentContext:
 
     def get_visible_items(self) -> Dict[str, Any]:
         """Get all non-expired items as dict."""
-        return {
-            key: item.value
-            for key, item in self.items.items()
-            if not item.is_expired()
-        }
+        return {key: item.value for key, item in self.items.items() if not item.is_expired()}
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary representation."""
@@ -138,5 +140,5 @@ class AgentContext:
             "isolation_level": self.isolation_level.value,
             "item_count": len(self.items),
             "parent": self.parent_agent,
-            "children": self.child_agents
+            "children": self.child_agents,
         }

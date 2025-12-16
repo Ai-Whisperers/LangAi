@@ -1,30 +1,30 @@
 """AI-powered data extraction using LLM."""
-from typing import List, Optional, Dict, Any
-import re
-import asyncio
 
+import asyncio
+import re
+from typing import Any, Dict, List, Optional
+
+from ...llm.response_parser import parse_json_response
 from ..base import AIComponent
 from ..fallback import FallbackHandler
 from ..utils import get_logger, normalize_confidence, truncate_text
-from ...llm.response_parser import parse_json_response
-
 from .models import (
-    CompanyType,
     CompanyClassification,
-    ExtractedFact,
-    FinancialData,
+    CompanyType,
     ContradictionAnalysis,
     ContradictionSeverity,
+    CountryDetectionResult,
+    ExtractedFact,
     ExtractionResult,
     FactCategory,
     FactType,
-    CountryDetectionResult
+    FinancialData,
 )
 from .prompts import (
     COMPANY_CLASSIFICATION_PROMPT,
-    FACT_EXTRACTION_PROMPT,
     CONTRADICTION_RESOLUTION_PROMPT,
-    COUNTRY_DETECTION_PROMPT
+    COUNTRY_DETECTION_PROMPT,
+    FACT_EXTRACTION_PROMPT,
 )
 
 logger = get_logger(__name__)
@@ -61,11 +61,7 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
         super().__init__()
         self._fallback_handler = FallbackHandler("data_extraction")
 
-    async def classify_company(
-        self,
-        company_name: str,
-        context: str
-    ) -> CompanyClassification:
+    async def classify_company(self, company_name: str, context: str) -> CompanyClassification:
         """
         Classify company using LLM.
 
@@ -77,15 +73,12 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
             CompanyClassification with inferred details
         """
         prompt = COMPANY_CLASSIFICATION_PROMPT.format(
-            company_name=company_name,
-            context=truncate_text(context, 6000)
+            company_name=company_name, context=truncate_text(context, 6000)
         )
 
         try:
             result = await self._async_call_llm(
-                prompt=prompt,
-                task_type="classification",
-                complexity="medium"
+                prompt=prompt, task_type="classification", complexity="medium"
             )
 
             parsed = parse_json_response(result, default={})
@@ -96,10 +89,7 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
             return self._fallback_classification(company_name)
 
     async def extract_facts(
-        self,
-        text: str,
-        company_name: str,
-        source_url: Optional[str] = None
+        self, text: str, company_name: str, source_url: Optional[str] = None
     ) -> List[ExtractedFact]:
         """
         Extract structured facts from text.
@@ -116,15 +106,12 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
             return []
 
         prompt = FACT_EXTRACTION_PROMPT.format(
-            company_name=company_name,
-            text=truncate_text(text, 8000)
+            company_name=company_name, text=truncate_text(text, 8000)
         )
 
         try:
             result = await self._async_call_llm(
-                prompt=prompt,
-                task_type="extraction",
-                complexity="medium"
+                prompt=prompt, task_type="extraction", complexity="medium"
             )
 
             parsed = parse_json_response(result, default={"facts": []})
@@ -140,10 +127,7 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
             return []
 
     async def resolve_contradiction(
-        self,
-        fact_type: str,
-        values: List[Dict[str, Any]],
-        company_name: str
+        self, fact_type: str, values: List[Dict[str, Any]], company_name: str
     ) -> ContradictionAnalysis:
         """
         Analyze and resolve contradicting facts.
@@ -156,25 +140,23 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
         Returns:
             ContradictionAnalysis with resolution
         """
-        values_str = "\n".join([
-            f"- Value: {v.get('value')}"
-            f", Source: {v.get('source', 'Unknown')}"
-            f", Period: {v.get('period', 'Unknown')}"
-            f", Confidence: {v.get('confidence', 0.5)}"
-            for v in values
-        ])
+        values_str = "\n".join(
+            [
+                f"- Value: {v.get('value')}"
+                f", Source: {v.get('source', 'Unknown')}"
+                f", Period: {v.get('period', 'Unknown')}"
+                f", Confidence: {v.get('confidence', 0.5)}"
+                for v in values
+            ]
+        )
 
         prompt = CONTRADICTION_RESOLUTION_PROMPT.format(
-            company_name=company_name,
-            fact_type=fact_type,
-            values=values_str
+            company_name=company_name, fact_type=fact_type, values=values_str
         )
 
         try:
             result = await self._async_call_llm(
-                prompt=prompt,
-                task_type="reasoning",
-                complexity="medium"
+                prompt=prompt, task_type="reasoning", complexity="medium"
             )
 
             parsed = parse_json_response(result, default={})
@@ -187,14 +169,10 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
                 values_found=values,
                 is_contradiction=True,
                 severity=ContradictionSeverity.MEDIUM,
-                reasoning=f"Resolution failed: {str(e)}"
+                reasoning=f"Resolution failed: {str(e)}",
             )
 
-    async def detect_country(
-        self,
-        company_name: str,
-        clues: str
-    ) -> CountryDetectionResult:
+    async def detect_country(self, company_name: str, clues: str) -> CountryDetectionResult:
         """
         Detect company's country from clues.
 
@@ -206,23 +184,23 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
             CountryDetectionResult with country, country_code, region, confidence
         """
         prompt = COUNTRY_DETECTION_PROMPT.format(
-            company_name=company_name,
-            clues=truncate_text(clues, 2000)
+            company_name=company_name, clues=truncate_text(clues, 2000)
         )
 
         try:
             result = await self._async_call_llm(
-                prompt=prompt,
-                task_type="classification",
-                complexity="low"
+                prompt=prompt, task_type="classification", complexity="low"
             )
 
-            parsed = parse_json_response(result, default={
-                "country": "Unknown",
-                "country_code": "XX",
-                "region": "Unknown",
-                "confidence": 0.0
-            })
+            parsed = parse_json_response(
+                result,
+                default={
+                    "country": "Unknown",
+                    "country_code": "XX",
+                    "region": "Unknown",
+                    "confidence": 0.0,
+                },
+            )
 
             return CountryDetectionResult(
                 country=parsed.get("country", "Unknown"),
@@ -230,7 +208,7 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
                 region=parsed.get("region", "Unknown"),
                 confidence=normalize_confidence(parsed.get("confidence", 0.0)),
                 indicators_found=parsed.get("indicators_found", []),
-                reasoning=parsed.get("reasoning", "")
+                reasoning=parsed.get("reasoning", ""),
             )
 
         except Exception as e:
@@ -240,13 +218,11 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
                 country_code="XX",
                 region="Unknown",
                 confidence=0.0,
-                reasoning=f"Detection failed: {str(e)}"
+                reasoning=f"Detection failed: {str(e)}",
             )
 
     async def extract_all(
-        self,
-        company_name: str,
-        search_results: List[Dict[str, Any]]
+        self, company_name: str, search_results: List[Dict[str, Any]]
     ) -> ExtractionResult:
         """
         Complete extraction pipeline.
@@ -259,11 +235,12 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
             ExtractionResult with all extracted data
         """
         # Combine text for classification context
-        all_text = "\n\n".join([
-            f"Source: {r.get('url', 'Unknown')}\n"
-            f"{r.get('content', r.get('snippet', ''))}"
-            for r in search_results[:10]
-        ])
+        all_text = "\n\n".join(
+            [
+                f"Source: {r.get('url', 'Unknown')}\n" f"{r.get('content', r.get('snippet', ''))}"
+                for r in search_results[:10]
+            ]
+        )
 
         # Classify company
         classification = await self.classify_company(company_name, all_text)
@@ -271,8 +248,8 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
         # Extract facts from each source
         all_facts = []
         for result in search_results:
-            text = result.get('content') or result.get('snippet', '')
-            url = result.get('url')
+            text = result.get("content") or result.get("snippet", "")
+            url = result.get("url")
             if text:
                 facts = await self.extract_facts(text, company_name, url)
                 all_facts.extend(facts)
@@ -295,21 +272,17 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
             all_facts=all_facts,
             contradictions=contradictions,
             has_critical_contradictions=any(
-                c.severity == ContradictionSeverity.CRITICAL
-                for c in contradictions
+                c.severity == ContradictionSeverity.CRITICAL for c in contradictions
             ),
             data_coverage=coverage,
             extraction_confidence=self._calculate_confidence(all_facts),
             sources_processed=len(search_results),
             facts_extracted=len(all_facts),
-            languages_detected=languages
+            languages_detected=languages,
         )
 
     async def _async_call_llm(
-        self,
-        prompt: str,
-        task_type: Optional[str] = None,
-        complexity: Optional[str] = None
+        self, prompt: str, task_type: Optional[str] = None, complexity: Optional[str] = None
     ) -> str:
         """Async wrapper for LLM call."""
         # The base class _call_llm is synchronous, wrap it
@@ -319,14 +292,12 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
             lambda: self._call_llm(
                 prompt=prompt,
                 task_type=task_type or self.default_task_type,
-                complexity=complexity or self.default_complexity
-            )
+                complexity=complexity or self.default_complexity,
+            ),
         )
 
     def _parse_classification(
-        self,
-        data: Dict[str, Any],
-        company_name: str
+        self, data: Dict[str, Any], company_name: str
     ) -> CompanyClassification:
         """Parse LLM response into CompanyClassification."""
         company_type = data.get("company_type", "unknown")
@@ -354,13 +325,11 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
             is_subsidiary=data.get("is_subsidiary", False),
             known_subsidiaries=data.get("known_subsidiaries", []),
             confidence=normalize_confidence(data.get("confidence", 0.5)),
-            reasoning=data.get("reasoning", "")
+            reasoning=data.get("reasoning", ""),
         )
 
     def _parse_fact(
-        self,
-        data: Dict[str, Any],
-        source_url: Optional[str]
+        self, data: Dict[str, Any], source_url: Optional[str]
     ) -> Optional[ExtractedFact]:
         """Parse a single fact from LLM response."""
         try:
@@ -388,17 +357,14 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
                 is_estimate=data.get("is_estimate", False),
                 source_text=data.get("source_text", "")[:500],
                 source_url=source_url,
-                confidence=normalize_confidence(data.get("confidence", 0.5))
+                confidence=normalize_confidence(data.get("confidence", 0.5)),
             )
         except Exception as e:
             logger.warning(f"Failed to parse fact: {e}")
             return None
 
     def _parse_contradiction(
-        self,
-        data: Dict[str, Any],
-        fact_type: str,
-        values: List[Dict]
+        self, data: Dict[str, Any], fact_type: str, values: List[Dict]
     ) -> ContradictionAnalysis:
         """Parse contradiction analysis from LLM response."""
         severity = data.get("severity", "medium")
@@ -417,13 +383,11 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
             resolution_explanation=data.get("resolution_explanation"),
             most_likely_value=data.get("most_likely_value"),
             most_likely_source=data.get("most_likely_source"),
-            reasoning=data.get("reasoning", "")
+            reasoning=data.get("reasoning", ""),
         )
 
     async def _find_contradictions(
-        self,
-        facts: List[ExtractedFact],
-        company_name: str
+        self, facts: List[ExtractedFact], company_name: str
     ) -> List[ContradictionAnalysis]:
         """Find and analyze contradictions in facts."""
         # Group facts by type
@@ -446,7 +410,7 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
                             "numeric": f.value_normalized,
                             "source": f.source_url or "Unknown",
                             "period": f.time_period,
-                            "confidence": f.confidence
+                            "confidence": f.confidence,
                         }
                         for f in numeric_facts
                     ]
@@ -467,8 +431,7 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
     def _build_financial_data(self, facts: List[ExtractedFact]) -> FinancialData:
         """Build consolidated financial data from facts."""
         financial_facts = [
-            f for f in facts
-            if f.category == FactCategory.FINANCIAL or f.category == "financial"
+            f for f in facts if f.category == FactCategory.FINANCIAL or f.category == "financial"
         ]
 
         financial = FinancialData(raw_facts=financial_facts)
@@ -535,33 +498,33 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
 
         # Simple heuristics
         for r in results:
-            text = r.get('content', '') + r.get('snippet', '')
-            url = r.get('url', '')
+            text = r.get("content", "") + r.get("snippet", "")
+            url = r.get("url", "")
 
             # URL-based detection
-            if '.br' in url or 'brasil' in url.lower():
-                languages.add('pt')
-            elif '.mx' in url or 'mexico' in url.lower():
-                languages.add('es')
-            elif '.es' in url:
-                languages.add('es')
-            elif '.ar' in url or 'argentina' in url.lower():
-                languages.add('es')
-            elif '.cl' in url or 'chile' in url.lower():
-                languages.add('es')
-            elif '.co' in url or 'colombia' in url.lower():
-                languages.add('es')
+            if ".br" in url or "brasil" in url.lower():
+                languages.add("pt")
+            elif ".mx" in url or "mexico" in url.lower():
+                languages.add("es")
+            elif ".es" in url:
+                languages.add("es")
+            elif ".ar" in url or "argentina" in url.lower():
+                languages.add("es")
+            elif ".cl" in url or "chile" in url.lower():
+                languages.add("es")
+            elif ".co" in url or "colombia" in url.lower():
+                languages.add("es")
 
             # Content-based (simple)
             text_lower = text.lower()
-            if any(w in text_lower for w in ['empresa', 'negocio', 'mercado', 'ano']):
+            if any(w in text_lower for w in ["empresa", "negocio", "mercado", "ano"]):
                 # Could be Spanish or Portuguese
-                if any(w in text_lower for w in ['nao', 'sao', 'nao', 'tambem']):
-                    languages.add('pt')
+                if any(w in text_lower for w in ["nao", "sao", "nao", "tambem"]):
+                    languages.add("pt")
                 else:
-                    languages.add('es')
+                    languages.add("es")
 
-        languages.add('en')  # Always include English
+        languages.add("en")  # Always include English
         return list(languages)
 
     def _to_number(self, value: Any) -> Optional[float]:
@@ -572,7 +535,7 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
             return float(value)
         if isinstance(value, str):
             # Remove currency and formatting
-            cleaned = re.sub(r'[$\u20ac\xa3R\$,\s]', '', value)
+            cleaned = re.sub(r"[$\u20ac\xa3R\$,\s]", "", value)
             try:
                 return float(cleaned)
             except ValueError:
@@ -590,14 +553,10 @@ class AIDataExtractor(AIComponent[ExtractionResult]):
             country="Unknown",
             country_code="XX",
             confidence=0.0,
-            reasoning="AI classification failed, using fallback"
+            reasoning="AI classification failed, using fallback",
         )
 
-    async def process(
-        self,
-        company_name: str,
-        search_results: List[Dict]
-    ) -> ExtractionResult:
+    async def process(self, company_name: str, search_results: List[Dict]) -> ExtractionResult:
         """Main processing method (implements AIComponent interface)."""
         return await self.extract_all(company_name, search_results)
 

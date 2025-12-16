@@ -10,18 +10,20 @@ PowerPoint/Slides generation:
 Supports python-pptx with markdown fallback.
 """
 
-from typing import Dict, Any, List, Optional
+import os
 from dataclasses import dataclass, field
 from enum import Enum
-import os
+from typing import Any, Dict, List, Optional
+
 from ..utils import utc_now
 
 # Try to import presentation library
 try:
     from pptx import Presentation
-    from pptx.util import Inches, Pt
     from pptx.dml.color import RgbColor
     from pptx.enum.text import PP_ALIGN
+    from pptx.util import Inches, Pt
+
     PPTX_AVAILABLE = True
 except ImportError:
     PPTX_AVAILABLE = False
@@ -31,16 +33,19 @@ except ImportError:
 # Data Models
 # ============================================================================
 
+
 class PresentationStyle(str, Enum):
     """Presentation style options."""
-    EXECUTIVE = "executive"    # Brief, high-level
-    DETAILED = "detailed"      # Comprehensive
-    INVESTOR = "investor"      # Investment focused
-    BOARD = "board"           # Board meeting format
+
+    EXECUTIVE = "executive"  # Brief, high-level
+    DETAILED = "detailed"  # Comprehensive
+    INVESTOR = "investor"  # Investment focused
+    BOARD = "board"  # Board meeting format
 
 
 class SlideType(str, Enum):
     """Types of slides."""
+
     TITLE = "title"
     SECTION = "section"
     CONTENT = "content"
@@ -54,6 +59,7 @@ class SlideType(str, Enum):
 @dataclass
 class SlideContent:
     """Content for a single slide."""
+
     slide_type: SlideType
     title: str
     subtitle: str = ""
@@ -66,6 +72,7 @@ class SlideContent:
 @dataclass
 class PresentationConfig:
     """Configuration for presentation generation."""
+
     title: str
     company_name: str
     style: PresentationStyle = PresentationStyle.EXECUTIVE
@@ -78,6 +85,7 @@ class PresentationConfig:
 # ============================================================================
 # Presentation Generator
 # ============================================================================
+
 
 class PresentationGenerator:
     """
@@ -101,7 +109,7 @@ class PresentationGenerator:
         "secondary": "2B6CB0",
         "accent": "38A169",
         "text": "2D3748",
-        "light": "EDF2F7"
+        "light": "EDF2F7",
     }
 
     def __init__(self):
@@ -112,7 +120,7 @@ class PresentationGenerator:
         self,
         research_data: Dict[str, Any],
         config: PresentationConfig,
-        output_path: Optional[str] = None
+        output_path: Optional[str] = None,
     ) -> str:
         """
         Generate presentation.
@@ -137,10 +145,7 @@ class PresentationGenerator:
             return self._generate_markdown_fallback(research_data, config, output_path)
 
     def _generate_pptx(
-        self,
-        data: Dict[str, Any],
-        config: PresentationConfig,
-        output_path: str
+        self, data: Dict[str, Any], config: PresentationConfig, output_path: str
     ) -> str:
         """Generate PowerPoint presentation."""
         prs = Presentation()
@@ -150,7 +155,7 @@ class PresentationGenerator:
         # Generate slides
         slides = self._create_slide_content(data, config)
 
-        for slide_content in slides[:config.max_slides]:
+        for slide_content in slides[: config.max_slides]:
             self._add_slide(prs, slide_content)
 
         # Save presentation
@@ -158,91 +163,78 @@ class PresentationGenerator:
         return output_path
 
     def _create_slide_content(
-        self,
-        data: Dict[str, Any],
-        config: PresentationConfig
+        self, data: Dict[str, Any], config: PresentationConfig
     ) -> List[SlideContent]:
         """Create slide content from research data."""
         slides = []
         agent_outputs = data.get("agent_outputs", data)
 
         # Title slide
-        slides.append(SlideContent(
-            slide_type=SlideType.TITLE,
-            title=config.title,
-            subtitle=f"{config.company_name} | {config.date}"
-        ))
+        slides.append(
+            SlideContent(
+                slide_type=SlideType.TITLE,
+                title=config.title,
+                subtitle=f"{config.company_name} | {config.date}",
+            )
+        )
 
         # Executive summary
-        slides.append(SlideContent(
-            slide_type=SlideType.SECTION,
-            title="Executive Summary"
-        ))
+        slides.append(SlideContent(slide_type=SlideType.SECTION, title="Executive Summary"))
 
         key_findings = self._extract_key_findings(agent_outputs)
         if key_findings:
-            slides.append(SlideContent(
-                slide_type=SlideType.BULLETS,
-                title="Key Findings",
-                bullets=key_findings[:6]
-            ))
+            slides.append(
+                SlideContent(
+                    slide_type=SlideType.BULLETS, title="Key Findings", bullets=key_findings[:6]
+                )
+            )
 
         # Key metrics slide
         metrics = self._extract_metrics(agent_outputs)
         if metrics:
-            slides.append(SlideContent(
-                slide_type=SlideType.METRICS,
-                title="Key Metrics",
-                metrics=metrics
-            ))
+            slides.append(
+                SlideContent(slide_type=SlideType.METRICS, title="Key Metrics", metrics=metrics)
+            )
 
         # Financial section
         if "financial" in agent_outputs:
-            slides.append(SlideContent(
-                slide_type=SlideType.SECTION,
-                title="Financial Analysis"
-            ))
+            slides.append(SlideContent(slide_type=SlideType.SECTION, title="Financial Analysis"))
             slides.append(self._create_financial_slide(agent_outputs["financial"]))
 
         # Market section
         if "market" in agent_outputs:
-            slides.append(SlideContent(
-                slide_type=SlideType.SECTION,
-                title="Market Analysis"
-            ))
+            slides.append(SlideContent(slide_type=SlideType.SECTION, title="Market Analysis"))
             slides.append(self._create_market_slide(agent_outputs["market"]))
 
         # Competitive section
         if "competitor" in agent_outputs:
-            slides.append(SlideContent(
-                slide_type=SlideType.SECTION,
-                title="Competitive Landscape"
-            ))
+            slides.append(SlideContent(slide_type=SlideType.SECTION, title="Competitive Landscape"))
             slides.append(self._create_competitive_slide(agent_outputs["competitor"]))
 
         # Investment section (for investor style)
         if config.style == PresentationStyle.INVESTOR and "investment" in agent_outputs:
-            slides.append(SlideContent(
-                slide_type=SlideType.SECTION,
-                title="Investment Analysis"
-            ))
+            slides.append(SlideContent(slide_type=SlideType.SECTION, title="Investment Analysis"))
             slides.append(self._create_investment_slide(agent_outputs["investment"]))
 
         # Recommendations
         recommendations = self._extract_recommendations(agent_outputs)
         if recommendations:
-            slides.append(SlideContent(
-                slide_type=SlideType.BULLETS,
-                title="Recommendations",
-                bullets=recommendations[:6]
-            ))
+            slides.append(
+                SlideContent(
+                    slide_type=SlideType.BULLETS,
+                    title="Recommendations",
+                    bullets=recommendations[:6],
+                )
+            )
 
         # Conclusion slide
-        slides.append(SlideContent(
-            slide_type=SlideType.CONCLUSION,
-            title="Conclusion",
-            bullets=self._create_conclusion_points(agent_outputs)
-        ))
+        slides.append(
+            SlideContent(
+                slide_type=SlideType.CONCLUSION,
+                title="Conclusion",
+                bullets=self._create_conclusion_points(agent_outputs),
+            )
+        )
 
         return slides
 
@@ -269,9 +261,7 @@ class PresentationGenerator:
         slide = prs.slides.add_slide(slide_layout)
 
         # Title
-        title_box = slide.shapes.add_textbox(
-            Inches(0.5), Inches(2.5), Inches(12.333), Inches(1)
-        )
+        title_box = slide.shapes.add_textbox(Inches(0.5), Inches(2.5), Inches(12.333), Inches(1))
         title_frame = title_box.text_frame
         title_para = title_frame.paragraphs[0]
         title_para.text = content.title
@@ -298,9 +288,7 @@ class PresentationGenerator:
         slide = prs.slides.add_slide(slide_layout)
 
         # Section title
-        title_box = slide.shapes.add_textbox(
-            Inches(0.5), Inches(3), Inches(12.333), Inches(1)
-        )
+        title_box = slide.shapes.add_textbox(Inches(0.5), Inches(3), Inches(12.333), Inches(1))
         title_frame = title_box.text_frame
         title_para = title_frame.paragraphs[0]
         title_para.text = content.title
@@ -315,9 +303,7 @@ class PresentationGenerator:
         slide = prs.slides.add_slide(slide_layout)
 
         # Title
-        title_box = slide.shapes.add_textbox(
-            Inches(0.5), Inches(0.5), Inches(12.333), Inches(0.8)
-        )
+        title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(12.333), Inches(0.8))
         title_frame = title_box.text_frame
         title_para = title_frame.paragraphs[0]
         title_para.text = content.title
@@ -326,9 +312,7 @@ class PresentationGenerator:
         title_para.font.color.rgb = RgbColor.from_string(self.COLORS["primary"])
 
         # Bullets
-        body_box = slide.shapes.add_textbox(
-            Inches(0.8), Inches(1.5), Inches(11.5), Inches(5.5)
-        )
+        body_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(11.5), Inches(5.5))
         body_frame = body_box.text_frame
         body_frame.word_wrap = True
 
@@ -349,9 +333,7 @@ class PresentationGenerator:
         slide = prs.slides.add_slide(slide_layout)
 
         # Title
-        title_box = slide.shapes.add_textbox(
-            Inches(0.5), Inches(0.5), Inches(12.333), Inches(0.8)
-        )
+        title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(12.333), Inches(0.8))
         title_frame = title_box.text_frame
         title_para = title_frame.paragraphs[0]
         title_para.text = content.title
@@ -396,9 +378,7 @@ class PresentationGenerator:
         slide = prs.slides.add_slide(slide_layout)
 
         # Title
-        title_box = slide.shapes.add_textbox(
-            Inches(0.5), Inches(0.5), Inches(12.333), Inches(0.8)
-        )
+        title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(12.333), Inches(0.8))
         title_frame = title_box.text_frame
         title_para = title_frame.paragraphs[0]
         title_para.text = content.title
@@ -442,9 +422,7 @@ class PresentationGenerator:
                     bullets.append(s.strip())
 
         return SlideContent(
-            slide_type=SlideType.BULLETS,
-            title="Financial Highlights",
-            bullets=bullets[:6]
+            slide_type=SlideType.BULLETS, title="Financial Highlights", bullets=bullets[:6]
         )
 
     def _create_market_slide(self, data: Dict[str, Any]) -> SlideContent:
@@ -461,9 +439,7 @@ class PresentationGenerator:
             bullets.append(f"Market Share: {data['market_share']}")
 
         return SlideContent(
-            slide_type=SlideType.BULLETS,
-            title="Market Opportunity",
-            bullets=bullets[:6]
+            slide_type=SlideType.BULLETS, title="Market Opportunity", bullets=bullets[:6]
         )
 
     def _create_competitive_slide(self, data: Dict[str, Any]) -> SlideContent:
@@ -478,9 +454,7 @@ class PresentationGenerator:
             bullets.append(f"Threat Assessment: {data['threat_summary']}")
 
         return SlideContent(
-            slide_type=SlideType.BULLETS,
-            title="Competitive Position",
-            bullets=bullets[:6]
+            slide_type=SlideType.BULLETS, title="Competitive Position", bullets=bullets[:6]
         )
 
     def _create_investment_slide(self, data: Dict[str, Any]) -> SlideContent:
@@ -497,9 +471,7 @@ class PresentationGenerator:
             bullets.append(f"Growth Stage: {data['growth_stage']}")
 
         return SlideContent(
-            slide_type=SlideType.BULLETS,
-            title="Investment Assessment",
-            bullets=bullets[:6]
+            slide_type=SlideType.BULLETS, title="Investment Assessment", bullets=bullets[:6]
         )
 
     def _extract_key_findings(self, data: Dict[str, Any]) -> List[str]:
@@ -552,7 +524,7 @@ class PresentationGenerator:
         points = [
             "Comprehensive research analysis completed",
             "Multiple data sources analyzed",
-            "Strategic insights generated"
+            "Strategic insights generated",
         ]
 
         if "financial" in data:
@@ -565,10 +537,7 @@ class PresentationGenerator:
         return points[:6]
 
     def _generate_markdown_fallback(
-        self,
-        data: Dict[str, Any],
-        config: PresentationConfig,
-        output_path: str
+        self, data: Dict[str, Any], config: PresentationConfig, output_path: str
     ) -> str:
         """Generate markdown slides as fallback."""
         md_path = output_path.replace(".pptx", "_slides.md")
@@ -607,12 +576,13 @@ class PresentationGenerator:
 # Factory Function
 # ============================================================================
 
+
 def generate_presentation(
     research_data: Dict[str, Any],
     company_name: str,
     title: Optional[str] = None,
     style: str = "executive",
-    output_path: Optional[str] = None
+    output_path: Optional[str] = None,
 ) -> str:
     """
     Generate presentation from research data.
@@ -630,7 +600,7 @@ def generate_presentation(
     config = PresentationConfig(
         title=title or f"{company_name} Research Analysis",
         company_name=company_name,
-        style=PresentationStyle(style)
+        style=PresentationStyle(style),
     )
 
     generator = PresentationGenerator()

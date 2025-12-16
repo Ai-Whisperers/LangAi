@@ -624,8 +624,7 @@ The AI has full access to all rules and can:
 
 ## Version & Provenance
 
-**Created**: 2025-12-01  
-**Purpose**: Central navigation and explanation of rules/prompts system  
-**Audience**: Developers, AI agents, rule authors  
+**Created**: 2025-12-01
+**Purpose**: Central navigation and explanation of rules/prompts system
+**Audience**: Developers, AI agents, rule authors
 **Maintained by**: Team AI / Foundation Team
-

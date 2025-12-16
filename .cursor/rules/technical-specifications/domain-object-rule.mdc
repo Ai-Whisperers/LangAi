@@ -82,7 +82,7 @@ In C# Domain-Driven Design, there's an important distinction:
 
 - **Domain Objects** (broader category):
   - Entities - objects with identity that can change over time
-  - Value Objects - immutable objects defined by their attributes  
+  - Value Objects - immutable objects defined by their attributes
   - Aggregates - clusters of domain objects treated as a unit
   - Domain Services - operations that don't naturally belong to entities
 

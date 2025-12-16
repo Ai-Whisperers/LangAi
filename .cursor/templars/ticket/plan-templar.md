@@ -37,7 +37,7 @@ provenance: { owner: team-ticket, last_review: 2025-11-04 }
 
 ## Complexity Assessment
 
-**Track**: {{complexity_track}}  
+**Track**: {{complexity_track}}
 (Simple Fix | Complex Implementation)
 
 **Rationale**: {{complexity_rationale}}
@@ -49,7 +49,7 @@ provenance: { owner: team-ticket, last_review: 2025-11-04 }
 
 ## Status
 
-{{status}}  
+{{status}}
 (Planning | Ready | In Progress | Complete)
 
 ## Testing Strategy
@@ -63,4 +63,3 @@ provenance: { owner: team-ticket, last_review: 2025-11-04 }
 {{#notes}}
 - {{note}}
 {{/notes}}
-

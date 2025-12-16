@@ -18,11 +18,12 @@ Usage:
 """
 
 import re
-from enum import Enum
-from typing import Dict, Any, List, Optional, Set, Tuple
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from collections import defaultdict
+from enum import Enum
+from typing import Any, Dict, List, Optional, Set, Tuple
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -30,34 +31,38 @@ logger = get_logger(__name__)
 
 class SourceTier(Enum):
     """Source credibility tiers."""
-    OFFICIAL = "official"           # Company filings, official statements
-    AUTHORITATIVE = "authoritative" # Major news, industry analysts
-    REPUTABLE = "reputable"         # Known publications, databases
-    STANDARD = "standard"           # General web sources
-    LOW = "low"                     # Unknown or unreliable sources
+
+    OFFICIAL = "official"  # Company filings, official statements
+    AUTHORITATIVE = "authoritative"  # Major news, industry analysts
+    REPUTABLE = "reputable"  # Known publications, databases
+    STANDARD = "standard"  # General web sources
+    LOW = "low"  # Unknown or unreliable sources
 
 
 class ConflictType(Enum):
     """Types of factual conflicts."""
-    NUMERICAL = "numerical"         # Different numbers
-    TEMPORAL = "temporal"           # Different dates/times
-    CATEGORICAL = "categorical"     # Different categories
-    DESCRIPTIVE = "descriptive"     # Different descriptions
-    EXISTENCE = "existence"         # Fact exists vs doesn't exist
+
+    NUMERICAL = "numerical"  # Different numbers
+    TEMPORAL = "temporal"  # Different dates/times
+    CATEGORICAL = "categorical"  # Different categories
+    DESCRIPTIVE = "descriptive"  # Different descriptions
+    EXISTENCE = "existence"  # Fact exists vs doesn't exist
 
 
 class ResolutionStrategy(Enum):
     """Strategies for resolving conflicts."""
-    HIGHEST_AUTHORITY = "highest_authority"   # Trust most authoritative source
-    MOST_RECENT = "most_recent"               # Trust most recent source
-    CONSENSUS = "consensus"                   # Trust majority view
-    WEIGHTED_AVERAGE = "weighted_average"     # For numerical conflicts
-    MANUAL = "manual"                         # Requires human review
+
+    HIGHEST_AUTHORITY = "highest_authority"  # Trust most authoritative source
+    MOST_RECENT = "most_recent"  # Trust most recent source
+    CONSENSUS = "consensus"  # Trust majority view
+    WEIGHTED_AVERAGE = "weighted_average"  # For numerical conflicts
+    MANUAL = "manual"  # Requires human review
 
 
 @dataclass
 class SourceInfo:
     """Information about a data source."""
+
     url: str
     domain: str
     tier: SourceTier
@@ -76,13 +81,14 @@ class SourceInfo:
             domain=domain,
             tier=tier,
             credibility_score=score,
-            publication_date=publication_date
+            publication_date=publication_date,
         )
 
     @staticmethod
     def _extract_domain(url: str) -> str:
         """Extract domain from URL."""
         from urllib.parse import urlparse
+
         try:
             parsed = urlparse(url)
             return parsed.netloc.lower().replace("www.", "")
@@ -93,10 +99,7 @@ class SourceInfo:
     def _assess_source(domain: str, url: str) -> Tuple[SourceTier, float]:
         """Assess source credibility based on domain."""
         # Official sources
-        official_patterns = [
-            r"sec\.gov", r"edgar", r"investor\.", r"ir\.",
-            r"\.gov$", r"\.edu$"
-        ]
+        official_patterns = [r"sec\.gov", r"edgar", r"investor\.", r"ir\.", r"\.gov$", r"\.edu$"]
         for pattern in official_patterns:
             if re.search(pattern, domain):
                 return SourceTier.OFFICIAL, 0.95
@@ -136,10 +139,11 @@ class SourceInfo:
 @dataclass
 class Fact:
     """A factual claim with source attribution."""
+
     id: str
-    category: str              # e.g., "revenue", "employee_count", "founding_date"
-    claim: str                 # The actual claim
-    value: Any                 # Extracted value (number, date, string)
+    category: str  # e.g., "revenue", "employee_count", "founding_date"
+    claim: str  # The actual claim
+    value: Any  # Extracted value (number, date, string)
     source: SourceInfo
     confidence: float = 0.5
     extraction_method: str = "llm"
@@ -150,11 +154,12 @@ class Fact:
 @dataclass
 class Conflict:
     """A detected conflict between facts."""
+
     id: str
     conflict_type: ConflictType
     category: str
     facts: List[Fact]
-    severity: float            # 0.0 to 1.0
+    severity: float  # 0.0 to 1.0
     description: str
     suggested_resolution: ResolutionStrategy
     resolved: bool = False
@@ -165,6 +170,7 @@ class Conflict:
 @dataclass
 class ValidationResult:
     """Result of cross-source validation."""
+
     is_valid: bool
     confidence_score: float
     validated_facts: List[Fact]
@@ -185,19 +191,19 @@ class CrossSourceValidator:
 
     # Numerical tolerance for different categories
     NUMERICAL_TOLERANCES = {
-        "revenue": 0.05,           # 5% tolerance
-        "employee_count": 0.10,    # 10% tolerance
+        "revenue": 0.05,  # 5% tolerance
+        "employee_count": 0.10,  # 10% tolerance
         "market_cap": 0.05,
         "funding": 0.02,
         "stock_price": 0.01,
-        "default": 0.10
+        "default": 0.10,
     }
 
     def __init__(
         self,
         min_sources_for_validation: int = 2,
         conflict_threshold: float = 0.15,
-        auto_resolve: bool = True
+        auto_resolve: bool = True,
     ):
         self.min_sources = min_sources_for_validation
         self.conflict_threshold = conflict_threshold
@@ -205,9 +211,7 @@ class CrossSourceValidator:
         self.fact_index: Dict[str, List[Fact]] = defaultdict(list)
 
     def validate_facts(
-        self,
-        facts: List[Fact],
-        require_consensus: bool = False
+        self, facts: List[Fact], require_consensus: bool = False
     ) -> ValidationResult:
         """
         Validate a list of facts through cross-source checking.
@@ -287,7 +291,7 @@ class CrossSourceValidator:
             conflicts=conflicts,
             unverified_facts=unverified,
             source_coverage=source_coverage,
-            recommendations=recommendations
+            recommendations=recommendations,
         )
 
     def _index_facts(self, facts: List[Fact]):
@@ -302,14 +306,11 @@ class CrossSourceValidator:
 
         # Compare all pairs
         for i, fact1 in enumerate(facts):
-            for fact2 in facts[i+1:]:
+            for fact2 in facts[i + 1 :]:
                 conflict = self._compare_facts(fact1, fact2)
                 if conflict:
                     # Check if already in conflicts list
-                    existing = next(
-                        (c for c in conflicts if c.category == category),
-                        None
-                    )
+                    existing = next((c for c in conflicts if c.category == category), None)
                     if existing:
                         if fact2 not in existing.facts:
                             existing.facts.append(fact2)
@@ -326,8 +327,7 @@ class CrossSourceValidator:
         # Numerical comparison
         if isinstance(val1, (int, float)) and isinstance(val2, (int, float)):
             tolerance = self.NUMERICAL_TOLERANCES.get(
-                fact1.category,
-                self.NUMERICAL_TOLERANCES["default"]
+                fact1.category, self.NUMERICAL_TOLERANCES["default"]
             )
 
             if val1 == 0 and val2 == 0:
@@ -344,7 +344,7 @@ class CrossSourceValidator:
                     facts=[fact1, fact2],
                     severity=severity,
                     description=f"Numerical conflict: {val1} vs {val2} ({diff:.1%} difference)",
-                    suggested_resolution=ResolutionStrategy.WEIGHTED_AVERAGE
+                    suggested_resolution=ResolutionStrategy.WEIGHTED_AVERAGE,
                 )
 
         # Date comparison
@@ -359,7 +359,7 @@ class CrossSourceValidator:
                     facts=[fact1, fact2],
                     severity=severity,
                     description=f"Date conflict: {val1.date()} vs {val2.date()}",
-                    suggested_resolution=ResolutionStrategy.HIGHEST_AUTHORITY
+                    suggested_resolution=ResolutionStrategy.HIGHEST_AUTHORITY,
                 )
 
         # String comparison
@@ -375,7 +375,7 @@ class CrossSourceValidator:
                         facts=[fact1, fact2],
                         severity=1 - similarity,
                         description=f"Descriptive conflict: '{val1[:50]}' vs '{val2[:50]}'",
-                        suggested_resolution=ResolutionStrategy.HIGHEST_AUTHORITY
+                        suggested_resolution=ResolutionStrategy.HIGHEST_AUTHORITY,
                     )
 
         return None
@@ -438,8 +438,8 @@ class CrossSourceValidator:
             confidence=0.75,
             metadata={
                 "resolution": "weighted_average",
-                "original_values": [f.value for f in conflict.facts]
-            }
+                "original_values": [f.value for f in conflict.facts],
+            },
         )
 
         conflict.resolved = True
@@ -457,7 +457,9 @@ class CrossSourceValidator:
 
         conflict.resolved = True
         conflict.resolved_value = best_fact.value
-        conflict.resolution_reasoning = f"Selected highest authority source: {best_fact.source.domain}"
+        conflict.resolution_reasoning = (
+            f"Selected highest authority source: {best_fact.source.domain}"
+        )
 
         return best_fact
 
@@ -478,7 +480,9 @@ class CrossSourceValidator:
 
             conflict.resolved = True
             conflict.resolved_value = best_fact.value
-            conflict.resolution_reasoning = f"Consensus: {len(majority_facts)}/{len(conflict.facts)} sources agree"
+            conflict.resolution_reasoning = (
+                f"Consensus: {len(majority_facts)}/{len(conflict.facts)} sources agree"
+            )
 
             return best_fact
 
@@ -487,10 +491,7 @@ class CrossSourceValidator:
 
     def _resolve_by_recency(self, conflict: Conflict) -> Optional[Fact]:
         """Resolve by selecting most recent source."""
-        facts_with_dates = [
-            f for f in conflict.facts
-            if f.source.publication_date is not None
-        ]
+        facts_with_dates = [f for f in conflict.facts if f.source.publication_date is not None]
 
         if not facts_with_dates:
             return self._resolve_by_authority(conflict)
@@ -500,7 +501,9 @@ class CrossSourceValidator:
 
         conflict.resolved = True
         conflict.resolved_value = most_recent.value
-        conflict.resolution_reasoning = f"Selected most recent source: {most_recent.source.publication_date}"
+        conflict.resolution_reasoning = (
+            f"Selected most recent source: {most_recent.source.publication_date}"
+        )
 
         return most_recent
 
@@ -531,10 +534,7 @@ class CrossSourceValidator:
         return coverage
 
 
-def validate_research_data(
-    data: Dict[str, Any],
-    sources: List[Dict[str, Any]]
-) -> ValidationResult:
+def validate_research_data(data: Dict[str, Any], sources: List[Dict[str, Any]]) -> ValidationResult:
     """
     Convenience function to validate research data.
 
@@ -554,12 +554,14 @@ def validate_research_data(
             source_info = sources[i % len(sources)] if i < len(sources) else sources[0]
             source = SourceInfo.from_url(source_info.get("url", "unknown"))
 
-            facts.append(Fact(
-                id=f"fact_{i}",
-                category=key,
-                claim=f"{key}: {value}",
-                value=value,
-                source=source
-            ))
+            facts.append(
+                Fact(
+                    id=f"fact_{i}",
+                    category=key,
+                    claim=f"{key}: {value}",
+                    value=value,
+                    source=source,
+                )
+            )
 
     return validator.validate_facts(facts)

@@ -22,6 +22,7 @@ Usage:
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
@@ -29,6 +30,7 @@ logger = get_logger(__name__)
 
 class InvestmentRecommendation(Enum):
     """Investment recommendation categories."""
+
     STRONG_BUY = "strong_buy"
     BUY = "buy"
     HOLD = "hold"
@@ -39,45 +41,50 @@ class InvestmentRecommendation(Enum):
 
 class InvestmentHorizon(Enum):
     """Investment time horizon."""
-    SHORT_TERM = "short_term"      # < 1 year
-    MEDIUM_TERM = "medium_term"    # 1-3 years
-    LONG_TERM = "long_term"        # 3+ years
+
+    SHORT_TERM = "short_term"  # < 1 year
+    MEDIUM_TERM = "medium_term"  # 1-3 years
+    LONG_TERM = "long_term"  # 3+ years
 
 
 class InvestorProfile(Enum):
     """Target investor profile."""
-    GROWTH = "growth"              # High growth, higher risk
-    VALUE = "value"                # Undervalued assets
-    INCOME = "income"              # Dividend focused
-    BALANCED = "balanced"          # Mix of growth and value
-    SPECULATIVE = "speculative"    # High risk/reward
+
+    GROWTH = "growth"  # High growth, higher risk
+    VALUE = "value"  # Undervalued assets
+    INCOME = "income"  # Dividend focused
+    BALANCED = "balanced"  # Mix of growth and value
+    SPECULATIVE = "speculative"  # High risk/reward
 
 
 @dataclass
 class BullCase:
     """Bullish investment thesis."""
+
     headline: str
     key_drivers: List[str]
     catalysts: List[str]
-    target_upside: float          # Percentage upside potential
-    probability: float            # Probability estimate (0-1)
+    target_upside: float  # Percentage upside potential
+    probability: float  # Probability estimate (0-1)
     timeframe: str
 
 
 @dataclass
 class BearCase:
     """Bearish investment thesis."""
+
     headline: str
     key_risks: List[str]
     triggers: List[str]
-    target_downside: float        # Percentage downside risk
-    probability: float            # Probability estimate (0-1)
+    target_downside: float  # Percentage downside risk
+    probability: float  # Probability estimate (0-1)
     timeframe: str
 
 
 @dataclass
 class ValuationMetrics:
     """Valuation analysis."""
+
     current_price: Optional[float] = None
     fair_value_estimate: Optional[float] = None
     upside_potential: Optional[float] = None
@@ -87,15 +94,16 @@ class ValuationMetrics:
     price_to_book: Optional[float] = None
     peer_average_pe: Optional[float] = None
     dcf_value: Optional[float] = None
-    valuation_grade: str = "C"    # A-F
+    valuation_grade: str = "C"  # A-F
 
 
 @dataclass
 class InvestmentThesis:
     """Complete investment thesis."""
+
     company_name: str
     recommendation: InvestmentRecommendation
-    confidence: float             # 0-100
+    confidence: float  # 0-100
     target_price: Optional[float]
     current_price: Optional[float]
     upside_potential: Optional[float]
@@ -132,7 +140,7 @@ class InvestmentThesisGenerator:
     def __init__(
         self,
         risk_tolerance: str = "moderate",
-        default_horizon: InvestmentHorizon = InvestmentHorizon.MEDIUM_TERM
+        default_horizon: InvestmentHorizon = InvestmentHorizon.MEDIUM_TERM,
     ):
         """Initialize the thesis generator."""
         self.risk_tolerance = risk_tolerance
@@ -144,7 +152,7 @@ class InvestmentThesisGenerator:
         company_data: Dict[str, Any],
         financial_data: Optional[Dict[str, Any]] = None,
         market_data: Optional[Dict[str, Any]] = None,
-        risk_assessment: Optional[Dict[str, Any]] = None
+        risk_assessment: Optional[Dict[str, Any]] = None,
     ) -> InvestmentThesis:
         """
         Generate comprehensive investment thesis.
@@ -172,22 +180,16 @@ class InvestmentThesisGenerator:
         valuation = self._analyze_valuation(financial_data, market_data)
 
         # Generate bull case
-        bull_case = self._generate_bull_case(
-            company_data, financial_data, market_data
-        )
+        bull_case = self._generate_bull_case(company_data, financial_data, market_data)
 
         # Generate bear case
-        bear_case = self._generate_bear_case(
-            company_data, financial_data, risk_assessment
-        )
+        bear_case = self._generate_bear_case(company_data, financial_data, risk_assessment)
 
         # Calculate upside potential
         upside = self._calculate_upside(valuation, bull_case, bear_case)
 
         # Calculate confidence first (needed for recommendation)
-        confidence = self._calculate_confidence(
-            financial_data, market_data, risk_assessment
-        )
+        confidence = self._calculate_confidence(financial_data, market_data, risk_assessment)
 
         # Determine recommendation (with data sufficiency check)
         risk_score = risk_assessment.get("overall_risk_score", 50)
@@ -196,22 +198,16 @@ class InvestmentThesisGenerator:
         )
 
         # Identify suitable investor profiles
-        suitable_for = self._identify_suitable_investors(
-            upside, risk_score, financial_data
-        )
+        suitable_for = self._identify_suitable_investors(upside, risk_score, financial_data)
 
         # Extract investment highlights
-        highlights = self._extract_highlights(
-            company_data, financial_data, market_data
-        )
+        highlights = self._extract_highlights(company_data, financial_data, market_data)
 
         # Extract key risks
         key_risks = self._extract_key_risks(risk_assessment)
 
         # Identify catalysts
-        catalysts = self._identify_catalysts(
-            company_data, market_data, bull_case
-        )
+        catalysts = self._identify_catalysts(company_data, market_data, bull_case)
 
         # Generate rationale
         rationale = self._generate_rationale(
@@ -219,9 +215,7 @@ class InvestmentThesisGenerator:
         )
 
         # Generate summary
-        summary = self._generate_summary(
-            company_name, recommendation, upside, confidence
-        )
+        summary = self._generate_summary(company_name, recommendation, upside, confidence)
 
         return InvestmentThesis(
             company_name=company_name,
@@ -239,13 +233,11 @@ class InvestmentThesisGenerator:
             key_risks=key_risks,
             catalysts=catalysts,
             rationale=rationale,
-            summary=summary
+            summary=summary,
         )
 
     def _analyze_valuation(
-        self,
-        financial_data: Dict[str, Any],
-        market_data: Dict[str, Any]
+        self, financial_data: Dict[str, Any], market_data: Dict[str, Any]
     ) -> ValuationMetrics:
         """Analyze company valuation."""
         current_price = financial_data.get("stock_price") or financial_data.get("current_price")
@@ -279,14 +271,11 @@ class InvestmentThesisGenerator:
             price_to_sales=price_to_sales,
             price_to_book=price_to_book,
             peer_average_pe=market_data.get("peer_average_pe"),
-            valuation_grade=grade
+            valuation_grade=grade,
         )
 
     def _grade_valuation(
-        self,
-        pe_ratio: Optional[float],
-        ev_ebitda: Optional[float],
-        price_to_sales: Optional[float]
+        self, pe_ratio: Optional[float], ev_ebitda: Optional[float], price_to_sales: Optional[float]
     ) -> str:
         """Grade valuation attractiveness."""
         score = 0
@@ -339,9 +328,7 @@ class InvestmentThesisGenerator:
             return "D"
 
     def _has_sufficient_financial_data(
-        self,
-        financial_data: Dict[str, Any],
-        market_data: Dict[str, Any]
+        self, financial_data: Dict[str, Any], market_data: Dict[str, Any]
     ) -> bool:
         """Check if we have enough data for a quantitative thesis."""
         data_points = 0
@@ -361,7 +348,7 @@ class InvestmentThesisGenerator:
         self,
         company_data: Dict[str, Any],
         financial_data: Dict[str, Any],
-        market_data: Dict[str, Any]
+        market_data: Dict[str, Any],
     ) -> BullCase:
         """Generate bullish investment thesis."""
         _ = company_data  # Unused but kept for API consistency
@@ -396,20 +383,17 @@ class InvestmentThesisGenerator:
             if has_data:
                 drivers = [
                     "Potential for operational improvement",
-                    "Market consolidation opportunities"
+                    "Market consolidation opportunities",
                 ]
             else:
                 drivers = [
                     "Insufficient data for quantitative analysis",
                     "Qualitative assessment suggests market position",
-                    "Further research recommended"
+                    "Further research recommended",
                 ]
 
         if not catalysts:
-            catalysts = [
-                "New product launches",
-                "Market expansion initiatives"
-            ]
+            catalysts = ["New product launches", "Market expansion initiatives"]
 
         # Calculate potential upside - with minimum when data is missing
         if has_data:
@@ -422,19 +406,23 @@ class InvestmentThesisGenerator:
             drivers.insert(0, "Based on qualitative factors (limited financial data)")
 
         return BullCase(
-            headline=f"Growth story with {upside:.0f}% upside potential" if has_data else f"Potential upside scenario ({upside:.0f}% estimate, limited data)",
+            headline=(
+                f"Growth story with {upside:.0f}% upside potential"
+                if has_data
+                else f"Potential upside scenario ({upside:.0f}% estimate, limited data)"
+            ),
             key_drivers=drivers[:4],
             catalysts=catalysts[:3],
             target_upside=upside,
             probability=0.4 if has_data else 0.3,  # Lower probability without data
-            timeframe="12-24 months"
+            timeframe="12-24 months",
         )
 
     def _generate_bear_case(
         self,
         company_data: Dict[str, Any],
         financial_data: Dict[str, Any],
-        risk_assessment: Dict[str, Any]
+        risk_assessment: Dict[str, Any],
     ) -> BearCase:
         """Generate bearish investment thesis."""
         _ = company_data  # Unused but kept for API consistency
@@ -463,16 +451,10 @@ class InvestmentThesisGenerator:
 
         # Default risks if none found
         if not risks:
-            risks = [
-                "Competitive pressure intensification",
-                "Economic downturn impact"
-            ]
+            risks = ["Competitive pressure intensification", "Economic downturn impact"]
 
         if not triggers:
-            triggers = [
-                "Market disruption from new entrants",
-                "Regulatory changes"
-            ]
+            triggers = ["Market disruption from new entrants", "Regulatory changes"]
 
         # Calculate potential downside
         risk_score = risk_assessment.get("overall_risk_score", 50)
@@ -484,14 +466,11 @@ class InvestmentThesisGenerator:
             triggers=triggers[:3],
             target_downside=downside,
             probability=0.3,
-            timeframe="12-18 months"
+            timeframe="12-18 months",
         )
 
     def _calculate_upside(
-        self,
-        valuation: ValuationMetrics,
-        bull_case: BullCase,
-        bear_case: BearCase
+        self, valuation: ValuationMetrics, bull_case: BullCase, bear_case: BearCase
     ) -> float:
         """Calculate expected upside potential."""
         # Start with valuation-based upside
@@ -500,8 +479,8 @@ class InvestmentThesisGenerator:
         else:
             # Use weighted bull/bear cases
             base_upside = (
-                bull_case.target_upside * bull_case.probability -
-                bear_case.target_downside * bear_case.probability
+                bull_case.target_upside * bull_case.probability
+                - bear_case.target_downside * bear_case.probability
             )
 
         return base_upside
@@ -511,12 +490,14 @@ class InvestmentThesisGenerator:
         upside: float,
         risk_score: float,
         has_sufficient_data: bool = True,
-        confidence: float = 50.0
+        confidence: float = 50.0,
     ) -> InvestmentRecommendation:
         """Determine investment recommendation."""
         # If we don't have enough data or confidence is too low, don't make a strong recommendation
         if not has_sufficient_data or confidence < 55:
-            logger.info(f"Insufficient data for recommendation (has_data={has_sufficient_data}, confidence={confidence})")
+            logger.info(
+                f"Insufficient data for recommendation (has_data={has_sufficient_data}, confidence={confidence})"
+            )
             return InvestmentRecommendation.NOT_RATED
 
         # Adjust upside for risk
@@ -537,7 +518,7 @@ class InvestmentThesisGenerator:
         self,
         financial_data: Dict[str, Any],
         market_data: Dict[str, Any],
-        risk_assessment: Dict[str, Any]
+        risk_assessment: Dict[str, Any],
     ) -> float:
         """Calculate confidence in the recommendation."""
         confidence = 50.0  # Base confidence
@@ -559,10 +540,7 @@ class InvestmentThesisGenerator:
         return min(95, confidence)
 
     def _identify_suitable_investors(
-        self,
-        upside: float,
-        risk_score: float,
-        financial_data: Dict[str, Any]
+        self, upside: float, risk_score: float, financial_data: Dict[str, Any]
     ) -> List[InvestorProfile]:
         """Identify suitable investor profiles."""
         suitable = []
@@ -600,7 +578,7 @@ class InvestmentThesisGenerator:
         self,
         company_data: Dict[str, Any],
         financial_data: Dict[str, Any],
-        market_data: Dict[str, Any]
+        market_data: Dict[str, Any],
     ) -> List[str]:
         """Extract key investment highlights."""
         highlights = []
@@ -608,30 +586,22 @@ class InvestmentThesisGenerator:
         # Market position (handle None values with 'or')
         market_share = market_data.get("market_share") or 0
         if market_share > 15:
-            highlights.append(
-                f"Market leader with {market_share:.1f}% share"
-            )
+            highlights.append(f"Market leader with {market_share:.1f}% share")
 
         # Growth (handle None values with 'or')
         revenue_growth = financial_data.get("revenue_growth") or 0
         if revenue_growth > 10:
-            highlights.append(
-                f"Strong growth at {revenue_growth:.1f}% annually"
-            )
+            highlights.append(f"Strong growth at {revenue_growth:.1f}% annually")
 
         # Profitability (handle None values with 'or')
         profit_margin = financial_data.get("profit_margin") or 0
         if profit_margin > 15:
-            highlights.append(
-                f"High profitability with {profit_margin:.1f}% margins"
-            )
+            highlights.append(f"High profitability with {profit_margin:.1f}% margins")
 
         # Valuation (check for None explicitly)
         pe_ratio = financial_data.get("pe_ratio")
         if pe_ratio is not None and pe_ratio < 20:
-            highlights.append(
-                f"Attractive valuation at {pe_ratio:.1f}x P/E"
-            )
+            highlights.append(f"Attractive valuation at {pe_ratio:.1f}x P/E")
 
         # Company strengths
         strengths = company_data.get("strengths", [])
@@ -640,10 +610,7 @@ class InvestmentThesisGenerator:
 
         # Default highlights
         if not highlights:
-            highlights = [
-                "Established market presence",
-                "Diversified business model"
-            ]
+            highlights = ["Established market presence", "Diversified business model"]
 
         return highlights[:5]
 
@@ -655,7 +622,7 @@ class InvestmentThesisGenerator:
             risks = [
                 "Market competition intensification",
                 "Economic downturn sensitivity",
-                "Regulatory environment changes"
+                "Regulatory environment changes",
             ]
 
         # Ensure string format
@@ -671,10 +638,7 @@ class InvestmentThesisGenerator:
         return formatted
 
     def _identify_catalysts(
-        self,
-        company_data: Dict[str, Any],
-        market_data: Dict[str, Any],
-        bull_case: BullCase
+        self, company_data: Dict[str, Any], market_data: Dict[str, Any], bull_case: BullCase
     ) -> List[str]:
         """Identify potential stock catalysts."""
         catalysts = list(bull_case.catalysts)
@@ -693,10 +657,9 @@ class InvestmentThesisGenerator:
 
         # Generic catalysts
         if len(catalysts) < 3:
-            catalysts.extend([
-                "Earnings beats and guidance raises",
-                "Strategic partnerships or acquisitions"
-            ])
+            catalysts.extend(
+                ["Earnings beats and guidance raises", "Strategic partnerships or acquisitions"]
+            )
 
         return list(dict.fromkeys(catalysts))[:5]  # Deduplicate
 
@@ -706,7 +669,7 @@ class InvestmentThesisGenerator:
         recommendation: InvestmentRecommendation,
         upside: float,
         highlights: List[str],
-        risks: List[str]
+        risks: List[str],
     ) -> str:
         """Generate detailed investment rationale."""
         rec_text = {
@@ -715,7 +678,7 @@ class InvestmentThesisGenerator:
             InvestmentRecommendation.HOLD: "Hold",
             InvestmentRecommendation.SELL: "Sell",
             InvestmentRecommendation.STRONG_SELL: "Strong Sell",
-            InvestmentRecommendation.NOT_RATED: "Not Rated"
+            InvestmentRecommendation.NOT_RATED: "Not Rated",
         }
 
         parts = [
@@ -740,7 +703,7 @@ class InvestmentThesisGenerator:
         company_name: str,
         recommendation: InvestmentRecommendation,
         upside: float,
-        confidence: float
+        confidence: float,
     ) -> str:
         """Generate executive summary."""
         rec_text = recommendation.value.replace("_", " ").title()
@@ -760,11 +723,7 @@ class InvestmentThesisGenerator:
 
 
 def create_thesis_generator(
-    risk_tolerance: str = "moderate",
-    horizon: InvestmentHorizon = InvestmentHorizon.MEDIUM_TERM
+    risk_tolerance: str = "moderate", horizon: InvestmentHorizon = InvestmentHorizon.MEDIUM_TERM
 ) -> InvestmentThesisGenerator:
     """Factory function to create InvestmentThesisGenerator."""
-    return InvestmentThesisGenerator(
-        risk_tolerance=risk_tolerance,
-        default_horizon=horizon
-    )
+    return InvestmentThesisGenerator(risk_tolerance=risk_tolerance, default_horizon=horizon)

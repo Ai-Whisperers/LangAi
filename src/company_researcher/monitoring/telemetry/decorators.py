@@ -9,18 +9,15 @@ import functools
 import time
 from typing import Any, Callable, Dict, TypeVar
 
-from .tracing import Tracer
 from .metrics import Meter
+from .tracing import Tracer
 
 # Type for generic function
-F = TypeVar('F', bound=Callable[..., Any])
+F = TypeVar("F", bound=Callable[..., Any])
 
 
 def trace(
-    tracer: Tracer,
-    name: str = None,
-    kind: str = "INTERNAL",
-    attributes: Dict[str, Any] = None
+    tracer: Tracer, name: str = None, kind: str = "INTERNAL", attributes: Dict[str, Any] = None
 ) -> Callable[[F], F]:
     """
     Decorator to trace a function.
@@ -30,6 +27,7 @@ def trace(
         def fetch_company_data(company: str):
             ...
     """
+
     def decorator(func: F) -> F:
         span_name = name or func.__name__
 
@@ -52,11 +50,7 @@ def trace(
     return decorator
 
 
-def timed(
-    meter: Meter,
-    metric_name: str,
-    attributes: Dict[str, str] = None
-) -> Callable[[F], F]:
+def timed(meter: Meter, metric_name: str, attributes: Dict[str, str] = None) -> Callable[[F], F]:
     """
     Decorator to time function execution.
 
@@ -93,11 +87,7 @@ def timed(
     return decorator
 
 
-def counted(
-    meter: Meter,
-    metric_name: str,
-    attributes: Dict[str, str] = None
-) -> Callable[[F], F]:
+def counted(meter: Meter, metric_name: str, attributes: Dict[str, str] = None) -> Callable[[F], F]:
     """
     Decorator to count function calls.
 

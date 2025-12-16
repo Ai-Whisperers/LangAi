@@ -158,8 +158,8 @@ Timeline.md must follow `templar.timeline.v1` structure with four required secti
 
 ## Primary Information Sources
 
-### 1. Conversation References 
-**Sources**: 
+### 1. Conversation References
+**Sources**:
 - `tickets/TICKET-ID/references.md` - Pre-documented conversation references
 - `conversations/[USER INITIALS]/YYYY-MM-DD_HH-MMZ-description.md` - Direct filename scan
 
@@ -214,7 +214,7 @@ Ready for production testing and validation.
 ```markdown
 # From conversations found by ticket ID:
 **09:52Z** - **Start** - Debugging session start (filename)
-**10:15Z** - **Breakthrough** - Root cause identified in MeasurementUnitConversionService.cs (content)  
+**10:15Z** - **Breakthrough** - Root cause identified in MeasurementUnitConversionService.cs (content)
 **10:45Z** - **Commit** - Fix applied with commit abc1234 (content)
 **11:30Z** - **Complete** - Debugging session finished, ready for production (content)
 ```
@@ -294,7 +294,7 @@ git log --grep="EBASE-XXXX" --pretty=format:"%ad - %h - %s" --date=iso-strict
 **09:52Z** - **Start** - Debugging API call parameters (conversation)
 
 # If conversation shows multiple phases:
-**09:52Z** - **Start** - Debugging API call parameters 
+**09:52Z** - **Start** - Debugging API call parameters
 **~10:30Z** - **Breakthrough** - Identified three critical bugs
 **~11:45Z** - **Complete** - Debugging session end
 ```
@@ -355,7 +355,7 @@ git log --grep="EBASE-XXXX" --pretty=format:"%ad - %h - %s" --date=iso-strict
 ```markdown
 # Timeline entries:
 **09:52Z** - **Start** - Debugging session
-**11:01Z** - **Decision** - Major breakthrough  
+**11:01Z** - **Decision** - Major breakthrough
 **12:44Z** - **Complete** - Session end
 
 # Reconstructed session for hours.md:
@@ -403,7 +403,7 @@ Type: Development
 
 ### Timeline Quality Check
 - **Source attribution** for every entry
-- **Chronological consistency** 
+- **Chronological consistency**
 - **Reasonable work patterns**
 - **Clear marking** of approximate vs exact timestamps
 

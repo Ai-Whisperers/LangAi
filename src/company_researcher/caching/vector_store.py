@@ -27,10 +27,11 @@ Usage:
     )
 """
 
-from typing import List, Dict, Optional, Any
+import hashlib
 from dataclasses import dataclass
 from threading import Lock
-import hashlib
+from typing import Any, Dict, List, Optional
+
 from ..utils import get_config, get_logger
 
 logger = get_logger(__name__)
@@ -38,6 +39,7 @@ logger = get_logger(__name__)
 try:
     import chromadb
     from chromadb.config import Settings
+
     CHROMADB_AVAILABLE = True
 except ImportError:
     CHROMADB_AVAILABLE = False
@@ -46,6 +48,7 @@ except ImportError:
 @dataclass
 class SearchResult:
     """Result from a vector search."""
+
     id: str
     content: str
     metadata: Dict[str, Any]
@@ -58,7 +61,7 @@ class SearchResult:
             "content": self.content,
             "metadata": self.metadata,
             "distance": self.distance,
-            "similarity": self.similarity
+            "similarity": self.similarity,
         }
 
 
@@ -72,11 +75,7 @@ class ResearchVectorStore:
     - Company information
     """
 
-    def __init__(
-        self,
-        persist_directory: str = "./chroma_db",
-        collection_prefix: str = "research"
-    ):
+    def __init__(self, persist_directory: str = "./chroma_db", collection_prefix: str = "research"):
         """
         Initialize the vector store.
 
@@ -86,8 +85,7 @@ class ResearchVectorStore:
         """
         if not CHROMADB_AVAILABLE:
             raise ImportError(
-                "ChromaDB is required for vector store. "
-                "Install with: pip install chromadb"
+                "ChromaDB is required for vector store. " "Install with: pip install chromadb"
             )
 
         self.persist_directory = persist_directory
@@ -95,27 +93,20 @@ class ResearchVectorStore:
 
         # Initialize ChromaDB client
         self.client = chromadb.PersistentClient(
-            path=persist_directory,
-            settings=Settings(
-                anonymized_telemetry=False,
-                allow_reset=True
-            )
+            path=persist_directory, settings=Settings(anonymized_telemetry=False, allow_reset=True)
         )
 
         # Get or create collections
         self.research_collection = self.client.get_or_create_collection(
-            name=f"{collection_prefix}_outputs",
-            metadata={"hnsw:space": "cosine"}
+            name=f"{collection_prefix}_outputs", metadata={"hnsw:space": "cosine"}
         )
 
         self.sources_collection = self.client.get_or_create_collection(
-            name=f"{collection_prefix}_sources",
-            metadata={"hnsw:space": "cosine"}
+            name=f"{collection_prefix}_sources", metadata={"hnsw:space": "cosine"}
         )
 
         self.companies_collection = self.client.get_or_create_collection(
-            name=f"{collection_prefix}_companies",
-            metadata={"hnsw:space": "cosine"}
+            name=f"{collection_prefix}_companies", metadata={"hnsw:space": "cosine"}
         )
 
     # =========================================================================
@@ -128,7 +119,7 @@ class ResearchVectorStore:
         company_name: str,
         agent_name: str,
         content: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Add research output to vector store.
@@ -149,21 +140,16 @@ class ResearchVectorStore:
             "company": company_name,
             "agent": agent_name,
             "research_id": research_id,
-            **(metadata or {})
+            **(metadata or {}),
         }
 
         self.research_collection.upsert(
-            ids=[doc_id],
-            documents=[content],
-            metadatas=[full_metadata]
+            ids=[doc_id], documents=[content], metadatas=[full_metadata]
         )
 
         return doc_id
 
-    def add_research_outputs_bulk(
-        self,
-        outputs: List[Dict[str, Any]]
-    ) -> int:
+    def add_research_outputs_bulk(self, outputs: List[Dict[str, Any]]) -> int:
         """
         Add multiple research outputs efficiently.
 
@@ -184,19 +170,17 @@ class ResearchVectorStore:
         for output in outputs:
             doc_id = f"{output['research_id']}_{output['agent_name']}"
             ids.append(doc_id)
-            documents.append(output['content'])
-            metadatas.append({
-                "company": output['company_name'],
-                "agent": output['agent_name'],
-                "research_id": output['research_id'],
-                **(output.get('metadata', {}))
-            })
+            documents.append(output["content"])
+            metadatas.append(
+                {
+                    "company": output["company_name"],
+                    "agent": output["agent_name"],
+                    "research_id": output["research_id"],
+                    **(output.get("metadata", {})),
+                }
+            )
 
-        self.research_collection.upsert(
-            ids=ids,
-            documents=documents,
-            metadatas=metadatas
-        )
+        self.research_collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
 
         return len(ids)
 
@@ -206,7 +190,7 @@ class ResearchVectorStore:
         company_name: Optional[str] = None,
         agent_name: Optional[str] = None,
         n_results: int = 5,
-        min_similarity: float = 0.0
+        min_similarity: float = 0.0,
     ) -> List[SearchResult]:
         """
         Search for similar research outputs.
@@ -228,9 +212,7 @@ class ResearchVectorStore:
             where_filter["agent"] = agent_name
 
         results = self.research_collection.query(
-            query_texts=[query],
-            n_results=n_results,
-            where=where_filter if where_filter else None
+            query_texts=[query], n_results=n_results, where=where_filter if where_filter else None
         )
 
         search_results = []
@@ -239,34 +221,31 @@ class ResearchVectorStore:
             similarity = 1 - distance  # For cosine distance
 
             if similarity >= min_similarity:
-                search_results.append(SearchResult(
-                    id=results["ids"][0][i],
-                    content=results["documents"][0][i],
-                    metadata=results["metadatas"][0][i],
-                    distance=distance,
-                    similarity=similarity
-                ))
+                search_results.append(
+                    SearchResult(
+                        id=results["ids"][0][i],
+                        content=results["documents"][0][i],
+                        metadata=results["metadatas"][0][i],
+                        distance=distance,
+                        similarity=similarity,
+                    )
+                )
 
         return search_results
 
-    def get_research_by_company(
-        self,
-        company_name: str,
-        limit: int = 100
-    ) -> List[Dict[str, Any]]:
+    def get_research_by_company(self, company_name: str, limit: int = 100) -> List[Dict[str, Any]]:
         """Get all research outputs for a company."""
-        results = self.research_collection.get(
-            where={"company": company_name},
-            limit=limit
-        )
+        results = self.research_collection.get(where={"company": company_name}, limit=limit)
 
         outputs = []
         for i in range(len(results["ids"])):
-            outputs.append({
-                "id": results["ids"][i],
-                "content": results["documents"][i],
-                "metadata": results["metadatas"][i]
-            })
+            outputs.append(
+                {
+                    "id": results["ids"][i],
+                    "content": results["documents"][i],
+                    "metadata": results["metadatas"][i],
+                }
+            )
 
         return outputs
 
@@ -281,7 +260,7 @@ class ResearchVectorStore:
         title: str,
         content: str,
         company_name: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Add source to vector store.
@@ -299,18 +278,9 @@ class ResearchVectorStore:
         """
         doc_id = source_id or self._hash_url(url)
 
-        full_metadata = {
-            "url": url,
-            "title": title,
-            "company": company_name,
-            **(metadata or {})
-        }
+        full_metadata = {"url": url, "title": title, "company": company_name, **(metadata or {})}
 
-        self.sources_collection.upsert(
-            ids=[doc_id],
-            documents=[content],
-            metadatas=[full_metadata]
-        )
+        self.sources_collection.upsert(ids=[doc_id], documents=[content], metadatas=[full_metadata])
 
         return doc_id
 
@@ -319,7 +289,7 @@ class ResearchVectorStore:
         query: str,
         company_name: Optional[str] = None,
         n_results: int = 10,
-        min_similarity: float = 0.5
+        min_similarity: float = 0.5,
     ) -> List[SearchResult]:
         """
         Search for similar sources.
@@ -336,9 +306,7 @@ class ResearchVectorStore:
         where_filter = {"company": company_name} if company_name else None
 
         results = self.sources_collection.query(
-            query_texts=[query],
-            n_results=n_results,
-            where=where_filter
+            query_texts=[query], n_results=n_results, where=where_filter
         )
 
         search_results = []
@@ -347,21 +315,19 @@ class ResearchVectorStore:
             similarity = 1 - distance
 
             if similarity >= min_similarity:
-                search_results.append(SearchResult(
-                    id=results["ids"][0][i],
-                    content=results["documents"][0][i],
-                    metadata=results["metadatas"][0][i],
-                    distance=distance,
-                    similarity=similarity
-                ))
+                search_results.append(
+                    SearchResult(
+                        id=results["ids"][0][i],
+                        content=results["documents"][0][i],
+                        metadata=results["metadatas"][0][i],
+                        distance=distance,
+                        similarity=similarity,
+                    )
+                )
 
         return search_results
 
-    def find_duplicate_sources(
-        self,
-        content: str,
-        threshold: float = 0.95
-    ) -> List[SearchResult]:
+    def find_duplicate_sources(self, content: str, threshold: float = 0.95) -> List[SearchResult]:
         """
         Find potentially duplicate sources by content.
 
@@ -372,10 +338,7 @@ class ResearchVectorStore:
         Returns:
             List of potential duplicates
         """
-        results = self.sources_collection.query(
-            query_texts=[content],
-            n_results=10
-        )
+        results = self.sources_collection.query(query_texts=[content], n_results=10)
 
         duplicates = []
         for i in range(len(results["ids"][0])):
@@ -383,13 +346,15 @@ class ResearchVectorStore:
             similarity = 1 - distance
 
             if similarity >= threshold:
-                duplicates.append(SearchResult(
-                    id=results["ids"][0][i],
-                    content=results["documents"][0][i],
-                    metadata=results["metadatas"][0][i],
-                    distance=distance,
-                    similarity=similarity
-                ))
+                duplicates.append(
+                    SearchResult(
+                        id=results["ids"][0][i],
+                        content=results["documents"][0][i],
+                        metadata=results["metadatas"][0][i],
+                        distance=distance,
+                        similarity=similarity,
+                    )
+                )
 
         return duplicates
 
@@ -398,10 +363,7 @@ class ResearchVectorStore:
     # =========================================================================
 
     def add_company_profile(
-        self,
-        company_name: str,
-        profile: str,
-        metadata: Optional[Dict[str, Any]] = None
+        self, company_name: str, profile: str, metadata: Optional[Dict[str, Any]] = None
     ) -> str:
         """
         Add company profile for similarity matching.
@@ -416,25 +378,16 @@ class ResearchVectorStore:
         """
         doc_id = f"company_{self._normalize_name(company_name)}"
 
-        full_metadata = {
-            "company": company_name,
-            "type": "profile",
-            **(metadata or {})
-        }
+        full_metadata = {"company": company_name, "type": "profile", **(metadata or {})}
 
         self.companies_collection.upsert(
-            ids=[doc_id],
-            documents=[profile],
-            metadatas=[full_metadata]
+            ids=[doc_id], documents=[profile], metadatas=[full_metadata]
         )
 
         return doc_id
 
     def find_similar_companies(
-        self,
-        query: str,
-        n_results: int = 5,
-        exclude_company: Optional[str] = None
+        self, query: str, n_results: int = 5, exclude_company: Optional[str] = None
     ) -> List[SearchResult]:
         """
         Find companies similar to a query or description.
@@ -448,8 +401,7 @@ class ResearchVectorStore:
             List of similar companies
         """
         results = self.companies_collection.query(
-            query_texts=[query],
-            n_results=n_results + (1 if exclude_company else 0)
+            query_texts=[query], n_results=n_results + (1 if exclude_company else 0)
         )
 
         search_results = []
@@ -461,13 +413,15 @@ class ResearchVectorStore:
                 continue
 
             distance = results["distances"][0][i]
-            search_results.append(SearchResult(
-                id=results["ids"][0][i],
-                content=results["documents"][0][i],
-                metadata=metadata,
-                distance=distance,
-                similarity=1 - distance
-            ))
+            search_results.append(
+                SearchResult(
+                    id=results["ids"][0][i],
+                    content=results["documents"][0][i],
+                    metadata=metadata,
+                    distance=distance,
+                    similarity=1 - distance,
+                )
+            )
 
         return search_results[:n_results]
 
@@ -478,9 +432,7 @@ class ResearchVectorStore:
     def delete_research(self, research_id: str) -> None:
         """Delete all data for a research run."""
         # Get all document IDs for this research
-        results = self.research_collection.get(
-            where={"research_id": research_id}
-        )
+        results = self.research_collection.get(where={"research_id": research_id})
 
         if results["ids"]:
             self.research_collection.delete(ids=results["ids"])
@@ -488,16 +440,12 @@ class ResearchVectorStore:
     def delete_company_data(self, company_name: str) -> None:
         """Delete all data for a company."""
         # Delete from research collection
-        research_results = self.research_collection.get(
-            where={"company": company_name}
-        )
+        research_results = self.research_collection.get(where={"company": company_name})
         if research_results["ids"]:
             self.research_collection.delete(ids=research_results["ids"])
 
         # Delete from sources collection
-        source_results = self.sources_collection.get(
-            where={"company": company_name}
-        )
+        source_results = self.sources_collection.get(where={"company": company_name})
         if source_results["ids"]:
             self.sources_collection.delete(ids=source_results["ids"])
 
@@ -513,7 +461,7 @@ class ResearchVectorStore:
         return {
             "research_outputs": self.research_collection.count(),
             "sources": self.sources_collection.count(),
-            "companies": self.companies_collection.count()
+            "companies": self.companies_collection.count(),
         }
 
     def reset(self) -> None:
@@ -524,16 +472,13 @@ class ResearchVectorStore:
 
         # Recreate collections
         self.research_collection = self.client.get_or_create_collection(
-            name=f"{self.collection_prefix}_outputs",
-            metadata={"hnsw:space": "cosine"}
+            name=f"{self.collection_prefix}_outputs", metadata={"hnsw:space": "cosine"}
         )
         self.sources_collection = self.client.get_or_create_collection(
-            name=f"{self.collection_prefix}_sources",
-            metadata={"hnsw:space": "cosine"}
+            name=f"{self.collection_prefix}_sources", metadata={"hnsw:space": "cosine"}
         )
         self.companies_collection = self.client.get_or_create_collection(
-            name=f"{self.collection_prefix}_companies",
-            metadata={"hnsw:space": "cosine"}
+            name=f"{self.collection_prefix}_companies", metadata={"hnsw:space": "cosine"}
         )
 
     def _hash_url(self, url: str) -> str:
@@ -543,9 +488,10 @@ class ResearchVectorStore:
     def _normalize_name(self, name: str) -> str:
         """Normalize name for ID generation."""
         import re
+
         normalized = name.lower()
-        normalized = re.sub(r'[^\w\s]', '', normalized)
-        normalized = re.sub(r'\s+', '_', normalized).strip('_')
+        normalized = re.sub(r"[^\w\s]", "", normalized)
+        normalized = re.sub(r"\s+", "_", normalized).strip("_")
         return normalized
 
 
@@ -554,9 +500,7 @@ _vector_store: Optional[ResearchVectorStore] = None
 _store_lock = Lock()
 
 
-def get_vector_store(
-    persist_directory: Optional[str] = None
-) -> ResearchVectorStore:
+def get_vector_store(persist_directory: Optional[str] = None) -> ResearchVectorStore:
     """
     Get singleton vector store instance.
 
@@ -570,16 +514,14 @@ def get_vector_store(
 
     if not CHROMADB_AVAILABLE:
         raise ImportError(
-            "ChromaDB is required for vector store. "
-            "Install with: pip install chromadb"
+            "ChromaDB is required for vector store. " "Install with: pip install chromadb"
         )
 
     if _vector_store is None:
         with _store_lock:
             if _vector_store is None:
                 directory = persist_directory or get_config(
-                    "CHROMA_PERSIST_DIR",
-                    default="./chroma_db"
+                    "CHROMA_PERSIST_DIR", default="./chroma_db"
                 )
                 _vector_store = ResearchVectorStore(directory)
 

@@ -17,6 +17,7 @@ import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Generic, Optional, TypeVar
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -26,15 +27,17 @@ def _utcnow() -> datetime:
     """Get current UTC time (timezone-aware)."""
     return datetime.now(timezone.utc)
 
+
 from .lru_cache import LRUCache, LRUCacheConfig
 from .ttl_cache import TTLCache, TTLCacheConfig
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 @dataclass
 class CachedResult(Generic[T]):
     """Wrapper for cached results with metadata."""
+
     value: T
     cached_at: datetime
     cache_key: str
@@ -67,24 +70,16 @@ class ResultCache(Generic[T]):
             use(cached.value)
     """
 
-    def __init__(
-        self,
-        ttl: Optional[float] = None,
-        max_size: int = 1000,
-        use_ttl: bool = True
-    ):
+    def __init__(self, ttl: Optional[float] = None, max_size: int = 1000, use_ttl: bool = True):
         self._use_ttl = use_ttl and ttl is not None
         self._ttl = ttl
 
         if self._use_ttl:
-            self._cache: TTLCache = TTLCache(TTLCacheConfig(
-                default_ttl=ttl or 300.0,
-                max_size=max_size
-            ))
+            self._cache: TTLCache = TTLCache(
+                TTLCacheConfig(default_ttl=ttl or 300.0, max_size=max_size)
+            )
         else:
-            self._cache: LRUCache = LRUCache(LRUCacheConfig(
-                max_size=max_size
-            ))
+            self._cache: LRUCache = LRUCache(LRUCacheConfig(max_size=max_size))
 
         self._metadata: Dict[str, Dict[str, Any]] = {}
 
@@ -108,16 +103,12 @@ class ResultCache(Generic[T]):
                 cache_key=key,
                 hit=True,
                 compute_time=meta.get("compute_time"),
-                ttl_remaining=ttl_remaining
+                ttl_remaining=ttl_remaining,
             )
         return None
 
     def set(
-        self,
-        key: str,
-        value: T,
-        ttl: Optional[float] = None,
-        compute_time: Optional[float] = None
+        self, key: str, value: T, ttl: Optional[float] = None, compute_time: Optional[float] = None
     ) -> None:
         """
         Cache a result.
@@ -133,10 +124,7 @@ class ResultCache(Generic[T]):
         else:
             self._cache.put(key, value)
 
-        self._metadata[key] = {
-            "cached_at": _utcnow(),
-            "compute_time": compute_time
-        }
+        self._metadata[key] = {"cached_at": _utcnow(), "compute_time": compute_time}
 
     def delete(self, key: str) -> bool:
         """Delete cached result."""
@@ -162,7 +150,7 @@ def _make_cache_key(
     args: tuple,
     kwargs: dict,
     key_prefix: Optional[str] = None,
-    exclude_args: Optional[list] = None
+    exclude_args: Optional[list] = None,
 ) -> str:
     """Generate cache key from function and arguments."""
     exclude_args = exclude_args or []
@@ -213,11 +201,7 @@ def _get_global_cache() -> ResultCache:
     return _global_cache
 
 
-def cache_result(
-    key: str,
-    value: Any,
-    ttl: Optional[float] = None
-) -> None:
+def cache_result(key: str, value: Any, ttl: Optional[float] = None) -> None:
     """
     Cache a result with the global cache.
 
@@ -234,7 +218,7 @@ def cached(
     ttl: Optional[float] = 300.0,
     key_prefix: Optional[str] = None,
     exclude_args: Optional[list] = None,
-    cache: Optional[ResultCache] = None
+    cache: Optional[ResultCache] = None,
 ):
     """
     Decorator to cache function results.
@@ -254,16 +238,16 @@ def cached(
         exclude_args: Arguments to exclude from cache key
         cache: Custom cache instance
     """
+
     def decorator(func: Callable) -> Callable:
         result_cache = cache or _get_global_cache()
 
         if asyncio.iscoroutinefunction(func):
+
             @functools.wraps(func)
             async def async_wrapper(*args, **kwargs):
                 cache_key = _make_cache_key(
-                    func, args, kwargs,
-                    key_prefix=key_prefix,
-                    exclude_args=exclude_args
+                    func, args, kwargs, key_prefix=key_prefix, exclude_args=exclude_args
                 )
 
                 # Check cache
@@ -277,23 +261,17 @@ def cached(
                 compute_time = time.time() - start
 
                 # Cache result
-                result_cache.set(
-                    cache_key,
-                    result,
-                    ttl=ttl,
-                    compute_time=compute_time
-                )
+                result_cache.set(cache_key, result, ttl=ttl, compute_time=compute_time)
 
                 return result
 
             return async_wrapper
         else:
+
             @functools.wraps(func)
             def sync_wrapper(*args, **kwargs):
                 cache_key = _make_cache_key(
-                    func, args, kwargs,
-                    key_prefix=key_prefix,
-                    exclude_args=exclude_args
+                    func, args, kwargs, key_prefix=key_prefix, exclude_args=exclude_args
                 )
 
                 # Check cache
@@ -307,12 +285,7 @@ def cached(
                 compute_time = time.time() - start
 
                 # Cache result
-                result_cache.set(
-                    cache_key,
-                    result,
-                    ttl=ttl,
-                    compute_time=compute_time
-                )
+                result_cache.set(cache_key, result, ttl=ttl, compute_time=compute_time)
 
                 return result
 

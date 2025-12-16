@@ -12,8 +12,8 @@ argument-hint: "Folder path to check for obsolete artifacts (e.g., .cursor/rules
 
 Please scan for obsolete, outdated, or superseded artifacts and create proper archival process with redirects to replacements.
 
-**Pattern**: Obsolescence Detection and Archival Pattern ⭐⭐⭐⭐  
-**Effectiveness**: Essential for maintaining clean, current artifact library  
+**Pattern**: Obsolescence Detection and Archival Pattern ⭐⭐⭐⭐
+**Effectiveness**: Essential for maintaining clean, current artifact library
 **Use When**: Quarterly cleanup, after major refactoring, or when noticing obsolete artifacts
 
 ---
@@ -258,11 +258,11 @@ If you believe this archival was a mistake or need assistance migrating:
 5. **Commit with context**:
    ```bash
    git commit -m "Archive [artifact-name]: [reason]
-   
+
    Superseded by: [replacement]
    Last used: [date]
    References updated: [count]
-   
+
    Archival reason: [detailed explanation]"
    ```
 
@@ -271,7 +271,7 @@ If you believe this archival was a mistake or need assistance migrating:
 1. **Add deprecation notice** to artifact:
    ```markdown
    # [Artifact Name]
-   
+
    > **⚠️ DEPRECATED**: This [artifact] is deprecated as of [date].
    > Use `[replacement]` instead.
    > This artifact will be archived on [sunset-date].
@@ -482,8 +482,8 @@ After archiving:
 **Status**: Superseded
 **Replacement**: `.cursor/rules/ticket/validation-before-completion-rule.mdc`
 
-**Reason**: 
-Superseded by comprehensive validation rule with multi-level checklist, 
+**Reason**:
+Superseded by comprehensive validation rule with multi-level checklist,
 better examples, and integration with ticket workflow.
 
 **Archival Strategy**: Archive with Redirect
@@ -601,7 +601,7 @@ tested but ultimately not adopted by the team.
 - Required significant tooling changes
 - Alternative simpler approach worked better
 
-**Alternative Chosen**: 
+**Alternative Chosen**:
 Current ticket workflow (see `.cursor/rules/ticket/`)
 
 **Historical Value**:
@@ -812,6 +812,6 @@ Before archiving:
 
 ---
 
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)

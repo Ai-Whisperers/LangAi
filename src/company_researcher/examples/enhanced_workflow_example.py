@@ -20,50 +20,29 @@ Run this example:
     python -m company_researcher.examples.enhanced_workflow_example
 """
 
+from company_researcher.prompts import get_prompt, get_prompt_registry
+from company_researcher.quality import EnhancedContradictionDetector
 
 # Import enhanced modules
-from company_researcher.shared import (
-    # Main pipeline
-    EnhancedResearchPipeline,
+from company_researcher.shared import (  # Main pipeline; Individual pipelines; Core components
     EnhancedAnalysisResult,
-
-    # Individual pipelines
-    run_quality_pipeline,
-    run_gap_detection,
-    run_contradiction_analysis,
-    get_optimized_queries,
-    select_best_sources,
-
-    # Core components
-    UnifiedQualityScorer,
-    SemanticGapDetector,
+    EnhancedResearchPipeline,
     QueryDiversifier,
+    SemanticGapDetector,
+    UnifiedQualityScorer,
+    get_optimized_queries,
+    run_contradiction_analysis,
+    run_gap_detection,
+    run_quality_pipeline,
+    select_best_sources,
 )
-
-from company_researcher.validation import (
-    GroundTruthValidator,
-)
-
-from company_researcher.quality import (
-    EnhancedContradictionDetector,
-)
-
-
-from company_researcher.prompts import (
-    get_prompt,
-    get_prompt_registry,
-)
-
-from company_researcher.state import (
-    TypedResearchState,
-    FinancialMetrics,
-    CompanyProfile,
-)
-
+from company_researcher.state import CompanyProfile, FinancialMetrics, TypedResearchState
+from company_researcher.validation import GroundTruthValidator
 
 # ============================================================================
 # Example 1: Full Enhanced Pipeline
 # ============================================================================
+
 
 def example_full_pipeline():
     """
@@ -71,9 +50,9 @@ def example_full_pipeline():
 
     This is the recommended way to use all improvements together.
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 1: Full Enhanced Pipeline")
-    print("="*60)
+    print("=" * 60)
 
     # Sample research output (this would come from your existing workflow)
     research_output = {
@@ -85,36 +64,34 @@ def example_full_pipeline():
                 The company has over 160,000 employees globally.
                 Market capitalization exceeds $3 trillion.""",
                 "analysis": "Strong financial performance with healthy margins.",
-                "data_gaps": ["Specific R&D spending breakdown"]
+                "data_gaps": ["Specific R&D spending breakdown"],
             },
             "market": {
                 "summary": """Apple holds approximately 20% of the global smartphone market.
                 Main competitors include Samsung, Google, and Huawei.
                 The company has been expanding in services and wearables.""",
                 "analysis": "Dominant market position in premium segment.",
-                "data_gaps": []
+                "data_gaps": [],
             },
             "product": {
                 "summary": """Core products include iPhone, Mac, iPad, Apple Watch.
                 Services include App Store, Apple Music, iCloud, Apple TV+.
                 iPhone accounts for about 52% of revenue.""",
                 "analysis": "Diversified product portfolio with services growth.",
-                "data_gaps": ["Exact revenue by product line"]
-            }
+                "data_gaps": ["Exact revenue by product line"],
+            },
         },
         "sources": [
             {"url": "https://investor.apple.com/sec-filings", "title": "SEC Filings"},
             {"url": "https://www.apple.com/newsroom", "title": "Apple Newsroom"},
             {"url": "https://finance.yahoo.com/quote/AAPL", "title": "Yahoo Finance"},
         ],
-        "company_overview": "Apple Inc. is a technology company headquartered in Cupertino, California."
+        "company_overview": "Apple Inc. is a technology company headquartered in Cupertino, California.",
     }
 
     # Create enhanced pipeline
     pipeline = EnhancedResearchPipeline(
-        company_name="Apple Inc.",
-        ticker="AAPL",
-        use_embeddings=True
+        company_name="Apple Inc.", ticker="AAPL", use_embeddings=True
     )
 
     # Run full analysis
@@ -143,21 +120,21 @@ def example_full_pipeline():
 # Example 2: Individual Components
 # ============================================================================
 
+
 def example_individual_components():
     """
     Use individual components separately for more control.
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 2: Individual Components")
-    print("="*60)
+    print("=" * 60)
 
     company_name = "Microsoft Corporation"
 
     # 1. Generate optimized search queries
     print("\n1. Query Diversification:")
     queries = get_optimized_queries(
-        company_name,
-        focus_areas=["financial", "market", "competitive"]
+        company_name, focus_areas=["financial", "market", "competitive"]
     )
     print(f"   Generated {len(queries)} diversified queries")
     for q in queries[:5]:
@@ -171,7 +148,7 @@ def example_individual_components():
     prompt = get_prompt(
         "financial_analysis",
         company_name=company_name,
-        additional_context="Focus on cloud revenue growth."
+        additional_context="Focus on cloud revenue growth.",
     )
     print(f"   Generated prompt ({len(prompt)} chars)")
     print(f"   Preview: {prompt[:100]}...")
@@ -182,7 +159,7 @@ def example_individual_components():
     assessment = detector.detect_gaps(
         content="Revenue was $211 billion. The CEO is Satya Nadella.",
         sources=[{"url": "https://microsoft.com"}],
-        company_name=company_name
+        company_name=company_name,
     )
     print(f"   Coverage Score: {assessment.coverage_score:.2f}")
     print(f"   Detected Gaps: {len(assessment.gaps)}")
@@ -194,13 +171,14 @@ def example_individual_components():
 # Example 3: Typed State Models
 # ============================================================================
 
+
 def example_typed_models():
     """
     Use strongly-typed state models for better data validation.
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 3: Typed State Models")
-    print("="*60)
+    print("=" * 60)
 
     # Create validated financial metrics
     metrics = FinancialMetrics(
@@ -212,7 +190,7 @@ def example_typed_models():
         profit_margin=0.253,
         market_cap=3_000_000_000_000,  # $3T
         employees=160000,
-        pe_ratio=28.5
+        pe_ratio=28.5,
     )
 
     print(f"\nFinancial Metrics (validated):")
@@ -230,7 +208,7 @@ def example_typed_models():
         headquarters_state="California",
         headquarters_country="USA",
         founded_year=1976,
-        ceo_name="Tim Cook"
+        ceo_name="Tim Cook",
     )
 
     print(f"\nCompany Profile:")
@@ -240,10 +218,7 @@ def example_typed_models():
     print(f"  CEO: {profile.ceo_name}")
 
     # Create full typed state
-    state = TypedResearchState(
-        company_name="Apple Inc.",
-        financial_metrics=metrics
-    )
+    state = TypedResearchState(company_name="Apple Inc.", financial_metrics=metrics)
 
     print(f"\nTyped State Created: {state.company_name}")
     print(f"  Duration: {state.duration_seconds:.2f}s")
@@ -257,13 +232,14 @@ def example_typed_models():
 # Example 4: Ground Truth Validation
 # ============================================================================
 
+
 def example_ground_truth():
     """
     Validate claims against ground truth from financial APIs.
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 4: Ground Truth Validation")
-    print("="*60)
+    print("=" * 60)
 
     validator = GroundTruthValidator()
 
@@ -298,59 +274,58 @@ def example_ground_truth():
 # Example 5: Source Selection with RAG
 # ============================================================================
 
+
 def example_source_selection():
     """
     Use semantic source selection for better context.
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 5: Source Selection with RAG")
-    print("="*60)
+    print("=" * 60)
 
     # Sample sources (would come from search results)
     sources = [
         {
             "url": "https://investor.apple.com/financials",
             "title": "Apple Investor Relations - Financials",
-            "snippet": "Quarterly earnings, annual reports, SEC filings for investors."
+            "snippet": "Quarterly earnings, annual reports, SEC filings for investors.",
         },
         {
             "url": "https://www.bloomberg.com/apple",
             "title": "Apple News - Bloomberg",
-            "snippet": "Latest Apple stock price, news, and analysis."
+            "snippet": "Latest Apple stock price, news, and analysis.",
         },
         {
             "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193",
             "title": "Apple SEC Filings",
-            "snippet": "Official SEC filings including 10-K, 10-Q, 8-K reports."
+            "snippet": "Official SEC filings including 10-K, 10-Q, 8-K reports.",
         },
         {
             "url": "https://techcrunch.com/tag/apple",
             "title": "Apple News - TechCrunch",
-            "snippet": "Technology news and product announcements about Apple."
+            "snippet": "Technology news and product announcements about Apple.",
         },
         {
             "url": "https://www.apple.com/newsroom",
             "title": "Apple Newsroom",
-            "snippet": "Official press releases and company announcements."
+            "snippet": "Official press releases and company announcements.",
         },
         {
             "url": "https://www.reddit.com/r/apple",
             "title": "r/apple - Reddit",
-            "snippet": "Community discussions about Apple products."
+            "snippet": "Community discussions about Apple products.",
         },
         {
             "url": "https://finance.yahoo.com/quote/AAPL",
             "title": "AAPL Stock - Yahoo Finance",
-            "snippet": "Real-time stock quotes, financials, and analysis."
+            "snippet": "Real-time stock quotes, financials, and analysis.",
         },
     ]
 
     # Select best sources for financial analysis
     print("\nSelecting sources for 'Apple financial performance'...")
     selected = select_best_sources(
-        query="Apple financial performance revenue earnings",
-        sources=sources,
-        max_sources=4
+        query="Apple financial performance revenue earnings", sources=sources, max_sources=4
     )
 
     print(f"\nSelected {len(selected)} sources:")
@@ -364,13 +339,14 @@ def example_source_selection():
 # Example 6: Contradiction Detection
 # ============================================================================
 
+
 def example_contradiction_detection():
     """
     Detect contradictions across multiple sources.
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 6: Contradiction Detection")
-    print("="*60)
+    print("=" * 60)
 
     detector = EnhancedContradictionDetector(use_embeddings=False)  # No embeddings for example
 
@@ -407,11 +383,12 @@ def example_contradiction_detection():
 # Main Entry Point
 # ============================================================================
 
+
 def main():
     """Run all examples."""
-    print("\n" + "#"*60)
+    print("\n" + "#" * 60)
     print("# Enhanced Company Researcher - Usage Examples")
-    print("#"*60)
+    print("#" * 60)
 
     # Run examples
     example_full_pipeline()
@@ -421,12 +398,13 @@ def main():
     example_source_selection()
     example_contradiction_detection()
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("All examples completed!")
-    print("="*60)
+    print("=" * 60)
 
     # Summary of improvements
-    print("""
+    print(
+        """
 SUMMARY OF IMPROVEMENTS:
 
 1. QUALITY SCORING (Issue #2)
@@ -465,7 +443,8 @@ SUMMARY OF IMPROVEMENTS:
    - A/B testing support
 
 All improvements are backward-compatible and can be adopted incrementally.
-""")
+"""
+    )
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
@@ -19,6 +20,7 @@ logger = get_logger(__name__)
 
 class RetryStrategy(Enum):
     """Strategies for retrying when data is insufficient."""
+
     MULTILINGUAL = "multilingual"
     PARENT_COMPANY = "parent_company"
     ALTERNATIVE_NAMES = "alternative_names"
@@ -29,6 +31,7 @@ class RetryStrategy(Enum):
 @dataclass
 class ThresholdResult:
     """Result of threshold checking."""
+
     passes_threshold: bool
     coverage_score: float  # 0-100
     source_count: int
@@ -122,10 +125,7 @@ class DataThresholdChecker:
                     self.thresholds[company_type].update(values)
 
     def check_threshold(
-        self,
-        results: List[Dict[str, Any]],
-        company_name: str,
-        company_type: str = "public"
+        self, results: List[Dict[str, Any]], company_name: str, company_type: str = "public"
     ) -> ThresholdResult:
         """
         Check if search results meet minimum data thresholds.
@@ -165,7 +165,7 @@ class DataThresholdChecker:
             unique_domains=unique_domains,
             content_length=content_length,
             categories_found=categories_found,
-            threshold=threshold
+            threshold=threshold,
         )
 
         # Check against thresholds
@@ -178,7 +178,9 @@ class DataThresholdChecker:
             retry_strategies.append(RetryStrategy.ALTERNATIVE_NAMES)
 
         if content_length < threshold["min_content_chars"]:
-            issues.append(f"Insufficient content: {content_length} chars < {threshold['min_content_chars']}")
+            issues.append(
+                f"Insufficient content: {content_length} chars < {threshold['min_content_chars']}"
+            )
             retry_strategies.append(RetryStrategy.MULTILINGUAL)
 
         # Check required categories
@@ -208,7 +210,7 @@ class DataThresholdChecker:
             passes_threshold=passes_threshold,
             coverage_score=coverage_score,
             source_count=source_count,
-            issues=issues
+            issues=issues,
         )
 
         logger.info(
@@ -227,7 +229,7 @@ class DataThresholdChecker:
             has_product_data=has_product,
             retry_strategies=retry_strategies,
             issues=issues,
-            summary=summary
+            summary=summary,
         )
 
     def _count_unique_domains(self, results: List[Dict]) -> int:
@@ -239,6 +241,7 @@ class DataThresholdChecker:
                 # Extract domain from URL
                 try:
                     from urllib.parse import urlparse
+
                     parsed = urlparse(url)
                     domain = parsed.netloc.replace("www.", "")
                     if domain:
@@ -275,7 +278,7 @@ class DataThresholdChecker:
         unique_domains: int,
         content_length: int,
         categories_found: List[str],
-        threshold: Dict
+        threshold: Dict,
     ) -> float:
         """Calculate overall coverage score."""
         # Source score (max 30 points)
@@ -312,7 +315,7 @@ class DataThresholdChecker:
         passes_threshold: bool,
         coverage_score: float,
         source_count: int,
-        issues: List[str]
+        issues: List[str],
     ) -> str:
         """Generate a summary of the threshold check."""
         status = "✅ PASS" if passes_threshold else "❌ FAIL"
@@ -332,8 +335,6 @@ class DataThresholdChecker:
         return "\n".join(summary_lines)
 
 
-def create_threshold_checker(
-    custom_thresholds: Optional[Dict] = None
-) -> DataThresholdChecker:
+def create_threshold_checker(custom_thresholds: Optional[Dict] = None) -> DataThresholdChecker:
     """Factory function to create DataThresholdChecker."""
     return DataThresholdChecker(custom_thresholds=custom_thresholds)

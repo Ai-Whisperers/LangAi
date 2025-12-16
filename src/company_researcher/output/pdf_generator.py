@@ -10,28 +10,36 @@ Professional PDF report generation:
 
 Supports multiple PDF libraries with fallback.
 """
+
 from __future__ import annotations
 
-from typing import Dict, Any, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
 from ..utils import utc_now
 
 if TYPE_CHECKING:
     from reportlab.platypus import Table
+
+import os
 from dataclasses import dataclass, field
 from enum import Enum
-import os
 
 # Try to import PDF libraries
 try:
     from reportlab.lib import colors
-    from reportlab.lib.pagesizes import letter, A4
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+    from reportlab.lib.pagesizes import A4, letter
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import inch
     from reportlab.platypus import (
-        SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-        PageBreak
+        PageBreak,
+        Paragraph,
+        SimpleDocTemplate,
+        Spacer,
+        Table,
+        TableStyle,
     )
-    from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+
     REPORTLAB_AVAILABLE = True
 except ImportError:
     REPORTLAB_AVAILABLE = False
@@ -41,17 +49,20 @@ except ImportError:
 # Data Models
 # ============================================================================
 
+
 class ReportStyle(str, Enum):
     """Report style options."""
-    EXECUTIVE = "executive"      # Concise, high-level
-    DETAILED = "detailed"        # Comprehensive
-    TECHNICAL = "technical"      # Technical focus
-    INVESTOR = "investor"        # Investment focused
+
+    EXECUTIVE = "executive"  # Concise, high-level
+    DETAILED = "detailed"  # Comprehensive
+    TECHNICAL = "technical"  # Technical focus
+    INVESTOR = "investor"  # Investment focused
 
 
 @dataclass
 class ReportSection:
     """A section in the report."""
+
     title: str
     content: str
     subsections: List["ReportSection"] = field(default_factory=list)
@@ -63,6 +74,7 @@ class ReportSection:
 @dataclass
 class ReportConfig:
     """Configuration for report generation."""
+
     title: str
     company_name: str
     style: ReportStyle = ReportStyle.DETAILED
@@ -78,6 +90,7 @@ class ReportConfig:
 # ============================================================================
 # PDF Generator
 # ============================================================================
+
 
 class PDFReportGenerator:
     """
@@ -109,62 +122,69 @@ class PDFReportGenerator:
         styles = getSampleStyleSheet()
 
         # Title style
-        styles.add(ParagraphStyle(
-            name='ReportTitle',
-            parent=styles['Heading1'],
-            fontSize=24,
-            spaceAfter=30,
-            alignment=TA_CENTER,
-            textColor=colors.HexColor('#1a365d')
-        ))
+        styles.add(
+            ParagraphStyle(
+                name="ReportTitle",
+                parent=styles["Heading1"],
+                fontSize=24,
+                spaceAfter=30,
+                alignment=TA_CENTER,
+                textColor=colors.HexColor("#1a365d"),
+            )
+        )
 
         # Section header
-        styles.add(ParagraphStyle(
-            name='SectionHeader',
-            parent=styles['Heading2'],
-            fontSize=16,
-            spaceBefore=20,
-            spaceAfter=10,
-            textColor=colors.HexColor('#2c5282')
-        ))
+        styles.add(
+            ParagraphStyle(
+                name="SectionHeader",
+                parent=styles["Heading2"],
+                fontSize=16,
+                spaceBefore=20,
+                spaceAfter=10,
+                textColor=colors.HexColor("#2c5282"),
+            )
+        )
 
         # Subsection header
-        styles.add(ParagraphStyle(
-            name='SubsectionHeader',
-            parent=styles['Heading3'],
-            fontSize=13,
-            spaceBefore=15,
-            spaceAfter=8,
-            textColor=colors.HexColor('#2d3748')
-        ))
+        styles.add(
+            ParagraphStyle(
+                name="SubsectionHeader",
+                parent=styles["Heading3"],
+                fontSize=13,
+                spaceBefore=15,
+                spaceAfter=8,
+                textColor=colors.HexColor("#2d3748"),
+            )
+        )
 
         # Body text
-        styles.add(ParagraphStyle(
-            name='BodyText',
-            parent=styles['Normal'],
-            fontSize=10,
-            leading=14,
-            alignment=TA_JUSTIFY,
-            spaceAfter=10
-        ))
+        styles.add(
+            ParagraphStyle(
+                name="BodyText",
+                parent=styles["Normal"],
+                fontSize=10,
+                leading=14,
+                alignment=TA_JUSTIFY,
+                spaceAfter=10,
+            )
+        )
 
         # Metric style
-        styles.add(ParagraphStyle(
-            name='MetricValue',
-            parent=styles['Normal'],
-            fontSize=18,
-            alignment=TA_CENTER,
-            textColor=colors.HexColor('#2b6cb0'),
-            spaceAfter=5
-        ))
+        styles.add(
+            ParagraphStyle(
+                name="MetricValue",
+                parent=styles["Normal"],
+                fontSize=18,
+                alignment=TA_CENTER,
+                textColor=colors.HexColor("#2b6cb0"),
+                spaceAfter=5,
+            )
+        )
 
         return styles
 
     def generate(
-        self,
-        research_data: Dict[str, Any],
-        config: ReportConfig,
-        output_path: Optional[str] = None
+        self, research_data: Dict[str, Any], config: ReportConfig, output_path: Optional[str] = None
     ) -> str:
         """
         Generate PDF report.
@@ -193,10 +213,10 @@ class PDFReportGenerator:
         doc = SimpleDocTemplate(
             output_path,
             pagesize=page_size,
-            rightMargin=0.75*inch,
-            leftMargin=0.75*inch,
-            topMargin=0.75*inch,
-            bottomMargin=0.75*inch
+            rightMargin=0.75 * inch,
+            leftMargin=0.75 * inch,
+            topMargin=0.75 * inch,
+            bottomMargin=0.75 * inch,
         )
 
         # Build story (content)
@@ -230,25 +250,19 @@ class PDFReportGenerator:
         elements = []
 
         # Spacer at top
-        elements.append(Spacer(1, 2*inch))
+        elements.append(Spacer(1, 2 * inch))
 
         # Title
-        elements.append(Paragraph(config.title, self._styles['ReportTitle']))
-        elements.append(Spacer(1, 0.5*inch))
+        elements.append(Paragraph(config.title, self._styles["ReportTitle"]))
+        elements.append(Spacer(1, 0.5 * inch))
 
         # Company name
-        elements.append(Paragraph(
-            f"<b>{config.company_name}</b>",
-            self._styles['SectionHeader']
-        ))
+        elements.append(Paragraph(f"<b>{config.company_name}</b>", self._styles["SectionHeader"]))
         elements.append(Spacer(1, inch))
 
         # Metadata
         meta_style = ParagraphStyle(
-            name='Meta',
-            parent=self._styles['Normal'],
-            alignment=TA_CENTER,
-            textColor=colors.gray
+            name="Meta", parent=self._styles["Normal"], alignment=TA_CENTER, textColor=colors.gray
         )
         elements.append(Paragraph(f"Report Date: {config.date}", meta_style))
         elements.append(Paragraph(f"Generated by: {config.author}", meta_style))
@@ -258,39 +272,34 @@ class PDFReportGenerator:
 
         return elements
 
-    def _create_executive_summary(
-        self,
-        data: Dict[str, Any],
-        config: ReportConfig
-    ) -> List:
+    def _create_executive_summary(self, data: Dict[str, Any], config: ReportConfig) -> List:
         """Create executive summary section."""
         elements = []
 
-        elements.append(Paragraph("Executive Summary", self._styles['SectionHeader']))
-        elements.append(Spacer(1, 0.2*inch))
+        elements.append(Paragraph("Executive Summary", self._styles["SectionHeader"]))
+        elements.append(Spacer(1, 0.2 * inch))
 
         # Extract key findings
         summary_points = self._extract_summary_points(data)
 
         if summary_points:
             for point in summary_points[:5]:
-                elements.append(Paragraph(
-                    f"• {point}",
-                    self._styles['BodyText']
-                ))
+                elements.append(Paragraph(f"• {point}", self._styles["BodyText"]))
         else:
-            elements.append(Paragraph(
-                "This report provides comprehensive research and analysis of "
-                f"{config.company_name}, covering financial performance, market position, "
-                "competitive landscape, and strategic outlook.",
-                self._styles['BodyText']
-            ))
+            elements.append(
+                Paragraph(
+                    "This report provides comprehensive research and analysis of "
+                    f"{config.company_name}, covering financial performance, market position, "
+                    "competitive landscape, and strategic outlook.",
+                    self._styles["BodyText"],
+                )
+            )
 
         # Key metrics table
         metrics = self._extract_key_metrics(data)
         if metrics:
-            elements.append(Spacer(1, 0.3*inch))
-            elements.append(Paragraph("Key Metrics", self._styles['SubsectionHeader']))
+            elements.append(Spacer(1, 0.3 * inch))
+            elements.append(Paragraph("Key Metrics", self._styles["SubsectionHeader"]))
             elements.append(self._create_metrics_table(metrics))
 
         elements.append(PageBreak())
@@ -301,8 +310,8 @@ class PDFReportGenerator:
         """Create table of contents placeholder."""
         elements = []
 
-        elements.append(Paragraph("Table of Contents", self._styles['SectionHeader']))
-        elements.append(Spacer(1, 0.3*inch))
+        elements.append(Paragraph("Table of Contents", self._styles["SectionHeader"]))
+        elements.append(Spacer(1, 0.3 * inch))
 
         toc_items = [
             "1. Executive Summary",
@@ -311,21 +320,17 @@ class PDFReportGenerator:
             "4. Market Analysis",
             "5. Competitive Landscape",
             "6. Strategic Assessment",
-            "7. Recommendations"
+            "7. Recommendations",
         ]
 
         for item in toc_items:
-            elements.append(Paragraph(item, self._styles['BodyText']))
+            elements.append(Paragraph(item, self._styles["BodyText"]))
 
         elements.append(PageBreak())
 
         return elements
 
-    def _create_main_sections(
-        self,
-        data: Dict[str, Any],
-        config: ReportConfig
-    ) -> List:
+    def _create_main_sections(self, data: Dict[str, Any], config: ReportConfig) -> List:
         """Create main report sections."""
         elements = []
 
@@ -344,8 +349,8 @@ class PDFReportGenerator:
 
         for key, (title, formatter) in section_map.items():
             if key in agent_outputs:
-                elements.append(Paragraph(title, self._styles['SectionHeader']))
-                elements.append(Spacer(1, 0.2*inch))
+                elements.append(Paragraph(title, self._styles["SectionHeader"]))
+                elements.append(Spacer(1, 0.2 * inch))
 
                 section_content = formatter(agent_outputs[key])
                 elements.extend(section_content)
@@ -363,7 +368,7 @@ class PDFReportGenerator:
         paragraphs = analysis.split("\n\n")
         for para in paragraphs[:5]:
             if para.strip():
-                elements.append(Paragraph(para.strip(), self._styles['BodyText']))
+                elements.append(Paragraph(para.strip(), self._styles["BodyText"]))
 
         return elements
 
@@ -374,15 +379,17 @@ class PDFReportGenerator:
         analysis = data.get("analysis", "")
         if analysis:
             # Extract key financial data
-            elements.append(Paragraph(
-                analysis[:1500] + "..." if len(analysis) > 1500 else analysis,
-                self._styles['BodyText']
-            ))
+            elements.append(
+                Paragraph(
+                    analysis[:1500] + "..." if len(analysis) > 1500 else analysis,
+                    self._styles["BodyText"],
+                )
+            )
 
         # Add financial metrics table if available
         if "metrics" in data:
-            elements.append(Spacer(1, 0.2*inch))
-            elements.append(Paragraph("Financial Metrics", self._styles['SubsectionHeader']))
+            elements.append(Spacer(1, 0.2 * inch))
+            elements.append(Paragraph("Financial Metrics", self._styles["SubsectionHeader"]))
             elements.append(self._create_metrics_table(data["metrics"]))
 
         return elements
@@ -392,10 +399,12 @@ class PDFReportGenerator:
         elements = []
 
         analysis = data.get("analysis", str(data))
-        elements.append(Paragraph(
-            analysis[:1500] + "..." if len(analysis) > 1500 else analysis,
-            self._styles['BodyText']
-        ))
+        elements.append(
+            Paragraph(
+                analysis[:1500] + "..." if len(analysis) > 1500 else analysis,
+                self._styles["BodyText"],
+            )
+        )
 
         return elements
 
@@ -404,10 +413,12 @@ class PDFReportGenerator:
         elements = []
 
         analysis = data.get("analysis", str(data))
-        elements.append(Paragraph(
-            analysis[:1500] + "..." if len(analysis) > 1500 else analysis,
-            self._styles['BodyText']
-        ))
+        elements.append(
+            Paragraph(
+                analysis[:1500] + "..." if len(analysis) > 1500 else analysis,
+                self._styles["BodyText"],
+            )
+        )
 
         return elements
 
@@ -416,10 +427,12 @@ class PDFReportGenerator:
         elements = []
 
         analysis = data.get("analysis", str(data))
-        elements.append(Paragraph(
-            analysis[:1500] + "..." if len(analysis) > 1500 else analysis,
-            self._styles['BodyText']
-        ))
+        elements.append(
+            Paragraph(
+                analysis[:1500] + "..." if len(analysis) > 1500 else analysis,
+                self._styles["BodyText"],
+            )
+        )
 
         return elements
 
@@ -428,17 +441,18 @@ class PDFReportGenerator:
         elements = []
 
         if "brand_score" in data:
-            elements.append(Paragraph(
-                f"Brand Score: {data['brand_score']}",
-                self._styles['MetricValue']
-            ))
+            elements.append(
+                Paragraph(f"Brand Score: {data['brand_score']}", self._styles["MetricValue"])
+            )
 
         analysis = data.get("analysis", "")
         if analysis:
-            elements.append(Paragraph(
-                analysis[:1000] + "..." if len(analysis) > 1000 else analysis,
-                self._styles['BodyText']
-            ))
+            elements.append(
+                Paragraph(
+                    analysis[:1000] + "..." if len(analysis) > 1000 else analysis,
+                    self._styles["BodyText"],
+                )
+            )
 
         return elements
 
@@ -447,16 +461,14 @@ class PDFReportGenerator:
         elements = []
 
         if "investment_rating" in data:
-            elements.append(Paragraph(
-                f"Rating: {data['investment_rating'].upper()}",
-                self._styles['MetricValue']
-            ))
+            elements.append(
+                Paragraph(
+                    f"Rating: {data['investment_rating'].upper()}", self._styles["MetricValue"]
+                )
+            )
 
         if "investment_thesis" in data:
-            elements.append(Paragraph(
-                data["investment_thesis"],
-                self._styles['BodyText']
-            ))
+            elements.append(Paragraph(data["investment_thesis"], self._styles["BodyText"]))
 
         return elements
 
@@ -464,13 +476,15 @@ class PDFReportGenerator:
         """Create appendix section."""
         elements = []
 
-        elements.append(Paragraph("Appendix", self._styles['SectionHeader']))
-        elements.append(Spacer(1, 0.2*inch))
+        elements.append(Paragraph("Appendix", self._styles["SectionHeader"]))
+        elements.append(Spacer(1, 0.2 * inch))
 
-        elements.append(Paragraph(
-            "This appendix contains additional data and methodology notes.",
-            self._styles['BodyText']
-        ))
+        elements.append(
+            Paragraph(
+                "This appendix contains additional data and methodology notes.",
+                self._styles["BodyText"],
+            )
+        )
 
         return elements
 
@@ -524,29 +538,30 @@ class PDFReportGenerator:
         for key, value in metrics.items():
             data.append([str(key), str(value)])
 
-        table = Table(data, colWidths=[2.5*inch, 2.5*inch])
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2c5282')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 11),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#edf2f7')),
-            ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#2d3748')),
-            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 10),
-            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cbd5e0')),
-            ('ROWHEIGHT', (0, 0), (-1, -1), 25),
-        ]))
+        table = Table(data, colWidths=[2.5 * inch, 2.5 * inch])
+        table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2c5282")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 11),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#edf2f7")),
+                    ("TEXTCOLOR", (0, 1), (-1, -1), colors.HexColor("#2d3748")),
+                    ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+                    ("FONTSIZE", (0, 1), (-1, -1), 10),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.HexColor("#cbd5e0")),
+                    ("ROWHEIGHT", (0, 0), (-1, -1), 25),
+                ]
+            )
+        )
 
         return table
 
     def _generate_fallback(
-        self,
-        data: Dict[str, Any],
-        config: ReportConfig,
-        output_path: Optional[str]
+        self, data: Dict[str, Any], config: ReportConfig, output_path: Optional[str]
     ) -> str:
         """Generate a text-based report as fallback."""
         if not output_path:
@@ -583,12 +598,13 @@ class PDFReportGenerator:
 # Factory Function
 # ============================================================================
 
+
 def generate_pdf_report(
     research_data: Dict[str, Any],
     company_name: str,
     title: Optional[str] = None,
     style: str = "detailed",
-    output_path: Optional[str] = None
+    output_path: Optional[str] = None,
 ) -> str:
     """
     Generate a PDF report from research data.
@@ -606,7 +622,7 @@ def generate_pdf_report(
     config = ReportConfig(
         title=title or f"{company_name} Research Report",
         company_name=company_name,
-        style=ReportStyle(style)
+        style=ReportStyle(style),
     )
 
     generator = PDFReportGenerator()

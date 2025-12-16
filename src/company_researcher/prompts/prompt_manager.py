@@ -27,13 +27,14 @@ Usage:
     )
 """
 
-import re
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -41,6 +42,7 @@ logger = get_logger(__name__)
 
 class PromptCategory(Enum):
     """Categories of prompts."""
+
     RESEARCH = "research"
     ANALYSIS = "analysis"
     SYNTHESIS = "synthesis"
@@ -52,6 +54,7 @@ class PromptCategory(Enum):
 @dataclass
 class PromptMetrics:
     """Metrics for evaluating prompt performance."""
+
     total_uses: int = 0
     avg_response_quality: float = 0.0
     avg_tokens_used: int = 0
@@ -64,7 +67,7 @@ class PromptMetrics:
         quality_score: float = 1.0,
         tokens_used: int = 0,
         latency_ms: float = 0.0,
-        success: bool = True
+        success: bool = True,
     ):
         """Record a prompt use."""
         self.total_uses += 1
@@ -72,21 +75,13 @@ class PromptMetrics:
 
         # Running averages
         n = self.total_uses
-        self.avg_response_quality = (
-            (self.avg_response_quality * (n - 1) + quality_score) / n
-        )
-        self.avg_tokens_used = int(
-            (self.avg_tokens_used * (n - 1) + tokens_used) / n
-        )
-        self.avg_latency_ms = (
-            (self.avg_latency_ms * (n - 1) + latency_ms) / n
-        )
+        self.avg_response_quality = (self.avg_response_quality * (n - 1) + quality_score) / n
+        self.avg_tokens_used = int((self.avg_tokens_used * (n - 1) + tokens_used) / n)
+        self.avg_latency_ms = (self.avg_latency_ms * (n - 1) + latency_ms) / n
 
         # Success rate
         if not success:
-            self.success_rate = (
-                (self.success_rate * (n - 1) + 0) / n
-            )
+            self.success_rate = (self.success_rate * (n - 1) + 0) / n
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -95,13 +90,14 @@ class PromptMetrics:
             "avg_tokens_used": self.avg_tokens_used,
             "avg_latency_ms": round(self.avg_latency_ms, 2),
             "success_rate": round(self.success_rate, 3),
-            "last_used": self.last_used.isoformat() if self.last_used else None
+            "last_used": self.last_used.isoformat() if self.last_used else None,
         }
 
 
 @dataclass
 class PromptVersion:
     """A versioned prompt template."""
+
     name: str
     template: str
     version: str
@@ -122,7 +118,7 @@ class PromptVersion:
     def _extract_variables(template: str) -> List[str]:
         """Extract variable names from template."""
         # Match {variable} patterns but not {{escaped}}
-        pattern = r'(?<!\{)\{([^{}]+)\}(?!\})'
+        pattern = r"(?<!\{)\{([^{}]+)\}(?!\})"
         matches = re.findall(pattern, template)
         return list(set(matches))
 
@@ -173,7 +169,7 @@ class PromptVersion:
             "required_vars": self.required_vars,
             "optional_vars": self.optional_vars,
             "is_active": self.is_active,
-            "metrics": self.metrics.to_dict()
+            "metrics": self.metrics.to_dict(),
         }
 
 
@@ -202,7 +198,7 @@ class PromptRegistry:
         category: PromptCategory = PromptCategory.RESEARCH,
         description: str = "",
         optional_vars: Optional[Dict[str, Any]] = None,
-        set_active: bool = True
+        set_active: bool = True,
     ) -> PromptVersion:
         """
         Register a new prompt version.
@@ -225,7 +221,7 @@ class PromptRegistry:
             version=version,
             category=category,
             description=description,
-            optional_vars=optional_vars or {}
+            optional_vars=optional_vars or {},
         )
 
         if name not in self._prompts:
@@ -239,12 +235,7 @@ class PromptRegistry:
         logger.info(f"Registered prompt '{name}' version {version}")
         return prompt
 
-    def get_prompt(
-        self,
-        name: str,
-        version: Optional[str] = None,
-        **kwargs
-    ) -> str:
+    def get_prompt(self, name: str, version: Optional[str] = None, **kwargs) -> str:
         """
         Get a rendered prompt.
 
@@ -259,11 +250,7 @@ class PromptRegistry:
         prompt_version = self.get_prompt_version(name, version)
         return prompt_version.render(**kwargs)
 
-    def get_prompt_version(
-        self,
-        name: str,
-        version: Optional[str] = None
-    ) -> PromptVersion:
+    def get_prompt_version(self, name: str, version: Optional[str] = None) -> PromptVersion:
         """
         Get a PromptVersion object.
 
@@ -299,12 +286,14 @@ class PromptRegistry:
         result = []
         for name, versions in self._prompts.items():
             active = self._active_versions.get(name)
-            result.append({
-                "name": name,
-                "versions": list(versions.keys()),
-                "active_version": active,
-                "category": versions[active].category.value if active else None
-            })
+            result.append(
+                {
+                    "name": name,
+                    "versions": list(versions.keys()),
+                    "active_version": active,
+                    "category": versions[active].category.value if active else None,
+                }
+            )
         return result
 
     def record_usage(
@@ -314,7 +303,7 @@ class PromptRegistry:
         quality_score: float = 1.0,
         tokens_used: int = 0,
         latency_ms: float = 0.0,
-        success: bool = True
+        success: bool = True,
     ):
         """Record usage metrics for a prompt."""
         prompt = self.get_prompt_version(name, version)
@@ -322,7 +311,7 @@ class PromptRegistry:
             quality_score=quality_score,
             tokens_used=tokens_used,
             latency_ms=latency_ms,
-            success=success
+            success=success,
         )
 
     def get_metrics(self, name: str, version: Optional[str] = None) -> Dict[str, Any]:
@@ -336,21 +325,15 @@ class PromptRegistry:
             raise KeyError(f"Prompt '{name}' not found")
 
         return {
-            version: prompt.metrics.to_dict()
-            for version, prompt in self._prompts[name].items()
+            version: prompt.metrics.to_dict() for version, prompt in self._prompts[name].items()
         }
 
     def export_prompts(self, path: Optional[Path] = None) -> Dict[str, Any]:
         """Export all prompts to JSON-serializable dict."""
-        data = {
-            "active_versions": self._active_versions,
-            "prompts": {}
-        }
+        data = {"active_versions": self._active_versions, "prompts": {}}
 
         for name, versions in self._prompts.items():
-            data["prompts"][name] = {
-                v: p.to_dict() for v, p in versions.items()
-            }
+            data["prompts"][name] = {v: p.to_dict() for v, p in versions.items()}
 
         if path:
             path.write_text(json.dumps(data, indent=2, default=str))
@@ -371,7 +354,7 @@ class PromptRegistry:
                     category=PromptCategory(prompt_data.get("category", "research")),
                     description=prompt_data.get("description", ""),
                     optional_vars=prompt_data.get("optional_vars", {}),
-                    set_active=False
+                    set_active=False,
                 )
 
         # Set active versions
@@ -411,7 +394,7 @@ Company: {company_name}
             version="1.0",
             category=PromptCategory.ANALYSIS,
             description="Financial analysis prompt requiring specific figures and citations",
-            optional_vars={"additional_context": ""}
+            optional_vars={"additional_context": ""},
         )
 
         self.register_prompt(
@@ -437,7 +420,7 @@ Industry: {industry}
             version="1.0",
             category=PromptCategory.ANALYSIS,
             description="Market analysis prompt with specific data requirements",
-            optional_vars={"industry": "Unknown", "additional_context": ""}
+            optional_vars={"industry": "Unknown", "additional_context": ""},
         )
 
         self.register_prompt(
@@ -461,7 +444,7 @@ Company: {company_name}
             version="1.0",
             category=PromptCategory.ANALYSIS,
             description="Product analysis prompt",
-            optional_vars={"additional_context": ""}
+            optional_vars={"additional_context": ""},
         )
 
         self.register_prompt(
@@ -486,7 +469,7 @@ Industry: {industry}
             version="1.0",
             category=PromptCategory.ANALYSIS,
             description="Competitor analysis prompt",
-            optional_vars={"industry": "Unknown", "additional_context": ""}
+            optional_vars={"industry": "Unknown", "additional_context": ""},
         )
 
         # =====================================================================
@@ -519,7 +502,7 @@ For each field, respond with:
 Company: {company_name}""",
             version="1.0",
             category=PromptCategory.QUALITY,
-            description="Gap identification prompt for quality assessment"
+            description="Gap identification prompt for quality assessment",
         )
 
         self.register_prompt(
@@ -540,7 +523,7 @@ Analysis required:
 Provide a final recommendation with confidence level (high/medium/low).""",
             version="1.0",
             category=PromptCategory.QUALITY,
-            description="Contradiction resolution prompt"
+            description="Contradiction resolution prompt",
         )
 
         # =====================================================================
@@ -567,7 +550,7 @@ Requirements:
 Output should be detailed but not redundant.""",
             version="1.0",
             category=PromptCategory.SYNTHESIS,
-            description="Report synthesis prompt"
+            description="Report synthesis prompt",
         )
 
         self.register_prompt(
@@ -589,7 +572,7 @@ Tone: Professional, fact-based
 Include: All specific numbers from the report""",
             version="1.0",
             category=PromptCategory.SYNTHESIS,
-            description="Executive summary generation prompt"
+            description="Executive summary generation prompt",
         )
 
         # =====================================================================
@@ -613,7 +596,7 @@ Format: One query per line, no numbering.""",
             version="1.0",
             category=PromptCategory.RESEARCH,
             description="Search query generation prompt",
-            optional_vars={"num_queries": 5, "focus_area": "general"}
+            optional_vars={"num_queries": 5, "focus_area": "general"},
         )
 
 
@@ -637,11 +620,6 @@ def get_prompt(name: str, version: Optional[str] = None, **kwargs) -> str:
     return get_prompt_registry().get_prompt(name, version, **kwargs)
 
 
-def register_prompt(
-    name: str,
-    template: str,
-    version: str = "1.0",
-    **kwargs
-) -> PromptVersion:
+def register_prompt(name: str, template: str, version: str = "1.0", **kwargs) -> PromptVersion:
     """Convenience function to register a prompt."""
     return get_prompt_registry().register_prompt(name, template, version, **kwargs)

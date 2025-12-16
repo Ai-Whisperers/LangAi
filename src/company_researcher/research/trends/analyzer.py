@@ -8,15 +8,15 @@ historical trends from extracted facts and source content.
 import re
 from typing import Any, Dict, List, Optional
 
+from ...utils import utc_now
 from .models import (
-    TrendDirection,
-    MetricCategory,
     DataPoint,
-    TrendMetric,
+    MetricCategory,
     TrendAnalysis,
+    TrendDirection,
+    TrendMetric,
     TrendTable,
 )
-from ...utils import utc_now
 
 
 class HistoricalTrendAnalyzer:
@@ -30,38 +30,42 @@ class HistoricalTrendAnalyzer:
     # Patterns for extracting historical data from text
     YEAR_VALUE_PATTERNS = [
         # "revenue was $X in 2023"
-        r'(?:revenue|sales|income|earnings|profit)\s+(?:was|were|of|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?\s+(?:in\s+)?(\d{4})',
+        r"(?:revenue|sales|income|earnings|profit)\s+(?:was|were|of|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?\s+(?:in\s+)?(\d{4})",
         # "2023 revenue: $X"
-        r'(\d{4})\s+(?:revenue|sales)(?:\s*:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
+        r"(\d{4})\s+(?:revenue|sales)(?:\s*:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
         # "FY2023: $X revenue"
-        r'FY\s*(\d{4})(?:\s*:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
+        r"FY\s*(\d{4})(?:\s*:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
         # "$X billion (2023)"
-        r'\$\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?\s*\((\d{4})\)',
+        r"\$\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?\s*\((\d{4})\)",
     ]
 
     GROWTH_PATTERNS = [
         # "grew X% in 2023"
-        r'(?:grew|increased|rose|up)\s+([\d.]+)%\s+(?:in\s+)?(\d{4})',
+        r"(?:grew|increased|rose|up)\s+([\d.]+)%\s+(?:in\s+)?(\d{4})",
         # "2023 growth of X%"
-        r'(\d{4})\s+growth\s+(?:of\s+)?([\d.]+)%',
+        r"(\d{4})\s+growth\s+(?:of\s+)?([\d.]+)%",
         # "YoY growth: X%"
-        r'(?:YoY|year-over-year)\s+growth(?:\s*:)?\s+([\d.]+)%',
+        r"(?:YoY|year-over-year)\s+growth(?:\s*:)?\s+([\d.]+)%",
         # "X% increase from previous year"
-        r'([\d.]+)%\s+(?:increase|growth)\s+(?:from|over)\s+(?:the\s+)?previous\s+year',
+        r"([\d.]+)%\s+(?:increase|growth)\s+(?:from|over)\s+(?:the\s+)?previous\s+year",
     ]
 
     MARGIN_PATTERNS = [
         # "gross margin of X% in 2023"
-        r'(gross|operating|net|profit|ebitda)\s+margin\s+(?:of\s+)?([\d.]+)%\s+(?:in\s+)?(\d{4})',
+        r"(gross|operating|net|profit|ebitda)\s+margin\s+(?:of\s+)?([\d.]+)%\s+(?:in\s+)?(\d{4})",
         # "2023 gross margin: X%"
-        r'(\d{4})\s+(gross|operating|net|profit|ebitda)\s+margin(?:\s*:)?\s*([\d.]+)%',
+        r"(\d{4})\s+(gross|operating|net|profit|ebitda)\s+margin(?:\s*:)?\s*([\d.]+)%",
     ]
 
     MULTIPLIERS = {
-        'trillion': 1e12, 't': 1e12,
-        'billion': 1e9, 'b': 1e9,
-        'million': 1e6, 'm': 1e6,
-        'thousand': 1e3, 'k': 1e3,
+        "trillion": 1e12,
+        "t": 1e12,
+        "billion": 1e9,
+        "b": 1e9,
+        "million": 1e6,
+        "m": 1e6,
+        "thousand": 1e3,
+        "k": 1e3,
     }
 
     def __init__(self, lookback_years: int = 5):
@@ -76,9 +80,7 @@ class HistoricalTrendAnalyzer:
         self.metrics: Dict[str, TrendMetric] = {}
 
     def extract_historical_data(
-        self,
-        content: str,
-        source_name: str = ""
+        self, content: str, source_name: str = ""
     ) -> Dict[str, TrendMetric]:
         """
         Extract historical data points from source content.
@@ -120,17 +122,10 @@ class HistoricalTrendAnalyzer:
 
         return metrics
 
-    def _extract_revenue_history(
-        self,
-        content: str,
-        source_name: str
-    ) -> TrendMetric:
+    def _extract_revenue_history(self, content: str, source_name: str) -> TrendMetric:
         """Extract historical revenue data."""
         metric = TrendMetric(
-            name="revenue",
-            display_name="Annual Revenue",
-            category=MetricCategory.REVENUE,
-            unit="$"
+            name="revenue", display_name="Annual Revenue", category=MetricCategory.REVENUE, unit="$"
         )
 
         for pattern in self.YEAR_VALUE_PATTERNS:
@@ -145,11 +140,11 @@ class HistoricalTrendAnalyzer:
                         if groups[0].isdigit() and len(groups[0]) == 4:
                             # Year first pattern
                             year = int(groups[0])
-                            value = float(groups[1].replace(',', ''))
+                            value = float(groups[1].replace(",", ""))
                             multiplier = groups[2] if len(groups) > 2 else None
                         else:
                             # Value first pattern
-                            value = float(groups[0].replace(',', ''))
+                            value = float(groups[0].replace(",", ""))
                             multiplier = groups[1]
                             year = int(groups[2])
 
@@ -162,10 +157,7 @@ class HistoricalTrendAnalyzer:
                         # Only include reasonable years
                         if self.current_year - self.lookback_years <= year <= self.current_year:
                             dp = DataPoint(
-                                year=year,
-                                value=value,
-                                source=source_name,
-                                confidence=0.8
+                                year=year, value=value, source=source_name, confidence=0.8
                             )
                             # Avoid duplicates
                             if not any(d.year == year for d in metric.data_points):
@@ -175,18 +167,14 @@ class HistoricalTrendAnalyzer:
 
         return metric
 
-    def _extract_growth_history(
-        self,
-        content: str,
-        source_name: str
-    ) -> TrendMetric:
+    def _extract_growth_history(self, content: str, source_name: str) -> TrendMetric:
         """Extract historical growth rate data."""
         metric = TrendMetric(
             name="revenue_growth",
             display_name="Revenue Growth (YoY)",
             category=MetricCategory.GROWTH,
             unit="%",
-            is_percentage=True
+            is_percentage=True,
         )
 
         for pattern in self.GROWTH_PATTERNS:
@@ -195,7 +183,7 @@ class HistoricalTrendAnalyzer:
                 groups = match.groups()
                 try:
                     # Handle different group orders
-                    if groups[0].replace('.', '').isdigit():
+                    if groups[0].replace(".", "").isdigit():
                         growth = float(groups[0])
                         year = int(groups[1]) if len(groups) > 1 else self.current_year
                     else:
@@ -203,12 +191,7 @@ class HistoricalTrendAnalyzer:
                         growth = float(groups[1])
 
                     if self.current_year - self.lookback_years <= year <= self.current_year:
-                        dp = DataPoint(
-                            year=year,
-                            value=growth,
-                            source=source_name,
-                            confidence=0.7
-                        )
+                        dp = DataPoint(year=year, value=growth, source=source_name, confidence=0.7)
                         if not any(d.year == year for d in metric.data_points):
                             metric.data_points.append(dp)
                 except (ValueError, IndexError):
@@ -216,20 +199,16 @@ class HistoricalTrendAnalyzer:
 
         return metric
 
-    def _extract_margin_history(
-        self,
-        content: str,
-        source_name: str
-    ) -> Dict[str, TrendMetric]:
+    def _extract_margin_history(self, content: str, source_name: str) -> Dict[str, TrendMetric]:
         """Extract historical margin data."""
         metrics = {}
 
         margin_types = {
-            'gross': ('gross_margin', 'Gross Margin'),
-            'operating': ('operating_margin', 'Operating Margin'),
-            'net': ('net_margin', 'Net Profit Margin'),
-            'profit': ('profit_margin', 'Profit Margin'),
-            'ebitda': ('ebitda_margin', 'EBITDA Margin'),
+            "gross": ("gross_margin", "Gross Margin"),
+            "operating": ("operating_margin", "Operating Margin"),
+            "net": ("net_margin", "Net Profit Margin"),
+            "profit": ("profit_margin", "Profit Margin"),
+            "ebitda": ("ebitda_margin", "EBITDA Margin"),
         }
 
         for pattern in self.MARGIN_PATTERNS:
@@ -255,15 +234,12 @@ class HistoricalTrendAnalyzer:
                                 display_name=display_name,
                                 category=MetricCategory.PROFITABILITY,
                                 unit="%",
-                                is_percentage=True
+                                is_percentage=True,
                             )
 
                         if self.current_year - self.lookback_years <= year <= self.current_year:
                             dp = DataPoint(
-                                year=year,
-                                value=value,
-                                source=source_name,
-                                confidence=0.75
+                                year=year, value=value, source=source_name, confidence=0.75
                             )
                             if not any(d.year == year for d in metrics[name].data_points):
                                 metrics[name].data_points.append(dp)
@@ -272,30 +248,26 @@ class HistoricalTrendAnalyzer:
 
         return metrics
 
-    def _extract_from_tables(
-        self,
-        content: str,
-        source_name: str
-    ) -> Dict[str, TrendMetric]:
+    def _extract_from_tables(self, content: str, source_name: str) -> Dict[str, TrendMetric]:
         """Extract historical data from markdown tables."""
         metrics = {}
 
         # Find markdown tables
-        table_pattern = r'\|[^\n]+\|\n\|[-:\s|]+\|\n(?:\|[^\n]+\|\n?)+'
+        table_pattern = r"\|[^\n]+\|\n\|[-:\s|]+\|\n(?:\|[^\n]+\|\n?)+"
         tables = re.findall(table_pattern, content)
 
         for table in tables:
-            lines = table.strip().split('\n')
+            lines = table.strip().split("\n")
             if len(lines) < 3:
                 continue
 
             # Parse header
-            header = [cell.strip() for cell in lines[0].split('|') if cell.strip()]
+            header = [cell.strip() for cell in lines[0].split("|") if cell.strip()]
 
             # Look for year columns
             year_columns = {}
             for i, h in enumerate(header):
-                year_match = re.search(r'(20\d{2})', h)
+                year_match = re.search(r"(20\d{2})", h)
                 if year_match:
                     year_columns[i] = int(year_match.group(1))
 
@@ -304,7 +276,7 @@ class HistoricalTrendAnalyzer:
 
             # Parse data rows
             for line in lines[2:]:
-                cells = [cell.strip() for cell in line.split('|') if cell.strip()]
+                cells = [cell.strip() for cell in line.split("|") if cell.strip()]
                 if not cells:
                     continue
 
@@ -312,12 +284,12 @@ class HistoricalTrendAnalyzer:
 
                 # Map common names
                 name_mapping = {
-                    'revenue': ('revenue', 'Annual Revenue', MetricCategory.REVENUE),
-                    'sales': ('revenue', 'Annual Revenue', MetricCategory.REVENUE),
-                    'net income': ('net_income', 'Net Income', MetricCategory.PROFITABILITY),
-                    'profit': ('net_income', 'Net Income', MetricCategory.PROFITABILITY),
-                    'ebitda': ('ebitda', 'EBITDA', MetricCategory.PROFITABILITY),
-                    'employees': ('employees', 'Employee Count', MetricCategory.OPERATIONAL),
+                    "revenue": ("revenue", "Annual Revenue", MetricCategory.REVENUE),
+                    "sales": ("revenue", "Annual Revenue", MetricCategory.REVENUE),
+                    "net income": ("net_income", "Net Income", MetricCategory.PROFITABILITY),
+                    "profit": ("net_income", "Net Income", MetricCategory.PROFITABILITY),
+                    "ebitda": ("ebitda", "EBITDA", MetricCategory.PROFITABILITY),
+                    "employees": ("employees", "Employee Count", MetricCategory.OPERATIONAL),
                 }
 
                 matched_name = None
@@ -336,7 +308,11 @@ class HistoricalTrendAnalyzer:
                         name=name,
                         display_name=display_name,
                         category=category,
-                        unit="$" if category in [MetricCategory.REVENUE, MetricCategory.PROFITABILITY] else ""
+                        unit=(
+                            "$"
+                            if category in [MetricCategory.REVENUE, MetricCategory.PROFITABILITY]
+                            else ""
+                        ),
                     )
 
                 for col_idx, year in year_columns.items():
@@ -345,10 +321,7 @@ class HistoricalTrendAnalyzer:
                         value = self._parse_value(value_str)
                         if value is not None:
                             dp = DataPoint(
-                                year=year,
-                                value=value,
-                                source=source_name,
-                                confidence=0.85
+                                year=year, value=value, source=source_name, confidence=0.85
                             )
                             if not any(d.year == year for d in metrics[name].data_points):
                                 metrics[name].data_points.append(dp)
@@ -357,19 +330,21 @@ class HistoricalTrendAnalyzer:
 
     def _parse_value(self, value_str: str) -> Optional[float]:
         """Parse a value string into a float."""
-        if not value_str or value_str.lower() in ['n/a', '-', 'data not available']:
+        if not value_str or value_str.lower() in ["n/a", "-", "data not available"]:
             return None
 
         # Remove currency symbols and whitespace
-        clean = re.sub(r'[$€£¥₹]', '', value_str).strip()
+        clean = re.sub(r"[$€£¥₹]", "", value_str).strip()
 
         # Extract number and multiplier
-        match = re.match(r'([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBMKtbmk])?', clean, re.IGNORECASE)
+        match = re.match(
+            r"([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBMKtbmk])?", clean, re.IGNORECASE
+        )
         if not match:
             return None
 
         try:
-            value = float(match.group(1).replace(',', ''))
+            value = float(match.group(1).replace(",", ""))
             if match.group(2):
                 mult_key = match.group(2).lower().strip()
                 if mult_key in self.MULTIPLIERS:
@@ -393,7 +368,7 @@ class HistoricalTrendAnalyzer:
         analysis = TrendAnalysis(
             metric_name=metric.name,
             direction=TrendDirection.INSUFFICIENT_DATA,
-            years_of_data=len(data_points)
+            years_of_data=len(data_points),
         )
 
         if len(data_points) < 2:
@@ -415,8 +390,8 @@ class HistoricalTrendAnalyzer:
         # Calculate growth rates
         growth_rates = []
         for i in range(1, len(values)):
-            if values[i-1] != 0:
-                growth = (values[i] - values[i-1]) / values[i-1] * 100
+            if values[i - 1] != 0:
+                growth = (values[i] - values[i - 1]) / values[i - 1] * 100
                 growth_rates.append(growth)
 
         if growth_rates:
@@ -426,7 +401,7 @@ class HistoricalTrendAnalyzer:
             if len(growth_rates) > 1:
                 mean = analysis.average_growth
                 variance = sum((g - mean) ** 2 for g in growth_rates) / len(growth_rates)
-                analysis.volatility = variance ** 0.5
+                analysis.volatility = variance**0.5
 
         # Calculate CAGR if we have enough years
         if len(data_points) >= 2 and values[0] > 0 and values[-1] > 0:
@@ -453,9 +428,7 @@ class HistoricalTrendAnalyzer:
         return analysis
 
     def _determine_direction(
-        self,
-        growth_rates: List[float],
-        volatility: Optional[float]
+        self, growth_rates: List[float], volatility: Optional[float]
     ) -> TrendDirection:
         """Determine the overall trend direction."""
         if not growth_rates:
@@ -480,10 +453,7 @@ class HistoricalTrendAnalyzer:
             return TrendDirection.STRONG_DOWN
 
     def _generate_trend_description(
-        self,
-        metric: TrendMetric,
-        analysis: TrendAnalysis,
-        growth_rates: List[float]
+        self, metric: TrendMetric, analysis: TrendAnalysis, growth_rates: List[float]
     ) -> str:
         """Generate a human-readable trend description."""
         parts = []
@@ -516,9 +486,7 @@ class HistoricalTrendAnalyzer:
         return " ".join(parts) + "."
 
     def generate_trend_table(
-        self,
-        metrics: List[TrendMetric],
-        title: str = "Historical Financial Trends"
+        self, metrics: List[TrendMetric], title: str = "Historical Financial Trends"
     ) -> TrendTable:
         """
         Generate a formatted trend table for multiple metrics.
@@ -539,13 +507,10 @@ class HistoricalTrendAnalyzer:
 
         if not all_years:
             return TrendTable(
-                title=title,
-                headers=["Metric"],
-                rows=[],
-                markdown="*No historical data available*"
+                title=title, headers=["Metric"], rows=[], markdown="*No historical data available*"
             )
 
-        years = sorted(all_years)[-self.lookback_years:]  # Last N years
+        years = sorted(all_years)[-self.lookback_years :]  # Last N years
 
         # Build headers
         headers = ["Metric"] + [str(y) for y in years] + ["CAGR"]
@@ -597,19 +562,11 @@ class HistoricalTrendAnalyzer:
         markdown = self._generate_markdown_table(title, headers, rows, footnotes)
 
         return TrendTable(
-            title=title,
-            headers=headers,
-            rows=rows,
-            footnotes=footnotes,
-            markdown=markdown
+            title=title, headers=headers, rows=rows, footnotes=footnotes, markdown=markdown
         )
 
     def _generate_markdown_table(
-        self,
-        title: str,
-        headers: List[str],
-        rows: List[Dict[str, Any]],
-        footnotes: List[str]
+        self, title: str, headers: List[str], rows: List[Dict[str, Any]], footnotes: List[str]
     ) -> str:
         """Generate markdown table string."""
         lines = [f"### {title}", ""]
@@ -637,10 +594,7 @@ class HistoricalTrendAnalyzer:
 
         return "\n".join(lines)
 
-    def generate_growth_analysis(
-        self,
-        metrics: Dict[str, TrendMetric]
-    ) -> str:
+    def generate_growth_analysis(self, metrics: Dict[str, TrendMetric]) -> str:
         """
         Generate a narrative growth analysis section.
 
@@ -683,16 +637,20 @@ class HistoricalTrendAnalyzer:
             lines.append("**Overall Assessment:**")
 
             growth_count = sum(
-                1 for a in analyses.values()
+                1
+                for a in analyses.values()
                 if a.direction in [TrendDirection.STRONG_UP, TrendDirection.UP]
             )
             decline_count = sum(
-                1 for a in analyses.values()
+                1
+                for a in analyses.values()
                 if a.direction in [TrendDirection.STRONG_DOWN, TrendDirection.DOWN]
             )
 
             if growth_count > decline_count:
-                lines.append("The company shows positive momentum with most metrics trending upward.")
+                lines.append(
+                    "The company shows positive momentum with most metrics trending upward."
+                )
             elif decline_count > growth_count:
                 lines.append("The company faces headwinds with several metrics showing decline.")
             else:

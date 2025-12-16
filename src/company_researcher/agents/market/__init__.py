@@ -8,28 +8,28 @@ Agents for market intelligence:
 - ComparativeAnalystAgent: Company benchmarking
 """
 
-from .market import MarketAgent, market_agent_node, create_market_agent
-from .enhanced_market import (
-    EnhancedMarketAgent,
-    enhanced_market_agent_node,
-    create_enhanced_market_agent,
+from .comparative_analyst import (
+    SWOT,
+    CompanyProfile,
+    ComparativeAnalysis,
+    ComparativeAnalystAgent,
+    MetricComparison,
+    comparative_analyst_node,
+    create_comparative_analyst,
 )
 from .competitor_scout import (
+    CompetitivePosition,
+    CompetitorProfile,
     CompetitorScoutAgent,
     competitor_scout_agent_node,
     create_competitor_scout,
-    CompetitorProfile,
-    CompetitivePosition,
 )
-from .comparative_analyst import (
-    ComparativeAnalystAgent,
-    comparative_analyst_node,
-    create_comparative_analyst,
-    CompanyProfile,
-    MetricComparison,
-    SWOT,
-    ComparativeAnalysis,
+from .enhanced_market import (
+    EnhancedMarketAgent,
+    create_enhanced_market_agent,
+    enhanced_market_agent_node,
 )
+from .market import MarketAgent, create_market_agent, market_agent_node
 
 __all__ = [
     # Basic Market

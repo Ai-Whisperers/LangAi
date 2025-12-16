@@ -32,7 +32,7 @@ This guide explains how to create pull requests using GitHub CLI in our project.
 
    ```bash
    # Basic command structure
-   gh pr create --draft --title "✨(scope): Your descriptive title" --body "Your PR description" --base main 
+   gh pr create --draft --title "✨(scope): Your descriptive title" --body "Your PR description" --base main
    ```
 
    For more complex PR descriptions with proper formatting, use the `--body-file` option with the exact PR template structure:

@@ -12,12 +12,13 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, AsyncIterator, Callable, Dict, List, Optional, TypeVar, Generic
+from typing import Any, AsyncIterator, Callable, Dict, Generic, List, Optional, TypeVar
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def _utcnow() -> datetime:
@@ -27,6 +28,7 @@ def _utcnow() -> datetime:
 
 class StreamStatus(str, Enum):
     """Status of a stream."""
+
     PENDING = "pending"
     STREAMING = "streaming"
     COMPLETED = "completed"
@@ -37,6 +39,7 @@ class StreamStatus(str, Enum):
 @dataclass
 class StreamChunk:
     """Individual chunk from a stream."""
+
     id: str
     content: str
     index: int
@@ -60,6 +63,7 @@ class StreamChunk:
 @dataclass
 class StreamMetrics:
     """Performance metrics for streaming."""
+
     stream_id: str
     start_time: datetime
     end_time: Optional[datetime] = None
@@ -105,10 +109,7 @@ class BaseStreamWrapper(ABC, Generic[T]):
     def __init__(self, stream_id: Optional[str] = None):
         self.stream_id = stream_id or str(uuid.uuid4())
         self.status = StreamStatus.PENDING
-        self._metrics = StreamMetrics(
-            stream_id=self.stream_id,
-            start_time=_utcnow()
-        )
+        self._metrics = StreamMetrics(stream_id=self.stream_id, start_time=_utcnow())
         self._chunks: List[StreamChunk] = []
         self._callbacks: List[Callable[[StreamChunk], None]] = []
         self._error_callbacks: List[Callable[[Exception], None]] = []
@@ -235,10 +236,7 @@ class LLMStreamWrapper(BaseStreamWrapper[Any]):
     """
 
     def __init__(
-        self,
-        llm_stream: Any,
-        model: Optional[str] = None,
-        stream_id: Optional[str] = None
+        self, llm_stream: Any, model: Optional[str] = None, stream_id: Optional[str] = None
     ):
         super().__init__(stream_id)
         self._llm_stream = llm_stream
@@ -246,10 +244,10 @@ class LLMStreamWrapper(BaseStreamWrapper[Any]):
 
     async def _get_chunks(self) -> AsyncIterator[Any]:
         """Get chunks from LLM stream."""
-        if hasattr(self._llm_stream, '__aiter__'):
+        if hasattr(self._llm_stream, "__aiter__"):
             async for chunk in self._llm_stream:
                 yield chunk
-        elif hasattr(self._llm_stream, '__iter__'):
+        elif hasattr(self._llm_stream, "__iter__"):
             for chunk in self._llm_stream:
                 yield chunk
         else:
@@ -263,27 +261,27 @@ class LLMStreamWrapper(BaseStreamWrapper[Any]):
         metadata = {}
 
         # Handle different chunk formats
-        if hasattr(raw_chunk, 'content'):
+        if hasattr(raw_chunk, "content"):
             # LangChain AIMessageChunk
             content = raw_chunk.content or ""
-            if hasattr(raw_chunk, 'usage_metadata'):
-                metadata['usage'] = raw_chunk.usage_metadata
-        elif hasattr(raw_chunk, 'choices'):
+            if hasattr(raw_chunk, "usage_metadata"):
+                metadata["usage"] = raw_chunk.usage_metadata
+        elif hasattr(raw_chunk, "choices"):
             # OpenAI format
             if raw_chunk.choices:
                 delta = raw_chunk.choices[0].delta
-                content = getattr(delta, 'content', '') or ""
-            if hasattr(raw_chunk, 'usage'):
-                metadata['usage'] = raw_chunk.usage
-        elif hasattr(raw_chunk, 'delta'):
+                content = getattr(delta, "content", "") or ""
+            if hasattr(raw_chunk, "usage"):
+                metadata["usage"] = raw_chunk.usage
+        elif hasattr(raw_chunk, "delta"):
             # Anthropic format
-            if hasattr(raw_chunk.delta, 'text'):
+            if hasattr(raw_chunk.delta, "text"):
                 content = raw_chunk.delta.text or ""
         elif isinstance(raw_chunk, str):
             content = raw_chunk
         elif isinstance(raw_chunk, dict):
-            content = raw_chunk.get('content', '') or raw_chunk.get('text', '')
-            metadata = {k: v for k, v in raw_chunk.items() if k not in ('content', 'text')}
+            content = raw_chunk.get("content", "") or raw_chunk.get("text", "")
+            metadata = {k: v for k, v in raw_chunk.items() if k not in ("content", "text")}
 
         # Estimate token count (rough: 4 chars per token)
         if content:
@@ -296,7 +294,7 @@ class LLMStreamWrapper(BaseStreamWrapper[Any]):
             token_count=token_count,
             source_type="llm",
             model=self._model,
-            metadata=metadata
+            metadata=metadata,
         )
 
 
@@ -307,22 +305,17 @@ class ToolStreamWrapper(BaseStreamWrapper[Dict[str, Any]]):
     Handles streaming output from tools that support it.
     """
 
-    def __init__(
-        self,
-        tool_stream: Any,
-        tool_name: str,
-        stream_id: Optional[str] = None
-    ):
+    def __init__(self, tool_stream: Any, tool_name: str, stream_id: Optional[str] = None):
         super().__init__(stream_id)
         self._tool_stream = tool_stream
         self._tool_name = tool_name
 
     async def _get_chunks(self) -> AsyncIterator[Dict[str, Any]]:
         """Get chunks from tool stream."""
-        if hasattr(self._tool_stream, '__aiter__'):
+        if hasattr(self._tool_stream, "__aiter__"):
             async for chunk in self._tool_stream:
                 yield chunk
-        elif hasattr(self._tool_stream, '__iter__'):
+        elif hasattr(self._tool_stream, "__iter__"):
             for chunk in self._tool_stream:
                 yield chunk
         else:
@@ -335,8 +328,8 @@ class ToolStreamWrapper(BaseStreamWrapper[Dict[str, Any]]):
         metadata = {}
 
         if isinstance(raw_chunk, dict):
-            content = raw_chunk.get('content', '') or raw_chunk.get('output', '')
-            metadata = {k: v for k, v in raw_chunk.items() if k not in ('content', 'output')}
+            content = raw_chunk.get("content", "") or raw_chunk.get("output", "")
+            metadata = {k: v for k, v in raw_chunk.items() if k not in ("content", "output")}
         elif isinstance(raw_chunk, str):
             content = raw_chunk
         else:
@@ -347,15 +340,11 @@ class ToolStreamWrapper(BaseStreamWrapper[Dict[str, Any]]):
             content=content,
             index=0,
             source_type="tool",
-            metadata={**metadata, "tool_name": self._tool_name}
+            metadata={**metadata, "tool_name": self._tool_name},
         )
 
 
-def create_stream_wrapper(
-    stream: Any,
-    stream_type: str = "auto",
-    **kwargs
-) -> BaseStreamWrapper:
+def create_stream_wrapper(stream: Any, stream_type: str = "auto", **kwargs) -> BaseStreamWrapper:
     """
     Factory function to create appropriate stream wrapper.
 
@@ -373,9 +362,9 @@ def create_stream_wrapper(
         return ToolStreamWrapper(stream, **kwargs)
     elif stream_type == "auto":
         # Try to detect stream type
-        if hasattr(stream, 'choices') or hasattr(stream, 'content'):
+        if hasattr(stream, "choices") or hasattr(stream, "content"):
             return LLMStreamWrapper(stream, **kwargs)
         else:
-            return ToolStreamWrapper(stream, tool_name=kwargs.get('tool_name', 'unknown'), **kwargs)
+            return ToolStreamWrapper(stream, tool_name=kwargs.get("tool_name", "unknown"), **kwargs)
     else:
         raise ValueError(f"Unknown stream type: {stream_type}")

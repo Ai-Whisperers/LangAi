@@ -42,4 +42,3 @@ provenance: { owner: team-ticket, last_review: 2025-12-06 }
 - **Branch**: {{git_branch}}
 - **Last Commit**: {{commit_hash}}
 - **Build Status**: {{passing | failing}}
-

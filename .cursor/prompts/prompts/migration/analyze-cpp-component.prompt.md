@@ -119,4 +119,3 @@ Save document to: `docs/technical/migration-analysis/[component-name]-analysis.m
 Follow standards from:
 - `.cursor/rules/migration/phase-1-data-collection.mdc`
 - `.cursor/rules/migration/migration-overview.mdc`
-

@@ -30,23 +30,24 @@ Usage:
 """
 
 import time
-from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 from ..config import get_config
-from .client_factory import safe_extract_text
 from ..utils import get_config, get_logger, utc_now
+from .client_factory import safe_extract_text
 
 logger = get_logger(__name__)
 
 # LangChain imports with graceful fallback
 try:
     from langchain_anthropic import ChatAnthropic
-    from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
-    from langchain_core.prompts import ChatPromptTemplate
-    from langchain_core.output_parsers import StrOutputParser
     from langchain_core.callbacks import BaseCallbackHandler
+    from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+    from langchain_core.output_parsers import StrOutputParser
+    from langchain_core.prompts import ChatPromptTemplate
     from langchain_core.runnables import RunnableConfig
+
     LANGCHAIN_AVAILABLE = True
 except ImportError:
     LANGCHAIN_AVAILABLE = False
@@ -62,6 +63,7 @@ except ImportError:
 # Fallback to direct Anthropic if LangChain not available
 try:
     from anthropic import Anthropic
+
     ANTHROPIC_AVAILABLE = True
 except ImportError:
     ANTHROPIC_AVAILABLE = False
@@ -71,6 +73,7 @@ except ImportError:
 @dataclass
 class TracedLLMResponse:
     """Response from a traced LLM call."""
+
     content: str
     input_tokens: int
     output_tokens: int
@@ -102,17 +105,21 @@ class CostTrackingCallback(BaseCallbackHandler if LANGCHAIN_AVAILABLE else objec
         self.end_time = time.time()
 
         # Extract token usage from response
-        if hasattr(response, 'llm_output') and response.llm_output:
-            usage = response.llm_output.get('usage', {})
-            self.input_tokens += usage.get('input_tokens', 0)
-            self.output_tokens += usage.get('output_tokens', 0)
+        if hasattr(response, "llm_output") and response.llm_output:
+            usage = response.llm_output.get("usage", {})
+            self.input_tokens += usage.get("input_tokens", 0)
+            self.output_tokens += usage.get("output_tokens", 0)
 
         # Store run info if available
-        if hasattr(response, 'run') and response.run:
-            self.runs.append({
-                'run_id': str(response.run.id) if hasattr(response.run, 'id') else None,
-                'latency_ms': (self.end_time - self.start_time) * 1000 if self.start_time else 0
-            })
+        if hasattr(response, "run") and response.run:
+            self.runs.append(
+                {
+                    "run_id": str(response.run.id) if hasattr(response.run, "id") else None,
+                    "latency_ms": (
+                        (self.end_time - self.start_time) * 1000 if self.start_time else 0
+                    ),
+                }
+            )
 
     @property
     def latency_ms(self) -> float:
@@ -127,7 +134,7 @@ def get_llm(
     temperature: Optional[float] = None,
     max_tokens: Optional[int] = None,
     streaming: bool = False,
-    **kwargs
+    **kwargs,
 ) -> "ChatAnthropic":
     """
     Get a LangChain-wrapped Anthropic LLM with tracing enabled.
@@ -162,14 +169,12 @@ def get_llm(
         max_tokens=max_tokens or config.llm_max_tokens,
         anthropic_api_key=config.anthropic_api_key,
         streaming=streaming,
-        **kwargs
+        **kwargs,
     )
 
 
 def get_chat_model(
-    model: Optional[str] = None,
-    system_prompt: Optional[str] = None,
-    **kwargs
+    model: Optional[str] = None, system_prompt: Optional[str] = None, **kwargs
 ) -> "ChatAnthropic":
     """
     Get a chat model with optional system prompt.
@@ -198,7 +203,7 @@ def invoke_with_tracing(
     run_name: Optional[str] = None,
     tags: Optional[List[str]] = None,
     metadata: Optional[Dict[str, Any]] = None,
-    **kwargs
+    **kwargs,
 ) -> TracedLLMResponse:
     """
     Invoke LLM with full LangSmith tracing.
@@ -255,16 +260,16 @@ def invoke_with_tracing(
     latency_ms = (time.time() - start_time) * 1000
 
     # Extract content
-    content = response.content if hasattr(response, 'content') else str(response)
+    content = response.content if hasattr(response, "content") else str(response)
 
     # Get token counts from response metadata
     input_tokens = 0
     output_tokens = 0
 
-    if hasattr(response, 'response_metadata'):
-        usage = response.response_metadata.get('usage', {})
-        input_tokens = usage.get('input_tokens', 0)
-        output_tokens = usage.get('output_tokens', 0)
+    if hasattr(response, "response_metadata"):
+        usage = response.response_metadata.get("usage", {})
+        input_tokens = usage.get("input_tokens", 0)
+        output_tokens = usage.get("output_tokens", 0)
 
     # Fallback to callback tracking
     if input_tokens == 0:
@@ -278,7 +283,7 @@ def invoke_with_tracing(
     # Get run ID if available
     run_id = None
     if cost_callback.runs:
-        run_id = cost_callback.runs[-1].get('run_id')
+        run_id = cost_callback.runs[-1].get("run_id")
 
     # Build trace URL
     trace_url = None
@@ -306,7 +311,7 @@ async def ainvoke_with_tracing(
     run_name: Optional[str] = None,
     tags: Optional[List[str]] = None,
     metadata: Optional[Dict[str, Any]] = None,
-    **kwargs
+    **kwargs,
 ) -> TracedLLMResponse:
     """
     Async version of invoke_with_tracing.
@@ -356,16 +361,16 @@ async def ainvoke_with_tracing(
     latency_ms = (time.time() - start_time) * 1000
 
     # Extract content
-    content = response.content if hasattr(response, 'content') else str(response)
+    content = response.content if hasattr(response, "content") else str(response)
 
     # Get token counts
     input_tokens = 0
     output_tokens = 0
 
-    if hasattr(response, 'response_metadata'):
-        usage = response.response_metadata.get('usage', {})
-        input_tokens = usage.get('input_tokens', 0)
-        output_tokens = usage.get('output_tokens', 0)
+    if hasattr(response, "response_metadata"):
+        usage = response.response_metadata.get("usage", {})
+        input_tokens = usage.get("input_tokens", 0)
+        output_tokens = usage.get("output_tokens", 0)
 
     # Calculate cost
     cost_usd = config.calculate_llm_cost(input_tokens, output_tokens)
@@ -381,10 +386,7 @@ async def ainvoke_with_tracing(
     )
 
 
-def _invoke_anthropic_direct(
-    prompt: str,
-    system_prompt: Optional[str] = None
-) -> TracedLLMResponse:
+def _invoke_anthropic_direct(prompt: str, system_prompt: Optional[str] = None) -> TracedLLMResponse:
     """
     Fallback to direct Anthropic SDK (not traced).
 
@@ -405,7 +407,7 @@ def _invoke_anthropic_direct(
         "model": config.llm_model,
         "max_tokens": config.llm_max_tokens,
         "temperature": config.llm_temperature,
-        "messages": [{"role": "user", "content": prompt}]
+        "messages": [{"role": "user", "content": prompt}],
     }
 
     if system_prompt:
@@ -444,11 +446,7 @@ class LangChainClient:
     with automatic tracing.
     """
 
-    def __init__(
-        self,
-        model: Optional[str] = None,
-        default_tags: Optional[List[str]] = None
-    ):
+    def __init__(self, model: Optional[str] = None, default_tags: Optional[List[str]] = None):
         """
         Initialize LangChain client.
 
@@ -468,11 +466,7 @@ class LangChainClient:
         return self._llm
 
     def analyze(
-        self,
-        prompt: str,
-        context: Optional[str] = None,
-        run_name: str = "analysis",
-        **kwargs
+        self, prompt: str, context: Optional[str] = None, run_name: str = "analysis", **kwargs
     ) -> TracedLLMResponse:
         """
         Perform an analysis task.
@@ -495,15 +489,11 @@ class LangChainClient:
             llm=self.llm,
             run_name=run_name,
             tags=self.default_tags + ["analysis"],
-            **kwargs
+            **kwargs,
         )
 
     def extract(
-        self,
-        text: str,
-        extraction_prompt: str,
-        run_name: str = "extraction",
-        **kwargs
+        self, text: str, extraction_prompt: str, run_name: str = "extraction", **kwargs
     ) -> TracedLLMResponse:
         """
         Extract information from text.
@@ -524,15 +514,11 @@ class LangChainClient:
             llm=self.llm,
             run_name=run_name,
             tags=self.default_tags + ["extraction"],
-            **kwargs
+            **kwargs,
         )
 
     def summarize(
-        self,
-        text: str,
-        max_length: Optional[int] = None,
-        run_name: str = "summarization",
-        **kwargs
+        self, text: str, max_length: Optional[int] = None, run_name: str = "summarization", **kwargs
     ) -> TracedLLMResponse:
         """
         Summarize text.
@@ -556,5 +542,5 @@ class LangChainClient:
             llm=self.llm,
             run_name=run_name,
             tags=self.default_tags + ["summarization"],
-            **kwargs
+            **kwargs,
         )

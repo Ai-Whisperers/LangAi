@@ -24,6 +24,7 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
@@ -31,59 +32,64 @@ logger = get_logger(__name__)
 
 class RiskCategory(Enum):
     """Categories of business risk."""
-    MARKET = "market"           # Market competition, demand changes
-    FINANCIAL = "financial"     # Debt, liquidity, profitability
-    OPERATIONAL = "operational" # Execution, supply chain, technology
-    REGULATORY = "regulatory"   # Compliance, legal, policy changes
-    STRATEGIC = "strategic"     # Business model, leadership, M&A
+
+    MARKET = "market"  # Market competition, demand changes
+    FINANCIAL = "financial"  # Debt, liquidity, profitability
+    OPERATIONAL = "operational"  # Execution, supply chain, technology
+    REGULATORY = "regulatory"  # Compliance, legal, policy changes
+    STRATEGIC = "strategic"  # Business model, leadership, M&A
     REPUTATIONAL = "reputational"  # Brand, PR, customer perception
     GEOPOLITICAL = "geopolitical"  # Country risk, trade, currency
 
 
 class RiskLevel(Enum):
     """Risk severity levels."""
-    CRITICAL = 5    # Immediate existential threat
-    HIGH = 4        # Significant impact likely
-    MEDIUM = 3      # Moderate impact possible
-    LOW = 2         # Minor impact expected
-    MINIMAL = 1     # Negligible impact
+
+    CRITICAL = 5  # Immediate existential threat
+    HIGH = 4  # Significant impact likely
+    MEDIUM = 3  # Moderate impact possible
+    LOW = 2  # Minor impact expected
+    MINIMAL = 1  # Negligible impact
 
 
 class RiskProbability(Enum):
     """Probability of risk occurrence."""
-    VERY_LIKELY = 5    # >80% chance
-    LIKELY = 4         # 60-80% chance
-    POSSIBLE = 3       # 40-60% chance
-    UNLIKELY = 2       # 20-40% chance
-    RARE = 1           # <20% chance
+
+    VERY_LIKELY = 5  # >80% chance
+    LIKELY = 4  # 60-80% chance
+    POSSIBLE = 3  # 40-60% chance
+    UNLIKELY = 2  # 20-40% chance
+    RARE = 1  # <20% chance
 
 
 @dataclass
 class Risk:
     """A quantified risk."""
+
     name: str
     category: RiskCategory
     level: RiskLevel
     probability: RiskProbability
-    impact_score: float         # 1-10 scale
-    likelihood_score: float     # 1-10 scale
-    risk_score: float           # Combined score
+    impact_score: float  # 1-10 scale
+    likelihood_score: float  # 1-10 scale
+    risk_score: float  # Combined score
     description: str
     mitigation: Optional[str] = None
-    trend: str = "stable"       # increasing, stable, decreasing
+    trend: str = "stable"  # increasing, stable, decreasing
     source: Optional[str] = None
 
 
 @dataclass
 class RiskAssessment:
     """Complete risk assessment result."""
+
     company_name: str
-    overall_risk_score: float   # 1-100
-    risk_grade: str             # A, B, C, D, F
+    overall_risk_score: float  # 1-100
+    risk_grade: str  # A, B, C, D, F
     risks: List[Risk]
     risk_by_category: Dict[str, List[Risk]]
     risk_matrix: Dict[str, Dict[str, float]]  # {category: {metric: score}}
-    key_risks: List[str]        # Top 3-5 risks
+    key_risks: List[str]  # Top 3-5 risks
     risk_adjusted_metrics: Dict[str, float]
     recommendations: List[str]
     summary: str
@@ -173,17 +179,17 @@ class RiskQuantifier:
 
     # Risk grade thresholds
     GRADE_THRESHOLDS = {
-        "A": (0, 20),      # Very low risk
-        "B": (20, 40),     # Low risk
-        "C": (40, 60),     # Moderate risk
-        "D": (60, 80),     # High risk
-        "F": (80, 100),    # Very high risk
+        "A": (0, 20),  # Very low risk
+        "B": (20, 40),  # Low risk
+        "C": (40, 60),  # Moderate risk
+        "D": (60, 80),  # High risk
+        "F": (80, 100),  # Very high risk
     }
 
     def __init__(
         self,
         custom_weights: Optional[Dict[str, float]] = None,
-        risk_tolerance: str = "moderate"  # conservative, moderate, aggressive
+        risk_tolerance: str = "moderate",  # conservative, moderate, aggressive
     ):
         """Initialize the risk quantifier."""
         self.category_weights = self.CATEGORY_WEIGHTS.copy()
@@ -199,7 +205,7 @@ class RiskQuantifier:
         company_name: str,
         company_data: Dict[str, Any],
         market_data: Optional[Dict[str, Any]] = None,
-        content: Optional[str] = None
+        content: Optional[str] = None,
     ) -> RiskAssessment:
         """
         Perform comprehensive risk assessment.
@@ -251,17 +257,13 @@ class RiskQuantifier:
         key_risks = self._identify_key_risks(risks)
 
         # Calculate risk-adjusted metrics
-        risk_adjusted = self._calculate_risk_adjusted_metrics(
-            company_data, overall_score
-        )
+        risk_adjusted = self._calculate_risk_adjusted_metrics(company_data, overall_score)
 
         # Generate recommendations
         recommendations = self._generate_recommendations(risks, risk_grade)
 
         # Generate summary
-        summary = self._generate_summary(
-            company_name, overall_score, risk_grade, risks
-        )
+        summary = self._generate_summary(company_name, overall_score, risk_grade, risks)
 
         return RiskAssessment(
             company_name=company_name,
@@ -273,7 +275,7 @@ class RiskQuantifier:
             key_risks=key_risks,
             risk_adjusted_metrics=risk_adjusted,
             recommendations=recommendations,
-            summary=summary
+            summary=summary,
         )
 
     def _extract_risks_from_text(self, content: str) -> List[Risk]:
@@ -295,7 +297,7 @@ class RiskQuantifier:
                         likelihood_score=5.0,
                         risk_score=25.0,
                         description=f"Identified from content: {matches[0]}",
-                        source="text_analysis"
+                        source="text_analysis",
                     )
                     risks.append(risk)
 
@@ -304,10 +306,10 @@ class RiskQuantifier:
     def _pattern_to_name(self, pattern: str) -> str:
         """Convert regex pattern to readable risk name."""
         # Remove regex special chars and format
-        name = re.sub(r'\\s\+|\\s\*|\?\!|\?|\\', ' ', pattern)
-        name = re.sub(r'\(\?:[^)]+\)', '', name)
-        name = re.sub(r'[()|\[\]]', '', name)
-        name = name.strip().replace('  ', ' ')
+        name = re.sub(r"\\s\+|\\s\*|\?\!|\?|\\", " ", pattern)
+        name = re.sub(r"\(\?:[^)]+\)", "", name)
+        name = re.sub(r"[()|\[\]]", "", name)
+        name = name.strip().replace("  ", " ")
         return name.title()
 
     def _assess_financial_risks(self, company_data: Dict[str, Any]) -> List[Risk]:
@@ -318,73 +320,83 @@ class RiskQuantifier:
         debt_equity = company_data.get("debt_to_equity")
         if debt_equity is not None:
             if debt_equity > 2.0:
-                risks.append(Risk(
-                    name="High Leverage",
-                    category=RiskCategory.FINANCIAL,
-                    level=RiskLevel.HIGH,
-                    probability=RiskProbability.LIKELY,
-                    impact_score=7.0,
-                    likelihood_score=7.0,
-                    risk_score=49.0,
-                    description=f"Debt-to-equity ratio of {debt_equity:.2f} indicates high leverage",
-                    mitigation="Consider debt reduction or equity financing"
-                ))
+                risks.append(
+                    Risk(
+                        name="High Leverage",
+                        category=RiskCategory.FINANCIAL,
+                        level=RiskLevel.HIGH,
+                        probability=RiskProbability.LIKELY,
+                        impact_score=7.0,
+                        likelihood_score=7.0,
+                        risk_score=49.0,
+                        description=f"Debt-to-equity ratio of {debt_equity:.2f} indicates high leverage",
+                        mitigation="Consider debt reduction or equity financing",
+                    )
+                )
             elif debt_equity > 1.0:
-                risks.append(Risk(
-                    name="Moderate Leverage",
-                    category=RiskCategory.FINANCIAL,
-                    level=RiskLevel.MEDIUM,
-                    probability=RiskProbability.POSSIBLE,
-                    impact_score=5.0,
-                    likelihood_score=5.0,
-                    risk_score=25.0,
-                    description=f"Debt-to-equity ratio of {debt_equity:.2f}",
-                    mitigation="Monitor debt levels"
-                ))
+                risks.append(
+                    Risk(
+                        name="Moderate Leverage",
+                        category=RiskCategory.FINANCIAL,
+                        level=RiskLevel.MEDIUM,
+                        probability=RiskProbability.POSSIBLE,
+                        impact_score=5.0,
+                        likelihood_score=5.0,
+                        risk_score=25.0,
+                        description=f"Debt-to-equity ratio of {debt_equity:.2f}",
+                        mitigation="Monitor debt levels",
+                    )
+                )
 
         # Profit margin risk
         profit_margin = company_data.get("profit_margin")
         if profit_margin is not None:
             if profit_margin < 5:
-                risks.append(Risk(
-                    name="Low Profitability",
-                    category=RiskCategory.FINANCIAL,
-                    level=RiskLevel.HIGH,
-                    probability=RiskProbability.LIKELY,
-                    impact_score=6.0,
-                    likelihood_score=7.0,
-                    risk_score=42.0,
-                    description=f"Profit margin of {profit_margin:.1f}% is below healthy threshold",
-                    mitigation="Focus on cost reduction and pricing optimization"
-                ))
+                risks.append(
+                    Risk(
+                        name="Low Profitability",
+                        category=RiskCategory.FINANCIAL,
+                        level=RiskLevel.HIGH,
+                        probability=RiskProbability.LIKELY,
+                        impact_score=6.0,
+                        likelihood_score=7.0,
+                        risk_score=42.0,
+                        description=f"Profit margin of {profit_margin:.1f}% is below healthy threshold",
+                        mitigation="Focus on cost reduction and pricing optimization",
+                    )
+                )
 
         # Revenue growth risk
         revenue_growth = company_data.get("revenue_growth")
         if revenue_growth is not None:
             if revenue_growth < -10:
-                risks.append(Risk(
-                    name="Revenue Decline",
-                    category=RiskCategory.FINANCIAL,
-                    level=RiskLevel.HIGH,
-                    probability=RiskProbability.VERY_LIKELY,
-                    impact_score=8.0,
-                    likelihood_score=9.0,
-                    risk_score=72.0,
-                    description=f"Revenue declining at {revenue_growth:.1f}%",
-                    mitigation="Urgent need for revenue diversification"
-                ))
+                risks.append(
+                    Risk(
+                        name="Revenue Decline",
+                        category=RiskCategory.FINANCIAL,
+                        level=RiskLevel.HIGH,
+                        probability=RiskProbability.VERY_LIKELY,
+                        impact_score=8.0,
+                        likelihood_score=9.0,
+                        risk_score=72.0,
+                        description=f"Revenue declining at {revenue_growth:.1f}%",
+                        mitigation="Urgent need for revenue diversification",
+                    )
+                )
             elif revenue_growth < 0:
-                risks.append(Risk(
-                    name="Stagnant Revenue",
-                    category=RiskCategory.FINANCIAL,
-                    level=RiskLevel.MEDIUM,
-                    probability=RiskProbability.LIKELY,
-                    impact_score=5.0,
-                    likelihood_score=6.0,
-                    risk_score=30.0,
-                    description=f"Revenue growth of {revenue_growth:.1f}%",
-                    mitigation="Explore growth opportunities"
-                ))
+                risks.append(
+                    Risk(
+                        name="Stagnant Revenue",
+                        category=RiskCategory.FINANCIAL,
+                        level=RiskLevel.MEDIUM,
+                        probability=RiskProbability.LIKELY,
+                        impact_score=5.0,
+                        likelihood_score=6.0,
+                        risk_score=30.0,
+                        description=f"Revenue growth of {revenue_growth:.1f}%",
+                        mitigation="Explore growth opportunities",
+                    )
+                )
 
         return risks
 
@@ -396,47 +408,53 @@ class RiskQuantifier:
         market_share = market_data.get("market_share")
         if market_share is not None:
             if market_share < 5:
-                risks.append(Risk(
-                    name="Low Market Share",
-                    category=RiskCategory.MARKET,
-                    level=RiskLevel.MEDIUM,
-                    probability=RiskProbability.POSSIBLE,
-                    impact_score=5.0,
-                    likelihood_score=6.0,
-                    risk_score=30.0,
-                    description=f"Market share of {market_share:.1f}% indicates limited market presence",
-                    mitigation="Focus on market expansion strategies"
-                ))
+                risks.append(
+                    Risk(
+                        name="Low Market Share",
+                        category=RiskCategory.MARKET,
+                        level=RiskLevel.MEDIUM,
+                        probability=RiskProbability.POSSIBLE,
+                        impact_score=5.0,
+                        likelihood_score=6.0,
+                        risk_score=30.0,
+                        description=f"Market share of {market_share:.1f}% indicates limited market presence",
+                        mitigation="Focus on market expansion strategies",
+                    )
+                )
 
         # Competitive intensity
         competitors = market_data.get("competitors", [])
         if len(competitors) > 10:
-            risks.append(Risk(
-                name="High Competition",
-                category=RiskCategory.MARKET,
-                level=RiskLevel.MEDIUM,
-                probability=RiskProbability.LIKELY,
-                impact_score=5.0,
-                likelihood_score=7.0,
-                risk_score=35.0,
-                description=f"Operating in highly competitive market with {len(competitors)}+ competitors",
-                mitigation="Differentiation and niche focus"
-            ))
+            risks.append(
+                Risk(
+                    name="High Competition",
+                    category=RiskCategory.MARKET,
+                    level=RiskLevel.MEDIUM,
+                    probability=RiskProbability.LIKELY,
+                    impact_score=5.0,
+                    likelihood_score=7.0,
+                    risk_score=35.0,
+                    description=f"Operating in highly competitive market with {len(competitors)}+ competitors",
+                    mitigation="Differentiation and niche focus",
+                )
+            )
 
         # Market growth
         market_growth = market_data.get("market_growth")
         if market_growth is not None and market_growth < 0:
-            risks.append(Risk(
-                name="Declining Market",
-                category=RiskCategory.MARKET,
-                level=RiskLevel.HIGH,
-                probability=RiskProbability.LIKELY,
-                impact_score=7.0,
-                likelihood_score=7.0,
-                risk_score=49.0,
-                description=f"Operating in declining market ({market_growth:.1f}% growth)",
-                mitigation="Consider market pivot or diversification"
-            ))
+            risks.append(
+                Risk(
+                    name="Declining Market",
+                    category=RiskCategory.MARKET,
+                    level=RiskLevel.HIGH,
+                    probability=RiskProbability.LIKELY,
+                    impact_score=7.0,
+                    likelihood_score=7.0,
+                    risk_score=49.0,
+                    description=f"Operating in declining market ({market_growth:.1f}% growth)",
+                    mitigation="Consider market pivot or diversification",
+                )
+            )
 
         return risks
 
@@ -447,32 +465,36 @@ class RiskQuantifier:
         # Employee turnover
         turnover = company_data.get("employee_turnover")
         if turnover is not None and turnover > 20:
-            risks.append(Risk(
-                name="High Employee Turnover",
-                category=RiskCategory.OPERATIONAL,
-                level=RiskLevel.MEDIUM,
-                probability=RiskProbability.LIKELY,
-                impact_score=5.0,
-                likelihood_score=6.0,
-                risk_score=30.0,
-                description=f"Employee turnover of {turnover:.1f}% indicates retention issues",
-                mitigation="Improve employee engagement and compensation"
-            ))
+            risks.append(
+                Risk(
+                    name="High Employee Turnover",
+                    category=RiskCategory.OPERATIONAL,
+                    level=RiskLevel.MEDIUM,
+                    probability=RiskProbability.LIKELY,
+                    impact_score=5.0,
+                    likelihood_score=6.0,
+                    risk_score=30.0,
+                    description=f"Employee turnover of {turnover:.1f}% indicates retention issues",
+                    mitigation="Improve employee engagement and compensation",
+                )
+            )
 
         # Technology dependency
         tech_age = company_data.get("tech_stack_age")
         if tech_age is not None and tech_age > 5:
-            risks.append(Risk(
-                name="Technology Obsolescence",
-                category=RiskCategory.OPERATIONAL,
-                level=RiskLevel.MEDIUM,
-                probability=RiskProbability.POSSIBLE,
-                impact_score=6.0,
-                likelihood_score=5.0,
-                risk_score=30.0,
-                description="Legacy technology stack may require modernization",
-                mitigation="Plan technology upgrade roadmap"
-            ))
+            risks.append(
+                Risk(
+                    name="Technology Obsolescence",
+                    category=RiskCategory.OPERATIONAL,
+                    level=RiskLevel.MEDIUM,
+                    probability=RiskProbability.POSSIBLE,
+                    impact_score=6.0,
+                    likelihood_score=5.0,
+                    risk_score=30.0,
+                    description="Legacy technology stack may require modernization",
+                    mitigation="Plan technology upgrade roadmap",
+                )
+            )
 
         return risks
 
@@ -550,9 +572,7 @@ class RiskQuantifier:
         return [f"{r.name}: {r.description}" for r in sorted_risks[:5]]
 
     def _calculate_risk_adjusted_metrics(
-        self,
-        company_data: Dict[str, Any],
-        risk_score: float
+        self, company_data: Dict[str, Any], risk_score: float
     ) -> Dict[str, float]:
         """Calculate risk-adjusted financial metrics."""
         risk_discount = risk_score / 100  # 0-1 scale
@@ -574,42 +594,28 @@ class RiskQuantifier:
 
         return metrics
 
-    def _generate_recommendations(
-        self,
-        risks: List[Risk],
-        grade: str
-    ) -> List[str]:
+    def _generate_recommendations(self, risks: List[Risk], grade: str) -> List[str]:
         """Generate risk mitigation recommendations."""
         recommendations = []
 
         # Grade-based recommendations
         if grade in ["D", "F"]:
-            recommendations.append(
-                "URGENT: Implement comprehensive risk management program"
-            )
+            recommendations.append("URGENT: Implement comprehensive risk management program")
 
         # Category-specific recommendations
         categories_found = set(r.category for r in risks)
 
         if RiskCategory.FINANCIAL in categories_found:
-            recommendations.append(
-                "Review financial structure and improve liquidity position"
-            )
+            recommendations.append("Review financial structure and improve liquidity position")
 
         if RiskCategory.MARKET in categories_found:
-            recommendations.append(
-                "Strengthen competitive positioning and market differentiation"
-            )
+            recommendations.append("Strengthen competitive positioning and market differentiation")
 
         if RiskCategory.OPERATIONAL in categories_found:
-            recommendations.append(
-                "Enhance operational efficiency and technology infrastructure"
-            )
+            recommendations.append("Enhance operational efficiency and technology infrastructure")
 
         if RiskCategory.REGULATORY in categories_found:
-            recommendations.append(
-                "Strengthen compliance framework and regulatory monitoring"
-            )
+            recommendations.append("Strengthen compliance framework and regulatory monitoring")
 
         # Risk-specific mitigations
         for risk in sorted(risks, key=lambda r: r.risk_score, reverse=True)[:3]:
@@ -619,11 +625,7 @@ class RiskQuantifier:
         return recommendations[:7]  # Limit to 7 recommendations
 
     def _generate_summary(
-        self,
-        company_name: str,
-        score: float,
-        grade: str,
-        risks: List[Risk]
+        self, company_name: str, score: float, grade: str, risks: List[Risk]
     ) -> str:
         """Generate executive risk summary."""
         risk_count = len(risks)
@@ -652,11 +654,7 @@ class RiskQuantifier:
 
 
 def create_risk_quantifier(
-    custom_weights: Optional[Dict[str, float]] = None,
-    risk_tolerance: str = "moderate"
+    custom_weights: Optional[Dict[str, float]] = None, risk_tolerance: str = "moderate"
 ) -> RiskQuantifier:
     """Factory function to create RiskQuantifier."""
-    return RiskQuantifier(
-        custom_weights=custom_weights,
-        risk_tolerance=risk_tolerance
-    )
+    return RiskQuantifier(custom_weights=custom_weights, risk_tolerance=risk_tolerance)

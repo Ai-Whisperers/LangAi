@@ -27,4 +27,3 @@ gh workflow run release-orchestrator.yml \
 1. Wait for the `Release Orchestrator` workflow to reach the environment approval step.
 2. Approve the `release` environment to publish the annotated tag and draft release.
 3. Review and publish the draft release on GitHub.
-

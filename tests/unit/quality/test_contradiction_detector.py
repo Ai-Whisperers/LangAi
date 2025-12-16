@@ -6,21 +6,20 @@ and resolution strategies.
 """
 
 import os
+
 import pytest
+
 from company_researcher.quality.contradiction_detector import (
-    ContradictionDetector,
     Contradiction,
+    ContradictionDetector,
     ContradictionReport,
     ContradictionSeverity,
     ResolutionStrategy,
-    extract_topics,
     detect_contradictions,
-    quick_contradiction_check
+    extract_topics,
+    quick_contradiction_check,
 )
-from company_researcher.quality.fact_extractor import (
-    ExtractedFact,
-    FactCategory
-)
+from company_researcher.quality.fact_extractor import ExtractedFact, FactCategory
 
 
 @pytest.mark.unit
@@ -44,8 +43,10 @@ class TestContradictionDetector:
 
         # Should detect the contradiction between $1.5B and $2.1B
         assert report.total_count > 0
-        assert any(c.severity in [ContradictionSeverity.HIGH, ContradictionSeverity.CRITICAL]
-                   for c in report.contradictions)
+        assert any(
+            c.severity in [ContradictionSeverity.HIGH, ContradictionSeverity.CRITICAL]
+            for c in report.contradictions
+        )
 
     def test_detect_no_contradictions(self, sample_extracted_facts):
         """Test detection when no contradictions exist."""
@@ -112,13 +113,13 @@ class TestContradictionDetector:
         fact_official = ExtractedFact(
             content="According to SEC filing, revenue was $1.5B",
             category=FactCategory.FINANCIAL,
-            source_agent="financial"
+            source_agent="financial",
         )
 
         fact_unofficial = ExtractedFact(
             content="Revenue is estimated at $2B",
             category=FactCategory.FINANCIAL,
-            source_agent="market"
+            source_agent="market",
         )
 
         strategy = detector._suggest_numerical_resolution(fact_official, fact_unofficial)
@@ -136,7 +137,7 @@ class TestContradictionDetector:
     @pytest.mark.requires_llm
     @pytest.mark.skipif(
         not os.getenv("ANTHROPIC_API_KEY"),
-        reason="ANTHROPIC_API_KEY not set - LLM tests require API access"
+        reason="ANTHROPIC_API_KEY not set - LLM tests require API access",
     )
     def test_detect_semantic_contradictions_with_llm(self):
         """Test LLM-based semantic contradiction detection.
@@ -151,13 +152,13 @@ class TestContradictionDetector:
             ExtractedFact(
                 content="The company is profitable with strong margins.",
                 category=FactCategory.FINANCIAL,
-                source_agent="financial"
+                source_agent="financial",
             ),
             ExtractedFact(
                 content="The company is losing money and burning cash.",
                 category=FactCategory.FINANCIAL,
-                source_agent="market"
-            )
+                source_agent="market",
+            ),
         ]
 
         report = detector.detect(facts)
@@ -184,14 +185,12 @@ class TestContradictionReport:
                 fact_b="Revenue is $2.1B",
                 explanation="Numerical disagreement",
                 agent_a="financial",
-                agent_b="market"
+                agent_b="market",
             )
         ]
 
         report = ContradictionReport(
-            contradictions=contradictions,
-            total_facts_analyzed=10,
-            topics_analyzed=3
+            contradictions=contradictions, total_facts_analyzed=10, topics_analyzed=3
         )
 
         assert report.total_count == 1
@@ -210,7 +209,7 @@ class TestContradictionReport:
                 fact_b="B",
                 explanation="Critical issue",
                 agent_a="a1",
-                agent_b="a2"
+                agent_b="a2",
             ),
             Contradiction(
                 id="C2",
@@ -220,8 +219,8 @@ class TestContradictionReport:
                 fact_b="D",
                 explanation="Minor issue",
                 agent_a="a1",
-                agent_b="a2"
-            )
+                agent_b="a2",
+            ),
         ]
 
         report = ContradictionReport(contradictions=contradictions)
@@ -236,10 +235,7 @@ class TestContradictionReport:
 
     def test_to_markdown_no_contradictions(self):
         """Test markdown formatting with no contradictions."""
-        report = ContradictionReport(
-            total_facts_analyzed=50,
-            topics_analyzed=10
-        )
+        report = ContradictionReport(total_facts_analyzed=50, topics_analyzed=10)
 
         markdown = report.to_markdown()
 
@@ -258,7 +254,7 @@ class TestContradictionReport:
                 fact_b="Revenue is $2.1B",
                 explanation="Significant numerical disagreement",
                 agent_a="financial",
-                agent_b="market"
+                agent_b="market",
             )
         ]
 
@@ -287,7 +283,7 @@ class TestContradiction:
             agent_a="agent1",
             agent_b="agent2",
             explanation="They disagree",
-            resolution_strategy=ResolutionStrategy.INVESTIGATE
+            resolution_strategy=ResolutionStrategy.INVESTIGATE,
         )
 
         assert contradiction.id == "C1"
@@ -306,7 +302,7 @@ class TestContradiction:
             agent_b="market",
             explanation="Major disagreement on revenue",
             resolution_strategy=ResolutionStrategy.USE_OFFICIAL,
-            resolution_suggestion="Use SEC filing data"
+            resolution_suggestion="Use SEC filing data",
         )
 
         markdown = contradiction.to_markdown()
@@ -331,18 +327,16 @@ class TestTopicExtraction:
             ExtractedFact(
                 content="Revenue was $1.5 billion in 2023",
                 category=FactCategory.FINANCIAL,
-                source_agent="financial"
+                source_agent="financial",
             ),
             ExtractedFact(
                 content="The company has strong profit margins",
                 category=FactCategory.FINANCIAL,
-                source_agent="financial"
+                source_agent="financial",
             ),
             ExtractedFact(
-                content="Founded in 2010",
-                category=FactCategory.COMPANY,
-                source_agent="researcher"
-            )
+                content="Founded in 2010", category=FactCategory.COMPANY, source_agent="researcher"
+            ),
         ]
 
         topics = extract_topics(facts)
@@ -357,7 +351,7 @@ class TestTopicExtraction:
             ExtractedFact(
                 content="Some random company information",
                 category=FactCategory.COMPANY,
-                source_agent="researcher"
+                source_agent="researcher",
             )
         ]
 

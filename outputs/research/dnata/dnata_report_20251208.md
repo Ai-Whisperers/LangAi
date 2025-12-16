@@ -22,4 +22,3 @@ I'm ready to help you create a comprehensive research report once I have the nec
 ---
 
 ## Sources
-

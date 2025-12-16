@@ -72,4 +72,3 @@ System reads `orders.csv` from FTP and calls `DBCREATE_ORDER`.
 
 **Applies Rules**:
 - `.cursor/rules/technical-specifications/integration-points-rule.mdc`
-

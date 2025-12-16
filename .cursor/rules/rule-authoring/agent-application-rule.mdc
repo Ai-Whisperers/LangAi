@@ -91,19 +91,19 @@ When user requests rule-related work, categorize:
 
 1. **New Rule Creation**: "Create rule for [action]"
    - → Execute Scenario A (Creating New Rule from Practice)
-   
+
 2. **Rule Update**: "Update [rule-id]" or "Add [section] to [rule]"
    - → Execute Scenario B (Updating Existing Rule)
-   
+
 3. **Rule Validation**: "Validate [rule-id]" or "Check compliance"
    - → Execute Scenario C (Validating Rule Compliance)
-   
+
 4. **Rule Extraction**: "Extract rule from [conversation/work]"
    - → Execute Scenario A (preferred method per extraction-from-practice rule)
-   
+
 5. **Templar/Exemplar Creation**: "Create templar for [output]"
    - → Execute Scenario D (Creating Templar/Exemplar)
-   
+
 6. **Rule Sync**: "Sync rules from [source] to [target]" or "Update [repo] with rules from [repo]"
    - → Execute Scenario E (Syncing Rules Between Repositories)
 
@@ -141,33 +141,33 @@ Has real work/conversation been completed demonstrating pattern?
    - Identify what actually worked
    - Extract key constraints and steps
    - Note edge cases encountered
-   
+
 2. Apply `rule.authoring.naming-conventions.v1`:
    - Generate stable ID: `rule.[domain].[action].v1`
    - Validate ID uniqueness
    - Choose appropriate file name
-   
+
 3. Apply `rule.authoring.invocation-strategies.v1`:
    - Determine invocation strategy (file-mask, agentic, or always-apply)
    - For operational rules: Use Strategy 1 (file-mask with globs/governs)
    - For meta-rules: Use Strategy 2 (description-triggered, omit globs/governs)
    - Set alwaysApply: false (default)
-   
+
 4. Apply `rule.authoring.file-structure.v1`:
    - Create complete 10-field front matter
    - Add all canonical sections in order
    - Ensure FINAL MUST-PASS CHECKLIST is last section
-   
+
 5. Apply `rule.authoring.contracts-and-scope.v1`:
    - Write explicit input contract
    - Write explicit output contract
    - Define `globs` and `governs` appropriately (if Strategy 1)
    - Add Purpose & Scope with "Applies to" / "Does not apply to"
-   
+
 6. Apply `rule.authoring.cross-references.v1`:
    - Reference dependencies by stable ID
    - Update related rules' references if needed
-   
+
 7. Apply `rule.authoring.validation-and-checklists.v1`:
    - Add FINAL MUST-PASS CHECKLIST section (last)
    - Validate against all rule-authoring standards
@@ -179,12 +179,12 @@ Has real work/conversation been completed demonstrating pattern?
    - Determine version bump type (MAJOR/MINOR/PATCH)
    - Update version field
    - Update provenance.last_review date
-   
+
 2. Apply relevant rule-authoring rule for specific update:
    - Adding contracts → `rule.authoring.contracts-and-scope.v1`
    - Adding cross-refs → `rule.authoring.cross-references.v1`
    - Restructuring → `rule.authoring.file-structure.v1`
-   
+
 3. Apply `rule.authoring.validation-and-checklists.v1`:
    - Validate updated rule still compliant
    - Update checklist if needed
@@ -223,12 +223,12 @@ Has real work/conversation been completed demonstrating pattern?
    - Identify what worked (exact value preservation, business meaning, qualification criteria)
    - Extract constraints encountered (don't document boolean flags as enums, etc.)
    - Note edge cases (numeric values MUST be preserved, not assumed)
-   
+
 2. Apply `rule.authoring.naming-conventions.v1`:
    - Generate ID: `rule.technical-specifications.enumeration.v1`
    - File name: `enumeration-rule.mdc`
    - Validate uniqueness
-   
+
 3. Apply `rule.authoring.file-structure.v1`:
    - Create front matter with 10 fields:
      - id, kind, version, description
@@ -245,17 +245,17 @@ Has real work/conversation been completed demonstrating pattern?
      - Failure Modes and Recovery
      - Related Rules
      - FINAL MUST-PASS CHECKLIST (LAST)
-   
+
 5. Apply `rule.authoring.contracts-and-scope.v1`:
    - Write explicit Inputs: C++ enum analysis, numeric values, usage patterns
    - Write explicit Outputs: Enumeration file with exact values, business meanings
    - Already defined globs/governs in step 4
    - Purpose & Scope already added in step 4
-   
+
 6. Apply `rule.authoring.cross-references.v1`:
    - Reference `rule.technical-specifications.anti-duplication.v1` in requires
    - Add to related rules section
-   
+
 7. Apply `rule.authoring.validation-and-checklists.v1`:
    - Create FINAL MUST-PASS CHECKLIST as last section
    - Include 3-7 binary items
@@ -271,16 +271,16 @@ Has real work/conversation been completed demonstrating pattern?
    - Determine version bump: MINOR (backward-compatible addition)
    - Update version: 1.0.0 → 1.1.0
    - Update provenance.last_review: [today's date]
-   
+
 2. Apply `rule.authoring.contracts-and-scope.v1`:
    - Add "## Inputs (Contract)" section after "Purpose & Scope"
    - Add "## Outputs (Contract)" section after "Inputs (Contract)"
    - Ensure explicit, verifiable statements
-   
+
 3. Apply `rule.authoring.file-structure.v1`:
    - Validate section ordering after addition
    - Ensure canonical order maintained
-   
+
 4. Apply `rule.authoring.validation-and-checklists.v1`:
    - Validate updated rule compliant
    - Confirm FINAL MUST-PASS CHECKLIST still last section
@@ -324,17 +324,17 @@ Has real work/conversation been completed demonstrating pattern?
    - Determine kind: `templar` (defines output shape)
    - Create structural template showing required sections
    - Document what belongs in each section
-   
+
 2. Apply `rule.authoring.naming-conventions.v1`:
    - Generate ID: `templar.plan.v1`
    - File name: `plan-templar.mdc`
    - Validate uniqueness
-   
+
 3. Apply `rule.authoring.file-structure.v1`:
    - Create front matter with kind: `templar`
    - Add canonical sections (abbreviated for templars)
    - Add FINAL MUST-PASS CHECKLIST
-   
+
 4. Apply `rule.authoring.validation-and-checklists.v1`:
    - Validate templar structure
    - Ensure checklist appropriate for templars
@@ -348,42 +348,42 @@ Has real work/conversation been completed demonstrating pattern?
    - Identify source repository (e.g., eneve.ebase.foundation)
    - Identify target repository (e.g., eneve.domain)
    - Determine sync scope (all rules, domain-specific, or selective)
-   
+
 2. **Step 1: Discover Rules**:
    - Scan source `.cursor/rules/` directory
    - Scan target `.cursor/rules/` directory
    - Parse front-matter from all rule files
    - Build registries for both repos
-   
+
 3. **Step 2: Compare and Categorize**:
    - Category A: Rules to Add (missing in target)
    - Category B: Rules to Update (version differences)
    - Category C: Rules to Review (conflicts)
    - Category D: Rules in Sync (no action)
-   
+
 4. **Step 3: Generate Sync Analysis Report**:
    - Show all four categories with counts
    - List specific rules in each category
    - Provide action recommendations
-   
+
 5. **Step 4: Present Report for Review**:
    - Show report to user
    - Wait for approval before executing
    - Clarify any conflicts (Category C)
-   
+
 6. **Step 5: Execute Sync** (after approval):
    - Apply `rule.authoring.validation-and-checklists.v1` on source rules
    - Copy Category A rules to target
    - Update Category B rules in target
    - Handle Category C per user decision
    - Sync dependencies (templars, exemplars)
-   
+
 7. **Step 6: Validate Sync**:
    - Apply `rule.authoring.validation-and-checklists.v1` on synced rules in target
    - Check for broken dependencies
    - Verify all `requires` resolve
    - Run OPSEC validation
-   
+
 8. **Step 7: Document Sync**:
    - Create/append to sync log in target repo
    - Record what was synced, when, and by whom
@@ -439,7 +439,7 @@ Has real work/conversation been completed demonstrating pattern?
 
 **Agent-application rules like this one** have special characteristics:
 
-1. **Description-Triggered**: 
+1. **Description-Triggered**:
    - NO globs field (not file-pattern based)
    - NO governs field (don't write files directly - coordinate only)
    - description: Rich, detailed description of WHEN to use this rule

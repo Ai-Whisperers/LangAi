@@ -104,7 +104,7 @@ This rule defines how to create business rules specification files that document
 
 **Purpose**: [What business need this algorithm serves]
 
-**Business Logic**: 
+**Business Logic**:
 1. [Step-by-step description of algorithm logic]
 2. [Each step described in business terms]
 3. [Decision points and conditions clearly stated]
@@ -138,7 +138,7 @@ This rule defines how to create business rules specification files that document
 
 **Decision Tree**:
 - **IF** [condition] **THEN** [outcome]
-- **ELSE IF** [condition] **THEN** [outcome]  
+- **ELSE IF** [condition] **THEN** [outcome]
 - **ELSE** [default outcome]
 
 **Business Impact**: [How this decision affects business outcomes]

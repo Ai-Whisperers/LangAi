@@ -19,12 +19,12 @@ def main():
 
     company_name = sys.argv[1]
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("PHASE 3: MULTI-AGENT WORKFLOW TEST")
-    print("="*60)
+    print("=" * 60)
     print(f"Company: {company_name}")
     print("Agents: Researcher -> Analyst")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
 
     try:
         result = research_company(company_name)
@@ -42,6 +42,7 @@ def main():
     except Exception as e:
         print(f"\n\n[ERROR] Error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

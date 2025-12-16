@@ -11,25 +11,26 @@ Batch and scheduled workflow execution:
 Designed for large-scale research operations.
 """
 
-from typing import Dict, Any, List, Optional, Callable
+import queue
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-import time
-import queue
-import threading
-from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Callable, Dict, List, Optional
 
-from .workflow_engine import WorkflowState
 from ..utils import utc_now
-
+from .workflow_engine import WorkflowState
 
 # ============================================================================
 # Data Models
 # ============================================================================
 
+
 class Priority(int, Enum):
     """Task priority levels."""
+
     CRITICAL = 1
     HIGH = 2
     NORMAL = 3
@@ -39,6 +40,7 @@ class Priority(int, Enum):
 
 class TaskStatus(str, Enum):
     """Scheduled task status."""
+
     QUEUED = "queued"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -49,6 +51,7 @@ class TaskStatus(str, Enum):
 @dataclass
 class ScheduleConfig:
     """Configuration for scheduled execution."""
+
     max_concurrent: int = 3
     rate_limit: float = 1.0  # requests per second
     retry_failed: bool = True
@@ -60,6 +63,7 @@ class ScheduleConfig:
 @dataclass
 class ScheduledTask:
     """A scheduled workflow task."""
+
     task_id: str
     company_name: str
     priority: Priority = Priority.NORMAL
@@ -80,6 +84,7 @@ class ScheduledTask:
 @dataclass
 class BatchResult:
     """Result of batch execution."""
+
     batch_id: str
     total_tasks: int = 0
     completed: int = 0
@@ -113,13 +118,14 @@ class BatchResult:
             "cancelled": self.cancelled,
             "success_rate": round(self.success_rate, 2),
             "duration_seconds": round(self.duration_seconds, 2),
-            "total_cost": round(self.total_cost, 4)
+            "total_cost": round(self.total_cost, 4),
         }
 
 
 # ============================================================================
 # Workflow Scheduler
 # ============================================================================
+
 
 class WorkflowScheduler:
     """
@@ -152,9 +158,7 @@ class WorkflowScheduler:
     """
 
     def __init__(
-        self,
-        config: Optional[ScheduleConfig] = None,
-        workflow_factory: Optional[Callable] = None
+        self, config: Optional[ScheduleConfig] = None, workflow_factory: Optional[Callable] = None
     ):
         """
         Initialize scheduler.
@@ -194,7 +198,7 @@ class WorkflowScheduler:
         self,
         company_name: str,
         priority: Priority = Priority.NORMAL,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Schedule a single company for research.
@@ -211,10 +215,7 @@ class WorkflowScheduler:
         task_id = f"task_{int(time.time())}_{self._task_counter}"
 
         task = ScheduledTask(
-            task_id=task_id,
-            company_name=company_name,
-            priority=priority,
-            metadata=metadata or {}
+            task_id=task_id, company_name=company_name, priority=priority, metadata=metadata or {}
         )
 
         self._task_queue.put((priority.value, task))
@@ -224,7 +225,7 @@ class WorkflowScheduler:
         self,
         companies: List[str],
         priority: Priority = Priority.NORMAL,
-        workflow_factory: Optional[Callable] = None
+        workflow_factory: Optional[Callable] = None,
     ) -> BatchResult:
         """
         Schedule and execute a batch of companies.
@@ -239,9 +240,7 @@ class WorkflowScheduler:
         """
         batch_id = f"batch_{int(time.time())}"
         batch_result = BatchResult(
-            batch_id=batch_id,
-            total_tasks=len(companies),
-            start_time=utc_now()
+            batch_id=batch_id, total_tasks=len(companies), start_time=utc_now()
         )
 
         factory = workflow_factory or self._workflow_factory
@@ -252,9 +251,7 @@ class WorkflowScheduler:
         task_ids = []
         for company in companies:
             task_id = self.schedule(
-                company_name=company,
-                priority=priority,
-                metadata={"batch_id": batch_id}
+                company_name=company, priority=priority, metadata={"batch_id": batch_id}
             )
             task_ids.append(task_id)
 
@@ -283,10 +280,7 @@ class WorkflowScheduler:
 
         return batch_result
 
-    def _process_batch(
-        self,
-        workflow_factory: Callable
-    ) -> Dict[str, WorkflowState]:
+    def _process_batch(self, workflow_factory: Callable) -> Dict[str, WorkflowState]:
         """Process all queued tasks."""
         results = {}
         futures = {}
@@ -294,16 +288,12 @@ class WorkflowScheduler:
         while not self._task_queue.empty() or self._active_tasks:
             # Start new tasks if under limit
             while (
-                not self._task_queue.empty() and
-                len(self._active_tasks) < self._config.max_concurrent
+                not self._task_queue.empty()
+                and len(self._active_tasks) < self._config.max_concurrent
             ):
                 try:
                     _, task = self._task_queue.get_nowait()
-                    future = self._executor.submit(
-                        self._execute_task,
-                        task,
-                        workflow_factory
-                    )
+                    future = self._executor.submit(self._execute_task, task, workflow_factory)
                     futures[future] = task.task_id
                     self._active_tasks[task.task_id] = task
                 except queue.Empty:
@@ -334,11 +324,7 @@ class WorkflowScheduler:
 
         return results
 
-    def _execute_task(
-        self,
-        task: ScheduledTask,
-        workflow_factory: Callable
-    ) -> ScheduledTask:
+    def _execute_task(self, task: ScheduledTask, workflow_factory: Callable) -> ScheduledTask:
         """Execute a single scheduled task."""
         task.status = TaskStatus.RUNNING
         task.started_at = utc_now()
@@ -354,9 +340,7 @@ class WorkflowScheduler:
             workflow = workflow_factory()
 
             # Execute
-            result = workflow.execute(
-                initial_data={"company_name": task.company_name}
-            )
+            result = workflow.execute(initial_data={"company_name": task.company_name})
 
             task.result = result
             task.status = TaskStatus.COMPLETED
@@ -434,19 +418,11 @@ class WorkflowScheduler:
     def get_statistics(self) -> Dict[str, Any]:
         """Get scheduler statistics."""
         completed = sum(
-            1 for t in self._completed_tasks.values()
-            if t.status == TaskStatus.COMPLETED
+            1 for t in self._completed_tasks.values() if t.status == TaskStatus.COMPLETED
         )
-        failed = sum(
-            1 for t in self._completed_tasks.values()
-            if t.status == TaskStatus.FAILED
-        )
+        failed = sum(1 for t in self._completed_tasks.values() if t.status == TaskStatus.FAILED)
 
-        total_cost = sum(
-            t.result.total_cost
-            for t in self._completed_tasks.values()
-            if t.result
-        )
+        total_cost = sum(t.result.total_cost for t in self._completed_tasks.values() if t.result)
 
         return {
             "queued": self.get_queue_size(),
@@ -454,7 +430,7 @@ class WorkflowScheduler:
             "completed": completed,
             "failed": failed,
             "total_processed": len(self._completed_tasks),
-            "total_cost": round(total_cost, 4)
+            "total_cost": round(total_cost, 4),
         }
 
     # ==========================================================================
@@ -495,14 +471,10 @@ class WorkflowScheduler:
 # Factory Functions
 # ============================================================================
 
+
 def create_scheduler(
-    max_concurrent: int = 3,
-    rate_limit: float = 1.0,
-    workflow_factory: Optional[Callable] = None
+    max_concurrent: int = 3, rate_limit: float = 1.0, workflow_factory: Optional[Callable] = None
 ) -> WorkflowScheduler:
     """Create a workflow scheduler."""
-    config = ScheduleConfig(
-        max_concurrent=max_concurrent,
-        rate_limit=rate_limit
-    )
+    config = ScheduleConfig(max_concurrent=max_concurrent, rate_limit=rate_limit)
     return WorkflowScheduler(config, workflow_factory)

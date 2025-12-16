@@ -10,8 +10,8 @@ Documentation: https://site.financialmodelingprep.com/developer/docs
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from .base_client import BaseAPIClient
 from ..utils import get_logger
+from .base_client import BaseAPIClient
 
 logger = get_logger(__name__)
 
@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 @dataclass
 class CompanyProfile:
     """Company profile data."""
+
     symbol: str
     company_name: str
     exchange: str
@@ -48,13 +49,14 @@ class CompanyProfile:
             website=data.get("website", ""),
             ipo_date=data.get("ipoDate", ""),
             market_cap=data.get("mktCap"),
-            price=data.get("price")
+            price=data.get("price"),
         )
 
 
 @dataclass
 class IncomeStatement:
     """Income statement data."""
+
     date: str
     symbol: str
     revenue: float
@@ -88,13 +90,14 @@ class IncomeStatement:
             net_income=data.get("netIncome", 0),
             net_income_ratio=data.get("netIncomeRatio", 0),
             eps=data.get("eps", 0),
-            eps_diluted=data.get("epsdiluted", 0)
+            eps_diluted=data.get("epsdiluted", 0),
         )
 
 
 @dataclass
 class BalanceSheet:
     """Balance sheet data."""
+
     date: str
     symbol: str
     total_assets: float
@@ -124,13 +127,14 @@ class BalanceSheet:
             total_current_assets=data.get("totalCurrentAssets", 0),
             total_current_liabilities=data.get("totalCurrentLiabilities", 0),
             long_term_debt=data.get("longTermDebt", 0),
-            total_debt=data.get("totalDebt", 0)
+            total_debt=data.get("totalDebt", 0),
         )
 
 
 @dataclass
 class KeyMetrics:
     """Key financial metrics."""
+
     symbol: str
     date: str
     market_cap: Optional[float]
@@ -166,13 +170,14 @@ class KeyMetrics:
             roa=data.get("roa"),
             roic=data.get("roic"),
             revenue_growth=data.get("revenueGrowth"),
-            earnings_growth=data.get("netIncomeGrowth")
+            earnings_growth=data.get("netIncomeGrowth"),
         )
 
 
 @dataclass
 class DCFValue:
     """Discounted Cash Flow valuation."""
+
     symbol: str
     date: str
     dcf: float
@@ -184,7 +189,7 @@ class DCFValue:
             symbol=data.get("symbol", ""),
             date=data.get("date", ""),
             dcf=data.get("dcf", 0),
-            stock_price=data.get("Stock Price", 0)
+            stock_price=data.get("Stock Price", 0),
         )
 
 
@@ -212,15 +217,10 @@ class FMPClient(BaseAPIClient):
             env_var="FMP_API_KEY",
             cache_ttl=3600,  # 1 hour cache
             rate_limit_calls=5,
-            rate_limit_period=1.0
+            rate_limit_period=1.0,
         )
 
-    async def _request(
-        self,
-        endpoint: str,
-        params: Optional[Dict] = None,
-        **kwargs
-    ) -> Any:
+    async def _request(self, endpoint: str, params: Optional[Dict] = None, **kwargs) -> Any:
         """Override to add API key to all requests."""
         params = params or {}
         params["apikey"] = self.api_key
@@ -246,10 +246,7 @@ class FMPClient(BaseAPIClient):
         return None
 
     async def search_company(
-        self,
-        query: str,
-        limit: int = 10,
-        exchange: Optional[str] = None
+        self, query: str, limit: int = 10, exchange: Optional[str] = None
     ) -> List[Dict]:
         """
         Search for companies by name.
@@ -285,10 +282,7 @@ class FMPClient(BaseAPIClient):
     # =========================================================================
 
     async def get_income_statement(
-        self,
-        symbol: str,
-        period: str = "annual",
-        limit: int = 5
+        self, symbol: str, period: str = "annual", limit: int = 5
     ) -> List[IncomeStatement]:
         """
         Get income statement history.
@@ -301,17 +295,11 @@ class FMPClient(BaseAPIClient):
         Returns:
             List of IncomeStatement objects
         """
-        data = await self._request(
-            f"income-statement/{symbol}",
-            {"period": period, "limit": limit}
-        )
+        data = await self._request(f"income-statement/{symbol}", {"period": period, "limit": limit})
         return [IncomeStatement.from_dict(item) for item in (data or [])]
 
     async def get_balance_sheet(
-        self,
-        symbol: str,
-        period: str = "annual",
-        limit: int = 5
+        self, symbol: str, period: str = "annual", limit: int = 5
     ) -> List[BalanceSheet]:
         """
         Get balance sheet history.
@@ -325,16 +313,12 @@ class FMPClient(BaseAPIClient):
             List of BalanceSheet objects
         """
         data = await self._request(
-            f"balance-sheet-statement/{symbol}",
-            {"period": period, "limit": limit}
+            f"balance-sheet-statement/{symbol}", {"period": period, "limit": limit}
         )
         return [BalanceSheet.from_dict(item) for item in (data or [])]
 
     async def get_cash_flow(
-        self,
-        symbol: str,
-        period: str = "annual",
-        limit: int = 5
+        self, symbol: str, period: str = "annual", limit: int = 5
     ) -> List[Dict]:
         """
         Get cash flow statement history.
@@ -347,20 +331,17 @@ class FMPClient(BaseAPIClient):
         Returns:
             List of cash flow statement dicts
         """
-        return await self._request(
-            f"cash-flow-statement/{symbol}",
-            {"period": period, "limit": limit}
-        ) or []
+        return (
+            await self._request(f"cash-flow-statement/{symbol}", {"period": period, "limit": limit})
+            or []
+        )
 
     # =========================================================================
     # Valuation & Metrics
     # =========================================================================
 
     async def get_key_metrics(
-        self,
-        symbol: str,
-        period: str = "annual",
-        limit: int = 5
+        self, symbol: str, period: str = "annual", limit: int = 5
     ) -> List[KeyMetrics]:
         """
         Get key financial metrics and ratios.
@@ -373,10 +354,7 @@ class FMPClient(BaseAPIClient):
         Returns:
             List of KeyMetrics objects
         """
-        data = await self._request(
-            f"key-metrics/{symbol}",
-            {"period": period, "limit": limit}
-        )
+        data = await self._request(f"key-metrics/{symbol}", {"period": period, "limit": limit})
         return [KeyMetrics.from_dict(item) for item in (data or [])]
 
     async def get_dcf(self, symbol: str) -> Optional[DCFValue]:
@@ -408,10 +386,7 @@ class FMPClient(BaseAPIClient):
         return data[0] if data else None
 
     async def get_financial_ratios(
-        self,
-        symbol: str,
-        period: str = "annual",
-        limit: int = 5
+        self, symbol: str, period: str = "annual", limit: int = 5
     ) -> List[Dict]:
         """
         Get comprehensive financial ratios.
@@ -424,10 +399,7 @@ class FMPClient(BaseAPIClient):
         Returns:
             List of financial ratio dicts
         """
-        return await self._request(
-            f"ratios/{symbol}",
-            {"period": period, "limit": limit}
-        ) or []
+        return await self._request(f"ratios/{symbol}", {"period": period, "limit": limit}) or []
 
     # =========================================================================
     # Peers & Competitors
@@ -452,11 +424,7 @@ class FMPClient(BaseAPIClient):
     # News
     # =========================================================================
 
-    async def get_stock_news(
-        self,
-        symbol: Optional[str] = None,
-        limit: int = 50
-    ) -> List[Dict]:
+    async def get_stock_news(self, symbol: Optional[str] = None, limit: int = 50) -> List[Dict]:
         """
         Get stock-related news.
 
@@ -507,9 +475,7 @@ class FMPClient(BaseAPIClient):
     # =========================================================================
 
     async def get_company_financials(
-        self,
-        symbol: str,
-        include_ratios: bool = True
+        self, symbol: str, include_ratios: bool = True
     ) -> Dict[str, Any]:
         """
         Get comprehensive financial data for a company.
@@ -532,7 +498,7 @@ class FMPClient(BaseAPIClient):
             "dcf": None,
             "rating": None,
             "peers": [],
-            "ratios": []
+            "ratios": [],
         }
 
         # Fetch all data

@@ -7,32 +7,34 @@ Handle shutdown gracefully:
 - In-flight request handling
 """
 
-from typing import Dict, Any, List, Optional, Callable
-from dataclasses import dataclass
-from enum import Enum
+import atexit
+import logging
 import signal
 import threading
 import time
-import logging
-import atexit
-
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
 
 # ============================================================================
 # Enums and Data Models
 # ============================================================================
 
+
 class ShutdownPhase(str, Enum):
     """Shutdown phases."""
+
     RUNNING = "running"
-    DRAINING = "draining"    # Stop accepting new requests
+    DRAINING = "draining"  # Stop accepting new requests
     TERMINATING = "terminating"  # Waiting for in-flight
-    CLEANUP = "cleanup"      # Running cleanup handlers
+    CLEANUP = "cleanup"  # Running cleanup handlers
     STOPPED = "stopped"
 
 
 @dataclass
 class ShutdownConfig:
     """Shutdown configuration."""
+
     drain_timeout: float = 10.0  # Seconds to wait for drain
     termination_timeout: float = 30.0  # Seconds to wait for in-flight
     cleanup_timeout: float = 5.0  # Seconds for cleanup handlers
@@ -42,6 +44,7 @@ class ShutdownConfig:
 # ============================================================================
 # Shutdown Handler
 # ============================================================================
+
 
 class ShutdownHandler:
     """
@@ -69,11 +72,7 @@ class ShutdownHandler:
             return "Service unavailable"
     """
 
-    def __init__(
-        self,
-        config: Optional[ShutdownConfig] = None,
-        install_signals: bool = True
-    ):
+    def __init__(self, config: Optional[ShutdownConfig] = None, install_signals: bool = True):
         """
         Initialize shutdown handler.
 
@@ -156,10 +155,7 @@ class ShutdownHandler:
             return
 
         # Run shutdown in background
-        shutdown_thread = threading.Thread(
-            target=self._shutdown_sequence,
-            daemon=True
-        )
+        shutdown_thread = threading.Thread(target=self._shutdown_sequence, daemon=True)
         shutdown_thread.start()
 
         if wait:
@@ -176,7 +172,9 @@ class ShutdownHandler:
 
         # Phase 2: Terminating
         self._phase = ShutdownPhase.TERMINATING
-        self._logger.info(f"Phase 2: Terminating - Waiting for {self._in_flight} in-flight requests")
+        self._logger.info(
+            f"Phase 2: Terminating - Waiting for {self._in_flight} in-flight requests"
+        )
 
         wait_start = time.time()
         while self._in_flight > 0:
@@ -265,7 +263,7 @@ class ShutdownHandler:
             "phase": self._phase.value,
             "is_shutting_down": self.is_shutting_down,
             "in_flight": self._in_flight,
-            "cleanup_handlers": len(self._cleanup_handlers)
+            "cleanup_handlers": len(self._cleanup_handlers),
         }
 
     def wait_for_shutdown(self, timeout: Optional[float] = None):
@@ -276,6 +274,7 @@ class ShutdownHandler:
 # ============================================================================
 # Request Tracker Context Manager
 # ============================================================================
+
 
 class _RequestTracker:
     """Context manager for tracking requests."""
@@ -296,6 +295,7 @@ class _RequestTracker:
 # Graceful Shutdown Helper
 # ============================================================================
 
+
 class GracefulShutdown:
     """
     Simplified graceful shutdown context.
@@ -308,15 +308,10 @@ class GracefulShutdown:
                 break
     """
 
-    def __init__(
-        self,
-        drain_timeout: float = 10.0,
-        termination_timeout: float = 30.0
-    ):
+    def __init__(self, drain_timeout: float = 10.0, termination_timeout: float = 30.0):
         self._handler = ShutdownHandler(
             config=ShutdownConfig(
-                drain_timeout=drain_timeout,
-                termination_timeout=termination_timeout
+                drain_timeout=drain_timeout, termination_timeout=termination_timeout
             )
         )
 
@@ -346,16 +341,13 @@ class GracefulShutdown:
 # Factory Functions
 # ============================================================================
 
+
 def create_shutdown_handler(
-    drain_timeout: float = 10.0,
-    termination_timeout: float = 30.0
+    drain_timeout: float = 10.0, termination_timeout: float = 30.0
 ) -> ShutdownHandler:
     """Create a shutdown handler instance."""
     return ShutdownHandler(
-        config=ShutdownConfig(
-            drain_timeout=drain_timeout,
-            termination_timeout=termination_timeout
-        )
+        config=ShutdownConfig(drain_timeout=drain_timeout, termination_timeout=termination_timeout)
     )
 
 

@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional
 
 class TrendDirection(Enum):
     """Direction of trend movement."""
+
     STRONG_UP = "strong_up"
     UP = "up"
     STABLE = "stable"
@@ -28,6 +29,7 @@ class TrendDirection(Enum):
 
 class MetricCategory(Enum):
     """Categories of metrics for trend analysis."""
+
     REVENUE = "revenue"
     PROFITABILITY = "profitability"
     GROWTH = "growth"
@@ -39,6 +41,7 @@ class MetricCategory(Enum):
 @dataclass
 class DataPoint:
     """Single data point in a time series."""
+
     year: int
     quarter: Optional[int] = None  # None for annual, 1-4 for quarterly
     value: float = 0.0
@@ -51,6 +54,7 @@ class DataPoint:
 @dataclass
 class TrendMetric:
     """Metric with historical data points."""
+
     name: str
     display_name: str
     category: MetricCategory
@@ -72,6 +76,7 @@ class TrendMetric:
 @dataclass
 class TrendAnalysis:
     """Analysis of a metric's trend."""
+
     metric_name: str
     direction: TrendDirection
     cagr: Optional[float] = None  # Compound Annual Growth Rate
@@ -89,6 +94,7 @@ class TrendAnalysis:
 @dataclass
 class TrendTable:
     """Formatted trend table for report output."""
+
     title: str
     headers: List[str]
     rows: List[Dict[str, Any]]

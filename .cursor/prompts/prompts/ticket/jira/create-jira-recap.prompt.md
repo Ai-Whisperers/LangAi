@@ -10,8 +10,8 @@ argument-hint: "Ticket ID (e.g., EBASE-12259)"
 
 Generate a JIRA-ready recap summary for a completed ticket that can be pasted directly into JIRA comments or resolution field.
 
-**Pattern**: JIRA Recap Generation Pattern ⭐⭐⭐⭐  
-**Effectiveness**: Essential for JIRA status reporting and ticket closure  
+**Pattern**: JIRA Recap Generation Pattern ⭐⭐⭐⭐
+**Effectiveness**: Essential for JIRA status reporting and ticket closure
 **Use When**: Closing tickets in JIRA, generating status reports, documenting outcomes for external tracking
 
 ---
@@ -144,11 +144,11 @@ When this prompt is invoked, the AI should:
 ```markdown
 # Recap: [TICKET-ID] - [Title]
 
-**Story ID:** [TICKET-ID]  
-**Feature:** [Parent feature if applicable]  
-**Epic:** [Parent epic if applicable]  
-**Repo:** [Repository name]  
-**Status:** ✅ Complete  
+**Story ID:** [TICKET-ID]
+**Feature:** [Parent feature if applicable]
+**Epic:** [Parent epic if applicable]
+**Repo:** [Repository name]
+**Status:** ✅ Complete
 **Completed:** [Date]
 
 ---
@@ -547,9 +547,9 @@ Delivered comprehensive documentation across 3 repositories.
 
 ---
 
-**Pattern**: JIRA Recap Generation Pattern  
-**Use When**: Closing tickets, generating status reports for JIRA, documenting outcomes  
-**Critical**: Multi-repo awareness - scan entire workspace, verify strong indicators  
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Pattern**: JIRA Recap Generation Pattern
+**Use When**: Closing tickets, generating status reports for JIRA, documenting outcomes
+**Critical**: Multi-repo awareness - scan entire workspace, verify strong indicators
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)

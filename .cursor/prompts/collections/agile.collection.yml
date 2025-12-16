@@ -19,4 +19,3 @@ items:
     kind: prompt
   - path: prompts/agile/split-user-story.prompt.md
     kind: prompt
-

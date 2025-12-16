@@ -26,4 +26,3 @@ What would you prefer?
 ---
 
 ## Sources
-

@@ -3,12 +3,13 @@
 Comprehensive Python codebase analyzer for syntax and import errors.
 """
 import ast
+import importlib.util
+import json
 import os
 import sys
-import importlib.util
-from pathlib import Path
 from collections import defaultdict
-import json
+from pathlib import Path
+
 
 class CodeAnalyzer:
     def __init__(self, root_path):
@@ -21,19 +22,21 @@ class CodeAnalyzer:
     def add_issue(self, file_path, line_number, error_type, description, severity):
         """Add an issue to the list"""
         self.issue_count += 1
-        self.issues.append({
-            'id': self.issue_count,
-            'file': str(file_path),
-            'line': line_number,
-            'type': error_type,
-            'description': description,
-            'severity': severity
-        })
+        self.issues.append(
+            {
+                "id": self.issue_count,
+                "file": str(file_path),
+                "line": line_number,
+                "type": error_type,
+                "description": description,
+                "severity": severity,
+            }
+        )
 
     def check_syntax(self, file_path):
         """Check for syntax errors in a Python file"""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
                 try:
                     ast.parse(content)
@@ -41,33 +44,22 @@ class CodeAnalyzer:
                     self.add_issue(
                         file_path,
                         e.lineno or 0,
-                        'SYNTAX_ERROR',
+                        "SYNTAX_ERROR",
                         f"Syntax error: {e.msg}",
-                        'CRITICAL'
+                        "CRITICAL",
                     )
                     return False
         except Exception as e:
-            self.add_issue(
-                file_path,
-                0,
-                'FILE_READ_ERROR',
-                f"Cannot read file: {str(e)}",
-                'HIGH'
-            )
+            self.add_issue(file_path, 0, "FILE_READ_ERROR", f"Cannot read file: {str(e)}", "HIGH")
             return False
         return True
 
     def extract_imports(self, file_path):
         """Extract all imports from a Python file"""
-        imports = {
-            'standard': [],
-            'third_party': [],
-            'local': [],
-            'relative': []
-        }
+        imports = {"standard": [], "third_party": [], "local": [], "relative": []}
 
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
                 tree = ast.parse(content)
 
@@ -75,37 +67,37 @@ class CodeAnalyzer:
                     if isinstance(node, ast.Import):
                         for alias in node.names:
                             import_info = {
-                                'module': alias.name,
-                                'line': node.lineno,
-                                'type': 'import'
+                                "module": alias.name,
+                                "line": node.lineno,
+                                "type": "import",
                             }
-                            imports['standard'].append(import_info)
+                            imports["standard"].append(import_info)
 
                     elif isinstance(node, ast.ImportFrom):
                         if node.module:
                             import_info = {
-                                'module': node.module,
-                                'names': [alias.name for alias in node.names],
-                                'line': node.lineno,
-                                'level': node.level,
-                                'type': 'from_import'
+                                "module": node.module,
+                                "names": [alias.name for alias in node.names],
+                                "line": node.lineno,
+                                "level": node.level,
+                                "type": "from_import",
                             }
 
                             if node.level > 0:
-                                imports['relative'].append(import_info)
-                            elif node.module.startswith('.'):
-                                imports['relative'].append(import_info)
+                                imports["relative"].append(import_info)
+                            elif node.module.startswith("."):
+                                imports["relative"].append(import_info)
                             else:
-                                imports['local'].append(import_info)
+                                imports["local"].append(import_info)
         except SyntaxError:
             pass  # Already caught in check_syntax
         except Exception as e:
             self.add_issue(
                 file_path,
                 0,
-                'IMPORT_EXTRACTION_ERROR',
+                "IMPORT_EXTRACTION_ERROR",
                 f"Cannot extract imports: {str(e)}",
-                'MEDIUM'
+                "MEDIUM",
             )
 
         return imports
@@ -114,39 +106,104 @@ class CodeAnalyzer:
         """Check if an imported module exists"""
         # Standard library modules (basic check)
         stdlib_modules = {
-            'os', 'sys', 'json', 'time', 'datetime', 'collections', 're',
-            'pathlib', 'typing', 'logging', 'unittest', 'asyncio', 'io',
-            'copy', 'itertools', 'functools', 'operator', 'tempfile', 'shutil',
-            'subprocess', 'threading', 'multiprocessing', 'hashlib', 'hmac',
-            'base64', 'urllib', 'http', 'email', 'math', 'random', 'statistics',
-            'dataclasses', 'enum', 'abc', 'contextlib', 'warnings', 'traceback',
-            'inspect', 'ast', 'importlib', 'pkgutil', 'uuid', 'socket', 'ssl'
+            "os",
+            "sys",
+            "json",
+            "time",
+            "datetime",
+            "collections",
+            "re",
+            "pathlib",
+            "typing",
+            "logging",
+            "unittest",
+            "asyncio",
+            "io",
+            "copy",
+            "itertools",
+            "functools",
+            "operator",
+            "tempfile",
+            "shutil",
+            "subprocess",
+            "threading",
+            "multiprocessing",
+            "hashlib",
+            "hmac",
+            "base64",
+            "urllib",
+            "http",
+            "email",
+            "math",
+            "random",
+            "statistics",
+            "dataclasses",
+            "enum",
+            "abc",
+            "contextlib",
+            "warnings",
+            "traceback",
+            "inspect",
+            "ast",
+            "importlib",
+            "pkgutil",
+            "uuid",
+            "socket",
+            "ssl",
         }
 
         # Common third-party packages
         common_packages = {
-            'langchain', 'langchain_core', 'langchain_community', 'langchain_openai',
-            'langgraph', 'pydantic', 'fastapi', 'uvicorn', 'requests', 'httpx',
-            'aiohttp', 'pytest', 'numpy', 'pandas', 'redis', 'sqlalchemy',
-            'alembic', 'dotenv', 'anthropic', 'openai', 'tavily', 'exa_py',
-            'firecrawl', 'tweepy', 'beautifulsoup4', 'lxml', 'yaml', 'toml',
-            'click', 'rich', 'tqdm', 'pytest_asyncio', 'websockets', 'starlette'
+            "langchain",
+            "langchain_core",
+            "langchain_community",
+            "langchain_openai",
+            "langgraph",
+            "pydantic",
+            "fastapi",
+            "uvicorn",
+            "requests",
+            "httpx",
+            "aiohttp",
+            "pytest",
+            "numpy",
+            "pandas",
+            "redis",
+            "sqlalchemy",
+            "alembic",
+            "dotenv",
+            "anthropic",
+            "openai",
+            "tavily",
+            "exa_py",
+            "firecrawl",
+            "tweepy",
+            "beautifulsoup4",
+            "lxml",
+            "yaml",
+            "toml",
+            "click",
+            "rich",
+            "tqdm",
+            "pytest_asyncio",
+            "websockets",
+            "starlette",
         }
 
         # Extract base module
-        base_module = module_name.split('.')[0]
+        base_module = module_name.split(".")[0]
 
         # Check if it's a standard library or common package
         if base_module in stdlib_modules or base_module in common_packages:
             return True
 
         # Check if it's a local module (starts with src or company_researcher)
-        if base_module in ['src', 'company_researcher', 'tests', 'scripts']:
+        if base_module in ["src", "company_researcher", "tests", "scripts"]:
             # Check if the file exists in the project
             potential_paths = [
-                self.root_path / 'src' / module_name.replace('.', '/') / '__init__.py',
-                self.root_path / 'src' / f"{module_name.replace('.', '/')}.py",
-                self.root_path / module_name.replace('.', '/') / '__init__.py',
+                self.root_path / "src" / module_name.replace(".", "/") / "__init__.py",
+                self.root_path / "src" / f"{module_name.replace('.', '/')}.py",
+                self.root_path / module_name.replace(".", "/") / "__init__.py",
                 self.root_path / f"{module_name.replace('.', '/')}.py",
             ]
 
@@ -161,6 +218,7 @@ class CodeAnalyzer:
 
     def check_circular_imports(self):
         """Detect circular import dependencies"""
+
         def has_cycle(node, visited, rec_stack, path):
             visited.add(node)
             rec_stack.add(node)
@@ -176,9 +234,9 @@ class CodeAnalyzer:
                     self.add_issue(
                         cycle[0],
                         0,
-                        'CIRCULAR_IMPORT',
+                        "CIRCULAR_IMPORT",
                         f"Circular import detected: {' -> '.join(cycle)}",
-                        'HIGH'
+                        "HIGH",
                     )
                     return True
 
@@ -202,55 +260,48 @@ class CodeAnalyzer:
 
         # Check for missing imports
         all_imports = (
-            imports['standard'] +
-            imports['third_party'] +
-            imports['local'] +
-            imports['relative']
+            imports["standard"] + imports["third_party"] + imports["local"] + imports["relative"]
         )
 
         for imp in all_imports:
-            module = imp.get('module', '')
-            line = imp.get('line', 0)
+            module = imp.get("module", "")
+            line = imp.get("line", 0)
 
             if module and not self.check_import_exists(file_path, module, line):
                 self.add_issue(
-                    file_path,
-                    line,
-                    'MISSING_MODULE',
-                    f"Module '{module}' may not exist",
-                    'HIGH'
+                    file_path, line, "MISSING_MODULE", f"Module '{module}' may not exist", "HIGH"
                 )
 
         # Build import graph for circular dependency detection
         file_module = self.get_module_name(file_path)
         if file_module:
-            for imp in imports['local']:
-                module = imp.get('module', '')
+            for imp in imports["local"]:
+                module = imp.get("module", "")
                 if module:
                     self.import_graph[file_module].add(module)
 
     def get_module_name(self, file_path):
         """Convert file path to module name"""
         try:
-            rel_path = file_path.relative_to(self.root_path / 'src')
+            rel_path = file_path.relative_to(self.root_path / "src")
             parts = rel_path.parts
-            if parts[-1] == '__init__.py':
-                return '.'.join(parts[:-1])
+            if parts[-1] == "__init__.py":
+                return ".".join(parts[:-1])
             else:
-                return '.'.join(parts)[:-3]  # Remove .py
+                return ".".join(parts)[:-3]  # Remove .py
         except:
             return None
 
     def analyze_all(self):
         """Analyze all Python files in the codebase"""
-        directories = ['src', 'tests', 'scripts']
+        directories = ["src", "tests", "scripts"]
 
         for directory in directories:
             dir_path = self.root_path / directory
             if not dir_path.exists():
                 continue
 
-            for file_path in dir_path.rglob('*.py'):
+            for file_path in dir_path.rglob("*.py"):
                 self.analyze_file(file_path)
 
         # Check for circular imports
@@ -267,11 +318,11 @@ class CodeAnalyzer:
         # Group by severity
         by_severity = defaultdict(list)
         for issue in self.issues:
-            by_severity[issue['severity']].append(issue)
+            by_severity[issue["severity"]].append(issue)
 
         print(f"Total Issues Found: {len(self.issues)}\n")
 
-        for severity in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']:
+        for severity in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]:
             issues = by_severity[severity]
             if issues:
                 print(f"\n{severity} SEVERITY ({len(issues)} issues)")
@@ -286,12 +337,13 @@ class CodeAnalyzer:
                     print(f"\n... and {len(issues) - 50} more {severity} issues")
 
         # Save to JSON
-        output_file = self.root_path / 'code_analysis_report.json'
-        with open(output_file, 'w') as f:
+        output_file = self.root_path / "code_analysis_report.json"
+        with open(output_file, "w") as f:
             json.dump(self.issues, f, indent=2)
         print(f"\n\nFull report saved to: {output_file}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     root = Path(__file__).parent
     analyzer = CodeAnalyzer(root)
     analyzer.analyze_all()

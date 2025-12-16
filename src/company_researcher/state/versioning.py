@@ -10,12 +10,14 @@ Provides:
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
+
 from ..utils import utc_now
 
 
 @dataclass
 class StateVersion:
     """Version information for state schema."""
+
     version: str
     created_at: datetime = field(default_factory=utc_now)
     description: str = ""
@@ -27,7 +29,7 @@ class StateVersion:
             "version": self.version,
             "created_at": self.created_at.isoformat(),
             "description": self.description,
-            "schema_hash": self.schema_hash
+            "schema_hash": self.schema_hash,
         }
 
 
@@ -42,6 +44,7 @@ class Migration:
         migrate_fn: Function to transform state
         description: Migration description
     """
+
     from_version: str
     to_version: str
     migrate_fn: Callable[[Dict[str, Any]], Dict[str, Any]]
@@ -98,11 +101,7 @@ class VersionManager:
         """Get a specific migration."""
         return self._migrations.get(from_version, {}).get(to_version)
 
-    def get_migration_path(
-        self,
-        from_version: str,
-        to_version: str
-    ) -> Optional[List[Migration]]:
+    def get_migration_path(self, from_version: str, to_version: str) -> Optional[List[Migration]]:
         """
         Find migration path between versions.
 
@@ -133,10 +132,7 @@ class VersionManager:
         return None
 
     def migrate(
-        self,
-        state: Dict[str, Any],
-        from_version: str,
-        to_version: Optional[str] = None
+        self, state: Dict[str, Any], from_version: str, to_version: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Migrate state from one version to another.
@@ -189,10 +185,7 @@ class VersionManager:
 
 # Convenience functions
 def migrate_state(
-    state: Dict[str, Any],
-    migrations: List[Migration],
-    from_version: str,
-    to_version: str
+    state: Dict[str, Any], migrations: List[Migration], from_version: str, to_version: str
 ) -> Dict[str, Any]:
     """
     Apply migrations to state.
@@ -215,11 +208,7 @@ def migrate_state(
 
 # Common migrations
 def add_field_migration(
-    from_version: str,
-    to_version: str,
-    field_name: str,
-    default_value: Any,
-    description: str = ""
+    from_version: str, to_version: str, field_name: str, default_value: Any, description: str = ""
 ) -> Migration:
     """Create migration that adds a field."""
     return Migration(
@@ -228,18 +217,15 @@ def add_field_migration(
         migrate_fn=lambda s: {**s, field_name: default_value},
         description=description or f"Add field {field_name}",
         reversible=True,
-        reverse_fn=lambda s: {k: v for k, v in s.items() if k != field_name}
+        reverse_fn=lambda s: {k: v for k, v in s.items() if k != field_name},
     )
 
 
 def rename_field_migration(
-    from_version: str,
-    to_version: str,
-    old_name: str,
-    new_name: str,
-    description: str = ""
+    from_version: str, to_version: str, old_name: str, new_name: str, description: str = ""
 ) -> Migration:
     """Create migration that renames a field."""
+
     def migrate(state):
         result = state.copy()
         if old_name in result:
@@ -258,15 +244,12 @@ def rename_field_migration(
         migrate_fn=migrate,
         description=description or f"Rename {old_name} to {new_name}",
         reversible=True,
-        reverse_fn=reverse
+        reverse_fn=reverse,
     )
 
 
 def remove_field_migration(
-    from_version: str,
-    to_version: str,
-    field_name: str,
-    description: str = ""
+    from_version: str, to_version: str, field_name: str, description: str = ""
 ) -> Migration:
     """Create migration that removes a field."""
     return Migration(
@@ -274,5 +257,5 @@ def remove_field_migration(
         to_version=to_version,
         migrate_fn=lambda s: {k: v for k, v in s.items() if k != field_name},
         description=description or f"Remove field {field_name}",
-        reversible=False
+        reversible=False,
     )

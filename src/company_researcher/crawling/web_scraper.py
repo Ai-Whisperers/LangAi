@@ -29,6 +29,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Type
 
 from pydantic import BaseModel
+
 from ..utils import get_config, get_logger
 
 logger = get_logger(__name__)
@@ -36,6 +37,7 @@ logger = get_logger(__name__)
 
 class ScrapingBackend(str, Enum):
     """Available scraping backends."""
+
     FIRECRAWL = "firecrawl"
     SCRAPEGRAPH = "scrapegraph"
     BASIC = "basic"  # Falls back to DomainExplorer/httpx
@@ -44,6 +46,7 @@ class ScrapingBackend(str, Enum):
 @dataclass
 class UnifiedScrapeResult:
     """Unified result from any scraping backend."""
+
     url: str
     markdown: str = ""
     html: str = ""
@@ -77,6 +80,7 @@ class UnifiedScrapeResult:
 @dataclass
 class UnifiedCrawlResult:
     """Unified result from crawling."""
+
     base_url: str
     pages: List[UnifiedScrapeResult] = field(default_factory=list)
     total_pages: int = 0
@@ -87,8 +91,7 @@ class UnifiedCrawlResult:
     def get_all_markdown(self, separator: str = "\n\n---\n\n") -> str:
         """Combine all pages' markdown."""
         return separator.join(
-            f"# {p.title or p.url}\n\n{p.markdown}"
-            for p in self.pages if p.success and p.markdown
+            f"# {p.title or p.url}\n\n{p.markdown}" for p in self.pages if p.success and p.markdown
         )
 
     def to_research_format(self) -> List[Dict[str, Any]]:
@@ -139,6 +142,7 @@ class WebScraper:
         """Get Firecrawl client (lazy-loaded)."""
         if self._firecrawl_client is None and self.firecrawl_key:
             from ..integrations.firecrawl_client import FirecrawlClient
+
             self._firecrawl_client = FirecrawlClient(api_key=self.firecrawl_key)
         return self._firecrawl_client
 
@@ -147,6 +151,7 @@ class WebScraper:
         """Get ScrapeGraph client (lazy-loaded)."""
         if self._scrapegraph_client is None and self.scrapegraph_key:
             from ..integrations.scrapegraph_client import ScrapeGraphClient
+
             self._scrapegraph_client = ScrapeGraphClient(api_key=self.scrapegraph_key)
         return self._scrapegraph_client
 
@@ -155,6 +160,7 @@ class WebScraper:
         """Get basic DomainExplorer (lazy-loaded)."""
         if self._domain_explorer is None:
             from .domain_explorer import DomainExplorer
+
             self._domain_explorer = DomainExplorer()
         return self._domain_explorer
 
@@ -256,10 +262,8 @@ class WebScraper:
     def _scrape_basic(self, url: str) -> UnifiedScrapeResult:
         """Scrape using basic DomainExplorer."""
         import asyncio
-        result = asyncio.run(self.domain_explorer._fetch_page(
-            url,
-            self._get_basic_client()
-        ))
+
+        result = asyncio.run(self.domain_explorer._fetch_page(url, self._get_basic_client()))
         return UnifiedScrapeResult(
             url=url,
             markdown=result.text,  # Basic extraction is plain text
@@ -272,6 +276,7 @@ class WebScraper:
     def _get_basic_client(self):
         """Get httpx client for basic scraping."""
         import httpx
+
         return httpx.AsyncClient(
             headers={"User-Agent": "CompanyResearcher/1.0"},
             follow_redirects=True,
@@ -364,7 +369,9 @@ class WebScraper:
 
         try:
             if backend == ScrapingBackend.FIRECRAWL and self.firecrawl:
-                return self._crawl_firecrawl(url, max_pages, max_depth, include_paths, exclude_paths)
+                return self._crawl_firecrawl(
+                    url, max_pages, max_depth, include_paths, exclude_paths
+                )
             elif backend == ScrapingBackend.SCRAPEGRAPH and self.scrapegraph and extraction_prompt:
                 return self._crawl_scrapegraph(url, max_pages, max_depth, extraction_prompt)
             else:

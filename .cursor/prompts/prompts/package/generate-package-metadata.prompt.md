@@ -113,7 +113,6 @@ Check:
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: 2025-12-06  
+**Version**: 1.0.0
+**Last Updated**: 2025-12-06
 **Triggered by**: `validate-package-metadata.ps1` failures
-

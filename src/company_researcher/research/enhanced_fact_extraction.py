@@ -15,8 +15,9 @@ Extracts structured facts from unstructured source content with:
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple
 from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -24,6 +25,7 @@ logger = get_logger(__name__)
 
 class FactType(Enum):
     """Types of extractable facts."""
+
     REVENUE = "revenue"
     NET_INCOME = "net_income"
     MARKET_CAP = "market_cap"
@@ -48,6 +50,7 @@ class FactType(Enum):
 
 class Currency(Enum):
     """Supported currencies."""
+
     USD = "USD"
     EUR = "EUR"
     GBP = "GBP"
@@ -63,6 +66,7 @@ class Currency(Enum):
 @dataclass
 class ExtractedFact:
     """A fact extracted from source content."""
+
     fact_type: FactType
     value: Any
     raw_value: str  # Original string from source
@@ -111,6 +115,7 @@ class ExtractedFact:
 @dataclass
 class ExtractionResult:
     """Result of fact extraction from a source."""
+
     source_url: str
     source_title: str
     facts: List[ExtractedFact]
@@ -158,42 +163,49 @@ class EnhancedFactExtractor:
 
     # Currency patterns
     CURRENCY_PATTERNS = {
-        Currency.USD: [r'\$', r'USD', r'US\s*dollars?'],
-        Currency.EUR: [r'€', r'EUR', r'euros?'],
-        Currency.GBP: [r'£', r'GBP', r'pounds?'],
-        Currency.MXN: [r'MX\$', r'MXN', r'pesos?\s+mexicanos?'],
-        Currency.BRL: [r'R\$', r'BRL', r'reais?', r'reales?'],
-        Currency.JPY: [r'¥', r'JPY', r'yen'],
-        Currency.CNY: [r'CNY', r'RMB', r'yuan'],
-        Currency.KRW: [r'₩', r'KRW', r'won'],
-        Currency.INR: [r'₹', r'INR', r'rupees?'],
+        Currency.USD: [r"\$", r"USD", r"US\s*dollars?"],
+        Currency.EUR: [r"€", r"EUR", r"euros?"],
+        Currency.GBP: [r"£", r"GBP", r"pounds?"],
+        Currency.MXN: [r"MX\$", r"MXN", r"pesos?\s+mexicanos?"],
+        Currency.BRL: [r"R\$", r"BRL", r"reais?", r"reales?"],
+        Currency.JPY: [r"¥", r"JPY", r"yen"],
+        Currency.CNY: [r"CNY", r"RMB", r"yuan"],
+        Currency.KRW: [r"₩", r"KRW", r"won"],
+        Currency.INR: [r"₹", r"INR", r"rupees?"],
     }
 
     # Multipliers
     MULTIPLIERS = {
-        'trillion': 1e12, 't': 1e12,
-        'billion': 1e9, 'b': 1e9, 'bn': 1e9,
-        'million': 1e6, 'm': 1e6, 'mn': 1e6, 'mm': 1e6,
-        'thousand': 1e3, 'k': 1e3,
+        "trillion": 1e12,
+        "t": 1e12,
+        "billion": 1e9,
+        "b": 1e9,
+        "bn": 1e9,
+        "million": 1e6,
+        "m": 1e6,
+        "mn": 1e6,
+        "mm": 1e6,
+        "thousand": 1e3,
+        "k": 1e3,
     }
 
     # Extraction patterns for different fact types
     EXTRACTION_PATTERNS: Dict[FactType, List[Dict]] = {
         FactType.REVENUE: [
             {
-                "pattern": r'(?:total\s+)?revenue\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
+                "pattern": r"(?:total\s+)?revenue\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
                 "value_group": 1,
                 "multiplier_group": 2,
                 "confidence": 0.9,
             },
             {
-                "pattern": r'\$\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?\s+(?:in\s+)?(?:total\s+)?(?:revenue|sales)',
+                "pattern": r"\$\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?\s+(?:in\s+)?(?:total\s+)?(?:revenue|sales)",
                 "value_group": 1,
                 "multiplier_group": 2,
                 "confidence": 0.85,
             },
             {
-                "pattern": r'(?:net\s+)?sales\s+(?:of|was|were|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
+                "pattern": r"(?:net\s+)?sales\s+(?:of|was|were|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
                 "value_group": 1,
                 "multiplier_group": 2,
                 "confidence": 0.8,
@@ -201,13 +213,13 @@ class EnhancedFactExtractor:
         ],
         FactType.NET_INCOME: [
             {
-                "pattern": r'net\s+income\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
+                "pattern": r"net\s+income\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
                 "value_group": 1,
                 "multiplier_group": 2,
                 "confidence": 0.9,
             },
             {
-                "pattern": r'(?:net\s+)?(?:earnings|profit)\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
+                "pattern": r"(?:net\s+)?(?:earnings|profit)\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
                 "value_group": 1,
                 "multiplier_group": 2,
                 "confidence": 0.85,
@@ -215,13 +227,13 @@ class EnhancedFactExtractor:
         ],
         FactType.MARKET_CAP: [
             {
-                "pattern": r'market\s+cap(?:italization)?\s+(?:of|is|was|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
+                "pattern": r"market\s+cap(?:italization)?\s+(?:of|is|was|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
                 "value_group": 1,
                 "multiplier_group": 2,
                 "confidence": 0.9,
             },
             {
-                "pattern": r'\$\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?\s+market\s+cap',
+                "pattern": r"\$\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?\s+market\s+cap",
                 "value_group": 1,
                 "multiplier_group": 2,
                 "confidence": 0.85,
@@ -229,19 +241,19 @@ class EnhancedFactExtractor:
         ],
         FactType.EMPLOYEES: [
             {
-                "pattern": r'([\d,]+)\s+employees',
+                "pattern": r"([\d,]+)\s+employees",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.9,
             },
             {
-                "pattern": r'employees?\s*:?\s*([\d,]+)',
+                "pattern": r"employees?\s*:?\s*([\d,]+)",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.85,
             },
             {
-                "pattern": r'(?:workforce|headcount|staff)\s+(?:of|:)?\s*([\d,]+)',
+                "pattern": r"(?:workforce|headcount|staff)\s+(?:of|:)?\s*([\d,]+)",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.8,
@@ -249,14 +261,14 @@ class EnhancedFactExtractor:
         ],
         FactType.PROFIT_MARGIN: [
             {
-                "pattern": r'(?:profit|net)\s+margin\s+(?:of|is|was|:)?\s*([\d,]+(?:\.\d+)?)\s*%',
+                "pattern": r"(?:profit|net)\s+margin\s+(?:of|is|was|:)?\s*([\d,]+(?:\.\d+)?)\s*%",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.9,
                 "unit": "percent",
             },
             {
-                "pattern": r'([\d,]+(?:\.\d+)?)\s*%\s+(?:profit|net)\s+margin',
+                "pattern": r"([\d,]+(?:\.\d+)?)\s*%\s+(?:profit|net)\s+margin",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.85,
@@ -265,14 +277,14 @@ class EnhancedFactExtractor:
         ],
         FactType.REVENUE_GROWTH: [
             {
-                "pattern": r'(?:revenue|sales)\s+(?:grew|growth|increased)\s+(?:by\s+)?([\d,]+(?:\.\d+)?)\s*%',
+                "pattern": r"(?:revenue|sales)\s+(?:grew|growth|increased)\s+(?:by\s+)?([\d,]+(?:\.\d+)?)\s*%",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.9,
                 "unit": "percent",
             },
             {
-                "pattern": r'([\d,]+(?:\.\d+)?)\s*%\s+(?:revenue|sales)\s+growth',
+                "pattern": r"([\d,]+(?:\.\d+)?)\s*%\s+(?:revenue|sales)\s+growth",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.85,
@@ -281,13 +293,13 @@ class EnhancedFactExtractor:
         ],
         FactType.EPS: [
             {
-                "pattern": r'(?:EPS|earnings\s+per\s+share)\s+(?:of|is|was|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)',
+                "pattern": r"(?:EPS|earnings\s+per\s+share)\s+(?:of|is|was|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.9,
             },
             {
-                "pattern": r'\$\s*([\d]+(?:\.\d+)?)\s+(?:per\s+share|EPS)',
+                "pattern": r"\$\s*([\d]+(?:\.\d+)?)\s+(?:per\s+share|EPS)",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.85,
@@ -295,7 +307,7 @@ class EnhancedFactExtractor:
         ],
         FactType.PE_RATIO: [
             {
-                "pattern": r'(?:P/?E|price.to.earnings)\s+(?:ratio\s+)?(?:of|is|:)?\s*([\d,]+(?:\.\d+)?)',
+                "pattern": r"(?:P/?E|price.to.earnings)\s+(?:ratio\s+)?(?:of|is|:)?\s*([\d,]+(?:\.\d+)?)",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.9,
@@ -303,7 +315,7 @@ class EnhancedFactExtractor:
         ],
         FactType.STOCK_PRICE: [
             {
-                "pattern": r'(?:stock|share)\s+price\s+(?:of|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)',
+                "pattern": r"(?:stock|share)\s+price\s+(?:of|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.8,
@@ -311,14 +323,14 @@ class EnhancedFactExtractor:
         ],
         FactType.HEADQUARTERS: [
             {
-                "pattern": r'headquartered?\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+?)(?:\.|,|$|\n)',
+                "pattern": r"headquartered?\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+?)(?:\.|,|$|\n)",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.9,
                 "is_text": True,
             },
             {
-                "pattern": r'(?:based|located)\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+?)(?:\.|,|$|\n)',
+                "pattern": r"(?:based|located)\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+?)(?:\.|,|$|\n)",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.85,
@@ -327,14 +339,14 @@ class EnhancedFactExtractor:
         ],
         FactType.CEO: [
             {
-                "pattern": r'(?:CEO|chief\s+executive(?:\s+officer)?)\s+(?:is|:)?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)',
+                "pattern": r"(?:CEO|chief\s+executive(?:\s+officer)?)\s+(?:is|:)?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.9,
                 "is_text": True,
             },
             {
-                "pattern": r'([A-Z][a-z]+\s+[A-Z][a-z]+)\s+(?:is|serves?\s+as)\s+(?:the\s+)?CEO',
+                "pattern": r"([A-Z][a-z]+\s+[A-Z][a-z]+)\s+(?:is|serves?\s+as)\s+(?:the\s+)?CEO",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.85,
@@ -343,13 +355,13 @@ class EnhancedFactExtractor:
         ],
         FactType.FOUNDED_YEAR: [
             {
-                "pattern": r'founded\s+(?:in\s+)?(\d{4})',
+                "pattern": r"founded\s+(?:in\s+)?(\d{4})",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.9,
             },
             {
-                "pattern": r'(?:established|incorporated)\s+(?:in\s+)?(\d{4})',
+                "pattern": r"(?:established|incorporated)\s+(?:in\s+)?(\d{4})",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.85,
@@ -357,7 +369,7 @@ class EnhancedFactExtractor:
         ],
         FactType.MARKET_SHARE: [
             {
-                "pattern": r'market\s+share\s+(?:of|is|:)?\s*([\d,]+(?:\.\d+)?)\s*%',
+                "pattern": r"market\s+share\s+(?:of|is|:)?\s*([\d,]+(?:\.\d+)?)\s*%",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.85,
@@ -366,7 +378,7 @@ class EnhancedFactExtractor:
         ],
         FactType.EBITDA: [
             {
-                "pattern": r'EBITDA\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
+                "pattern": r"EBITDA\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
                 "value_group": 1,
                 "multiplier_group": 2,
                 "confidence": 0.9,
@@ -374,7 +386,7 @@ class EnhancedFactExtractor:
         ],
         FactType.DIVIDEND_YIELD: [
             {
-                "pattern": r'dividend\s+yield\s+(?:of|is|:)?\s*([\d,]+(?:\.\d+)?)\s*%',
+                "pattern": r"dividend\s+yield\s+(?:of|is|:)?\s*([\d,]+(?:\.\d+)?)\s*%",
                 "value_group": 1,
                 "multiplier_group": None,
                 "confidence": 0.9,
@@ -385,11 +397,11 @@ class EnhancedFactExtractor:
 
     # Period patterns
     PERIOD_PATTERNS = [
-        (r'FY\s*(\d{4})', r'FY\1'),
-        (r'fiscal\s+(?:year\s+)?(\d{4})', r'FY\1'),
-        (r'Q([1-4])\s*(\d{4})', r'Q\1 \2'),
-        (r'(?:full\s+year\s+)?(\d{4})', r'FY\1'),
-        (r'(?:TTM|trailing\s+twelve\s+months)', 'TTM'),
+        (r"FY\s*(\d{4})", r"FY\1"),
+        (r"fiscal\s+(?:year\s+)?(\d{4})", r"FY\1"),
+        (r"Q([1-4])\s*(\d{4})", r"Q\1 \2"),
+        (r"(?:full\s+year\s+)?(\d{4})", r"FY\1"),
+        (r"(?:TTM|trailing\s+twelve\s+months)", "TTM"),
     ]
 
     def __init__(self):
@@ -397,16 +409,10 @@ class EnhancedFactExtractor:
         self._compiled_patterns = {}
         for fact_type, patterns in self.EXTRACTION_PATTERNS.items():
             self._compiled_patterns[fact_type] = [
-                {**p, "compiled": re.compile(p["pattern"], re.IGNORECASE)}
-                for p in patterns
+                {**p, "compiled": re.compile(p["pattern"], re.IGNORECASE)} for p in patterns
             ]
 
-    def extract(
-        self,
-        text: str,
-        source_url: str = "",
-        source_title: str = ""
-    ) -> ExtractionResult:
+    def extract(self, text: str, source_url: str = "", source_title: str = "") -> ExtractionResult:
         """
         Extract facts from text content.
 
@@ -441,7 +447,7 @@ class EnhancedFactExtractor:
                             detected_period,
                             source_url,
                             source_title,
-                            text
+                            text,
                         )
                         if fact:
                             facts.append(fact)
@@ -459,13 +465,10 @@ class EnhancedFactExtractor:
             source_url=source_url,
             source_title=source_title,
             facts=facts,
-            raw_text=text[:1000]  # Store first 1000 chars for reference
+            raw_text=text[:1000],  # Store first 1000 chars for reference
         )
 
-    def extract_batch(
-        self,
-        sources: List[Dict[str, Any]]
-    ) -> List[ExtractionResult]:
+    def extract_batch(self, sources: List[Dict[str, Any]]) -> List[ExtractionResult]:
         """
         Extract facts from multiple sources.
 
@@ -497,7 +500,7 @@ class EnhancedFactExtractor:
         detected_period: Optional[str],
         source_url: str,
         source_title: str,
-        full_text: str
+        full_text: str,
     ) -> Optional[ExtractedFact]:
         """Create a fact from a regex match."""
         value_group = pattern_def.get("value_group", 1)
@@ -543,7 +546,7 @@ class EnhancedFactExtractor:
             source_url=source_url,
             source_title=source_title,
             confidence=pattern_def.get("confidence", 0.8),
-            context=context
+            context=context,
         )
 
     def _parse_number(self, text: str) -> Optional[float]:
@@ -573,30 +576,27 @@ class EnhancedFactExtractor:
         return None
 
     def _extract_from_tables(
-        self,
-        text: str,
-        source_url: str,
-        source_title: str
+        self, text: str, source_url: str, source_title: str
     ) -> List[ExtractedFact]:
         """Extract facts from markdown/HTML tables."""
         facts = []
 
         # Markdown table pattern
-        table_pattern = r'\|[^\n]+\|(?:\n\|[^\n]+\|)+'
+        table_pattern = r"\|[^\n]+\|(?:\n\|[^\n]+\|)+"
 
         tables = re.findall(table_pattern, text)
 
         for table in tables:
-            rows = table.strip().split('\n')
+            rows = table.strip().split("\n")
             if len(rows) < 2:
                 continue
 
             # Parse header
-            header = [cell.strip() for cell in rows[0].split('|') if cell.strip()]
+            header = [cell.strip() for cell in rows[0].split("|") if cell.strip()]
 
             # Parse data rows (skip separator row)
             for row in rows[2:]:
-                cells = [cell.strip() for cell in row.split('|') if cell.strip()]
+                cells = [cell.strip() for cell in row.split("|") if cell.strip()]
                 if len(cells) != len(header):
                     continue
 
@@ -607,15 +607,17 @@ class EnhancedFactExtractor:
                         # Try to extract value
                         value = self._parse_table_cell(c)
                         if value is not None:
-                            facts.append(ExtractedFact(
-                                fact_type=fact_type,
-                                value=value,
-                                raw_value=c,
-                                source_url=source_url,
-                                source_title=source_title,
-                                confidence=0.85,
-                                context=f"From table: {h}"
-                            ))
+                            facts.append(
+                                ExtractedFact(
+                                    fact_type=fact_type,
+                                    value=value,
+                                    raw_value=c,
+                                    source_url=source_url,
+                                    source_title=source_title,
+                                    confidence=0.85,
+                                    context=f"From table: {h}",
+                                )
+                            )
 
         return facts
 
@@ -647,30 +649,27 @@ class EnhancedFactExtractor:
     def _parse_table_cell(self, cell: str) -> Optional[Any]:
         """Parse a value from a table cell."""
         # Remove currency symbols and common formatting
-        cleaned = re.sub(r'[\$€£¥₹,]', '', cell).strip()
+        cleaned = re.sub(r"[\$€£¥₹,]", "", cell).strip()
 
         # Try to parse as number
         try:
             # Check for multiplier
-            mult_match = re.search(r'([\d.]+)\s*([TBMKtbmk])', cleaned)
+            mult_match = re.search(r"([\d.]+)\s*([TBMKtbmk])", cleaned)
             if mult_match:
                 value = float(mult_match.group(1))
                 mult = self.MULTIPLIERS.get(mult_match.group(2).lower(), 1)
                 return value * mult
 
             # Check for percentage
-            if '%' in cell:
-                cleaned = cleaned.replace('%', '')
+            if "%" in cell:
+                cleaned = cleaned.replace("%", "")
                 return float(cleaned)
 
             return float(cleaned)
         except ValueError:
             return None
 
-    def _deduplicate_facts(
-        self,
-        facts: List[ExtractedFact]
-    ) -> List[ExtractedFact]:
+    def _deduplicate_facts(self, facts: List[ExtractedFact]) -> List[ExtractedFact]:
         """Remove duplicate facts, keeping highest confidence."""
         # Group by type and approximate value
         grouped: Dict[Tuple, List[ExtractedFact]] = {}
@@ -699,11 +698,7 @@ class EnhancedFactExtractor:
 
 
 # Convenience function
-def extract_facts(
-    text: str,
-    source_url: str = "",
-    source_title: str = ""
-) -> List[ExtractedFact]:
+def extract_facts(text: str, source_url: str = "", source_title: str = "") -> List[ExtractedFact]:
     """
     Extract facts from text.
 
@@ -720,9 +715,7 @@ def extract_facts(
     return result.facts
 
 
-def extract_facts_from_sources(
-    sources: List[Dict]
-) -> Dict[str, List[ExtractedFact]]:
+def extract_facts_from_sources(sources: List[Dict]) -> Dict[str, List[ExtractedFact]]:
     """
     Extract facts from multiple sources, grouped by fact type.
 

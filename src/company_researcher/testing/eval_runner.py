@@ -18,6 +18,7 @@ from .eval_dataset import EvalCase, EvalDataset, EvalResult
 @dataclass
 class EvalConfig:
     """Configuration for evaluation runs."""
+
     timeout_seconds: float = 300.0
     max_concurrent: int = 5
     retry_on_failure: bool = False
@@ -30,6 +31,7 @@ class EvalConfig:
 @dataclass
 class EvalMetrics:
     """Aggregated evaluation metrics."""
+
     total_cases: int = 0
     passed_cases: int = 0
     failed_cases: int = 0
@@ -72,7 +74,7 @@ class EvalMetrics:
             "total_duration_seconds": self.total_duration_seconds,
             "avg_duration_seconds": self.avg_duration_seconds,
             "by_difficulty": self.by_difficulty,
-            "by_tag": self.by_tag
+            "by_tag": self.by_tag,
         }
 
 
@@ -95,7 +97,7 @@ class EvalRunner:
         self,
         workflow: Callable,
         evaluator: Optional[Callable] = None,
-        config: Optional[EvalConfig] = None
+        config: Optional[EvalConfig] = None,
     ):
         """
         Initialize runner.
@@ -115,7 +117,7 @@ class EvalRunner:
         self,
         dataset: EvalDataset,
         filter_tags: Optional[List[str]] = None,
-        filter_difficulty: Optional[str] = None
+        filter_difficulty: Optional[str] = None,
     ) -> List[EvalResult]:
         """
         Run evaluation on dataset.
@@ -159,9 +161,7 @@ class EvalRunner:
         return self.results
 
     async def _run_case_with_semaphore(
-        self,
-        case: EvalCase,
-        semaphore: asyncio.Semaphore
+        self, case: EvalCase, semaphore: asyncio.Semaphore
     ) -> EvalResult:
         """Run single case with semaphore for concurrency control."""
         async with semaphore:
@@ -177,17 +177,13 @@ class EvalRunner:
             # Run workflow with timeout
             if asyncio.iscoroutinefunction(self.workflow):
                 actual_output = await asyncio.wait_for(
-                    self.workflow(case.input),
-                    timeout=self.config.timeout_seconds
+                    self.workflow(case.input), timeout=self.config.timeout_seconds
                 )
             else:
                 actual_output = self.workflow(case.input)
 
             # Evaluate result
-            passed, score, eval_errors = self.evaluator(
-                case.expected_output,
-                actual_output
-            )
+            passed, score, eval_errors = self.evaluator(case.expected_output, actual_output)
             errors.extend(eval_errors)
 
         except asyncio.TimeoutError:
@@ -212,13 +208,11 @@ class EvalRunner:
             score=score,
             actual_output=actual_output,
             errors=errors,
-            duration_seconds=duration
+            duration_seconds=duration,
         )
 
     def _default_evaluator(
-        self,
-        expected: Dict[str, Any],
-        actual: Dict[str, Any]
+        self, expected: Dict[str, Any], actual: Dict[str, Any]
     ) -> tuple[bool, float, List[str]]:
         """
         Default evaluator - checks if expected keys exist and match.
@@ -241,12 +235,16 @@ class EvalRunner:
                 if bool(actual_value) == expected_value:
                     matches += 1
                 else:
-                    errors.append(f"Mismatch for {key}: expected {expected_value}, got {actual_value}")
+                    errors.append(
+                        f"Mismatch for {key}: expected {expected_value}, got {actual_value}"
+                    )
             elif isinstance(expected_value, (int, float)):
                 if abs(float(actual_value) - float(expected_value)) < 0.01:
                     matches += 1
                 else:
-                    errors.append(f"Mismatch for {key}: expected {expected_value}, got {actual_value}")
+                    errors.append(
+                        f"Mismatch for {key}: expected {expected_value}, got {actual_value}"
+                    )
             elif actual_value == expected_value:
                 matches += 1
             else:
@@ -307,9 +305,7 @@ class EvalRunner:
 
 
 async def run_evaluation(
-    workflow: Callable,
-    dataset: EvalDataset,
-    config: Optional[EvalConfig] = None
+    workflow: Callable, dataset: EvalDataset, config: Optional[EvalConfig] = None
 ) -> tuple[List[EvalResult], EvalMetrics]:
     """
     Convenience function to run evaluation.
@@ -332,7 +328,7 @@ def compare_evaluations(
     eval1_metrics: EvalMetrics,
     eval2_metrics: EvalMetrics,
     eval1_name: str = "Eval 1",
-    eval2_name: str = "Eval 2"
+    eval2_name: str = "Eval 2",
 ) -> Dict[str, Any]:
     """
     Compare two evaluation runs.
@@ -349,8 +345,9 @@ def compare_evaluations(
     return {
         "pass_rate_delta": eval2_metrics.pass_rate - eval1_metrics.pass_rate,
         "avg_score_delta": eval2_metrics.avg_score - eval1_metrics.avg_score,
-        "avg_duration_delta": eval2_metrics.avg_duration_seconds - eval1_metrics.avg_duration_seconds,
+        "avg_duration_delta": eval2_metrics.avg_duration_seconds
+        - eval1_metrics.avg_duration_seconds,
         eval1_name: eval1_metrics.to_dict(),
         eval2_name: eval2_metrics.to_dict(),
-        "improved": eval2_metrics.pass_rate > eval1_metrics.pass_rate
+        "improved": eval2_metrics.pass_rate > eval1_metrics.pass_rate,
     }

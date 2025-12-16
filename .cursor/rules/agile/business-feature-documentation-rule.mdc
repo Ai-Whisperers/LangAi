@@ -169,4 +169,4 @@ Updated: 2025-11-04T14:30:00Z by rule.agile.business-feature-documentation.v1
 - [ ] Business value clearly stated and quantified
 - [ ] Scope boundaries defined with explicit In/Out of Scope lists
 - [ ] No OPSEC violations (internal URLs, credentials, personal data)
-- [ ] Provenance footer appended with timestamp 
+- [ ] Provenance footer appended with timestamp

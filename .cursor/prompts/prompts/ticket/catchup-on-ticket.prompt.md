@@ -10,8 +10,8 @@ argument-hint: "Ticket ID and optional timeframe (e.g., @EPP-192 catch me up)"
 
 This prompt provides a narrative summary of ticket history, key decisions, and current state for quick onboarding after time away or when joining work in progress.
 
-**Pattern**: Ticket Catchup Pattern ⭐⭐⭐⭐⭐  
-**Effectiveness**: Essential for context continuity  
+**Pattern**: Ticket Catchup Pattern ⭐⭐⭐⭐⭐
+**Effectiveness**: Essential for context continuity
 **Use When**: Returning to ticket after time away, joining someone else's work, need quick orientation
 
 ---
@@ -302,7 +302,7 @@ When providing catchup, AI must structure response by intensity level:
 - ✅ Preparing for next action
 - ✅ Need completion percentages and remaining work
 
-**Key Difference**: 
+**Key Difference**:
 - **Catchup** = storytelling (what happened and why)
 - **Status** = reporting (where we are and what's left)
 
@@ -384,9 +384,8 @@ After catchup, typically:
 
 ---
 
-**Prompt Created**: 2025-12-06  
-**Category**: Ticket Management  
-**Pattern Type**: Context Reconstruction  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Prompt Created**: 2025-12-06
+**Category**: Ticket Management
+**Pattern Type**: Context Reconstruction
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)
-

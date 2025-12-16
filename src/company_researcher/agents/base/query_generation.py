@@ -32,20 +32,17 @@ Usage:
     cleaned = clean_query("  Tesla   revenue   ")
 """
 
+import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Dict, Any
-import re
-from ...utils import (
-    get_logger,
-    get_current_year,
-    get_relevant_years,
-    get_freshness_indicator,
-)
+from typing import Any, Dict, List, Optional
+
+from ...utils import get_current_year, get_freshness_indicator, get_logger, get_relevant_years
 
 
 class QueryDomain(str, Enum):
     """Research domains for targeted query generation."""
+
     OVERVIEW = "overview"
     FINANCIAL = "financial"
     PRODUCTS = "products"
@@ -167,10 +164,9 @@ DOMAIN_TEMPLATES: Dict[QueryDomain, List[str]] = {
 # Core Functions
 # ==============================================================================
 
+
 def get_fallback_queries(
-    company_name: str,
-    count: int = 5,
-    domains: Optional[List[QueryDomain]] = None
+    company_name: str, count: int = 5, domains: Optional[List[QueryDomain]] = None
 ) -> List[str]:
     """
     Generate fallback search queries for a company.
@@ -220,9 +216,7 @@ def get_fallback_queries(
 
 
 def get_domain_queries(
-    company_name: str,
-    domain: QueryDomain,
-    count: Optional[int] = None
+    company_name: str, domain: QueryDomain, count: Optional[int] = None
 ) -> List[str]:
     """
     Generate queries for a specific research domain.
@@ -243,11 +237,7 @@ def get_domain_queries(
     return queries
 
 
-def get_gap_queries(
-    company_name: str,
-    missing_info: List[str],
-    max_queries: int = 5
-) -> List[str]:
+def get_gap_queries(company_name: str, missing_info: List[str], max_queries: int = 5) -> List[str]:
     """
     Generate queries to fill identified research gaps.
 
@@ -302,10 +292,7 @@ def get_gap_queries(
     return queries[:max_queries]
 
 
-def get_comprehensive_queries(
-    company_name: str,
-    depth: str = "standard"
-) -> List[str]:
+def get_comprehensive_queries(company_name: str, depth: str = "standard") -> List[str]:
     """
     Generate comprehensive research queries.
 
@@ -340,6 +327,7 @@ def get_comprehensive_queries(
 # Query Utilities
 # ==============================================================================
 
+
 def clean_query(query: str) -> str:
     """
     Clean and normalize a search query.
@@ -372,7 +360,7 @@ def clean_query(query: str) -> str:
     query_lower = query.lower()
     for prefix in prefixes_to_remove:
         if query_lower.startswith(prefix):
-            query = query[len(prefix):]
+            query = query[len(prefix) :]
             break
 
     return query.strip()
@@ -433,7 +421,7 @@ def parse_query_response(response_text: str) -> List[str]:
     # Try JSON array first
     try:
         # Find JSON array in text
-        json_match = re.search(r'\[.*\]', text, re.DOTALL)
+        json_match = re.search(r"\[.*\]", text, re.DOTALL)
         if json_match:
             queries = json.loads(json_match.group())
             if isinstance(queries, list):
@@ -443,7 +431,7 @@ def parse_query_response(response_text: str) -> List[str]:
 
     # Try numbered/bullet lists
     queries = []
-    lines = text.split('\n')
+    lines = text.split("\n")
 
     for line in lines:
         line = line.strip()
@@ -452,20 +440,20 @@ def parse_query_response(response_text: str) -> List[str]:
 
         # Remove numbering
         # "1. query" or "1) query"
-        numbered = re.match(r'^\d+[\.\)]\s*(.+)$', line)
+        numbered = re.match(r"^\d+[\.\)]\s*(.+)$", line)
         if numbered:
             queries.append(numbered.group(1))
             continue
 
         # Remove bullets
         # "- query" or "* query" or "• query"
-        bullet = re.match(r'^[-*•]\s*(.+)$', line)
+        bullet = re.match(r"^[-*•]\s*(.+)$", line)
         if bullet:
             queries.append(bullet.group(1))
             continue
 
         # Plain line (if it looks like a query)
-        if len(line) > 5 and not line.startswith('#'):
+        if len(line) > 5 and not line.startswith("#"):
             queries.append(line)
 
     return validate_queries(queries)
@@ -475,28 +463,28 @@ def parse_query_response(response_text: str) -> List[str]:
 # Query Configuration
 # ==============================================================================
 
+
 @dataclass
 class QueryConfig:
     """Configuration for query generation."""
+
     company_name: str
-    domains: List[QueryDomain] = field(default_factory=lambda: [
-        QueryDomain.OVERVIEW,
-        QueryDomain.FINANCIAL,
-        QueryDomain.PRODUCTS,
-        QueryDomain.COMPETITORS,
-        QueryDomain.NEWS,
-    ])
+    domains: List[QueryDomain] = field(
+        default_factory=lambda: [
+            QueryDomain.OVERVIEW,
+            QueryDomain.FINANCIAL,
+            QueryDomain.PRODUCTS,
+            QueryDomain.COMPETITORS,
+            QueryDomain.NEWS,
+        ]
+    )
     count: int = 5
     include_year: bool = False
     year: Optional[int] = None
 
     def build_queries(self) -> List[str]:
         """Build queries based on configuration."""
-        queries = get_fallback_queries(
-            self.company_name,
-            count=self.count,
-            domains=self.domains
-        )
+        queries = get_fallback_queries(self.company_name, count=self.count, domains=self.domains)
 
         # Optionally add year to queries
         if self.include_year and self.year:
@@ -509,10 +497,9 @@ class QueryConfig:
 # AI-Powered Query Generation
 # ==============================================================================
 
+
 def generate_research_queries(
-    company_name: str,
-    context: Optional[Dict[str, Any]] = None,
-    num_queries: int = 10
+    company_name: str, context: Optional[Dict[str, Any]] = None, num_queries: int = 10
 ) -> List[str]:
     """
     Generate research queries using AI or legacy templates.
@@ -531,7 +518,7 @@ def generate_research_queries(
 
     if config.query_generation.enabled:
         try:
-            from company_researcher.ai.query import get_query_generator, CompanyContext
+            from company_researcher.ai.query import CompanyContext, get_query_generator
 
             # Build context
             ctx = CompanyContext(
@@ -614,6 +601,7 @@ SPANISH_DOMAIN_TEMPLATES: Dict[QueryDomain, List[str]] = {
 # ==============================================================================
 # Date-Aware Query Generation
 # ==============================================================================
+
 
 def get_date_filtered_queries(
     company_name: str,
@@ -797,7 +785,12 @@ def get_comprehensive_dated_queries(
     # Add year-filtered domain queries
     domains_by_depth = {
         "basic": [QueryDomain.OVERVIEW, QueryDomain.NEWS],
-        "standard": [QueryDomain.OVERVIEW, QueryDomain.FINANCIAL, QueryDomain.NEWS, QueryDomain.MARKET],
+        "standard": [
+            QueryDomain.OVERVIEW,
+            QueryDomain.FINANCIAL,
+            QueryDomain.NEWS,
+            QueryDomain.MARKET,
+        ],
         "deep": list(QueryDomain),
     }
 

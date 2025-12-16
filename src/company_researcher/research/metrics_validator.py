@@ -17,8 +17,9 @@ Different validation profiles for:
 
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -26,6 +27,7 @@ logger = get_logger(__name__)
 
 class CompanyType(Enum):
     """Types of companies with different validation requirements."""
+
     PUBLIC = "public"
     PRIVATE = "private"
     SUBSIDIARY = "subsidiary"
@@ -41,6 +43,7 @@ class CompanyType(Enum):
 
 class DataCategory(Enum):
     """Categories of company data for validation."""
+
     COMPANY_BASICS = "company_basics"
     FINANCIAL = "financial"
     PRODUCTS = "products"
@@ -51,6 +54,7 @@ class DataCategory(Enum):
 
 class MetricStatus(Enum):
     """Status of a metric validation."""
+
     PRESENT = "present"  # Metric found with valid value
     PARTIAL = "partial"  # Metric found but missing required attributes
     MISSING = "missing"  # Metric not found
@@ -59,6 +63,7 @@ class MetricStatus(Enum):
 
 class MetricPriority(Enum):
     """Priority level for metrics."""
+
     CRITICAL = "critical"  # Must have
     HIGH = "high"  # Should have
     MEDIUM = "medium"  # Nice to have
@@ -68,6 +73,7 @@ class MetricPriority(Enum):
 @dataclass
 class MetricDefinition:
     """Definition of a required metric."""
+
     name: str
     display_name: str
     priority: MetricPriority
@@ -82,6 +88,7 @@ class MetricDefinition:
 @dataclass
 class MetricValidation:
     """Result of validating a single metric."""
+
     metric: MetricDefinition
     status: MetricStatus
     found_value: Optional[Any] = None
@@ -106,13 +113,14 @@ class MetricValidation:
             "period": self.found_period,
             "source": self.found_source,
             "currency": self.found_currency,
-            "issues": self.issues
+            "issues": self.issues,
         }
 
 
 @dataclass
 class ValidationReport:
     """Complete validation report for a research output."""
+
     company_name: str
     company_type: CompanyType
     validations: List[MetricValidation]
@@ -140,7 +148,7 @@ class ValidationReport:
                 "present": sum(1 for v in self.validations if v.status == MetricStatus.PRESENT),
                 "partial": sum(1 for v in self.validations if v.status == MetricStatus.PARTIAL),
                 "missing": sum(1 for v in self.validations if v.status == MetricStatus.MISSING),
-            }
+            },
         }
 
     # Alias properties for backward compatibility with agents/research/ ValidationResult
@@ -171,11 +179,7 @@ class ValidationReport:
     @property
     def metrics_missing(self) -> List[str]:
         """Get missing metric names (backward compatibility)."""
-        return [
-            v.metric.name
-            for v in self.validations
-            if v.status == MetricStatus.MISSING
-        ]
+        return [v.metric.name for v in self.validations if v.status == MetricStatus.MISSING]
 
     @property
     def warnings(self) -> List[str]:
@@ -216,11 +220,11 @@ class MetricsValidator:
                 priority=MetricPriority.CRITICAL,
                 requires_currency=True,
                 value_patterns=[
-                    r'\$\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
-                    r'revenue\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
-                    r'([\d,]+(?:\.\d+)?)\s*(trillion|billion|million)\s+(?:in\s+)?(?:revenue|sales)',
+                    r"\$\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
+                    r"revenue\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
+                    r"([\d,]+(?:\.\d+)?)\s*(trillion|billion|million)\s+(?:in\s+)?(?:revenue|sales)",
                 ],
-                keywords=["revenue", "sales", "turnover", "top line"]
+                keywords=["revenue", "sales", "turnover", "top line"],
             ),
             MetricDefinition(
                 name="net_income",
@@ -228,11 +232,11 @@ class MetricsValidator:
                 priority=MetricPriority.CRITICAL,
                 requires_currency=True,
                 value_patterns=[
-                    r'net\s+income\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
-                    r'profit\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
-                    r'earnings\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
+                    r"net\s+income\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
+                    r"profit\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
+                    r"earnings\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
                 ],
-                keywords=["net income", "profit", "earnings", "bottom line"]
+                keywords=["net income", "profit", "earnings", "bottom line"],
             ),
             MetricDefinition(
                 name="market_cap",
@@ -241,12 +245,11 @@ class MetricsValidator:
                 requires_currency=True,
                 requires_period=False,  # Point-in-time
                 value_patterns=[
-                    r'market\s+cap(?:italization)?\s+(?:of|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
-                    r'\$\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?\s+market\s+cap',
+                    r"market\s+cap(?:italization)?\s+(?:of|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
+                    r"\$\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?\s+market\s+cap",
                 ],
-                keywords=["market cap", "market capitalization", "valuation"]
+                keywords=["market cap", "market capitalization", "valuation"],
             ),
-
             # High priority
             MetricDefinition(
                 name="employees",
@@ -254,12 +257,12 @@ class MetricsValidator:
                 priority=MetricPriority.HIGH,
                 requires_currency=False,
                 value_patterns=[
-                    r'([\d,]+)\s+employees',
-                    r'employees?\s*:?\s*([\d,]+)',
-                    r'workforce\s+(?:of|:)?\s*([\d,]+)',
-                    r'headcount\s+(?:of|:)?\s*([\d,]+)',
+                    r"([\d,]+)\s+employees",
+                    r"employees?\s*:?\s*([\d,]+)",
+                    r"workforce\s+(?:of|:)?\s*([\d,]+)",
+                    r"headcount\s+(?:of|:)?\s*([\d,]+)",
                 ],
-                keywords=["employees", "workforce", "headcount", "staff"]
+                keywords=["employees", "workforce", "headcount", "staff"],
             ),
             MetricDefinition(
                 name="eps",
@@ -267,10 +270,10 @@ class MetricsValidator:
                 priority=MetricPriority.HIGH,
                 requires_currency=True,
                 value_patterns=[
-                    r'(?:EPS|earnings\s+per\s+share)\s*(?:of|is|was|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)',
-                    r'\$\s*([\d]+(?:\.\d+)?)\s+(?:per\s+share|EPS)',
+                    r"(?:EPS|earnings\s+per\s+share)\s*(?:of|is|was|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)",
+                    r"\$\s*([\d]+(?:\.\d+)?)\s+(?:per\s+share|EPS)",
                 ],
-                keywords=["eps", "earnings per share", "per share"]
+                keywords=["eps", "earnings per share", "per share"],
             ),
             MetricDefinition(
                 name="pe_ratio",
@@ -279,12 +282,11 @@ class MetricsValidator:
                 requires_currency=False,
                 requires_period=False,
                 value_patterns=[
-                    r'(?:P/?E|price.to.earnings)\s*(?:ratio)?\s*(?:of|is|:)?\s*([\d,]+(?:\.\d+)?)',
-                    r'([\d,]+(?:\.\d+)?)\s*(?:x|times)?\s*(?:P/?E|earnings)',
+                    r"(?:P/?E|price.to.earnings)\s*(?:ratio)?\s*(?:of|is|:)?\s*([\d,]+(?:\.\d+)?)",
+                    r"([\d,]+(?:\.\d+)?)\s*(?:x|times)?\s*(?:P/?E|earnings)",
                 ],
-                keywords=["p/e", "pe ratio", "price to earnings"]
+                keywords=["p/e", "pe ratio", "price to earnings"],
             ),
-
             # Medium priority
             MetricDefinition(
                 name="profit_margin",
@@ -292,10 +294,10 @@ class MetricsValidator:
                 priority=MetricPriority.MEDIUM,
                 requires_currency=False,
                 value_patterns=[
-                    r'(?:profit|net)\s+margin\s*(?:of|is|was|:)?\s*([\d,]+(?:\.\d+)?)\s*%',
-                    r'([\d,]+(?:\.\d+)?)\s*%\s+(?:profit|net)\s+margin',
+                    r"(?:profit|net)\s+margin\s*(?:of|is|was|:)?\s*([\d,]+(?:\.\d+)?)\s*%",
+                    r"([\d,]+(?:\.\d+)?)\s*%\s+(?:profit|net)\s+margin",
                 ],
-                keywords=["profit margin", "net margin", "margin"]
+                keywords=["profit margin", "net margin", "margin"],
             ),
             MetricDefinition(
                 name="revenue_growth",
@@ -303,10 +305,10 @@ class MetricsValidator:
                 priority=MetricPriority.MEDIUM,
                 requires_currency=False,
                 value_patterns=[
-                    r'(?:revenue|sales)\s+(?:grew|growth|increased)\s*(?:by)?\s*([\d,]+(?:\.\d+)?)\s*%',
-                    r'([\d,]+(?:\.\d+)?)\s*%\s+(?:revenue|sales)\s+growth',
+                    r"(?:revenue|sales)\s+(?:grew|growth|increased)\s*(?:by)?\s*([\d,]+(?:\.\d+)?)\s*%",
+                    r"([\d,]+(?:\.\d+)?)\s*%\s+(?:revenue|sales)\s+growth",
                 ],
-                keywords=["revenue growth", "sales growth", "yoy growth"]
+                keywords=["revenue growth", "sales growth", "yoy growth"],
             ),
             MetricDefinition(
                 name="market_share",
@@ -314,12 +316,11 @@ class MetricsValidator:
                 priority=MetricPriority.MEDIUM,
                 requires_currency=False,
                 value_patterns=[
-                    r'market\s+share\s*(?:of|is|:)?\s*([\d,]+(?:\.\d+)?)\s*%',
-                    r'([\d,]+(?:\.\d+)?)\s*%\s+(?:of\s+the\s+)?market',
+                    r"market\s+share\s*(?:of|is|:)?\s*([\d,]+(?:\.\d+)?)\s*%",
+                    r"([\d,]+(?:\.\d+)?)\s*%\s+(?:of\s+the\s+)?market",
                 ],
-                keywords=["market share", "share of market"]
+                keywords=["market share", "share of market"],
             ),
-
             # Company info
             MetricDefinition(
                 name="headquarters",
@@ -329,11 +330,11 @@ class MetricsValidator:
                 requires_period=False,
                 requires_currency=False,
                 value_patterns=[
-                    r'headquartered?\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+)',
-                    r'based\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+)',
-                    r'headquarters?\s*(?:is|are|:)\s*(?:in|at)?\s*([A-Z][a-zA-Z\s,]+)',
+                    r"headquartered?\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+)",
+                    r"based\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+)",
+                    r"headquarters?\s*(?:is|are|:)\s*(?:in|at)?\s*([A-Z][a-zA-Z\s,]+)",
                 ],
-                keywords=["headquarters", "based in", "located in", "hq"]
+                keywords=["headquarters", "based in", "located in", "hq"],
             ),
             MetricDefinition(
                 name="ceo",
@@ -343,10 +344,10 @@ class MetricsValidator:
                 requires_period=False,
                 requires_currency=False,
                 value_patterns=[
-                    r'(?:CEO|chief\s+executive)\s*(?:is|:)?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)',
-                    r'([A-Z][a-z]+\s+[A-Z][a-z]+)\s+(?:is|serves\s+as)\s+(?:the\s+)?CEO',
+                    r"(?:CEO|chief\s+executive)\s*(?:is|:)?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)",
+                    r"([A-Z][a-z]+\s+[A-Z][a-z]+)\s+(?:is|serves\s+as)\s+(?:the\s+)?CEO",
                 ],
-                keywords=["ceo", "chief executive", "leader"]
+                keywords=["ceo", "chief executive", "leader"],
             ),
             MetricDefinition(
                 name="founded",
@@ -356,14 +357,13 @@ class MetricsValidator:
                 requires_period=False,
                 requires_currency=False,
                 value_patterns=[
-                    r'founded\s+(?:in\s+)?(\d{4})',
-                    r'established\s+(?:in\s+)?(\d{4})',
-                    r'since\s+(\d{4})',
+                    r"founded\s+(?:in\s+)?(\d{4})",
+                    r"established\s+(?:in\s+)?(\d{4})",
+                    r"since\s+(\d{4})",
                 ],
-                keywords=["founded", "established", "since"]
+                keywords=["founded", "established", "since"],
             ),
         ],
-
         CompanyType.PRIVATE: [
             # Relaxed requirements for private companies
             MetricDefinition(
@@ -373,9 +373,9 @@ class MetricsValidator:
                 requires_currency=True,
                 requires_source=True,
                 value_patterns=[
-                    r'(?:estimated\s+)?revenue\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?',
+                    r"(?:estimated\s+)?revenue\s+(?:of|was|is|:)?\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|[TBM])?",
                 ],
-                keywords=["revenue", "estimated revenue", "sales"]
+                keywords=["revenue", "estimated revenue", "sales"],
             ),
             MetricDefinition(
                 name="employees",
@@ -383,10 +383,10 @@ class MetricsValidator:
                 priority=MetricPriority.CRITICAL,
                 requires_currency=False,
                 value_patterns=[
-                    r'([\d,]+)\s+employees',
-                    r'employees?\s*:?\s*([\d,]+)',
+                    r"([\d,]+)\s+employees",
+                    r"employees?\s*:?\s*([\d,]+)",
                 ],
-                keywords=["employees", "workforce", "headcount"]
+                keywords=["employees", "workforce", "headcount"],
             ),
             MetricDefinition(
                 name="funding",
@@ -394,10 +394,10 @@ class MetricsValidator:
                 priority=MetricPriority.HIGH,
                 requires_currency=True,
                 value_patterns=[
-                    r'(?:raised|funding\s+of)\s+\$?\s*([\d,]+(?:\.\d+)?)\s*(million|billion|[MB])?',
-                    r'\$\s*([\d,]+(?:\.\d+)?)\s*(million|billion|[MB])?\s+(?:in\s+)?funding',
+                    r"(?:raised|funding\s+of)\s+\$?\s*([\d,]+(?:\.\d+)?)\s*(million|billion|[MB])?",
+                    r"\$\s*([\d,]+(?:\.\d+)?)\s*(million|billion|[MB])?\s+(?:in\s+)?funding",
                 ],
-                keywords=["funding", "raised", "investment"]
+                keywords=["funding", "raised", "investment"],
             ),
             MetricDefinition(
                 name="headquarters",
@@ -407,13 +407,12 @@ class MetricsValidator:
                 requires_period=False,
                 requires_currency=False,
                 value_patterns=[
-                    r'headquartered?\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+)',
-                    r'based\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+)',
+                    r"headquartered?\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+)",
+                    r"based\s+(?:in|at)\s+([A-Z][a-zA-Z\s,]+)",
                 ],
-                keywords=["headquarters", "based", "located"]
+                keywords=["headquarters", "based", "located"],
             ),
         ],
-
         CompanyType.SUBSIDIARY: [
             # For subsidiaries, we need different metrics
             MetricDefinition(
@@ -424,10 +423,10 @@ class MetricsValidator:
                 requires_period=False,
                 requires_currency=False,
                 value_patterns=[
-                    r'(?:subsidiary|owned\s+by|part\s+of)\s+([A-Z][a-zA-Z\s]+)',
-                    r'parent\s+company\s*(?:is|:)?\s*([A-Z][a-zA-Z\s]+)',
+                    r"(?:subsidiary|owned\s+by|part\s+of)\s+([A-Z][a-zA-Z\s]+)",
+                    r"parent\s+company\s*(?:is|:)?\s*([A-Z][a-zA-Z\s]+)",
                 ],
-                keywords=["parent company", "subsidiary", "owned by"]
+                keywords=["parent company", "subsidiary", "owned by"],
             ),
             MetricDefinition(
                 name="employees",
@@ -435,9 +434,9 @@ class MetricsValidator:
                 priority=MetricPriority.HIGH,
                 requires_currency=False,
                 value_patterns=[
-                    r'([\d,]+)\s+employees',
+                    r"([\d,]+)\s+employees",
                 ],
-                keywords=["employees", "workforce"]
+                keywords=["employees", "workforce"],
             ),
             MetricDefinition(
                 name="segment_revenue",
@@ -445,10 +444,10 @@ class MetricsValidator:
                 priority=MetricPriority.HIGH,
                 requires_currency=False,
                 value_patterns=[
-                    r'([\d,]+(?:\.\d+)?)\s*%\s+(?:of\s+)?(?:revenue|sales)',
-                    r'contributes?\s+([\d,]+(?:\.\d+)?)\s*%',
+                    r"([\d,]+(?:\.\d+)?)\s*%\s+(?:of\s+)?(?:revenue|sales)",
+                    r"contributes?\s+([\d,]+(?:\.\d+)?)\s*%",
                 ],
-                keywords=["segment", "contribution", "percentage of revenue"]
+                keywords=["segment", "contribution", "percentage of revenue"],
             ),
         ],
     }
@@ -473,9 +472,7 @@ class MetricsValidator:
     }
 
     def __init__(
-        self,
-        min_score: Optional[float] = None,
-        critical_threshold: Optional[float] = None
+        self, min_score: Optional[float] = None, critical_threshold: Optional[float] = None
     ):
         """
         Initialize MetricsValidator with optional custom thresholds.
@@ -494,7 +491,7 @@ class MetricsValidator:
         self,
         research_output: Dict[str, Any],
         company_name: str,
-        company_type: CompanyType = CompanyType.PUBLIC
+        company_type: CompanyType = CompanyType.PUBLIC,
     ) -> ValidationReport:
         """
         Validate research output for required metrics.
@@ -512,8 +509,7 @@ class MetricsValidator:
 
         # Get metric definitions for this company type
         metrics = self.METRIC_DEFINITIONS.get(
-            company_type,
-            self.METRIC_DEFINITIONS[CompanyType.PUBLIC]
+            company_type, self.METRIC_DEFINITIONS[CompanyType.PUBLIC]
         )
 
         # Validate each metric
@@ -527,28 +523,33 @@ class MetricsValidator:
 
         # Check publishability
         critical_missing = [
-            v.metric.display_name for v in validations
-            if v.status == MetricStatus.MISSING
-            and v.metric.priority == MetricPriority.CRITICAL
+            v.metric.display_name
+            for v in validations
+            if v.status == MetricStatus.MISSING and v.metric.priority == MetricPriority.CRITICAL
         ]
 
         thresholds = self.PUBLISHABILITY_THRESHOLDS.get(
-            company_type,
-            self.PUBLISHABILITY_THRESHOLDS[CompanyType.PUBLIC]
+            company_type, self.PUBLISHABILITY_THRESHOLDS[CompanyType.PUBLIC]
         )
 
         # Apply custom thresholds if set
-        effective_min_score = self._custom_min_score if self._custom_min_score is not None else thresholds["min_score"]
+        effective_min_score = (
+            self._custom_min_score
+            if self._custom_min_score is not None
+            else thresholds["min_score"]
+        )
         effective_max_critical_missing = thresholds["max_critical_missing"]
         if self._custom_critical_threshold is not None:
             # Convert threshold fraction to max missing count
-            total_critical = sum(1 for v in validations if v.metric.priority == MetricPriority.CRITICAL)
+            total_critical = sum(
+                1 for v in validations if v.metric.priority == MetricPriority.CRITICAL
+            )
             effective_max_critical_missing = int(total_critical * self._custom_critical_threshold)
 
         high_present = sum(
-            1 for v in validations
-            if v.status == MetricStatus.PRESENT
-            and v.metric.priority == MetricPriority.HIGH
+            1
+            for v in validations
+            if v.status == MetricStatus.PRESENT and v.metric.priority == MetricPriority.HIGH
         )
 
         is_publishable = (
@@ -564,7 +565,9 @@ class MetricsValidator:
         retry_recommended = not is_publishable and score < 60
 
         # Generate retry queries for missing data (from agents/research/ consolidation)
-        missing_metric_names = [v.metric.name for v in validations if v.status == MetricStatus.MISSING]
+        missing_metric_names = [
+            v.metric.name for v in validations if v.status == MetricStatus.MISSING
+        ]
         recommended_queries = self._generate_retry_queries(
             company_name, missing_metric_names, company_type
         )
@@ -578,7 +581,7 @@ class MetricsValidator:
             recommendations=recommendations,
             is_publishable=is_publishable,
             retry_recommended=retry_recommended,
-            recommended_queries=recommended_queries
+            recommended_queries=recommended_queries,
         )
 
     def _extract_text(self, research_output: Dict) -> str:
@@ -586,8 +589,14 @@ class MetricsValidator:
         parts = []
 
         # Direct text fields
-        for key in ["company_overview", "executive_summary", "financial_analysis",
-                    "market_position", "strategy", "report"]:
+        for key in [
+            "company_overview",
+            "executive_summary",
+            "financial_analysis",
+            "market_position",
+            "strategy",
+            "report",
+        ]:
             if key in research_output:
                 parts.append(str(research_output[key]))
 
@@ -607,11 +616,7 @@ class MetricsValidator:
 
         return "\n".join(parts)
 
-    def _validate_metric(
-        self,
-        metric: MetricDefinition,
-        text: str
-    ) -> MetricValidation:
+    def _validate_metric(self, metric: MetricDefinition, text: str) -> MetricValidation:
         """Validate a single metric against the text."""
         validation = MetricValidation(metric=metric, status=MetricStatus.MISSING)
 
@@ -639,10 +644,10 @@ class MetricsValidator:
         # Check for period
         if metric.requires_period:
             period_patterns = [
-                r'(?:FY|fiscal\s+year)\s*(\d{4})',
-                r'Q[1-4]\s*(\d{4})',
-                r'(?:in|for)\s+(\d{4})',
-                r'(\d{4})\s+(?:annual|results)',
+                r"(?:FY|fiscal\s+year)\s*(\d{4})",
+                r"Q[1-4]\s*(\d{4})",
+                r"(?:in|for)\s+(\d{4})",
+                r"(\d{4})\s+(?:annual|results)",
             ]
             for pattern in period_patterns:
                 match = re.search(pattern, text, re.IGNORECASE)
@@ -656,16 +661,14 @@ class MetricsValidator:
         # Check for currency (for financial values)
         if metric.requires_currency:
             currency_patterns = [
-                r'\$',  # USD
-                r'USD',
-                r'€|EUR',
-                r'£|GBP',
-                r'MX\$|MXN',  # Mexican Peso
-                r'R\$|BRL',  # Brazilian Real
+                r"\$",  # USD
+                r"USD",
+                r"€|EUR",
+                r"£|GBP",
+                r"MX\$|MXN",  # Mexican Peso
+                r"R\$|BRL",  # Brazilian Real
             ]
-            currency_found = any(
-                re.search(p, text) for p in currency_patterns
-            )
+            currency_found = any(re.search(p, text) for p in currency_patterns)
             if currency_found:
                 validation.found_currency = "detected"
             elif validation.found_value:
@@ -722,11 +725,7 @@ class MetricsValidator:
 
         return (weighted_score / total_weight) * 100
 
-    def detect_company_type(
-        self,
-        content: str,
-        company_name: str
-    ) -> CompanyType:
+    def detect_company_type(self, content: str, company_name: str) -> CompanyType:
         """
         Auto-detect the type of company from content.
         Ported from agents/research/metrics_validator.py for consolidation.
@@ -817,7 +816,7 @@ class MetricsValidator:
                 f"{company_name} annual revenue 2024",
                 f"{company_name} financial results earnings",
                 f"{company_name} ingresos anuales",  # Spanish
-                f"{company_name} receita anual",    # Portuguese
+                f"{company_name} receita anual",  # Portuguese
             ],
             "net_income": [
                 f"{company_name} net income profit 2024",
@@ -858,10 +857,7 @@ class MetricsValidator:
 
         return queries[:7]  # Return max 7 queries
 
-    def get_data_quality_summary(
-        self,
-        report: ValidationReport
-    ) -> str:
+    def get_data_quality_summary(self, report: ValidationReport) -> str:
         """
         Generate a human-readable data quality summary.
         Ported from agents/research/metrics_validator.py for consolidation.
@@ -887,7 +883,11 @@ class MetricsValidator:
         if present_metrics:
             lines.append(f"### Metrics Found ({len(present_metrics)})")
             for v in present_metrics:
-                value_str = str(v.found_value)[:50] + "..." if v.found_value and len(str(v.found_value)) > 50 else str(v.found_value)
+                value_str = (
+                    str(v.found_value)[:50] + "..."
+                    if v.found_value and len(str(v.found_value)) > 50
+                    else str(v.found_value)
+                )
                 lines.append(f"- {v.metric.display_name}: {value_str}")
             lines.append("")
 
@@ -915,10 +915,7 @@ class MetricsValidator:
 
         return "\n".join(lines)
 
-    def _generate_recommendations(
-        self,
-        validations: List[MetricValidation]
-    ) -> List[str]:
+    def _generate_recommendations(self, validations: List[MetricValidation]) -> List[str]:
         """Generate recommendations based on validation results."""
         recommendations = []
 
@@ -929,25 +926,19 @@ class MetricsValidator:
                         f"CRITICAL: Add {v.metric.display_name} with specific value and source"
                     )
                 elif v.metric.priority == MetricPriority.HIGH:
-                    recommendations.append(
-                        f"HIGH: Include {v.metric.display_name} data"
-                    )
+                    recommendations.append(f"HIGH: Include {v.metric.display_name} data")
 
             elif v.status == MetricStatus.PARTIAL:
                 if v.issues:
                     for issue in v.issues:
-                        recommendations.append(
-                            f"FIX {v.metric.display_name}: {issue}"
-                        )
+                        recommendations.append(f"FIX {v.metric.display_name}: {issue}")
 
         return recommendations[:10]  # Limit to top 10
 
 
 # Convenience function
 def validate_research_metrics(
-    research_output: Dict[str, Any],
-    company_name: str,
-    company_type: str = "public"
+    research_output: Dict[str, Any], company_name: str, company_type: str = "public"
 ) -> ValidationReport:
     """
     Validate research output metrics.
@@ -968,15 +959,12 @@ def validate_research_metrics(
 
     validator = MetricsValidator()
     return validator.validate(
-        research_output,
-        company_name,
-        type_map.get(company_type.lower(), CompanyType.PUBLIC)
+        research_output, company_name, type_map.get(company_type.lower(), CompanyType.PUBLIC)
     )
 
 
 def create_metrics_validator(
-    min_score: float = 60.0,
-    critical_threshold: float = 0.5
+    min_score: float = 60.0, critical_threshold: float = 0.5
 ) -> MetricsValidator:
     """
     Factory function to create MetricsValidator.
@@ -990,10 +978,7 @@ def create_metrics_validator(
     Returns:
         Configured MetricsValidator instance
     """
-    return MetricsValidator(
-        min_score=min_score,
-        critical_threshold=critical_threshold
-    )
+    return MetricsValidator(min_score=min_score, critical_threshold=critical_threshold)
 
 
 # Alias for backward compatibility with agents/research/ version

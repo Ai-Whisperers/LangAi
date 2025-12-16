@@ -8,35 +8,36 @@ prospect list, prioritized by tier score.
 Uses the new Cost-First routing to minimize API costs.
 """
 
+import json
+import logging
 import os
 import sys
-import yaml
-import json
 import time
-import logging
-from pathlib import Path
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import yaml
 
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler(f'logs/customer_intel_research_{datetime.now():%Y%m%d_%H%M%S}.log')
-    ]
+        logging.FileHandler(f"logs/customer_intel_research_{datetime.now():%Y%m%d_%H%M%S}.log"),
+    ],
 )
 logger = logging.getLogger(__name__)
 
 # Ensure logs directory exists
 Path("logs").mkdir(exist_ok=True)
 
-# Import the research workflow
-from src.company_researcher.workflows import research_company_comprehensive
 from src.company_researcher.config import get_config
 from src.company_researcher.integrations.search_router import get_search_router
 
+# Import the research workflow
+from src.company_researcher.workflows import research_company_comprehensive
 
 # =============================================================================
 # CONFIGURATION
@@ -50,10 +51,10 @@ OUTPUT_DIR = Path("outputs/research/customer_intelligence")
 
 # Research configuration
 RESEARCH_CONFIG = {
-    "max_companies_per_run": 5,      # Limit per run to avoid timeouts
-    "min_priority_score": 85,        # Only research Tier 1 (score >= 85)
-    "delay_between_companies": 10,   # Seconds between companies
-    "skip_existing": True,           # Skip if report already exists
+    "max_companies_per_run": 5,  # Limit per run to avoid timeouts
+    "min_priority_score": 85,  # Only research Tier 1 (score >= 85)
+    "delay_between_companies": 10,  # Seconds between companies
+    "skip_existing": True,  # Skip if report already exists
 }
 
 
@@ -65,7 +66,7 @@ def load_targets_from_yaml() -> List[Dict[str, Any]]:
         logger.error(f"Priority file not found: {priority_file}")
         return []
 
-    with open(priority_file, 'r', encoding='utf-8') as f:
+    with open(priority_file, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
     targets = []
@@ -73,26 +74,30 @@ def load_targets_from_yaml() -> List[Dict[str, Any]]:
     # Extract Tier 1 targets (highest priority)
     tier_1 = data.get("tier_1_immediate", {}).get("targets", [])
     for t in tier_1:
-        targets.append({
-            "company": t.get("company"),
-            "vertical": t.get("vertical"),
-            "country": t.get("country"),
-            "score": t.get("score", 90),
-            "tier": 1,
-            "rationale": t.get("rationale", ""),
-            "entry_approach": t.get("entry_approach", ""),
-        })
+        targets.append(
+            {
+                "company": t.get("company"),
+                "vertical": t.get("vertical"),
+                "country": t.get("country"),
+                "score": t.get("score", 90),
+                "tier": 1,
+                "rationale": t.get("rationale", ""),
+                "entry_approach": t.get("entry_approach", ""),
+            }
+        )
 
     # Extract Tier 2 targets
     tier_2 = data.get("tier_2_high", {}).get("targets", [])
     for t in tier_2:
-        targets.append({
-            "company": t.get("company"),
-            "vertical": t.get("vertical", "Unknown"),
-            "country": t.get("country", "LATAM"),
-            "score": t.get("score", 75),
-            "tier": 2,
-        })
+        targets.append(
+            {
+                "company": t.get("company"),
+                "vertical": t.get("vertical", "Unknown"),
+                "country": t.get("country", "LATAM"),
+                "score": t.get("score", 75),
+                "tier": 2,
+            }
+        )
 
     # Sort by score descending
     targets.sort(key=lambda x: x.get("score", 0), reverse=True)
@@ -103,7 +108,9 @@ def load_targets_from_yaml() -> List[Dict[str, Any]]:
 
 def get_output_path(company_name: str) -> Path:
     """Generate output path for a company."""
-    safe_name = company_name.lower().replace(" ", "_").replace("/", "_").replace("(", "").replace(")", "")
+    safe_name = (
+        company_name.lower().replace(" ", "_").replace("/", "_").replace("(", "").replace(")", "")
+    )
     return OUTPUT_DIR / safe_name
 
 
@@ -147,6 +154,7 @@ def run_research_for_company(company_name: str, context: Dict[str, Any]) -> Opti
     except Exception as e:
         logger.error(f"Research failed for {company_name}: {e}")
         import traceback
+
         traceback.print_exc()
         return None
 
@@ -164,7 +172,7 @@ def save_batch_summary(results: List[Dict], start_time: datetime):
     }
 
     summary_path = OUTPUT_DIR / f"_batch_summary_{start_time:%Y%m%d_%H%M%S}.json"
-    with open(summary_path, 'w', encoding='utf-8') as f:
+    with open(summary_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2, ensure_ascii=False, default=str)
 
     logger.info(f"Batch summary saved to: {summary_path}")
@@ -173,9 +181,9 @@ def save_batch_summary(results: List[Dict], start_time: datetime):
 
 def main():
     """Main execution function."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("CUSTOMER INTELLIGENCE PLATFORM - BATCH RESEARCH RUNNER")
-    print("="*70 + "\n")
+    print("=" * 70 + "\n")
 
     start_time = datetime.now()
 
@@ -207,9 +215,11 @@ def main():
     # List targets to research
     print("TARGETS TO RESEARCH:")
     print("-" * 50)
-    for i, t in enumerate(filtered_targets[:RESEARCH_CONFIG["max_companies_per_run"]], 1):
+    for i, t in enumerate(filtered_targets[: RESEARCH_CONFIG["max_companies_per_run"]], 1):
         existing = "EXISTS" if check_existing_research(t["company"]) else "NEW"
-        print(f"  {i}. {t['company']} (Score: {t['score']}, {t['vertical']}, {t['country']}) [{existing}]")
+        print(
+            f"  {i}. {t['company']} (Score: {t['score']}, {t['vertical']}, {t['country']}) [{existing}]"
+        )
     print()
 
     # Confirm execution
@@ -229,12 +239,9 @@ def main():
         # Check if should skip existing
         if RESEARCH_CONFIG["skip_existing"] and check_existing_research(company):
             logger.info(f"[{i}/{max_companies}] Skipping {company} (already researched)")
-            results.append({
-                "company": company,
-                "success": True,
-                "skipped": True,
-                "reason": "Already exists"
-            })
+            results.append(
+                {"company": company, "success": True, "skipped": True, "reason": "Already exists"}
+            )
             continue
 
         print(f"\n[{i}/{max_companies}] Researching: {company}")
@@ -242,19 +249,17 @@ def main():
         result = run_research_for_company(company, target)
 
         if result:
-            results.append({
-                "company": company,
-                "success": True,
-                "report_path": result.get("report_path"),
-                "duration": result.get("metrics", {}).get("duration_seconds", 0),
-                "cost": result.get("metrics", {}).get("cost_usd", 0),
-            })
+            results.append(
+                {
+                    "company": company,
+                    "success": True,
+                    "report_path": result.get("report_path"),
+                    "duration": result.get("metrics", {}).get("duration_seconds", 0),
+                    "cost": result.get("metrics", {}).get("cost_usd", 0),
+                }
+            )
         else:
-            results.append({
-                "company": company,
-                "success": False,
-                "error": "Research failed"
-            })
+            results.append({"company": company, "success": False, "error": "Research failed"})
 
         # Delay between companies
         if i < max_companies:
@@ -266,16 +271,16 @@ def main():
     summary = save_batch_summary(results, start_time)
 
     # Print final summary
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("BATCH RESEARCH COMPLETE")
-    print("="*70)
+    print("=" * 70)
     print(f"Total companies: {len(results)}")
     print(f"Successful: {summary['successful']}")
     print(f"Failed: {summary['failed']}")
     print(f"Total duration: {summary['total_duration_seconds']:.1f}s")
     print(f"Total cost: ${summary['total_cost_usd']:.4f}")
     print(f"Output directory: {OUTPUT_DIR}")
-    print("="*70 + "\n")
+    print("=" * 70 + "\n")
 
 
 if __name__ == "__main__":

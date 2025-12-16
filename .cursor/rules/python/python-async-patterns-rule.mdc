@@ -1,0 +1,63 @@
+---
+id: rule.python.async-patterns.v1
+name: Python Async Patterns
+version: 1.0.0
+description: Enforce best practices for async/await patterns in Python
+globs: ["**/*.py"]
+governs: ["**/*.py"]
+alwaysApply: false
+requires: []
+---
+
+# Python Async Patterns Rule
+
+## Purpose
+Ensure efficient and correct usage of Python's `asyncio` features.
+
+## Standards
+
+### Async/Await Usage
+- Prefer `async` for I/O bound operations (DB, Network, File)
+- Use `await` for all async function calls
+- Avoid mixing sync and async code where possible
+
+### Concurrency
+- Use `asyncio.gather()` for independent tasks to run concurrently
+- Use sequential `await` only when dependency exists
+
+### Resource Management
+- Use `async with` for async context managers (e.g., database connections, HTTP sessions)
+- Ensure resources are properly closed in `finally` blocks if not using context managers
+
+### Exception Handling
+- Handle exceptions within async tasks to prevent silent failures
+- Use `asyncio.gather(..., return_exceptions=True)` with care
+
+### Examples
+
+**Good:**
+```python
+async def fetch_data(urls: List[str]):
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch_url(session, url) for url in urls]
+        # Run independent requests concurrently
+        results = await asyncio.gather(*tasks)
+    return results
+```
+
+**Bad:**
+```python
+async def fetch_data(urls: List[str]):
+    results = []
+    for url in urls:
+        # Sequential execution is slower for independent tasks
+        res = await fetch_url(url)
+        results.append(res)
+    return results
+```
+
+## Validation Checklist
+- [ ] `asyncio.gather` used for concurrent tasks
+- [ ] `async with` used for resource management
+- [ ] Exceptions handled in async context
+- [ ] No blocking I/O in async functions

@@ -30,11 +30,13 @@ Usage:
     content = wiki.get_article("Microsoft")
 """
 
-import requests
-from typing import Optional, Dict, Any, List
+import re
 from dataclasses import dataclass, field
 from threading import Lock
-import re
+from typing import Any, Dict, List, Optional
+
+import requests
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -43,6 +45,7 @@ logger = get_logger(__name__)
 @dataclass
 class WikipediaInfobox:
     """Parsed Wikipedia infobox data."""
+
     name: Optional[str] = None
     type: Optional[str] = None  # Public, Private, Subsidiary
     industry: Optional[str] = None
@@ -73,13 +76,14 @@ class WikipediaInfobox:
             "num_employees": self.num_employees,
             "website": self.website,
             "parent": self.parent,
-            "subsidiaries": self.subsidiaries
+            "subsidiaries": self.subsidiaries,
         }
 
 
 @dataclass
 class WikipediaArticle:
     """Wikipedia article data."""
+
     title: str
     page_id: int
     summary: str = ""
@@ -102,13 +106,14 @@ class WikipediaArticle:
             "infobox": self.infobox.to_dict() if self.infobox else None,
             "related_articles": self.related_articles,
             "success": self.success,
-            "error": self.error
+            "error": self.error,
         }
 
 
 @dataclass
 class WikipediaSearchResult:
     """Result from Wikipedia search."""
+
     query: str
     results: List[Dict[str, str]] = field(default_factory=list)
     success: bool = True
@@ -119,7 +124,7 @@ class WikipediaSearchResult:
             "query": self.query,
             "results": self.results,
             "success": self.success,
-            "error": self.error
+            "error": self.error,
         }
 
 
@@ -132,11 +137,7 @@ class WikipediaClient:
 
     BASE_URL = "https://en.wikipedia.org/w/api.php"
 
-    def __init__(
-        self,
-        language: str = "en",
-        timeout: int = 10
-    ):
+    def __init__(self, language: str = "en", timeout: int = 10):
         """
         Initialize Wikipedia client.
 
@@ -151,18 +152,12 @@ class WikipediaClient:
         self.base_url = f"https://{language}.wikipedia.org/w/api.php"
 
         self._session = requests.Session()
-        self._session.headers.update({
-            "User-Agent": "CompanyResearcher/1.0 (research@example.com)"
-        })
+        self._session.headers.update({"User-Agent": "CompanyResearcher/1.0 (research@example.com)"})
 
         self._total_queries = 0
         self._lock = Lock()
 
-    def search(
-        self,
-        query: str,
-        max_results: int = 10
-    ) -> WikipediaSearchResult:
+    def search(self, query: str, max_results: int = 10) -> WikipediaSearchResult:
         """
         Search Wikipedia for articles.
 
@@ -179,42 +174,32 @@ class WikipediaClient:
                 "list": "search",
                 "srsearch": query,
                 "srlimit": max_results,
-                "format": "json"
+                "format": "json",
             }
 
-            response = self._session.get(
-                self.base_url,
-                params=params,
-                timeout=self.timeout
-            )
+            response = self._session.get(self.base_url, params=params, timeout=self.timeout)
             response.raise_for_status()
 
             data = response.json()
 
             results = []
             for item in data.get("query", {}).get("search", []):
-                results.append({
-                    "title": item.get("title", ""),
-                    "page_id": str(item.get("pageid", "")),
-                    "snippet": re.sub(r'<[^>]+>', '', item.get("snippet", ""))
-                })
+                results.append(
+                    {
+                        "title": item.get("title", ""),
+                        "page_id": str(item.get("pageid", "")),
+                        "snippet": re.sub(r"<[^>]+>", "", item.get("snippet", "")),
+                    }
+                )
 
             with self._lock:
                 self._total_queries += 1
 
-            return WikipediaSearchResult(
-                query=query,
-                results=results,
-                success=True
-            )
+            return WikipediaSearchResult(query=query, results=results, success=True)
 
         except Exception as e:
             logger.error(f"Wikipedia search error for '{query}': {e}")
-            return WikipediaSearchResult(
-                query=query,
-                success=False,
-                error=str(e)
-            )
+            return WikipediaSearchResult(query=query, success=False, error=str(e))
 
     def get_summary(self, title: str) -> Optional[str]:
         """
@@ -233,14 +218,10 @@ class WikipediaClient:
                 "prop": "extracts",
                 "exintro": True,
                 "explaintext": True,
-                "format": "json"
+                "format": "json",
             }
 
-            response = self._session.get(
-                self.base_url,
-                params=params,
-                timeout=self.timeout
-            )
+            response = self._session.get(self.base_url, params=params, timeout=self.timeout)
             response.raise_for_status()
 
             data = response.json()
@@ -258,11 +239,7 @@ class WikipediaClient:
             logger.error(f"Wikipedia summary error for '{title}': {e}")
             return None
 
-    def get_article(
-        self,
-        title: str,
-        include_content: bool = False
-    ) -> WikipediaArticle:
+    def get_article(self, title: str, include_content: bool = False) -> WikipediaArticle:
         """
         Get full article data.
 
@@ -284,14 +261,10 @@ class WikipediaClient:
                 "inprop": "url",
                 "cllimit": 20,
                 "pllimit": 20,
-                "format": "json"
+                "format": "json",
             }
 
-            response = self._session.get(
-                self.base_url,
-                params=params,
-                timeout=self.timeout
-            )
+            response = self._session.get(self.base_url, params=params, timeout=self.timeout)
             response.raise_for_status()
 
             data = response.json()
@@ -300,10 +273,7 @@ class WikipediaClient:
             for page_id, page_data in pages.items():
                 if page_id == "-1":
                     return WikipediaArticle(
-                        title=title,
-                        page_id=0,
-                        success=False,
-                        error="Article not found"
+                        title=title, page_id=0, success=False, error="Article not found"
                     )
 
                 # Extract categories
@@ -317,7 +287,9 @@ class WikipediaClient:
                 related = []
                 for link in page_data.get("links", []):
                     link_title = link.get("title", "")
-                    if link_title and not link_title.startswith(("Wikipedia:", "Template:", "Help:")):
+                    if link_title and not link_title.startswith(
+                        ("Wikipedia:", "Template:", "Help:")
+                    ):
                         related.append(link_title)
 
                 with self._lock:
@@ -330,24 +302,16 @@ class WikipediaClient:
                     url=page_data.get("fullurl", ""),
                     categories=categories[:10],
                     related_articles=related[:10],
-                    success=True
+                    success=True,
                 )
 
             return WikipediaArticle(
-                title=title,
-                page_id=0,
-                success=False,
-                error="Article not found"
+                title=title, page_id=0, success=False, error="Article not found"
             )
 
         except Exception as e:
             logger.error(f"Wikipedia article error for '{title}': {e}")
-            return WikipediaArticle(
-                title=title,
-                page_id=0,
-                success=False,
-                error=str(e)
-            )
+            return WikipediaArticle(title=title, page_id=0, success=False, error=str(e))
 
     def get_company_info(self, company_name: str) -> WikipediaArticle:
         """
@@ -363,7 +327,8 @@ class WikipediaClient:
         """
         # Check cache first (30-day TTL)
         try:
-            from .result_cache import get_cached_wikipedia, cache_wikipedia
+            from .result_cache import cache_wikipedia, get_cached_wikipedia
+
             cached = get_cached_wikipedia(company_name)
             if cached:
                 logger.debug(f"[CACHE HIT] Wikipedia: '{company_name}'")
@@ -382,10 +347,7 @@ class WikipediaClient:
 
         if not search_result.success or not search_result.results:
             return WikipediaArticle(
-                title=company_name,
-                page_id=0,
-                success=False,
-                error="Company not found on Wikipedia"
+                title=company_name, page_id=0, success=False, error="Company not found on Wikipedia"
             )
 
         # Find best match (prioritize exact matches and company-related articles)
@@ -416,6 +378,7 @@ class WikipediaClient:
         if article.success:
             try:
                 from .result_cache import cache_wikipedia
+
                 cache_wikipedia(company_name, article.to_dict())
                 logger.debug(f"[CACHED] Wikipedia: '{company_name}'")
             except ImportError:
@@ -440,9 +403,9 @@ class WikipediaClient:
 
         # Founded year pattern
         founded_patterns = [
-            r'founded (?:in |on )?(\d{4})',
-            r'established (?:in |on )?(\d{4})',
-            r'incorporated (?:in |on )?(\d{4})'
+            r"founded (?:in |on )?(\d{4})",
+            r"established (?:in |on )?(\d{4})",
+            r"incorporated (?:in |on )?(\d{4})",
         ]
         for pattern in founded_patterns:
             match = re.search(pattern, text_lower)
@@ -452,9 +415,9 @@ class WikipediaClient:
 
         # Headquarters pattern
         hq_patterns = [
-            r'headquartered in ([^,\.]+)',
-            r'based in ([^,\.]+)',
-            r'headquarters (?:is |are )?(?:in |at )?([^,\.]+)'
+            r"headquartered in ([^,\.]+)",
+            r"based in ([^,\.]+)",
+            r"headquarters (?:is |are )?(?:in |at )?([^,\.]+)",
         ]
         for pattern in hq_patterns:
             match = re.search(pattern, text_lower)
@@ -464,9 +427,9 @@ class WikipediaClient:
 
         # Employee count pattern
         emp_patterns = [
-            r'(\d[\d,]+)\s*employees',
-            r'employs?\s*(\d[\d,]+)',
-            r'workforce of\s*(\d[\d,]+)'
+            r"(\d[\d,]+)\s*employees",
+            r"employs?\s*(\d[\d,]+)",
+            r"workforce of\s*(\d[\d,]+)",
         ]
         for pattern in emp_patterns:
             match = re.search(pattern, text_lower)
@@ -476,10 +439,27 @@ class WikipediaClient:
 
         # Industry pattern (usually first sentence)
         industry_keywords = [
-            "technology", "software", "hardware", "automotive", "retail",
-            "financial", "bank", "insurance", "pharmaceutical", "healthcare",
-            "energy", "oil", "gas", "manufacturing", "aerospace", "defense",
-            "telecommunications", "media", "entertainment", "food", "beverage"
+            "technology",
+            "software",
+            "hardware",
+            "automotive",
+            "retail",
+            "financial",
+            "bank",
+            "insurance",
+            "pharmaceutical",
+            "healthcare",
+            "energy",
+            "oil",
+            "gas",
+            "manufacturing",
+            "aerospace",
+            "defense",
+            "telecommunications",
+            "media",
+            "entertainment",
+            "food",
+            "beverage",
         ]
         for keyword in industry_keywords:
             if keyword in text_lower:
@@ -512,14 +492,10 @@ class WikipediaClient:
                 "titles": title,
                 "prop": "categories",
                 "cllimit": 50,
-                "format": "json"
+                "format": "json",
             }
 
-            response = self._session.get(
-                self.base_url,
-                params=params,
-                timeout=self.timeout
-            )
+            response = self._session.get(self.base_url, params=params, timeout=self.timeout)
             response.raise_for_status()
 
             data = response.json()
@@ -558,7 +534,7 @@ class WikipediaClient:
             return {
                 "total_queries": self._total_queries,
                 "language": self.language,
-                "cost": 0.0  # FREE!
+                "cost": 0.0,  # FREE!
             }
 
     def reset_stats(self) -> None:

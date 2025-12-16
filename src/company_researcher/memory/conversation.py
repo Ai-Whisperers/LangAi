@@ -21,6 +21,7 @@ def _utcnow() -> datetime:
 
 class MessageRole(str, Enum):
     """Message roles in conversation."""
+
     SYSTEM = "system"
     USER = "user"
     ASSISTANT = "assistant"
@@ -31,6 +32,7 @@ class MessageRole(str, Enum):
 @dataclass
 class Message:
     """A message in a conversation."""
+
     role: MessageRole
     content: str
     timestamp: datetime = field(default_factory=_utcnow)
@@ -40,10 +42,7 @@ class Message:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to LLM-compatible format."""
-        result = {
-            "role": self.role.value,
-            "content": self.content
-        }
+        result = {"role": self.role.value, "content": self.content}
         if self.name:
             result["name"] = self.name
         return result
@@ -67,6 +66,7 @@ class Message:
 @dataclass
 class ConversationSummary:
     """Summary of a conversation segment."""
+
     content: str
     messages_summarized: int
     tokens_saved: int
@@ -99,7 +99,7 @@ class ConversationMemory:
         max_tokens: int = 4000,
         max_messages: int = 100,
         system_message: str = None,
-        summarize_fn: Callable[[List[Message]], str] = None
+        summarize_fn: Callable[[List[Message]], str] = None,
     ):
         self.max_tokens = max_tokens
         self.max_messages = max_messages
@@ -167,7 +167,7 @@ class ConversationMemory:
         if len(self._messages) <= keep_count:
             return
 
-        to_summarize = self._messages[1:-keep_count + 1]
+        to_summarize = self._messages[1 : -keep_count + 1]
         if not to_summarize:
             return
 
@@ -177,24 +177,20 @@ class ConversationMemory:
 
         # Store summary
         summary = ConversationSummary(
-            content=summary_text,
-            messages_summarized=len(to_summarize),
-            tokens_saved=tokens_saved
+            content=summary_text, messages_summarized=len(to_summarize), tokens_saved=tokens_saved
         )
         self._summaries.append(summary)
 
         # Replace summarized messages with summary message
         self._messages = (
-            self._messages[:1] +
-            [Message.system(f"[Previous conversation summary: {summary_text}]")] +
-            self._messages[-keep_count + 1:]
+            self._messages[:1]
+            + [Message.system(f"[Previous conversation summary: {summary_text}]")]
+            + self._messages[-keep_count + 1 :]
         )
         self._total_tokens = sum(m.token_count for m in self._messages)
 
     def get_messages(
-        self,
-        max_tokens: int = None,
-        include_system: bool = True
+        self, max_tokens: int = None, include_system: bool = True
     ) -> List[Dict[str, Any]]:
         """
         Get messages for LLM, respecting token limits.
@@ -240,11 +236,7 @@ class ConversationMemory:
             lines.append(f"{prefix}: {msg.content}")
         return "\n".join(lines)
 
-    def search_messages(
-        self,
-        query: str,
-        role: MessageRole = None
-    ) -> List[Message]:
+    def search_messages(self, query: str, role: MessageRole = None) -> List[Message]:
         """Search messages containing query."""
         results = []
         query_lower = query.lower()
@@ -283,11 +275,7 @@ class WindowedConversationMemory(ConversationMemory):
     Keeps only the most recent messages within a window.
     """
 
-    def __init__(
-        self,
-        window_size: int = 10,
-        **kwargs
-    ):
+    def __init__(self, window_size: int = 10, **kwargs):
         super().__init__(**kwargs)
         self.window_size = window_size
 
@@ -340,11 +328,7 @@ class BufferedConversationMemory:
 
 
 def create_conversation_memory(
-    max_tokens: int = 4000,
-    system_message: str = None
+    max_tokens: int = 4000, system_message: str = None
 ) -> ConversationMemory:
     """Create a conversation memory."""
-    return ConversationMemory(
-        max_tokens=max_tokens,
-        system_message=system_message
-    )
+    return ConversationMemory(max_tokens=max_tokens, system_message=system_message)

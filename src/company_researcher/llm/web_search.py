@@ -23,16 +23,16 @@ Usage:
     intel = search.get_competitive_intelligence("NVIDIA", ["AMD", "Intel"])
 """
 
-from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 from threading import Lock
+from typing import Any, Dict, List, Optional
 
 from anthropic import Anthropic
 
+from ..utils import get_logger, utc_now
 from .client_factory import get_anthropic_client
 from .cost_tracker import get_cost_tracker
-from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
 
@@ -40,6 +40,7 @@ logger = get_logger(__name__)
 @dataclass
 class WebSearchResult:
     """Result from a web search query."""
+
     query: str
     content: str
     sources: List[str] = field(default_factory=list)
@@ -65,7 +66,7 @@ class WebSearchResult:
             "search_count": self.search_count,
             "estimated_cost": self.estimated_cost,
             "timestamp": self.timestamp.isoformat(),
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
 
@@ -90,7 +91,7 @@ class ClaudeWebSearch:
         self,
         client: Optional[Anthropic] = None,
         default_model: str = "claude-sonnet-4-5-20250929",
-        track_costs: bool = True
+        track_costs: bool = True,
     ):
         """
         Initialize Claude Web Search.
@@ -112,7 +113,7 @@ class ClaudeWebSearch:
         context: Optional[str] = None,
         model: Optional[str] = None,
         max_tokens: int = 2000,
-        company_name: Optional[str] = None
+        company_name: Optional[str] = None,
     ) -> WebSearchResult:
         """
         Perform a web search with Claude analysis.
@@ -148,7 +149,7 @@ Format sources as a list at the end."""
                 model=model,
                 max_tokens=max_tokens,
                 tools=[{"type": "web_search"}],
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
             )
 
             # Update search count
@@ -176,7 +177,7 @@ Format sources as a list at the end."""
                     input_tokens=response.usage.input_tokens,
                     output_tokens=response.usage.output_tokens,
                     agent_name="web_search",
-                    company_name=company_name or "unknown"
+                    company_name=company_name or "unknown",
                 )
 
             result = WebSearchResult(
@@ -185,7 +186,7 @@ Format sources as a list at the end."""
                 sources=sources,
                 input_tokens=response.usage.input_tokens,
                 output_tokens=response.usage.output_tokens,
-                metadata={"model": model, "context": context}
+                metadata={"model": model, "context": context},
             )
 
             logger.info(f"[WebSearch] Query: {query[:50]}... | Sources: {len(sources)}")
@@ -194,9 +195,7 @@ Format sources as a list at the end."""
         except Exception as e:
             logger.error(f"[WebSearch] Error: {e}")
             return WebSearchResult(
-                query=query,
-                content=f"Search failed: {str(e)}",
-                metadata={"error": str(e)}
+                query=query, content=f"Search failed: {str(e)}", metadata={"error": str(e)}
             )
 
     def research_company_news(
@@ -204,7 +203,7 @@ Format sources as a list at the end."""
         company_name: str,
         topics: Optional[List[str]] = None,
         days_back: int = 30,
-        model: Optional[str] = None
+        model: Optional[str] = None,
     ) -> WebSearchResult:
         """
         Get latest news for a company.
@@ -234,11 +233,7 @@ Include specific dates for all news items.
 Cite sources for all claims."""
 
         return self.search(
-            query=query,
-            context=context,
-            model=model,
-            max_tokens=3000,
-            company_name=company_name
+            query=query, context=context, model=model, max_tokens=3000, company_name=company_name
         )
 
     def get_competitive_intelligence(
@@ -246,7 +241,7 @@ Cite sources for all claims."""
         company_name: str,
         competitors: List[str],
         aspects: Optional[List[str]] = None,
-        model: Optional[str] = None
+        model: Optional[str] = None,
     ) -> WebSearchResult:
         """
         Get competitive analysis from recent sources.
@@ -295,18 +290,11 @@ Use the most recent data available.
 Cite all sources with dates."""
 
         return self.search(
-            query=query,
-            context=context,
-            model=model,
-            max_tokens=4000,
-            company_name=company_name
+            query=query, context=context, model=model, max_tokens=4000, company_name=company_name
         )
 
     def get_financial_updates(
-        self,
-        company_name: str,
-        ticker: Optional[str] = None,
-        model: Optional[str] = None
+        self, company_name: str, ticker: Optional[str] = None, model: Optional[str] = None
     ) -> WebSearchResult:
         """
         Get latest financial information for a company.
@@ -347,18 +335,11 @@ Focus on official company releases and reputable financial sources.
 Include specific numbers and dates."""
 
         return self.search(
-            query=query,
-            context=context,
-            model=model,
-            max_tokens=2500,
-            company_name=company_name
+            query=query, context=context, model=model, max_tokens=2500, company_name=company_name
         )
 
     def get_industry_trends(
-        self,
-        industry: str,
-        company_context: Optional[str] = None,
-        model: Optional[str] = None
+        self, industry: str, company_context: Optional[str] = None, model: Optional[str] = None
     ) -> WebSearchResult:
         """
         Get current trends for an industry.
@@ -402,11 +383,7 @@ Include specific numbers and dates."""
 Use recent market research and analyst reports."""
 
         return self.search(
-            query=query,
-            context=context,
-            model=model,
-            max_tokens=3000,
-            company_name=company_context
+            query=query, context=context, model=model, max_tokens=3000, company_name=company_context
         )
 
     def get_search_stats(self) -> Dict[str, Any]:
@@ -420,7 +397,7 @@ Use recent market research and analyst reports."""
             return {
                 "total_searches": self._search_count,
                 "estimated_cost": self._search_count * 0.01,  # $0.01 per search
-                "cost_per_1k": 10.0  # $10 per 1,000 searches
+                "cost_per_1k": 10.0,  # $10 per 1,000 searches
             }
 
     def reset_stats(self) -> None:

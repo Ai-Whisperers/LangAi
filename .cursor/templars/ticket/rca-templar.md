@@ -19,9 +19,9 @@ provenance: { owner: team-ticket, last_review: 2025-11-04 }
 
 ## Impact Assessment
 
-**Severity**: {{severity_level}}  
-**Scope**: {{impact_scope}}  
-**Users Affected**: {{users_affected}}  
+**Severity**: {{severity_level}}
+**Scope**: {{impact_scope}}
+**Users Affected**: {{users_affected}}
 **Duration**: {{problem_duration}}
 
 ## Timeline of Events
@@ -38,7 +38,7 @@ provenance: { owner: team-ticket, last_review: 2025-11-04 }
 
 {{root_cause_description}}
 
-**Category**: {{root_cause_category}}  
+**Category**: {{root_cause_category}}
 (Human Error | Process Gaps | System Limitations | Communication Issues | Resource Constraints | Environmental Factors)
 
 ## Contributing Factors
@@ -70,4 +70,3 @@ provenance: { owner: team-ticket, last_review: 2025-11-04 }
 {{#lessons}}
 - {{lesson}}
 {{/lessons}}
-

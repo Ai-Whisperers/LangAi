@@ -38,4 +38,3 @@ provenance: { owner: team-ticket, last_review: 2025-12-06 }
 ## Follow-up Actions
 - [ ] {{action_1}}
 - [ ] {{action_2}}
-

@@ -13,6 +13,7 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional, Tuple
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
@@ -20,6 +21,7 @@ logger = get_logger(__name__)
 
 class Language(Enum):
     """Supported languages for search queries."""
+
     ENGLISH = "en"
     SPANISH = "es"
     PORTUGUESE = "pt"
@@ -33,6 +35,7 @@ class Language(Enum):
 
 class Region(Enum):
     """Geographic regions."""
+
     NORTH_AMERICA = "north_america"
     LATAM_BRAZIL = "latam_brazil"
     LATAM_SPANISH = "latam_spanish"
@@ -44,6 +47,7 @@ class Region(Enum):
 @dataclass
 class MultilingualQuery:
     """A search query with language metadata."""
+
     query: str
     language: Language
     topic: str
@@ -53,6 +57,7 @@ class MultilingualQuery:
 @dataclass
 class RegionalSource:
     """A regional data source for market-specific research."""
+
     name: str
     url: str
     language: Language
@@ -66,10 +71,22 @@ class RegionalSource:
 BRAND_DISAMBIGUATION_MAP = {
     # Telecom brands with generic names
     "personal": ("Núcleo S.A.", "telecomunicaciones", ["Personal Paraguay", "Telecom Personal"]),
-    "personal paraguay": ("Núcleo S.A.", "telecomunicaciones", ["Telecom Personal", "operador móvil"]),
-    "personal argentina": ("Telecom Argentina S.A.", "telecomunicaciones", ["Telecom Personal Argentina"]),
+    "personal paraguay": (
+        "Núcleo S.A.",
+        "telecomunicaciones",
+        ["Telecom Personal", "operador móvil"],
+    ),
+    "personal argentina": (
+        "Telecom Argentina S.A.",
+        "telecomunicaciones",
+        ["Telecom Personal Argentina"],
+    ),
     "tigo": ("Millicom International", "telecomunicaciones", ["Tigo mobile"]),
-    "tigo paraguay": ("Telefónica Celular del Paraguay S.A.", "telecomunicaciones", ["Millicom Paraguay"]),
+    "tigo paraguay": (
+        "Telefónica Celular del Paraguay S.A.",
+        "telecomunicaciones",
+        ["Millicom Paraguay"],
+    ),
     "claro": ("América Móvil", "telecomunicaciones", ["Claro móvil"]),
     "vivo": ("Telefônica Brasil", "telecomunicações", ["Vivo celular"]),
     "movistar": ("Telefónica", "telecomunicaciones", ["Movistar móvil"]),
@@ -237,69 +254,103 @@ COUNTRY_INDICATORS = {
     # Mexico FIRST because S.A. de C.V. is more specific than just S.A.
     "mexico": {
         "patterns": [
-            r"\bS\.?A\.?\s*de\s*C\.?V\.?\b", r"\bméxico\b", r"\bmexico\b", r"\bmexicano?\b",
-            r"\bBMV\b", r"\bMXN\b",
+            r"\bS\.?A\.?\s*de\s*C\.?V\.?\b",
+            r"\bméxico\b",
+            r"\bmexico\b",
+            r"\bmexicano?\b",
+            r"\bBMV\b",
+            r"\bMXN\b",
         ],
         "region": Region.LATAM_SPANISH,
         "language": Language.SPANISH,
     },
     "brazil": {
         "patterns": [
-            r"\bbrasil\b", r"\bbrasileira?\b", r"\bLtda\.?\b",
-            r"\bB3\b", r"\bBOVESPA\b", r"\bBRL\b", r"\bR\$",
+            r"\bbrasil\b",
+            r"\bbrasileira?\b",
+            r"\bLtda\.?\b",
+            r"\bB3\b",
+            r"\bBOVESPA\b",
+            r"\bBRL\b",
+            r"\bR\$",
             r"\bS\.?A\.?\b(?!\s*de\s*C\.?V\.?)",  # S.A. but NOT followed by de C.V.
-            r"\bpetrobras\b", r"\bvale\b", r"\bitaú\b", r"\bbradesco\b",  # Major Brazilian companies
+            r"\bpetrobras\b",
+            r"\bvale\b",
+            r"\bitaú\b",
+            r"\bbradesco\b",  # Major Brazilian companies
         ],
         "region": Region.LATAM_BRAZIL,
         "language": Language.PORTUGUESE,
     },
     "argentina": {
         "patterns": [
-            r"\bargentin[ao]\b", r"\bBCBA\b", r"\bARS\b",
+            r"\bargentin[ao]\b",
+            r"\bBCBA\b",
+            r"\bARS\b",
         ],
         "region": Region.LATAM_SPANISH,
         "language": Language.SPANISH,
     },
     "chile": {
         "patterns": [
-            r"\bchile\b", r"\bchilena?\b", r"\bBCS\b", r"\bCLP\b",
+            r"\bchile\b",
+            r"\bchilena?\b",
+            r"\bBCS\b",
+            r"\bCLP\b",
         ],
         "region": Region.LATAM_SPANISH,
         "language": Language.SPANISH,
     },
     "colombia": {
         "patterns": [
-            r"\bcolombia\b", r"\bcolombian[ao]\b", r"\bBVC\b", r"\bCOP\b",
+            r"\bcolombia\b",
+            r"\bcolombian[ao]\b",
+            r"\bBVC\b",
+            r"\bCOP\b",
         ],
         "region": Region.LATAM_SPANISH,
         "language": Language.SPANISH,
     },
     "peru": {
         "patterns": [
-            r"\bperú?\b", r"\bperuan[ao]\b", r"\bBVL\b", r"\bPEN\b",
+            r"\bperú?\b",
+            r"\bperuan[ao]\b",
+            r"\bBVL\b",
+            r"\bPEN\b",
         ],
         "region": Region.LATAM_SPANISH,
         "language": Language.SPANISH,
     },
     "paraguay": {
         "patterns": [
-            r"\bparaguay\b", r"\bparaguay[ao]\b", r"\bBVPASA\b", r"\bPYG\b",
-            r"\basunción\b", r"\basuncion\b",
+            r"\bparaguay\b",
+            r"\bparaguay[ao]\b",
+            r"\bBVPASA\b",
+            r"\bPYG\b",
+            r"\basunción\b",
+            r"\basuncion\b",
         ],
         "region": Region.LATAM_SPANISH,
         "language": Language.SPANISH,
     },
     "ecuador": {
         "patterns": [
-            r"\becuador\b", r"\becuatorian[ao]\b", r"\bBVQ\b",
-            r"\bguayaquil\b", r"\bquito\b",
+            r"\becuador\b",
+            r"\becuatorian[ao]\b",
+            r"\bBVQ\b",
+            r"\bguayaquil\b",
+            r"\bquito\b",
         ],
         "region": Region.LATAM_SPANISH,
         "language": Language.SPANISH,
     },
     "venezuela": {
         "patterns": [
-            r"\bvenezuela\b", r"\bvenezolan[ao]\b", r"\bBVC\b", r"\bVES\b", r"\bVEF\b",
+            r"\bvenezuela\b",
+            r"\bvenezolan[ao]\b",
+            r"\bBVC\b",
+            r"\bVES\b",
+            r"\bVEF\b",
             r"\bcaracas\b",
         ],
         "region": Region.LATAM_SPANISH,
@@ -307,7 +358,10 @@ COUNTRY_INDICATORS = {
     },
     "uruguay": {
         "patterns": [
-            r"\buruguay\b", r"\buruguay[ao]\b", r"\bBVMV\b", r"\bUYU\b",
+            r"\buruguay\b",
+            r"\buruguay[ao]\b",
+            r"\bBVMV\b",
+            r"\bUYU\b",
             r"\bmontevideo\b",
         ],
         "region": Region.LATAM_SPANISH,
@@ -315,37 +369,55 @@ COUNTRY_INDICATORS = {
     },
     "bolivia": {
         "patterns": [
-            r"\bbolivia\b", r"\bbolivian[ao]\b", r"\bBBV\b", r"\bBOB\b",
-            r"\bla paz\b", r"\bsanta cruz\b",
+            r"\bbolivia\b",
+            r"\bbolivian[ao]\b",
+            r"\bBBV\b",
+            r"\bBOB\b",
+            r"\bla paz\b",
+            r"\bsanta cruz\b",
         ],
         "region": Region.LATAM_SPANISH,
         "language": Language.SPANISH,
     },
     "panama": {
         "patterns": [
-            r"\bpanama\b", r"\bpanamá\b", r"\bpanameñ[ao]\b", r"\bBVP\b", r"\bPAB\b",
+            r"\bpanama\b",
+            r"\bpanamá\b",
+            r"\bpanameñ[ao]\b",
+            r"\bBVP\b",
+            r"\bPAB\b",
         ],
         "region": Region.LATAM_SPANISH,
         "language": Language.SPANISH,
     },
     "costa_rica": {
         "patterns": [
-            r"\bcosta rica\b", r"\bcostarricens[ae]\b", r"\bBNV\b", r"\bCRC\b",
-            r"\bsan josé\b", r"\bsan jose\b",
+            r"\bcosta rica\b",
+            r"\bcostarricens[ae]\b",
+            r"\bBNV\b",
+            r"\bCRC\b",
+            r"\bsan josé\b",
+            r"\bsan jose\b",
         ],
         "region": Region.LATAM_SPANISH,
         "language": Language.SPANISH,
     },
     "guatemala": {
         "patterns": [
-            r"\bguatemala\b", r"\bguatemalte[ck]o\b", r"\bBVN\b", r"\bGTQ\b",
+            r"\bguatemala\b",
+            r"\bguatemalte[ck]o\b",
+            r"\bBVN\b",
+            r"\bGTQ\b",
         ],
         "region": Region.LATAM_SPANISH,
         "language": Language.SPANISH,
     },
     "dominican_republic": {
         "patterns": [
-            r"\bdominicana?\b", r"\brepública dominicana\b", r"\bBVRD\b", r"\bDOP\b",
+            r"\bdominicana?\b",
+            r"\brepública dominicana\b",
+            r"\bBVRD\b",
+            r"\bDOP\b",
             r"\bsanto domingo\b",
         ],
         "region": Region.LATAM_SPANISH,
@@ -353,7 +425,9 @@ COUNTRY_INDICATORS = {
     },
     "honduras": {
         "patterns": [
-            r"\bhonduras\b", r"\bhondureñ[ao]\b", r"\bHNL\b",
+            r"\bhonduras\b",
+            r"\bhondureñ[ao]\b",
+            r"\bHNL\b",
             r"\btegucigalpa\b",
         ],
         "region": Region.LATAM_SPANISH,
@@ -361,7 +435,9 @@ COUNTRY_INDICATORS = {
     },
     "el_salvador": {
         "patterns": [
-            r"\bel salvador\b", r"\bsalvadoreñ[ao]\b", r"\bSSV\b",
+            r"\bel salvador\b",
+            r"\bsalvadoreñ[ao]\b",
+            r"\bSSV\b",
             r"\bsan salvador\b",
         ],
         "region": Region.LATAM_SPANISH,
@@ -369,7 +445,9 @@ COUNTRY_INDICATORS = {
     },
     "nicaragua": {
         "patterns": [
-            r"\bnicaragua\b", r"\bnicaraguens[ae]\b", r"\bNIO\b",
+            r"\bnicaragua\b",
+            r"\bnicaraguens[ae]\b",
+            r"\bNIO\b",
             r"\bmanagua\b",
         ],
         "region": Region.LATAM_SPANISH,
@@ -377,15 +455,21 @@ COUNTRY_INDICATORS = {
     },
     "cuba": {
         "patterns": [
-            r"\bcuba\b", r"\bcuban[ao]\b", r"\bCUP\b", r"\bCUC\b",
-            r"\bla habana\b", r"\bhavana\b",
+            r"\bcuba\b",
+            r"\bcuban[ao]\b",
+            r"\bCUP\b",
+            r"\bCUC\b",
+            r"\bla habana\b",
+            r"\bhavana\b",
         ],
         "region": Region.LATAM_SPANISH,
         "language": Language.SPANISH,
     },
     "puerto_rico": {
         "patterns": [
-            r"\bpuerto rico\b", r"\bpuertorriqueñ[ao]\b", r"\bboricua\b",
+            r"\bpuerto rico\b",
+            r"\bpuertorriqueñ[ao]\b",
+            r"\bboricua\b",
             r"\bsan juan\b",
         ],
         "region": Region.LATAM_SPANISH,
@@ -1082,130 +1166,166 @@ QUERY_TEMPLATES = {
 REGIONAL_SOURCES = {
     # Latin America
     "mexico": [
-        RegionalSource("BMV", "bmv.com.mx", Language.SPANISH, "Mexico",
-                      ["financial", "stock"], "site:bmv.com.mx {query}"),
-        RegionalSource("Expansion MX", "expansion.mx", Language.SPANISH, "Mexico",
-                      ["news", "financial"]),
-        RegionalSource("El Economista MX", "eleconomista.com.mx", Language.SPANISH, "Mexico",
-                      ["news", "financial"]),
-        RegionalSource("CNBV", "cnbv.gob.mx", Language.SPANISH, "Mexico",
-                      ["regulatory"]),
+        RegionalSource(
+            "BMV",
+            "bmv.com.mx",
+            Language.SPANISH,
+            "Mexico",
+            ["financial", "stock"],
+            "site:bmv.com.mx {query}",
+        ),
+        RegionalSource(
+            "Expansion MX", "expansion.mx", Language.SPANISH, "Mexico", ["news", "financial"]
+        ),
+        RegionalSource(
+            "El Economista MX",
+            "eleconomista.com.mx",
+            Language.SPANISH,
+            "Mexico",
+            ["news", "financial"],
+        ),
+        RegionalSource("CNBV", "cnbv.gob.mx", Language.SPANISH, "Mexico", ["regulatory"]),
     ],
     "brazil": [
-        RegionalSource("B3", "b3.com.br", Language.PORTUGUESE, "Brazil",
-                      ["financial", "stock"], "site:b3.com.br {query}"),
-        RegionalSource("Valor Econômico", "valor.globo.com", Language.PORTUGUESE, "Brazil",
-                      ["news", "financial"]),
-        RegionalSource("InfoMoney", "infomoney.com.br", Language.PORTUGUESE, "Brazil",
-                      ["financial", "stock"]),
-        RegionalSource("Exame", "exame.com", Language.PORTUGUESE, "Brazil",
-                      ["news", "business"]),
-        RegionalSource("CVM", "cvm.gov.br", Language.PORTUGUESE, "Brazil",
-                      ["regulatory"]),
+        RegionalSource(
+            "B3",
+            "b3.com.br",
+            Language.PORTUGUESE,
+            "Brazil",
+            ["financial", "stock"],
+            "site:b3.com.br {query}",
+        ),
+        RegionalSource(
+            "Valor Econômico",
+            "valor.globo.com",
+            Language.PORTUGUESE,
+            "Brazil",
+            ["news", "financial"],
+        ),
+        RegionalSource(
+            "InfoMoney", "infomoney.com.br", Language.PORTUGUESE, "Brazil", ["financial", "stock"]
+        ),
+        RegionalSource("Exame", "exame.com", Language.PORTUGUESE, "Brazil", ["news", "business"]),
+        RegionalSource("CVM", "cvm.gov.br", Language.PORTUGUESE, "Brazil", ["regulatory"]),
     ],
     "argentina": [
-        RegionalSource("BYMA", "byma.com.ar", Language.SPANISH, "Argentina",
-                      ["financial", "stock"]),
-        RegionalSource("Ámbito", "ambito.com", Language.SPANISH, "Argentina",
-                      ["news", "financial"]),
-        RegionalSource("El Cronista", "cronista.com", Language.SPANISH, "Argentina",
-                      ["news", "financial"]),
+        RegionalSource(
+            "BYMA", "byma.com.ar", Language.SPANISH, "Argentina", ["financial", "stock"]
+        ),
+        RegionalSource(
+            "Ámbito", "ambito.com", Language.SPANISH, "Argentina", ["news", "financial"]
+        ),
+        RegionalSource(
+            "El Cronista", "cronista.com", Language.SPANISH, "Argentina", ["news", "financial"]
+        ),
     ],
     "chile": [
-        RegionalSource("Bolsa de Santiago", "bolsadesantiago.com", Language.SPANISH, "Chile",
-                      ["financial", "stock"]),
-        RegionalSource("Diario Financiero", "df.cl", Language.SPANISH, "Chile",
-                      ["news", "financial"]),
-        RegionalSource("CMF Chile", "cmfchile.cl", Language.SPANISH, "Chile",
-                      ["regulatory"]),
+        RegionalSource(
+            "Bolsa de Santiago",
+            "bolsadesantiago.com",
+            Language.SPANISH,
+            "Chile",
+            ["financial", "stock"],
+        ),
+        RegionalSource(
+            "Diario Financiero", "df.cl", Language.SPANISH, "Chile", ["news", "financial"]
+        ),
+        RegionalSource("CMF Chile", "cmfchile.cl", Language.SPANISH, "Chile", ["regulatory"]),
     ],
     "colombia": [
-        RegionalSource("BVC", "bvc.com.co", Language.SPANISH, "Colombia",
-                      ["financial", "stock"]),
-        RegionalSource("Portafolio", "portafolio.co", Language.SPANISH, "Colombia",
-                      ["news", "financial"]),
+        RegionalSource("BVC", "bvc.com.co", Language.SPANISH, "Colombia", ["financial", "stock"]),
+        RegionalSource(
+            "Portafolio", "portafolio.co", Language.SPANISH, "Colombia", ["news", "financial"]
+        ),
     ],
     "peru": [
-        RegionalSource("BVL", "bvl.com.pe", Language.SPANISH, "Peru",
-                      ["financial", "stock"]),
-        RegionalSource("Gestión", "gestion.pe", Language.SPANISH, "Peru",
-                      ["news", "financial"]),
+        RegionalSource("BVL", "bvl.com.pe", Language.SPANISH, "Peru", ["financial", "stock"]),
+        RegionalSource("Gestión", "gestion.pe", Language.SPANISH, "Peru", ["news", "financial"]),
     ],
     "paraguay": [
-        RegionalSource("BVPASA", "bvpasa.com.py", Language.SPANISH, "Paraguay",
-                      ["financial", "stock"]),
-        RegionalSource("5 Días", "5dias.com.py", Language.SPANISH, "Paraguay",
-                      ["news", "business"]),
-        RegionalSource("La Nación PY", "lanacion.com.py", Language.SPANISH, "Paraguay",
-                      ["news"]),
-        RegionalSource("CONATEL", "conatel.gov.py", Language.SPANISH, "Paraguay",
-                      ["regulatory", "telecom"]),
+        RegionalSource(
+            "BVPASA", "bvpasa.com.py", Language.SPANISH, "Paraguay", ["financial", "stock"]
+        ),
+        RegionalSource(
+            "5 Días", "5dias.com.py", Language.SPANISH, "Paraguay", ["news", "business"]
+        ),
+        RegionalSource("La Nación PY", "lanacion.com.py", Language.SPANISH, "Paraguay", ["news"]),
+        RegionalSource(
+            "CONATEL", "conatel.gov.py", Language.SPANISH, "Paraguay", ["regulatory", "telecom"]
+        ),
     ],
     # Europe
     "spain": [
-        RegionalSource("BME", "bolsasymercados.es", Language.SPANISH, "Spain",
-                      ["financial", "stock"]),
-        RegionalSource("Expansión ES", "expansion.com", Language.SPANISH, "Spain",
-                      ["news", "financial"]),
-        RegionalSource("Cinco Días", "cincodias.elpais.com", Language.SPANISH, "Spain",
-                      ["news", "financial"]),
-        RegionalSource("CNMV", "cnmv.es", Language.SPANISH, "Spain",
-                      ["regulatory"]),
+        RegionalSource(
+            "BME", "bolsasymercados.es", Language.SPANISH, "Spain", ["financial", "stock"]
+        ),
+        RegionalSource(
+            "Expansión ES", "expansion.com", Language.SPANISH, "Spain", ["news", "financial"]
+        ),
+        RegionalSource(
+            "Cinco Días", "cincodias.elpais.com", Language.SPANISH, "Spain", ["news", "financial"]
+        ),
+        RegionalSource("CNMV", "cnmv.es", Language.SPANISH, "Spain", ["regulatory"]),
     ],
     "germany": [
-        RegionalSource("Deutsche Börse", "deutsche-boerse.com", Language.GERMAN, "Germany",
-                      ["financial", "stock"]),
-        RegionalSource("Handelsblatt", "handelsblatt.com", Language.GERMAN, "Germany",
-                      ["news", "financial"]),
-        RegionalSource("Manager Magazin", "manager-magazin.de", Language.GERMAN, "Germany",
-                      ["news", "business"]),
-        RegionalSource("BaFin", "bafin.de", Language.GERMAN, "Germany",
-                      ["regulatory"]),
+        RegionalSource(
+            "Deutsche Börse",
+            "deutsche-boerse.com",
+            Language.GERMAN,
+            "Germany",
+            ["financial", "stock"],
+        ),
+        RegionalSource(
+            "Handelsblatt", "handelsblatt.com", Language.GERMAN, "Germany", ["news", "financial"]
+        ),
+        RegionalSource(
+            "Manager Magazin",
+            "manager-magazin.de",
+            Language.GERMAN,
+            "Germany",
+            ["news", "business"],
+        ),
+        RegionalSource("BaFin", "bafin.de", Language.GERMAN, "Germany", ["regulatory"]),
     ],
     "france": [
-        RegionalSource("Euronext Paris", "euronext.com", Language.FRENCH, "France",
-                      ["financial", "stock"]),
-        RegionalSource("Les Echos", "lesechos.fr", Language.FRENCH, "France",
-                      ["news", "financial"]),
-        RegionalSource("Le Figaro Économie", "lefigaro.fr", Language.FRENCH, "France",
-                      ["news", "financial"]),
-        RegionalSource("AMF", "amf-france.org", Language.FRENCH, "France",
-                      ["regulatory"]),
+        RegionalSource(
+            "Euronext Paris", "euronext.com", Language.FRENCH, "France", ["financial", "stock"]
+        ),
+        RegionalSource(
+            "Les Echos", "lesechos.fr", Language.FRENCH, "France", ["news", "financial"]
+        ),
+        RegionalSource(
+            "Le Figaro Économie", "lefigaro.fr", Language.FRENCH, "France", ["news", "financial"]
+        ),
+        RegionalSource("AMF", "amf-france.org", Language.FRENCH, "France", ["regulatory"]),
     ],
     "italy": [
-        RegionalSource("Borsa Italiana", "borsaitaliana.it", Language.ITALIAN, "Italy",
-                      ["financial", "stock"]),
-        RegionalSource("Il Sole 24 Ore", "ilsole24ore.com", Language.ITALIAN, "Italy",
-                      ["news", "financial"]),
-        RegionalSource("CONSOB", "consob.it", Language.ITALIAN, "Italy",
-                      ["regulatory"]),
+        RegionalSource(
+            "Borsa Italiana", "borsaitaliana.it", Language.ITALIAN, "Italy", ["financial", "stock"]
+        ),
+        RegionalSource(
+            "Il Sole 24 Ore", "ilsole24ore.com", Language.ITALIAN, "Italy", ["news", "financial"]
+        ),
+        RegionalSource("CONSOB", "consob.it", Language.ITALIAN, "Italy", ["regulatory"]),
     ],
     # Asia
     "china": [
-        RegionalSource("SSE", "sse.com.cn", Language.CHINESE, "China",
-                      ["financial", "stock"]),
-        RegionalSource("SZSE", "szse.cn", Language.CHINESE, "China",
-                      ["financial", "stock"]),
-        RegionalSource("Caixin", "caixin.com", Language.CHINESE, "China",
-                      ["news", "financial"]),
-        RegionalSource("CSRC", "csrc.gov.cn", Language.CHINESE, "China",
-                      ["regulatory"]),
+        RegionalSource("SSE", "sse.com.cn", Language.CHINESE, "China", ["financial", "stock"]),
+        RegionalSource("SZSE", "szse.cn", Language.CHINESE, "China", ["financial", "stock"]),
+        RegionalSource("Caixin", "caixin.com", Language.CHINESE, "China", ["news", "financial"]),
+        RegionalSource("CSRC", "csrc.gov.cn", Language.CHINESE, "China", ["regulatory"]),
     ],
     "japan": [
-        RegionalSource("TSE", "jpx.co.jp", Language.JAPANESE, "Japan",
-                      ["financial", "stock"]),
-        RegionalSource("Nikkei", "nikkei.com", Language.JAPANESE, "Japan",
-                      ["news", "financial"]),
-        RegionalSource("FSA Japan", "fsa.go.jp", Language.JAPANESE, "Japan",
-                      ["regulatory"]),
+        RegionalSource("TSE", "jpx.co.jp", Language.JAPANESE, "Japan", ["financial", "stock"]),
+        RegionalSource("Nikkei", "nikkei.com", Language.JAPANESE, "Japan", ["news", "financial"]),
+        RegionalSource("FSA Japan", "fsa.go.jp", Language.JAPANESE, "Japan", ["regulatory"]),
     ],
     "south_korea": [
-        RegionalSource("KRX", "krx.co.kr", Language.KOREAN, "South Korea",
-                      ["financial", "stock"]),
-        RegionalSource("Maeil Business", "mk.co.kr", Language.KOREAN, "South Korea",
-                      ["news", "financial"]),
-        RegionalSource("FSC Korea", "fsc.go.kr", Language.KOREAN, "South Korea",
-                      ["regulatory"]),
+        RegionalSource("KRX", "krx.co.kr", Language.KOREAN, "South Korea", ["financial", "stock"]),
+        RegionalSource(
+            "Maeil Business", "mk.co.kr", Language.KOREAN, "South Korea", ["news", "financial"]
+        ),
+        RegionalSource("FSC Korea", "fsc.go.kr", Language.KOREAN, "South Korea", ["regulatory"]),
     ],
 }
 
@@ -1242,7 +1362,7 @@ class MultilingualSearchGenerator:
                 "legal_name": legal_name,
                 "industry": industry,
                 "alternatives": alternatives,
-                "needs_disambiguation": True
+                "needs_disambiguation": True,
             }
 
         # Check partial matches
@@ -1252,16 +1372,13 @@ class MultilingualSearchGenerator:
                     "legal_name": legal_name,
                     "industry": industry,
                     "alternatives": alternatives,
-                    "needs_disambiguation": True
+                    "needs_disambiguation": True,
                 }
 
         return None
 
     def generate_disambiguated_query(
-        self,
-        company_name: str,
-        base_query: str,
-        disambiguation: Optional[dict] = None
+        self, company_name: str, base_query: str, disambiguation: Optional[dict] = None
     ) -> List[str]:
         """
         Generate multiple query variations with disambiguation.
@@ -1288,7 +1405,9 @@ class MultilingualSearchGenerator:
             # Add industry-qualified query
             industry = disambiguation.get("industry", "")
             if industry:
-                industry_query = f'"{company_name}" {industry} {base_query.replace("{company}", "").strip()}'
+                industry_query = (
+                    f'"{company_name}" {industry} {base_query.replace("{company}", "").strip()}'
+                )
                 queries.append(industry_query)
 
             # Add legal name query
@@ -1305,11 +1424,7 @@ class MultilingualSearchGenerator:
 
         return queries
 
-    def detect_country(
-        self,
-        company_name: str,
-        additional_context: str = ""
-    ) -> str:
+    def detect_country(self, company_name: str, additional_context: str = "") -> str:
         """
         Detect the country for a company based on name patterns.
 
@@ -1330,9 +1445,7 @@ class MultilingualSearchGenerator:
         return "United States"  # Default
 
     def detect_region(
-        self,
-        company_name: str,
-        additional_context: str = ""
+        self, company_name: str, additional_context: str = ""
     ) -> Tuple[Region, Language]:
         """
         Detect the likely region and primary language for a company.
@@ -1417,9 +1530,11 @@ class MultilingualSearchGenerator:
         if use_disambiguation:
             disambiguation = self.get_brand_disambiguation(company_name)
             if disambiguation:
-                logger.info(f"Brand disambiguation active for '{company_name}': "
-                           f"legal_name='{disambiguation.get('legal_name')}', "
-                           f"industry='{disambiguation.get('industry')}'")
+                logger.info(
+                    f"Brand disambiguation active for '{company_name}': "
+                    f"legal_name='{disambiguation.get('legal_name')}', "
+                    f"industry='{disambiguation.get('industry')}'"
+                )
 
         # Default topics - expanded to 16 for comprehensive research
         # CEO is critical - ceo_appointment added as dedicated topic
@@ -1462,12 +1577,11 @@ class MultilingualSearchGenerator:
                     base_query = template.format(company=company_name, country=detected_country)
                     priority = 1 if lang == language else 2  # Native language has higher priority
 
-                    queries.append(MultilingualQuery(
-                        query=base_query,
-                        language=lang,
-                        topic=topic,
-                        priority=priority
-                    ))
+                    queries.append(
+                        MultilingualQuery(
+                            query=base_query, language=lang, topic=topic, priority=priority
+                        )
+                    )
 
                     # If disambiguation is active, add legal name and industry-qualified queries
                     if disambiguation and disambiguation.get("needs_disambiguation"):
@@ -1475,24 +1589,35 @@ class MultilingualSearchGenerator:
                         industry = disambiguation.get("industry", "")
 
                         # Add legal name query for critical topics
-                        if legal_name and topic in ["overview", "financial", "leadership", "ceo_appointment"]:
-                            legal_query = template.format(company=legal_name, country=detected_country)
-                            queries.append(MultilingualQuery(
-                                query=legal_query,
-                                language=lang,
-                                topic=topic,
-                                priority=priority + 1  # Slightly lower priority
-                            ))
+                        if legal_name and topic in [
+                            "overview",
+                            "financial",
+                            "leadership",
+                            "ceo_appointment",
+                        ]:
+                            legal_query = template.format(
+                                company=legal_name, country=detected_country
+                            )
+                            queries.append(
+                                MultilingualQuery(
+                                    query=legal_query,
+                                    language=lang,
+                                    topic=topic,
+                                    priority=priority + 1,  # Slightly lower priority
+                                )
+                            )
 
                         # Add industry-qualified query for overview/news
                         if industry and topic in ["overview", "news"]:
                             industry_query = f'"{company_name}" {industry}'
-                            queries.append(MultilingualQuery(
-                                query=industry_query,
-                                language=lang,
-                                topic=topic,
-                                priority=priority + 1
-                            ))
+                            queries.append(
+                                MultilingualQuery(
+                                    query=industry_query,
+                                    language=lang,
+                                    topic=topic,
+                                    priority=priority + 1,
+                                )
+                            )
 
         # Deduplicate queries
         seen = set()
@@ -1507,11 +1632,7 @@ class MultilingualSearchGenerator:
         unique_queries.sort(key=lambda q: q.priority)
         return unique_queries[:max_queries]
 
-    def get_parent_company_queries(
-        self,
-        company_name: str,
-        max_queries: int = 5
-    ) -> List[str]:
+    def get_parent_company_queries(self, company_name: str, max_queries: int = 5) -> List[str]:
         """
         Generate queries for the parent company if this is a subsidiary.
 
@@ -1536,11 +1657,7 @@ class MultilingualSearchGenerator:
 
         return queries[:max_queries]
 
-    def get_alternative_name_queries(
-        self,
-        company_name: str,
-        max_queries: int = 5
-    ) -> List[str]:
+    def get_alternative_name_queries(self, company_name: str, max_queries: int = 5) -> List[str]:
         """
         Generate queries with alternative company name variations.
 
@@ -1558,7 +1675,7 @@ class MultilingualSearchGenerator:
         suffixes = [" S.A.", " SA", " Ltda", " Inc", " Corp", " LLC", " S.A. de C.V."]
         for suffix in suffixes:
             if name.endswith(suffix):
-                name = name[:-len(suffix)]
+                name = name[: -len(suffix)]
                 break
 
         # Add variations
@@ -1567,7 +1684,7 @@ class MultilingualSearchGenerator:
         variations.append(f"{name} empresa brasileira")  # Brazilian
 
         # Add without special characters
-        clean_name = re.sub(r'[^\w\s]', '', name)
+        clean_name = re.sub(r"[^\w\s]", "", name)
         if clean_name != name:
             variations.append(f"{clean_name} company")
 
@@ -1578,7 +1695,7 @@ class MultilingualSearchGenerator:
         company_name: str,
         country: Optional[str] = None,
         data_types: Optional[List[str]] = None,
-        max_queries: int = 10
+        max_queries: int = 10,
     ) -> List[str]:
         """
         Generate site-specific queries targeting regional data sources.
@@ -1623,7 +1740,7 @@ class MultilingualSearchGenerator:
         # Remove common suffixes for cleaner searches
         for suffix in [" S.A.", " SA", " Ltda", " Inc", " Corp", " LLC"]:
             if clean_name.endswith(suffix):
-                clean_name = clean_name[:-len(suffix)].strip()
+                clean_name = clean_name[: -len(suffix)].strip()
                 break
 
         # Generate site-specific queries for each source
@@ -1633,47 +1750,47 @@ class MultilingualSearchGenerator:
             # Add topic-specific queries based on data type
             if "regulatory" in source.data_types:
                 if source.language == Language.SPANISH:
-                    queries.append(f'{base_query} licencia regulación')
-                    queries.append(f'{base_query} resolución normativa')
+                    queries.append(f"{base_query} licencia regulación")
+                    queries.append(f"{base_query} resolución normativa")
                 elif source.language == Language.PORTUGUESE:
-                    queries.append(f'{base_query} licença regulamentação')
-                    queries.append(f'{base_query} resolução normativa')
+                    queries.append(f"{base_query} licença regulamentação")
+                    queries.append(f"{base_query} resolução normativa")
                 else:
-                    queries.append(f'{base_query} license regulation')
-                    queries.append(f'{base_query} resolution compliance')
+                    queries.append(f"{base_query} license regulation")
+                    queries.append(f"{base_query} resolution compliance")
 
             if "financial" in source.data_types or "stock" in source.data_types:
                 if source.language == Language.SPANISH:
-                    queries.append(f'{base_query} estados financieros')
-                    queries.append(f'{base_query} informe anual')
+                    queries.append(f"{base_query} estados financieros")
+                    queries.append(f"{base_query} informe anual")
                 elif source.language == Language.PORTUGUESE:
-                    queries.append(f'{base_query} demonstrações financeiras')
-                    queries.append(f'{base_query} relatório anual')
+                    queries.append(f"{base_query} demonstrações financeiras")
+                    queries.append(f"{base_query} relatório anual")
                 else:
-                    queries.append(f'{base_query} financial statements')
-                    queries.append(f'{base_query} annual report')
+                    queries.append(f"{base_query} financial statements")
+                    queries.append(f"{base_query} annual report")
 
             if "news" in source.data_types:
                 if source.language == Language.SPANISH:
-                    queries.append(f'{base_query} CEO director ejecutivo')
-                    queries.append(f'{base_query} noticias resultados')
+                    queries.append(f"{base_query} CEO director ejecutivo")
+                    queries.append(f"{base_query} noticias resultados")
                 elif source.language == Language.PORTUGUESE:
-                    queries.append(f'{base_query} CEO diretor executivo')
-                    queries.append(f'{base_query} notícias resultados')
+                    queries.append(f"{base_query} CEO diretor executivo")
+                    queries.append(f"{base_query} notícias resultados")
                 else:
-                    queries.append(f'{base_query} CEO executive')
-                    queries.append(f'{base_query} news results')
+                    queries.append(f"{base_query} CEO executive")
+                    queries.append(f"{base_query} news results")
 
             if "telecom" in source.data_types:
                 if source.language == Language.SPANISH:
-                    queries.append(f'{base_query} espectro frecuencia')
-                    queries.append(f'{base_query} telecomunicaciones móvil')
+                    queries.append(f"{base_query} espectro frecuencia")
+                    queries.append(f"{base_query} telecomunicaciones móvil")
                 elif source.language == Language.PORTUGUESE:
-                    queries.append(f'{base_query} espectro frequência')
-                    queries.append(f'{base_query} telecomunicações móvel')
+                    queries.append(f"{base_query} espectro frequência")
+                    queries.append(f"{base_query} telecomunicações móvel")
                 else:
-                    queries.append(f'{base_query} spectrum frequency')
-                    queries.append(f'{base_query} telecommunications mobile')
+                    queries.append(f"{base_query} spectrum frequency")
+                    queries.append(f"{base_query} telecommunications mobile")
 
         # Deduplicate and limit
         seen = set()
@@ -1691,7 +1808,7 @@ class MultilingualSearchGenerator:
         include_regional: bool = True,
         include_parent: bool = True,
         include_alternatives: bool = True,
-        max_total: int = 30
+        max_total: int = 30,
     ) -> List[str]:
         """
         Get all enhanced queries combining regional, parent, and alternative name queries.

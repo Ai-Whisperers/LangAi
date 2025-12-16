@@ -23,11 +23,11 @@ Please create comprehensive technical specification for this domain object:
    - Relationships to other domain objects
 
 2. **Field/Property Specifications**:
-   
+
    For each field, document:
    ```markdown
    ### [FieldName]
-   
+
    - **Type**: [Data type with precision]
    - **Purpose**: [What this field stores]
    - **Business Meaning**: [What it represents in business terms]
@@ -100,4 +100,3 @@ Follow standards from:
 - `.cursor/rules/technical-specifications/domain-object-rule.mdc`
 - `.cursor/rules/technical-specifications/specification-anti-duplication-rule.mdc`
 - `.cursor/rules/technical-specifications/documentation-architecture-rule.mdc`
-

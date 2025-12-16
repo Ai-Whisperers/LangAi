@@ -27,26 +27,18 @@ Usage:
     recent = repo.get_recent_research("Tesla", limit=5)
 """
 
-from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
-from contextlib import contextmanager
 import uuid
+from contextlib import contextmanager
+from datetime import datetime, timedelta
 from threading import Lock
+from typing import Any, Dict, List, Optional
 
-from sqlalchemy import create_engine, func, desc
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy import create_engine, desc, func
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 
-from .models import (
-    Base,
-    Company,
-    ResearchRun,
-    AgentOutput,
-    Source,
-    CostLog,
-    ResearchCache
-)
 from ..utils import utc_now
+from .models import AgentOutput, Base, Company, CostLog, ResearchCache, ResearchRun, Source
 
 
 class ResearchRepository:
@@ -58,10 +50,7 @@ class ResearchRepository:
     """
 
     def __init__(
-        self,
-        database_url: Optional[str] = None,
-        pool_size: int = 5,
-        max_overflow: int = 10
+        self, database_url: Optional[str] = None, pool_size: int = 5, max_overflow: int = 10
     ):
         """
         Initialize the repository.
@@ -73,8 +62,9 @@ class ResearchRepository:
         """
         if database_url is None:
             from ..config import get_config
+
             config = get_config()
-            database_url = getattr(config, 'database_url', None)
+            database_url = getattr(config, "database_url", None)
 
             if database_url is None:
                 # Default to SQLite if no PostgreSQL configured
@@ -86,7 +76,7 @@ class ResearchRepository:
             poolclass=QueuePool,
             pool_size=pool_size,
             max_overflow=max_overflow,
-            pool_pre_ping=True  # Verify connections before use
+            pool_pre_ping=True,  # Verify connections before use
         )
 
         self.SessionFactory = sessionmaker(bind=self.engine)
@@ -127,7 +117,7 @@ class ResearchRepository:
         name: str,
         ticker: Optional[str] = None,
         industry: Optional[str] = None,
-        company_type: str = "unknown"
+        company_type: str = "unknown",
     ) -> Company:
         """
         Get existing company or create new one.
@@ -144,9 +134,7 @@ class ResearchRepository:
         normalized = Company.normalize_name(name)
 
         with self.get_session() as session:
-            company = session.query(Company).filter(
-                Company.normalized_name == normalized
-            ).first()
+            company = session.query(Company).filter(Company.normalized_name == normalized).first()
 
             if company is None:
                 company = Company(
@@ -154,7 +142,7 @@ class ResearchRepository:
                     normalized_name=normalized,
                     ticker=ticker,
                     industry=industry,
-                    company_type=company_type
+                    company_type=company_type,
                 )
                 session.add(company)
                 session.flush()
@@ -170,9 +158,7 @@ class ResearchRepository:
         """Get company by name."""
         normalized = Company.normalize_name(name)
         with self.get_session() as session:
-            company = session.query(Company).filter(
-                Company.normalized_name == normalized
-            ).first()
+            company = session.query(Company).filter(Company.normalized_name == normalized).first()
             if company:
                 session.expunge(company)
             return company
@@ -180,24 +166,16 @@ class ResearchRepository:
     def get_company_by_ticker(self, ticker: str) -> Optional[Company]:
         """Get company by stock ticker."""
         with self.get_session() as session:
-            company = session.query(Company).filter(
-                Company.ticker == ticker.upper()
-            ).first()
+            company = session.query(Company).filter(Company.ticker == ticker.upper()).first()
             if company:
                 session.expunge(company)
             return company
 
-    def update_company(
-        self,
-        name: str,
-        **updates
-    ) -> Optional[Company]:
+    def update_company(self, name: str, **updates) -> Optional[Company]:
         """Update company attributes."""
         normalized = Company.normalize_name(name)
         with self.get_session() as session:
-            company = session.query(Company).filter(
-                Company.normalized_name == normalized
-            ).first()
+            company = session.query(Company).filter(Company.normalized_name == normalized).first()
 
             if company:
                 for key, value in updates.items():
@@ -218,7 +196,7 @@ class ResearchRepository:
         company_name: str,
         config_snapshot: Optional[Dict] = None,
         workflow_type: str = "parallel",
-        triggered_by: str = "api"
+        triggered_by: str = "api",
     ) -> ResearchRun:
         """
         Create a new research run.
@@ -243,7 +221,7 @@ class ResearchRepository:
                 status="running",
                 config_snapshot=config_snapshot,
                 workflow_type=workflow_type,
-                triggered_by=triggered_by
+                triggered_by=triggered_by,
             )
             session.add(run)
             session.flush()
@@ -251,9 +229,9 @@ class ResearchRepository:
             session.expunge(run)
 
             # Update company last researched
-            session.query(Company).filter(
-                Company.id == company.id
-            ).update({"last_researched_at": utc_now()})
+            session.query(Company).filter(Company.id == company.id).update(
+                {"last_researched_at": utc_now()}
+            )
 
             return run
 
@@ -268,13 +246,9 @@ class ResearchRepository:
         """
         with self.get_session() as session:
             if isinstance(run_id, int):
-                run = session.query(ResearchRun).filter(
-                    ResearchRun.id == run_id
-                ).first()
+                run = session.query(ResearchRun).filter(ResearchRun.id == run_id).first()
             else:
-                run = session.query(ResearchRun).filter(
-                    ResearchRun.run_id == run_id
-                ).first()
+                run = session.query(ResearchRun).filter(ResearchRun.run_id == run_id).first()
             if run:
                 session.expunge(run)
             return run
@@ -290,9 +264,7 @@ class ResearchRepository:
             Updated ResearchRun instance if found, None otherwise.
         """
         with self.get_session() as session:
-            run = session.query(ResearchRun).filter(
-                ResearchRun.id == run_id
-            ).first()
+            run = session.query(ResearchRun).filter(ResearchRun.id == run_id).first()
 
             if run:
                 run.status = status
@@ -303,6 +275,7 @@ class ResearchRepository:
                         started = run.started_at
                         if started.tzinfo is None:
                             from datetime import timezone
+
                             started = started.replace(tzinfo=timezone.utc)
                         run.duration_seconds = (run.completed_at - started).total_seconds()
                 session.flush()
@@ -317,7 +290,7 @@ class ResearchRepository:
         total_cost: Optional[float] = None,
         total_input_tokens: Optional[int] = None,
         total_output_tokens: Optional[int] = None,
-        quality_score: Optional[float] = None
+        quality_score: Optional[float] = None,
     ) -> Optional[ResearchRun]:
         """Update research run metrics by integer ID.
 
@@ -332,9 +305,7 @@ class ResearchRepository:
             Updated ResearchRun instance if found, None otherwise.
         """
         with self.get_session() as session:
-            run = session.query(ResearchRun).filter(
-                ResearchRun.id == run_id
-            ).first()
+            run = session.query(ResearchRun).filter(ResearchRun.id == run_id).first()
 
             if run:
                 if total_cost is not None:
@@ -361,9 +332,12 @@ class ResearchRepository:
             Most recent ResearchRun instance if found, None otherwise.
         """
         with self.get_session() as session:
-            run = session.query(ResearchRun).filter(
-                ResearchRun.company_id == company_id
-            ).order_by(desc(ResearchRun.started_at)).first()
+            run = (
+                session.query(ResearchRun)
+                .filter(ResearchRun.company_id == company_id)
+                .order_by(desc(ResearchRun.started_at))
+                .first()
+            )
 
             if run:
                 session.expunge(run)
@@ -376,13 +350,11 @@ class ResearchRepository:
         total_cost: float = 0.0,
         total_input_tokens: int = 0,
         total_output_tokens: int = 0,
-        quality_score: Optional[float] = None
+        quality_score: Optional[float] = None,
     ) -> Optional[ResearchRun]:
         """Mark research run as completed."""
         with self.get_session() as session:
-            run = session.query(ResearchRun).filter(
-                ResearchRun.run_id == run_id
-            ).first()
+            run = session.query(ResearchRun).filter(ResearchRun.run_id == run_id).first()
 
             if run:
                 run.mark_completed()
@@ -399,9 +371,7 @@ class ResearchRepository:
     def fail_research_run(self, run_id: str, error: str) -> Optional[ResearchRun]:
         """Mark research run as failed."""
         with self.get_session() as session:
-            run = session.query(ResearchRun).filter(
-                ResearchRun.run_id == run_id
-            ).first()
+            run = session.query(ResearchRun).filter(ResearchRun.run_id == run_id).first()
 
             if run:
                 run.mark_failed(error)
@@ -412,10 +382,7 @@ class ResearchRepository:
             return run
 
     def get_recent_research(
-        self,
-        company_name: str,
-        limit: int = 5,
-        status: Optional[str] = None
+        self, company_name: str, limit: int = 5, status: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
         Get recent research runs for a company.
@@ -433,9 +400,7 @@ class ResearchRepository:
             return []
 
         with self.get_session() as session:
-            query = session.query(ResearchRun).filter(
-                ResearchRun.company_id == company.id
-            )
+            query = session.query(ResearchRun).filter(ResearchRun.company_id == company.id)
 
             if status:
                 query = query.filter(ResearchRun.status == status)
@@ -449,7 +414,7 @@ class ResearchRepository:
                     "started_at": r.started_at.isoformat() if r.started_at else None,
                     "completed_at": r.completed_at.isoformat() if r.completed_at else None,
                     "total_cost": r.total_cost,
-                    "quality_score": r.quality_score
+                    "quality_score": r.quality_score,
                 }
                 for r in runs
             ]
@@ -471,7 +436,7 @@ class ResearchRepository:
         model: Optional[str] = None,  # Alias for model_used
         agent_type: Optional[str] = None,
         structured_data: Optional[Dict] = None,
-        metadata: Optional[Dict] = None
+        metadata: Optional[Dict] = None,
     ) -> AgentOutput:
         """
         Save agent output to database.
@@ -512,7 +477,7 @@ class ResearchRepository:
                 cached_tokens=cached_tokens,
                 model_used=actual_model,
                 structured_data=structured_data,
-                extra_metadata=extra_meta if extra_meta else None
+                extra_metadata=extra_meta if extra_meta else None,
             )
             session.add(output)
             session.flush()
@@ -520,22 +485,24 @@ class ResearchRepository:
             session.expunge(output)
 
             # Update research run totals
-            session.query(ResearchRun).filter(
-                ResearchRun.id == research_run_id
-            ).update({
-                "total_cost": ResearchRun.total_cost + cost,
-                "total_input_tokens": ResearchRun.total_input_tokens + input_tokens,
-                "total_output_tokens": ResearchRun.total_output_tokens + output_tokens
-            })
+            session.query(ResearchRun).filter(ResearchRun.id == research_run_id).update(
+                {
+                    "total_cost": ResearchRun.total_cost + cost,
+                    "total_input_tokens": ResearchRun.total_input_tokens + input_tokens,
+                    "total_output_tokens": ResearchRun.total_output_tokens + output_tokens,
+                }
+            )
 
             return output
 
     def get_agent_outputs(self, research_run_id: int) -> List[AgentOutput]:
         """Get all agent outputs for a research run."""
         with self.get_session() as session:
-            outputs = session.query(AgentOutput).filter(
-                AgentOutput.research_run_id == research_run_id
-            ).all()
+            outputs = (
+                session.query(AgentOutput)
+                .filter(AgentOutput.research_run_id == research_run_id)
+                .all()
+            )
 
             for output in outputs:
                 session.expunge(output)
@@ -553,7 +520,7 @@ class ResearchRepository:
         title: Optional[str] = None,
         content_snippet: Optional[str] = None,
         relevance_score: Optional[float] = None,
-        discovered_by_agent: Optional[str] = None
+        discovered_by_agent: Optional[str] = None,
     ) -> Source:
         """Save a source reference."""
         from urllib.parse import urlparse
@@ -563,10 +530,11 @@ class ResearchRepository:
 
         with self.get_session() as session:
             # Check for existing source in this run
-            existing = session.query(Source).filter(
-                Source.research_run_id == research_run_id,
-                Source.url_hash == url_hash
-            ).first()
+            existing = (
+                session.query(Source)
+                .filter(Source.research_run_id == research_run_id, Source.url_hash == url_hash)
+                .first()
+            )
 
             if existing:
                 session.expunge(existing)
@@ -580,7 +548,7 @@ class ResearchRepository:
                 title=title,
                 content_snippet=content_snippet,
                 relevance_score=relevance_score,
-                discovered_by_agent=discovered_by_agent
+                discovered_by_agent=discovered_by_agent,
             )
             session.add(source)
             session.flush()
@@ -588,19 +556,13 @@ class ResearchRepository:
             session.expunge(source)
 
             # Update source count
-            session.query(ResearchRun).filter(
-                ResearchRun.id == research_run_id
-            ).update({
-                "source_count": ResearchRun.source_count + 1
-            })
+            session.query(ResearchRun).filter(ResearchRun.id == research_run_id).update(
+                {"source_count": ResearchRun.source_count + 1}
+            )
 
             return source
 
-    def save_sources_bulk(
-        self,
-        research_run_id: int,
-        sources: List[Dict[str, Any]]
-    ) -> int:
+    def save_sources_bulk(self, research_run_id: int, sources: List[Dict[str, Any]]) -> int:
         """
         Save multiple sources efficiently.
 
@@ -631,10 +593,13 @@ class ResearchRepository:
 
             # Single query to get ALL existing hashes (fixes N+1 pattern)
             existing_hashes = {
-                row[0] for row in session.query(Source.url_hash).filter(
+                row[0]
+                for row in session.query(Source.url_hash)
+                .filter(
                     Source.research_run_id == research_run_id,
-                    Source.url_hash.in_(list(url_hashes.keys()))
-                ).all()
+                    Source.url_hash.in_(list(url_hashes.keys())),
+                )
+                .all()
             }
 
             # Process only new sources
@@ -650,17 +615,15 @@ class ResearchRepository:
                     domain=urlparse(url).netloc,
                     title=source_data.get("title"),
                     content_snippet=source_data.get("content", "")[:1000],
-                    relevance_score=source_data.get("score")
+                    relevance_score=source_data.get("score"),
                 )
                 session.add(source)
                 saved_count += 1
 
             if saved_count > 0:
-                session.query(ResearchRun).filter(
-                    ResearchRun.id == research_run_id
-                ).update({
-                    "source_count": ResearchRun.source_count + saved_count
-                })
+                session.query(ResearchRun).filter(ResearchRun.id == research_run_id).update(
+                    {"source_count": ResearchRun.source_count + saved_count}
+                )
 
         return saved_count
 
@@ -677,7 +640,7 @@ class ResearchRepository:
         agent_name: Optional[str] = None,
         research_run_id: Optional[int] = None,
         cached_tokens: int = 0,
-        is_batch: bool = False
+        is_batch: bool = False,
     ) -> CostLog:
         """Log an API call cost."""
         with self.get_session() as session:
@@ -689,7 +652,7 @@ class ResearchRepository:
                 output_tokens=output_tokens,
                 cached_tokens=cached_tokens,
                 cost=cost,
-                is_batch=is_batch
+                is_batch=is_batch,
             )
             session.add(log)
             session.flush()
@@ -699,9 +662,7 @@ class ResearchRepository:
             return log
 
     def get_cost_summary(
-        self,
-        since: Optional[datetime] = None,
-        until: Optional[datetime] = None
+        self, since: Optional[datetime] = None, until: Optional[datetime] = None
     ) -> Dict[str, Any]:
         """Get cost summary for a time period."""
         with self.get_session() as session:
@@ -709,7 +670,7 @@ class ResearchRepository:
                 func.sum(CostLog.cost).label("total_cost"),
                 func.sum(CostLog.input_tokens).label("total_input"),
                 func.sum(CostLog.output_tokens).label("total_output"),
-                func.count(CostLog.id).label("total_calls")
+                func.count(CostLog.id).label("total_calls"),
             )
 
             if since:
@@ -723,7 +684,7 @@ class ResearchRepository:
                 "total_cost": float(result.total_cost or 0),
                 "total_input_tokens": int(result.total_input or 0),
                 "total_output_tokens": int(result.total_output or 0),
-                "total_calls": int(result.total_calls or 0)
+                "total_calls": int(result.total_calls or 0),
             }
 
     def get_cost_logs(self, research_run_id: int) -> List[CostLog]:
@@ -736,9 +697,12 @@ class ResearchRepository:
             List of CostLog instances.
         """
         with self.get_session() as session:
-            logs = session.query(CostLog).filter(
-                CostLog.research_run_id == research_run_id
-            ).order_by(CostLog.created_at).all()
+            logs = (
+                session.query(CostLog)
+                .filter(CostLog.research_run_id == research_run_id)
+                .order_by(CostLog.created_at)
+                .all()
+            )
 
             for log in logs:
                 session.expunge(log)
@@ -755,11 +719,11 @@ class ResearchRepository:
             Total cost as float.
         """
         with self.get_session() as session:
-            result = session.query(
-                func.sum(CostLog.cost).label("total")
-            ).filter(
-                CostLog.research_run_id == research_run_id
-            ).first()
+            result = (
+                session.query(func.sum(CostLog.cost).label("total"))
+                .filter(CostLog.research_run_id == research_run_id)
+                .first()
+            )
 
             return float(result.total or 0.0)
 
@@ -772,23 +736,21 @@ class ResearchRepository:
         company_name: str,
         data: Dict[str, Any],
         ttl_hours: int = 24,
-        source_run_id: Optional[int] = None
+        source_run_id: Optional[int] = None,
     ) -> ResearchCache:
         """Cache research results."""
         cache_key = f"research_{Company.normalize_name(company_name)}"
 
         with self.get_session() as session:
             # Remove existing cache
-            session.query(ResearchCache).filter(
-                ResearchCache.cache_key == cache_key
-            ).delete()
+            session.query(ResearchCache).filter(ResearchCache.cache_key == cache_key).delete()
 
             cache = ResearchCache(
                 company_name=company_name,
                 cache_key=cache_key,
                 cached_data=data,
                 expires_at=utc_now() + timedelta(hours=ttl_hours),
-                source_run_id=source_run_id
+                source_run_id=source_run_id,
             )
             session.add(cache)
             session.flush()
@@ -802,11 +764,15 @@ class ResearchRepository:
         cache_key = f"research_{Company.normalize_name(company_name)}"
 
         with self.get_session() as session:
-            cache = session.query(ResearchCache).filter(
-                ResearchCache.cache_key == cache_key,
-                ResearchCache.is_valid == True,
-                ResearchCache.expires_at > utc_now()
-            ).first()
+            cache = (
+                session.query(ResearchCache)
+                .filter(
+                    ResearchCache.cache_key == cache_key,
+                    ResearchCache.is_valid == True,
+                    ResearchCache.expires_at > utc_now(),
+                )
+                .first()
+            )
 
             if cache:
                 return cache.cached_data
@@ -818,9 +784,9 @@ class ResearchRepository:
         cache_key = f"research_{Company.normalize_name(company_name)}"
 
         with self.get_session() as session:
-            session.query(ResearchCache).filter(
-                ResearchCache.cache_key == cache_key
-            ).update({"is_valid": False})
+            session.query(ResearchCache).filter(ResearchCache.cache_key == cache_key).update(
+                {"is_valid": False}
+            )
 
 
 # Singleton instance

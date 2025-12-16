@@ -32,13 +32,13 @@ Usage:
 import json
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, Any, List, Optional, Set
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
 
-from ..utils import get_logger
 from ..integrations.search_router import get_search_router
-from ..llm.smart_client import get_smart_client, TaskType
+from ..llm.smart_client import TaskType, get_smart_client
+from ..utils import get_logger
 
 logger = get_logger(__name__)
 
@@ -47,9 +47,11 @@ logger = get_logger(__name__)
 # Data Models
 # =============================================================================
 
+
 @dataclass
 class DiscoveredContext:
     """Context discovered from web searches (not hardcoded)."""
+
     company_name: str
     parent_company: Optional[str] = None
     industry: Optional[str] = None
@@ -92,6 +94,7 @@ class DiscoveredContext:
 
 class CriticalField(Enum):
     """Fields that are critical for research quality."""
+
     CEO = "ceo"
     REVENUE = "revenue"
     MARKET_SHARE = "market_share"
@@ -160,7 +163,7 @@ def _call_llm(prompt: str, max_tokens: int = 2000) -> str:
         task_type=TaskType.REASONING,
         complexity="medium",
         max_tokens=max_tokens,
-        temperature=0.0
+        temperature=0.0,
     )
 
     logger.info(f"[LLM] Provider: {result.provider}/{result.model} ({result.routing_reason})")
@@ -209,17 +212,19 @@ def discovery_phase(company_name: str) -> DiscoveredContext:
             response = router.search(
                 query=query,
                 quality="premium",
-                max_results=3  # Fewer results per query, more queries
+                max_results=3,  # Fewer results per query, more queries
             )
             if response.success and response.results:
                 for item in response.results:
                     result_dict = item.to_dict()
-                    all_results.append({
-                        "query": query,
-                        "title": result_dict.get("title", ""),
-                        "content": result_dict.get("snippet", "")[:500],
-                        "url": result_dict.get("url", "")
-                    })
+                    all_results.append(
+                        {
+                            "query": query,
+                            "title": result_dict.get("title", ""),
+                            "content": result_dict.get("snippet", "")[:500],
+                            "url": result_dict.get("url", ""),
+                        }
+                    )
                     sources.append(result_dict.get("url", ""))
                 logger.debug(f"  [OK] '{query[:40]}...' - {len(response.results)} results")
         except Exception as e:
@@ -230,16 +235,15 @@ def discovery_phase(company_name: str) -> DiscoveredContext:
         return DiscoveredContext(company_name=company_name)
 
     # Format results for LLM
-    formatted_results = "\n\n".join([
-        f"Query: {r['query']}\nTitle: {r['title']}\nContent: {r['content']}"
-        for r in all_results[:15]  # Limit to avoid context overflow
-    ])
+    formatted_results = "\n\n".join(
+        [
+            f"Query: {r['query']}\nTitle: {r['title']}\nContent: {r['content']}"
+            for r in all_results[:15]  # Limit to avoid context overflow
+        ]
+    )
 
     # Extract structured context using LLM
-    prompt = DISCOVERY_PROMPT.format(
-        company_name=company_name,
-        search_results=formatted_results
-    )
+    prompt = DISCOVERY_PROMPT.format(company_name=company_name, search_results=formatted_results)
 
     try:
         content = _call_llm(prompt, max_tokens=1500)
@@ -251,10 +255,10 @@ def discovery_phase(company_name: str) -> DiscoveredContext:
             content = content.split("```")[1].split("```")[0]
 
         # Find JSON boundaries
-        start_idx = content.find('{')
-        end_idx = content.rfind('}')
+        start_idx = content.find("{")
+        end_idx = content.rfind("}")
         if start_idx >= 0 and end_idx >= 0:
-            json_str = content[start_idx:end_idx+1]
+            json_str = content[start_idx : end_idx + 1]
             data = json.loads(json_str)
         else:
             data = json.loads(content)
@@ -280,9 +284,11 @@ def discovery_phase(company_name: str) -> DiscoveredContext:
             discovery_confidence=data.get("confidence", 0.5),
         )
 
-        logger.info(f"[DISCOVERY] Completed - Parent: {context.parent_company}, "
-                   f"Industry: {context.industry}, Country: {context.country}, "
-                   f"CEO: {context.current_ceo}")
+        logger.info(
+            f"[DISCOVERY] Completed - Parent: {context.parent_company}, "
+            f"Industry: {context.industry}, Country: {context.country}, "
+            f"CEO: {context.current_ceo}"
+        )
 
         return context
 
@@ -295,11 +301,12 @@ def discovery_phase(company_name: str) -> DiscoveredContext:
 # Gap-Driven Query Generation
 # =============================================================================
 
+
 def generate_gap_driven_queries(
     company_name: str,
     context: DiscoveredContext,
     missing_fields: List[str],
-    current_year: Optional[int] = None
+    current_year: Optional[int] = None,
 ) -> List[str]:
     """
     Generate targeted search queries specifically for missing fields.
@@ -335,84 +342,102 @@ def generate_gap_driven_queries(
 
         if field_lower == "ceo" or field_lower == "leadership":
             # CEO-specific queries with multiple patterns
-            queries.extend([
-                f"{company_name} CEO {current_year}",
-                f"{company_name} chief executive officer {current_year}",
-                f"{company_name} general manager director {current_year}",
-                f"Who leads {company_name}",
-                f"{company_name} leadership appointment {current_year}",
-                f"{company_name} new CEO appointed",
-            ])
+            queries.extend(
+                [
+                    f"{company_name} CEO {current_year}",
+                    f"{company_name} chief executive officer {current_year}",
+                    f"{company_name} general manager director {current_year}",
+                    f"Who leads {company_name}",
+                    f"{company_name} leadership appointment {current_year}",
+                    f"{company_name} new CEO appointed",
+                ]
+            )
             if parent:
                 queries.append(f"{parent} {company_name} CEO")
 
         elif field_lower == "market_share" or field_lower == "subscribers":
             # Market-specific queries
-            queries.extend([
-                f"{company_name} market share {country} {current_year}",
-                f"{company_name} subscribers customers {current_year}",
-                f"{industry} market {country} ranking {current_year}",
-                f"{company_name} market position {country}",
-            ])
+            queries.extend(
+                [
+                    f"{company_name} market share {country} {current_year}",
+                    f"{company_name} subscribers customers {current_year}",
+                    f"{industry} market {country} ranking {current_year}",
+                    f"{company_name} market position {country}",
+                ]
+            )
             if context.competitors:
                 competitor = context.competitors[0]
                 queries.append(f"{company_name} vs {competitor} market share {country}")
 
         elif field_lower == "revenue" or field_lower == "financial":
             # Financial queries
-            queries.extend([
-                f"{company_name} revenue {current_year}",
-                f"{company_name} annual report {current_year - 1}",
-                f"{company_name} financial results {current_year}",
-            ])
+            queries.extend(
+                [
+                    f"{company_name} revenue {current_year}",
+                    f"{company_name} annual report {current_year - 1}",
+                    f"{company_name} financial results {current_year}",
+                ]
+            )
             if parent:
                 queries.append(f"{parent} {company_name} revenue financial")
 
         elif field_lower == "regulatory" or field_lower == "spectrum":
             # Regulatory queries using discovered regulator
             if regulator:
-                queries.extend([
-                    f"{regulator} {company_name}",
-                    f"{company_name} {regulator} license",
-                    f"{company_name} spectrum {country}",
-                    f"{company_name} 5G license {country} {current_year}",
-                ])
+                queries.extend(
+                    [
+                        f"{regulator} {company_name}",
+                        f"{company_name} {regulator} license",
+                        f"{company_name} spectrum {country}",
+                        f"{company_name} 5G license {country} {current_year}",
+                    ]
+                )
             else:
-                queries.extend([
-                    f"{company_name} telecom regulator {country}",
-                    f"{company_name} spectrum license {country}",
-                ])
+                queries.extend(
+                    [
+                        f"{company_name} telecom regulator {country}",
+                        f"{company_name} spectrum license {country}",
+                    ]
+                )
 
         elif field_lower == "competitors":
             # Competitor discovery
-            queries.extend([
-                f"{company_name} competitors {country}",
-                f"{industry} companies {country}",
-                f"{company_name} vs market {country}",
-            ])
+            queries.extend(
+                [
+                    f"{company_name} competitors {country}",
+                    f"{industry} companies {country}",
+                    f"{company_name} vs market {country}",
+                ]
+            )
 
         elif field_lower == "products" or field_lower == "services":
             # Product/service discovery
-            queries.extend([
-                f"{company_name} products services",
-                f"{company_name} business segments",
-            ])
+            queries.extend(
+                [
+                    f"{company_name} products services",
+                    f"{company_name} business segments",
+                ]
+            )
             if context.business_segments:
                 for segment in context.business_segments[:2]:
                     queries.append(f"{company_name} {segment}")
 
         elif field_lower == "founded" or field_lower == "history":
             # Historical queries
-            queries.extend([
-                f"{company_name} founded established history",
-                f"{company_name} company history timeline",
-            ])
+            queries.extend(
+                [
+                    f"{company_name} founded established history",
+                    f"{company_name} company history timeline",
+                ]
+            )
 
         elif field_lower == "employees":
-            queries.extend([
-                f"{company_name} employees workforce {current_year}",
-                f"{company_name} number of employees",
-            ])
+            queries.extend(
+                [
+                    f"{company_name} employees workforce {current_year}",
+                    f"{company_name} number of employees",
+                ]
+            )
 
         else:
             # Generic fallback
@@ -426,7 +451,9 @@ def generate_gap_driven_queries(
             seen.add(q.lower())
             unique_queries.append(q)
 
-    logger.info(f"[GAP-QUERIES] Generated {len(unique_queries)} targeted queries for {len(missing_fields)} missing fields")
+    logger.info(
+        f"[GAP-QUERIES] Generated {len(unique_queries)} targeted queries for {len(missing_fields)} missing fields"
+    )
 
     return unique_queries
 
@@ -457,11 +484,7 @@ Instructions:
 {field_name}:"""
 
 
-def semantic_field_extraction(
-    text: str,
-    field_name: str,
-    company_name: str
-) -> Optional[str]:
+def semantic_field_extraction(text: str, field_name: str, company_name: str) -> Optional[str]:
     """
     Use LLM to semantically extract a field from text.
 
@@ -485,9 +508,7 @@ def semantic_field_extraction(
     text = text[:4000]
 
     prompt = SEMANTIC_EXTRACTION_PROMPT.format(
-        field_name=field_name,
-        company_name=company_name,
-        text=text
+        field_name=field_name, company_name=company_name, text=text
     )
 
     try:
@@ -498,9 +519,9 @@ def semantic_field_extraction(
             return None
 
         # Clean up common artifacts
-        result = result.strip('"\'')
+        result = result.strip("\"'")
         if result.lower().startswith(f"{field_name.lower()}:"):
-            result = result[len(field_name)+1:].strip()
+            result = result[len(field_name) + 1 :].strip()
 
         return result if result and result.upper() != "NOT_FOUND" else None
 
@@ -510,9 +531,7 @@ def semantic_field_extraction(
 
 
 def extract_all_fields_semantically(
-    text: str,
-    company_name: str,
-    fields: List[str] = None
+    text: str, company_name: str, fields: List[str] = None
 ) -> Dict[str, Optional[str]]:
     """
     Extract multiple fields from text using semantic understanding.
@@ -543,6 +562,7 @@ def extract_all_fields_semantically(
 # =============================================================================
 # Date-Aware Search Queries
 # =============================================================================
+
 
 def add_date_filters(queries: List[str], prefer_recent: bool = True) -> List[str]:
     """
@@ -585,10 +605,9 @@ def add_date_filters(queries: List[str], prefer_recent: bool = True) -> List[str
 # Multi-Source Fact Validation
 # =============================================================================
 
+
 def validate_fact_across_sources(
-    fact: str,
-    fact_type: str,
-    sources: List[Dict[str, str]]
+    fact: str, fact_type: str, sources: List[Dict[str, str]]
 ) -> Dict[str, Any]:
     """
     Validate a fact by checking how many sources mention it.
@@ -620,7 +639,7 @@ def validate_fact_across_sources(
         "mention_count": mention_count,
         "confidence": confidence,
         "sources": mentioning_sources[:5],
-        "validated": mention_count >= 2
+        "validated": mention_count >= 2,
     }
 
 
@@ -628,9 +647,9 @@ def validate_fact_across_sources(
 # Main Autonomous Research Function
 # =============================================================================
 
+
 def run_autonomous_discovery(
-    company_name: str,
-    required_fields: List[str] = None
+    company_name: str, required_fields: List[str] = None
 ) -> Dict[str, Any]:
     """
     Run the full autonomous discovery process.
@@ -672,9 +691,7 @@ def run_autonomous_discovery(
     # Phase 3: Generate gap-driven queries
     if missing_fields:
         targeted_queries = generate_gap_driven_queries(
-            company_name=company_name,
-            context=context,
-            missing_fields=missing_fields
+            company_name=company_name, context=context, missing_fields=missing_fields
         )
 
         # Phase 4: Execute targeted searches
@@ -687,11 +704,13 @@ def run_autonomous_discovery(
                 if response.success and response.results:
                     for item in response.results:
                         result_dict = item.to_dict()
-                        additional_results.append({
-                            "query": query,
-                            "content": result_dict.get("snippet", ""),
-                            "url": result_dict.get("url", "")
-                        })
+                        additional_results.append(
+                            {
+                                "query": query,
+                                "content": result_dict.get("snippet", ""),
+                                "url": result_dict.get("url", ""),
+                            }
+                        )
             except Exception as e:
                 logger.warning(f"Targeted search failed: {query[:40]}... - {e}")
 
@@ -701,7 +720,7 @@ def run_autonomous_discovery(
             extracted = extract_all_fields_semantically(
                 text=combined_text,
                 company_name=company_name,
-                fields=["CEO", "Market Share", "Revenue", "Subscribers"]
+                fields=["CEO", "Market Share", "Revenue", "Subscribers"],
             )
 
             # Update context with extracted fields
@@ -721,9 +740,11 @@ def run_autonomous_discovery(
 # Previous Run Loading - Build on Past Research
 # =============================================================================
 
+
 @dataclass
 class PreviousResearchResult:
     """Extracted data from a previous research run."""
+
     company_name: str
     company_slug: str
     report_path: str
@@ -738,9 +759,10 @@ class PreviousResearchResult:
 def _normalize_company_slug(company_name: str) -> str:
     """Convert company name to folder slug format."""
     import re
+
     slug = company_name.lower()
-    slug = re.sub(r'[^a-z0-9]+', '_', slug)
-    slug = slug.strip('_')
+    slug = re.sub(r"[^a-z0-9]+", "_", slug)
+    slug = slug.strip("_")
     return slug
 
 
@@ -749,6 +771,7 @@ def _get_outputs_dir() -> Path:
     # Try to get from config, fallback to default
     try:
         from ..config import get_config
+
         config = get_config()
         return Path(config.output_dir)
     except Exception:
@@ -792,7 +815,7 @@ def load_previous_research(company_name: str) -> Optional[PreviousResearchResult
 
     # Read report content
     try:
-        raw_content = report_path.read_text(encoding='utf-8')
+        raw_content = report_path.read_text(encoding="utf-8")
     except Exception as e:
         logger.error(f"[PREVIOUS] Failed to read report: {e}")
         return None
@@ -806,7 +829,8 @@ def load_previous_research(company_name: str) -> Optional[PreviousResearchResult
     if metrics_path.exists():
         try:
             import json
-            metrics = json.loads(metrics_path.read_text(encoding='utf-8'))
+
+            metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
             quality_score = metrics.get("quality_score", 0.0)
             timestamp = metrics.get("timestamp")
             sources_count = metrics.get("sources_count", 0)
@@ -828,12 +852,14 @@ def load_previous_research(company_name: str) -> Optional[PreviousResearchResult
         extracted_fields=extracted_fields,
         missing_fields=missing_fields,
         sources_count=sources_count,
-        raw_content=raw_content[:10000]  # Truncate for memory
+        raw_content=raw_content[:10000],  # Truncate for memory
     )
 
-    logger.info(f"[PREVIOUS] Loaded research for {company_name}: "
-               f"quality={quality_score:.1f}, sources={sources_count}, "
-               f"missing={len(missing_fields)} fields")
+    logger.info(
+        f"[PREVIOUS] Loaded research for {company_name}: "
+        f"quality={quality_score:.1f}, sources={sources_count}, "
+        f"missing={len(missing_fields)} fields"
+    )
 
     return result
 
@@ -875,10 +901,7 @@ def _extract_fields_from_report(content: str, company_name: str) -> Dict[str, An
     # Truncate content to avoid context overflow
     content = content[:8000]
 
-    prompt = EXTRACT_FIELDS_PROMPT.format(
-        company_name=company_name,
-        content=content
-    )
+    prompt = EXTRACT_FIELDS_PROMPT.format(company_name=company_name, content=content)
 
     try:
         result = _call_llm(prompt, max_tokens=1000)
@@ -889,10 +912,10 @@ def _extract_fields_from_report(content: str, company_name: str) -> Dict[str, An
         elif "```" in result:
             result = result.split("```")[1].split("```")[0]
 
-        start_idx = result.find('{')
-        end_idx = result.rfind('}')
+        start_idx = result.find("{")
+        end_idx = result.rfind("}")
         if start_idx >= 0 and end_idx >= 0:
-            json_str = result[start_idx:end_idx+1]
+            json_str = result[start_idx : end_idx + 1]
             return json.loads(json_str)
 
         return json.loads(result)
@@ -905,9 +928,16 @@ def _extract_fields_from_report(content: str, company_name: str) -> Dict[str, An
 def _identify_missing_fields(extracted: Dict[str, Any]) -> List[str]:
     """Identify which critical fields are missing."""
     critical_fields = [
-        "ceo", "revenue", "market_share", "subscribers",
-        "employees", "founded_year", "headquarters", "parent_company",
-        "competitors", "regulator"
+        "ceo",
+        "revenue",
+        "market_share",
+        "subscribers",
+        "employees",
+        "founded_year",
+        "headquarters",
+        "parent_company",
+        "competitors",
+        "regulator",
     ]
 
     missing = []
@@ -958,9 +988,11 @@ def load_all_previous_research() -> Dict[str, PreviousResearchResult]:
 # Gap Analysis - Understand What's Missing
 # =============================================================================
 
+
 @dataclass
 class GapAnalysis:
     """Analysis of gaps in previous research."""
+
     company_name: str
     quality_score: float
     total_fields: int
@@ -979,7 +1011,7 @@ class GapAnalysis:
             "missing_fields": self.missing_fields,
             "priority_fields": self.priority_fields,
             "stale_fields": self.stale_fields,
-            "recommendations": self.recommendations
+            "recommendations": self.recommendations,
         }
 
 
@@ -994,9 +1026,16 @@ def analyze_research_gaps(previous: PreviousResearchResult) -> GapAnalysis:
         GapAnalysis with prioritized missing fields
     """
     critical_fields = [
-        "ceo", "revenue", "market_share", "subscribers",
-        "employees", "founded_year", "headquarters", "parent_company",
-        "competitors", "regulator"
+        "ceo",
+        "revenue",
+        "market_share",
+        "subscribers",
+        "employees",
+        "founded_year",
+        "headquarters",
+        "parent_company",
+        "competitors",
+        "regulator",
     ]
 
     # Count found vs missing
@@ -1019,6 +1058,7 @@ def analyze_research_gaps(previous: PreviousResearchResult) -> GapAnalysis:
     if previous.timestamp:
         try:
             from datetime import datetime
+
             ts = datetime.strptime(previous.timestamp, "%Y%m%d_%H%M%S")
             age_days = (datetime.now() - ts).days
             if age_days > 180:
@@ -1048,7 +1088,7 @@ def analyze_research_gaps(previous: PreviousResearchResult) -> GapAnalysis:
         missing_fields=missing,
         priority_fields=priority_fields,
         stale_fields=stale_fields,
-        recommendations=recommendations
+        recommendations=recommendations,
     )
 
 
@@ -1056,9 +1096,11 @@ def analyze_research_gaps(previous: PreviousResearchResult) -> GapAnalysis:
 # Cross-Company Data Checking
 # =============================================================================
 
+
 @dataclass
 class CrossCompanyData:
     """Data found in other company research that may be relevant."""
+
     source_company: str
     field_name: str
     value: Any
@@ -1067,8 +1109,7 @@ class CrossCompanyData:
 
 
 def find_relevant_cross_company_data(
-    target_company: str,
-    all_research: Dict[str, PreviousResearchResult]
+    target_company: str, all_research: Dict[str, PreviousResearchResult]
 ) -> List[CrossCompanyData]:
     """
     Search all previous research for data relevant to target company.
@@ -1095,19 +1136,19 @@ def find_relevant_cross_company_data(
         if target_lower in research.raw_content.lower():
             # This company's research mentions our target - extract context
             context = _extract_mention_context(
-                research.raw_content,
-                target_company,
-                research.company_name
+                research.raw_content, target_company, research.company_name
             )
 
             if context:
-                relevant_data.append(CrossCompanyData(
-                    source_company=research.company_name,
-                    field_name="mention",
-                    value=target_company,
-                    context=context,
-                    confidence="medium"
-                ))
+                relevant_data.append(
+                    CrossCompanyData(
+                        source_company=research.company_name,
+                        field_name="mention",
+                        value=target_company,
+                        context=context,
+                        confidence="medium",
+                    )
+                )
 
         # Check if this company is the parent of target
         parent = research.extracted_fields.get("parent_company", "")
@@ -1120,15 +1161,19 @@ def find_relevant_cross_company_data(
             # Look for specific field mentions
             for field, value in research.extracted_fields.items():
                 if isinstance(value, str) and target_lower in value.lower():
-                    relevant_data.append(CrossCompanyData(
-                        source_company=research.company_name,
-                        field_name=field,
-                        value=value,
-                        context=f"Found in {research.company_name}'s {field}",
-                        confidence="high"
-                    ))
+                    relevant_data.append(
+                        CrossCompanyData(
+                            source_company=research.company_name,
+                            field_name=field,
+                            value=value,
+                            context=f"Found in {research.company_name}'s {field}",
+                            confidence="high",
+                        )
+                    )
 
-    logger.info(f"[CROSS-CHECK] Found {len(relevant_data)} relevant data points from other companies")
+    logger.info(
+        f"[CROSS-CHECK] Found {len(relevant_data)} relevant data points from other companies"
+    )
     return relevant_data
 
 
@@ -1148,7 +1193,7 @@ def _extract_mention_context(content: str, target: str, source_company: str) -> 
     context = content[start:end].strip()
 
     # Clean up
-    context = context.replace('\n', ' ').replace('  ', ' ')
+    context = context.replace("\n", " ").replace("  ", " ")
 
     return f"In {source_company}: ...{context}..."
 
@@ -1157,9 +1202,11 @@ def _extract_mention_context(content: str, target: str, source_company: str) -> 
 # Inconsistency Detection
 # =============================================================================
 
+
 @dataclass
 class DataInconsistency:
     """Detected inconsistency between data sources."""
+
     field_name: str
     company_a: str
     value_a: Any
@@ -1172,7 +1219,7 @@ class DataInconsistency:
 def detect_inconsistencies(
     target_company: str,
     target_data: Dict[str, Any],
-    all_research: Dict[str, PreviousResearchResult]
+    all_research: Dict[str, PreviousResearchResult],
 ) -> List[DataInconsistency]:
     """
     Detect inconsistencies between target company data and other sources.
@@ -1199,15 +1246,17 @@ def detect_inconsistencies(
             parent_research = all_research[parent_slug]
             # Check if parent research mentions target as subsidiary
             if target_company.lower() not in parent_research.raw_content.lower():
-                inconsistencies.append(DataInconsistency(
-                    field_name="parent_company",
-                    company_a=target_company,
-                    value_a=f"Parent: {target_parent}",
-                    company_b=target_parent,
-                    value_b="Does not mention target as subsidiary",
-                    severity="warning",
-                    explanation=f"{target_company} claims {target_parent} as parent, but {target_parent}'s research doesn't mention it"
-                ))
+                inconsistencies.append(
+                    DataInconsistency(
+                        field_name="parent_company",
+                        company_a=target_company,
+                        value_a=f"Parent: {target_parent}",
+                        company_b=target_parent,
+                        value_b="Does not mention target as subsidiary",
+                        severity="warning",
+                        explanation=f"{target_company} claims {target_parent} as parent, but {target_parent}'s research doesn't mention it",
+                    )
+                )
 
     # Check competitor consistency
     target_competitors = target_data.get("competitors", [])
@@ -1219,21 +1268,24 @@ def detect_inconsistencies(
                 comp_competitors = comp_research.extracted_fields.get("competitors", [])
 
                 # Check if relationship is bidirectional
-                target_in_comp = any(
-                    target_company.lower() in str(c).lower()
-                    for c in comp_competitors
-                ) if isinstance(comp_competitors, list) else False
+                target_in_comp = (
+                    any(target_company.lower() in str(c).lower() for c in comp_competitors)
+                    if isinstance(comp_competitors, list)
+                    else False
+                )
 
                 if not target_in_comp:
-                    inconsistencies.append(DataInconsistency(
-                        field_name="competitors",
-                        company_a=target_company,
-                        value_a=f"Lists {competitor} as competitor",
-                        company_b=competitor,
-                        value_b="Does not list target as competitor",
-                        severity="info",
-                        explanation="Competitive relationship not confirmed bidirectionally"
-                    ))
+                    inconsistencies.append(
+                        DataInconsistency(
+                            field_name="competitors",
+                            company_a=target_company,
+                            value_a=f"Lists {competitor} as competitor",
+                            company_b=competitor,
+                            value_b="Does not list target as competitor",
+                            severity="info",
+                            explanation="Competitive relationship not confirmed bidirectionally",
+                        )
+                    )
 
     # Check for numerical inconsistencies in market share
     target_market_share = target_data.get("market_share", "")
@@ -1251,15 +1303,17 @@ def detect_inconsistencies(
 
         total = sum(v for v in market_shares.values() if v is not None)
         if total > 100:
-            inconsistencies.append(DataInconsistency(
-                field_name="market_share",
-                company_a="All companies",
-                value_a=f"Total: {total:.1f}%",
-                company_b="Expected",
-                value_b="<= 100%",
-                severity="critical",
-                explanation=f"Market shares sum to {total:.1f}%, exceeds 100%"
-            ))
+            inconsistencies.append(
+                DataInconsistency(
+                    field_name="market_share",
+                    company_a="All companies",
+                    value_a=f"Total: {total:.1f}%",
+                    company_b="Expected",
+                    value_b="<= 100%",
+                    severity="critical",
+                    explanation=f"Market shares sum to {total:.1f}%, exceeds 100%",
+                )
+            )
 
     logger.info(f"[INCONSISTENCY] Found {len(inconsistencies)} potential inconsistencies")
     return inconsistencies
@@ -1268,11 +1322,12 @@ def detect_inconsistencies(
 def _parse_percentage(value: str) -> Optional[float]:
     """Parse a percentage string to float."""
     import re
+
     if not value or value == "NOT_FOUND":
         return None
 
     # Extract number from string like "45%", "45 percent", "45.5%"
-    match = re.search(r'(\d+(?:\.\d+)?)\s*%?', str(value))
+    match = re.search(r"(\d+(?:\.\d+)?)\s*%?", str(value))
     if match:
         return float(match.group(1))
     return None
@@ -1282,10 +1337,9 @@ def _parse_percentage(value: str) -> Optional[float]:
 # Integrated Research with Historical Context
 # =============================================================================
 
+
 def run_research_with_history(
-    company_name: str,
-    required_fields: List[str] = None,
-    use_cross_company: bool = True
+    company_name: str, required_fields: List[str] = None, use_cross_company: bool = True
 ) -> Dict[str, Any]:
     """
     Run research that builds on previous results.
@@ -1322,13 +1376,9 @@ def run_research_with_history(
         all_research = load_all_previous_research()
 
         if previous:
-            cross_company_data = find_relevant_cross_company_data(
-                company_name, all_research
-            )
+            cross_company_data = find_relevant_cross_company_data(company_name, all_research)
             inconsistencies = detect_inconsistencies(
-                company_name,
-                previous.extracted_fields,
-                all_research
+                company_name, previous.extracted_fields, all_research
             )
 
     # Step 3: Analyze gaps
@@ -1339,13 +1389,15 @@ def run_research_with_history(
         gap_analysis = analyze_research_gaps(previous)
 
         # Only research missing and stale fields
-        fields_to_research = list(set(
-            gap_analysis.missing_fields + gap_analysis.stale_fields
-        ))
+        fields_to_research = list(set(gap_analysis.missing_fields + gap_analysis.stale_fields))
 
-        logger.info(f"[RESEARCH] Previous research found. Focusing on {len(fields_to_research)} fields: {fields_to_research}")
+        logger.info(
+            f"[RESEARCH] Previous research found. Focusing on {len(fields_to_research)} fields: {fields_to_research}"
+        )
     else:
-        logger.info(f"[RESEARCH] No previous research. Researching all {len(required_fields)} fields")
+        logger.info(
+            f"[RESEARCH] No previous research. Researching all {len(required_fields)} fields"
+        )
 
     # Step 4: Run discovery (only if we have fields to research)
     discovery_result = None
@@ -1355,17 +1407,25 @@ def run_research_with_history(
         if previous:
             initial_context = DiscoveredContext(
                 company_name=company_name,
-                parent_company=previous.extracted_fields.get("parent_company")
-                    if previous.extracted_fields.get("parent_company") != "NOT_FOUND" else None,
-                industry=previous.extracted_fields.get("industry")
-                    if previous.extracted_fields.get("industry") != "NOT_FOUND" else None,
-                country=previous.extracted_fields.get("country")
-                    if previous.extracted_fields.get("country") != "NOT_FOUND" else None,
+                parent_company=(
+                    previous.extracted_fields.get("parent_company")
+                    if previous.extracted_fields.get("parent_company") != "NOT_FOUND"
+                    else None
+                ),
+                industry=(
+                    previous.extracted_fields.get("industry")
+                    if previous.extracted_fields.get("industry") != "NOT_FOUND"
+                    else None
+                ),
+                country=(
+                    previous.extracted_fields.get("country")
+                    if previous.extracted_fields.get("country") != "NOT_FOUND"
+                    else None
+                ),
             )
 
         discovery_result = run_autonomous_discovery(
-            company_name=company_name,
-            required_fields=fields_to_research
+            company_name=company_name, required_fields=fields_to_research
         )
 
     return {
@@ -1381,16 +1441,12 @@ def run_research_with_history(
                 "field": d.field_name,
                 "value": d.value,
                 "context": d.context,
-                "confidence": d.confidence
+                "confidence": d.confidence,
             }
             for d in cross_company_data
         ],
         "inconsistencies": [
-            {
-                "field": i.field_name,
-                "severity": i.severity,
-                "explanation": i.explanation
-            }
+            {"field": i.field_name, "severity": i.severity, "explanation": i.explanation}
             for i in inconsistencies
         ],
         "discovery_result": discovery_result,

@@ -12,7 +12,7 @@
 
 **Mission/Vision:** Data not available from provided sources.
 
-**Leadership Team:** 
+**Leadership Team:**
 - CEO: Elliott Hill
 
 **Headquarters and Global Presence:** Nike is headquartered in Beaverton, Oregon, United States.

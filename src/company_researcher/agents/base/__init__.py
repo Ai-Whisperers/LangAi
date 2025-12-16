@@ -51,115 +51,86 @@ Example - Using class:
             return PROMPT.format(...)
 """
 
-# Types
-from .types import (
-    # Enums
-    AgentStatus,
-    # TypedDicts
-    TokenUsage,
-    AgentOutput,
-    AgentResult,
-    SearchResult,
-    # Dataclasses
-    AgentConfig,
-    AgentContext,
-    # Factory functions
-    create_empty_result,
-    create_agent_result,
-    merge_agent_results,
+# Error handling
+from .errors import (  # Exceptions; Severity; Helpers; Retry; Context manager; Validation
+    AgentError,
+    AgentErrorContext,
+    ConfigurationError,
+    ErrorSeverity,
+    ExtractionError,
+    LLMError,
+    ParsingError,
+    RetryConfig,
+    SearchError,
+    ValidationError,
+    create_empty_result_with_reason,
+    create_error_result,
+    handle_agent_error,
+    validate_company_name,
+    validate_search_results,
+    with_retry,
 )
 
 # Logger
-from .logger import (
-    AgentLogger,
-    AgentLogContext,
-    get_agent_logger,
-    configure_agent_logging,
-)
+from .logger import AgentLogContext, AgentLogger, configure_agent_logging, get_agent_logger
 
 # Node infrastructure
-from .node import (
-    BaseAgentNode,
-    NodeConfig,
-    agent_node,
-    format_search_results,
-)
+from .node import BaseAgentNode, NodeConfig, agent_node, format_search_results
 
-# Specialist agent infrastructure
-from .specialist import (
-    BaseSpecialistAgent,
-    ParsingMixin,
-    AnalysisMetrics,
+# Query generation
+from .query_generation import (  # Date-aware queries; Spanish templates
+    SPANISH_DOMAIN_TEMPLATES,
+    QueryConfig,
+    QueryDomain,
+    clean_query,
+    generate_targeted_queries,
+    get_bilingual_queries,
+    get_comprehensive_dated_queries,
+    get_comprehensive_queries,
+    get_date_filtered_queries,
+    get_domain_queries,
+    get_fallback_queries,
+    get_gap_queries,
+    get_leadership_queries,
+    get_market_data_queries,
+    parse_query_response,
+    validate_queries,
 )
 
 # Search result formatting
-from .search_formatting import (
-    # Core formatter
-    SearchResultFormatter,
-    FormatterConfig,
-    SearchResultMixin,
-    # Domain-specific formatters
-    MarketSearchFormatter,
+from .search_formatting import (  # Core formatter; Domain-specific formatters; Convenience functions
+    BrandSearchFormatter,
     CompetitorSearchFormatter,
     FinancialSearchFormatter,
+    FormatterConfig,
+    MarketSearchFormatter,
     ProductSearchFormatter,
     SalesSearchFormatter,
-    BrandSearchFormatter,
-    # Convenience functions
-    format_market_results,
+    SearchResultFormatter,
+    SearchResultMixin,
+    format_brand_results,
     format_competitor_results,
     format_financial_results,
+    format_market_results,
     format_product_results,
     format_sales_results,
-    format_brand_results,
 )
 
-# Query generation
-from .query_generation import (
-    QueryDomain,
-    QueryConfig,
-    get_fallback_queries,
-    get_domain_queries,
-    get_gap_queries,
-    get_comprehensive_queries,
-    clean_query,
-    validate_queries,
-    parse_query_response,
-    # Date-aware queries
-    get_date_filtered_queries,
-    get_leadership_queries,
-    get_market_data_queries,
-    get_bilingual_queries,
-    get_comprehensive_dated_queries,
-    generate_targeted_queries,
-    # Spanish templates
-    SPANISH_DOMAIN_TEMPLATES,
-)
+# Specialist agent infrastructure
+from .specialist import AnalysisMetrics, BaseSpecialistAgent, ParsingMixin
 
-# Error handling
-from .errors import (
-    # Exceptions
-    AgentError,
-    ParsingError,
-    LLMError,
-    SearchError,
-    ConfigurationError,
-    ValidationError,
-    ExtractionError,
-    # Severity
-    ErrorSeverity,
-    # Helpers
-    create_error_result,
-    create_empty_result_with_reason,
-    handle_agent_error,
-    # Retry
-    RetryConfig,
-    with_retry,
-    # Context manager
-    AgentErrorContext,
-    # Validation
-    validate_search_results,
-    validate_company_name,
+# Types
+from .types import (  # Enums; TypedDicts; Dataclasses; Factory functions
+    AgentConfig,
+    AgentContext,
+    AgentOutput,
+    AgentResult,
+    AgentStatus,
+    SearchResult,
+    TokenUsage,
+    create_agent_result,
+    create_empty_result,
+    merge_agent_results,
 )
 
 __all__ = [

@@ -20,29 +20,24 @@ Individual Components:
     )
 """
 
-from .quality import UnifiedQualityScorer, QualityResult, DimensionScore, QualityDimension
-from .gaps import SemanticGapDetector, GapAssessment, GapConfidence, CoverageLevel
-from .search import RobustSearchClient, SearchResult, ProviderHealth, QueryDiversifier
+from .gaps import CoverageLevel, GapAssessment, GapConfidence, SemanticGapDetector
 
 # Integration pipelines
-from .integration import (
-    # Main pipeline
-    EnhancedResearchPipeline,
-    EnhancedAnalysisResult,
-
-    # Component pipelines
-    QualityPipeline,
-    GapDetectionPipeline,
+from .integration import (  # Main pipeline; Component pipelines; Convenience functions
     ContradictionPipeline,
+    EnhancedAnalysisResult,
+    EnhancedResearchPipeline,
+    GapDetectionPipeline,
+    QualityPipeline,
     SearchOptimizationPipeline,
-
-    # Convenience functions
-    run_quality_pipeline,
-    run_gap_detection,
-    run_contradiction_analysis,
     get_optimized_queries,
+    run_contradiction_analysis,
+    run_gap_detection,
+    run_quality_pipeline,
     select_best_sources,
 )
+from .quality import DimensionScore, QualityDimension, QualityResult, UnifiedQualityScorer
+from .search import ProviderHealth, QueryDiversifier, RobustSearchClient, SearchResult
 
 __all__ = [
     # Quality

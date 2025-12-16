@@ -1,0 +1,41 @@
+id: core-workflows-bundle
+name: "Core Workflows"
+description: "Curated prompts for day-to-day development (small, high-signal set)."
+tags:
+  - core
+  - day-to-day
+  - workflow
+version: 1.0.0
+owner: team-prompts
+items:
+  - path: prompts/code-quality/report-errors.prompt.md
+    kind: prompt
+  - path: prompts/code-quality/iterative-refinement.prompt.md
+    kind: prompt
+  - path: prompts/code-quality/request-feature.prompt.md
+    kind: prompt
+
+  - path: prompts/testing/run-tests.prompt.md
+    kind: prompt
+  - path: prompts/testing/debug-workflow.prompt.md
+    kind: prompt
+
+  - path: prompts/ticket/activate-ticket.prompt.md
+    kind: prompt
+  - path: prompts/ticket/validate-before-action.prompt.md
+    kind: prompt
+  - path: prompts/ticket/update-progress.prompt.md
+    kind: prompt
+
+  - path: prompts/git/prepare-commit.prompt.md
+    kind: prompt
+  - path: prompts/git/create-branch.prompt.md
+    kind: prompt
+
+  - path: prompts/documentation/update-readme.prompt.md
+    kind: prompt
+  - path: prompts/documentation/validate-documentation-quality.prompt.md
+    kind: prompt
+
+  - path: prompts/unit-testing/generate-missing-tests.prompt.md
+    kind: prompt

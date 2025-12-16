@@ -105,4 +105,3 @@ Competitive Context:
 ---
 
 ## Sources
-

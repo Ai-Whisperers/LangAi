@@ -20,7 +20,7 @@ The `references.md` file serves as a **static reference directory** for file loc
 
 ### ✅ INCLUDE (Static References Only)
 - **File paths and locations**: Specific files, methods, and line numbers relevant to the ticket
-- **Conversation file links**: All conversations that contributed to the ticket work  
+- **Conversation file links**: All conversations that contributed to the ticket work
 - **Technical specifications**: Relevant docs from `docs/technical/` organized by domain (layering, virtual administrations, etc.)
 - **Debug data**: Test cases, error messages, data examples that are factual
 - **Technical references**: External documentation, API references, specifications
@@ -44,7 +44,7 @@ The `references.md` file serves as a **static reference directory** for file loc
 
 #### Implementation Details
 - **Solution architecture**: Detailed implementation explanations (→ context.md)
-- **Code change descriptions**: What was modified and why (→ progress.md)  
+- **Code change descriptions**: What was modified and why (→ progress.md)
 - **Technical decisions**: Why certain approaches were chosen (→ progress.md)
 - **Session summaries**: What happened in conversations (→ progress.md)
 
@@ -82,11 +82,11 @@ Location: `docs/technical/[another-domain]/`
 - `full/path/to/reference/file.cs` - Already implemented version
 
 ## Key Files
-**File:** path/to/file.cs  
+**File:** path/to/file.cs
 **Method:** MethodName (lines 123-456)
 **Purpose:** What this file/method does
 
-## Conversation References  
+## Conversation References
 - **conversations/[USER INITIALS]/YYYY-MM-DD_HH-MMZ-{description}.md** - Brief topic description
 
 ## Debug Data
@@ -117,7 +117,7 @@ Location: `docs/technical/[another-domain]/`
 
 ### Required Updates
 - **Current conversation**: Always include the most recent conversation file
-- **Modified files**: Include all files edited in the current session  
+- **Modified files**: Include all files edited in the current session
 - **Technical specifications**: Include all relevant technical documentation from `docs/technical/` organized by domain
 - **New technical findings**: Add any new file references or debug data discovered
 
@@ -130,7 +130,7 @@ Location: `docs/technical/[another-domain]/`
 - Technical reference links
 - Factual debug data
 
-### progress.md (Dynamic Progress)  
+### progress.md (Dynamic Progress)
 - What was accomplished
 - Implementation status
 - Session summaries
@@ -172,7 +172,7 @@ Location: `docs/technical/[another-domain]/`
 
 ### ❌ Status Tracking
 - Checkboxes with completion status
-- Progress percentages or indicators  
+- Progress percentages or indicators
 - Implementation phase descriptions
 - Session outcome summaries
 

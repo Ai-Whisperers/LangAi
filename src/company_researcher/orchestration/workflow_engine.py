@@ -14,19 +14,15 @@ Import directly from company_researcher.orchestration.workflow instead:
 """
 
 # Re-export all public API from the workflow package for backward compatibility
-from .workflow import (
-    # Enums
-    NodeType,
-    ExecutionStatus,
-    RouteCondition,
-    # Dataclasses
-    NodeConfig,
+from .workflow import (  # Enums; Dataclasses; Classes; Functions
     ExecutionResult,
-    WorkflowState,
-    # Classes
+    ExecutionStatus,
+    NodeConfig,
     NodeExecutor,
+    NodeType,
+    RouteCondition,
     WorkflowEngine,
-    # Functions
+    WorkflowState,
     create_workflow_engine,
 )
 

@@ -8,21 +8,23 @@ Provides:
 - Connection pooling
 """
 
-import json
 import hashlib
+import json
 from dataclasses import dataclass
 from typing import Any, Dict, Generic, List, Optional, TypeVar
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
 
-K = TypeVar('K')
-V = TypeVar('V')
+K = TypeVar("K")
+V = TypeVar("V")
 
 
 @dataclass
 class RedisCacheConfig:
     """Configuration for Redis cache."""
+
     host: str = "localhost"
     port: int = 6379
     db: int = 0
@@ -82,7 +84,7 @@ class RedisCache(Generic[K, V]):
                 socket_timeout=self._config.socket_timeout,
                 retry_on_timeout=self._config.retry_on_timeout,
                 decode_responses=self._config.decode_responses,
-                max_connections=self._config.max_connections
+                max_connections=self._config.max_connections,
             )
 
             # Test connection
@@ -91,9 +93,7 @@ class RedisCache(Generic[K, V]):
             return True
 
         except ImportError:
-            raise ImportError(
-                "Redis package not installed. Install with: pip install redis"
-            )
+            raise ImportError("Redis package not installed. Install with: pip install redis")
         except Exception as e:
             self._connected = False
             raise ConnectionError(f"Failed to connect to Redis: {e}")
@@ -116,11 +116,10 @@ class RedisCache(Generic[K, V]):
 
     def _serialize(self, value: V) -> str:
         """Serialize value for storage."""
-        return json.dumps({
-            "value": value,
-            "stored_at": utc_now().isoformat(),
-            "type": type(value).__name__
-        }, default=str)
+        return json.dumps(
+            {"value": value, "stored_at": utc_now().isoformat(), "type": type(value).__name__},
+            default=str,
+        )
 
     def _deserialize(self, data: str) -> V:
         """Deserialize stored value."""
@@ -155,12 +154,7 @@ class RedisCache(Generic[K, V]):
             self._misses += 1
             return default
 
-    async def put(
-        self,
-        key: K,
-        value: V,
-        ttl: Optional[int] = None
-    ) -> bool:
+    async def put(self, key: K, value: V, ttl: Optional[int] = None) -> bool:
         """
         Put value into Redis.
 
@@ -257,11 +251,7 @@ class RedisCache(Generic[K, V]):
         except Exception:
             return {k: None for k in keys}
 
-    async def put_many(
-        self,
-        items: Dict[K, V],
-        ttl: Optional[int] = None
-    ) -> bool:
+    async def put_many(self, items: Dict[K, V], ttl: Optional[int] = None) -> bool:
         """Put multiple values at once."""
         if not self._connected:
             return False
@@ -336,7 +326,7 @@ class RedisCache(Generic[K, V]):
             "hits": self._hits,
             "misses": self._misses,
             "hit_rate": hit_rate,
-            "prefix": self._config.prefix
+            "prefix": self._config.prefix,
         }
 
         if self._connected:
@@ -361,7 +351,7 @@ def create_redis_cache(
     db: int = 0,
     password: Optional[str] = None,
     prefix: str = "company_researcher:",
-    default_ttl: int = 3600
+    default_ttl: int = 3600,
 ) -> RedisCache:
     """
     Factory function to create Redis cache.
@@ -378,11 +368,6 @@ def create_redis_cache(
         Configured RedisCache instance
     """
     config = RedisCacheConfig(
-        host=host,
-        port=port,
-        db=db,
-        password=password,
-        prefix=prefix,
-        default_ttl=default_ttl
+        host=host, port=port, db=db, password=password, prefix=prefix, default_ttl=default_ttl
     )
     return RedisCache(config)

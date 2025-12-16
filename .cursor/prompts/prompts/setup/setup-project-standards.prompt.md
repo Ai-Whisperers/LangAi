@@ -10,8 +10,8 @@ argument-hint: "interactive|default|[project-path]"
 
 Please check and configure a project to follow Energy21 development standards, with optional interactive mode for customization.
 
-**Pattern**: Project Standards Setup Pattern ⭐⭐⭐⭐  
-**Effectiveness**: 90% coverage of standard requirements  
+**Pattern**: Project Standards Setup Pattern ⭐⭐⭐⭐
+**Effectiveness**: 90% coverage of standard requirements
 **Use When**: Starting new project, auditing existing project, ensuring standards compliance
 
 ---
@@ -560,7 +560,7 @@ After applying standards, verify:
 
 ---
 
-**Created**: 2025-12-02  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
-**Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)  
+**Created**: 2025-12-02
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
+**Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)
 **Pattern ID**: #7 Project Standards Setup

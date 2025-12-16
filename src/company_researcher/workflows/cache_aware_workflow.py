@@ -26,31 +26,26 @@ Usage:
 """
 
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, List, Optional
 
-from ..cache import (
-    ResearchCache,
-    get_cache,
-    CachedCompanyData,
-    URLStatus,
-)
-from ..state import OverallState, InputState, OutputState, create_initial_state, create_output_state
+from ..cache import CachedCompanyData, ResearchCache, URLStatus, get_cache
 from ..config import get_config
+from ..state import InputState, OutputState, OverallState, create_initial_state, create_output_state
+from ..utils import get_logger
 
 # Import base workflows
 from .basic_research import (
-    generate_queries_node,
-    search_node as base_search_node,
     analyze_node,
-    extract_data_node,
     check_quality_node,
-    news_sentiment_node,
     competitive_analysis_node,
-    risk_assessment_node,
+    extract_data_node,
+    generate_queries_node,
     investment_thesis_node,
+    news_sentiment_node,
+    risk_assessment_node,
     save_report_node,
 )
-from ..utils import get_logger
+from .basic_research import search_node as base_search_node
 
 logger = get_logger(__name__)
 
@@ -69,6 +64,7 @@ def get_workflow_cache() -> ResearchCache:
 # =============================================================================
 # Cache-Aware Workflow Nodes
 # =============================================================================
+
 
 def check_cache_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -131,17 +127,17 @@ def cache_aware_search_node(state: OverallState) -> Dict[str, Any]:
     urls = [s.get("url", "") for s in search_result.get("sources", [])]
     filtered = cache.filter_urls(urls)
 
-    logger.info(f"[CACHE] URL filtering: {len(filtered['new'])} new, {len(filtered['useful'])} useful, {len(filtered['useless'])} blocked")
+    logger.info(
+        f"[CACHE] URL filtering: {len(filtered['new'])} new, {len(filtered['useful'])} useful, {len(filtered['useless'])} blocked"
+    )
 
     # Remove useless URLs from results
     useless_urls = set(filtered["useless"])
     filtered_results = [
-        r for r in search_result.get("search_results", [])
-        if r.get("url", "") not in useless_urls
+        r for r in search_result.get("search_results", []) if r.get("url", "") not in useless_urls
     ]
     filtered_sources = [
-        s for s in search_result.get("sources", [])
-        if s.get("url", "") not in useless_urls
+        s for s in search_result.get("sources", []) if s.get("url", "") not in useless_urls
     ]
 
     # Add priority for useful URLs
@@ -150,7 +146,9 @@ def cache_aware_search_node(state: OverallState) -> Dict[str, Any]:
             source["priority"] = "high"
             source["cached_quality"] = "verified_useful"
 
-    logger.info(f"[SEARCH] {len(filtered_results)} results after filtering (removed {len(useless_urls)} known useless)")
+    logger.info(
+        f"[SEARCH] {len(filtered_results)} results after filtering (removed {len(useless_urls)} known useless)"
+    )
 
     return {
         "search_results": filtered_results,
@@ -275,10 +273,7 @@ def merge_with_cached_node(state: OverallState) -> Dict[str, Any]:
 
     # Merge sources (don't duplicate)
     existing_urls = {s.get("url") for s in cached_data.all_sources}
-    new_sources = [
-        s for s in state.get("sources", [])
-        if s.get("url") not in existing_urls
-    ]
+    new_sources = [s for s in state.get("sources", []) if s.get("url") not in existing_urls]
     if new_sources:
         updates["sources"] = cached_data.all_sources + new_sources
         logger.info(f"[CACHE] Added {len(new_sources)} new sources")
@@ -298,6 +293,7 @@ def merge_with_cached_node(state: OverallState) -> Dict[str, Any]:
 # =============================================================================
 # Helper Functions
 # =============================================================================
+
 
 def _format_cached_overview(data: CachedCompanyData) -> str:
     """Format cached data as overview text."""
@@ -377,6 +373,7 @@ def _classify_source_urls(cache: ResearchCache, sources: List[Dict], company_nam
 # Main Research Functions
 # =============================================================================
 
+
 def research_with_cache(company_name: str, force: bool = False) -> OutputState:
     """
     Research a company using the cache-aware workflow.
@@ -394,7 +391,7 @@ def research_with_cache(company_name: str, force: bool = False) -> OutputState:
     Returns:
         OutputState with results and metrics
     """
-    from langgraph.graph import StateGraph, END
+    from langgraph.graph import END, StateGraph
 
     cache = get_workflow_cache()
 

@@ -17,16 +17,15 @@ Refactored to use BaseSpecialistAgent for:
 - Centralized LLM calling and cost tracking
 """
 
-from typing import Dict, Any, List
 from dataclasses import dataclass, field
+from typing import Any, Dict, List
 
 from ...config import get_config
 from ...llm.client_factory import calculate_cost
 from ...state import OverallState
-from ...types import LeadScore, BuyingStage, CompanySize  # Centralized enums
-from ..base import get_agent_logger, create_empty_result
+from ...types import BuyingStage, CompanySize, LeadScore  # Centralized enums
+from ..base import create_empty_result, get_agent_logger
 from ..base.specialist import BaseSpecialistAgent, ParsingMixin
-
 
 # ============================================================================
 # Data Models
@@ -37,6 +36,7 @@ from ..base.specialist import BaseSpecialistAgent, ParsingMixin
 @dataclass
 class DecisionMaker:
     """A potential decision maker or influencer."""
+
     title: str
     department: str
     influence_level: str  # HIGH/MEDIUM/LOW
@@ -49,13 +49,14 @@ class DecisionMaker:
             "department": self.department,
             "influence_level": self.influence_level,
             "concerns": self.likely_concerns,
-            "approach": self.engagement_approach
+            "approach": self.engagement_approach,
         }
 
 
 @dataclass
 class PainPoint:
     """An identified pain point."""
+
     description: str
     severity: str  # HIGH/MEDIUM/LOW
     evidence: str
@@ -68,13 +69,14 @@ class PainPoint:
             "severity": self.severity,
             "evidence": self.evidence,
             "solution_fit": self.solution_fit,
-            "urgency": self.urgency
+            "urgency": self.urgency,
         }
 
 
 @dataclass
 class BuyingSignal:
     """A detected buying signal."""
+
     signal_type: str
     description: str
     strength: str  # STRONG/MODERATE/WEAK
@@ -87,13 +89,14 @@ class BuyingSignal:
             "description": self.description,
             "strength": self.strength,
             "source": self.source,
-            "action": self.action_required
+            "action": self.action_required,
         }
 
 
 @dataclass
 class SalesIntelligenceResult:
     """Complete sales intelligence result."""
+
     company_name: str
     lead_score: LeadScore = LeadScore.COLD
     buying_stage: BuyingStage = BuyingStage.UNKNOWN
@@ -123,7 +126,7 @@ class SalesIntelligenceResult:
             "recommended_approach": self.recommended_approach,
             "talking_points": self.talking_points,
             "objection_handlers": self.objection_handlers,
-            "next_steps": self.next_steps
+            "next_steps": self.next_steps,
         }
 
 
@@ -230,6 +233,7 @@ Begin your sales intelligence analysis:"""
 # Sales Intelligence Agent
 # ============================================================================
 
+
 class SalesIntelligenceAgent(BaseSpecialistAgent[SalesIntelligenceResult], ParsingMixin):
     """
     Sales Intelligence Agent for B2B prospecting.
@@ -259,15 +263,10 @@ class SalesIntelligenceAgent(BaseSpecialistAgent[SalesIntelligenceResult], Parsi
     def _get_prompt(self, company_name: str, formatted_results: str) -> str:
         """Build the sales intelligence prompt."""
         return SALES_INTELLIGENCE_PROMPT.format(
-            company_name=company_name,
-            search_results=formatted_results
+            company_name=company_name, search_results=formatted_results
         )
 
-    def _parse_analysis(
-        self,
-        company_name: str,
-        analysis: str
-    ) -> SalesIntelligenceResult:
+    def _parse_analysis(self, company_name: str, analysis: str) -> SalesIntelligenceResult:
         """Parse analysis into structured result."""
         result = SalesIntelligenceResult(company_name=company_name)
 
@@ -340,19 +339,28 @@ class SalesIntelligenceAgent(BaseSpecialistAgent[SalesIntelligenceResult], Parsi
         """Extract decision makers."""
         makers = []
         common_titles = [
-            "CEO", "CTO", "CFO", "CIO", "VP", "Director",
-            "Head of", "Manager", "Chief"
+            "CEO",
+            "CTO",
+            "CFO",
+            "CIO",
+            "VP",
+            "Director",
+            "Head of",
+            "Manager",
+            "Chief",
         ]
 
         lines = analysis.split("\n")
         for line in lines:
             for title in common_titles:
                 if title in line and (":" in line or "**" in line):
-                    makers.append(DecisionMaker(
-                        title=title,
-                        department="Executive" if "C" == title[0] else "Operations",
-                        influence_level="HIGH" if "C" == title[0] else "MEDIUM"
-                    ))
+                    makers.append(
+                        DecisionMaker(
+                            title=title,
+                            department="Executive" if "C" == title[0] else "Operations",
+                            influence_level="HIGH" if "C" == title[0] else "MEDIUM",
+                        )
+                    )
                     break
 
         return makers[:5]
@@ -367,13 +375,15 @@ class SalesIntelligenceAgent(BaseSpecialistAgent[SalesIntelligenceResult], Parsi
                 if "|" in line and not "Pain Point" in line and not "---" in line:
                     parts = [p.strip() for p in line.split("|") if p.strip()]
                     if len(parts) >= 3:
-                        points.append(PainPoint(
-                            description=parts[0],
-                            severity=parts[1] if len(parts) > 1 else "MEDIUM",
-                            evidence=parts[2] if len(parts) > 2 else "",
-                            solution_fit=parts[3] if len(parts) > 3 else "",
-                            urgency=parts[4] if len(parts) > 4 else "SHORT_TERM"
-                        ))
+                        points.append(
+                            PainPoint(
+                                description=parts[0],
+                                severity=parts[1] if len(parts) > 1 else "MEDIUM",
+                                evidence=parts[2] if len(parts) > 2 else "",
+                                solution_fit=parts[3] if len(parts) > 3 else "",
+                                urgency=parts[4] if len(parts) > 4 else "SHORT_TERM",
+                            )
+                        )
         return points[:5]
 
     def _extract_buying_signals(self, analysis: str) -> List[BuyingSignal]:
@@ -383,13 +393,15 @@ class SalesIntelligenceAgent(BaseSpecialistAgent[SalesIntelligenceResult], Parsi
 
         for signal_type in signal_types:
             if signal_type.lower() in analysis.lower():
-                signals.append(BuyingSignal(
-                    signal_type=signal_type,
-                    description=f"{signal_type} activity detected",
-                    strength="MODERATE",
-                    source="research",
-                    action_required="Follow up"
-                ))
+                signals.append(
+                    BuyingSignal(
+                        signal_type=signal_type,
+                        description=f"{signal_type} activity detected",
+                        strength="MODERATE",
+                        source="research",
+                        action_required="Follow up",
+                    )
+                )
 
         return signals[:5]
 
@@ -408,6 +420,7 @@ class SalesIntelligenceAgent(BaseSpecialistAgent[SalesIntelligenceResult], Parsi
 # ============================================================================
 # Agent Node Function
 # ============================================================================
+
 
 def sales_intelligence_agent_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -442,19 +455,16 @@ def sales_intelligence_agent_node(state: OverallState) -> Dict[str, Any]:
 
         return {
             "agent_outputs": {
-                "sales": {
-                    **result.to_dict(),
-                    "analysis": result.analysis,
-                    "cost": cost
-                }
+                "sales": {**result.to_dict(), "analysis": result.analysis, "cost": cost}
             },
-            "total_cost": cost
+            "total_cost": cost,
         }
 
 
 # ============================================================================
 # Factory Function
 # ============================================================================
+
 
 def create_sales_intelligence_agent() -> SalesIntelligenceAgent:
     """Create a Sales Intelligence Agent instance."""

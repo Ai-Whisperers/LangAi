@@ -25,8 +25,7 @@ import sys
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Set
-
+from typing import Any, Dict, List, Set
 
 # ============================================================================
 # CONFIGURATION
@@ -34,28 +33,53 @@ from typing import Dict, List, Any, Set
 
 # Directories to skip during scanning
 SKIP_DIRS: Set[str] = {
-    '__pycache__', '.pytest_cache', '.mypy_cache', '.git',
-    'venv', '.venv', 'node_modules', 'htmlcov', 'External repos'
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".git",
+    "venv",
+    ".venv",
+    "node_modules",
+    "htmlcov",
+    "External repos",
 }
 
 # Temporary file patterns
-TEMP_PATTERNS = ['*.tmp', '*.temp', '*~', '*.swp', '*.swo', '*.pyc', '*.pyo', '*.log']
+TEMP_PATTERNS = ["*.tmp", "*.temp", "*~", "*.swp", "*.swo", "*.pyc", "*.pyo", "*.log"]
 
 # Backup file patterns
-BACKUP_PATTERNS = ['*.bak', '*.backup', '*.old', '*.orig', '*-old', '*_old']
+BACKUP_PATTERNS = ["*.bak", "*.backup", "*.old", "*.orig", "*-old", "*_old"]
 
 # Files that should be in root
 ROOT_ESSENTIAL_FILES = {
-    'README.md', 'INSTALLATION.md', 'QUICK_START.md', 'CONTRIBUTING.md',
-    'CHANGELOG.md', 'LICENSE', 'LICENSE.md', '.gitignore', '.gitattributes',
-    'requirements.txt', 'pyproject.toml', 'setup.py', 'setup.cfg',
-    'poetry.lock', 'Pipfile', 'Pipfile.lock', 'env.example', '.env.example',
+    "README.md",
+    "INSTALLATION.md",
+    "QUICK_START.md",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "LICENSE.md",
+    ".gitignore",
+    ".gitattributes",
+    "requirements.txt",
+    "pyproject.toml",
+    "setup.py",
+    "setup.cfg",
+    "poetry.lock",
+    "Pipfile",
+    "Pipfile.lock",
+    "env.example",
+    ".env.example",
 }
 
 # Report files to archive
 REPORT_FILE_PATTERNS = [
-    '*_report.txt', '*_log.txt', '*_analysis.txt',
-    'obsolete_*.txt', 'quick_cleanup_*.txt', 'import_validation_*.txt'
+    "*_report.txt",
+    "*_log.txt",
+    "*_analysis.txt",
+    "obsolete_*.txt",
+    "quick_cleanup_*.txt",
+    "import_validation_*.txt",
 ]
 
 
@@ -63,9 +87,10 @@ REPORT_FILE_PATTERNS = [
 # UTILITY FUNCTIONS
 # ============================================================================
 
+
 def format_size(size: int) -> str:
     """Format file size for display."""
-    for unit in ['B', 'KB', 'MB', 'GB']:
+    for unit in ["B", "KB", "MB", "GB"]:
         if size < 1024.0:
             return f"{size:.1f}{unit}"
         size /= 1024.0
@@ -76,8 +101,8 @@ def hash_file(filepath: Path) -> str:
     """Calculate MD5 hash of a file."""
     try:
         hasher = hashlib.md5()
-        with open(filepath, 'rb') as f:
-            for chunk in iter(lambda: f.read(4096), b''):
+        with open(filepath, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
                 hasher.update(chunk)
         return hasher.hexdigest()
     except Exception:
@@ -91,12 +116,13 @@ def get_project_root() -> Path:
 
 def should_skip_dir(dirname: str) -> bool:
     """Check if directory should be skipped."""
-    return dirname in SKIP_DIRS or dirname.startswith('.')
+    return dirname in SKIP_DIRS or dirname.startswith(".")
 
 
 # ============================================================================
 # SCANNER CLASS
 # ============================================================================
+
 
 class RepositoryScanner:
     """Scan repository for cleanup items."""
@@ -104,14 +130,14 @@ class RepositoryScanner:
     def __init__(self, project_root: Path):
         self.project_root = project_root
         self.results: Dict[str, List[Any]] = {
-            'temp_files': [],
-            'backup_files': [],
-            'pycache_dirs': [],
-            'empty_dirs': [],
-            'large_files': [],
-            'report_files': [],
-            'duplicate_files': defaultdict(list),
-            'obsolete_docs': [],
+            "temp_files": [],
+            "backup_files": [],
+            "pycache_dirs": [],
+            "empty_dirs": [],
+            "large_files": [],
+            "report_files": [],
+            "duplicate_files": defaultdict(list),
+            "obsolete_docs": [],
         }
 
     def scan_all(self, quick: bool = False) -> Dict[str, List[Any]]:
@@ -142,12 +168,12 @@ class RepositoryScanner:
 
                 for pattern in TEMP_PATTERNS:
                     if filepath.match(pattern):
-                        self.results['temp_files'].append(filepath)
+                        self.results["temp_files"].append(filepath)
                         break
 
                 for pattern in BACKUP_PATTERNS:
                     if filepath.match(pattern):
-                        self.results['backup_files'].append(filepath)
+                        self.results["backup_files"].append(filepath)
                         break
 
     def _scan_cache_dirs(self):
@@ -155,10 +181,10 @@ class RepositoryScanner:
         print("  [*] Scanning for cache directories...")
 
         for root, dirs, _ in os.walk(self.project_root):
-            if '__pycache__' in dirs:
-                self.results['pycache_dirs'].append(Path(root) / '__pycache__')
-            if '.pytest_cache' in dirs:
-                self.results['pycache_dirs'].append(Path(root) / '.pytest_cache')
+            if "__pycache__" in dirs:
+                self.results["pycache_dirs"].append(Path(root) / "__pycache__")
+            if ".pytest_cache" in dirs:
+                self.results["pycache_dirs"].append(Path(root) / ".pytest_cache")
 
             dirs[:] = [d for d in dirs if not should_skip_dir(d)]
 
@@ -174,10 +200,10 @@ class RepositoryScanner:
                 try:
                     contents = list(dirpath.iterdir())
                     if not contents:
-                        self.results['empty_dirs'].append(dirpath)
-                    elif len(contents) == 1 and contents[0].name == '__init__.py':
+                        self.results["empty_dirs"].append(dirpath)
+                    elif len(contents) == 1 and contents[0].name == "__init__.py":
                         if contents[0].stat().st_size == 0:
-                            self.results['empty_dirs'].append(dirpath)
+                            self.results["empty_dirs"].append(dirpath)
                 except (PermissionError, OSError):
                     continue
 
@@ -194,7 +220,7 @@ class RepositoryScanner:
                 try:
                     size = filepath.stat().st_size
                     if size > threshold:
-                        self.results['large_files'].append((filepath, size))
+                        self.results["large_files"].append((filepath, size))
                 except (PermissionError, OSError):
                     continue
 
@@ -206,7 +232,7 @@ class RepositoryScanner:
             if item.is_file():
                 for pattern in REPORT_FILE_PATTERNS:
                     if item.match(pattern):
-                        self.results['report_files'].append(item)
+                        self.results["report_files"].append(item)
                         break
 
     def _scan_duplicates(self):
@@ -225,7 +251,7 @@ class RepositoryScanner:
                     # Skip large files and binaries
                     if filepath.stat().st_size > 10 * 1024 * 1024:
                         continue
-                    if filepath.suffix in ['.png', '.jpg', '.jpeg', '.gif', '.pdf', '.zip', '.exe']:
+                    if filepath.suffix in [".png", ".jpg", ".jpeg", ".gif", ".pdf", ".zip", ".exe"]:
                         continue
 
                     file_hash = hash_file(filepath)
@@ -237,7 +263,7 @@ class RepositoryScanner:
         # Keep only duplicates
         for file_hash, files in file_hashes.items():
             if len(files) > 1:
-                self.results['duplicate_files'][file_hash] = files
+                self.results["duplicate_files"][file_hash] = files
 
     def _scan_obsolete_docs(self):
         """Find potentially obsolete markdown files."""
@@ -249,30 +275,31 @@ class RepositoryScanner:
             dirs[:] = [d for d in dirs if not should_skip_dir(d)]
 
             for filename in files:
-                if not filename.lower().endswith('.md'):
+                if not filename.lower().endswith(".md"):
                     continue
 
                 filepath = Path(root) / filename
 
                 # Track multiple copies of same doc type
                 doc_type = filename.lower()
-                if doc_type in ['readme.md', 'changelog.md', 'contributing.md']:
+                if doc_type in ["readme.md", "changelog.md", "contributing.md"]:
                     doc_counts[doc_type].append(filepath)
 
                 # Flag planning/status docs
-                keywords = ['planning', 'roadmap', 'todo', 'status', 'progress', 'phase']
+                keywords = ["planning", "roadmap", "todo", "status", "progress", "phase"]
                 if any(kw in filename.lower() for kw in keywords):
-                    self.results['obsolete_docs'].append(filepath)
+                    self.results["obsolete_docs"].append(filepath)
 
         # Add duplicate docs
         for doc_type, files in doc_counts.items():
             if len(files) > 1:
-                self.results['obsolete_docs'].extend(files[1:])  # Keep first, mark rest
+                self.results["obsolete_docs"].extend(files[1:])  # Keep first, mark rest
 
 
 # ============================================================================
 # CLEANER CLASS
 # ============================================================================
+
 
 class RepositoryCleaner:
     """Clean up repository based on scan results."""
@@ -280,12 +307,7 @@ class RepositoryCleaner:
     def __init__(self, project_root: Path, dry_run: bool = True):
         self.project_root = project_root
         self.dry_run = dry_run
-        self.stats = {
-            'deleted': 0,
-            'moved': 0,
-            'skipped': 0,
-            'errors': 0
-        }
+        self.stats = {"deleted": 0, "moved": 0, "skipped": 0, "errors": 0}
 
     def clean_temp_files(self, files: List[Path]):
         """Delete temporary files."""
@@ -308,16 +330,16 @@ class RepositoryCleaner:
                 else:
                     dirpath.rmdir()
                     print(f"  [OK] Deleted: {rel_path}/")
-                self.stats['deleted'] += 1
+                self.stats["deleted"] += 1
             except Exception as e:
                 print(f"  [ERR] {rel_path}: {e}")
-                self.stats['errors'] += 1
+                self.stats["errors"] += 1
 
     def archive_reports(self, files: List[Path]):
         """Move report files to archive."""
         print("\n[*] Archiving report files...")
 
-        archive_dir = self.project_root / '.archive' / 'reports'
+        archive_dir = self.project_root / ".archive" / "reports"
         if not self.dry_run:
             archive_dir.mkdir(parents=True, exist_ok=True)
 
@@ -326,7 +348,7 @@ class RepositoryCleaner:
                 target = archive_dir / filepath.name
                 if target.exists():
                     print(f"  [SKIP] Already archived: {filepath.name}")
-                    self.stats['skipped'] += 1
+                    self.stats["skipped"] += 1
                     continue
 
                 if self.dry_run:
@@ -334,10 +356,10 @@ class RepositoryCleaner:
                 else:
                     shutil.move(str(filepath), str(target))
                     print(f"  [OK] Moved: {filepath.name} -> .archive/reports/")
-                self.stats['moved'] += 1
+                self.stats["moved"] += 1
             except Exception as e:
                 print(f"  [ERR] {filepath.name}: {e}")
-                self.stats['errors'] += 1
+                self.stats["errors"] += 1
 
     def _delete_files(self, files: List[Path]):
         """Delete a list of files."""
@@ -349,10 +371,10 @@ class RepositoryCleaner:
                 else:
                     filepath.unlink()
                     print(f"  [OK] Deleted: {rel_path}")
-                self.stats['deleted'] += 1
+                self.stats["deleted"] += 1
             except Exception as e:
                 print(f"  [ERR] {rel_path}: {e}")
-                self.stats['errors'] += 1
+                self.stats["errors"] += 1
 
     def _delete_dirs(self, dirs: List[Path]):
         """Delete directories recursively."""
@@ -364,10 +386,10 @@ class RepositoryCleaner:
                 else:
                     shutil.rmtree(dirpath)
                     print(f"  [OK] Deleted: {rel_path}/")
-                self.stats['deleted'] += 1
+                self.stats["deleted"] += 1
             except Exception as e:
                 print(f"  [ERR] {rel_path}: {e}")
-                self.stats['errors'] += 1
+                self.stats["errors"] += 1
 
     def print_stats(self):
         """Print cleanup statistics."""
@@ -388,6 +410,7 @@ class RepositoryCleaner:
 # REPORT GENERATOR
 # ============================================================================
 
+
 def generate_report(results: Dict[str, List[Any]], project_root: Path) -> str:
     """Generate cleanup analysis report."""
     lines = []
@@ -400,13 +423,13 @@ def generate_report(results: Dict[str, List[Any]], project_root: Path) -> str:
 
     # Summary
     total_issues = (
-        len(results['temp_files']) +
-        len(results['backup_files']) +
-        len(results['pycache_dirs']) +
-        len(results['empty_dirs']) +
-        len(results['report_files']) +
-        len(results['duplicate_files']) +
-        len(results['obsolete_docs'])
+        len(results["temp_files"])
+        + len(results["backup_files"])
+        + len(results["pycache_dirs"])
+        + len(results["empty_dirs"])
+        + len(results["report_files"])
+        + len(results["duplicate_files"])
+        + len(results["obsolete_docs"])
     )
 
     lines.append("SUMMARY")
@@ -423,59 +446,59 @@ def generate_report(results: Dict[str, List[Any]], project_root: Path) -> str:
     lines.append("")
 
     # Details sections
-    if results['pycache_dirs']:
+    if results["pycache_dirs"]:
         lines.append("=" * 80)
         lines.append("CACHE DIRECTORIES (safe to delete)")
         lines.append("=" * 80)
-        for dirpath in sorted(results['pycache_dirs'])[:20]:
+        for dirpath in sorted(results["pycache_dirs"])[:20]:
             rel_path = dirpath.relative_to(project_root)
             lines.append(f"  {rel_path}/")
-        if len(results['pycache_dirs']) > 20:
+        if len(results["pycache_dirs"]) > 20:
             lines.append(f"  ... and {len(results['pycache_dirs']) - 20} more")
         lines.append("")
 
-    if results['temp_files']:
+    if results["temp_files"]:
         lines.append("=" * 80)
         lines.append("TEMPORARY FILES (safe to delete)")
         lines.append("=" * 80)
-        for filepath in sorted(results['temp_files'])[:20]:
+        for filepath in sorted(results["temp_files"])[:20]:
             rel_path = filepath.relative_to(project_root)
             lines.append(f"  {rel_path}")
-        if len(results['temp_files']) > 20:
+        if len(results["temp_files"]) > 20:
             lines.append(f"  ... and {len(results['temp_files']) - 20} more")
         lines.append("")
 
-    if results['backup_files']:
+    if results["backup_files"]:
         lines.append("=" * 80)
         lines.append("BACKUP FILES (review before deleting)")
         lines.append("=" * 80)
-        for filepath in sorted(results['backup_files']):
+        for filepath in sorted(results["backup_files"]):
             rel_path = filepath.relative_to(project_root)
             lines.append(f"  {rel_path}")
         lines.append("")
 
-    if results['report_files']:
+    if results["report_files"]:
         lines.append("=" * 80)
         lines.append("REPORT FILES (should be archived)")
         lines.append("=" * 80)
-        for filepath in sorted(results['report_files']):
+        for filepath in sorted(results["report_files"]):
             lines.append(f"  {filepath.name}")
         lines.append("")
 
-    if results['large_files']:
+    if results["large_files"]:
         lines.append("=" * 80)
         lines.append("LARGE FILES (>1MB)")
         lines.append("=" * 80)
-        for filepath, size in sorted(results['large_files'], key=lambda x: x[1], reverse=True)[:15]:
+        for filepath, size in sorted(results["large_files"], key=lambda x: x[1], reverse=True)[:15]:
             rel_path = filepath.relative_to(project_root)
             lines.append(f"  {format_size(size):>10s}  {rel_path}")
         lines.append("")
 
-    if results['duplicate_files']:
+    if results["duplicate_files"]:
         lines.append("=" * 80)
         lines.append("DUPLICATE FILES")
         lines.append("=" * 80)
-        for i, (_, files) in enumerate(results['duplicate_files'].items(), 1):
+        for i, (_, files) in enumerate(results["duplicate_files"].items(), 1):
             if i > 10:
                 lines.append(f"  ... and {len(results['duplicate_files']) - 10} more sets")
                 break
@@ -491,7 +514,7 @@ def generate_report(results: Dict[str, List[Any]], project_root: Path) -> str:
     lines.append("=" * 80)
     lines.append("")
     lines.append("Quick cleanup (safe):")
-    lines.append('  python -m scripts.utils.cleanup clean --execute')
+    lines.append("  python -m scripts.utils.cleanup clean --execute")
     lines.append("")
     lines.append("Manual cleanup:")
     lines.append('  find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null')
@@ -504,6 +527,7 @@ def generate_report(results: Dict[str, List[Any]], project_root: Path) -> str:
 # ============================================================================
 # CLI COMMANDS
 # ============================================================================
+
 
 def cmd_scan(args):
     """Quick scan for cleanup items."""
@@ -536,8 +560,8 @@ def cmd_analyze(args):
     print("\n" + report)
 
     # Save report
-    report_path = project_root / 'cleanup_report.txt'
-    with open(report_path, 'w', encoding='utf-8') as f:
+    report_path = project_root / "cleanup_report.txt"
+    with open(report_path, "w", encoding="utf-8") as f:
         f.write(report)
     print(f"[*] Report saved to: {report_path}")
 
@@ -554,17 +578,17 @@ def cmd_clean(args):
     # Clean
     cleaner = RepositoryCleaner(project_root, dry_run=dry_run)
 
-    if results['pycache_dirs']:
-        cleaner.clean_pycache(results['pycache_dirs'])
+    if results["pycache_dirs"]:
+        cleaner.clean_pycache(results["pycache_dirs"])
 
-    if results['temp_files']:
-        cleaner.clean_temp_files(results['temp_files'])
+    if results["temp_files"]:
+        cleaner.clean_temp_files(results["temp_files"])
 
-    if results['empty_dirs']:
-        cleaner.clean_empty_dirs(results['empty_dirs'])
+    if results["empty_dirs"]:
+        cleaner.clean_empty_dirs(results["empty_dirs"])
 
-    if results['report_files']:
-        cleaner.archive_reports(results['report_files'])
+    if results["report_files"]:
+        cleaner.archive_reports(results["report_files"])
 
     cleaner.print_stats()
 
@@ -573,12 +597,14 @@ def cmd_clean(args):
 # MAIN
 # ============================================================================
 
+
 def main():
     """Main entry point."""
     # UTF-8 for Windows
-    if sys.platform == 'win32':
+    if sys.platform == "win32":
         import io
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
     parser = argparse.ArgumentParser(
         description="Repository Cleanup Utility",
@@ -589,23 +615,24 @@ Examples:
   python -m scripts.utils.cleanup analyze        # Full analysis report
   python -m scripts.utils.cleanup clean          # Clean (dry run)
   python -m scripts.utils.cleanup clean --execute  # Actually clean
-"""
+""",
     )
 
-    subparsers = parser.add_subparsers(dest='command', help='Commands')
+    subparsers = parser.add_subparsers(dest="command", help="Commands")
 
     # Scan command
-    scan_parser = subparsers.add_parser('scan', help='Quick scan for cleanup items')
+    scan_parser = subparsers.add_parser("scan", help="Quick scan for cleanup items")
     scan_parser.set_defaults(func=cmd_scan)
 
     # Analyze command
-    analyze_parser = subparsers.add_parser('analyze', help='Full analysis with report')
+    analyze_parser = subparsers.add_parser("analyze", help="Full analysis with report")
     analyze_parser.set_defaults(func=cmd_analyze)
 
     # Clean command
-    clean_parser = subparsers.add_parser('clean', help='Clean up repository')
-    clean_parser.add_argument('--execute', action='store_true',
-                              help='Actually perform cleanup (default is dry run)')
+    clean_parser = subparsers.add_parser("clean", help="Clean up repository")
+    clean_parser.add_argument(
+        "--execute", action="store_true", help="Actually perform cleanup (default is dry run)"
+    )
     clean_parser.set_defaults(func=cmd_clean)
 
     args = parser.parse_args()
@@ -617,5 +644,5 @@ Examples:
     args.func(args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

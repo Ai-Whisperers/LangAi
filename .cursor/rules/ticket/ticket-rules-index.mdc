@@ -57,107 +57,107 @@ A ticket is a **small, short-lived AI entity** that knows its plan, history, and
 ### ?? Core Framework Rules
 
 #### `rule.ticket.workflow.v1`
-**File**: `ticket-workflow-rule.mdc`  
-**Purpose**: Standard workflow for ticket documentation and traceability with adaptive implementation strategy  
-**Governs**: Overall ticket lifecycle and commit strategy  
+**File**: `ticket-workflow-rule.mdc`
+**Purpose**: Standard workflow for ticket documentation and traceability with adaptive implementation strategy
+**Governs**: Overall ticket lifecycle and commit strategy
 **Status**: [X] Active
 
 #### `rule.ticket.current.v1`
-**File**: `current-rule.mdc`  
-**Purpose**: Active ticket identifier (located at `tickets/current.md`)  
-**Governs**: `**/tickets/current.md`  
+**File**: `current-rule.mdc`
+**Purpose**: Active ticket identifier (located at `tickets/current.md`)
+**Governs**: `**/tickets/current.md`
 **Status**: [X] Active
 
 ### ? Documentation File Rules
 
 #### `rule.ticket.plan.v1`
-**File**: `plan-rule.mdc`  
-**Purpose**: Defines ticket objectives, requirements, and implementation strategy with complexity assessment  
-**Governs**: `**/tickets/**/plan.md`  
-**Requires**: `rule.ticket.complexity-assessment.v1`, `templar.plan.v1`  
+**File**: `plan-rule.mdc`
+**Purpose**: Defines ticket objectives, requirements, and implementation strategy with complexity assessment
+**Governs**: `**/tickets/**/plan.md`
+**Requires**: `rule.ticket.complexity-assessment.v1`, `templar.plan.v1`
 **Status**: [X] Active
 
 #### `rule.ticket.context.v1`
-**File**: `context-rule.mdc`  
-**Purpose**: Maintains current technical state, focus areas, and immediate next steps  
-**Governs**: `**/tickets/**/context.md`  
-**Requires**: `templar.context.v1`  
+**File**: `context-rule.mdc`
+**Purpose**: Maintains current technical state, focus areas, and immediate next steps
+**Governs**: `**/tickets/**/context.md`
+**Requires**: `templar.context.v1`
 **Status**: [X] Active
 
 #### `rule.ticket.progress.v1`
-**File**: `progress-rule.mdc`  
-**Purpose**: Chronological log of actions, decisions, and milestones with append-only discipline  
-**Governs**: `**/tickets/**/progress.md`  
-**Requires**: `rule.ticket.timeline.v1`, `templar.progress.v1`  
+**File**: `progress-rule.mdc`
+**Purpose**: Chronological log of actions, decisions, and milestones with append-only discipline
+**Governs**: `**/tickets/**/progress.md`
+**Requires**: `rule.ticket.timeline.v1`, `templar.progress.v1`
 **Status**: [X] Active
 
 #### `rule.ticket.timeline.v1`
-**File**: `timeline-tracking-rule.mdc`  
-**Purpose**: Timestamp-focused timeline tracking with session reconstruction capability  
-**Governs**: `**/tickets/**/timeline.md`  
-**Requires**: `templar.timeline.v1`  
+**File**: `timeline-tracking-rule.mdc`
+**Purpose**: Timestamp-focused timeline tracking with session reconstruction capability
+**Governs**: `**/tickets/**/timeline.md`
+**Requires**: `templar.timeline.v1`
 **Status**: [X] Active
 
 #### `rule.ticket.recap.v1`
-**File**: `recap-rule.mdc`  
-**Purpose**: Summarizes ticket outcomes, key learnings, and follow-up actions for closure  
-**Governs**: `**/tickets/**/recap.md`  
-**Requires**: `templar.recap.v1`  
+**File**: `recap-rule.mdc`
+**Purpose**: Summarizes ticket outcomes, key learnings, and follow-up actions for closure
+**Governs**: `**/tickets/**/recap.md`
+**Requires**: `templar.recap.v1`
 **Status**: [X] Active
 
 #### `rule.ticket.rca.v1`
-**File**: `rca-rule.mdc`  
-**Purpose**: Root Cause Analysis for defects and issues with prevention strategies  
-**Governs**: `**/tickets/**/rca.md`  
-**Requires**: `templar.rca.v1`  
+**File**: `rca-rule.mdc`
+**Purpose**: Root Cause Analysis for defects and issues with prevention strategies
+**Governs**: `**/tickets/**/rca.md`
+**Requires**: `templar.rca.v1`
 **Status**: [X] Active
 
 #### `rule.ticket.references.v1`
-**File**: `references-rule.mdc`  
-**Purpose**: Static file and conversation references  
-**Governs**: `**/tickets/**/references.md`  
-**Requires**: `templar.references.v1`  
+**File**: `references-rule.mdc`
+**Purpose**: Static file and conversation references
+**Governs**: `**/tickets/**/references.md`
+**Requires**: `templar.references.v1`
 **Status**: [X] Active
 
 ### ? Process & Discipline Rules
 
 #### `rule.ticket.coding-and-folder-structure.v1`
-**File**: `ticket-coding-and-folder-structure-rule.mdc`  
-**Purpose**: Defines ticket ID coding conventions, folder structure with numbered sub-tickets, and cleanup policies  
-**Governs**: `tickets/**/` (folder structure and organization)  
+**File**: `ticket-coding-and-folder-structure-rule.mdc`
+**Purpose**: Defines ticket ID coding conventions, folder structure with numbered sub-tickets, and cleanup policies
+**Governs**: `tickets/**/` (folder structure and organization)
 **Status**: [X] Active
 
 #### `rule.ticket.complexity-assessment.v1`
-**File**: `complexity-assessment-rule.mdc`  
-**Purpose**: Framework for assessing ticket complexity and determining implementation strategy  
-**Governs**: `**/tickets/**/plan.md` (Complexity Assessment section)  
+**File**: `complexity-assessment-rule.mdc`
+**Purpose**: Framework for assessing ticket complexity and determining implementation strategy
+**Governs**: `**/tickets/**/plan.md` (Complexity Assessment section)
 **Status**: [X] Active
 
 #### `rule.ticket.validation.v1`
-**File**: `validation-before-completion-rule.mdc`  
-**Purpose**: Comprehensive validation requirements before claiming ticket completion  
-**Governs**: All ticket files (validation only)  
+**File**: `validation-before-completion-rule.mdc`
+**Purpose**: Comprehensive validation requirements before claiming ticket completion
+**Governs**: All ticket files (validation only)
 **Status**: [X] Active
 
 #### `rule.ticket.completion-discipline.v1`
-**File**: `ai-completion-discipline.mdc`  
-**Purpose**: AI behavior and discipline when claiming work is complete  
-**Kind**: `guideline` (behavioral, not file-generating)  
-**Governs**: "" (behavioral rule)  
+**File**: `ai-completion-discipline.mdc`
+**Purpose**: AI behavior and discipline when claiming work is complete
+**Kind**: `guideline` (behavioral, not file-generating)
+**Governs**: "" (behavioral rule)
 **Status**: [X] Active
 
 #### `rule.ticket.switching-discipline.v1`
-**File**: `switching-discipline.mdc`  
-**Purpose**: Rules for disciplined ticket switching and context management  
-**Governs**: `**/tickets/current.md`, `**/tickets/**/context.md`, `**/tickets/**/progress.md`  
-**Requires**: `rule.ticket.current.v1`, `rule.ticket.context.v1`, `rule.ticket.progress.v1`  
+**File**: `switching-discipline.mdc`
+**Purpose**: Rules for disciplined ticket switching and context management
+**Governs**: `**/tickets/current.md`, `**/tickets/**/context.md`, `**/tickets/**/progress.md`
+**Requires**: `rule.ticket.current.v1`, `rule.ticket.context.v1`, `rule.ticket.progress.v1`
 **Status**: [X] Active
 
 #### `rule.ticket.timeline-workflow-integration.v1`
-**File**: `timeline-workflow-integration.mdc`  
-**Purpose**: Integration of timeline tracking with ticket workflow  
-**Governs**: `**/tickets/**/timeline.md`, `**/tickets/**/hours.md`  
-**Requires**: `rule.ticket.timeline.v1`, `rule.ticket.workflow.v1`  
+**File**: `timeline-workflow-integration.mdc`
+**Purpose**: Integration of timeline tracking with ticket workflow
+**Governs**: `**/tickets/**/timeline.md`, `**/tickets/**/hours.md`
+**Requires**: `rule.ticket.timeline.v1`, `rule.ticket.workflow.v1`
 **Status**: [X] Active
 
 ## Rule Dependencies Graph

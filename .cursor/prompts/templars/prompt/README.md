@@ -17,8 +17,8 @@ A **templar** is a structural template that:
 
 ### 1. Guided Creation Workflow Templar
 
-**File**: `guided-creation-workflow-templar.md`  
-**Extracted From**: `create-new-prompt.prompt.md`  
+**File**: `guided-creation-workflow-templar.md`
+**Extracted From**: `create-new-prompt.prompt.md`
 **Pattern**: Multi-step guided workflow with decision trees
 
 **Applies To**:
@@ -51,8 +51,8 @@ A **templar** is a structural template that:
 
 ### 2. Multi-Level Validation Templar
 
-**File**: `multi-level-validation-templar.md`  
-**Extracted From**: `validate-prompt.prompt.md`  
+**File**: `multi-level-validation-templar.md`
+**Extracted From**: `validate-prompt.prompt.md`
 **Pattern**: Weighted validation with severity levels and scoring
 
 **Applies To**:
@@ -86,8 +86,8 @@ A **templar** is a structural template that:
 
 ### 3. Enhancement Workflow Templar
 
-**File**: `enhancement-workflow-templar.md`  
-**Extracted From**: `enhance-prompt.prompt.md`  
+**File**: `enhancement-workflow-templar.md`
+**Extracted From**: `enhance-prompt.prompt.md`
 **Pattern**: Categorized enhancement with decision trees and time-scoping
 
 **Applies To**:
@@ -121,8 +121,8 @@ A **templar** is a structural template that:
 
 ### 4. Categorization Workflow Templar
 
-**File**: `categorization-workflow-templar.md`  
-**Extracted From**: `organize-prompts.prompt.md`  
+**File**: `categorization-workflow-templar.md`
+**Extracted From**: `organize-prompts.prompt.md`
 **Pattern**: Inventory → Categorize → Move → Validate workflow
 
 **Applies To**:
@@ -243,8 +243,7 @@ See `extract-templar-exemplar.prompt.md` for extraction guidance.
 
 ## Metadata
 
-**Last Updated**: 2025-12-08  
-**Templar Count**: 4  
-**Extraction Source**: `.cursor/prompts/prompt/` folder analysis  
+**Last Updated**: 2025-12-08
+**Templar Count**: 4
+**Extraction Source**: `.cursor/prompts/prompt/` folder analysis
 **Related Prompt**: `extract-templar-exemplar.prompt.md`
-

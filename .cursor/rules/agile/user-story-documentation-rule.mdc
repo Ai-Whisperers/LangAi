@@ -187,4 +187,4 @@ Updated: 2025-11-04T14:30:00Z by rule.agile.user-story-documentation.v1
 - [ ] Parent Feature and Epic referenced with valid IDs
 - [ ] Definition of Done includes at least 3 specific criteria
 - [ ] No OPSEC violations (internal URLs, credentials, personal data)
-- [ ] Provenance footer appended with timestamp 
+- [ ] Provenance footer appended with timestamp

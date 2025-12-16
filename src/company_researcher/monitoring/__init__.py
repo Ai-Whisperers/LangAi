@@ -39,75 +39,45 @@ Usage:
         # do work
 """
 
-from .metrics import (
-    MetricsCollector,
-    Metric,
-    MetricType,
-    create_metrics_collector,
-)
-
-from .cost_tracker import (
-    CostTracker,
-    CostEntry,
-    CostCategory,
-    create_cost_tracker,
-)
-
-from .performance import (
-    PerformanceMonitor,
-    PerformanceMetric,
-    create_performance_monitor,
-)
-
+from .alerts import Alert, AlertManager, AlertRule, AlertSeverity, create_alert_manager
 from .analytics import (
     AnalyticsAggregator,
     TimeRange,
-    get_dashboard_data,
     create_analytics_aggregator,
+    get_dashboard_data,
 )
-
-from .alerts import (
-    AlertManager,
-    Alert,
-    AlertSeverity,
-    AlertRule,
-    create_alert_manager,
-)
-
-from .opentelemetry import (
-    # Tracing
-    TracerProvider,
-    Tracer,
+from .cost_tracker import CostCategory, CostEntry, CostTracker, create_cost_tracker
+from .metrics import Metric, MetricsCollector, MetricType, create_metrics_collector
+from .opentelemetry import (  # Tracing; Metrics; Decorators; Factory functions; Global accessors
+    ConsoleSpanExporter,
+    Counter,
+    Gauge,
+    Histogram,
+    InMemorySpanExporter,
+    Meter,
+    MeterProvider,
+    MetricPoint,
+    OTLPSpanExporter,
     Span,
     SpanContext,
     SpanEvent,
     SpanExporter,
-    ConsoleSpanExporter,
-    OTLPSpanExporter,
-    InMemorySpanExporter,
-    # Metrics
-    MeterProvider,
-    Meter,
-    Counter,
+    Tracer,
+    TracerProvider,
     UpDownCounter,
-    Histogram,
-    Gauge,
-    MetricPoint,
-    # Decorators
-    trace,
-    timed,
     counted,
-    # Factory functions
-    create_tracer_provider,
     create_meter_provider,
-    # Global accessors
-    get_tracer_provider,
-    set_tracer_provider,
-    get_tracer,
-    get_meter_provider,
-    set_meter_provider,
+    create_tracer_provider,
     get_meter,
+    get_meter_provider,
+    get_tracer,
+    get_tracer_provider,
+    set_meter_provider,
+    set_tracer_provider,
+    timed,
+    trace,
 )
+from .performance import PerformanceMetric, PerformanceMonitor, create_performance_monitor
 
 __all__ = [
     # Metrics

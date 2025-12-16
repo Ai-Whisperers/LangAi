@@ -10,8 +10,8 @@ argument-hint: "Tracker filename (e.g., @tracker.md lets continue)"
 
 This prompt resumes systematic work using a progress tracker file to maintain continuity across sessions.
 
-**Pattern**: Tracker-Based Continuation Pattern ⭐⭐⭐⭐⭐  
-**Effectiveness**: Perfect for multi-session systematic work  
+**Pattern**: Tracker-Based Continuation Pattern ⭐⭐⭐⭐⭐
+**Effectiveness**: Perfect for multi-session systematic work
 **Use When**: Resuming work tracked in progress files (tests, coverage, multi-phase implementations)
 
 ---
@@ -250,10 +250,8 @@ After each batch:
 
 ---
 
-**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)  
-**Pattern ID**: #2 Tracker-Based Continuation  
-**Evidence**: conversations/JP/extracted/pattern-discovery-report.md  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)
+**Pattern ID**: #2 Tracker-Based Continuation
+**Evidence**: conversations/JP/extracted/pattern-discovery-report.md
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)
-
-

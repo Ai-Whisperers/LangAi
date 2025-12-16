@@ -14,10 +14,11 @@ Examples:
 - "Who are Amazon's main competitors?"
 """
 
-from typing import Dict, Any, List, Optional, Tuple
+import re
 from dataclasses import dataclass, field
 from enum import Enum
-import re
+from typing import Any, Dict, List, Optional, Tuple
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -25,6 +26,7 @@ logger = get_logger(__name__)
 
 class QueryIntent(str, Enum):
     """Types of query intents."""
+
     COMPANY_OVERVIEW = "company_overview"
     FINANCIAL_INFO = "financial_info"
     MARKET_ANALYSIS = "market_analysis"
@@ -39,6 +41,7 @@ class QueryIntent(str, Enum):
 
 class EntityType(str, Enum):
     """Types of entities in queries."""
+
     COMPANY = "company"
     METRIC = "metric"
     TIME_PERIOD = "time_period"
@@ -49,6 +52,7 @@ class EntityType(str, Enum):
 @dataclass
 class Entity:
     """An entity extracted from a query."""
+
     text: str
     entity_type: EntityType
     normalized: Optional[str] = None
@@ -58,6 +62,7 @@ class Entity:
 @dataclass
 class ParsedQuery:
     """Result of parsing a natural language query."""
+
     original_query: str
     intent: QueryIntent
     companies: List[str]
@@ -72,6 +77,7 @@ class ParsedQuery:
 @dataclass
 class QueryResponse:
     """Formatted response to a natural language query."""
+
     query: ParsedQuery
     answer: str
     data: Dict[str, Any]
@@ -247,12 +253,12 @@ class NaturalLanguageQueryProcessor:
                     break
 
         # Also look for capitalized words that might be company names
-        words = re.findall(r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b', query)
+        words = re.findall(r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b", query)
         for word in words:
             word_lower = word.lower()
             if word_lower not in [c.lower() for c in companies]:
                 # Check if it looks like a company name
-                if len(word) > 2 and word_lower not in ['the', 'and', 'for', 'with']:
+                if len(word) > 2 and word_lower not in ["the", "and", "for", "with"]:
                     companies.append(word)
 
         return list(set(companies))
@@ -300,35 +306,33 @@ class NaturalLanguageQueryProcessor:
         return None
 
     def _extract_entities(
-        self,
-        query: str,
-        companies: List[str],
-        metrics: List[str]
+        self, query: str, companies: List[str], metrics: List[str]
     ) -> List[Entity]:
         """Extract all entities from query."""
         entities = []
 
         for company in companies:
-            entities.append(Entity(
-                text=company,
-                entity_type=EntityType.COMPANY,
-                normalized=company.lower(),
-            ))
+            entities.append(
+                Entity(
+                    text=company,
+                    entity_type=EntityType.COMPANY,
+                    normalized=company.lower(),
+                )
+            )
 
         for metric in metrics:
-            entities.append(Entity(
-                text=metric,
-                entity_type=EntityType.METRIC,
-                normalized=metric,
-            ))
+            entities.append(
+                Entity(
+                    text=metric,
+                    entity_type=EntityType.METRIC,
+                    normalized=metric,
+                )
+            )
 
         return entities
 
     def _generate_follow_ups(
-        self,
-        intent: QueryIntent,
-        companies: List[str],
-        metrics: List[str]
+        self, intent: QueryIntent, companies: List[str], metrics: List[str]
     ) -> List[str]:
         """Generate follow-up question suggestions."""
         follow_ups = []
@@ -347,11 +351,7 @@ class NaturalLanguageQueryProcessor:
 
         return follow_ups[:3]
 
-    def format_response(
-        self,
-        parsed: ParsedQuery,
-        research_data: Dict[str, Any]
-    ) -> QueryResponse:
+    def format_response(self, parsed: ParsedQuery, research_data: Dict[str, Any]) -> QueryResponse:
         """
         Format research data as a response to the query.
 
@@ -375,11 +375,7 @@ class NaturalLanguageQueryProcessor:
             suggestions=suggestions,
         )
 
-    def _generate_answer(
-        self,
-        parsed: ParsedQuery,
-        data: Dict[str, Any]
-    ) -> str:
+    def _generate_answer(self, parsed: ParsedQuery, data: Dict[str, Any]) -> str:
         """Generate natural language answer from data."""
         if not parsed.companies:
             return "I couldn't identify which company you're asking about. Please specify a company name."
@@ -390,7 +386,9 @@ class NaturalLanguageQueryProcessor:
         if parsed.intent == QueryIntent.FINANCIAL_INFO:
             financial = agent_outputs.get("financial", {})
             if isinstance(financial, dict) and financial.get("analysis"):
-                return f"Here's what I found about {company}'s financials:\n\n{financial['analysis']}"
+                return (
+                    f"Here's what I found about {company}'s financials:\n\n{financial['analysis']}"
+                )
             return f"I found some financial information about {company}, but detailed metrics aren't available."
 
         elif parsed.intent == QueryIntent.COMPETITOR_ANALYSIS:
@@ -422,8 +420,7 @@ def create_query_processor() -> NaturalLanguageQueryProcessor:
 
 
 async def process_natural_query(
-    query: str,
-    research_data: Optional[Dict[str, Any]] = None
+    query: str, research_data: Optional[Dict[str, Any]] = None
 ) -> QueryResponse:
     """
     Process a natural language query.

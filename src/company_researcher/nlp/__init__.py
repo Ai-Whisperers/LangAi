@@ -25,12 +25,12 @@ Usage:
 """
 
 from .query_processor import (
+    Entity,
+    EntityType,
     NaturalLanguageQueryProcessor,
     ParsedQuery,
-    QueryResponse,
     QueryIntent,
-    EntityType,
-    Entity,
+    QueryResponse,
     create_query_processor,
     process_natural_query,
 )

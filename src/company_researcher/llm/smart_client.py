@@ -34,16 +34,16 @@ Usage:
     report = generate_report(analysis)  # Uses Claude
 """
 
-from typing import Optional, Dict, Any, List, Union
 from dataclasses import dataclass
 from threading import Lock
+from typing import Any, Dict, List, Optional, Union
 
 from anthropic import Anthropic
 from openai import OpenAI
 
-from .model_router import ModelRouter, TaskType
-from .deepseek_client import DeepSeekClient
 from ..utils import get_config, get_logger, utc_now
+from .deepseek_client import DeepSeekClient
+from .model_router import ModelRouter, TaskType
 
 logger = get_logger(__name__)
 
@@ -51,6 +51,7 @@ logger = get_logger(__name__)
 @dataclass
 class CompletionResult:
     """Result from smart completion."""
+
     content: str
     model: str
     provider: str
@@ -71,7 +72,7 @@ class CompletionResult:
             "cost": self.cost,
             "task_type": self.task_type,
             "routing_reason": self.routing_reason,
-            "latency_ms": self.latency_ms
+            "latency_ms": self.latency_ms,
         }
 
 
@@ -96,7 +97,7 @@ class SmartLLMClient:
         groq_api_key: Optional[str] = None,
         quality_priority: float = 0.5,
         max_cost_per_call: float = 0.10,
-        enable_fallbacks: bool = True
+        enable_fallbacks: bool = True,
     ):
         """
         Initialize smart client with available providers.
@@ -137,17 +138,14 @@ class SmartLLMClient:
         # Groq
         groq_key = groq_api_key or get_config("GROQ_API_KEY")
         if groq_key:
-            self._groq = OpenAI(
-                api_key=groq_key,
-                base_url="https://api.groq.com/openai/v1"
-            )
+            self._groq = OpenAI(api_key=groq_key, base_url="https://api.groq.com/openai/v1")
             logger.info("Groq client initialized")
 
         # Model router
         self._router = ModelRouter(
             quality_priority=quality_priority,
             max_cost_per_call=max_cost_per_call,
-            enable_fallbacks=enable_fallbacks
+            enable_fallbacks=enable_fallbacks,
         )
 
         # Usage tracking
@@ -179,7 +177,7 @@ class SmartLLMClient:
         temperature: float = 0.0,
         force_provider: Optional[str] = None,
         force_model: Optional[str] = None,
-        json_mode: bool = False
+        json_mode: bool = False,
     ) -> CompletionResult:
         """
         Create completion with automatic model routing.
@@ -211,10 +209,7 @@ class SmartLLMClient:
             provider = force_provider or self._infer_provider(force_model)
             routing_reason = f"Forced: {model_id}"
         else:
-            decision = self._router.select_model(
-                task_type=task_type,
-                complexity=complexity
-            )
+            decision = self._router.select_model(task_type=task_type, complexity=complexity)
             model_id = decision.model_config.model_id
             provider = force_provider or decision.model_config.provider
             routing_reason = decision.reasoning
@@ -251,28 +246,30 @@ class SmartLLMClient:
                 system=system,
                 max_tokens=max_tokens,
                 temperature=temperature,
-                json_mode=json_mode
+                json_mode=json_mode,
             )
         except Exception as e:
             error_msg = str(e).lower()
             # Check for rate limit, billing, authentication, or API errors
             # 400 = billing/credit issues, 401 = auth issues, 429 = rate limit
             is_recoverable = (
-                "rate" in error_msg or
-                "limit" in error_msg or
-                "429" in str(e) or
-                "400" in str(e) or  # Billing/credit exhausted
-                "401" in str(e) or  # Authentication errors (invalid/expired key)
-                "authentication" in error_msg or
-                "invalid" in error_msg or  # Invalid API key
-                "credit" in error_msg or
-                "quota" in error_msg or
-                "billing" in error_msg or
-                "payment" in error_msg or
-                "insufficient" in error_msg
+                "rate" in error_msg
+                or "limit" in error_msg
+                or "429" in str(e)
+                or "400" in str(e)  # Billing/credit exhausted
+                or "401" in str(e)  # Authentication errors (invalid/expired key)
+                or "authentication" in error_msg
+                or "invalid" in error_msg  # Invalid API key
+                or "credit" in error_msg
+                or "quota" in error_msg
+                or "billing" in error_msg
+                or "payment" in error_msg
+                or "insufficient" in error_msg
             )
             if is_recoverable:
-                logger.warning(f"API error for {provider} ({str(e)[:100]}), falling back to alternative provider")
+                logger.warning(
+                    f"API error for {provider} ({str(e)[:100]}), falling back to alternative provider"
+                )
                 # Try Groq as fallback
                 if provider != "groq" and self._groq:
                     provider = "groq"
@@ -285,7 +282,7 @@ class SmartLLMClient:
                         system=system,
                         max_tokens=max_tokens,
                         temperature=temperature,
-                        json_mode=json_mode
+                        json_mode=json_mode,
                     )
                 # Try DeepSeek as second fallback
                 elif provider != "deepseek" and self._deepseek:
@@ -299,7 +296,7 @@ class SmartLLMClient:
                         system=system,
                         max_tokens=max_tokens,
                         temperature=temperature,
-                        json_mode=json_mode
+                        json_mode=json_mode,
                     )
                 else:
                     raise  # Re-raise if no fallback available
@@ -319,7 +316,7 @@ class SmartLLMClient:
             cost=result["cost"],
             task_type=task_type.value,
             routing_reason=routing_reason,
-            latency_ms=latency_ms
+            latency_ms=latency_ms,
         )
 
     def _infer_provider(self, model_id: str) -> str:
@@ -342,35 +339,34 @@ class SmartLLMClient:
         system: Optional[str],
         max_tokens: int,
         temperature: float,
-        json_mode: bool
+        json_mode: bool,
     ) -> Dict[str, Any]:
         """Execute completion with specific provider."""
 
         if provider == "anthropic":
             return self._anthropic_completion(model, prompt, system, max_tokens, temperature)
         elif provider == "openai":
-            return self._openai_completion(model, prompt, system, max_tokens, temperature, json_mode)
+            return self._openai_completion(
+                model, prompt, system, max_tokens, temperature, json_mode
+            )
         elif provider == "deepseek":
-            return self._deepseek_completion(model, prompt, system, max_tokens, temperature, json_mode)
+            return self._deepseek_completion(
+                model, prompt, system, max_tokens, temperature, json_mode
+            )
         elif provider == "groq":
             return self._groq_completion(model, prompt, system, max_tokens, temperature, json_mode)
         else:
             raise ValueError(f"Unknown provider: {provider}")
 
     def _anthropic_completion(
-        self,
-        model: str,
-        prompt: str,
-        system: Optional[str],
-        max_tokens: int,
-        temperature: float
+        self, model: str, prompt: str, system: Optional[str], max_tokens: int, temperature: float
     ) -> Dict[str, Any]:
         """Execute Anthropic completion."""
         kwargs = {
             "model": model,
             "max_tokens": max_tokens,
             "temperature": temperature,
-            "messages": [{"role": "user", "content": prompt}]
+            "messages": [{"role": "user", "content": prompt}],
         }
         if system:
             kwargs["system"] = system
@@ -393,7 +389,7 @@ class SmartLLMClient:
             "content": response.content[0].text,
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
-            "cost": cost
+            "cost": cost,
         }
 
     def _openai_completion(
@@ -403,7 +399,7 @@ class SmartLLMClient:
         system: Optional[str],
         max_tokens: int,
         temperature: float,
-        json_mode: bool
+        json_mode: bool,
     ) -> Dict[str, Any]:
         """Execute OpenAI completion."""
         messages = []
@@ -415,7 +411,7 @@ class SmartLLMClient:
             "model": model,
             "messages": messages,
             "max_tokens": max_tokens,
-            "temperature": temperature
+            "temperature": temperature,
         }
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
@@ -439,7 +435,7 @@ class SmartLLMClient:
             "content": response.choices[0].message.content,
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
-            "cost": cost
+            "cost": cost,
         }
 
     def _deepseek_completion(
@@ -449,7 +445,7 @@ class SmartLLMClient:
         system: Optional[str],
         max_tokens: int,
         temperature: float,
-        json_mode: bool
+        json_mode: bool,
     ) -> Dict[str, Any]:
         """Execute DeepSeek completion using the query method."""
         response = self._deepseek.query(
@@ -458,14 +454,14 @@ class SmartLLMClient:
             model=model,
             max_tokens=max_tokens,
             temperature=temperature,
-            json_mode=json_mode
+            json_mode=json_mode,
         )
 
         return {
             "content": response.content,
             "input_tokens": response.input_tokens,
             "output_tokens": response.output_tokens,
-            "cost": response.cost
+            "cost": response.cost,
         }
 
     def _groq_completion(
@@ -475,7 +471,7 @@ class SmartLLMClient:
         system: Optional[str],
         max_tokens: int,
         temperature: float,
-        json_mode: bool
+        json_mode: bool,
     ) -> Dict[str, Any]:
         """Execute Groq completion."""
         messages = []
@@ -487,7 +483,7 @@ class SmartLLMClient:
             "model": model,
             "messages": messages,
             "max_tokens": max_tokens,
-            "temperature": temperature
+            "temperature": temperature,
         }
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
@@ -504,7 +500,7 @@ class SmartLLMClient:
             "content": response.choices[0].message.content,
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
-            "cost": cost
+            "cost": cost,
         }
 
     def _track_usage(self, provider: str, cost: float, input_tokens: int, output_tokens: int):
@@ -518,7 +514,7 @@ class SmartLLMClient:
                     "calls": 0,
                     "cost": 0.0,
                     "input_tokens": 0,
-                    "output_tokens": 0
+                    "output_tokens": 0,
                 }
 
             self._usage_by_provider[provider]["calls"] += 1
@@ -533,7 +529,7 @@ class SmartLLMClient:
                 "total_calls": self._total_calls,
                 "total_cost": self._total_cost,
                 "by_provider": dict(self._usage_by_provider),
-                "available_providers": self._get_available_providers()
+                "available_providers": self._get_available_providers(),
             }
 
     def reset_stats(self):
@@ -560,40 +556,31 @@ def get_smart_client(**kwargs) -> SmartLLMClient:
 
 
 # Convenience functions
-def smart_completion(
-    prompt: str,
-    task_type: str = "simple",
-    **kwargs
-) -> CompletionResult:
+def smart_completion(prompt: str, task_type: str = "simple", **kwargs) -> CompletionResult:
     """Quick smart completion."""
     return get_smart_client().complete(prompt, task_type=task_type, **kwargs)
 
 
 def extract_data(
-    context: str,
-    extraction_prompt: str,
-    fields: Optional[List[str]] = None
+    context: str, extraction_prompt: str, fields: Optional[List[str]] = None
 ) -> CompletionResult:
     """Extract structured data (uses cheapest model)."""
     if fields:
-        prompt = f"{extraction_prompt}\n\nFields to extract: {', '.join(fields)}\n\nContext:\n{context}"
+        prompt = (
+            f"{extraction_prompt}\n\nFields to extract: {', '.join(fields)}\n\nContext:\n{context}"
+        )
     else:
         prompt = f"{extraction_prompt}\n\nContext:\n{context}"
 
     return get_smart_client().complete(
-        prompt=prompt,
-        task_type="extraction",
-        complexity="low",
-        json_mode=True
+        prompt=prompt, task_type="extraction", complexity="low", json_mode=True
     )
 
 
 def analyze_text(text: str, analysis_prompt: str) -> CompletionResult:
     """Analyze text (uses mid-tier model)."""
     return get_smart_client().complete(
-        prompt=f"{analysis_prompt}\n\nText:\n{text}",
-        task_type="reasoning",
-        complexity="medium"
+        prompt=f"{analysis_prompt}\n\nText:\n{text}", task_type="reasoning", complexity="medium"
     )
 
 
@@ -602,7 +589,7 @@ def generate_report(content: str, report_type: str = "summary") -> CompletionRes
     return get_smart_client().complete(
         prompt=f"Generate a {report_type} report:\n\n{content}",
         task_type="synthesis",
-        complexity="high"
+        complexity="high",
     )
 
 

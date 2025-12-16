@@ -200,4 +200,3 @@ As solution the idea is to split EBASE environments in such a way that there is 
 - Excel will be the primary intermediate format for data exchange
 - Existing Python scripts for SQL generation can be leveraged
 - Binary files (pictograms, icons) will be handled with metadata in DB and files in file system
-

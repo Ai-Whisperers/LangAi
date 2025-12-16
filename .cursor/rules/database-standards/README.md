@@ -65,4 +65,4 @@ When suggesting changes to these standards:
 1. Document the rationale
 2. Provide examples
 3. Consider impact on existing code
-4. Get team review and approval 
+4. Get team review and approval

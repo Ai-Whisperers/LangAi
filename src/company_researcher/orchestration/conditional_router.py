@@ -17,12 +17,13 @@ Usage:
     result = workflow.invoke({"company_name": "Tesla"})
 """
 
-from typing import Dict, Any, Optional, List, Callable
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
 
 try:
-    from langgraph.graph import StateGraph, END
+    from langgraph.graph import END, StateGraph
+
     LANGGRAPH_AVAILABLE = True
 except ImportError:
     LANGGRAPH_AVAILABLE = False
@@ -32,6 +33,7 @@ except ImportError:
 
 class CompanyType(str, Enum):
     """Classification of company types."""
+
     PUBLIC = "public"
     PRIVATE = "private"
     STARTUP = "startup"
@@ -40,6 +42,7 @@ class CompanyType(str, Enum):
 
 class ResearchDepth(str, Enum):
     """Depth of research required."""
+
     QUICK = "quick"
     STANDARD = "standard"
     DEEP = "deep"
@@ -48,6 +51,7 @@ class ResearchDepth(str, Enum):
 @dataclass
 class RoutingDecision:
     """Decision made by the router."""
+
     company_type: CompanyType
     research_depth: ResearchDepth
     agents_to_run: List[str]
@@ -61,9 +65,9 @@ class RoutingDecision:
 # Classification Functions
 # =============================================================================
 
+
 def classify_company_type(
-    company_name: str,
-    search_results: List[Dict[str, Any]] = None
+    company_name: str, search_results: List[Dict[str, Any]] = None
 ) -> CompanyType:
     """
     Classify company type based on available information.
@@ -77,16 +81,33 @@ def classify_company_type(
     """
     # Common public company indicators
     public_indicators = [
-        "nasdaq", "nyse", "stock", "ticker", "sec filing",
-        "quarterly earnings", "market cap", "publicly traded",
-        "ipo", "shareholders", "10-k", "10-q"
+        "nasdaq",
+        "nyse",
+        "stock",
+        "ticker",
+        "sec filing",
+        "quarterly earnings",
+        "market cap",
+        "publicly traded",
+        "ipo",
+        "shareholders",
+        "10-k",
+        "10-q",
     ]
 
     # Startup indicators
     startup_indicators = [
-        "series a", "series b", "series c", "seed round",
-        "venture capital", "vc", "startup", "founded 202",
-        "pre-revenue", "early stage", "accelerator"
+        "series a",
+        "series b",
+        "series c",
+        "seed round",
+        "venture capital",
+        "vc",
+        "startup",
+        "founded 202",
+        "pre-revenue",
+        "early stage",
+        "accelerator",
     ]
 
     # Combine text for analysis
@@ -103,8 +124,18 @@ def classify_company_type(
 
     # Well-known public companies
     known_public = [
-        "apple", "microsoft", "google", "amazon", "tesla", "meta",
-        "nvidia", "netflix", "salesforce", "adobe", "oracle", "intel"
+        "apple",
+        "microsoft",
+        "google",
+        "amazon",
+        "tesla",
+        "meta",
+        "nvidia",
+        "netflix",
+        "salesforce",
+        "adobe",
+        "oracle",
+        "intel",
     ]
     if any(company in company_name.lower() for company in known_public):
         return CompanyType.PUBLIC
@@ -121,9 +152,7 @@ def classify_company_type(
 
 
 def determine_research_depth(
-    company_name: str,
-    requested_depth: Optional[str] = None,
-    source_count: int = 0
+    company_name: str, requested_depth: Optional[str] = None, source_count: int = 0
 ) -> ResearchDepth:
     """
     Determine appropriate research depth.
@@ -140,7 +169,7 @@ def determine_research_depth(
         depth_map = {
             "quick": ResearchDepth.QUICK,
             "standard": ResearchDepth.STANDARD,
-            "deep": ResearchDepth.DEEP
+            "deep": ResearchDepth.DEEP,
         }
         return depth_map.get(requested_depth.lower(), ResearchDepth.STANDARD)
 
@@ -154,9 +183,7 @@ def determine_research_depth(
 
 
 def make_routing_decision(
-    company_name: str,
-    search_results: List[Dict[str, Any]] = None,
-    config: Dict[str, Any] = None
+    company_name: str, search_results: List[Dict[str, Any]] = None, config: Dict[str, Any] = None
 ) -> RoutingDecision:
     """
     Make comprehensive routing decision.
@@ -177,9 +204,7 @@ def make_routing_decision(
 
     # Determine depth
     research_depth = determine_research_depth(
-        company_name,
-        config.get("research_depth"),
-        len(search_results)
+        company_name, config.get("research_depth"), len(search_results)
     )
 
     # Determine agents to run
@@ -221,7 +246,7 @@ def make_routing_decision(
         skip_agents=skip_agents,
         use_enhanced_financial=use_enhanced_financial,
         use_batch_api=use_batch,
-        estimated_cost=estimated_cost
+        estimated_cost=estimated_cost,
     )
 
 
@@ -238,6 +263,7 @@ if LANGGRAPH_AVAILABLE:
         Returns:
             Router function for conditional edges
         """
+
         def router(state: Dict[str, Any]) -> str:
             """Route based on company type."""
             company_name = state.get("company_name", "")
@@ -260,6 +286,7 @@ if LANGGRAPH_AVAILABLE:
 
         Determines if research is complete or needs iteration.
         """
+
         def checker(state: Dict[str, Any]) -> str:
             """Check research quality and decide next step."""
             iterations = state.get("iteration_count", 0)
@@ -303,14 +330,14 @@ if LANGGRAPH_AVAILABLE:
         Returns:
             Compiled LangGraph workflow
         """
-        from ..state import OverallState
-        from ..agents.core.researcher import researcher_agent_node
         from ..agents.core.analyst import analyst_agent_node
+        from ..agents.core.researcher import researcher_agent_node
         from ..agents.core.synthesizer import synthesizer_agent_node
-        from ..agents.financial.financial import financial_agent_node
         from ..agents.financial.enhanced_financial import enhanced_financial_agent_node
+        from ..agents.financial.financial import financial_agent_node
         from ..agents.market.market import market_agent_node
         from ..agents.specialized.product import product_agent_node
+        from ..state import OverallState
 
         # Create graph
         workflow = StateGraph(OverallState)
@@ -338,8 +365,8 @@ if LANGGRAPH_AVAILABLE:
                 "routing_decision": {
                     "agents": decision.agents_to_run,
                     "depth": decision.research_depth.value,
-                    "estimated_cost": decision.estimated_cost
-                }
+                    "estimated_cost": decision.estimated_cost,
+                },
             }
 
         workflow.add_node("classify", classify_node)
@@ -359,10 +386,7 @@ if LANGGRAPH_AVAILABLE:
         workflow.add_conditional_edges(
             "classify",
             financial_router,
-            {
-                "financial_enhanced": "financial_enhanced",
-                "financial_basic": "financial_basic"
-            }
+            {"financial_enhanced": "financial_enhanced", "financial_basic": "financial_basic"},
         )
 
         # Both financial paths continue to market
@@ -415,12 +439,7 @@ if LANGGRAPH_AVAILABLE:
         # Quality-based routing
         quality_checker = create_quality_checker()
         workflow.add_conditional_edges(
-            "increment",
-            quality_checker,
-            {
-                "iterate": "research",  # Loop back
-                "finalize": END
-            }
+            "increment", quality_checker, {"iterate": "research", "finalize": END}  # Loop back
         )
 
         return workflow.compile()
@@ -430,14 +449,12 @@ else:
 
     def create_conditional_research_graph(config=None):
         raise ImportError(
-            "LangGraph is required for conditional routing. "
-            "Install with: pip install langgraph"
+            "LangGraph is required for conditional routing. " "Install with: pip install langgraph"
         )
 
     def create_iterative_research_graph(max_iterations=2):
         raise ImportError(
-            "LangGraph is required for iterative workflows. "
-            "Install with: pip install langgraph"
+            "LangGraph is required for iterative workflows. " "Install with: pip install langgraph"
         )
 
     def create_company_type_router():
@@ -451,6 +468,7 @@ else:
 # Simple Router (No LangGraph Required)
 # =============================================================================
 
+
 class SimpleRouter:
     """
     Simple router without LangGraph dependency.
@@ -463,9 +481,7 @@ class SimpleRouter:
         self.config = config or {}
 
     def route_research(
-        self,
-        company_name: str,
-        search_results: List[Dict[str, Any]] = None
+        self, company_name: str, search_results: List[Dict[str, Any]] = None
     ) -> RoutingDecision:
         """
         Get routing decision for a company.
@@ -477,16 +493,9 @@ class SimpleRouter:
         Returns:
             RoutingDecision
         """
-        return make_routing_decision(
-            company_name,
-            search_results,
-            self.config
-        )
+        return make_routing_decision(company_name, search_results, self.config)
 
-    def get_agent_sequence(
-        self,
-        decision: RoutingDecision
-    ) -> List[Callable]:
+    def get_agent_sequence(self, decision: RoutingDecision) -> List[Callable]:
         """
         Get ordered list of agent functions to run.
 
@@ -496,11 +505,11 @@ class SimpleRouter:
         Returns:
             List of agent functions
         """
-        from ..agents.core.researcher import researcher_agent_node
         from ..agents.core.analyst import analyst_agent_node
+        from ..agents.core.researcher import researcher_agent_node
         from ..agents.core.synthesizer import synthesizer_agent_node
-        from ..agents.financial.financial import financial_agent_node
         from ..agents.financial.enhanced_financial import enhanced_financial_agent_node
+        from ..agents.financial.financial import financial_agent_node
         from ..agents.market.market import market_agent_node
         from ..agents.specialized.product import product_agent_node
 
@@ -511,7 +520,7 @@ class SimpleRouter:
             "enhanced_financial": enhanced_financial_agent_node,
             "market": market_agent_node,
             "product": product_agent_node,
-            "synthesizer": synthesizer_agent_node
+            "synthesizer": synthesizer_agent_node,
         }
 
         sequence = []
@@ -522,9 +531,7 @@ class SimpleRouter:
         return sequence
 
     def run_sequential(
-        self,
-        company_name: str,
-        search_results: List[Dict[str, Any]] = None
+        self, company_name: str, search_results: List[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Run research with simple sequential routing.
@@ -544,7 +551,7 @@ class SimpleRouter:
             "company_name": company_name,
             "search_results": search_results or [],
             "agent_outputs": {},
-            "routing": decision.__dict__
+            "routing": decision.__dict__,
         }
 
         # Run agents in sequence

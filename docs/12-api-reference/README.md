@@ -51,5 +51,3 @@ See `src/company_researcher/api/routes.py` for the authoritative list.
 - `GET /ws` (WebSocket): real-time updates / message handling
 
 See `src/company_researcher/api/websocket.py`.
-
-

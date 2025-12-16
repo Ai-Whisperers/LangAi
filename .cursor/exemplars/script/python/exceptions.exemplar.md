@@ -22,7 +22,7 @@ class ConfigurationError(CoverageError):
 
 class ThresholdError(CoverageError):
     """Coverage threshold not met."""
-    
+
     def __init__(self, metric: str, actual: float, threshold: float):
         self.metric = metric
         self.actual = actual
@@ -38,10 +38,10 @@ class BuildError(CoverageError):
 # Usage:
 def validate_thresholds(results: Dict, thresholds: Dict):
     """Validate coverage against thresholds."""
-    
+
     if results['line_coverage'] < thresholds['line']:
         raise ThresholdError('line', results['line_coverage'], thresholds['line'])
-    
+
     if results['branch_coverage'] < thresholds['branch']:
         raise ThresholdError('branch', results['branch_coverage'], thresholds['branch'])
 
@@ -70,4 +70,3 @@ except CoverageError as e:
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

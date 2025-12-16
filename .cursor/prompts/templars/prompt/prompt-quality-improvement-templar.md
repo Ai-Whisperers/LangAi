@@ -25,12 +25,12 @@ Diagnose and fix prompt quality issues before enhancement. Produce a corrected, 
 - Access to prompt-creation-rule and registry integration rule
 
 ## Deterministic Steps
-1) Read & Understand Intent  
-2) Analyze against five lenses: Frontmatter, Structure, Clarity, Reusability, Documentation  
-3) Identify Issues with severity (critical / important / nice-to-have)  
-4) Rewrite: produce a complete improved prompt fixing all issues  
-5) Document Changes: short list of what changed and why  
-6) Validate: YAML correctness, required sections present, examples usable  
+1) Read & Understand Intent
+2) Analyze against five lenses: Frontmatter, Structure, Clarity, Reusability, Documentation
+3) Identify Issues with severity (critical / important / nice-to-have)
+4) Rewrite: produce a complete improved prompt fixing all issues
+5) Document Changes: short list of what changed and why
+6) Validate: YAML correctness, required sections present, examples usable
 
 ## Structure to Produce
 - Frontmatter: required fields only; correct YAML; polite description
@@ -58,4 +58,3 @@ Diagnose and fix prompt quality issues before enhancement. Produce a corrected, 
 ```
 @improve-prompt .cursor/prompts/prompt/example.prompt.md
 ```
-

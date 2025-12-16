@@ -16,7 +16,7 @@ Ford Motor Company reported mixed financial results for 2024, with earnings per 
 
 **Mission/Vision:** Data not available from provided sources.
 
-**Leadership Team:** 
+**Leadership Team:**
 - CEO: Jim Farley
 
 **Headquarters and Global Presence:** Headquartered in Dearborn, Michigan, United States.

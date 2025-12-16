@@ -127,4 +127,3 @@ AI loads ticket and spec, validates migration plan against database schema, conf
 ```
 
 ---
-

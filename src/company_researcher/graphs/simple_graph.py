@@ -5,11 +5,13 @@ This is a minimal graph to verify Studio is working correctly.
 """
 
 from typing import TypedDict
-from langgraph.graph import StateGraph, START, END
+
+from langgraph.graph import END, START, StateGraph
 
 
 class SimpleState(TypedDict):
     """State for simple test graph"""
+
     input: str
     output: str
     step: int
@@ -17,26 +19,17 @@ class SimpleState(TypedDict):
 
 def step1(state: SimpleState) -> dict:
     """First step: Process input"""
-    return {
-        "output": f"Processed: {state['input']}",
-        "step": 1
-    }
+    return {"output": f"Processed: {state['input']}", "step": 1}
 
 
 def step2(state: SimpleState) -> dict:
     """Second step: Add more processing"""
-    return {
-        "output": state["output"] + " | Enhanced",
-        "step": 2
-    }
+    return {"output": state["output"] + " | Enhanced", "step": 2}
 
 
 def step3(state: SimpleState) -> dict:
     """Final step: Complete processing"""
-    return {
-        "output": state["output"] + " | Complete!",
-        "step": 3
-    }
+    return {"output": state["output"] + " | Complete!", "step": 3}
 
 
 # Build the graph

@@ -1,17 +1,18 @@
 """Tests for safe operation utilities."""
 
-import pytest
-import json
 import asyncio
-from unittest.mock import patch, MagicMock
+import json
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from company_researcher.utils.safe_ops import (
-    safe_get,
-    safe_json_parse,
     safe_execute,
     safe_execute_async,
-    safe_int,
     safe_float,
+    safe_get,
+    safe_int,
+    safe_json_parse,
 )
 
 
@@ -85,15 +86,15 @@ class TestSafeJsonParse:
 
     def test_valid_json_array(self):
         """safe_json_parse should parse valid JSON array."""
-        result = safe_json_parse('[1, 2, 3]')
+        result = safe_json_parse("[1, 2, 3]")
         assert result == [1, 2, 3]
 
     def test_valid_json_primitives(self):
         """safe_json_parse should parse JSON primitives."""
         assert safe_json_parse('"string"') == "string"
-        assert safe_json_parse('123') == 123
-        assert safe_json_parse('true') is True
-        assert safe_json_parse('null') is None
+        assert safe_json_parse("123") == 123
+        assert safe_json_parse("true") is True
+        assert safe_json_parse("null") is None
 
     def test_invalid_json_returns_default(self):
         """safe_json_parse should return default for invalid JSON."""
@@ -132,27 +133,34 @@ class TestSafeExecute:
 
     def test_with_kwargs(self):
         """safe_execute should pass kwargs to function."""
+
         def func(a, b=10):
             return a * b
+
         result = safe_execute(func, 5, b=3)
         assert result == 15
 
     def test_exception_returns_default(self):
         """safe_execute should return default on exception."""
+
         def failing():
             raise ValueError("error")
+
         result = safe_execute(failing, default="fallback")
         assert result == "fallback"
 
     def test_exception_returns_none_by_default(self):
         """safe_execute should return None when no default specified."""
+
         def failing():
             raise RuntimeError()
+
         result = safe_execute(failing)
         assert result is None
 
     def test_log_errors_true(self):
         """safe_execute should log errors when log_errors=True."""
+
         def failing():
             raise ValueError("test error")
 
@@ -162,6 +170,7 @@ class TestSafeExecute:
 
     def test_log_errors_false(self):
         """safe_execute should not log when log_errors=False."""
+
         def failing():
             raise ValueError("test error")
 
@@ -171,6 +180,7 @@ class TestSafeExecute:
 
     def test_custom_error_message(self):
         """safe_execute should use custom error message."""
+
         def failing():
             raise ValueError("test error")
 
@@ -186,30 +196,37 @@ class TestSafeExecuteAsync:
     @pytest.mark.asyncio
     async def test_successful_async_execution(self):
         """safe_execute_async should return function result on success."""
+
         async def async_func():
             return 42
+
         result = await safe_execute_async(async_func)
         assert result == 42
 
     @pytest.mark.asyncio
     async def test_async_with_arguments(self):
         """safe_execute_async should pass arguments to async function."""
+
         async def async_func(x, y):
             return x + y
+
         result = await safe_execute_async(async_func, 3, 4)
         assert result == 7
 
     @pytest.mark.asyncio
     async def test_async_exception_returns_default(self):
         """safe_execute_async should return default on exception."""
+
         async def failing_async():
             raise ValueError("error")
+
         result = await safe_execute_async(failing_async, default="fallback")
         assert result == "fallback"
 
     @pytest.mark.asyncio
     async def test_async_log_errors(self):
         """safe_execute_async should log errors when log_errors=True."""
+
         async def failing_async():
             raise ValueError("test error")
 

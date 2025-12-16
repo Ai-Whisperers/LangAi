@@ -210,7 +210,7 @@ def calculate_combined_score(query: str):
     authority_score = _calculate_authority()  # Domain-based (0-1)
     relevance_score = _calculate_relevance(query)  # Query match (0-1)
     rank_factor = 1.0 / (1.0 + 0.1 * raw_rank)  # Position decay
-    
+
     combined_score = (
         authority_score * 0.4 +    # 40% domain authority
         relevance_score * 0.4 +    # 40% query relevance
@@ -240,7 +240,7 @@ class ProviderHealth:
     avg_response_time_ms: float = 0.0
     total_requests: int = 0
     total_successes: int = 0
-    
+
     @property
     def is_healthy(self) -> bool:
         if consecutive_failures >= 3:
@@ -248,7 +248,7 @@ class ProviderHealth:
             cooldown = 60 * (2 ** min(consecutive_failures - 3, 5))
             return (now - last_failure) >= cooldown
         return True
-    
+
     @property
     def success_rate(self) -> float:
         return successes / total_requests
@@ -311,21 +311,21 @@ REQUIRED_FIELDS = {
     "founded": ["founded", "established", "incorporated"],
     "industry": ["industry", "sector", "business segment"],
     "employees": ["employees", "workforce", "staff count", "headcount"],
-    
+
     # Leadership
     "ceo": ["ceo", "chief executive", "managing director", "general manager"],
     "leadership_team": ["leadership", "management team", "board", "executives"],
-    
+
     # Financial metrics
     "revenue": ["revenue", "sales", "turnover", "annual revenue"],
     "profit_margin": ["profit margin", "net margin", "operating margin"],
     "market_cap": ["market cap", "market capitalization", "valuation"],
-    
+
     # Market position
     "market_share": ["market share", "share of market", "% of market"],
     "subscribers": ["subscribers", "customers", "users", "client base"],
     "competitors": ["competitor", "rival", "competing", "market player"],
-    
+
     # Operational
     "products_services": ["product", "service", "offering", "solution"],
     "geographic_presence": ["geographic", "countries", "regions", "operations in"],
@@ -401,11 +401,11 @@ class ExtractionResult:
 def check_field_completeness(extracted_data: str) -> Dict:
     """Check which required fields are present/missing"""
     field_score = (present_count / total_fields) * 100
-    
+
     # Calculate composite quality score
     critical_penalty = len(critical_missing) * 5  # -5 per critical field
     important_penalty = len(important_missing) * 2  # -2 per important field
-    
+
     return {
         "field_score": field_score,                    # 0-100
         "present_fields": [...],
@@ -661,16 +661,16 @@ def should_continue_research(state: OverallState) -> str:
     iteration_count = state.get("iteration_count", 0)
     quality_score = state.get("quality_score", 0)
     max_iterations = 2
-    
+
     # Decision thresholds
     if quality_score >= 85:
         # Quality is good - proceed to report
         return "finish"
-    
+
     elif iteration_count >= max_iterations:
         # Maximum iterations reached - proceed to report
         return "finish"
-    
+
     else:
         # Quality low and iterations remaining - re-search
         return "continue_research"
@@ -861,36 +861,36 @@ END
 {
     # Input
     "company_name": str,
-    
+
     # Query Generation
     "search_queries": List[str],
     "detected_region": str,
     "detected_language": str,
-    
+
     # Search Results
     "search_results": List[Dict],           # Accumulated
     "sources": List[Dict],                  # Accumulated
-    
+
     # Analysis
     "notes": List[str],                     # Accumulated LLM notes
     "company_overview": Optional[str],      # Extracted narrative
-    
+
     # Structured Data
     "key_metrics": Optional[Dict],
     "products_services": Optional[List[str]],
     "competitors": Optional[List[str]],
     "key_insights": Optional[List[str]],
-    
+
     # Classification
     "company_classification": Optional[Dict],
     "is_public_company": Optional[bool],
     "stock_ticker": Optional[str],
-    
+
     # Quality & Iteration
     "quality_score": Optional[float],       # 0-100
     "iteration_count": int,                 # Number of re-search cycles
     "missing_info": Optional[List[str]],
-    
+
     # Metrics
     "start_time": datetime,
     "total_cost": float,                    # Accumulated cost
@@ -1031,4 +1031,3 @@ Key opportunities for improvement:
 - Multi-source fact validation
 - Early convergence detection
 - Cost-aware iteration control
-

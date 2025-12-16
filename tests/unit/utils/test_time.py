@@ -1,15 +1,16 @@
 """Tests for time utilities."""
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
-from datetime import datetime, timezone, timedelta
 
 from company_researcher.utils.time import (
-    utc_now,
-    format_timestamp,
-    parse_timestamp,
     duration_str,
     elapsed_since,
+    format_timestamp,
     is_recent,
+    parse_timestamp,
+    utc_now,
 )
 
 

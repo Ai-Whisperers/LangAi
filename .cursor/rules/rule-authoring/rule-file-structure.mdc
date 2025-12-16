@@ -106,7 +106,7 @@ governs: **/pattern1.md
 **Format Rules for globs/governs**:
 - [X] Plain comma-separated string: `pattern1, pattern2, pattern3`
 - [X] Single space after each comma
-- [X] NO brackets: `[]` 
+- [X] NO brackets: `[]`
 - [X] NO quotes: `""`
 - [X] NO hyphens: `-`
 - [X] All patterns on ONE line

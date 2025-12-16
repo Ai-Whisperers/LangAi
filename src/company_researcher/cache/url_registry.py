@@ -9,11 +9,12 @@ Maintains a persistent registry of all URLs encountered during research:
 """
 
 import json
-from pathlib import Path
-from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -21,21 +22,23 @@ logger = get_logger(__name__)
 
 class URLStatus(str, Enum):
     """Status of a URL in the registry."""
-    USEFUL = "useful"           # Good content, worth keeping
-    USELESS = "useless"         # Bad content, skip in future
-    PAYWALL = "paywall"         # Behind paywall
-    NOT_FOUND = "not_found"     # 404 or similar
-    BLOCKED = "blocked"         # Access denied
-    TIMEOUT = "timeout"         # Request timed out
-    IRRELEVANT = "irrelevant"   # Content not relevant to research
-    DUPLICATE = "duplicate"     # Same content as another URL
-    LOW_QUALITY = "low_quality" # Low quality source
-    PENDING = "pending"         # Not yet evaluated
+
+    USEFUL = "useful"  # Good content, worth keeping
+    USELESS = "useless"  # Bad content, skip in future
+    PAYWALL = "paywall"  # Behind paywall
+    NOT_FOUND = "not_found"  # 404 or similar
+    BLOCKED = "blocked"  # Access denied
+    TIMEOUT = "timeout"  # Request timed out
+    IRRELEVANT = "irrelevant"  # Content not relevant to research
+    DUPLICATE = "duplicate"  # Same content as another URL
+    LOW_QUALITY = "low_quality"  # Low quality source
+    PENDING = "pending"  # Not yet evaluated
 
 
 @dataclass
 class URLRecord:
     """Record for a single URL."""
+
     url: str
     domain: str
     status: URLStatus
@@ -171,7 +174,7 @@ class URLRegistry:
                 "version": "1.0",
                 "last_updated": datetime.now(timezone.utc).isoformat(),
                 "total_urls": len(self._urls),
-                "urls": [r.to_dict() for r in self._urls.values()]
+                "urls": [r.to_dict() for r in self._urls.values()],
             }
             with open(self.urls_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)
@@ -189,6 +192,7 @@ class URLRegistry:
         """Extract domain from URL."""
         try:
             from urllib.parse import urlparse
+
             parsed = urlparse(url)
             return parsed.netloc.lower()
         except Exception:
@@ -215,8 +219,13 @@ class URLRegistry:
 
         if status == URLStatus.USEFUL:
             stats["useful_count"] += 1
-        elif status in [URLStatus.USELESS, URLStatus.PAYWALL, URLStatus.BLOCKED,
-                        URLStatus.IRRELEVANT, URLStatus.LOW_QUALITY]:
+        elif status in [
+            URLStatus.USELESS,
+            URLStatus.PAYWALL,
+            URLStatus.BLOCKED,
+            URLStatus.IRRELEVANT,
+            URLStatus.LOW_QUALITY,
+        ]:
             stats["useless_count"] += 1
 
         # Calculate useless ratio
@@ -244,9 +253,14 @@ class URLRegistry:
         # Check exact URL
         if url in self._urls:
             record = self._urls[url]
-            if record.status in [URLStatus.USELESS, URLStatus.PAYWALL,
-                                 URLStatus.BLOCKED, URLStatus.NOT_FOUND,
-                                 URLStatus.IRRELEVANT, URLStatus.LOW_QUALITY]:
+            if record.status in [
+                URLStatus.USELESS,
+                URLStatus.PAYWALL,
+                URLStatus.BLOCKED,
+                URLStatus.NOT_FOUND,
+                URLStatus.IRRELEVANT,
+                URLStatus.LOW_QUALITY,
+            ]:
                 return True
 
         # Check if domain is mostly useless
@@ -373,16 +387,15 @@ class URLRegistry:
     def get_useful_urls_for_company(self, company_name: str) -> List[URLRecord]:
         """Get all useful URLs previously used for a company."""
         return [
-            r for r in self._urls.values()
-            if r.status == URLStatus.USEFUL
-            and company_name in r.companies_used_for
+            r
+            for r in self._urls.values()
+            if r.status == URLStatus.USEFUL and company_name in r.companies_used_for
         ]
 
     def get_useful_urls_by_domain(self, domain: str) -> List[URLRecord]:
         """Get all useful URLs from a domain."""
         return [
-            r for r in self._urls.values()
-            if r.domain == domain and r.status == URLStatus.USEFUL
+            r for r in self._urls.values() if r.domain == domain and r.status == URLStatus.USEFUL
         ]
 
     def get_useless_domains(self) -> Set[str]:
@@ -400,10 +413,10 @@ class URLRegistry:
             Dict with keys: "new", "useful", "useless", "skip"
         """
         result = {
-            "new": [],      # Never seen before
-            "useful": [],   # Known to be useful
+            "new": [],  # Never seen before
+            "useful": [],  # Known to be useful
             "useless": [],  # Known to be useless
-            "skip": [],     # From useless domain
+            "skip": [],  # From useless domain
         }
 
         for url in urls:

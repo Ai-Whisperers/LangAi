@@ -64,7 +64,7 @@ Prompts for creating, validating, syncing, and extracting patterns from rules in
 ### Sync Rules Between Repos
 
 ```
-@sync-rules-between-repos 
+@sync-rules-between-repos
   source: eneve.ebase.foundation
   target: eneve.domain
   domain: ticket
@@ -207,7 +207,7 @@ Save to: .cursor/rules/templars/ticket/
   target: eneve.domain
   scope: ticket domain
 
-Result: 
+Result:
 - 3 rules to add
 - 5 rules to update
 - 1 rule to review (conflict)
@@ -261,7 +261,7 @@ Result:
 
 ### Issue: Rule Validation Fails
 
-**Solution**: 
+**Solution**:
 1. Check front-matter syntax (YAML must be valid)
 2. Verify rule_id follows naming convention
 3. Ensure all required sections present
@@ -306,4 +306,3 @@ For issues with rule authoring:
 - `.cursor/rules/exemplars/` - Reference rule examples
 - `.cursor/prompts/prompt/` - Similar prompts for prompt management
 - `.cursor/prompts/housekeeping/` - Maintenance prompts including pattern extraction
-

@@ -14,10 +14,10 @@ Refactored to use @agent_node decorator for reduced boilerplate.
 
 from typing import Any, Callable, Dict, List, Optional
 
-from ..base import agent_node, AgentResult
 from ...config import ResearchConfig
 from ...state import OverallState
 from ...utils import get_logger
+from ..base import AgentResult, agent_node
 
 logger = get_logger(__name__)
 
@@ -36,7 +36,9 @@ class MarketAgent:
         self.search_tool = search_tool
         self.llm_client = llm_client
 
-    def analyze(self, company_name: str, search_results: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+    def analyze(
+        self, company_name: str, search_results: Optional[List[Dict[str, Any]]] = None
+    ) -> Dict[str, Any]:
         """
         Analyze market position for a company.
 
@@ -49,7 +51,9 @@ class MarketAgent:
         return market_agent_node(state)
 
 
-def create_market_agent(search_tool: Optional[Callable] = None, llm_client: Optional[Any] = None) -> MarketAgent:
+def create_market_agent(
+    search_tool: Optional[Callable] = None, llm_client: Optional[Any] = None
+) -> MarketAgent:
     """Factory function to create a MarketAgent."""
     return MarketAgent(search_tool=search_tool, llm_client=llm_client)
 
@@ -129,7 +133,7 @@ Format as:
     max_tokens=1000,
     temperature=0.0,
     max_sources=15,
-    content_truncate_length=500
+    content_truncate_length=500,
 )
 def market_agent_node(
     state: OverallState,
@@ -138,7 +142,7 @@ def market_agent_node(
     config: ResearchConfig,
     node_config,
     formatted_results: str,
-    company_name: str
+    company_name: str,
 ) -> AgentResult:
     """
     Market Agent Node: Analyze market position and competition.
@@ -167,8 +171,7 @@ def market_agent_node(
     """
     # Create prompt with pre-formatted results
     prompt = MARKET_ANALYSIS_PROMPT.format(
-        company_name=company_name,
-        search_results=formatted_results
+        company_name=company_name, search_results=formatted_results
     )
 
     # Call Claude for market analysis
@@ -177,5 +180,5 @@ def market_agent_node(
         model=config.llm_model,
         max_tokens=node_config.max_tokens,
         temperature=node_config.temperature,
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
     )

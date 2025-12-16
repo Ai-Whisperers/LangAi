@@ -110,4 +110,3 @@ For existing tickets (like EPP-196):
 3. Keep important final records in root
 4. Add `work/` to .gitignore
 5. Can keep current structure or migrate gradually
-

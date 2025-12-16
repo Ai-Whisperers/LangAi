@@ -19,7 +19,7 @@ Complete toolkit for Product Owners to excel at backlog management and sprint ex
 ### user_story_generator.py
 Generates well-formed user stories with acceptance criteria from epics.
 
-**Usage**: 
+**Usage**:
 - Generate stories: `python scripts/user_story_generator.py`
 - Plan sprint: `python scripts/user_story_generator.py sprint [capacity]`
 

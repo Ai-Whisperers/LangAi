@@ -19,13 +19,14 @@ Usage:
 """
 
 import asyncio
-from enum import Enum
-from typing import Dict, Any, List, Optional, Callable, Set
-from dataclasses import dataclass, field
-from datetime import datetime
-from collections import defaultdict
 import hashlib
 import statistics
+from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Set
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -33,16 +34,18 @@ logger = get_logger(__name__)
 
 class ConsensusStrategy(Enum):
     """Strategies for reaching consensus."""
-    MAJORITY_VOTE = "majority_vote"         # Simple majority wins
-    WEIGHTED_VOTE = "weighted_vote"         # Vote weighted by agent confidence
-    UNANIMOUS = "unanimous"                 # All must agree
-    FIRST_AGREEMENT = "first_agreement"     # First N agents to agree
-    BEST_CONFIDENCE = "best_confidence"     # Highest confidence wins
-    AGGREGATION = "aggregation"             # Combine all results
+
+    MAJORITY_VOTE = "majority_vote"  # Simple majority wins
+    WEIGHTED_VOTE = "weighted_vote"  # Vote weighted by agent confidence
+    UNANIMOUS = "unanimous"  # All must agree
+    FIRST_AGREEMENT = "first_agreement"  # First N agents to agree
+    BEST_CONFIDENCE = "best_confidence"  # Highest confidence wins
+    AGGREGATION = "aggregation"  # Combine all results
 
 
 class ConflictResolution(Enum):
     """Methods for resolving conflicts."""
+
     HIGHEST_CONFIDENCE = "highest_confidence"
     MOST_RECENT = "most_recent"
     MOST_DETAILED = "most_detailed"
@@ -52,30 +55,33 @@ class ConflictResolution(Enum):
 
 class AgentRole(Enum):
     """Roles agents can play in a swarm."""
-    EXPLORER = "explorer"           # Searches for information
-    ANALYST = "analyst"             # Analyzes information
-    VALIDATOR = "validator"         # Validates findings
-    SYNTHESIZER = "synthesizer"     # Combines results
-    CRITIC = "critic"               # Challenges findings
+
+    EXPLORER = "explorer"  # Searches for information
+    ANALYST = "analyst"  # Analyzes information
+    VALIDATOR = "validator"  # Validates findings
+    SYNTHESIZER = "synthesizer"  # Combines results
+    CRITIC = "critic"  # Challenges findings
 
 
 @dataclass
 class SwarmConfig:
     """Configuration for swarm execution."""
+
     min_agents: int = 2
     max_agents: int = 5
     timeout_seconds: int = 120
     consensus_strategy: ConsensusStrategy = ConsensusStrategy.WEIGHTED_VOTE
     conflict_resolution: ConflictResolution = ConflictResolution.HIGHEST_CONFIDENCE
     require_validation: bool = True
-    diversity_threshold: float = 0.3    # Minimum result diversity
-    confidence_threshold: float = 0.6   # Minimum confidence to accept
+    diversity_threshold: float = 0.3  # Minimum result diversity
+    confidence_threshold: float = 0.6  # Minimum confidence to accept
     max_retries: int = 2
 
 
 @dataclass
 class AgentResult:
     """Result from a single agent in the swarm."""
+
     agent_id: str
     agent_role: AgentRole
     result: Dict[str, Any]
@@ -89,6 +95,7 @@ class AgentResult:
         """Hash of result for comparison."""
         # Create deterministic hash of key findings
         import json
+
         content = json.dumps(self.result, sort_keys=True, default=str)
         return hashlib.md5(content.encode()).hexdigest()[:8]
 
@@ -96,6 +103,7 @@ class AgentResult:
 @dataclass
 class ConsensusResult:
     """Result of consensus voting."""
+
     reached_consensus: bool
     consensus_value: Any
     confidence: float
@@ -108,6 +116,7 @@ class ConsensusResult:
 @dataclass
 class SwarmResult:
     """Final result from swarm execution."""
+
     task_id: str
     task_description: str
     final_result: Dict[str, Any]
@@ -117,20 +126,14 @@ class SwarmResult:
     conflicts_resolved: int
     execution_time: float
     confidence: float
-    coverage_score: float           # How many aspects were covered
+    coverage_score: float  # How many aspects were covered
     timestamp: datetime = field(default_factory=utc_now)
 
 
 class AgentWrapper:
     """Wrapper for agents to participate in swarm."""
 
-    def __init__(
-        self,
-        agent_id: str,
-        agent_func: Callable,
-        role: AgentRole,
-        weight: float = 1.0
-    ):
+    def __init__(self, agent_id: str, agent_func: Callable, role: AgentRole, weight: float = 1.0):
         self.agent_id = agent_id
         self.agent_func = agent_func
         self.role = role
@@ -159,7 +162,7 @@ class AgentWrapper:
                 agent_role=self.role,
                 result=result if isinstance(result, dict) else {"value": result},
                 confidence=confidence,
-                execution_time=execution_time
+                execution_time=execution_time,
             )
 
         except Exception as e:
@@ -172,7 +175,7 @@ class AgentWrapper:
                 result={"error": str(e)},
                 confidence=0.0,
                 execution_time=execution_time,
-                metadata={"failed": True, "error_type": type(e).__name__}
+                metadata={"failed": True, "error_type": type(e).__name__},
             )
 
     @property
@@ -195,19 +198,10 @@ class SwarmOrchestrator:
         self.task_history: List[SwarmResult] = []
 
     def register_agent(
-        self,
-        agent_id: str,
-        agent_func: Callable,
-        role: AgentRole,
-        weight: float = 1.0
+        self, agent_id: str, agent_func: Callable, role: AgentRole, weight: float = 1.0
     ):
         """Register an agent with the swarm."""
-        wrapper = AgentWrapper(
-            agent_id=agent_id,
-            agent_func=agent_func,
-            role=role,
-            weight=weight
-        )
+        wrapper = AgentWrapper(agent_id=agent_id, agent_func=agent_func, role=role, weight=weight)
         self.agents[agent_id] = wrapper
         logger.info(f"Registered agent: {agent_id} as {role.value}")
 
@@ -220,7 +214,7 @@ class SwarmOrchestrator:
         self,
         task: Dict[str, Any],
         agent_ids: Optional[List[str]] = None,
-        roles: Optional[List[AgentRole]] = None
+        roles: Optional[List[AgentRole]] = None,
     ) -> SwarmResult:
         """
         Execute task with swarm of agents.
@@ -265,14 +259,14 @@ class SwarmOrchestrator:
                     supporting_agents=[],
                     dissenting_agents=[a.agent_id for a in agent_results],
                     vote_distribution={},
-                    reasoning="All agents failed to produce results"
+                    reasoning="All agents failed to produce results",
                 ),
                 agent_results=agent_results,
                 conflicts_found=0,
                 conflicts_resolved=0,
                 execution_time=(utc_now() - start_time).total_seconds(),
                 confidence=0,
-                coverage_score=0
+                coverage_score=0,
             )
 
         # Detect conflicts
@@ -293,9 +287,7 @@ class SwarmOrchestrator:
         if self.config.require_validation:
             validators = [a for a in selected_agents if a.role == AgentRole.VALIDATOR]
             if validators:
-                final_result = await self._validate_result(
-                    final_result, validators[0], task
-                )
+                final_result = await self._validate_result(final_result, validators[0], task)
 
         # Calculate coverage score
         coverage_score = self._calculate_coverage(valid_results)
@@ -312,16 +304,14 @@ class SwarmOrchestrator:
             conflicts_resolved=resolved_conflicts,
             execution_time=execution_time,
             confidence=consensus.confidence,
-            coverage_score=coverage_score
+            coverage_score=coverage_score,
         )
 
         self.task_history.append(result)
         return result
 
     def _select_agents(
-        self,
-        agent_ids: Optional[List[str]],
-        roles: Optional[List[AgentRole]]
+        self, agent_ids: Optional[List[str]], roles: Optional[List[AgentRole]]
     ) -> List[AgentWrapper]:
         """Select agents for execution."""
         selected = []
@@ -334,33 +324,32 @@ class SwarmOrchestrator:
             selected.append(agent)
 
         # Limit to max agents
-        return selected[:self.config.max_agents]
+        return selected[: self.config.max_agents]
 
     async def _execute_parallel(
-        self,
-        agents: List[AgentWrapper],
-        task: Dict[str, Any]
+        self, agents: List[AgentWrapper], task: Dict[str, Any]
     ) -> List[AgentResult]:
         """Execute agents in parallel with timeout."""
         tasks = [agent.execute(task) for agent in agents]
 
         try:
             results = await asyncio.wait_for(
-                asyncio.gather(*tasks, return_exceptions=True),
-                timeout=self.config.timeout_seconds
+                asyncio.gather(*tasks, return_exceptions=True), timeout=self.config.timeout_seconds
             )
 
             # Convert exceptions to error results
             final_results = []
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
-                    final_results.append(AgentResult(
-                        agent_id=agents[i].agent_id,
-                        agent_role=agents[i].role,
-                        result={"error": str(result)},
-                        confidence=0,
-                        execution_time=self.config.timeout_seconds
-                    ))
+                    final_results.append(
+                        AgentResult(
+                            agent_id=agents[i].agent_id,
+                            agent_role=agents[i].role,
+                            result={"error": str(result)},
+                            confidence=0,
+                            execution_time=self.config.timeout_seconds,
+                        )
+                    )
                 else:
                     final_results.append(result)
 
@@ -374,7 +363,7 @@ class SwarmOrchestrator:
                     agent_role=agent.role,
                     result={"error": "timeout"},
                     confidence=0,
-                    execution_time=self.config.timeout_seconds
+                    execution_time=self.config.timeout_seconds,
                 )
                 for agent in agents
             ]
@@ -401,14 +390,18 @@ class SwarmOrchestrator:
                 if len(values) >= 2:
                     all_values = [v for _, v in values]
                     if max(all_values) != 0:
-                        variance = (max(all_values) - min(all_values)) / max(abs(v) for v in all_values)
+                        variance = (max(all_values) - min(all_values)) / max(
+                            abs(v) for v in all_values
+                        )
                         if variance > 0.2:  # 20% variance
-                            conflicts.append({
-                                "key": key,
-                                "type": "numerical",
-                                "values": values,
-                                "variance": variance
-                            })
+                            conflicts.append(
+                                {
+                                    "key": key,
+                                    "type": "numerical",
+                                    "values": values,
+                                    "variance": variance,
+                                }
+                            )
 
         return conflicts
 
@@ -433,7 +426,7 @@ class SwarmOrchestrator:
                 supporting_agents=[],
                 dissenting_agents=[],
                 vote_distribution={},
-                reasoning="No results to build consensus"
+                reasoning="No results to build consensus",
             )
 
         strategy = self.config.consensus_strategy
@@ -475,7 +468,7 @@ class SwarmOrchestrator:
             supporting_agents=supporters,
             dissenting_agents=dissenting,
             vote_distribution={h: len(v) for h, v in votes.items()},
-            reasoning=f"Majority vote: {len(supporters)}/{len(results)} agents agreed"
+            reasoning=f"Majority vote: {len(supporters)}/{len(results)} agents agreed",
         )
 
     def _weighted_vote(self, results: List[AgentResult]) -> ConsensusResult:
@@ -506,7 +499,7 @@ class SwarmOrchestrator:
             supporting_agents=supporters,
             dissenting_agents=dissenting,
             vote_distribution={h: w for h, w in weighted_votes.items()},
-            reasoning=f"Weighted vote: {winner_weight:.2f}/{total_weight:.2f} weight for winner"
+            reasoning=f"Weighted vote: {winner_weight:.2f}/{total_weight:.2f} weight for winner",
         )
 
     def _best_confidence(self, results: List[AgentResult]) -> ConsensusResult:
@@ -520,7 +513,7 @@ class SwarmOrchestrator:
             supporting_agents=[best.agent_id],
             dissenting_agents=[r.agent_id for r in results if r != best],
             vote_distribution={best.result_hash: 1},
-            reasoning=f"Best confidence: {best.agent_id} with {best.confidence:.2f}"
+            reasoning=f"Best confidence: {best.agent_id} with {best.confidence:.2f}",
         )
 
     def _aggregation_consensus(self, results: List[AgentResult]) -> ConsensusResult:
@@ -536,13 +529,11 @@ class SwarmOrchestrator:
             supporting_agents=[r.agent_id for r in results],
             dissenting_agents=[],
             vote_distribution={"aggregated": len(results)},
-            reasoning=f"Aggregated {len(results)} agent results"
+            reasoning=f"Aggregated {len(results)} agent results",
         )
 
     def _resolve_conflicts(
-        self,
-        conflicts: List[Dict[str, Any]],
-        results: List[AgentResult]
+        self, conflicts: List[Dict[str, Any]], results: List[AgentResult]
     ) -> int:
         """Resolve detected conflicts."""
         resolved = 0
@@ -550,10 +541,7 @@ class SwarmOrchestrator:
         for conflict in conflicts:
             if self.config.conflict_resolution == ConflictResolution.HIGHEST_CONFIDENCE:
                 # Find agent with highest confidence
-                best_agent = max(
-                    [r for r in results],
-                    key=lambda r: r.confidence
-                )
+                best_agent = max([r for r in results], key=lambda r: r.confidence)
                 conflict["resolved_value"] = best_agent.result.get(conflict["key"])
                 resolved += 1
 
@@ -576,9 +564,7 @@ class SwarmOrchestrator:
         return resolved
 
     def _aggregate_results(
-        self,
-        results: List[AgentResult],
-        consensus: Optional[ConsensusResult]
+        self, results: List[AgentResult], consensus: Optional[ConsensusResult]
     ) -> Dict[str, Any]:
         """Aggregate results from multiple agents."""
         if consensus and consensus.consensus_value:
@@ -612,17 +598,10 @@ class SwarmOrchestrator:
         return aggregated
 
     async def _validate_result(
-        self,
-        result: Dict[str, Any],
-        validator: AgentWrapper,
-        task: Dict[str, Any]
+        self, result: Dict[str, Any], validator: AgentWrapper, task: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Validate result using validator agent."""
-        validation_task = {
-            **task,
-            "result_to_validate": result,
-            "validation_mode": True
-        }
+        validation_task = {**task, "result_to_validate": result, "validation_mode": True}
 
         validation_result = await validator.execute(validation_task)
 
@@ -661,16 +640,17 @@ class SwarmOrchestrator:
             "tasks_executed": len(self.task_history),
             "avg_execution_time": statistics.mean(t.execution_time for t in self.task_history),
             "avg_confidence": statistics.mean(t.confidence for t in self.task_history),
-            "consensus_rate": sum(1 for t in self.task_history if t.consensus.reached_consensus) / len(self.task_history),
+            "consensus_rate": sum(1 for t in self.task_history if t.consensus.reached_consensus)
+            / len(self.task_history),
             "avg_conflicts": statistics.mean(t.conflicts_found for t in self.task_history),
             "agents": {
                 agent_id: {
                     "role": agent.role.value,
                     "avg_execution_time": agent.avg_execution_time,
-                    "weight": agent.weight
+                    "weight": agent.weight,
                 }
                 for agent_id, agent in self.agents.items()
-            }
+            },
         }
 
 
@@ -683,7 +663,7 @@ def create_research_swarm() -> SwarmOrchestrator:
         consensus_strategy=ConsensusStrategy.WEIGHTED_VOTE,
         conflict_resolution=ConflictResolution.HIGHEST_CONFIDENCE,
         require_validation=True,
-        confidence_threshold=0.7
+        confidence_threshold=0.7,
     )
     return SwarmOrchestrator(config)
 
@@ -697,6 +677,6 @@ def create_analysis_swarm() -> SwarmOrchestrator:
         consensus_strategy=ConsensusStrategy.AGGREGATION,
         conflict_resolution=ConflictResolution.WEIGHTED_MERGE,
         require_validation=False,
-        diversity_threshold=0.4
+        diversity_threshold=0.4,
     )
     return SwarmOrchestrator(config)

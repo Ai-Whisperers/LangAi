@@ -10,28 +10,26 @@ This agent is responsible for:
 """
 
 from typing import Any, Dict, List, Optional
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
-from ...state import OverallState
+from ...llm.client_factory import calculate_cost, get_anthropic_client, safe_extract_text
 from ...prompts import (
     ANALYZE_RESULTS_PROMPT,
     EXTRACT_DATA_PROMPT,
     format_search_results_for_analysis,
-    format_sources_for_extraction
+    format_sources_for_extraction,
 )
+from ...state import OverallState
 
 # Import quality validation modules
 try:
-    from ..research.metrics_validator import (
-        create_metrics_validator,
-    )
-    from ..research.quality_enforcer import (
-        create_quality_enforcer,
-    )
+    from ..research.metrics_validator import create_metrics_validator
+    from ..research.quality_enforcer import create_quality_enforcer
+
     QUALITY_MODULES_AVAILABLE = True
 except ImportError:
     QUALITY_MODULES_AVAILABLE = False
@@ -41,17 +39,14 @@ except ImportError:
 class AnalystAgent:
     """Analyst agent for extracting structured insights from sources."""
 
-    def __init__(
-        self,
-        llm_client: Optional[Any] = None
-    ):
+    def __init__(self, llm_client: Optional[Any] = None):
         self.llm_client = llm_client or get_anthropic_client()
 
     def analyze(
         self,
         company_name: str,
         search_results: List[Dict[str, Any]] = None,
-        sources: List[Dict[str, Any]] = None
+        sources: List[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Analyze search results and extract structured insights.
@@ -62,7 +57,7 @@ class AnalystAgent:
         state = {
             "company_name": company_name,
             "search_results": search_results or [],
-            "sources": sources or []
+            "sources": sources or [],
         }
         return analyst_agent_node(state)
 
@@ -103,16 +98,16 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
             "data_quality": {
                 "score": 0,
                 "passes_threshold": False,
-                "issues": ["No search results provided"]
+                "issues": ["No search results provided"],
             },
             "agent_outputs": {
                 "analyst": {
                     "sources_analyzed": 0,
                     "data_extracted": False,
                     "quality_score": 0,
-                    "cost": 0.0
+                    "cost": 0.0,
                 }
-            }
+            },
         }
 
     logger.info(f"Analyzing {len(search_results)} search results")
@@ -121,21 +116,19 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
     formatted_results = format_search_results_for_analysis(search_results)
 
     analysis_prompt = ANALYZE_RESULTS_PROMPT.format(
-        company_name=company_name,
-        search_results=formatted_results
+        company_name=company_name, search_results=formatted_results
     )
 
     analysis_response = client.messages.create(
         model=config.llm_model,
         max_tokens=config.llm_max_tokens,
         temperature=config.llm_temperature,
-        messages=[{"role": "user", "content": analysis_prompt}]
+        messages=[{"role": "user", "content": analysis_prompt}],
     )
 
     notes = safe_extract_text(analysis_response, agent_name="analyst")
     analysis_cost = calculate_cost(
-        analysis_response.usage.input_tokens,
-        analysis_response.usage.output_tokens
+        analysis_response.usage.input_tokens, analysis_response.usage.output_tokens
     )
 
     logger.debug("Analysis complete")
@@ -151,22 +144,19 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
     formatted_sources = format_sources_for_extraction(sources)
 
     extraction_prompt = EXTRACT_DATA_PROMPT.format(
-        company_name=company_name,
-        notes=combined_notes,
-        sources=formatted_sources
+        company_name=company_name, notes=combined_notes, sources=formatted_sources
     )
 
     extraction_response = client.messages.create(
         model=config.llm_model,
         max_tokens=config.llm_max_tokens,
         temperature=config.llm_temperature,
-        messages=[{"role": "user", "content": extraction_prompt}]
+        messages=[{"role": "user", "content": extraction_prompt}],
     )
 
     extracted_data = safe_extract_text(extraction_response, agent_name="analyst")
     extraction_cost = calculate_cost(
-        extraction_response.usage.input_tokens,
-        extraction_response.usage.output_tokens
+        extraction_response.usage.input_tokens, extraction_response.usage.output_tokens
     )
 
     logger.debug("Data extraction complete")
@@ -183,20 +173,14 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
         logger.info("Running quality validation on extracted data")
 
         # Initialize validators
-        metrics_validator = create_metrics_validator(
-            min_score=30.0,
-            critical_threshold=0.4
-        )
+        metrics_validator = create_metrics_validator(min_score=30.0, critical_threshold=0.4)
         quality_enforcer = create_quality_enforcer(
-            min_score=30.0,
-            block_on_empty=True,
-            strict=False
+            min_score=30.0, block_on_empty=True, strict=False
         )
 
         # Validate metrics in extracted data
         validation_result = metrics_validator.validate_metrics(
-            content=extracted_data,
-            company_name=company_name
+            content=extracted_data, company_name=company_name
         )
 
         quality_score = validation_result.score
@@ -208,7 +192,7 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
         quality_gate = quality_enforcer.check_quality(
             report_content=extracted_data,
             company_name=company_name,
-            validation_score=validation_result.score
+            validation_score=validation_result.score,
         )
 
         can_generate_report = quality_gate.can_generate
@@ -236,7 +220,9 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
 
         # Add quality warnings to notes if significant issues
         if quality_warnings:
-            quality_note = "\n\n**Data Quality Warnings:**\n" + "\n".join(f"- {w}" for w in quality_warnings[:3])
+            quality_note = "\n\n**Data Quality Warnings:**\n" + "\n".join(
+                f"- {w}" for w in quality_warnings[:3]
+            )
             notes += quality_note
 
     else:
@@ -246,7 +232,7 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
             "passes_threshold": True,
             "can_generate_report": True,
             "warnings": [],
-            "note": "Quality modules not available - using defaults"
+            "note": "Quality modules not available - using defaults",
         }
 
     # Calculate total cost
@@ -263,8 +249,9 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
         "cost": total_cost,
         "tokens": {
             "input": analysis_response.usage.input_tokens + extraction_response.usage.input_tokens,
-            "output": analysis_response.usage.output_tokens + extraction_response.usage.output_tokens
-        }
+            "output": analysis_response.usage.output_tokens
+            + extraction_response.usage.output_tokens,
+        },
     }
 
     logger.info(f"Analyst agent complete - cost: ${total_cost:.4f}, quality: {quality_score:.1f}")
@@ -278,6 +265,6 @@ def analyst_agent_node(state: OverallState) -> Dict[str, Any]:
         "total_cost": total_cost,
         "total_tokens": {
             "input": agent_output["tokens"]["input"],
-            "output": agent_output["tokens"]["output"]
-        }
+            "output": agent_output["tokens"]["output"],
+        },
     }

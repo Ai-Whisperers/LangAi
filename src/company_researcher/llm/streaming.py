@@ -21,17 +21,9 @@ Usage:
         print(chunk, end="", flush=True)
 """
 
-from typing import (
-    AsyncIterator,
-    Callable,
-    Optional,
-    List,
-    Dict,
-    Any,
-    Generator
-)
 from dataclasses import dataclass
 from threading import Lock
+from typing import Any, AsyncIterator, Callable, Dict, Generator, List, Optional
 
 from anthropic import Anthropic
 
@@ -41,6 +33,7 @@ from .client_factory import get_anthropic_client
 @dataclass
 class StreamingStats:
     """Statistics for a streaming response."""
+
     chunks_received: int = 0
     total_characters: int = 0
     input_tokens: int = 0
@@ -52,6 +45,7 @@ class StreamingStats:
 @dataclass
 class StreamingResult:
     """Result from a streaming operation."""
+
     content: str
     stats: StreamingStats
     stop_reason: Optional[str] = None
@@ -86,7 +80,7 @@ class StreamingClient:
         on_start: Optional[Callable[[], None]] = None,
         on_complete: Optional[Callable[[StreamingResult], None]] = None,
         on_error: Optional[Callable[[Exception], None]] = None,
-        **kwargs
+        **kwargs,
     ) -> StreamingResult:
         """
         Stream a message with optional callbacks.
@@ -118,7 +112,7 @@ class StreamingClient:
             "max_tokens": max_tokens,
             "temperature": temperature,
             "messages": messages,
-            **kwargs
+            **kwargs,
         }
 
         if system:
@@ -150,10 +144,7 @@ class StreamingClient:
             stats.total_time_ms = (time.time() - start_time) * 1000
 
             result = StreamingResult(
-                content=full_response,
-                stats=stats,
-                stop_reason=stop_reason,
-                model=model
+                content=full_response, stats=stats, stop_reason=stop_reason, model=model
             )
 
             if on_complete:
@@ -173,7 +164,7 @@ class StreamingClient:
         max_tokens: int = 1000,
         temperature: float = 0.0,
         system: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> Generator[str, None, StreamingResult]:
         """
         Stream message as a generator.
@@ -206,7 +197,7 @@ class StreamingClient:
             "max_tokens": max_tokens,
             "temperature": temperature,
             "messages": messages,
-            **kwargs
+            **kwargs,
         }
 
         if system:
@@ -232,10 +223,7 @@ class StreamingClient:
         stats.total_time_ms = (time.time() - start_time) * 1000
 
         return StreamingResult(
-            content=full_response,
-            stats=stats,
-            stop_reason=stop_reason,
-            model=model
+            content=full_response, stats=stats, stop_reason=stop_reason, model=model
         )
 
     async def astream_message(
@@ -245,7 +233,7 @@ class StreamingClient:
         max_tokens: int = 1000,
         temperature: float = 0.0,
         system: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> AsyncIterator[str]:
         """
         Async stream a message.
@@ -266,7 +254,7 @@ class StreamingClient:
             "max_tokens": max_tokens,
             "temperature": temperature,
             "messages": messages,
-            **kwargs
+            **kwargs,
         }
 
         if system:
@@ -283,7 +271,7 @@ class StreamingClient:
         max_tokens: int = 1000,
         temperature: float = 0.0,
         system: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> StreamingResult:
         """
         Async stream with full statistics.
@@ -311,7 +299,7 @@ class StreamingClient:
             "max_tokens": max_tokens,
             "temperature": temperature,
             "messages": messages,
-            **kwargs
+            **kwargs,
         }
 
         if system:
@@ -335,10 +323,7 @@ class StreamingClient:
         stats.total_time_ms = (time.time() - start_time) * 1000
 
         return StreamingResult(
-            content=full_response,
-            stats=stats,
-            stop_reason=stop_reason,
-            model=model
+            content=full_response, stats=stats, stop_reason=stop_reason, model=model
         )
 
 
@@ -369,12 +354,7 @@ class StreamingProgressPrinter:
     Useful for CLI applications that want to show real-time output.
     """
 
-    def __init__(
-        self,
-        prefix: str = "",
-        suffix: str = "",
-        show_stats: bool = True
-    ):
+    def __init__(self, prefix: str = "", suffix: str = "", show_stats: bool = True):
         """
         Initialize the progress printer.
 
@@ -419,7 +399,7 @@ def stream_research_analysis(
     content: str,
     model: str = "claude-sonnet-4-20250514",
     max_tokens: int = 1000,
-    show_progress: bool = True
+    show_progress: bool = True,
 ) -> StreamingResult:
     """
     Stream a research analysis with optional progress display.
@@ -443,20 +423,21 @@ def stream_research_analysis(
         "financial": "You are a financial analyst. Analyze the financial data.",
         "market": "You are a market analyst. Analyze market positioning.",
         "product": "You are a product analyst. Analyze products and technology.",
-        "synthesis": "You are a senior analyst. Synthesize the research findings."
+        "synthesis": "You are a senior analyst. Synthesize the research findings.",
     }
 
     system = prompts.get(analysis_type, "You are a research analyst.")
 
-    messages = [{
-        "role": "user",
-        "content": f"Company: {company_name}\n\nContent:\n{content}\n\nProvide your analysis:"
-    }]
+    messages = [
+        {
+            "role": "user",
+            "content": f"Company: {company_name}\n\nContent:\n{content}\n\nProvide your analysis:",
+        }
+    ]
 
     if show_progress:
         printer = StreamingProgressPrinter(
-            prefix=f"\n[{analysis_type.title()} Analysis - Streaming]\n",
-            show_stats=True
+            prefix=f"\n[{analysis_type.title()} Analysis - Streaming]\n", show_stats=True
         )
         return client.stream_message(
             model=model,
@@ -466,12 +447,9 @@ def stream_research_analysis(
             on_start=printer.on_start,
             on_text=printer.on_text,
             on_complete=printer.on_complete,
-            on_error=printer.on_error
+            on_error=printer.on_error,
         )
     else:
         return client.stream_message(
-            model=model,
-            messages=messages,
-            max_tokens=max_tokens,
-            system=system
+            model=model, messages=messages, max_tokens=max_tokens, system=system
         )

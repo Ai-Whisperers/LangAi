@@ -6,10 +6,9 @@ Global instances and factory functions for telemetry.
 
 from typing import Dict, Optional
 
-from .tracing import TracerProvider, Tracer
-from .metrics import MeterProvider, Meter
-from .exporters import OTLPSpanExporter, ConsoleSpanExporter
-
+from .exporters import ConsoleSpanExporter, OTLPSpanExporter
+from .metrics import Meter, MeterProvider
+from .tracing import Tracer, TracerProvider
 
 # Global instances for convenience
 _global_tracer_provider: Optional[TracerProvider] = None
@@ -56,10 +55,9 @@ def get_meter(name: str) -> Meter:
 
 # Factory functions
 
+
 def create_tracer_provider(
-    service_name: str,
-    otlp_endpoint: str = None,
-    console_export: bool = False
+    service_name: str, otlp_endpoint: str = None, console_export: bool = False
 ) -> TracerProvider:
     """
     Create a configured tracer provider.
@@ -80,15 +78,10 @@ def create_tracer_provider(
     if console_export:
         exporters.append(ConsoleSpanExporter())
 
-    return TracerProvider(
-        service_name=service_name,
-        exporters=exporters
-    )
+    return TracerProvider(service_name=service_name, exporters=exporters)
 
 
-def create_meter_provider(
-    resource: Dict[str, str] = None
-) -> MeterProvider:
+def create_meter_provider(resource: Dict[str, str] = None) -> MeterProvider:
     """
     Create a configured meter provider.
 

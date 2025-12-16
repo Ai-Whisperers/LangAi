@@ -16,7 +16,7 @@ from typing import Dict, List
 # Thresholds
 MAX_FILES_WARNING = 3  # 3-file rule
 TOKEN_WARNING_THRESHOLD = 35000  # 17.5% of 200K limit
-TOKEN_DANGER_THRESHOLD = 50000   # 25% of 200K limit
+TOKEN_DANGER_THRESHOLD = 50000  # 25% of 200K limit
 
 # Track state across hook invocations
 STATE_FILE = Path.home() / ".claude" / "context_state.txt"
@@ -58,7 +58,9 @@ def detect_context_bloat(file_count: int, token_count: int) -> Dict[str, any]:
     # Check file count (3-file rule)
     if file_count > MAX_FILES_WARNING:
         issues.append(f"{file_count} files open (3-file rule: max 3)")
-        recommendations.append("Close extra files - keep only current implementation, test, and reference")
+        recommendations.append(
+            "Close extra files - keep only current implementation, test, and reference"
+        )
         severity = "warning"
 
     # Check token usage
@@ -80,7 +82,7 @@ def detect_context_bloat(file_count: int, token_count: int) -> Dict[str, any]:
         "token_count": token_count,
         "token_percentage": token_percentage,
         "issues": issues,
-        "recommendations": recommendations
+        "recommendations": recommendations,
     }
 
 

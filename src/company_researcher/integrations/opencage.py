@@ -10,8 +10,8 @@ Documentation: https://opencagedata.com/api
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from .base_client import BaseAPIClient
 from ..utils import get_logger
+from .base_client import BaseAPIClient
 
 logger = get_logger(__name__)
 
@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 @dataclass
 class GeocodingResult:
     """Geocoding result."""
+
     formatted: str
     latitude: float
     longitude: float
@@ -52,7 +53,7 @@ class GeocodingResult:
             confidence=data.get("confidence", 0),
             bounds=data.get("bounds", {}),
             timezone=annotations.get("timezone", {}).get("name", ""),
-            currency=annotations.get("currency", {})
+            currency=annotations.get("currency", {}),
         )
 
 
@@ -79,7 +80,7 @@ class OpenCageClient(BaseAPIClient):
             env_var="OPENCAGE_API_KEY",
             cache_ttl=86400,  # 24 hour cache (addresses don't change)
             rate_limit_calls=1,
-            rate_limit_period=1.0  # Free tier: 1/second
+            rate_limit_period=1.0,  # Free tier: 1/second
         )
 
     async def geocode(
@@ -88,7 +89,7 @@ class OpenCageClient(BaseAPIClient):
         country_code: Optional[str] = None,
         language: str = "en",
         limit: int = 5,
-        min_confidence: int = 0
+        min_confidence: int = 0,
     ) -> List[GeocodingResult]:
         """
         Forward geocoding: address/place name → coordinates.
@@ -113,7 +114,7 @@ class OpenCageClient(BaseAPIClient):
             "key": self.api_key,
             "language": language,
             "limit": limit,
-            "no_annotations": 0
+            "no_annotations": 0,
         }
 
         if country_code:
@@ -126,10 +127,7 @@ class OpenCageClient(BaseAPIClient):
         return [GeocodingResult.from_dict(item) for item in results]
 
     async def reverse_geocode(
-        self,
-        latitude: float,
-        longitude: float,
-        language: str = "en"
+        self, latitude: float, longitude: float, language: str = "en"
     ) -> Optional[GeocodingResult]:
         """
         Reverse geocoding: coordinates → address.
@@ -146,7 +144,7 @@ class OpenCageClient(BaseAPIClient):
             "q": f"{latitude},{longitude}",
             "key": self.api_key,
             "language": language,
-            "no_annotations": 0
+            "no_annotations": 0,
         }
 
         data = await self._request("json", params)
@@ -157,9 +155,7 @@ class OpenCageClient(BaseAPIClient):
         return None
 
     async def get_company_location(
-        self,
-        company_name: str,
-        country: Optional[str] = None
+        self, company_name: str, country: Optional[str] = None
     ) -> Optional[GeocodingResult]:
         """
         Get company headquarters location.
@@ -179,11 +175,7 @@ class OpenCageClient(BaseAPIClient):
         return results[0] if results else None
 
     async def geocode_address(
-        self,
-        street: str,
-        city: str,
-        country: str,
-        postcode: Optional[str] = None
+        self, street: str, city: str, country: str, postcode: Optional[str] = None
     ) -> Optional[GeocodingResult]:
         """
         Geocode a structured address.
@@ -206,11 +198,7 @@ class OpenCageClient(BaseAPIClient):
         results = await self.geocode(query, limit=1)
         return results[0] if results else None
 
-    async def get_timezone(
-        self,
-        latitude: float,
-        longitude: float
-    ) -> Optional[str]:
+    async def get_timezone(self, latitude: float, longitude: float) -> Optional[str]:
         """
         Get timezone for coordinates.
 

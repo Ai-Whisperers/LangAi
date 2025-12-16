@@ -55,4 +55,3 @@ This rule helps the agent decide which **Python-specific** standards to apply wh
 - [ ] Python changes follow `rule.python.code-style.v1`
 - [ ] Any new/changed behavior is covered by tests per `rule.python.testing.v1`
 - [ ] No secrets added (especially `.env`, API keys, tokens)
-

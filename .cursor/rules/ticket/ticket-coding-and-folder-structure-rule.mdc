@@ -165,7 +165,7 @@ EPP-192-01-AUTH-VALIDATION/
 
 **Purpose**: Tickets currently being worked on
 
-**Contents**: 
+**Contents**:
 - Tickets with recent activity (< 30 days)
 - Tickets in active development phases
 - Tickets awaiting review or deployment

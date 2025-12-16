@@ -26,11 +26,12 @@ Usage:
 """
 
 import logging
+import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, TypeVar
 from functools import wraps
-import time
+from typing import Any, Callable, Dict, List, Optional, TypeVar
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
@@ -40,14 +41,12 @@ logger = get_logger(__name__)
 # Exception Hierarchy
 # ==============================================================================
 
+
 class AgentError(Exception):
     """Base exception for all agent-related errors."""
 
     def __init__(
-        self,
-        message: str,
-        agent_name: str = "unknown",
-        details: Optional[Dict[str, Any]] = None
+        self, message: str, agent_name: str = "unknown", details: Optional[Dict[str, Any]] = None
     ):
         self.message = message
         self.agent_name = agent_name
@@ -60,7 +59,7 @@ class AgentError(Exception):
             "error_type": self.__class__.__name__,
             "message": self.message,
             "agent_name": self.agent_name,
-            "details": self.details
+            "details": self.details,
         }
 
 
@@ -72,11 +71,11 @@ class ParsingError(AgentError):
         message: str,
         agent_name: str = "unknown",
         raw_response: Optional[str] = None,
-        expected_format: Optional[str] = None
+        expected_format: Optional[str] = None,
     ):
         details = {
             "raw_response_preview": raw_response[:200] if raw_response else None,
-            "expected_format": expected_format
+            "expected_format": expected_format,
         }
         super().__init__(message, agent_name, details)
         self.raw_response = raw_response
@@ -92,13 +91,9 @@ class LLMError(AgentError):
         agent_name: str = "unknown",
         model: Optional[str] = None,
         status_code: Optional[int] = None,
-        retryable: bool = True
+        retryable: bool = True,
     ):
-        details = {
-            "model": model,
-            "status_code": status_code,
-            "retryable": retryable
-        }
+        details = {"model": model, "status_code": status_code, "retryable": retryable}
         super().__init__(message, agent_name, details)
         self.model = model
         self.status_code = status_code
@@ -113,12 +108,9 @@ class SearchError(AgentError):
         message: str,
         agent_name: str = "unknown",
         query: Optional[str] = None,
-        provider: Optional[str] = None
+        provider: Optional[str] = None,
     ):
-        details = {
-            "query": query,
-            "provider": provider
-        }
+        details = {"query": query, "provider": provider}
         super().__init__(message, agent_name, details)
         self.query = query
         self.provider = provider
@@ -136,12 +128,9 @@ class ValidationError(AgentError):
         message: str,
         agent_name: str = "unknown",
         field: Optional[str] = None,
-        value: Optional[Any] = None
+        value: Optional[Any] = None,
     ):
-        details = {
-            "field": field,
-            "value": str(value)[:100] if value else None
-        }
+        details = {"field": field, "value": str(value)[:100] if value else None}
         super().__init__(message, agent_name, details)
         self.field = field
         self.value = value
@@ -155,11 +144,11 @@ class ExtractionError(AgentError):
         message: str,
         agent_name: str = "unknown",
         field: Optional[str] = None,
-        analysis_preview: Optional[str] = None
+        analysis_preview: Optional[str] = None,
     ):
         details = {
             "field": field,
-            "analysis_preview": analysis_preview[:200] if analysis_preview else None
+            "analysis_preview": analysis_preview[:200] if analysis_preview else None,
         }
         super().__init__(message, agent_name, details)
         self.field = field
@@ -169,24 +158,27 @@ class ExtractionError(AgentError):
 # Error Severity
 # ==============================================================================
 
+
 class ErrorSeverity(str, Enum):
     """Severity levels for errors."""
+
     CRITICAL = "critical"  # Agent cannot continue
-    HIGH = "high"          # Significant functionality lost
-    MEDIUM = "medium"      # Partial results available
-    LOW = "low"            # Minor issue, workaround applied
-    WARNING = "warning"    # Not an error, but noteworthy
+    HIGH = "high"  # Significant functionality lost
+    MEDIUM = "medium"  # Partial results available
+    LOW = "low"  # Minor issue, workaround applied
+    WARNING = "warning"  # Not an error, but noteworthy
 
 
 # ==============================================================================
 # Error Result Creation
 # ==============================================================================
 
+
 def create_error_result(
     agent_name: str,
     error: Exception,
     severity: ErrorSeverity = ErrorSeverity.HIGH,
-    partial_result: Optional[Dict[str, Any]] = None
+    partial_result: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Create a standardized error result for agent output.
@@ -214,7 +206,7 @@ def create_error_result(
         "analysis": f"Error: {str(error)}",
         "data_extracted": False,
         "cost": 0.0,
-        **error_info
+        **error_info,
     }
 
     if partial_result:
@@ -223,14 +215,12 @@ def create_error_result(
     return {
         "agent_outputs": {agent_name: agent_output},
         "total_cost": 0.0,
-        "total_tokens": {"input": 0, "output": 0}
+        "total_tokens": {"input": 0, "output": 0},
     }
 
 
 def create_empty_result_with_reason(
-    agent_name: str,
-    reason: str,
-    status: str = "no_data"
+    agent_name: str, reason: str, status: str = "no_data"
 ) -> Dict[str, Any]:
     """
     Create an empty result with a specific reason.
@@ -245,15 +235,10 @@ def create_empty_result_with_reason(
     """
     return {
         "agent_outputs": {
-            agent_name: {
-                "analysis": reason,
-                "data_extracted": False,
-                "status": status,
-                "cost": 0.0
-            }
+            agent_name: {"analysis": reason, "data_extracted": False, "status": status, "cost": 0.0}
         },
         "total_cost": 0.0,
-        "total_tokens": {"input": 0, "output": 0}
+        "total_tokens": {"input": 0, "output": 0},
     }
 
 
@@ -261,12 +246,13 @@ def create_empty_result_with_reason(
 # Error Handler
 # ==============================================================================
 
+
 def handle_agent_error(
     error: Exception,
     agent_name: str,
     logger: Optional[logging.Logger] = None,
     reraise: bool = False,
-    severity: ErrorSeverity = ErrorSeverity.HIGH
+    severity: ErrorSeverity = ErrorSeverity.HIGH,
 ) -> Dict[str, Any]:
     """
     Handle an agent error with logging and result creation.
@@ -307,12 +293,13 @@ def handle_agent_error(
 # Retry Decorator
 # ==============================================================================
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 @dataclass
 class RetryConfig:
     """Configuration for retry behavior."""
+
     max_retries: int = 3
     delay: float = 1.0
     backoff_factor: float = 2.0
@@ -346,10 +333,9 @@ def with_retry(config: Optional[RetryConfig] = None):
                     last_error = e
 
                     if attempt < cfg.max_retries:
-                        delay = cfg.delay * (cfg.backoff_factor ** attempt)
+                        delay = cfg.delay * (cfg.backoff_factor**attempt)
                         logger.warning(
-                            f"Retry {attempt + 1}/{cfg.max_retries} "
-                            f"after {delay:.1f}s: {e}"
+                            f"Retry {attempt + 1}/{cfg.max_retries} " f"after {delay:.1f}s: {e}"
                         )
 
                         if cfg.on_retry:
@@ -366,12 +352,14 @@ def with_retry(config: Optional[RetryConfig] = None):
             raise RuntimeError("Retry logic error")
 
         return wrapper
+
     return decorator
 
 
 # ==============================================================================
 # Error Context Manager
 # ==============================================================================
+
 
 class AgentErrorContext:
     """
@@ -387,11 +375,7 @@ class AgentErrorContext:
             return ctx.error_result
     """
 
-    def __init__(
-        self,
-        agent_name: str,
-        logger: Optional[logging.Logger] = None
-    ):
+    def __init__(self, agent_name: str, logger: Optional[logging.Logger] = None):
         self.agent_name = agent_name
         self.logger = logger or logging.getLogger(f"agent.{agent_name}")
         self.error: Optional[Exception] = None
@@ -418,11 +402,7 @@ class AgentErrorContext:
     def error_result(self) -> Dict[str, Any]:
         """Get error result if error occurred."""
         if self.error:
-            return create_error_result(
-                self.agent_name,
-                self.error,
-                self.severity
-            )
+            return create_error_result(self.agent_name, self.error, self.severity)
         return {}
 
     def set_warning(self, message: str) -> None:
@@ -439,10 +419,9 @@ class AgentErrorContext:
 # Validation Helpers
 # ==============================================================================
 
+
 def validate_search_results(
-    results: Any,
-    agent_name: str,
-    min_results: int = 1
+    results: Any, agent_name: str, min_results: int = 1
 ) -> List[Dict[str, Any]]:
     """
     Validate search results input.
@@ -463,7 +442,7 @@ def validate_search_results(
             "Search results cannot be None",
             agent_name=agent_name,
             field="search_results",
-            value=None
+            value=None,
         )
 
     if not isinstance(results, list):
@@ -471,7 +450,7 @@ def validate_search_results(
             f"Search results must be a list, got {type(results).__name__}",
             agent_name=agent_name,
             field="search_results",
-            value=type(results).__name__
+            value=type(results).__name__,
         )
 
     if len(results) < min_results:
@@ -479,16 +458,13 @@ def validate_search_results(
             f"Need at least {min_results} search results, got {len(results)}",
             agent_name=agent_name,
             field="search_results",
-            value=len(results)
+            value=len(results),
         )
 
     return results
 
 
-def validate_company_name(
-    name: Any,
-    agent_name: str
-) -> str:
+def validate_company_name(name: Any, agent_name: str) -> str:
     """
     Validate company name input.
 
@@ -504,10 +480,7 @@ def validate_company_name(
     """
     if not name:
         raise ValidationError(
-            "Company name cannot be empty",
-            agent_name=agent_name,
-            field="company_name",
-            value=name
+            "Company name cannot be empty", agent_name=agent_name, field="company_name", value=name
         )
 
     if not isinstance(name, str):
@@ -515,7 +488,7 @@ def validate_company_name(
             f"Company name must be a string, got {type(name).__name__}",
             agent_name=agent_name,
             field="company_name",
-            value=type(name).__name__
+            value=type(name).__name__,
         )
 
     return name.strip()

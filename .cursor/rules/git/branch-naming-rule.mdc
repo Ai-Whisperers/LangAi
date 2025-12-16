@@ -183,7 +183,7 @@ function validateBranchName(branchName) {
   const workBranchPattern = /^(feature|fix|hotfix)\/[A-Z]+-\d+$/;
   const releaseBranchPattern = /^release\/\d+\.\d+$/;
   const rcBranchPattern = /^rc\/\d+\.\d+\.\d+$/;
-  
+
   return workBranchPattern.test(branchName) ||
          releaseBranchPattern.test(branchName) ||
          rcBranchPattern.test(branchName);
@@ -202,7 +202,7 @@ def validate_branch_name(branch_name):
     work_branch_pattern = r'^(feature|fix|hotfix)/[A-Z]+-\d+$'
     release_branch_pattern = r'^release/\d+\.\d+$'
     rc_branch_pattern = r'^rc/\d+\.\d+\.\d+$'
-    
+
     return (bool(re.match(work_branch_pattern, branch_name)) or
             bool(re.match(release_branch_pattern, branch_name)) or
             bool(re.match(rc_branch_pattern, branch_name)))
@@ -218,7 +218,7 @@ print(validate_branch_name("my-feature"))       # False
 
 validate_branch_name() {
     local branch="$1"
-    
+
     if [[ $branch =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
        [[ $branch =~ ^release/[0-9]+\.[0-9]+$ ]] || \
        [[ $branch =~ ^rc/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -292,12 +292,12 @@ function constructBranchName(jiraTicket, branchType) {
   if (!['feature', 'fix', 'hotfix'].includes(branchType)) {
     throw new Error(`Invalid branch type: ${branchType}`);
   }
-  
+
   const ticketPattern = /^[A-Z]+-\d+$/;
   if (!ticketPattern.test(jiraTicket)) {
     throw new Error(`Invalid Jira ticket format: ${jiraTicket}`);
   }
-  
+
   return `${branchType}/${jiraTicket}`;
 }
 
@@ -335,7 +335,7 @@ validate-branch-name:
       if [[ "$CI_COMMIT_REF_NAME" == "main" ]] || [[ "$CI_COMMIT_REF_NAME" == "develop" ]]; then
         exit 0
       fi
-      
+
       if [[ $CI_COMMIT_REF_NAME =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
          [[ $CI_COMMIT_REF_NAME =~ ^release/[0-9]+\.[0-9]+$ ]] || \
          [[ $CI_COMMIT_REF_NAME =~ ^rc/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -372,11 +372,11 @@ jobs:
       - name: Check branch name
         run: |
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-          
+
           if [[ "$BRANCH_NAME" == "main" ]] || [[ "$BRANCH_NAME" == "develop" ]]; then
             exit 0
           fi
-          
+
           if [[ $BRANCH_NAME =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
              [[ $BRANCH_NAME =~ ^release/[0-9]+\.[0-9]+$ ]] || \
              [[ $BRANCH_NAME =~ ^rc/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then

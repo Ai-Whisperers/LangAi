@@ -29,4 +29,3 @@ Would you prefer that approach, or would you like to provide the specific resear
 ---
 
 ## Sources
-

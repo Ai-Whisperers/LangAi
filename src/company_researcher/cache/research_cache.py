@@ -41,18 +41,8 @@ Usage:
 """
 
 # Import from modular structure for backward compatibility
-from .models import (
-    SourceQuality,
-    DataCompleteness,
-    CachedSource,
-    CachedCompanyData,
-)
-
-from .storage import (
-    ResearchCache,
-    get_cache,
-    create_cache,
-)
+from .models import CachedCompanyData, CachedSource, DataCompleteness, SourceQuality
+from .storage import ResearchCache, create_cache, get_cache
 
 # Re-export all public APIs
 __all__ = [
@@ -99,12 +89,14 @@ if __name__ == "__main__":
             "industry": "Electric Vehicles",
             "founded": "2003",
         },
-        sources=[{
-            "url": "https://www.tesla.com",
-            "title": "Tesla Official Website",
-            "quality": "primary",
-            "score": 1.0,
-        }],
+        sources=[
+            {
+                "url": "https://www.tesla.com",
+                "title": "Tesla Official Website",
+                "quality": "primary",
+                "score": 1.0,
+            }
+        ],
     )
     print("   ✓ Stored overview for Tesla Inc")
 
@@ -116,12 +108,14 @@ if __name__ == "__main__":
             "market_cap": "800B",
             "year": "2023",
         },
-        sources=[{
-            "url": "https://sec.gov/tesla",
-            "title": "Tesla 10-K",
-            "quality": "primary",
-            "score": 0.95,
-        }],
+        sources=[
+            {
+                "url": "https://sec.gov/tesla",
+                "title": "Tesla 10-K",
+                "quality": "primary",
+                "score": 0.95,
+            }
+        ],
     )
     print("   ✓ Stored financials for Tesla Inc")
 
@@ -154,7 +148,7 @@ if __name__ == "__main__":
     priority = cache.get_research_priority("Tesla Inc")
     print(f"   ✓ High priority sections: {len(priority['high_priority'])}")
     print(f"   ✓ Medium priority sections: {len(priority['medium_priority'])}")
-    if priority['high_priority']:
+    if priority["high_priority"]:
         print(f"   ✓ Next to research: {', '.join(priority['high_priority'][:3])}")
 
     # 6. Should research check

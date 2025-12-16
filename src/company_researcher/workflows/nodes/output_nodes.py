@@ -8,19 +8,19 @@ This module contains nodes responsible for final output generation:
 Also includes formatters for report sections.
 """
 
-from typing import Dict, Any, Optional
 from pathlib import Path
+from typing import Any, Dict, Optional
 
-from ...state import OverallState
+from ...agents.research.investment_thesis import create_thesis_generator
 from ...config import get_config
 from ...prompts import format_sources_for_report
-from ...agents.research.investment_thesis import create_thesis_generator
+from ...state import OverallState
 from ...utils import utc_now
-
 
 # ============================================================================
 # Report Formatters
 # ============================================================================
+
 
 def _format_news_sentiment(sentiment: Optional[Dict[str, Any]]) -> str:
     """Format news sentiment for report."""
@@ -211,6 +211,7 @@ def _format_investment_thesis(thesis: Optional[Dict[str, Any]]) -> str:
 # Output Nodes
 # ============================================================================
 
+
 def investment_thesis_node(state: OverallState) -> Dict[str, Any]:
     """
     Node 8: Generate investment thesis.
@@ -267,7 +268,7 @@ def investment_thesis_node(state: OverallState) -> Dict[str, Any]:
         company_data=company_data,
         financial_data=financial_data,
         market_data=market_data,
-        risk_assessment=risk_assessment
+        risk_assessment=risk_assessment,
     )
 
     # Convert to dict for state storage (using correct attribute names)
@@ -297,27 +298,31 @@ def investment_thesis_node(state: OverallState) -> Dict[str, Any]:
             "probability": thesis.bear_case.probability,
             "timeframe": thesis.bear_case.timeframe,
         },
-        "valuation": {
-            "current_price": thesis.valuation.current_price,
-            "fair_value_estimate": thesis.valuation.fair_value_estimate,  # Correct name
-            "upside_potential": thesis.valuation.upside_potential,  # Correct name
-            "pe_ratio": thesis.valuation.pe_ratio,
-            "ev_ebitda": thesis.valuation.ev_ebitda,
-            "price_to_sales": thesis.valuation.price_to_sales,
-            "price_to_book": thesis.valuation.price_to_book,
-            "valuation_grade": thesis.valuation.valuation_grade,
-        } if thesis.valuation else None,
+        "valuation": (
+            {
+                "current_price": thesis.valuation.current_price,
+                "fair_value_estimate": thesis.valuation.fair_value_estimate,  # Correct name
+                "upside_potential": thesis.valuation.upside_potential,  # Correct name
+                "pe_ratio": thesis.valuation.pe_ratio,
+                "ev_ebitda": thesis.valuation.ev_ebitda,
+                "price_to_sales": thesis.valuation.price_to_sales,
+                "price_to_book": thesis.valuation.price_to_book,
+                "valuation_grade": thesis.valuation.valuation_grade,
+            }
+            if thesis.valuation
+            else None
+        ),
         "investment_highlights": thesis.investment_highlights,
         "key_risks": thesis.key_risks,
         "catalysts": thesis.catalysts,
         "suitable_for": [p.value for p in thesis.suitable_for],
     }
 
-    print(f"[OK] Investment thesis complete: {thesis.recommendation.value} ({thesis.confidence:.0f}% confidence)")
+    print(
+        f"[OK] Investment thesis complete: {thesis.recommendation.value} ({thesis.confidence:.0f}% confidence)"
+    )
 
-    return {
-        "investment_thesis": thesis_dict
-    }
+    return {"investment_thesis": thesis_dict}
 
 
 def save_report_node(state: OverallState) -> Dict[str, Any]:
@@ -420,9 +425,7 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
 
     print(f"[OK] Report saved to: {report_path}")
 
-    return {
-        "report_path": str(report_path)
-    }
+    return {"report_path": str(report_path)}
 
 
 # Export formatters for use in other modules

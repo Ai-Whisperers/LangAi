@@ -7,10 +7,10 @@ Tests the centralized logging system for agents.
 import logging
 
 from src.company_researcher.agents.base.logger import (
-    AgentLogger,
     AgentLogContext,
-    get_agent_logger,
+    AgentLogger,
     configure_agent_logging,
+    get_agent_logger,
 )
 
 
@@ -25,11 +25,7 @@ class TestAgentLogger:
 
     def test_logger_with_custom_settings(self):
         """Test logger with custom settings."""
-        logger = AgentLogger(
-            "custom_agent",
-            log_level=logging.DEBUG,
-            show_separator=False
-        )
+        logger = AgentLogger("custom_agent", log_level=logging.DEBUG, show_separator=False)
         assert logger.agent_name == "custom_agent"
         assert logger.show_separator is False
 

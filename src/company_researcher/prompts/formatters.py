@@ -18,14 +18,16 @@ def format_search_results_for_analysis(results: list) -> str:
     """
     formatted = []
     for i, result in enumerate(results, 1):
-        formatted.append(f"""
+        formatted.append(
+            f"""
 Result {i}:
 Title: {result.get('title', 'N/A')}
 URL: {result.get('url', 'N/A')}
 Content: {result.get('content', 'N/A')}
 Score: {result.get('score', 0):.0%}
 ---
-""")
+"""
+        )
     return "\n".join(formatted)
 
 
@@ -60,7 +62,5 @@ def format_sources_for_report(sources: list) -> str:
     """
     formatted = []
     for i, source in enumerate(sources, 1):
-        formatted.append(
-            f"{i}. [{source.get('title', 'N/A')}]({source.get('url', 'N/A')})"
-        )
+        formatted.append(f"{i}. [{source.get('title', 'N/A')}]({source.get('url', 'N/A')})")
     return "\n".join(formatted)

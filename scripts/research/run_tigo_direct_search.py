@@ -1,29 +1,32 @@
 #!/usr/bin/env python
 """Direct search using Tavily for Tigo Paraguay gaps."""
 
+import json
 import os
 import sys
-import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 from dotenv import load_dotenv
+
 load_dotenv()
+
 
 def main():
     print("\n" + "=" * 70)
     print("  DIRECT TAVILY SEARCH - Tigo Paraguay")
     print("=" * 70)
 
-    tavily_key = os.getenv('TAVILY_API_KEY')
+    tavily_key = os.getenv("TAVILY_API_KEY")
     if not tavily_key:
         print("ERROR: TAVILY_API_KEY not set")
         return 1
 
     from tavily import TavilyClient
+
     tavily = TavilyClient(api_key=tavily_key)
 
     # Targeted queries for known gaps
@@ -31,23 +34,18 @@ def main():
         # Leadership - this is the key gap
         "Roberto Laratro Tigo Paraguay CEO director general 2024",
         "Tigo Paraguay gerente general nombrado mayo 2024",
-
         # Market share current
         "Tigo Paraguay participacion mercado 2024 CONATEL",
         "Paraguay telecomunicaciones cuota mercado operadores 2024",
-
         # Subscribers
         "Tigo Paraguay cantidad suscriptores lineas 2024",
         "Millicom Paraguay subscriber base Q3 2024",
-
         # Regulatory
         "CONATEL Paraguay Tigo 5G licitacion espectro",
         "Tigo Paraguay licencias frecuencias asignadas",
-
         # Business segments
         "Tigo Sports Paraguay derechos futbol liga",
         "Tigo Money Paraguay usuarios billetera digital",
-
         # Financial
         "Tigo Paraguay ingresos revenue 2024 Millicom",
     ]
@@ -58,22 +56,21 @@ def main():
         print(f"\nSearching: {query[:60]}...")
         try:
             response = tavily.search(
-                query=query,
-                search_depth="advanced",
-                max_results=5,
-                include_raw_content=False
+                query=query, search_depth="advanced", max_results=5, include_raw_content=False
             )
 
-            results = response.get('results', [])
+            results = response.get("results", [])
             print(f"  Found {len(results)} results")
 
             for r in results:
-                all_results.append({
-                    'query': query,
-                    'title': r.get('title', ''),
-                    'url': r.get('url', ''),
-                    'content': r.get('content', '')[:500]
-                })
+                all_results.append(
+                    {
+                        "query": query,
+                        "title": r.get("title", ""),
+                        "url": r.get("url", ""),
+                        "content": r.get("content", "")[:500],
+                    }
+                )
 
         except Exception as e:
             print(f"  Error: {e}")
@@ -82,8 +79,8 @@ def main():
     seen_urls = set()
     unique_results = []
     for r in all_results:
-        if r['url'] not in seen_urls:
-            seen_urls.add(r['url'])
+        if r["url"] not in seen_urls:
+            seen_urls.add(r["url"])
             unique_results.append(r)
 
     print(f"\n--- Total unique results: {len(unique_results)} ---")
@@ -94,13 +91,16 @@ def main():
     print("=" * 70)
 
     from src.company_researcher.llm.smart_client import SmartLLMClient
+
     llm = SmartLLMClient()
 
     # Prepare context
-    context = "\n\n".join([
-        f"Source: {r['url']}\nTitle: {r['title']}\nContent: {r['content']}"
-        for r in unique_results
-    ])
+    context = "\n\n".join(
+        [
+            f"Source: {r['url']}\nTitle: {r['title']}\nContent: {r['content']}"
+            for r in unique_results
+        ]
+    )
 
     extraction_prompt = f"""Analyze these search results about Tigo Paraguay and extract the following information.
 ONLY include information explicitly stated in the sources with the source URL.
@@ -147,13 +147,17 @@ IMPORTANT: Do not fabricate any information. Only include what is explicitly sta
             prompt=extraction_prompt,
             system="You are a precise data extraction specialist. Extract only information explicitly stated in sources.",
             task_type="extraction",
-            max_tokens=2000
+            max_tokens=2000,
         )
 
         # Handle CompletionResult dataclass
         if result:
-            extraction = result.content if hasattr(result, 'content') else result.get('content', '')
-            provider = result.provider if hasattr(result, 'provider') else result.get('provider', 'unknown')
+            extraction = result.content if hasattr(result, "content") else result.get("content", "")
+            provider = (
+                result.provider
+                if hasattr(result, "provider")
+                else result.get("provider", "unknown")
+            )
             print(f"\nProvider: {provider}")
             print("\n" + "-" * 70)
             print("EXTRACTED DATA:")
@@ -165,11 +169,11 @@ IMPORTANT: Do not fabricate any information. Only include what is explicitly sta
             output_dir.mkdir(parents=True, exist_ok=True)
 
             # Save search results
-            with open(output_dir / "direct_search_results.json", 'w', encoding='utf-8') as f:
+            with open(output_dir / "direct_search_results.json", "w", encoding="utf-8") as f:
                 json.dump(unique_results, f, indent=2, ensure_ascii=False)
 
             # Save extraction
-            with open(output_dir / "direct_extraction.md", 'w', encoding='utf-8') as f:
+            with open(output_dir / "direct_extraction.md", "w", encoding="utf-8") as f:
                 f.write(f"# Tigo Paraguay - Direct Search Extraction\n")
                 f.write(f"*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n")
                 f.write(f"## Sources Searched: {len(unique_results)}\n\n")
@@ -184,6 +188,7 @@ IMPORTANT: Do not fabricate any information. Only include what is explicitly sta
     except Exception as e:
         print(f"Extraction error: {e}")
         import traceback
+
         traceback.print_exc()
 
     print("\n" + "=" * 70)

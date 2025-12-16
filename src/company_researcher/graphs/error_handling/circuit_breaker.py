@@ -25,13 +25,13 @@ Usage:
         ...
 """
 
-from typing import Dict, Any, Callable, Optional
-from dataclasses import dataclass, field
-from enum import Enum
-from datetime import datetime, timedelta
 import functools
 import threading
 import time
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Callable, Dict, Optional
 
 from ...utils import get_logger, utc_now
 
@@ -142,9 +142,7 @@ class CircuitBreaker:
             self._half_open_calls = 0
 
         if self.config.log_state_changes:
-            logger.info(
-                f"[CIRCUIT] {self.name}: {old_state.value} -> {new_state.value}"
-            )
+            logger.info(f"[CIRCUIT] {self.name}: {old_state.value} -> {new_state.value}")
 
     def allow_request(self) -> bool:
         """
@@ -204,9 +202,7 @@ class CircuitBreaker:
                     self._transition_to(CircuitState.OPEN)
 
             if error and self.config.log_state_changes:
-                logger.warning(
-                    f"[CIRCUIT] {self.name}: Recorded failure - {error}"
-                )
+                logger.warning(f"[CIRCUIT] {self.name}: Recorded failure - {error}")
 
     def protect(self, func: Callable) -> Callable:
         """
@@ -218,6 +214,7 @@ class CircuitBreaker:
         Returns:
             Protected function
         """
+
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             if not self.allow_request():
@@ -253,7 +250,9 @@ class CircuitBreaker:
                 "state": self._state.value,
                 "failure_count": len(self._failures),
                 "failure_threshold": self.config.failure_threshold,
-                "last_failure": self._last_failure_time.isoformat() if self._last_failure_time else None,
+                "last_failure": (
+                    self._last_failure_time.isoformat() if self._last_failure_time else None
+                ),
                 "opened_at": self._opened_at.isoformat() if self._opened_at else None,
                 "recovery_timeout": self.config.recovery_timeout,
             }
@@ -262,6 +261,7 @@ class CircuitBreaker:
 # ============================================================================
 # Circuit Breaker Registry
 # ============================================================================
+
 
 class CircuitBreakerRegistry:
     """
@@ -302,10 +302,7 @@ class CircuitBreakerRegistry:
     def get_all_status(self) -> Dict[str, Dict[str, Any]]:
         """Get status of all breakers."""
         with self._lock:
-            return {
-                name: breaker.get_status()
-                for name, breaker in self._breakers.items()
-            }
+            return {name: breaker.get_status() for name, breaker in self._breakers.items()}
 
     def reset_all(self) -> None:
         """Reset all circuit breakers."""
@@ -327,6 +324,7 @@ def get_circuit_breaker(name: str) -> CircuitBreaker:
 # Node Protection
 # ============================================================================
 
+
 def protected_node(
     breaker_name: str,
     fallback_value: Optional[Dict[str, Any]] = None,
@@ -346,15 +344,14 @@ def protected_node(
         def tavily_search_node(state):
             ...
     """
+
     def decorator(func: Callable) -> Callable:
         breaker = get_circuit_breaker(breaker_name)
 
         @functools.wraps(func)
         def wrapper(state):
             if not breaker.allow_request():
-                logger.warning(
-                    f"[CIRCUIT] {breaker_name} is open, using fallback"
-                )
+                logger.warning(f"[CIRCUIT] {breaker_name} is open, using fallback")
                 if fallback_value is not None:
                     return {
                         **fallback_value,

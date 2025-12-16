@@ -21,18 +21,20 @@ Usage:
     print(f"Total cost: ${summary['total_cost']:.4f}")
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
-from datetime import datetime, timedelta
-from threading import Lock
-from enum import Enum
 import asyncio
 import json
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from threading import Lock
+from typing import Any, Dict, List, Optional
+
 from ..utils import utc_now
 
 
 class CostModel(str, Enum):
     """Supported cost models."""
+
     CLAUDE_SONNET_4 = "claude-sonnet-4-20250514"
     CLAUDE_SONNET_35 = "claude-3-5-sonnet-20241022"
     CLAUDE_HAIKU = "claude-3-haiku-20240307"
@@ -42,6 +44,7 @@ class CostModel(str, Enum):
 @dataclass
 class APICall:
     """Record of a single API call."""
+
     timestamp: datetime
     model: str
     input_tokens: int
@@ -65,13 +68,14 @@ class APICall:
             "agent_name": self.agent_name,
             "company_name": self.company_name,
             "research_run_id": self.research_run_id,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
 
 @dataclass
 class CostSummary:
     """Summary of costs over a period."""
+
     total_cost: float
     total_calls: int
     total_input_tokens: int
@@ -97,7 +101,7 @@ class CostSummary:
             "by_company": self.by_company,
             "by_model": self.by_model,
             "period_start": self.period_start.isoformat() if self.period_start else None,
-            "period_end": self.period_end.isoformat() if self.period_end else None
+            "period_end": self.period_end.isoformat() if self.period_end else None,
         }
 
 
@@ -117,7 +121,7 @@ class CostTracker:
             "cached_input": 0.50,
             "cache_write": 6.25,
             "batch_input": 2.5,
-            "batch_output": 12.5
+            "batch_output": 12.5,
         },
         "claude-sonnet-4-5-20250929": {
             "input": 3.0,
@@ -125,7 +129,7 @@ class CostTracker:
             "cached_input": 0.30,
             "cache_write": 3.75,
             "batch_input": 1.5,
-            "batch_output": 7.5
+            "batch_output": 7.5,
         },
         "claude-haiku-4-5-20250929": {
             "input": 1.0,
@@ -133,7 +137,7 @@ class CostTracker:
             "cached_input": 0.10,
             "cache_write": 1.25,
             "batch_input": 0.5,
-            "batch_output": 2.5
+            "batch_output": 2.5,
         },
         # Legacy 4.x models
         "claude-opus-4-1-20250514": {
@@ -142,7 +146,7 @@ class CostTracker:
             "cached_input": 1.50,
             "cache_write": 18.75,
             "batch_input": 7.5,
-            "batch_output": 37.5
+            "batch_output": 37.5,
         },
         "claude-sonnet-4-20250514": {
             "input": 3.0,
@@ -150,7 +154,7 @@ class CostTracker:
             "cached_input": 0.30,
             "cache_write": 3.75,
             "batch_input": 1.5,
-            "batch_output": 7.5
+            "batch_output": 7.5,
         },
         # Legacy 3.5 models
         "claude-3-5-sonnet-20241022": {
@@ -159,7 +163,7 @@ class CostTracker:
             "cached_input": 0.30,
             "cache_write": 3.75,
             "batch_input": 1.5,
-            "batch_output": 7.5
+            "batch_output": 7.5,
         },
         "claude-3-5-haiku-20241022": {
             "input": 0.80,
@@ -167,7 +171,7 @@ class CostTracker:
             "cached_input": 0.08,
             "cache_write": 1.0,
             "batch_input": 0.40,
-            "batch_output": 2.0
+            "batch_output": 2.0,
         },
         # Legacy 3.0 models
         "claude-3-haiku-20240307": {
@@ -176,7 +180,7 @@ class CostTracker:
             "cached_input": 0.03,
             "cache_write": 0.30,
             "batch_input": 0.125,
-            "batch_output": 0.625
+            "batch_output": 0.625,
         },
         "claude-3-opus-20240229": {
             "input": 15.0,
@@ -184,12 +188,10 @@ class CostTracker:
             "cached_input": 1.50,
             "cache_write": 18.75,
             "batch_input": 7.5,
-            "batch_output": 37.5
+            "batch_output": 37.5,
         },
         # Web search tool pricing (per search, not per token)
-        "web_search": {
-            "per_search": 0.01  # $10 per 1,000 searches = $0.01 each
-        }
+        "web_search": {"per_search": 0.01},  # $10 per 1,000 searches = $0.01 each
     }
 
     # Default pricing for unknown models
@@ -198,7 +200,7 @@ class CostTracker:
         "output": 15.0,
         "cached_input": 0.30,
         "batch_input": 1.5,
-        "batch_output": 7.5
+        "batch_output": 7.5,
     }
 
     def __init__(self, max_history: int = 10000):
@@ -244,7 +246,7 @@ class CostTracker:
         agent_name: str = "",
         company_name: str = "",
         is_batch: bool = False,
-        metadata: Dict[str, Any] = None
+        metadata: Dict[str, Any] = None,
     ) -> float:
         """
         Record an API call and return calculated cost.
@@ -298,7 +300,7 @@ class CostTracker:
             agent_name=agent_name,
             company_name=company_name,
             research_run_id=self._current_research_run,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         with self._lock:
@@ -315,7 +317,7 @@ class CostTracker:
         agent_name: str = "",
         company_name: str = "",
         is_batch: bool = False,
-        metadata: Dict[str, Any] = None
+        metadata: Dict[str, Any] = None,
     ) -> float:
         """
         Record an API call asynchronously (non-blocking).
@@ -348,7 +350,7 @@ class CostTracker:
             agent_name=agent_name,
             company_name=company_name,
             research_run_id=self._current_research_run,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         async with self._get_async_lock():
@@ -360,7 +362,7 @@ class CostTracker:
         """Append a call and trim history (must be called with lock held)."""
         self.calls.append(call)
         if len(self.calls) > self.max_history:
-            self.calls = self.calls[-self.max_history:]
+            self.calls = self.calls[-self.max_history :]
 
     def get_summary(
         self,
@@ -368,7 +370,7 @@ class CostTracker:
         until: Optional[datetime] = None,
         agent_name: Optional[str] = None,
         company_name: Optional[str] = None,
-        research_run_id: Optional[str] = None
+        research_run_id: Optional[str] = None,
     ) -> CostSummary:
         """
         Get cost summary with optional filtering.
@@ -389,7 +391,7 @@ class CostTracker:
                 until=until,
                 agent_name=agent_name,
                 company_name=company_name,
-                research_run_id=research_run_id
+                research_run_id=research_run_id,
             )
 
         total_cost = sum(c.cost for c in filtered_calls)
@@ -442,7 +444,7 @@ class CostTracker:
             by_company=by_company,
             by_model=by_model,
             period_start=since,
-            period_end=until
+            period_end=until,
         )
 
     def _filter_calls(
@@ -451,7 +453,7 @@ class CostTracker:
         until: Optional[datetime] = None,
         agent_name: Optional[str] = None,
         company_name: Optional[str] = None,
-        research_run_id: Optional[str] = None
+        research_run_id: Optional[str] = None,
     ) -> List[APICall]:
         """Filter calls by criteria."""
         filtered = self.calls
@@ -507,10 +509,10 @@ class CostTracker:
             data = {
                 "exported_at": utc_now().isoformat(),
                 "total_calls": len(self.calls),
-                "calls": [call.to_dict() for call in self.calls]
+                "calls": [call.to_dict() for call in self.calls],
             }
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(data, f, indent=2)
 
     def reset(self) -> None:
@@ -541,12 +543,16 @@ class CostTracker:
 
         if summary.by_agent:
             print("\nBy Agent:")
-            for agent, stats in sorted(summary.by_agent.items(), key=lambda x: x[1]["cost"], reverse=True):
+            for agent, stats in sorted(
+                summary.by_agent.items(), key=lambda x: x[1]["cost"], reverse=True
+            ):
                 print(f"  {agent}: ${stats['cost']:.4f} ({stats['calls']} calls)")
 
         if summary.by_model:
             print("\nBy Model:")
-            for model, stats in sorted(summary.by_model.items(), key=lambda x: x[1]["cost"], reverse=True):
+            for model, stats in sorted(
+                summary.by_model.items(), key=lambda x: x[1]["cost"], reverse=True
+            ):
                 print(f"  {model}: ${stats['cost']:.4f} ({stats['calls']} calls)")
 
         print("=" * 60)
@@ -576,7 +582,7 @@ def calculate_cost(
     input_tokens: int,
     output_tokens: int,
     model: str = "claude-sonnet-4-20250514",
-    cached_tokens: int = 0
+    cached_tokens: int = 0,
 ) -> float:
     """
     Convenience function to calculate cost without tracking.

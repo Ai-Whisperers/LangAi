@@ -11,17 +11,19 @@ This module addresses the issue of "sources not fully utilized" in reports
 by analyzing what information is available vs. what was extracted.
 """
 
+import re
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
-import re
-from collections import defaultdict
+
 from ..utils import utc_now
 
 
 class SourceType(Enum):
     """Types of information sources."""
+
     SEC_FILING = "sec_filing"
     ANNUAL_REPORT = "annual_report"
     QUARTERLY_REPORT = "quarterly_report"
@@ -38,6 +40,7 @@ class SourceType(Enum):
 
 class FactCategory(Enum):
     """Categories of extractable facts."""
+
     FINANCIAL = "financial"
     OPERATIONAL = "operational"
     STRATEGIC = "strategic"
@@ -53,6 +56,7 @@ class FactCategory(Enum):
 @dataclass
 class ExtractedFact:
     """A single fact extracted from a source."""
+
     fact_id: str
     category: FactCategory
     fact_type: str  # e.g., "revenue", "ceo_name", "market_share"
@@ -68,6 +72,7 @@ class ExtractedFact:
 @dataclass
 class SourceInfo:
     """Information about a source."""
+
     source_id: str
     url: str
     title: str
@@ -75,7 +80,9 @@ class SourceInfo:
     content_length: int
     fetch_time: datetime
     extracted_facts: List[str] = field(default_factory=list)  # fact_ids
-    potential_facts: List[str] = field(default_factory=list)  # Fact types available but not extracted
+    potential_facts: List[str] = field(
+        default_factory=list
+    )  # Fact types available but not extracted
     quality_score: float = 0.0
     language: str = "en"
 
@@ -83,6 +90,7 @@ class SourceInfo:
 @dataclass
 class ExtractionCoverage:
     """Coverage analysis for fact extraction."""
+
     total_facts_extracted: int = 0
     total_potential_facts: int = 0
     coverage_percentage: float = 0.0
@@ -94,6 +102,7 @@ class ExtractionCoverage:
 @dataclass
 class SourceUtilization:
     """Utilization metrics for a single source."""
+
     source_id: str
     facts_extracted: int
     facts_potential: int
@@ -114,41 +123,87 @@ class SourceUtilizationTracker:
     # Expected fact types by source type
     SOURCE_EXPECTED_FACTS: Dict[SourceType, List[str]] = {
         SourceType.SEC_FILING: [
-            "revenue", "net_income", "eps", "total_assets", "total_liabilities",
-            "operating_income", "cash_flow", "shares_outstanding", "executive_compensation",
-            "risk_factors", "related_party_transactions", "segment_revenue"
+            "revenue",
+            "net_income",
+            "eps",
+            "total_assets",
+            "total_liabilities",
+            "operating_income",
+            "cash_flow",
+            "shares_outstanding",
+            "executive_compensation",
+            "risk_factors",
+            "related_party_transactions",
+            "segment_revenue",
         ],
         SourceType.ANNUAL_REPORT: [
-            "revenue", "net_income", "ebitda", "employees", "operating_margin",
-            "revenue_by_segment", "revenue_by_geography", "capex", "r_and_d_expense",
-            "strategy", "outlook", "competitive_position"
+            "revenue",
+            "net_income",
+            "ebitda",
+            "employees",
+            "operating_margin",
+            "revenue_by_segment",
+            "revenue_by_geography",
+            "capex",
+            "r_and_d_expense",
+            "strategy",
+            "outlook",
+            "competitive_position",
         ],
         SourceType.QUARTERLY_REPORT: [
-            "quarterly_revenue", "quarterly_net_income", "quarterly_eps",
-            "revenue_growth_yoy", "margin_trends", "guidance"
+            "quarterly_revenue",
+            "quarterly_net_income",
+            "quarterly_eps",
+            "revenue_growth_yoy",
+            "margin_trends",
+            "guidance",
         ],
         SourceType.PRESS_RELEASE: [
-            "announcements", "partnerships", "acquisitions", "product_launches",
-            "executive_changes", "strategic_initiatives"
+            "announcements",
+            "partnerships",
+            "acquisitions",
+            "product_launches",
+            "executive_changes",
+            "strategic_initiatives",
         ],
         SourceType.NEWS_ARTICLE: [
-            "recent_events", "market_sentiment", "competitor_actions",
-            "industry_trends", "analyst_opinions"
+            "recent_events",
+            "market_sentiment",
+            "competitor_actions",
+            "industry_trends",
+            "analyst_opinions",
         ],
         SourceType.STOCK_DATABASE: [
-            "market_cap", "stock_price", "pe_ratio", "dividend_yield",
-            "52_week_high", "52_week_low", "trading_volume", "beta"
+            "market_cap",
+            "stock_price",
+            "pe_ratio",
+            "dividend_yield",
+            "52_week_high",
+            "52_week_low",
+            "trading_volume",
+            "beta",
         ],
         SourceType.COMPANY_WEBSITE: [
-            "mission", "vision", "leadership_team", "products_services",
-            "locations", "history", "contact_info"
+            "mission",
+            "vision",
+            "leadership_team",
+            "products_services",
+            "locations",
+            "history",
+            "contact_info",
         ],
     }
 
     # Critical facts that should always be extracted
     CRITICAL_FACTS = [
-        "revenue", "net_income", "market_cap", "employees",
-        "ceo", "headquarters", "industry", "founded"
+        "revenue",
+        "net_income",
+        "market_cap",
+        "employees",
+        "ceo",
+        "headquarters",
+        "industry",
+        "founded",
     ]
 
     # Fact category mappings
@@ -175,12 +230,7 @@ class SourceUtilizationTracker:
         self.fact_counter = 0
 
     def register_source(
-        self,
-        url: str,
-        title: str,
-        source_type: SourceType,
-        content: str,
-        language: str = "en"
+        self, url: str, title: str, source_type: SourceType, content: str, language: str = "en"
     ) -> str:
         """
         Register a new source for tracking.
@@ -212,17 +262,13 @@ class SourceUtilizationTracker:
             fetch_time=utc_now(),
             potential_facts=potential,
             quality_score=quality,
-            language=language
+            language=language,
         )
 
         self.sources[source_id] = source
         return source_id
 
-    def _analyze_potential_facts(
-        self,
-        content: str,
-        source_type: SourceType
-    ) -> List[str]:
+    def _analyze_potential_facts(self, content: str, source_type: SourceType) -> List[str]:
         """Analyze what facts could potentially be extracted from content."""
         potential = []
         content_lower = content.lower()
@@ -236,9 +282,9 @@ class SourceUtilizationTracker:
 
         # Check for financial data patterns
         financial_patterns = [
-            (r'\$[\d,]+(?:\.\d+)?(?:\s*(?:billion|million|B|M))?', ["revenue", "income", "cost"]),
-            (r'\d+(?:\.\d+)?%', ["margin", "growth", "rate"]),
-            (r'\d{1,3}(?:,\d{3})+\s*employees?', ["employees"]),
+            (r"\$[\d,]+(?:\.\d+)?(?:\s*(?:billion|million|B|M))?", ["revenue", "income", "cost"]),
+            (r"\d+(?:\.\d+)?%", ["margin", "growth", "rate"]),
+            (r"\d{1,3}(?:,\d{3})+\s*employees?", ["employees"]),
         ]
 
         for pattern, fact_types in financial_patterns:
@@ -266,10 +312,7 @@ class SourceUtilizationTracker:
         return keyword_map.get(fact_type, [fact_type])
 
     def _calculate_source_quality(
-        self,
-        content: str,
-        source_type: SourceType,
-        potential_facts: List[str]
+        self, content: str, source_type: SourceType, potential_facts: List[str]
     ) -> float:
         """Calculate quality score for a source."""
         score = 0.0
@@ -311,7 +354,7 @@ class SourceUtilizationTracker:
         source_id: str,
         extraction_method: str = "pattern",
         confidence: float = 1.0,
-        context: str = ""
+        context: str = "",
     ) -> str:
         """
         Register an extracted fact.
@@ -330,9 +373,7 @@ class SourceUtilizationTracker:
         self.fact_counter += 1
         fact_id = f"fact_{self.fact_counter:05d}"
 
-        category = self.FACT_CATEGORIES.get(
-            fact_type, FactCategory.OPERATIONAL
-        )
+        category = self.FACT_CATEGORIES.get(fact_type, FactCategory.OPERATIONAL)
 
         fact = ExtractedFact(
             fact_id=fact_id,
@@ -343,7 +384,7 @@ class SourceUtilizationTracker:
             source_url=self.sources[source_id].url if source_id in self.sources else "",
             extraction_method=extraction_method,
             confidence=confidence,
-            context=context
+            context=context,
         )
 
         self.facts[fact_id] = fact
@@ -404,8 +445,7 @@ class SourceUtilizationTracker:
         # Find missing critical facts
         extracted_types = {f.fact_type for f in self.facts.values()}
         coverage.missing_critical_facts = [
-            ft for ft in self.CRITICAL_FACTS
-            if ft not in extracted_types
+            ft for ft in self.CRITICAL_FACTS if ft not in extracted_types
         ]
 
         # Generate recommendations
@@ -413,25 +453,18 @@ class SourceUtilizationTracker:
 
         return coverage
 
-    def _generate_coverage_recommendations(
-        self,
-        coverage: ExtractionCoverage
-    ) -> List[str]:
+    def _generate_coverage_recommendations(self, coverage: ExtractionCoverage) -> List[str]:
         """Generate recommendations to improve coverage."""
         recommendations = []
 
         # Low overall coverage
         if coverage.coverage_percentage < 50:
-            recommendations.append(
-                "Consider adding more diverse sources to improve data coverage"
-            )
+            recommendations.append("Consider adding more diverse sources to improve data coverage")
 
         # Missing critical facts
         if coverage.missing_critical_facts:
             missing_str = ", ".join(coverage.missing_critical_facts[:5])
-            recommendations.append(
-                f"Priority: Extract missing critical facts - {missing_str}"
-            )
+            recommendations.append(f"Priority: Extract missing critical facts - {missing_str}")
 
         # Low category coverage
         for category, pct in coverage.coverage_by_category.items():
@@ -486,9 +519,9 @@ class SourceUtilizationTracker:
 
         # Calculate value score
         value_score = (
-            source.quality_score * 0.4 +
-            utilization_rate * 0.3 +
-            (unique_facts / max(1, facts_extracted)) * 0.3
+            source.quality_score * 0.4
+            + utilization_rate * 0.3
+            + (unique_facts / max(1, facts_extracted)) * 0.3
         )
 
         # Generate recommendations
@@ -509,7 +542,7 @@ class SourceUtilizationTracker:
             utilization_rate=utilization_rate,
             unique_facts=unique_facts,
             value_score=value_score,
-            recommendations=recommendations
+            recommendations=recommendations,
         )
 
     def get_all_source_utilizations(self) -> List[SourceUtilization]:
@@ -582,10 +615,7 @@ class SourceUtilizationTracker:
 
     def get_facts_by_type(self, fact_type: str) -> List[ExtractedFact]:
         """Get all facts of a specific type across all sources."""
-        return [
-            fact for fact in self.facts.values()
-            if fact.fact_type == fact_type
-        ]
+        return [fact for fact in self.facts.values() if fact.fact_type == fact_type]
 
     def get_fact_attribution_markdown(self) -> str:
         """

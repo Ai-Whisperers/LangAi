@@ -44,4 +44,3 @@ logger.debug("Debug info")
 
 ---
 Produced-by: prompt.scripts.add-logging.v1 | ts=2025-12-07T00:00:00Z
-

@@ -12,4 +12,3 @@ items:
     kind: prompt
   - path: prompts/database-standards/review-sql-script.prompt.md
     kind: prompt
-

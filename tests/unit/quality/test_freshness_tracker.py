@@ -1,18 +1,19 @@
 """Tests for freshness tracking system."""
 
-import pytest
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 from company_researcher.quality.freshness_tracker import (
-    FreshnessLevel,
-    DataType,
-    FreshnessThreshold,
-    FreshnessAssessment,
-    DateExtractor,
-    FreshnessTracker,
     DEFAULT_THRESHOLDS,
-    create_freshness_tracker,
+    DataType,
+    DateExtractor,
+    FreshnessAssessment,
+    FreshnessLevel,
+    FreshnessThreshold,
+    FreshnessTracker,
     assess_data_freshness,
+    create_freshness_tracker,
 )
 
 
@@ -74,11 +75,7 @@ class TestFreshnessThreshold:
     def test_create_threshold(self):
         """FreshnessThreshold should store all values."""
         threshold = FreshnessThreshold(
-            data_type=DataType.NEWS,
-            fresh_hours=6,
-            recent_hours=24,
-            aging_hours=72,
-            stale_hours=168
+            data_type=DataType.NEWS, fresh_hours=6, recent_hours=24, aging_hours=72, stale_hours=168
         )
         assert threshold.data_type == DataType.NEWS
         assert threshold.fresh_hours == 6
@@ -89,11 +86,7 @@ class TestFreshnessThreshold:
     def test_get_level_fresh(self):
         """get_level should return FRESH for young data."""
         threshold = FreshnessThreshold(
-            data_type=DataType.NEWS,
-            fresh_hours=6,
-            recent_hours=24,
-            aging_hours=72,
-            stale_hours=168
+            data_type=DataType.NEWS, fresh_hours=6, recent_hours=24, aging_hours=72, stale_hours=168
         )
         level = threshold.get_level(3)
         assert level == FreshnessLevel.FRESH
@@ -101,11 +94,7 @@ class TestFreshnessThreshold:
     def test_get_level_recent(self):
         """get_level should return RECENT for recent data."""
         threshold = FreshnessThreshold(
-            data_type=DataType.NEWS,
-            fresh_hours=6,
-            recent_hours=24,
-            aging_hours=72,
-            stale_hours=168
+            data_type=DataType.NEWS, fresh_hours=6, recent_hours=24, aging_hours=72, stale_hours=168
         )
         level = threshold.get_level(12)
         assert level == FreshnessLevel.RECENT
@@ -113,11 +102,7 @@ class TestFreshnessThreshold:
     def test_get_level_aging(self):
         """get_level should return AGING for aging data."""
         threshold = FreshnessThreshold(
-            data_type=DataType.NEWS,
-            fresh_hours=6,
-            recent_hours=24,
-            aging_hours=72,
-            stale_hours=168
+            data_type=DataType.NEWS, fresh_hours=6, recent_hours=24, aging_hours=72, stale_hours=168
         )
         level = threshold.get_level(48)
         assert level == FreshnessLevel.AGING
@@ -125,11 +110,7 @@ class TestFreshnessThreshold:
     def test_get_level_stale(self):
         """get_level should return STALE for stale data."""
         threshold = FreshnessThreshold(
-            data_type=DataType.NEWS,
-            fresh_hours=6,
-            recent_hours=24,
-            aging_hours=72,
-            stale_hours=168
+            data_type=DataType.NEWS, fresh_hours=6, recent_hours=24, aging_hours=72, stale_hours=168
         )
         level = threshold.get_level(100)
         assert level == FreshnessLevel.STALE
@@ -137,11 +118,7 @@ class TestFreshnessThreshold:
     def test_get_level_outdated(self):
         """get_level should return OUTDATED for very old data."""
         threshold = FreshnessThreshold(
-            data_type=DataType.NEWS,
-            fresh_hours=6,
-            recent_hours=24,
-            aging_hours=72,
-            stale_hours=168
+            data_type=DataType.NEWS, fresh_hours=6, recent_hours=24, aging_hours=72, stale_hours=168
         )
         level = threshold.get_level(200)
         assert level == FreshnessLevel.OUTDATED
@@ -149,11 +126,7 @@ class TestFreshnessThreshold:
     def test_get_level_negative_age(self):
         """get_level should return UNKNOWN for negative age."""
         threshold = FreshnessThreshold(
-            data_type=DataType.NEWS,
-            fresh_hours=6,
-            recent_hours=24,
-            aging_hours=72,
-            stale_hours=168
+            data_type=DataType.NEWS, fresh_hours=6, recent_hours=24, aging_hours=72, stale_hours=168
         )
         level = threshold.get_level(-1)
         assert level == FreshnessLevel.UNKNOWN
@@ -173,7 +146,7 @@ class TestFreshnessAssessment:
             age_hours=2.0,
             age_description="2 hours",
             needs_refresh=False,
-            refresh_priority=0.0
+            refresh_priority=0.0,
         )
         assert assessment.data_type == DataType.NEWS
         assert assessment.level == FreshnessLevel.FRESH
@@ -190,7 +163,7 @@ class TestFreshnessAssessment:
             age_hours=0.0,
             age_description="0 hours",
             needs_refresh=False,
-            refresh_priority=0.0
+            refresh_priority=0.0,
         )
         assert assessment.warnings == []
 
@@ -207,7 +180,7 @@ class TestFreshnessAssessment:
             age_description="5 hours",
             needs_refresh=False,
             refresh_priority=0.0,
-            warnings=["Test warning"]
+            warnings=["Test warning"],
         )
         result = assessment.to_dict()
         assert result["data_type"] == "news"
@@ -227,7 +200,7 @@ class TestFreshnessAssessment:
             age_hours=-1,
             age_description="Unknown",
             needs_refresh=True,
-            refresh_priority=0.6
+            refresh_priority=0.6,
         )
         result = assessment.to_dict()
         assert result["source_date"] is None
@@ -318,10 +291,7 @@ class TestDateExtractor:
     def test_metadata_takes_priority(self, extractor):
         """extract_date should prefer metadata over text."""
         meta_date = datetime(2024, 1, 1, tzinfo=timezone.utc)
-        result = extractor.extract_date(
-            "Different date 2025-06-15",
-            {"published_at": meta_date}
-        )
+        result = extractor.extract_date("Different date 2025-06-15", {"published_at": meta_date})
         assert result == meta_date
 
 
@@ -373,7 +343,7 @@ class TestFreshnessTracker:
         assessment = tracker.assess(
             DataType.NEWS,
             source_date=source_date,  # Pass date explicitly to avoid tz issues
-            content="Article published recently"
+            content="Article published recently",
         )
         # When source_date is provided, level should be determinable
         assert assessment.level == FreshnessLevel.FRESH
@@ -466,7 +436,7 @@ class TestFreshnessReport:
         research_result = {
             "agent_outputs": {
                 "financial": {"analysis": "Test", "data_date": None},
-                "market": {"analysis": "Test", "data_date": None}
+                "market": {"analysis": "Test", "data_date": None},
             }
         }
         report = tracker.get_freshness_report(research_result)
@@ -480,7 +450,7 @@ class TestFreshnessReport:
             "agent_outputs": {
                 "financial": {
                     "analysis": "Test",
-                    "source_date": (now - timedelta(days=10)).isoformat()
+                    "source_date": (now - timedelta(days=10)).isoformat(),
                 }
             }
         }
@@ -543,10 +513,7 @@ class TestConvenienceFunctions:
     def test_assess_data_freshness(self):
         """assess_data_freshness should work."""
         now = datetime.now(timezone.utc)
-        assessment = assess_data_freshness(
-            DataType.NEWS,
-            source_date=now - timedelta(hours=2)
-        )
+        assessment = assess_data_freshness(DataType.NEWS, source_date=now - timedelta(hours=2))
         assert isinstance(assessment, FreshnessAssessment)
         assert assessment.level == FreshnessLevel.FRESH
 
@@ -558,7 +525,7 @@ class TestConvenienceFunctions:
         assessment = assess_data_freshness(
             DataType.NEWS,
             source_date=now - timedelta(hours=12),  # 12 hours = RECENT for news
-            content="Some article content"
+            content="Some article content",
         )
         assert isinstance(assessment, FreshnessAssessment)
         assert assessment.level == FreshnessLevel.RECENT

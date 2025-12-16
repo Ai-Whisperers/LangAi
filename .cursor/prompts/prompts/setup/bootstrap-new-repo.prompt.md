@@ -10,8 +10,8 @@ argument-hint: "New repository name (e.g., my-new-repo)"
 
 Please bootstrap a new .NET repository using `eneve.domain` as the "Gold Standard" reference implementation, setting up build infrastructure, CI/CD pipeline, documentation architecture, and AI rules.
 
-**Pattern**: Repository Bootstrap Pattern ⭐⭐⭐⭐⭐  
-**Effectiveness**: Essential for consistent repo initialization  
+**Pattern**: Repository Bootstrap Pattern ⭐⭐⭐⭐⭐
+**Effectiveness**: Essential for consistent repo initialization
 **Use When**: Creating new .NET repository from scratch
 
 ---
@@ -553,7 +553,7 @@ After completing bootstrap:
 
 ---
 
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
-**Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)  
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
+**Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)
 **Reference**: eneve.domain (Gold Standard Implementation)

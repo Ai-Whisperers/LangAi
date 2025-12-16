@@ -11,19 +11,13 @@ import inspect
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
-from .base_mapper import (
-    BaseMapper,
-    FrameworkType,
-    MappedEdge,
-    MappedGraph,
-    MappedNode,
-    NodeType,
-)
+from .base_mapper import BaseMapper, FrameworkType, MappedEdge, MappedGraph, MappedNode, NodeType
 
 
 @dataclass
 class GoogleADKTool:
     """Representation of a Google ADK tool."""
+
     name: str
     description: str
     parameters: Dict[str, Any] = field(default_factory=dict)
@@ -33,6 +27,7 @@ class GoogleADKTool:
 @dataclass
 class GoogleADKAgent:
     """Representation of a Google ADK Agent."""
+
     name: str
     model: str = "gemini-pro"
     system_instruction: str = ""
@@ -75,26 +70,28 @@ class GoogleADKMapper(BaseMapper):
         tools = []
 
         # Extract tools from agent
-        for tool in getattr(agent, 'tools', []):
-            if hasattr(tool, '__name__'):
-                tools.append(GoogleADKTool(
-                    name=tool.__name__,
-                    description=inspect.getdoc(tool) or '',
-                    function=tool
-                ))
-            elif hasattr(tool, 'name'):
-                tools.append(GoogleADKTool(
-                    name=tool.name,
-                    description=getattr(tool, 'description', ''),
-                    parameters=getattr(tool, 'parameters', {})
-                ))
+        for tool in getattr(agent, "tools", []):
+            if hasattr(tool, "__name__"):
+                tools.append(
+                    GoogleADKTool(
+                        name=tool.__name__, description=inspect.getdoc(tool) or "", function=tool
+                    )
+                )
+            elif hasattr(tool, "name"):
+                tools.append(
+                    GoogleADKTool(
+                        name=tool.name,
+                        description=getattr(tool, "description", ""),
+                        parameters=getattr(tool, "parameters", {}),
+                    )
+                )
 
         return GoogleADKAgent(
-            name=getattr(agent, 'name', 'google_adk_agent'),
-            model=getattr(agent, 'model', 'gemini-pro'),
-            system_instruction=getattr(agent, 'system_instruction', ''),
+            name=getattr(agent, "name", "google_adk_agent"),
+            model=getattr(agent, "model", "gemini-pro"),
+            system_instruction=getattr(agent, "system_instruction", ""),
             tools=tools,
-            config=getattr(agent, 'config', {})
+            config=getattr(agent, "config", {}),
         )
 
     def _build_graph(self, agents: List[GoogleADKAgent]) -> MappedGraph:
@@ -111,7 +108,7 @@ class GoogleADKMapper(BaseMapper):
                 framework=FrameworkType.GOOGLE_ADK,
                 description=agent.system_instruction,
                 tools=[t.name for t in agent.tools],
-                config={"model": agent.model}
+                config={"model": agent.model},
             )
             nodes.append(agent_node)
 
@@ -124,16 +121,14 @@ class GoogleADKMapper(BaseMapper):
                     framework=FrameworkType.GOOGLE_ADK,
                     description=tool.description,
                     function=tool.function,
-                    config={"parameters": tool.parameters}
+                    config={"parameters": tool.parameters},
                 )
                 nodes.append(tool_node)
 
                 # Edge from agent to tool
-                edges.append(MappedEdge(
-                    source=agent_node.id,
-                    target=tool_node.id,
-                    edge_type="tool_call"
-                ))
+                edges.append(
+                    MappedEdge(source=agent_node.id, target=tool_node.id, edge_type="tool_call")
+                )
 
         entry_point = nodes[0].id if nodes else None
 
@@ -143,15 +138,16 @@ class GoogleADKMapper(BaseMapper):
             nodes=nodes,
             edges=edges,
             entry_point=entry_point,
-            exit_points=[]
+            exit_points=[],
         )
 
     def to_langgraph(self, graph: MappedGraph) -> Any:
         """Convert to LangGraph StateGraph."""
         try:
-            from langgraph.graph import StateGraph, END
-            from typing import TypedDict, Annotated
             import operator
+            from typing import Annotated, TypedDict
+
+            from langgraph.graph import END, StateGraph
         except ImportError:
             raise ImportError("langgraph is required for conversion")
 
@@ -165,12 +161,14 @@ class GoogleADKMapper(BaseMapper):
         agent_nodes = [n for n in graph.nodes if n.node_type == NodeType.AGENT]
 
         for node in agent_nodes:
+
             def make_agent_node(agent_node: MappedNode):
                 async def agent_func(state: ADKState) -> ADKState:
                     return {
                         "messages": [{"role": "assistant", "content": f"Agent {agent_node.name}"}],
-                        "tool_results": {}
+                        "tool_results": {},
                     }
+
                 return agent_func
 
             workflow.add_node(node.id, make_agent_node(node))
@@ -183,10 +181,7 @@ class GoogleADKMapper(BaseMapper):
         return workflow
 
 
-def map_google_adk_to_langgraph(
-    agent: Any,
-    compile: bool = False
-) -> Any:
+def map_google_adk_to_langgraph(agent: Any, compile: bool = False) -> Any:
     """
     Convenience function to map Google ADK agent to LangGraph.
 

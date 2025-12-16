@@ -35,4 +35,3 @@ items:
     kind: prompt
   - path: prompts/script/validate-script-standards.prompt.md
     kind: prompt
-

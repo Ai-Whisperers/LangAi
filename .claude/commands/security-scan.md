@@ -21,4 +21,3 @@ gh run watch --workflow "Security Audit (Claude)"
 
 ## Completion
 - Ensure both local and remote scans are clean before pushing or merging.
-

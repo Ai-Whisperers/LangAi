@@ -63,7 +63,7 @@
 ### Database Objects
 - Tables: PascalCase (e.g., `D_COUNTERREADING`)
 - Columns: snake_case (e.g., `meter_reading`)
-- Indexes: 
+- Indexes:
   - Primary Key: `[Table]_[Column]_PK`
   - Foreign Key: `[Table]_[Column]_FK`
   - Non-unique: `[Table]_[Column]_IX`
@@ -176,4 +176,4 @@
 - Update documentation
 - Track technical debt
 - Plan migrations
-- Maintain Excel tracking sheet 
+- Maintain Excel tracking sheet

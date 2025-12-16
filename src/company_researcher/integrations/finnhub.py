@@ -11,8 +11,8 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
-from .base_client import BaseAPIClient
 from ..utils import get_logger, utc_now
+from .base_client import BaseAPIClient
 
 logger = get_logger(__name__)
 
@@ -20,6 +20,7 @@ logger = get_logger(__name__)
 @dataclass
 class CompanyNews:
     """News article for a company."""
+
     category: str
     datetime: int
     headline: str
@@ -41,13 +42,14 @@ class CompanyNews:
             related=data.get("related", ""),
             source=data.get("source", ""),
             summary=data.get("summary", ""),
-            url=data.get("url", "")
+            url=data.get("url", ""),
         )
 
 
 @dataclass
 class Quote:
     """Stock quote data."""
+
     current_price: float
     change: float
     percent_change: float
@@ -67,13 +69,14 @@ class Quote:
             low=data.get("l", 0),
             open=data.get("o", 0),
             previous_close=data.get("pc", 0),
-            timestamp=data.get("t", 0)
+            timestamp=data.get("t", 0),
         )
 
 
 @dataclass
 class CompanyProfile:
     """Company profile from Finnhub."""
+
     country: str
     currency: str
     exchange: str
@@ -101,7 +104,7 @@ class CompanyProfile:
             ticker=data.get("ticker", ""),
             weburl=data.get("weburl", ""),
             logo=data.get("logo", ""),
-            industry=data.get("finnhubIndustry", "")
+            industry=data.get("finnhubIndustry", ""),
         )
 
 
@@ -133,7 +136,7 @@ class FinnhubClient(BaseAPIClient):
             env_var="FINNHUB_API_KEY",
             cache_ttl=300,  # 5 min cache for real-time data
             rate_limit_calls=60,
-            rate_limit_period=60.0
+            rate_limit_period=60.0,
         )
 
     def _get_headers(self) -> Dict[str, str]:
@@ -196,10 +199,7 @@ class FinnhubClient(BaseAPIClient):
     # =========================================================================
 
     async def get_company_news(
-        self,
-        symbol: str,
-        from_date: Optional[str] = None,
-        to_date: Optional[str] = None
+        self, symbol: str, from_date: Optional[str] = None, to_date: Optional[str] = None
     ) -> List[CompanyNews]:
         """
         Get company news in date range.
@@ -217,11 +217,9 @@ class FinnhubClient(BaseAPIClient):
         if not to_date:
             to_date = utc_now().strftime("%Y-%m-%d")
 
-        data = await self._request("company-news", {
-            "symbol": symbol,
-            "from": from_date,
-            "to": to_date
-        })
+        data = await self._request(
+            "company-news", {"symbol": symbol, "from": from_date, "to": to_date}
+        )
         return [CompanyNews.from_dict(item) for item in (data or [])]
 
     async def get_market_news(self, category: str = "general") -> List[Dict]:
@@ -268,11 +266,7 @@ class FinnhubClient(BaseAPIClient):
     # Fundamentals
     # =========================================================================
 
-    async def get_basic_financials(
-        self,
-        symbol: str,
-        metric: str = "all"
-    ) -> Dict[str, Any]:
+    async def get_basic_financials(self, symbol: str, metric: str = "all") -> Dict[str, Any]:
         """
         Get basic financial metrics.
 
@@ -283,10 +277,7 @@ class FinnhubClient(BaseAPIClient):
         Returns:
             Dict with metric data and series
         """
-        return await self._request("stock/metric", {
-            "symbol": symbol,
-            "metric": metric
-        }) or {}
+        return await self._request("stock/metric", {"symbol": symbol, "metric": metric}) or {}
 
     # =========================================================================
     # Earnings
@@ -296,7 +287,7 @@ class FinnhubClient(BaseAPIClient):
         self,
         from_date: Optional[str] = None,
         to_date: Optional[str] = None,
-        symbol: Optional[str] = None
+        symbol: Optional[str] = None,
     ) -> List[Dict]:
         """
         Get earnings calendar.
@@ -390,7 +381,7 @@ class FinnhubClient(BaseAPIClient):
             "financials": {},
             "recommendations": [],
             "price_target": {},
-            "peers": []
+            "peers": [],
         }
 
         result["profile"] = await self.get_company_profile(symbol)

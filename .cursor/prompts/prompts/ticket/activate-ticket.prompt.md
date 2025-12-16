@@ -10,8 +10,8 @@ argument-hint: "Ticket ID and action (e.g., @EPP-192 please start)"
 
 This prompt activates a ticket by loading its context and executing the requested action.
 
-**Pattern**: Ticket Activation Pattern ⭐⭐⭐⭐⭐  
-**Effectiveness**: 95% first-attempt success rate  
+**Pattern**: Ticket Activation Pattern ⭐⭐⭐⭐⭐
+**Effectiveness**: 95% first-attempt success rate
 **Use When**: Starting work on a specific ticket, switching tickets, requesting ticket-specific actions
 
 ---
@@ -87,33 +87,33 @@ When this prompt is invoked, the AI should:
 ## Common Actions
 
 ### Start Work (`please start`)
-**When**: Beginning new ticket  
-**Links to**: `start-ticket.prompt.md`  
+**When**: Beginning new ticket
+**Links to**: `start-ticket.prompt.md`
 **AI should**: Initialize context, load plan, propose first steps
 
 ### Create Documentation (`please make the [TYPE] md`)
-**When**: Need to generate ticket artifacts  
-**Links to**: `update-progress.prompt.md`  
+**When**: Need to generate ticket artifacts
+**Links to**: `update-progress.prompt.md`
 **AI should**: Generate requested documentation following templates
 
 ### Test Implementation (`please test`)
-**When**: Implementation complete, needs validation  
-**Links to**: `validate-completion.prompt.md`  
+**When**: Implementation complete, needs validation
+**Links to**: `validate-completion.prompt.md`
 **AI should**: Execute tests, verify acceptance criteria, report results
 
 ### Continue Work (`please continue`)
-**When**: Resuming work after break  
-**Links to**: `catchup-on-ticket.prompt.md`  
+**When**: Resuming work after break
+**Links to**: `catchup-on-ticket.prompt.md`
 **AI should**: Review context, identify next steps, proceed
 
 ### Check Progress (`check the progress`)
-**When**: Need status update  
-**Links to**: `check-status.prompt.md`  
+**When**: Need status update
+**Links to**: `check-status.prompt.md`
 **AI should**: Review progress.md, summarize state, identify blockers
 
 ### Validate and Execute (`please validate and execute`)
-**When**: Complex change needing pre-execution validation  
-**Links to**: `validate-before-action.prompt.md`  
+**When**: Complex change needing pre-execution validation
+**Links to**: `validate-before-action.prompt.md`
 **AI should**: Validate preconditions, confirm approach, execute if valid
 
 ---
@@ -196,11 +196,8 @@ When activating a ticket, AI must respond with:
 
 ---
 
-**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)  
-**Pattern ID**: #1 Ticket Activation  
-**Evidence**: conversations/JP/extracted/pattern-discovery-report.md  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)
+**Pattern ID**: #1 Ticket Activation
+**Evidence**: conversations/JP/extracted/pattern-discovery-report.md
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)
-
-
-

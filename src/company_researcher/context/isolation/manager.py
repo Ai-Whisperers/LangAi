@@ -9,17 +9,11 @@ Provides:
 - Cross-agent communication
 """
 
-from typing import Dict, Any, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
-from .models import (
-    IsolationLevel,
-    SharePolicy,
-    ContextVisibility,
-    ContextItem,
-    AgentContext,
-)
-from .filter import ContextFilter
 from ...utils import utc_now
+from .filter import ContextFilter
+from .models import AgentContext, ContextItem, ContextVisibility, IsolationLevel, SharePolicy
 
 
 class ContextIsolationManager:
@@ -49,7 +43,7 @@ class ContextIsolationManager:
     def __init__(
         self,
         default_isolation: IsolationLevel = IsolationLevel.MODERATE,
-        default_policy: SharePolicy = SharePolicy.FILTERED
+        default_policy: SharePolicy = SharePolicy.FILTERED,
     ):
         """
         Initialize manager.
@@ -77,7 +71,7 @@ class ContextIsolationManager:
         agent_type: str,
         parent_agent: Optional[str] = None,
         isolation_level: Optional[IsolationLevel] = None,
-        share_policy: Optional[SharePolicy] = None
+        share_policy: Optional[SharePolicy] = None,
     ) -> AgentContext:
         """
         Create context for an agent.
@@ -97,7 +91,7 @@ class ContextIsolationManager:
             agent_type=agent_type,
             parent_agent=parent_agent,
             isolation_level=isolation_level or self._default_isolation,
-            share_policy=share_policy or self._default_policy
+            share_policy=share_policy or self._default_policy,
         )
 
         self._contexts[agent_name] = context
@@ -122,7 +116,7 @@ class ContextIsolationManager:
         agent_name: str,
         include_shared: bool = True,
         include_global: bool = True,
-        include_inherited: bool = True
+        include_inherited: bool = True,
     ) -> Dict[str, Any]:
         """
         Get full context available to an agent.
@@ -190,11 +184,7 @@ class ContextIsolationManager:
 
         return result
 
-    def _get_shared_context(
-        self,
-        agent_name: str,
-        agent_type: str
-    ) -> Dict[str, Any]:
+    def _get_shared_context(self, agent_name: str, agent_type: str) -> Dict[str, Any]:
         """Get context shared by other agents."""
         result = {}
         agent_ctx = self._contexts.get(agent_name)
@@ -217,11 +207,7 @@ class ContextIsolationManager:
                         result[key] = item.value
             else:
                 # Use filter for MODERATE/MINIMAL
-                filtered = self._filter.filter_for_agent(
-                    other_ctx.items,
-                    agent_name,
-                    agent_type
-                )
+                filtered = self._filter.filter_for_agent(other_ctx.items, agent_name, agent_type)
                 result.update(filtered)
 
         return result
@@ -230,19 +216,14 @@ class ContextIsolationManager:
     # Global Context
     # ==========================================================================
 
-    def add_global(
-        self,
-        key: str,
-        value: Any,
-        tags: Optional[List[str]] = None
-    ) -> None:
+    def add_global(self, key: str, value: Any, tags: Optional[List[str]] = None) -> None:
         """Add item to global context (visible to all)."""
         self._global_context[key] = ContextItem(
             key=key,
             value=value,
             visibility=ContextVisibility.GLOBAL,
             owner_agent="global",
-            tags=tags or []
+            tags=tags or [],
         )
 
     def get_global(self, key: str, default: Any = None) -> Any:
@@ -263,12 +244,7 @@ class ContextIsolationManager:
     # Cross-Agent Communication
     # ==========================================================================
 
-    def share_item(
-        self,
-        from_agent: str,
-        to_agents: List[str],
-        key: str
-    ) -> bool:
+    def share_item(self, from_agent: str, to_agents: List[str], key: str) -> bool:
         """
         Share a specific item with other agents.
 
@@ -290,11 +266,7 @@ class ContextIsolationManager:
         return True
 
     def send_message(
-        self,
-        from_agent: str,
-        to_agent: str,
-        message: str,
-        message_type: str = "info"
+        self, from_agent: str, to_agent: str, message: str, message_type: str = "info"
     ) -> str:
         """
         Send a message from one agent to another.
@@ -320,10 +292,10 @@ class ContextIsolationManager:
                 "from": from_agent,
                 "message": message,
                 "type": message_type,
-                "timestamp": utc_now().isoformat()
+                "timestamp": utc_now().isoformat(),
             },
             visibility=ContextVisibility.PRIVATE,
-            tags=["message", message_type]
+            tags=["message", message_type],
         )
 
         return msg_id
@@ -333,7 +305,7 @@ class ContextIsolationManager:
         from_agent: str,
         message: str,
         to_team: Optional[str] = None,
-        message_type: str = "broadcast"
+        message_type: str = "broadcast",
     ) -> int:
         """
         Broadcast message to multiple agents.
@@ -366,11 +338,7 @@ class ContextIsolationManager:
     # Context Templates
     # ==========================================================================
 
-    def apply_template(
-        self,
-        agent_name: str,
-        template_name: str
-    ) -> bool:
+    def apply_template(self, agent_name: str, template_name: str) -> bool:
         """
         Apply a context template to an agent.
 
@@ -385,18 +353,18 @@ class ContextIsolationManager:
             "research_agent": {
                 "allowed_tags": ["overview", "general", "company_info"],
                 "isolation": IsolationLevel.MODERATE,
-                "share_policy": SharePolicy.FILTERED
+                "share_policy": SharePolicy.FILTERED,
             },
             "analysis_agent": {
                 "allowed_tags": ["finding", "analysis", "summary"],
                 "isolation": IsolationLevel.MINIMAL,
-                "share_policy": SharePolicy.INHERIT
+                "share_policy": SharePolicy.INHERIT,
             },
             "verification_agent": {
                 "allowed_tags": ["all"],  # Access everything for verification
                 "isolation": IsolationLevel.NONE,
-                "share_policy": SharePolicy.INHERIT
-            }
+                "share_policy": SharePolicy.INHERIT,
+            },
         }
 
         template = templates.get(template_name)
@@ -443,10 +411,7 @@ class ContextIsolationManager:
             "agent_count": len(self._contexts),
             "global_items": len(self._global_context),
             "teams": {k: len(v) for k, v in self._agent_teams.items()},
-            "agents": {
-                name: ctx.to_dict()
-                for name, ctx in self._contexts.items()
-            }
+            "agents": {name: ctx.to_dict() for name, ctx in self._contexts.items()},
         }
 
     def list_agents(self) -> List[str]:
@@ -455,7 +420,4 @@ class ContextIsolationManager:
 
     def list_teams(self) -> Dict[str, List[str]]:
         """List all teams with their agents."""
-        return {
-            team: list(agents)
-            for team, agents in self._agent_teams.items()
-        }
+        return {team: list(agents) for team, agents in self._agent_teams.items()}

@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
 from ..utils import get_logger
 
 _logger = get_logger(__name__)
@@ -25,6 +26,7 @@ _logger = get_logger(__name__)
 
 class LogLevel(str, Enum):
     """Log levels."""
+
     DEBUG = "debug"
     INFO = "info"
     WARNING = "warning"
@@ -35,6 +37,7 @@ class LogLevel(str, Enum):
 @dataclass
 class LogEntry:
     """A structured log entry."""
+
     timestamp: datetime
     level: LogLevel
     message: str
@@ -54,7 +57,7 @@ class LogEntry:
             "service": self.service,
             "trace_id": self.trace_id,
             "span_id": self.span_id,
-            **self.extra
+            **self.extra,
         }
 
     def to_json(self) -> str:
@@ -62,7 +65,9 @@ class LogEntry:
         return json.dumps(self.to_dict(), default=str)
 
     @classmethod
-    def from_record(cls, record: logging.LogRecord, service: str = "company-researcher") -> "LogEntry":
+    def from_record(
+        cls, record: logging.LogRecord, service: str = "company-researcher"
+    ) -> "LogEntry":
         """Create from logging.LogRecord."""
         level_map = {
             logging.DEBUG: LogLevel.DEBUG,
@@ -74,9 +79,23 @@ class LogEntry:
 
         extra = {}
         for key, value in record.__dict__.items():
-            if key not in ('name', 'msg', 'args', 'created', 'levelname', 'levelno',
-                          'pathname', 'filename', 'module', 'lineno', 'funcName',
-                          'exc_info', 'exc_text', 'stack_info', 'message'):
+            if key not in (
+                "name",
+                "msg",
+                "args",
+                "created",
+                "levelname",
+                "levelno",
+                "pathname",
+                "filename",
+                "module",
+                "lineno",
+                "funcName",
+                "exc_info",
+                "exc_text",
+                "stack_info",
+                "message",
+            ):
                 extra[key] = value
 
         return cls(
@@ -85,9 +104,9 @@ class LogEntry:
             message=record.getMessage(),
             logger_name=record.name,
             service=service,
-            trace_id=getattr(record, 'trace_id', None),
-            span_id=getattr(record, 'span_id', None),
-            extra=extra
+            trace_id=getattr(record, "trace_id", None),
+            span_id=getattr(record, "span_id", None),
+            extra=extra,
         )
 
 
@@ -126,11 +145,7 @@ class LogAggregator:
         logs = aggregator.query(level=LogLevel.ERROR, limit=100)
     """
 
-    def __init__(
-        self,
-        service_name: str = "company-researcher",
-        buffer_size: int = 1000
-    ):
+    def __init__(self, service_name: str = "company-researcher", buffer_size: int = 1000):
         self.service_name = service_name
         self._buffer: List[LogEntry] = []
         self._buffer_size = buffer_size
@@ -169,18 +184,14 @@ class LogAggregator:
         filepath: str,
         level: LogLevel = LogLevel.DEBUG,
         max_bytes: int = 10_000_000,
-        backup_count: int = 5
+        backup_count: int = 5,
     ) -> None:
         """Add file output handler with rotation."""
         from logging.handlers import RotatingFileHandler
 
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
-        handler = RotatingFileHandler(
-            filepath,
-            maxBytes=max_bytes,
-            backupCount=backup_count
-        )
+        handler = RotatingFileHandler(filepath, maxBytes=max_bytes, backupCount=backup_count)
         handler.setLevel(getattr(logging, level.value.upper()))
         handler.setFormatter(StructuredFormatter(self.service_name))
         self._root_logger.addHandler(handler)
@@ -196,7 +207,7 @@ class LogAggregator:
         with self._lock:
             self._buffer.append(entry)
             if len(self._buffer) > self._buffer_size:
-                self._buffer = self._buffer[-self._buffer_size:]
+                self._buffer = self._buffer[-self._buffer_size :]
 
         # Send to shippers
         for shipper in self._shippers:
@@ -210,7 +221,7 @@ class LogAggregator:
         end_time: datetime = None,
         trace_id: str = None,
         search: str = None,
-        limit: int = 100
+        limit: int = 100,
     ) -> List[LogEntry]:
         """
         Query buffered logs.
@@ -227,7 +238,13 @@ class LogAggregator:
         Returns:
             List of matching LogEntry objects
         """
-        level_order = [LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARNING, LogLevel.ERROR, LogLevel.CRITICAL]
+        level_order = [
+            LogLevel.DEBUG,
+            LogLevel.INFO,
+            LogLevel.WARNING,
+            LogLevel.ERROR,
+            LogLevel.CRITICAL,
+        ]
 
         with self._lock:
             results = []
@@ -289,6 +306,7 @@ class _MemoryHandler(logging.Handler):
         except Exception as e:
             # Log to stderr to avoid recursion but still capture the error
             import sys
+
             print(f"LogAggregator emit error: {e}", file=sys.stderr)
 
 
@@ -309,11 +327,7 @@ class LogShipper:
 class AsyncLogShipper(LogShipper):
     """Async log shipper with batching."""
 
-    def __init__(
-        self,
-        batch_size: int = 100,
-        flush_interval: float = 5.0
-    ):
+    def __init__(self, batch_size: int = 100, flush_interval: float = 5.0):
         self.batch_size = batch_size
         self.flush_interval = flush_interval
         self._queue: queue.Queue = queue.Queue()
@@ -373,7 +387,7 @@ class FileShipper(AsyncLogShipper):
 
     def _send_batch(self, batch: List[LogEntry]) -> None:
         """Write batch to file."""
-        with open(self.filepath, 'a') as f:
+        with open(self.filepath, "a") as f:
             for entry in batch:
                 f.write(entry.to_json() + "\n")
 
@@ -381,12 +395,7 @@ class FileShipper(AsyncLogShipper):
 class HTTPShipper(AsyncLogShipper):
     """Ships logs to an HTTP endpoint."""
 
-    def __init__(
-        self,
-        url: str,
-        headers: Dict[str, str] = None,
-        **kwargs
-    ):
+    def __init__(self, url: str, headers: Dict[str, str] = None, **kwargs):
         super().__init__(**kwargs)
         self.url = url
         self.headers = headers or {}
@@ -395,16 +404,13 @@ class HTTPShipper(AsyncLogShipper):
         """Send batch to HTTP endpoint."""
         import urllib.request
 
-        payload = json.dumps([e.to_dict() for e in batch]).encode('utf-8')
+        payload = json.dumps([e.to_dict() for e in batch]).encode("utf-8")
 
         request = urllib.request.Request(
             self.url,
             data=payload,
-            headers={
-                "Content-Type": "application/json",
-                **self.headers
-            },
-            method="POST"
+            headers={"Content-Type": "application/json", **self.headers},
+            method="POST",
         )
 
         try:
@@ -417,14 +423,9 @@ class HTTPShipper(AsyncLogShipper):
 class ElasticsearchShipper(AsyncLogShipper):
     """Ships logs to Elasticsearch."""
 
-    def __init__(
-        self,
-        url: str,
-        index: str = "logs",
-        **kwargs
-    ):
+    def __init__(self, url: str, index: str = "logs", **kwargs):
         super().__init__(**kwargs)
-        self.url = url.rstrip('/')
+        self.url = url.rstrip("/")
         self.index = index
 
     def _send_batch(self, batch: List[LogEntry]) -> None:
@@ -443,9 +444,9 @@ class ElasticsearchShipper(AsyncLogShipper):
 
         request = urllib.request.Request(
             f"{self.url}/_bulk",
-            data=body.encode('utf-8'),
+            data=body.encode("utf-8"),
             headers={"Content-Type": "application/x-ndjson"},
-            method="POST"
+            method="POST",
         )
 
         try:
@@ -459,9 +460,7 @@ class ElasticsearchShipper(AsyncLogShipper):
 
 
 def create_log_aggregator(
-    service_name: str = "company-researcher",
-    log_file: str = None,
-    console: bool = True
+    service_name: str = "company-researcher", log_file: str = None, console: bool = True
 ) -> LogAggregator:
     """Create a configured log aggregator."""
     aggregator = LogAggregator(service_name=service_name)
@@ -476,8 +475,7 @@ def create_log_aggregator(
 
 
 def setup_structured_logging(
-    service_name: str = "company-researcher",
-    level: str = "INFO"
+    service_name: str = "company-researcher", level: str = "INFO"
 ) -> logging.Logger:
     """Setup structured logging for the application."""
     logger = logging.getLogger(service_name)

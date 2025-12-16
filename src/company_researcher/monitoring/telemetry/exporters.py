@@ -5,12 +5,12 @@ Exporters for sending spans to various backends.
 """
 
 import json
-import urllib.request
 import urllib.error
+import urllib.request
 from typing import Dict, List
 
-from .models import Span
 from ...utils import get_logger
+from .models import Span
 
 logger = get_logger(__name__)
 
@@ -60,7 +60,7 @@ class OTLPSpanExporter(SpanExporter):
         self,
         endpoint: str = "http://localhost:4318/v1/traces",
         headers: Dict[str, str] = None,
-        timeout: float = 10.0
+        timeout: float = 10.0,
     ):
         self.endpoint = endpoint
         self.headers = headers or {}
@@ -73,25 +73,24 @@ class OTLPSpanExporter(SpanExporter):
         try:
             # Build OTLP payload
             payload = {
-                "resourceSpans": [{
-                    "resource": {
-                        "attributes": []
-                    },
-                    "scopeSpans": [{
-                        "scope": {"name": "company-researcher"},
-                        "spans": [span.to_dict() for span in spans]
-                    }]
-                }]
+                "resourceSpans": [
+                    {
+                        "resource": {"attributes": []},
+                        "scopeSpans": [
+                            {
+                                "scope": {"name": "company-researcher"},
+                                "spans": [span.to_dict() for span in spans],
+                            }
+                        ],
+                    }
+                ]
             }
 
             request = urllib.request.Request(
                 self.endpoint,
-                data=json.dumps(payload).encode('utf-8'),
-                headers={
-                    "Content-Type": "application/json",
-                    **self.headers
-                },
-                method="POST"
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json", **self.headers},
+                method="POST",
             )
 
             with urllib.request.urlopen(request, timeout=self.timeout) as response:

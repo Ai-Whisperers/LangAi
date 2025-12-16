@@ -133,23 +133,23 @@ When user provides request, categorize:
 
 1. **Architecture Setup**: "Create docs structure for [domain]"
    - → Apply architecture decision logic (see below)
-   
+
 2. **Domain Overview**: "Document [domain] overview"
    - → Apply `rule.technical-specifications.domain-overview.v1`
-   
+
 3. **Entity Documentation**: "Document [Entity] entity/class/object"
    - → Apply `rule.technical-specifications.domain-object.v1`
-   
+
 4. **Enumeration Documentation**: "Document [Enum] enumeration/constants"
    - → Run qualification check first (Step 2)
    - → If qualified, apply `rule.technical-specifications.enumeration.v1`
-   
+
 5. **Business Logic Documentation**: "Document business rules for [domain/process]"
    - → Apply `rule.technical-specifications.business-rules.v1`
-   
+
 6. **Database Documentation**: "Document database schema for [domain]"
    - → Apply `rule.technical-specifications.entity-relationship.v1`
-   
+
 7. **Integration Documentation**: "Document integrations with [system]"
    - → Apply `rule.technical-specifications.integration-points.v1`
 

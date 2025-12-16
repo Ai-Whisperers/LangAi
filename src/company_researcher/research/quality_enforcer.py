@@ -12,16 +12,18 @@ This module addresses the issue of "inconsistent report quality"
 by enforcing standards before report finalization.
 """
 
+import re
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
-import re
-from datetime import datetime
+
 from ..utils import utc_now
 
 
 class QualityLevel(Enum):
     """Quality level classifications."""
+
     EXCELLENT = "excellent"  # Score 90-100
     GOOD = "good"  # Score 75-89
     ACCEPTABLE = "acceptable"  # Score 60-74
@@ -31,6 +33,7 @@ class QualityLevel(Enum):
 
 class SectionType(Enum):
     """Types of report sections."""
+
     EXECUTIVE_SUMMARY = "executive_summary"
     COMPANY_OVERVIEW = "company_overview"
     FINANCIAL_ANALYSIS = "financial_analysis"
@@ -44,6 +47,7 @@ class SectionType(Enum):
 
 class IssueType(Enum):
     """Types of quality issues."""
+
     MISSING_DATA = "missing_data"
     VAGUE_STATEMENT = "vague_statement"
     MISSING_SECTION = "missing_section"
@@ -56,6 +60,7 @@ class IssueType(Enum):
 
 class IssueSeverity(Enum):
     """Severity of quality issues."""
+
     CRITICAL = "critical"  # Blocks publication
     MAJOR = "major"  # Should be fixed
     MINOR = "minor"  # Nice to fix
@@ -65,6 +70,7 @@ class IssueSeverity(Enum):
 @dataclass
 class QualityIssue:
     """A single quality issue found in a report."""
+
     issue_type: IssueType
     severity: IssueSeverity
     section: Optional[SectionType]
@@ -76,6 +82,7 @@ class QualityIssue:
 @dataclass
 class SectionAnalysis:
     """Analysis of a single report section."""
+
     section_type: SectionType
     present: bool = False
     word_count: int = 0
@@ -89,6 +96,7 @@ class SectionAnalysis:
 @dataclass
 class QualityReport:
     """Complete quality assessment report."""
+
     overall_score: float = 0.0
     quality_level: QualityLevel = QualityLevel.POOR
     publishable: bool = False
@@ -168,71 +176,71 @@ class ReportQualityEnforcer:
 
     # Patterns indicating vague or incomplete content
     VAGUE_PATTERNS = [
-        r'data\s+not\s+available',
-        r'n/?a\b',
-        r'not\s+(?:yet\s+)?available',
-        r'information\s+not\s+(?:yet\s+)?(?:available|disclosed)',
-        r'to\s+be\s+(?:determined|announced)',
-        r'no\s+data\s+(?:found|available)',
-        r'could\s+not\s+(?:be\s+)?(?:determined|found|verified)',
-        r'(?:exact|specific)\s+(?:figure|number|data)\s+not',
-        r'—',  # Placeholder dash
+        r"data\s+not\s+available",
+        r"n/?a\b",
+        r"not\s+(?:yet\s+)?available",
+        r"information\s+not\s+(?:yet\s+)?(?:available|disclosed)",
+        r"to\s+be\s+(?:determined|announced)",
+        r"no\s+data\s+(?:found|available)",
+        r"could\s+not\s+(?:be\s+)?(?:determined|found|verified)",
+        r"(?:exact|specific)\s+(?:figure|number|data)\s+not",
+        r"—",  # Placeholder dash
     ]
 
     # Patterns indicating good content (with specific data)
     SPECIFIC_DATA_PATTERNS = [
-        r'\$[\d,]+(?:\.\d+)?(?:\s*(?:billion|million|trillion|B|M|T))?',  # Currency
-        r'\d+(?:\.\d+)?%',  # Percentages
-        r'(?:FY|Q[1-4])\s*20\d{2}',  # Fiscal periods
-        r'(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}',
-        r'\d{1,3}(?:,\d{3})+\s*(?:employees|stores|locations)',  # Counts
-        r'(?:CEO|CFO|CTO|COO):\s*\w+\s+\w+',  # Named executives
+        r"\$[\d,]+(?:\.\d+)?(?:\s*(?:billion|million|trillion|B|M|T))?",  # Currency
+        r"\d+(?:\.\d+)?%",  # Percentages
+        r"(?:FY|Q[1-4])\s*20\d{2}",  # Fiscal periods
+        r"(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}",
+        r"\d{1,3}(?:,\d{3})+\s*(?:employees|stores|locations)",  # Counts
+        r"(?:CEO|CFO|CTO|COO):\s*\w+\s+\w+",  # Named executives
     ]
 
     # Section header patterns
     SECTION_PATTERNS: Dict[SectionType, List[str]] = {
         SectionType.EXECUTIVE_SUMMARY: [
-            r'#+\s*executive\s+summary',
-            r'#+\s*summary',
-            r'#+\s*overview',
+            r"#+\s*executive\s+summary",
+            r"#+\s*summary",
+            r"#+\s*overview",
         ],
         SectionType.COMPANY_OVERVIEW: [
-            r'#+\s*company\s+overview',
-            r'#+\s*about\s+(?:the\s+)?company',
-            r'#+\s*(?:\d+[\.\)]\s*)?company\s+(?:overview|profile|background)',
+            r"#+\s*company\s+overview",
+            r"#+\s*about\s+(?:the\s+)?company",
+            r"#+\s*(?:\d+[\.\)]\s*)?company\s+(?:overview|profile|background)",
         ],
         SectionType.FINANCIAL_ANALYSIS: [
-            r'#+\s*financial\s+(?:analysis|performance|results)',
-            r'#+\s*financials',
-            r'#+\s*(?:\d+[\.\)]\s*)?financial\s+(?:analysis|performance)',
+            r"#+\s*financial\s+(?:analysis|performance|results)",
+            r"#+\s*financials",
+            r"#+\s*(?:\d+[\.\)]\s*)?financial\s+(?:analysis|performance)",
         ],
         SectionType.MARKET_POSITION: [
-            r'#+\s*market\s+position',
-            r'#+\s*(?:\d+[\.\)]\s*)?market\s+(?:position|capitalization)',
-            r'#+\s*valuation',
+            r"#+\s*market\s+position",
+            r"#+\s*(?:\d+[\.\)]\s*)?market\s+(?:position|capitalization)",
+            r"#+\s*valuation",
         ],
         SectionType.COMPETITIVE_ANALYSIS: [
-            r'#+\s*competi(?:tive|tion)\s*(?:analysis|landscape)?',
-            r'#+\s*(?:\d+[\.\)]\s*)?competi(?:tive|tion)',
+            r"#+\s*competi(?:tive|tion)\s*(?:analysis|landscape)?",
+            r"#+\s*(?:\d+[\.\)]\s*)?competi(?:tive|tion)",
         ],
         SectionType.STRATEGY_OUTLOOK: [
-            r'#+\s*strategy',
-            r'#+\s*(?:growth\s+)?outlook',
-            r'#+\s*strategic\s+initiatives',
+            r"#+\s*strategy",
+            r"#+\s*(?:growth\s+)?outlook",
+            r"#+\s*strategic\s+initiatives",
         ],
         SectionType.RISK_ASSESSMENT: [
-            r'#+\s*risks?\s*(?:assessment|factors|analysis)?',
-            r'#+\s*(?:\d+[\.\)]\s*)?risks?\s*(?:&|and)?\s*concerns?',
+            r"#+\s*risks?\s*(?:assessment|factors|analysis)?",
+            r"#+\s*(?:\d+[\.\)]\s*)?risks?\s*(?:&|and)?\s*concerns?",
         ],
         SectionType.INVESTMENT_THESIS: [
-            r'#+\s*investment\s+thesis',
-            r'#+\s*(?:\d+[\.\)]\s*)?investment\s+(?:thesis|recommendation)',
-            r'#+\s*conclusion\s*(?:with\s+)?rating',
+            r"#+\s*investment\s+thesis",
+            r"#+\s*(?:\d+[\.\)]\s*)?investment\s+(?:thesis|recommendation)",
+            r"#+\s*conclusion\s*(?:with\s+)?rating",
         ],
         SectionType.SOURCES: [
-            r'#+\s*sources?',
-            r'#+\s*references?',
-            r'\*\*sources?\*\*',
+            r"#+\s*sources?",
+            r"#+\s*references?",
+            r"\*\*sources?\*\*",
         ],
     }
 
@@ -301,11 +309,7 @@ class ReportQualityEnforcer:
 
         return report
 
-    def _analyze_section(
-        self,
-        content: str,
-        section_type: SectionType
-    ) -> SectionAnalysis:
+    def _analyze_section(self, content: str, section_type: SectionType) -> SectionAnalysis:
         """Analyze a specific section of the report."""
         analysis = SectionAnalysis(section_type=section_type)
         requirements = self.SECTION_REQUIREMENTS.get(section_type, {})
@@ -316,16 +320,20 @@ class ReportQualityEnforcer:
         if not section_text:
             analysis.present = False
             if requirements.get("required", False):
-                analysis.issues.append(QualityIssue(
-                    issue_type=IssueType.MISSING_SECTION,
-                    severity=IssueSeverity.CRITICAL if section_type in [
-                        SectionType.FINANCIAL_ANALYSIS,
-                        SectionType.COMPANY_OVERVIEW
-                    ] else IssueSeverity.MAJOR,
-                    section=section_type,
-                    description=f"Required section '{section_type.value}' is missing",
-                    suggestion=f"Add a {section_type.value.replace('_', ' ')} section"
-                ))
+                analysis.issues.append(
+                    QualityIssue(
+                        issue_type=IssueType.MISSING_SECTION,
+                        severity=(
+                            IssueSeverity.CRITICAL
+                            if section_type
+                            in [SectionType.FINANCIAL_ANALYSIS, SectionType.COMPANY_OVERVIEW]
+                            else IssueSeverity.MAJOR
+                        ),
+                        section=section_type,
+                        description=f"Required section '{section_type.value}' is missing",
+                        suggestion=f"Add a {section_type.value.replace('_', ' ')} section",
+                    )
+                )
             return analysis
 
         analysis.present = True
@@ -338,39 +346,47 @@ class ReportQualityEnforcer:
         analysis.has_metrics = analysis.data_points > 0
 
         # Check for source references
-        analysis.has_sources = bool(re.search(r'\[[^\]]+\]\([^\)]+\)|source:|from:', section_text, re.IGNORECASE))
+        analysis.has_sources = bool(
+            re.search(r"\[[^\]]+\]\([^\)]+\)|source:|from:", section_text, re.IGNORECASE)
+        )
 
         # Check minimum requirements
         min_words = requirements.get("min_words", 50)
         if analysis.word_count < min_words:
-            analysis.issues.append(QualityIssue(
-                issue_type=IssueType.INCOMPLETE_SECTION,
-                severity=IssueSeverity.MAJOR,
-                section=section_type,
-                description=f"Section has {analysis.word_count} words, minimum is {min_words}",
-                suggestion=f"Expand section with more detailed analysis"
-            ))
+            analysis.issues.append(
+                QualityIssue(
+                    issue_type=IssueType.INCOMPLETE_SECTION,
+                    severity=IssueSeverity.MAJOR,
+                    section=section_type,
+                    description=f"Section has {analysis.word_count} words, minimum is {min_words}",
+                    suggestion=f"Expand section with more detailed analysis",
+                )
+            )
 
         min_data = requirements.get("min_data_points", 0)
         if analysis.data_points < min_data:
-            analysis.issues.append(QualityIssue(
-                issue_type=IssueType.MISSING_DATA,
-                severity=IssueSeverity.MAJOR if min_data > 3 else IssueSeverity.MINOR,
-                section=section_type,
-                description=f"Section has {analysis.data_points} data points, minimum is {min_data}",
-                suggestion=f"Add specific metrics and figures"
-            ))
+            analysis.issues.append(
+                QualityIssue(
+                    issue_type=IssueType.MISSING_DATA,
+                    severity=IssueSeverity.MAJOR if min_data > 3 else IssueSeverity.MINOR,
+                    section=section_type,
+                    description=f"Section has {analysis.data_points} data points, minimum is {min_data}",
+                    suggestion=f"Add specific metrics and figures",
+                )
+            )
 
         # Check for vague statements
         vague_count = self._count_vague_statements(section_text)
         if vague_count > 2:
-            analysis.issues.append(QualityIssue(
-                issue_type=IssueType.VAGUE_STATEMENT,
-                severity=IssueSeverity.MAJOR,
-                section=section_type,
-                description=f"Section contains {vague_count} vague or 'data not available' statements",
-                suggestion="Replace vague statements with specific data or research further"
-            ))
+            analysis.issues.append(
+                QualityIssue(
+                    issue_type=IssueType.VAGUE_STATEMENT,
+                    severity=IssueSeverity.MAJOR,
+                    section=section_type,
+                    description=f"Section contains {vague_count} vague or 'data not available' statements",
+                    suggestion="Replace vague statements with specific data or research further",
+                )
+            )
 
         # Calculate completeness
         max_score = 100
@@ -385,11 +401,7 @@ class ReportQualityEnforcer:
 
         return analysis
 
-    def _extract_section(
-        self,
-        content: str,
-        section_type: SectionType
-    ) -> str:
+    def _extract_section(self, content: str, section_type: SectionType) -> str:
         """Extract a section's text from the full content."""
         patterns = self.SECTION_PATTERNS.get(section_type, [])
 
@@ -399,7 +411,7 @@ class ReportQualityEnforcer:
                 start = match.end()
 
                 # Find next section header
-                next_header = re.search(r'\n#+\s', content[start:])
+                next_header = re.search(r"\n#+\s", content[start:])
                 if next_header:
                     end = start + next_header.start()
                 else:
@@ -426,62 +438,74 @@ class ReportQualityEnforcer:
         return count
 
     def _check_global_issues(
-        self,
-        content: str,
-        section_analyses: Dict[SectionType, SectionAnalysis]
+        self, content: str, section_analyses: Dict[SectionType, SectionAnalysis]
     ) -> List[QualityIssue]:
         """Check for issues across the entire report."""
         issues = []
 
         # Check for inconsistent data
         revenue_mentions = re.findall(
-            r'revenue\s+(?:of\s+)?\$?([\d,]+(?:\.\d+)?)\s*(billion|million|B|M)?',
-            content, re.IGNORECASE
+            r"revenue\s+(?:of\s+)?\$?([\d,]+(?:\.\d+)?)\s*(billion|million|B|M)?",
+            content,
+            re.IGNORECASE,
         )
         if len(set(revenue_mentions)) > 2:
-            issues.append(QualityIssue(
-                issue_type=IssueType.INCONSISTENCY,
-                severity=IssueSeverity.MAJOR,
-                section=None,
-                description="Multiple different revenue figures mentioned",
-                suggestion="Verify and use consistent revenue figures throughout"
-            ))
+            issues.append(
+                QualityIssue(
+                    issue_type=IssueType.INCONSISTENCY,
+                    severity=IssueSeverity.MAJOR,
+                    section=None,
+                    description="Multiple different revenue figures mentioned",
+                    suggestion="Verify and use consistent revenue figures throughout",
+                )
+            )
 
         # Check for outdated data
         current_year = utc_now().year
         if f"20{current_year - 3}" in content or f"20{current_year - 4}" in content:
-            issues.append(QualityIssue(
-                issue_type=IssueType.OUTDATED_DATA,
-                severity=IssueSeverity.MINOR,
-                section=None,
-                description="Report contains data from 3+ years ago without recent updates",
-                suggestion="Update with more recent data where available"
-            ))
+            issues.append(
+                QualityIssue(
+                    issue_type=IssueType.OUTDATED_DATA,
+                    severity=IssueSeverity.MINOR,
+                    section=None,
+                    description="Report contains data from 3+ years ago without recent updates",
+                    suggestion="Update with more recent data where available",
+                )
+            )
 
         # Check for missing sources
         source_analysis = section_analyses.get(SectionType.SOURCES)
         if source_analysis and source_analysis.present:
             if source_analysis.data_points < 3:
-                issues.append(QualityIssue(
-                    issue_type=IssueType.MISSING_SOURCE,
-                    severity=IssueSeverity.MAJOR,
-                    section=SectionType.SOURCES,
-                    description="Insufficient sources cited",
-                    suggestion="Add more authoritative sources"
-                ))
+                issues.append(
+                    QualityIssue(
+                        issue_type=IssueType.MISSING_SOURCE,
+                        severity=IssueSeverity.MAJOR,
+                        section=SectionType.SOURCES,
+                        description="Insufficient sources cited",
+                        suggestion="Add more authoritative sources",
+                    )
+                )
 
         return issues
 
     def _calculate_metrics_coverage(self, content: str) -> float:
         """Calculate percentage of key metrics present."""
         key_metrics = [
-            "revenue", "net income", "eps", "market cap",
-            "employees", "margin", "growth", "ebitda"
+            "revenue",
+            "net income",
+            "eps",
+            "market cap",
+            "employees",
+            "margin",
+            "growth",
+            "ebitda",
         ]
 
         found = sum(
-            1 for metric in key_metrics
-            if re.search(rf'{metric}.*\$?[\d,]+', content, re.IGNORECASE)
+            1
+            for metric in key_metrics
+            if re.search(rf"{metric}.*\$?[\d,]+", content, re.IGNORECASE)
         )
 
         return (found / len(key_metrics)) * 100
@@ -489,7 +513,7 @@ class ReportQualityEnforcer:
     def _calculate_source_coverage(self, content: str) -> float:
         """Calculate source coverage score."""
         # Count linked sources
-        sources = re.findall(r'\[[^\]]+\]\([^\)]+\)', content)
+        sources = re.findall(r"\[[^\]]+\]\([^\)]+\)", content)
         source_count = len(sources)
 
         # Ideal is 10+ sources
@@ -576,7 +600,8 @@ class ReportQualityEnforcer:
 
         # Missing sections
         missing_sections = [
-            s for s, a in report.section_analyses.items()
+            s
+            for s, a in report.section_analyses.items()
             if not a.present and self.SECTION_REQUIREMENTS.get(s, {}).get("required", False)
         ]
         if missing_sections:
@@ -626,7 +651,9 @@ class ReportQualityEnforcer:
         }
         emoji = status_emoji.get(report.quality_level, "🟡")
 
-        lines.append(f"**Overall Score:** {emoji} {report.overall_score:.1f}/100 ({report.quality_level.value.title()})")
+        lines.append(
+            f"**Overall Score:** {emoji} {report.overall_score:.1f}/100 ({report.quality_level.value.title()})"
+        )
         lines.append(f"**Publishable:** {'✅ Yes' if report.publishable else '❌ No'}")
         lines.append("")
 

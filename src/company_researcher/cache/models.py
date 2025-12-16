@@ -37,25 +37,28 @@ from typing import Any, Dict, List, Optional
 
 class SourceQuality(str, Enum):
     """Quality tier of a data source."""
-    PRIMARY = "primary"         # Official sources (SEC, company website)
-    HIGH = "high"               # Reputable news, financial APIs
-    MEDIUM = "medium"           # General web search results
-    LOW = "low"                 # User-generated, unverified
+
+    PRIMARY = "primary"  # Official sources (SEC, company website)
+    HIGH = "high"  # Reputable news, financial APIs
+    MEDIUM = "medium"  # General web search results
+    LOW = "low"  # User-generated, unverified
     UNKNOWN = "unknown"
 
 
 class DataCompleteness(str, Enum):
     """Completeness level of company data."""
-    COMPLETE = "complete"       # All major sections present
-    SUBSTANTIAL = "substantial" # Most important data present
-    PARTIAL = "partial"         # Some data but major gaps
-    MINIMAL = "minimal"         # Very little data
-    EMPTY = "empty"             # No data
+
+    COMPLETE = "complete"  # All major sections present
+    SUBSTANTIAL = "substantial"  # Most important data present
+    PARTIAL = "partial"  # Some data but major gaps
+    MINIMAL = "minimal"  # Very little data
+    EMPTY = "empty"  # No data
 
 
 @dataclass
 class CachedSource:
     """A source used in cached research."""
+
     url: str
     title: str
     domain: str
@@ -94,6 +97,7 @@ class CachedSource:
 @dataclass
 class CachedCompanyData:
     """Cached research data for a company."""
+
     company_name: str
     normalized_name: str
     first_researched: datetime

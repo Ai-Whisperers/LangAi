@@ -10,15 +10,16 @@ Tests cover:
 """
 
 import pytest
+
 from src.company_researcher.agents.research.risk_quantifier import (
+    RISK_INDICATORS,
+    Risk,
+    RiskAssessment,
     RiskCategory,
     RiskLevel,
     RiskProbability,
-    Risk,
-    RiskAssessment,
     RiskQuantifier,
     create_risk_quantifier,
-    RISK_INDICATORS,
 )
 
 
@@ -69,7 +70,7 @@ class TestRiskDataclass:
             impact_score=7.0,
             likelihood_score=8.0,
             risk_score=56.0,
-            description="A test risk"
+            description="A test risk",
         )
 
         assert risk.name == "Test Risk"
@@ -97,7 +98,7 @@ class TestRiskDataclass:
             description="High debt levels",
             mitigation="Reduce debt through equity issuance",
             trend="increasing",
-            source="financial_analysis"
+            source="financial_analysis",
         )
 
         assert risk.mitigation == "Reduce debt through equity issuance"
@@ -118,7 +119,7 @@ class TestRiskAssessmentDataclass:
             impact_score=5.0,
             likelihood_score=5.0,
             risk_score=25.0,
-            description="Test"
+            description="Test",
         )
 
         assessment = RiskAssessment(
@@ -131,7 +132,7 @@ class TestRiskAssessmentDataclass:
             key_risks=["Test Risk: Test"],
             risk_adjusted_metrics={"implied_risk_premium": 3.5},
             recommendations=["Monitor risks"],
-            summary="Test summary"
+            summary="Test summary",
         )
 
         assert assessment.company_name == "Test Corp"
@@ -379,11 +380,7 @@ class TestFinancialRiskAssessment:
 
     def test_multiple_financial_risks(self, quantifier):
         """Test detection of multiple financial risks."""
-        company_data = {
-            "debt_to_equity": 2.5,
-            "profit_margin": 2.0,
-            "revenue_growth": -20.0
-        }
+        company_data = {"debt_to_equity": 2.5, "profit_margin": 2.0, "revenue_growth": -20.0}
         risks = quantifier._assess_financial_risks(company_data)
 
         assert len(risks) == 3
@@ -423,11 +420,7 @@ class TestMarketRiskAssessment:
 
     def test_healthy_market_no_risks(self, quantifier):
         """Test healthy market produces no risks."""
-        market_data = {
-            "market_share": 25.0,
-            "competitors": ["A", "B", "C"],
-            "market_growth": 10.0
-        }
+        market_data = {"market_share": 25.0, "competitors": ["A", "B", "C"], "market_growth": 10.0}
         risks = quantifier._assess_market_risks(market_data)
         assert len(risks) == 0
 
@@ -457,10 +450,7 @@ class TestOperationalRiskAssessment:
 
     def test_healthy_operations_no_risks(self, quantifier):
         """Test healthy operations produce no risks."""
-        company_data = {
-            "employee_turnover": 10.0,
-            "tech_stack_age": 2
-        }
+        company_data = {"employee_turnover": 10.0, "tech_stack_age": 2}
         risks = quantifier._assess_operational_risks(company_data)
         assert len(risks) == 0
 
@@ -479,31 +469,36 @@ class TestOverallScoreCalculation:
 
     def test_single_risk_score(self, quantifier):
         """Test score with single risk."""
-        risks = [Risk(
-            name="Test",
-            category=RiskCategory.FINANCIAL,
-            level=RiskLevel.HIGH,
-            probability=RiskProbability.LIKELY,
-            impact_score=7.0,
-            likelihood_score=7.0,
-            risk_score=49.0,
-            description="Test risk"
-        )]
+        risks = [
+            Risk(
+                name="Test",
+                category=RiskCategory.FINANCIAL,
+                level=RiskLevel.HIGH,
+                probability=RiskProbability.LIKELY,
+                impact_score=7.0,
+                likelihood_score=7.0,
+                risk_score=49.0,
+                description="Test risk",
+            )
+        ]
         score = quantifier._calculate_overall_score(risks)
         assert 0 <= score <= 100
 
     def test_score_bounded(self, quantifier):
         """Test score is bounded between 0 and 100."""
-        high_risks = [Risk(
-            name=f"Risk {i}",
-            category=list(RiskCategory)[i % 7],
-            level=RiskLevel.CRITICAL,
-            probability=RiskProbability.VERY_LIKELY,
-            impact_score=10.0,
-            likelihood_score=10.0,
-            risk_score=100.0,
-            description="High risk"
-        ) for i in range(10)]
+        high_risks = [
+            Risk(
+                name=f"Risk {i}",
+                category=list(RiskCategory)[i % 7],
+                level=RiskLevel.CRITICAL,
+                probability=RiskProbability.VERY_LIKELY,
+                impact_score=10.0,
+                likelihood_score=10.0,
+                risk_score=100.0,
+                description="High risk",
+            )
+            for i in range(10)
+        ]
 
         score = quantifier._calculate_overall_score(high_risks)
         assert score <= 100
@@ -520,15 +515,36 @@ class TestRiskGrouping:
     def test_group_by_category(self, quantifier):
         """Test grouping risks by category."""
         risks = [
-            Risk(name="R1", category=RiskCategory.FINANCIAL, level=RiskLevel.HIGH,
-                 probability=RiskProbability.LIKELY, impact_score=7, likelihood_score=7,
-                 risk_score=49, description="Financial"),
-            Risk(name="R2", category=RiskCategory.FINANCIAL, level=RiskLevel.MEDIUM,
-                 probability=RiskProbability.POSSIBLE, impact_score=5, likelihood_score=5,
-                 risk_score=25, description="Financial 2"),
-            Risk(name="R3", category=RiskCategory.MARKET, level=RiskLevel.LOW,
-                 probability=RiskProbability.UNLIKELY, impact_score=3, likelihood_score=3,
-                 risk_score=9, description="Market"),
+            Risk(
+                name="R1",
+                category=RiskCategory.FINANCIAL,
+                level=RiskLevel.HIGH,
+                probability=RiskProbability.LIKELY,
+                impact_score=7,
+                likelihood_score=7,
+                risk_score=49,
+                description="Financial",
+            ),
+            Risk(
+                name="R2",
+                category=RiskCategory.FINANCIAL,
+                level=RiskLevel.MEDIUM,
+                probability=RiskProbability.POSSIBLE,
+                impact_score=5,
+                likelihood_score=5,
+                risk_score=25,
+                description="Financial 2",
+            ),
+            Risk(
+                name="R3",
+                category=RiskCategory.MARKET,
+                level=RiskLevel.LOW,
+                probability=RiskProbability.UNLIKELY,
+                impact_score=3,
+                likelihood_score=3,
+                risk_score=9,
+                description="Market",
+            ),
         ]
 
         grouped = quantifier._group_by_category(risks)
@@ -549,12 +565,26 @@ class TestRiskMatrix:
     def test_generate_risk_matrix(self, quantifier):
         """Test risk matrix generation."""
         risks = [
-            Risk(name="R1", category=RiskCategory.FINANCIAL, level=RiskLevel.HIGH,
-                 probability=RiskProbability.LIKELY, impact_score=7, likelihood_score=8,
-                 risk_score=56, description="Test"),
-            Risk(name="R2", category=RiskCategory.FINANCIAL, level=RiskLevel.MEDIUM,
-                 probability=RiskProbability.POSSIBLE, impact_score=5, likelihood_score=4,
-                 risk_score=20, description="Test 2"),
+            Risk(
+                name="R1",
+                category=RiskCategory.FINANCIAL,
+                level=RiskLevel.HIGH,
+                probability=RiskProbability.LIKELY,
+                impact_score=7,
+                likelihood_score=8,
+                risk_score=56,
+                description="Test",
+            ),
+            Risk(
+                name="R2",
+                category=RiskCategory.FINANCIAL,
+                level=RiskLevel.MEDIUM,
+                probability=RiskProbability.POSSIBLE,
+                impact_score=5,
+                likelihood_score=4,
+                risk_score=20,
+                description="Test 2",
+            ),
         ]
 
         matrix = quantifier._generate_risk_matrix(risks)
@@ -578,15 +608,36 @@ class TestKeyRisksIdentification:
     def test_identify_key_risks_sorted(self, quantifier):
         """Test key risks are sorted by score."""
         risks = [
-            Risk(name="Low", category=RiskCategory.MARKET, level=RiskLevel.LOW,
-                 probability=RiskProbability.RARE, impact_score=2, likelihood_score=2,
-                 risk_score=4, description="Low risk"),
-            Risk(name="High", category=RiskCategory.FINANCIAL, level=RiskLevel.HIGH,
-                 probability=RiskProbability.LIKELY, impact_score=8, likelihood_score=8,
-                 risk_score=64, description="High risk"),
-            Risk(name="Medium", category=RiskCategory.OPERATIONAL, level=RiskLevel.MEDIUM,
-                 probability=RiskProbability.POSSIBLE, impact_score=5, likelihood_score=5,
-                 risk_score=25, description="Medium risk"),
+            Risk(
+                name="Low",
+                category=RiskCategory.MARKET,
+                level=RiskLevel.LOW,
+                probability=RiskProbability.RARE,
+                impact_score=2,
+                likelihood_score=2,
+                risk_score=4,
+                description="Low risk",
+            ),
+            Risk(
+                name="High",
+                category=RiskCategory.FINANCIAL,
+                level=RiskLevel.HIGH,
+                probability=RiskProbability.LIKELY,
+                impact_score=8,
+                likelihood_score=8,
+                risk_score=64,
+                description="High risk",
+            ),
+            Risk(
+                name="Medium",
+                category=RiskCategory.OPERATIONAL,
+                level=RiskLevel.MEDIUM,
+                probability=RiskProbability.POSSIBLE,
+                impact_score=5,
+                likelihood_score=5,
+                risk_score=25,
+                description="Medium risk",
+            ),
         ]
 
         key_risks = quantifier._identify_key_risks(risks)
@@ -596,16 +647,19 @@ class TestKeyRisksIdentification:
 
     def test_identify_key_risks_limit(self, quantifier):
         """Test key risks limited to 5."""
-        risks = [Risk(
-            name=f"Risk {i}",
-            category=RiskCategory.MARKET,
-            level=RiskLevel.MEDIUM,
-            probability=RiskProbability.POSSIBLE,
-            impact_score=5,
-            likelihood_score=5,
-            risk_score=25 + i,
-            description=f"Risk {i}"
-        ) for i in range(10)]
+        risks = [
+            Risk(
+                name=f"Risk {i}",
+                category=RiskCategory.MARKET,
+                level=RiskLevel.MEDIUM,
+                probability=RiskProbability.POSSIBLE,
+                impact_score=5,
+                likelihood_score=5,
+                risk_score=25 + i,
+                description=f"Risk {i}",
+            )
+            for i in range(10)
+        ]
 
         key_risks = quantifier._identify_key_risks(risks)
         assert len(key_risks) == 5
@@ -668,16 +722,18 @@ class TestRecommendationGeneration:
 
     def test_financial_category_recommendation(self, quantifier):
         """Test financial category recommendation."""
-        risks = [Risk(
-            name="Debt",
-            category=RiskCategory.FINANCIAL,
-            level=RiskLevel.HIGH,
-            probability=RiskProbability.LIKELY,
-            impact_score=7,
-            likelihood_score=7,
-            risk_score=49,
-            description="High debt"
-        )]
+        risks = [
+            Risk(
+                name="Debt",
+                category=RiskCategory.FINANCIAL,
+                level=RiskLevel.HIGH,
+                probability=RiskProbability.LIKELY,
+                impact_score=7,
+                likelihood_score=7,
+                risk_score=49,
+                description="High debt",
+            )
+        ]
 
         recommendations = quantifier._generate_recommendations(risks, "C")
 
@@ -685,17 +741,20 @@ class TestRecommendationGeneration:
 
     def test_recommendations_limited(self, quantifier):
         """Test recommendations are limited to 7."""
-        risks = [Risk(
-            name=f"Risk {i}",
-            category=list(RiskCategory)[i % 7],
-            level=RiskLevel.HIGH,
-            probability=RiskProbability.LIKELY,
-            impact_score=8,
-            likelihood_score=8,
-            risk_score=64,
-            description=f"Risk {i}",
-            mitigation=f"Mitigate risk {i}"
-        ) for i in range(10)]
+        risks = [
+            Risk(
+                name=f"Risk {i}",
+                category=list(RiskCategory)[i % 7],
+                level=RiskLevel.HIGH,
+                probability=RiskProbability.LIKELY,
+                impact_score=8,
+                likelihood_score=8,
+                risk_score=64,
+                description=f"Risk {i}",
+                mitigation=f"Mitigate risk {i}",
+            )
+            for i in range(10)
+        ]
 
         recommendations = quantifier._generate_recommendations(risks, "D")
         assert len(recommendations) <= 7
@@ -743,14 +802,10 @@ class TestFullRiskAssessment:
             "debt_to_equity": 2.5,
             "profit_margin": 3.0,
             "revenue_growth": -5.0,
-            "employee_turnover": 25.0
+            "employee_turnover": 25.0,
         }
 
-        market_data = {
-            "market_share": 3.0,
-            "competitors": list(range(15)),
-            "market_growth": -2.0
-        }
+        market_data = {"market_share": 3.0, "competitors": list(range(15)), "market_growth": -2.0}
 
         content = "The company faces intense competition and regulatory scrutiny."
 
@@ -758,7 +813,7 @@ class TestFullRiskAssessment:
             company_name="Risk Corp",
             company_data=company_data,
             market_data=market_data,
-            content=content
+            content=content,
         )
 
         assert isinstance(assessment, RiskAssessment)
@@ -774,16 +829,9 @@ class TestFullRiskAssessment:
         """Test assessment for low-risk company."""
         quantifier = RiskQuantifier()
 
-        company_data = {
-            "debt_to_equity": 0.3,
-            "profit_margin": 25.0,
-            "revenue_growth": 15.0
-        }
+        company_data = {"debt_to_equity": 0.3, "profit_margin": 25.0, "revenue_growth": 15.0}
 
-        assessment = quantifier.assess_risks(
-            company_name="Safe Corp",
-            company_data=company_data
-        )
+        assessment = quantifier.assess_risks(company_name="Safe Corp", company_data=company_data)
 
         # Low risk company should have grade A or B
         assert assessment.risk_grade in ["A", "B"]
@@ -796,19 +844,13 @@ class TestFullRiskAssessment:
             "debt_to_equity": 3.5,
             "profit_margin": 1.0,
             "revenue_growth": -25.0,
-            "employee_turnover": 40.0
+            "employee_turnover": 40.0,
         }
 
-        market_data = {
-            "market_share": 1.0,
-            "competitors": list(range(20)),
-            "market_growth": -10.0
-        }
+        market_data = {"market_share": 1.0, "competitors": list(range(20)), "market_growth": -10.0}
 
         assessment = quantifier.assess_risks(
-            company_name="Risky Corp",
-            company_data=company_data,
-            market_data=market_data
+            company_name="Risky Corp", company_data=company_data, market_data=market_data
         )
 
         # High risk company should have grade D or F
@@ -829,8 +871,7 @@ class TestCreateRiskQuantifier:
         """Test creating quantifier with custom settings."""
         custom_weights = {RiskCategory.MARKET: 0.25}
         quantifier = create_risk_quantifier(
-            custom_weights=custom_weights,
-            risk_tolerance="conservative"
+            custom_weights=custom_weights, risk_tolerance="conservative"
         )
 
         assert quantifier.risk_tolerance == "conservative"

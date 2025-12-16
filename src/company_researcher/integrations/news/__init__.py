@@ -30,13 +30,7 @@ from pathlib import Path
 from threading import Lock
 from typing import Optional
 
-from .models import (
-    NewsProvider,
-    NewsQuality,
-    NewsArticle,
-    NewsSearchResult,
-    ProviderQuota,
-)
+from .models import NewsArticle, NewsProvider, NewsQuality, NewsSearchResult, ProviderQuota
 from .router import NewsRouter
 
 # Re-export all public APIs
@@ -62,8 +56,7 @@ _router_lock = Lock()
 
 
 def get_news_router(
-    cache_dir: Optional[Path] = None,
-    default_quality: NewsQuality = NewsQuality.STANDARD
+    cache_dir: Optional[Path] = None, default_quality: NewsQuality = NewsQuality.STANDARD
 ) -> NewsRouter:
     """
     Get or create singleton news router.
@@ -79,17 +72,12 @@ def get_news_router(
 
     with _router_lock:
         if _news_router is None:
-            _news_router = NewsRouter(
-                cache_dir=cache_dir,
-                default_quality=default_quality
-            )
+            _news_router = NewsRouter(cache_dir=cache_dir, default_quality=default_quality)
         return _news_router
 
 
 async def smart_news_search(
-    query: str,
-    max_results: int = 10,
-    quality: NewsQuality = NewsQuality.STANDARD
+    query: str, max_results: int = 10, quality: NewsQuality = NewsQuality.STANDARD
 ) -> NewsSearchResult:
     """
     Quick function to search news with smart provider routing.
@@ -107,9 +95,7 @@ async def smart_news_search(
 
 
 def smart_news_search_sync(
-    query: str,
-    max_results: int = 10,
-    quality: NewsQuality = NewsQuality.STANDARD
+    query: str, max_results: int = 10, quality: NewsQuality = NewsQuality.STANDARD
 ) -> NewsSearchResult:
     """
     Synchronous version of smart_news_search.

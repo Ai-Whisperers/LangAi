@@ -23,103 +23,94 @@ Usage:
         result = await analyzer.analyze_sentiment(text, company_name)
 """
 
-# Workstream 1: Sentiment Analysis (completed)
-from .sentiment import (
-    get_sentiment_analyzer,
-    AISentimentAnalyzer,
-    SentimentLevel,
-    EntitySentiment,
-    SentimentAnalysisResult,
-    NewsCategorization,
-    NewsCategory,
-    SentimentAggregation,
-)
-
-# Workstream 2: Query Generation (completed)
-from .query import (
-    get_query_generator,
-    AIQueryGenerator,
-    QueryPurpose,
-    CompanyContext,
-    GeneratedQuery,
-    QueryGenerationResult,
-    QueryRefinementResult,
-)
-
-# Workstream 3: Quality Assessment (completed)
-from .quality import (
-    get_quality_assessor,
-    reset_quality_assessor,
-    AIQualityAssessor,
-    QualityLevel,
-    SourceType,
-    ContentQualityAssessment,
-    SourceQualityAssessment,
-    ConfidenceAssessment,
-    SectionRequirements,
-    OverallQualityReport,
+from .base import AIComponent, AIComponentRegistry, get_ai_registry
+from .config import AIComponentConfig, AIConfig, get_ai_config, reset_ai_config, set_ai_config
+from .exceptions import (
+    AIClassificationError,
+    AIComponentError,
+    AICostLimitExceeded,
+    AIExtractionError,
+    AIFallbackTriggered,
+    AIParsingError,
+    AIQualityAssessmentError,
+    AIQueryGenerationError,
+    AISentimentError,
+    AITimeoutError,
 )
 
 # Workstream 4: Data Extraction (completed)
 from .extraction import (
-    get_data_extractor,
-    reset_data_extractor,
     AIDataExtractor,
+    CompanyClassification,
     CompanyType,
+    ContradictionAnalysis,
+    ContradictionSeverity,
+    CountryDetectionResult,
+    ExtractedFact,
+    ExtractionResult,
     FactCategory,
     FactType,
-    ContradictionSeverity,
-    CompanyClassification,
-    ExtractedFact,
     FinancialData,
-    ContradictionAnalysis,
-    ExtractionResult,
-    CountryDetectionResult,
+    get_data_extractor,
+    reset_data_extractor,
 )
-
-from .config import get_ai_config, set_ai_config, reset_ai_config, AIConfig, AIComponentConfig
-from .base import AIComponent, AIComponentRegistry, get_ai_registry
-from .exceptions import (
-    AIComponentError,
-    AIExtractionError,
-    AISentimentError,
-    AIQueryGenerationError,
-    AIQualityAssessmentError,
-    AIClassificationError,
-    AIFallbackTriggered,
-    AICostLimitExceeded,
-    AIParsingError,
-    AITimeoutError,
-)
-from .fallback import (
-    FallbackHandler,
-    FallbackRegistry,
-    get_fallback_registry,
-    with_fallback,
-)
-from .utils import (
-    safe_parse_model,
-    truncate_text,
-    extract_json_from_text,
-    normalize_confidence,
-    merge_results,
-    format_for_prompt,
-    CostTracker,
-)
+from .fallback import FallbackHandler, FallbackRegistry, get_fallback_registry, with_fallback
 
 # Workstream 6: Integration & Migration (completed)
-from .integration import (
-    AIIntegrationLayer,
-    get_ai_integration,
-    reset_ai_integration,
-)
+from .integration import AIIntegrationLayer, get_ai_integration, reset_ai_integration
 from .migration import (
-    MigrationValidator,
-    MigrationRegistry,
     ComparisonResult,
+    MigrationRegistry,
+    MigrationValidator,
     get_migration_registry,
-    reset_migration_registry,
     gradual_rollout,
+    reset_migration_registry,
+)
+
+# Workstream 3: Quality Assessment (completed)
+from .quality import (
+    AIQualityAssessor,
+    ConfidenceAssessment,
+    ContentQualityAssessment,
+    OverallQualityReport,
+    QualityLevel,
+    SectionRequirements,
+    SourceQualityAssessment,
+    SourceType,
+    get_quality_assessor,
+    reset_quality_assessor,
+)
+
+# Workstream 2: Query Generation (completed)
+from .query import (
+    AIQueryGenerator,
+    CompanyContext,
+    GeneratedQuery,
+    QueryGenerationResult,
+    QueryPurpose,
+    QueryRefinementResult,
+    get_query_generator,
+)
+
+# Workstream 1: Sentiment Analysis (completed)
+from .sentiment import (
+    AISentimentAnalyzer,
+    EntitySentiment,
+    NewsCategorization,
+    NewsCategory,
+    SentimentAggregation,
+    SentimentAnalysisResult,
+    SentimentLevel,
+    get_sentiment_analyzer,
+)
+from .utils import (
+    CostTracker,
+    extract_json_from_text,
+    format_for_prompt,
+    merge_results,
+    normalize_confidence,
+    safe_parse_model,
+    truncate_text,
 )
 
 __all__ = [

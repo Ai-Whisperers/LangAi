@@ -1,19 +1,20 @@
 """Tests for ESG models."""
 
-import pytest
 from datetime import datetime, timezone
 
+import pytest
+
 from company_researcher.agents.esg.models import (
-    ESGCategory,
-    ESGRating,
-    ControversySeverity,
-    ESGMetric,
-    Controversy,
-    ESGScore,
-    ESGAnalysis,
     ENVIRONMENTAL_INDICATORS,
-    SOCIAL_INDICATORS,
     GOVERNANCE_INDICATORS,
+    SOCIAL_INDICATORS,
+    Controversy,
+    ControversySeverity,
+    ESGAnalysis,
+    ESGCategory,
+    ESGMetric,
+    ESGRating,
+    ESGScore,
 )
 
 
@@ -77,7 +78,7 @@ class TestESGMetric:
             year=2023,
             trend="improving",
             benchmark=1200,
-            source="Annual Report"
+            source="Annual Report",
         )
         assert metric.name == "Carbon Emissions"
         assert metric.category == ESGCategory.ENVIRONMENTAL
@@ -88,11 +89,7 @@ class TestESGMetric:
 
     def test_metric_defaults(self):
         """ESGMetric should have sensible defaults."""
-        metric = ESGMetric(
-            name="Test",
-            category=ESGCategory.SOCIAL,
-            value=50
-        )
+        metric = ESGMetric(name="Test", category=ESGCategory.SOCIAL, value=50)
         assert metric.unit == ""
         assert metric.year == 0
         assert metric.trend == ""
@@ -107,7 +104,7 @@ class TestESGMetric:
             value=75,
             unit="%",
             year=2023,
-            trend="stable"
+            trend="stable",
         )
         result = metric.to_dict()
 
@@ -132,7 +129,7 @@ class TestControversy:
             date=date,
             resolved=False,
             impact="Significant environmental damage",
-            sources=["https://news.com/article"]
+            sources=["https://news.com/article"],
         )
         assert controversy.title == "Environmental Incident"
         assert controversy.category == ESGCategory.ENVIRONMENTAL
@@ -145,7 +142,7 @@ class TestControversy:
             title="Test",
             description="Test controversy",
             category=ESGCategory.GOVERNANCE,
-            severity=ControversySeverity.LOW
+            severity=ControversySeverity.LOW,
         )
         assert controversy.date is None
         assert controversy.resolved is False
@@ -161,7 +158,7 @@ class TestControversy:
             category=ESGCategory.SOCIAL,
             severity=ControversySeverity.MODERATE,
             date=date,
-            resolved=True
+            resolved=True,
         )
         result = controversy.to_dict()
 
@@ -177,7 +174,7 @@ class TestControversy:
             title="Test",
             description="Test",
             category=ESGCategory.GOVERNANCE,
-            severity=ControversySeverity.LOW
+            severity=ControversySeverity.LOW,
         )
         result = controversy.to_dict()
         assert result["date"] is None
@@ -194,7 +191,7 @@ class TestESGScore:
             environmental_score=80.0,
             social_score=70.0,
             governance_score=76.0,
-            confidence=0.85
+            confidence=0.85,
         )
         assert score.overall_score == 75.5
         assert score.overall_rating == ESGRating.AA
@@ -208,7 +205,7 @@ class TestESGScore:
             overall_rating=ESGRating.BBB,
             environmental_score=50,
             social_score=50,
-            governance_score=50
+            governance_score=50,
         )
         assert score.confidence == 0.0
 
@@ -220,7 +217,7 @@ class TestESGScore:
             environmental_score=70.0,
             social_score=60.0,
             governance_score=65.0,
-            confidence=0.75
+            confidence=0.75,
         )
         result = score.to_dict()
 
@@ -243,14 +240,10 @@ class TestESGAnalysis:
                 overall_rating=ESGRating.A,
                 environmental_score=75.0,
                 social_score=65.0,
-                governance_score=70.0
+                governance_score=70.0,
             ),
             metrics=[
-                ESGMetric(
-                    name="Carbon Emissions",
-                    category=ESGCategory.ENVIRONMENTAL,
-                    value=1000
-                )
+                ESGMetric(name="Carbon Emissions", category=ESGCategory.ENVIRONMENTAL, value=1000)
             ],
             controversies=[],
             environmental_summary="Good environmental practices",
@@ -259,7 +252,7 @@ class TestESGAnalysis:
             strengths=["Low emissions"],
             risks=["Regulatory risk"],
             recommendations=["Improve diversity"],
-            data_sources=["Annual Report"]
+            data_sources=["Annual Report"],
         )
 
     def test_analysis_stores_all_fields(self, sample_analysis):

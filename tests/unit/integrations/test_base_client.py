@@ -8,11 +8,11 @@ import pytest
 
 from company_researcher.integrations.base_client import (
     APIError,
-    RateLimitError,
-    CircuitState,
-    CircuitBreaker,
-    RateLimiter,
     BaseAPIClient,
+    CircuitBreaker,
+    CircuitState,
+    RateLimiter,
+    RateLimitError,
 )
 
 
@@ -77,11 +77,7 @@ class TestCircuitBreakerInit:
 
     def test_custom_thresholds(self):
         """CircuitBreaker should accept custom thresholds."""
-        cb = CircuitBreaker(
-            failure_threshold=10,
-            recovery_timeout=120,
-            success_threshold=5
-        )
+        cb = CircuitBreaker(failure_threshold=10, recovery_timeout=120, success_threshold=5)
         assert cb.failure_threshold == 10
         assert cb.recovery_timeout == 120
         assert cb.success_threshold == 5
@@ -237,6 +233,7 @@ class TestBaseAPIClientInit:
 
     def test_initialization_with_api_key(self):
         """BaseAPIClient should store api_key."""
+
         class TestClient(BaseAPIClient):
             pass
 
@@ -245,6 +242,7 @@ class TestBaseAPIClientInit:
 
     def test_initialization_without_api_key(self):
         """BaseAPIClient should accept no api_key."""
+
         class TestClient(BaseAPIClient):
             pass
 
@@ -253,6 +251,7 @@ class TestBaseAPIClientInit:
 
     def test_cache_parameters(self):
         """BaseAPIClient should initialize cache with parameters."""
+
         class TestClient(BaseAPIClient):
             pass
 
@@ -266,6 +265,7 @@ class TestBaseAPIClientIsAvailable:
 
     def test_available_with_api_key(self):
         """is_available should return True with api_key."""
+
         class TestClient(BaseAPIClient):
             pass
 
@@ -274,6 +274,7 @@ class TestBaseAPIClientIsAvailable:
 
     def test_not_available_without_api_key(self):
         """is_available should return False without api_key."""
+
         class TestClient(BaseAPIClient):
             pass
 
@@ -286,6 +287,7 @@ class TestBaseAPIClientHeaders:
 
     def test_default_headers(self):
         """_get_headers should return default JSON headers."""
+
         class TestClient(BaseAPIClient):
             pass
 
@@ -296,6 +298,7 @@ class TestBaseAPIClientHeaders:
 
     def test_custom_headers(self):
         """_get_headers can be overridden in subclass."""
+
         class TestClient(BaseAPIClient):
             def _get_headers(self):
                 return {"Authorization": f"Bearer {self.api_key}"}
@@ -311,6 +314,7 @@ class TestBaseAPIClientContextManager:
     @pytest.mark.asyncio
     async def test_context_manager_entry(self):
         """Context manager should return client on entry."""
+
         class TestClient(BaseAPIClient):
             pass
 
@@ -320,6 +324,7 @@ class TestBaseAPIClientContextManager:
     @pytest.mark.asyncio
     async def test_context_manager_closes_session(self):
         """Context manager should close session on exit."""
+
         class TestClient(BaseAPIClient):
             pass
 
@@ -341,6 +346,7 @@ class TestBaseAPIClientClose:
     @pytest.mark.asyncio
     async def test_close_with_session(self):
         """close should close active session."""
+
         class TestClient(BaseAPIClient):
             pass
 
@@ -356,6 +362,7 @@ class TestBaseAPIClientClose:
     @pytest.mark.asyncio
     async def test_close_without_session(self):
         """close should handle no session gracefully."""
+
         class TestClient(BaseAPIClient):
             pass
 
@@ -369,6 +376,7 @@ class TestBaseAPIClientRequest:
     @pytest.mark.asyncio
     async def test_request_uses_circuit_breaker(self):
         """_request should check circuit breaker."""
+
         class TestClient(BaseAPIClient):
             BASE_URL = "https://api.example.com"
 
@@ -383,6 +391,7 @@ class TestBaseAPIClientRequest:
     @pytest.mark.asyncio
     async def test_request_cache_hit(self):
         """_request should return cached data for GET."""
+
         class TestClient(BaseAPIClient):
             BASE_URL = "https://api.example.com"
 
@@ -396,14 +405,15 @@ class TestBaseAPIClientRequest:
     @pytest.mark.asyncio
     async def test_request_builds_correct_url(self):
         """_request should build correct URL from BASE_URL and endpoint."""
+
         class TestClient(BaseAPIClient):
             BASE_URL = "https://api.example.com"
 
         client = TestClient()
 
-        with patch.object(client, '_rate_limiter') as mock_limiter:
+        with patch.object(client, "_rate_limiter") as mock_limiter:
             mock_limiter.acquire = AsyncMock()
-            with patch.object(client, '_get_session') as mock_get_session:
+            with patch.object(client, "_get_session") as mock_get_session:
                 mock_session = MagicMock()
                 mock_response = MagicMock()
                 mock_response.status = 200
@@ -427,11 +437,7 @@ class TestCircuitBreakerIntegration:
 
     def test_failure_recovery_cycle(self):
         """Circuit should go through full failure/recovery cycle."""
-        cb = CircuitBreaker(
-            failure_threshold=2,
-            recovery_timeout=1,
-            success_threshold=2
-        )
+        cb = CircuitBreaker(failure_threshold=2, recovery_timeout=1, success_threshold=2)
 
         # Start closed
         assert cb.state == CircuitState.CLOSED

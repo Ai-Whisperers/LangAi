@@ -10,16 +10,16 @@ Base classes and fundamental agents:
 """
 
 from .base import BaseAgent
-from .researcher import researcher_agent_node
 from .company_classifier import (
-    CompanyClassifier,
     CompanyClassification,
+    CompanyClassifier,
     CompanyType,
     Region,
-    get_company_classifier,
     classify_company,
     classify_company_node,
+    get_company_classifier,
 )
+from .researcher import researcher_agent_node
 
 __all__ = [
     # Base

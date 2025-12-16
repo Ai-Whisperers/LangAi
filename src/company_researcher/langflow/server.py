@@ -15,10 +15,11 @@ Usage:
         start_langflow_server()
 """
 
-import sys
 import subprocess
-from typing import Optional, Dict, Any
+import sys
 from pathlib import Path
+from typing import Any, Dict, Optional
+
 from ..utils import get_config, get_logger
 
 logger = get_logger(__name__)
@@ -26,6 +27,7 @@ logger = get_logger(__name__)
 # Check if LangFlow is available
 try:
     import langflow
+
     LANGFLOW_AVAILABLE = True
     LANGFLOW_VERSION = getattr(langflow, "__version__", "unknown")
 except ImportError:
@@ -134,10 +136,16 @@ def start_langflow_server(
 
     # Build command
     cmd = [
-        sys.executable, "-m", "langflow", "run",
-        "--host", host,
-        "--port", str(port),
-        "--log-level", log_level,
+        sys.executable,
+        "-m",
+        "langflow",
+        "run",
+        "--host",
+        host,
+        "--port",
+        str(port),
+        "--log-level",
+        log_level,
     ]
 
     if not open_browser:
@@ -187,10 +195,15 @@ def start_langflow_dev_server(port: int = 7860) -> Optional[subprocess.Popen]:
         raise ImportError("LangFlow is not installed")
 
     cmd = [
-        sys.executable, "-m", "langflow", "run",
-        "--port", str(port),
+        sys.executable,
+        "-m",
+        "langflow",
+        "run",
+        "--port",
+        str(port),
         "--dev",
-        "--log-level", "debug",
+        "--log-level",
+        "debug",
     ]
 
     components_path = Path(__file__).parent / "components.py"
@@ -266,6 +279,7 @@ def get_langflow_status() -> Dict[str, Any]:
         # List available components
         try:
             from .components import COMPONENT_REGISTRY
+
             status["components"] = list(COMPONENT_REGISTRY.keys())
         except ImportError:
             status["components"] = []
@@ -288,9 +302,13 @@ def print_langflow_info():
             for comp in status["components"]:
                 print(f"    - {comp}")
         print(f"\n  Start server with:")
-        print(f"    python -c \"from company_researcher.langflow import start_langflow_server; start_langflow_server()\"")
+        print(
+            f'    python -c "from company_researcher.langflow import start_langflow_server; start_langflow_server()"'
+        )
         print(f"\n  Or via CLI:")
-        print(f"    langflow run --components-path {status.get('components_path', 'path/to/components.py')}")
+        print(
+            f"    langflow run --components-path {status.get('components_path', 'path/to/components.py')}"
+        )
     else:
         print("  Installed: No")
         print("\n  Install with:")

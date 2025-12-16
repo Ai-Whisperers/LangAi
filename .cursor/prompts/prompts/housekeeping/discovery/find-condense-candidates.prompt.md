@@ -108,4 +108,3 @@ Surface prompts/rules that should be condensed by checking size, example density
 
 - `.cursor/rules/prompts/prompt-creation-rule.mdc`
 - `.cursor/rules/prompts/prompt-registry-integration-rule.mdc`
-

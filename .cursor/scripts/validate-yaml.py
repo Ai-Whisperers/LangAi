@@ -64,7 +64,9 @@ def validate_file(file_path: Path) -> tuple[bool, str | None]:
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate YAML files.")
-    parser.add_argument("paths", nargs="*", help="Files or directories to check (default: current directory).")
+    parser.add_argument(
+        "paths", nargs="*", help="Files or directories to check (default: current directory)."
+    )
     parser.add_argument("--recurse", action="store_true", help="Recurse into subdirectories.")
     parser.add_argument("--fail-fast", action="store_true", help="Stop after first failure.")
     return parser.parse_args(argv)
@@ -94,7 +96,9 @@ def main(argv: list[str]) -> int:
                 break
 
     if failures:
-        print(f"\nERROR: YAML validation failed ({failures} invalid file{'s' if failures != 1 else ''}).")
+        print(
+            f"\nERROR: YAML validation failed ({failures} invalid file{'s' if failures != 1 else ''})."
+        )
         return 1
 
     print(f"\nOK: All YAML files are valid ({len(files)} checked).")
@@ -103,4 +107,3 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
-

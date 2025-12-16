@@ -15,8 +15,9 @@ Data Source Hierarchy:
 """
 
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
@@ -24,6 +25,7 @@ logger = get_logger(__name__)
 
 class CompanyType(str, Enum):
     """Type of company entity."""
+
     PUBLIC = "public"
     PRIVATE = "private"
     SUBSIDIARY = "subsidiary"
@@ -34,6 +36,7 @@ class CompanyType(str, Enum):
 
 class Region(str, Enum):
     """Geographic regions."""
+
     NORTH_AMERICA = "north_america"
     LATIN_AMERICA = "latin_america"
     EUROPE = "europe"
@@ -46,6 +49,7 @@ class Region(str, Enum):
 @dataclass
 class CompanyClassification:
     """Result of company classification."""
+
     company_name: str
     is_public: bool = False
     ticker: Optional[str] = None
@@ -94,56 +98,131 @@ STOCK_EXCHANGES: Dict[Region, List[str]] = {
 COMPANY_SUFFIXES: Dict[Region, List[str]] = {
     Region.NORTH_AMERICA: ["Inc.", "Inc", "Corp.", "Corp", "Corporation", "LLC", "LP", "Co."],
     Region.LATIN_AMERICA: ["S.A.", "SA", "S.A.B.", "SAPI", "S. de R.L.", "Ltda.", "Cia."],
-    Region.EUROPE: ["PLC", "plc", "AG", "GmbH", "SE", "N.V.", "B.V.", "S.p.A.", "SARL", "SAS", "AB"],
+    Region.EUROPE: [
+        "PLC",
+        "plc",
+        "AG",
+        "GmbH",
+        "SE",
+        "N.V.",
+        "B.V.",
+        "S.p.A.",
+        "SARL",
+        "SAS",
+        "AB",
+    ],
     Region.ASIA_PACIFIC: ["Ltd", "Limited", "KK", "Pty", "Bhd", "Pte", "Co., Ltd."],
 }
 
 # Known LATAM conglomerates (for quick detection)
 LATAM_CONGLOMERATES = [
-    "GRUPO", "CEMEX", "FEMSA", "BIMBO", "TELEVISA", "PETROBRAS", "VALE",
-    "ITAU", "BRADESCO", "AMBEV", "FALABELLA", "CENCOSUD", "COPEC", "CMPC",
-    "ARCOR", "TECHINT", "ODEBRECHT", "CAMARGO", "ANDRADE", "JBS", "BRF",
-    "GERDAU", "SUZANO", "EMBRAER", "WEG", "NATURA", "GLOBO", "VOTORANTIM",
-    "LUKSIC", "MATTE", "ANGELINI", "SAIEH", "GILINSKI", "SANTO DOMINGO",
-    "CARSO", "SLIM", "SALINAS", "ALFA", "GRUMA", "SORIANA", "ELEKTRA",
+    "GRUPO",
+    "CEMEX",
+    "FEMSA",
+    "BIMBO",
+    "TELEVISA",
+    "PETROBRAS",
+    "VALE",
+    "ITAU",
+    "BRADESCO",
+    "AMBEV",
+    "FALABELLA",
+    "CENCOSUD",
+    "COPEC",
+    "CMPC",
+    "ARCOR",
+    "TECHINT",
+    "ODEBRECHT",
+    "CAMARGO",
+    "ANDRADE",
+    "JBS",
+    "BRF",
+    "GERDAU",
+    "SUZANO",
+    "EMBRAER",
+    "WEG",
+    "NATURA",
+    "GLOBO",
+    "VOTORANTIM",
+    "LUKSIC",
+    "MATTE",
+    "ANGELINI",
+    "SAIEH",
+    "GILINSKI",
+    "SANTO DOMINGO",
+    "CARSO",
+    "SLIM",
+    "SALINAS",
+    "ALFA",
+    "GRUMA",
+    "SORIANA",
+    "ELEKTRA",
 ]
 
 # Country to region mapping
 COUNTRY_REGION_MAP = {
     # North America
-    "US": Region.NORTH_AMERICA, "USA": Region.NORTH_AMERICA,
-    "CA": Region.NORTH_AMERICA, "MX": Region.NORTH_AMERICA,
+    "US": Region.NORTH_AMERICA,
+    "USA": Region.NORTH_AMERICA,
+    "CA": Region.NORTH_AMERICA,
+    "MX": Region.NORTH_AMERICA,
     # Latin America
-    "BR": Region.LATIN_AMERICA, "AR": Region.LATIN_AMERICA,
-    "CL": Region.LATIN_AMERICA, "CO": Region.LATIN_AMERICA,
-    "PE": Region.LATIN_AMERICA, "VE": Region.LATIN_AMERICA,
-    "EC": Region.LATIN_AMERICA, "UY": Region.LATIN_AMERICA,
-    "PY": Region.LATIN_AMERICA, "BO": Region.LATIN_AMERICA,
-    "CR": Region.LATIN_AMERICA, "PA": Region.LATIN_AMERICA,
-    "GT": Region.LATIN_AMERICA, "HN": Region.LATIN_AMERICA,
-    "SV": Region.LATIN_AMERICA, "NI": Region.LATIN_AMERICA,
+    "BR": Region.LATIN_AMERICA,
+    "AR": Region.LATIN_AMERICA,
+    "CL": Region.LATIN_AMERICA,
+    "CO": Region.LATIN_AMERICA,
+    "PE": Region.LATIN_AMERICA,
+    "VE": Region.LATIN_AMERICA,
+    "EC": Region.LATIN_AMERICA,
+    "UY": Region.LATIN_AMERICA,
+    "PY": Region.LATIN_AMERICA,
+    "BO": Region.LATIN_AMERICA,
+    "CR": Region.LATIN_AMERICA,
+    "PA": Region.LATIN_AMERICA,
+    "GT": Region.LATIN_AMERICA,
+    "HN": Region.LATIN_AMERICA,
+    "SV": Region.LATIN_AMERICA,
+    "NI": Region.LATIN_AMERICA,
     # Europe
-    "GB": Region.EUROPE, "UK": Region.EUROPE,
-    "DE": Region.EUROPE, "FR": Region.EUROPE,
-    "ES": Region.EUROPE, "IT": Region.EUROPE,
-    "NL": Region.EUROPE, "CH": Region.EUROPE,
-    "SE": Region.EUROPE, "NO": Region.EUROPE,
-    "DK": Region.EUROPE, "FI": Region.EUROPE,
-    "BE": Region.EUROPE, "AT": Region.EUROPE,
-    "PT": Region.EUROPE, "IE": Region.EUROPE,
+    "GB": Region.EUROPE,
+    "UK": Region.EUROPE,
+    "DE": Region.EUROPE,
+    "FR": Region.EUROPE,
+    "ES": Region.EUROPE,
+    "IT": Region.EUROPE,
+    "NL": Region.EUROPE,
+    "CH": Region.EUROPE,
+    "SE": Region.EUROPE,
+    "NO": Region.EUROPE,
+    "DK": Region.EUROPE,
+    "FI": Region.EUROPE,
+    "BE": Region.EUROPE,
+    "AT": Region.EUROPE,
+    "PT": Region.EUROPE,
+    "IE": Region.EUROPE,
     "PL": Region.EUROPE,
     # Asia Pacific
-    "JP": Region.ASIA_PACIFIC, "CN": Region.ASIA_PACIFIC,
-    "HK": Region.ASIA_PACIFIC, "IN": Region.ASIA_PACIFIC,
-    "KR": Region.ASIA_PACIFIC, "SG": Region.ASIA_PACIFIC,
-    "AU": Region.ASIA_PACIFIC, "NZ": Region.ASIA_PACIFIC,
-    "TW": Region.ASIA_PACIFIC, "TH": Region.ASIA_PACIFIC,
-    "ID": Region.ASIA_PACIFIC, "MY": Region.ASIA_PACIFIC,
-    "PH": Region.ASIA_PACIFIC, "VN": Region.ASIA_PACIFIC,
+    "JP": Region.ASIA_PACIFIC,
+    "CN": Region.ASIA_PACIFIC,
+    "HK": Region.ASIA_PACIFIC,
+    "IN": Region.ASIA_PACIFIC,
+    "KR": Region.ASIA_PACIFIC,
+    "SG": Region.ASIA_PACIFIC,
+    "AU": Region.ASIA_PACIFIC,
+    "NZ": Region.ASIA_PACIFIC,
+    "TW": Region.ASIA_PACIFIC,
+    "TH": Region.ASIA_PACIFIC,
+    "ID": Region.ASIA_PACIFIC,
+    "MY": Region.ASIA_PACIFIC,
+    "PH": Region.ASIA_PACIFIC,
+    "VN": Region.ASIA_PACIFIC,
     # Middle East
-    "SA": Region.MIDDLE_EAST, "AE": Region.MIDDLE_EAST,
-    "IL": Region.MIDDLE_EAST, "EG": Region.MIDDLE_EAST,
-    "QA": Region.MIDDLE_EAST, "KW": Region.MIDDLE_EAST,
+    "SA": Region.MIDDLE_EAST,
+    "AE": Region.MIDDLE_EAST,
+    "IL": Region.MIDDLE_EAST,
+    "EG": Region.MIDDLE_EAST,
+    "QA": Region.MIDDLE_EAST,
+    "KW": Region.MIDDLE_EAST,
 }
 
 
@@ -170,6 +249,7 @@ class CompanyClassifier:
         # SEC EDGAR (FREE)
         try:
             from ...integrations.sec_edgar import get_sec_edgar
+
             self._sec_edgar = get_sec_edgar()
             logger.info("SEC EDGAR integration available")
         except ImportError:
@@ -178,6 +258,7 @@ class CompanyClassifier:
         # Wikipedia (FREE)
         try:
             from ...integrations.wikipedia_client import get_wikipedia_client
+
             self._wikipedia = get_wikipedia_client()
             logger.info("Wikipedia integration available")
         except ImportError:
@@ -185,8 +266,9 @@ class CompanyClassifier:
 
         # FMP (requires API key)
         try:
-            from ...integrations.financial_modeling_prep import FMPClient
             from ...config import get_config
+            from ...integrations.financial_modeling_prep import FMPClient
+
             config = get_config()
             if config.fmp_api_key:
                 self._fmp = FMPClient(api_key=config.fmp_api_key)
@@ -300,9 +382,13 @@ class CompanyClassifier:
                 result.sector = infobox.get("products") or infobox.get("services")
 
                 result.confidence = max(result.confidence, 0.75 if result.is_public else 0.6)
-                result.metadata["wikipedia_summary"] = wiki_result.summary[:500] if wiki_result.summary else None
+                result.metadata["wikipedia_summary"] = (
+                    wiki_result.summary[:500] if wiki_result.summary else None
+                )
 
-                logger.info(f"Wikipedia match: exchange={result.exchange}, country={result.country}")
+                logger.info(
+                    f"Wikipedia match: exchange={result.exchange}, country={result.country}"
+                )
         except Exception as e:
             logger.debug(f"Wikipedia check failed: {e}")
 
@@ -348,19 +434,39 @@ class CompanyClassifier:
         location_upper = location.upper()
 
         country_patterns = {
-            "UNITED STATES": "US", "U.S.": "US", "USA": "US", "AMERICA": "US",
-            "BRAZIL": "BR", "BRASIL": "BR",
-            "MEXICO": "MX", "MÉXICO": "MX",
-            "ARGENTINA": "AR", "CHILE": "CL", "COLOMBIA": "CO", "PERU": "PE",
-            "UNITED KINGDOM": "GB", "UK": "GB", "ENGLAND": "GB",
-            "GERMANY": "DE", "DEUTSCHLAND": "DE",
-            "FRANCE": "FR", "SPAIN": "ES", "ESPAÑA": "ES",
-            "ITALY": "IT", "ITALIA": "IT",
-            "NETHERLANDS": "NL", "SWITZERLAND": "CH",
-            "JAPAN": "JP", "CHINA": "CN", "HONG KONG": "HK",
-            "INDIA": "IN", "AUSTRALIA": "AU",
-            "SOUTH KOREA": "KR", "KOREA": "KR",
-            "SINGAPORE": "SG", "TAIWAN": "TW",
+            "UNITED STATES": "US",
+            "U.S.": "US",
+            "USA": "US",
+            "AMERICA": "US",
+            "BRAZIL": "BR",
+            "BRASIL": "BR",
+            "MEXICO": "MX",
+            "MÉXICO": "MX",
+            "ARGENTINA": "AR",
+            "CHILE": "CL",
+            "COLOMBIA": "CO",
+            "PERU": "PE",
+            "UNITED KINGDOM": "GB",
+            "UK": "GB",
+            "ENGLAND": "GB",
+            "GERMANY": "DE",
+            "DEUTSCHLAND": "DE",
+            "FRANCE": "FR",
+            "SPAIN": "ES",
+            "ESPAÑA": "ES",
+            "ITALY": "IT",
+            "ITALIA": "IT",
+            "NETHERLANDS": "NL",
+            "SWITZERLAND": "CH",
+            "JAPAN": "JP",
+            "CHINA": "CN",
+            "HONG KONG": "HK",
+            "INDIA": "IN",
+            "AUSTRALIA": "AU",
+            "SOUTH KOREA": "KR",
+            "KOREA": "KR",
+            "SINGAPORE": "SG",
+            "TAIWAN": "TW",
         }
 
         for pattern, code in country_patterns.items():
@@ -430,10 +536,8 @@ def classify_company_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
     # Check cache first (30 day TTL)
     try:
-        from ...integrations.result_cache import (
-            cache_classification,
-            get_cached_classification
-        )
+        from ...integrations.result_cache import cache_classification, get_cached_classification
+
         cached = get_cached_classification(company_name)
         if cached:
             print(f"  [CACHE HIT] Classification cached for '{company_name}'")
@@ -451,15 +555,18 @@ def classify_company_node(state: Dict[str, Any]) -> Dict[str, Any]:
     classifier = get_company_classifier()
     result = classifier.classify(company_name)
 
-    print(f"  [RESULT] Type: {result.company_type.value}, "
-          f"Public: {result.is_public}, "
-          f"Ticker: {result.ticker}, "
-          f"Region: {result.region.value}")
+    print(
+        f"  [RESULT] Type: {result.company_type.value}, "
+        f"Public: {result.is_public}, "
+        f"Ticker: {result.ticker}, "
+        f"Region: {result.region.value}"
+    )
     print(f"  [SOURCES] {', '.join(result.data_sources)}")
 
     # Cache result for next time (30 days)
     try:
         from ...integrations.result_cache import cache_classification
+
         cache_classification(company_name, result.to_dict())
         print("  [CACHED] Classification saved for 30 days")
     except ImportError:

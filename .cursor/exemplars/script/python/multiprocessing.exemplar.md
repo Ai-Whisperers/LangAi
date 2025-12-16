@@ -28,12 +28,12 @@ def analyze_packages_parallel(packages: List[Package], config: CoverageConfig) -
     """Analyze packages in parallel using all CPU cores."""
     analyze_func = partial(analyze_single_package, config=config)
     num_processes = cpu_count()
-    
+
     logger.info(f"Analyzing {len(packages)} packages using {num_processes} cores")
-    
+
     with Pool(processes=num_processes) as pool:
         results = pool.map(analyze_func, packages)
-    
+
     return results
 
 # 🚀 4-8x faster for CPU-intensive operations
@@ -53,4 +53,3 @@ def analyze_packages_parallel(packages: List[Package], config: CoverageConfig) -
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

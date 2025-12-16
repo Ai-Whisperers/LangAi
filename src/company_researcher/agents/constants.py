@@ -21,10 +21,10 @@ Usage:
 
 from typing import Final
 
-
 # ==============================================================================
 # Formatting Constants
 # ==============================================================================
+
 
 class FormattingConstants:
     """Constants for search result and content formatting."""
@@ -60,6 +60,7 @@ class FormattingConstants:
 # ==============================================================================
 # Extraction Constants
 # ==============================================================================
+
 
 class ExtractionConstants:
     """Constants for text extraction and parsing."""
@@ -100,6 +101,7 @@ class ExtractionConstants:
 # Agent Defaults
 # ==============================================================================
 
+
 class AgentDefaults:
     """Default configuration values for agents."""
 
@@ -131,6 +133,7 @@ class AgentDefaults:
 # ==============================================================================
 # Quality Constants
 # ==============================================================================
+
 
 class QualityConstants:
     """Constants for quality assessment."""
@@ -173,6 +176,7 @@ class QualityConstants:
 # Search Constants
 # ==============================================================================
 
+
 class SearchConstants:
     """Constants for search operations."""
 
@@ -197,6 +201,7 @@ class SearchConstants:
 # ==============================================================================
 # Display Constants
 # ==============================================================================
+
 
 class DisplayConstants:
     """Constants for display and output formatting."""

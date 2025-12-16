@@ -15,22 +15,22 @@
 param(
     [Parameter(Mandatory=$false, HelpMessage="Path to source repository")]
     [string]$SourceRepo = "E:\WPG\Git\E21\GitRepos\eneve.ebase.foundation",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="Path to target repository")]
     [string]$TargetRepo = "E:\WPG\Git\E21\GitRepos\eneve.domain",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="File mask for rules (default: *.mdc)")]
     [string]$RulesMask = "*.mdc",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="File mask for prompts (default: *.md)")]
     [string]$PromptsMask = "*.md",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="File mask for scripts (default: *.ps1)")]
     [string]$ScriptsMask = "*.ps1",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="Rules folder relative path (default: .cursor\rules)")]
     [string]$RulesPath = ".cursor\rules",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="Prompts folder relative path (default: .cursor\prompts)")]
     [string]$PromptsPath = ".cursor\prompts"
 )
@@ -53,10 +53,10 @@ $sourceRulesPath = Join-Path $SourceRepo $RulesPath
 $targetRulesPath = Join-Path $TargetRepo $RulesPath
 
 if (Test-Path $sourceRulesPath) {
-    $sourceRules = Get-ChildItem -Path $sourceRulesPath -Recurse -Filter $RulesMask | 
+    $sourceRules = Get-ChildItem -Path $sourceRulesPath -Recurse -Filter $RulesMask |
         ForEach-Object { $_.FullName.Replace($sourceRulesPath, "").TrimStart('\') }
 
-    $targetRules = Get-ChildItem -Path $targetRulesPath -Recurse -Filter $RulesMask -ErrorAction SilentlyContinue | 
+    $targetRules = Get-ChildItem -Path $targetRulesPath -Recurse -Filter $RulesMask -ErrorAction SilentlyContinue |
         ForEach-Object { $_.FullName.Replace($targetRulesPath, "").TrimStart('\') }
 
     $missingRules = $sourceRules | Where-Object { $_ -notin $targetRules }
@@ -93,11 +93,11 @@ $targetPromptsPath = Join-Path $TargetRepo $PromptsPath
 
 if (Test-Path $sourcePromptsPath) {
     # Get all prompt files from source
-    $sourcePrompts = Get-ChildItem -Path $sourcePromptsPath -Recurse -Filter $PromptsMask | 
+    $sourcePrompts = Get-ChildItem -Path $sourcePromptsPath -Recurse -Filter $PromptsMask |
         ForEach-Object { $_.FullName.Replace($sourcePromptsPath, "").TrimStart('\') }
 
     # Get all prompt files from target
-    $targetPrompts = Get-ChildItem -Path $targetPromptsPath -Recurse -Filter $PromptsMask -ErrorAction SilentlyContinue | 
+    $targetPrompts = Get-ChildItem -Path $targetPromptsPath -Recurse -Filter $PromptsMask -ErrorAction SilentlyContinue |
         ForEach-Object { $_.FullName.Replace($targetPromptsPath, "").TrimStart('\') }
 
     $missingPrompts = $sourcePrompts | Where-Object { $_ -notin $targetPrompts }
@@ -135,11 +135,11 @@ $targetScriptsPath = Join-Path $TargetRepo $PromptsPath
 
 if (Test-Path $sourceScriptsPath) {
     # Get all script files from source
-    $sourceScripts = Get-ChildItem -Path $sourceScriptsPath -Recurse -Filter $ScriptsMask | 
+    $sourceScripts = Get-ChildItem -Path $sourceScriptsPath -Recurse -Filter $ScriptsMask |
         ForEach-Object { $_.FullName.Replace($sourceScriptsPath, "").TrimStart('\') }
 
     # Get all script files from target
-    $targetScripts = Get-ChildItem -Path $targetScriptsPath -Recurse -Filter $ScriptsMask -ErrorAction SilentlyContinue | 
+    $targetScripts = Get-ChildItem -Path $targetScriptsPath -Recurse -Filter $ScriptsMask -ErrorAction SilentlyContinue |
         ForEach-Object { $_.FullName.Replace($targetScriptsPath, "").TrimStart('\') }
 
     $missingScripts = $sourceScripts | Where-Object { $_ -notin $targetScripts }

@@ -27,12 +27,12 @@ import logging
 
 # Import from news package
 from .news import (
+    NewsArticle,
     NewsProvider,
     NewsQuality,
-    NewsArticle,
+    NewsRouter,
     NewsSearchResult,
     ProviderQuota,
-    NewsRouter,
     get_news_router,
     smart_news_search,
     smart_news_search_sync,

@@ -24,6 +24,7 @@ def _utcnow() -> datetime:
 
 class DeduplicationStrategy(str, Enum):
     """How to handle duplicate queries."""
+
     EXACT = "exact"
     NORMALIZED = "normalized"
     SEMANTIC = "semantic"
@@ -33,6 +34,7 @@ class DeduplicationStrategy(str, Enum):
 @dataclass
 class NormalizedQuery:
     """A normalized query representation."""
+
     original: str
     normalized: str
     tokens: Set[str]
@@ -41,7 +43,9 @@ class NormalizedQuery:
     depth: Optional[str] = None
 
     @classmethod
-    def from_query(cls, query: str, company_name: str = None, depth: str = None) -> "NormalizedQuery":
+    def from_query(
+        cls, query: str, company_name: str = None, depth: str = None
+    ) -> "NormalizedQuery":
         """Create normalized query from raw input."""
         normalized = cls._normalize(query)
         tokens = cls._tokenize(normalized)
@@ -52,30 +56,31 @@ class NormalizedQuery:
             tokens=tokens,
             hash=query_hash,
             company_name=company_name,
-            depth=depth
+            depth=depth,
         )
 
     @staticmethod
     def _normalize(query: str) -> str:
         """Normalize query string."""
         normalized = query.lower().strip()
-        normalized = re.sub(r'\s+', ' ', normalized)
-        filler_words = {'the', 'a', 'an', 'and', 'or', 'of', 'for', 'to', 'in', 'on'}
+        normalized = re.sub(r"\s+", " ", normalized)
+        filler_words = {"the", "a", "an", "and", "or", "of", "for", "to", "in", "on"}
         words = normalized.split()
         words = [w for w in words if w not in filler_words]
         words.sort()
-        return ' '.join(words)
+        return " ".join(words)
 
     @staticmethod
     def _tokenize(text: str) -> Set[str]:
         """Extract tokens from text."""
-        tokens = re.findall(r'\b\w+\b', text.lower())
+        tokens = re.findall(r"\b\w+\b", text.lower())
         return set(tokens)
 
 
 @dataclass
 class PendingQuery:
     """A query currently being processed."""
+
     query: NormalizedQuery
     future: asyncio.Future
     started_at: datetime
@@ -89,6 +94,7 @@ class PendingQuery:
 @dataclass
 class QueryDeduplicationStats:
     """Statistics for query deduplication."""
+
     total_queries: int = 0
     deduplicated_queries: int = 0
     coalesced_requests: int = 0
@@ -118,7 +124,7 @@ class QueryDeduplicator:
         similarity_threshold: float = 0.85,
         cache_ttl_seconds: int = 300,
         max_cache_size: int = 1000,
-        enable_coalescence: bool = True
+        enable_coalescence: bool = True,
     ):
         self.strategy = strategy
         self.similarity_threshold = similarity_threshold
@@ -146,7 +152,7 @@ class QueryDeduplicator:
         query: str,
         company_name: str = None,
         depth: str = "standard",
-        executor: Callable = None
+        executor: Callable = None,
     ) -> Tuple[Any, bool]:
         """Deduplicate a query and return result."""
         self._stats.total_queries += 1
@@ -184,11 +190,7 @@ class QueryDeduplicator:
             raise ValueError("No executor provided and query not in cache")
 
         future = asyncio.get_event_loop().create_future()
-        pending_query = PendingQuery(
-            query=normalized,
-            future=future,
-            started_at=_utcnow()
-        )
+        pending_query = PendingQuery(query=normalized, future=future, started_at=_utcnow())
 
         async with self._pending_lock:
             self._pending[normalized.hash] = pending_query
@@ -270,13 +272,15 @@ class QueryDeduplicator:
         if company_name:
             company_lower = company_name.lower()
             to_remove = [
-                q.hash for q in self._recent_queries
+                q.hash
+                for q in self._recent_queries
                 if q.company_name and q.company_name.lower() == company_lower
             ]
             for h in to_remove:
                 self._cache.pop(h, None)
             self._recent_queries = [
-                q for q in self._recent_queries
+                q
+                for q in self._recent_queries
                 if not (q.company_name and q.company_name.lower() == company_lower)
             ]
 
@@ -299,7 +303,9 @@ class RequestCoalescer:
                 future = self._in_flight[key]
         if key in self._in_flight:
             try:
-                result = await asyncio.wait_for(asyncio.shield(future), timeout=self.timeout_seconds)
+                result = await asyncio.wait_for(
+                    asyncio.shield(future), timeout=self.timeout_seconds
+                )
                 return result, True
             except asyncio.TimeoutError:
                 pass
@@ -327,11 +333,21 @@ class CompanyNameNormalizer:
     """Normalizes company names for better matching."""
 
     SUFFIXES = [
-        r'\s+inc\.?$', r'\s+incorporated$', r'\s+corp\.?$',
-        r'\s+corporation$', r'\s+ltd\.?$', r'\s+limited$',
-        r'\s+llc\.?$', r'\s+plc\.?$', r'\s+co\.?$',
-        r'\s+company$', r'\s+&\s+co\.?$', r'\s+group$',
-        r'\s+holdings?$', r'\s+international$', r'\s+intl\.?$'
+        r"\s+inc\.?$",
+        r"\s+incorporated$",
+        r"\s+corp\.?$",
+        r"\s+corporation$",
+        r"\s+ltd\.?$",
+        r"\s+limited$",
+        r"\s+llc\.?$",
+        r"\s+plc\.?$",
+        r"\s+co\.?$",
+        r"\s+company$",
+        r"\s+&\s+co\.?$",
+        r"\s+group$",
+        r"\s+holdings?$",
+        r"\s+international$",
+        r"\s+intl\.?$",
     ]
 
     def __init__(self):
@@ -342,14 +358,24 @@ class CompanyNameNormalizer:
     def _load_common_aliases(self):
         """Load common company aliases."""
         common = {
-            "alphabet": "google", "googl": "google", "goog": "google",
-            "meta platforms": "meta", "facebook": "meta", "fb": "meta",
-            "microsoft corporation": "microsoft", "msft": "microsoft",
-            "apple inc": "apple", "aapl": "apple",
-            "amazon.com": "amazon", "amzn": "amazon",
-            "jpmorgan chase": "jp morgan", "jpm": "jp morgan",
-            "berkshire hathaway": "berkshire", "brk": "berkshire",
-            "exxon mobil": "exxonmobil", "xom": "exxonmobil",
+            "alphabet": "google",
+            "googl": "google",
+            "goog": "google",
+            "meta platforms": "meta",
+            "facebook": "meta",
+            "fb": "meta",
+            "microsoft corporation": "microsoft",
+            "msft": "microsoft",
+            "apple inc": "apple",
+            "aapl": "apple",
+            "amazon.com": "amazon",
+            "amzn": "amazon",
+            "jpmorgan chase": "jp morgan",
+            "jpm": "jp morgan",
+            "berkshire hathaway": "berkshire",
+            "brk": "berkshire",
+            "exxon mobil": "exxonmobil",
+            "xom": "exxonmobil",
         }
         self._aliases.update(common)
 
@@ -371,8 +397,8 @@ class CompanyNameNormalizer:
         if normalized in self._aliases:
             return self._aliases[normalized]
         for suffix_pattern in self.SUFFIXES:
-            normalized = re.sub(suffix_pattern, '', normalized, flags=re.IGNORECASE)
-        normalized = re.sub(r'\s+', ' ', normalized).strip()
+            normalized = re.sub(suffix_pattern, "", normalized, flags=re.IGNORECASE)
+        normalized = re.sub(r"\s+", " ", normalized).strip()
         if normalized in self._aliases:
             return self._aliases[normalized]
         return normalized
@@ -383,16 +409,14 @@ class CompanyNameNormalizer:
 
 
 def create_deduplicator(
-    strategy: str = "hybrid",
-    similarity_threshold: float = 0.85,
-    cache_ttl_seconds: int = 300
+    strategy: str = "hybrid", similarity_threshold: float = 0.85, cache_ttl_seconds: int = 300
 ) -> QueryDeduplicator:
     """Create a query deduplicator with common settings."""
     strategy_enum = DeduplicationStrategy(strategy)
     return QueryDeduplicator(
         strategy=strategy_enum,
         similarity_threshold=similarity_threshold,
-        cache_ttl_seconds=cache_ttl_seconds
+        cache_ttl_seconds=cache_ttl_seconds,
     )
 
 

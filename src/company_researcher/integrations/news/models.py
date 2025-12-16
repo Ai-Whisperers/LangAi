@@ -13,11 +13,13 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Optional
+
 from ...utils import utc_now
 
 
 class NewsProvider(str, Enum):
     """Available news providers."""
+
     GOOGLE_RSS = "google_rss"
     GNEWS = "gnews"
     NEWSAPI = "newsapi"
@@ -26,14 +28,16 @@ class NewsProvider(str, Enum):
 
 class NewsQuality(str, Enum):
     """Quality tier for news search."""
-    FREE = "free"           # Only use free providers
-    STANDARD = "standard"   # Free first, fall back to paid
-    PREMIUM = "premium"     # Use best provider regardless of cost
+
+    FREE = "free"  # Only use free providers
+    STANDARD = "standard"  # Free first, fall back to paid
+    PREMIUM = "premium"  # Use best provider regardless of cost
 
 
 @dataclass
 class NewsArticle:
     """Unified news article format."""
+
     title: str
     description: Optional[str]
     url: str
@@ -57,13 +61,14 @@ class NewsArticle:
             "image_url": self.image_url,
             "author": self.author,
             "content": self.content,
-            "sentiment": self.sentiment
+            "sentiment": self.sentiment,
         }
 
 
 @dataclass
 class NewsSearchResult:
     """Result from a news search."""
+
     query: str
     articles: list[NewsArticle]
     total_results: int
@@ -77,6 +82,7 @@ class NewsSearchResult:
 @dataclass
 class ProviderQuota:
     """Track provider quota usage."""
+
     provider: NewsProvider
     daily_limit: int
     monthly_limit: int

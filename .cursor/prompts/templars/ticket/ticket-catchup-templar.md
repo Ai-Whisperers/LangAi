@@ -20,11 +20,11 @@ Rehydrate context quickly after a pause: rebuild mental model, surface blockers,
 - Files: context.md, progress.md; optional timeline.md, references.md
 
 ## Deterministic Steps
-1) Read context.md for current focus and components  
-2) Read progress.md (latest entries first) for recent actions/decisions  
-3) Read timeline.md if present for sequence; note if missing  
-4) Summarize: current state, blockers, decisions, risks  
-5) Propose next 3 steps; call out unknowns/missing artifacts  
+1) Read context.md for current focus and components
+2) Read progress.md (latest entries first) for recent actions/decisions
+3) Read timeline.md if present for sequence; note if missing
+4) Summarize: current state, blockers, decisions, risks
+5) Propose next 3 steps; call out unknowns/missing artifacts
 
 ## Expected Output
 - Catch-up summary (2–3 bullets)
@@ -42,4 +42,3 @@ Rehydrate context quickly after a pause: rebuild mental model, surface blockers,
 ```
 @catchup-on-ticket PROMPTS-EXTRACT
 ```
-

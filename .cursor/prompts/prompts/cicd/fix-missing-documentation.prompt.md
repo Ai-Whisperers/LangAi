@@ -60,7 +60,7 @@ Requirements:
 - Use /// XML comments for all public classes, methods, properties
 - Include <summary> for all members
 - Add <param> tags for all method parameters
-- Add <returns> tags for methods with return values  
+- Add <returns> tags for methods with return values
 - Add <exception> tags for thrown exceptions
 - Write clear, concise descriptions
 - Use complete sentences
@@ -72,7 +72,7 @@ Make documentation helpful for API consumers.
 ### For Multiple Files
 
 ```
-Scan the entire src/<PROJECT> directory and add XML documentation 
+Scan the entire src/<PROJECT> directory and add XML documentation
 to all undocumented public members. Process file by file and show progress.
 ```
 
@@ -189,10 +189,10 @@ Before considering documentation complete:
 
 ## Success Criteria
 
-✅ Zero CS1591 warnings  
-✅ All public APIs documented  
-✅ XML file generated  
-✅ Documentation passes validation  
+✅ Zero CS1591 warnings
+✅ All public APIs documented
+✅ XML file generated
+✅ Documentation passes validation
 ✅ Ready for commit
 
 ## Related Prompts
@@ -212,7 +212,6 @@ Before considering documentation complete:
 
 ---
 
-**Created**: 2024-11-15 (Original prompt creation)  
-**Updated**: 2025-12-08 (PROMPTS-OPTIMIZE: Added Pattern metadata, Purpose, User Process, Related Prompts/Rules, Fixed frontmatter YAML)  
+**Created**: 2024-11-15 (Original prompt creation)
+**Updated**: 2025-12-08 (PROMPTS-OPTIMIZE: Added Pattern metadata, Purpose, User Process, Related Prompts/Rules, Fixed frontmatter YAML)
 **Rule**: `rule.prompts.creation.v1`, `rule.prompts.registry-integration.v1`
-

@@ -11,15 +11,16 @@ Tests cover:
 """
 
 import pytest
+
 from src.company_researcher.agents.research.investment_thesis import (
-    InvestmentRecommendation,
-    InvestmentHorizon,
-    InvestorProfile,
-    BullCase,
     BearCase,
-    ValuationMetrics,
+    BullCase,
+    InvestmentHorizon,
+    InvestmentRecommendation,
     InvestmentThesis,
     InvestmentThesisGenerator,
+    InvestorProfile,
+    ValuationMetrics,
     create_thesis_generator,
 )
 
@@ -62,7 +63,7 @@ class TestBullCaseDataclass:
             catalysts=["New products", "Acquisitions"],
             target_upside=30.0,
             probability=0.45,
-            timeframe="18 months"
+            timeframe="18 months",
         )
 
         assert bull.headline == "Strong growth potential"
@@ -84,7 +85,7 @@ class TestBearCaseDataclass:
             triggers=["New entrants", "Price war"],
             target_downside=25.0,
             probability=0.3,
-            timeframe="12 months"
+            timeframe="12 months",
         )
 
         assert bear.headline == "Downside risk scenario"
@@ -119,7 +120,7 @@ class TestValuationMetricsDataclass:
             price_to_book=2.5,
             peer_average_pe=18.0,
             dcf_value=115.0,
-            valuation_grade="B"
+            valuation_grade="B",
         )
 
         assert metrics.current_price == 100.0
@@ -141,8 +142,7 @@ class TestInvestmentThesisGeneratorInit:
     def test_custom_init(self):
         """Test custom initialization."""
         generator = InvestmentThesisGenerator(
-            risk_tolerance="conservative",
-            default_horizon=InvestmentHorizon.LONG_TERM
+            risk_tolerance="conservative", default_horizon=InvestmentHorizon.LONG_TERM
         )
 
         assert generator.risk_tolerance == "conservative"
@@ -168,11 +168,7 @@ class TestValuationAnalysis:
 
     def test_analyze_valuation_with_pe(self, generator):
         """Test valuation analysis with P/E data."""
-        financial_data = {
-            "stock_price": 100.0,
-            "pe_ratio": 15.0,
-            "earnings_per_share": 6.67
-        }
+        financial_data = {"stock_price": 100.0, "pe_ratio": 15.0, "earnings_per_share": 6.67}
         market_data = {"peer_average_pe": 18.0}
 
         valuation = generator._analyze_valuation(financial_data, market_data)
@@ -294,7 +290,7 @@ class TestBearCaseGeneration:
         """Test bear case incorporates risk assessment."""
         risk_assessment = {
             "key_risks": ["Competition risk", "Regulatory risk"],
-            "overall_risk_score": 70
+            "overall_risk_score": 70,
         }
 
         bear = generator._generate_bear_case({}, {}, risk_assessment)
@@ -320,12 +316,20 @@ class TestUpsideCalculation:
         """Test upside calculation from valuation."""
         valuation = ValuationMetrics(upside_potential=25.0)
         bull = BullCase(
-            headline="Test", key_drivers=[], catalysts=[],
-            target_upside=30.0, probability=0.4, timeframe="12 months"
+            headline="Test",
+            key_drivers=[],
+            catalysts=[],
+            target_upside=30.0,
+            probability=0.4,
+            timeframe="12 months",
         )
         bear = BearCase(
-            headline="Test", key_risks=[], triggers=[],
-            target_downside=20.0, probability=0.3, timeframe="12 months"
+            headline="Test",
+            key_risks=[],
+            triggers=[],
+            target_downside=20.0,
+            probability=0.3,
+            timeframe="12 months",
         )
 
         upside = generator._calculate_upside(valuation, bull, bear)
@@ -335,12 +339,20 @@ class TestUpsideCalculation:
         """Test upside calculation from bull/bear cases."""
         valuation = ValuationMetrics()  # No upside_potential
         bull = BullCase(
-            headline="Test", key_drivers=[], catalysts=[],
-            target_upside=40.0, probability=0.5, timeframe="12 months"
+            headline="Test",
+            key_drivers=[],
+            catalysts=[],
+            target_upside=40.0,
+            probability=0.5,
+            timeframe="12 months",
         )
         bear = BearCase(
-            headline="Test", key_risks=[], triggers=[],
-            target_downside=20.0, probability=0.3, timeframe="12 months"
+            headline="Test",
+            key_risks=[],
+            triggers=[],
+            target_downside=20.0,
+            probability=0.3,
+            timeframe="12 months",
         )
 
         upside = generator._calculate_upside(valuation, bull, bear)
@@ -402,28 +414,18 @@ class TestConfidenceCalculation:
         market_data = {"market_share": 20.0}
         risk_assessment = {"overall_risk_score": 40, "risk_grade": "B"}
 
-        confidence = generator._calculate_confidence(
-            financial_data, market_data, risk_assessment
-        )
+        confidence = generator._calculate_confidence(financial_data, market_data, risk_assessment)
 
         # 50 + 10 (pe) + 10 (growth) + 10 (share) + 10 (risk) + 5 (grade) = 95
         assert confidence == 95.0
 
     def test_confidence_capped_at_95(self, generator):
         """Test confidence is capped at 95."""
-        financial_data = {
-            "pe_ratio": 15.0,
-            "revenue_growth": 10.0
-        }
+        financial_data = {"pe_ratio": 15.0, "revenue_growth": 10.0}
         market_data = {"market_share": 20.0}
-        risk_assessment = {
-            "overall_risk_score": 40,
-            "risk_grade": "A"
-        }
+        risk_assessment = {"overall_risk_score": 40, "risk_grade": "A"}
 
-        confidence = generator._calculate_confidence(
-            financial_data, market_data, risk_assessment
-        )
+        confidence = generator._calculate_confidence(financial_data, market_data, risk_assessment)
 
         assert confidence <= 95
 
@@ -577,8 +579,12 @@ class TestCatalystsIdentification:
         """Test identifying market catalyst."""
         market_data = {"market_growth": 10.0}
         bull_case = BullCase(
-            headline="Test", key_drivers=[], catalysts=["Growth"],
-            target_upside=20.0, probability=0.4, timeframe="12 months"
+            headline="Test",
+            key_drivers=[],
+            catalysts=["Growth"],
+            target_upside=20.0,
+            probability=0.4,
+            timeframe="12 months",
         )
 
         catalysts = generator._identify_catalysts({}, market_data, bull_case)
@@ -588,8 +594,12 @@ class TestCatalystsIdentification:
         """Test identifying product catalyst."""
         company_data = {"upcoming_products": ["Product X"]}
         bull_case = BullCase(
-            headline="Test", key_drivers=[], catalysts=[],
-            target_upside=20.0, probability=0.4, timeframe="12 months"
+            headline="Test",
+            key_drivers=[],
+            catalysts=[],
+            target_upside=20.0,
+            probability=0.4,
+            timeframe="12 months",
         )
 
         catalysts = generator._identify_catalysts(company_data, {}, bull_case)
@@ -598,9 +608,12 @@ class TestCatalystsIdentification:
     def test_catalysts_limited_to_5(self, generator):
         """Test catalysts are limited to 5."""
         bull_case = BullCase(
-            headline="Test", key_drivers=[],
+            headline="Test",
+            key_drivers=[],
             catalysts=["C1", "C2", "C3", "C4", "C5", "C6"],
-            target_upside=20.0, probability=0.4, timeframe="12 months"
+            target_upside=20.0,
+            probability=0.4,
+            timeframe="12 months",
         )
 
         catalysts = generator._identify_catalysts({}, {}, bull_case)
@@ -617,33 +630,21 @@ class TestRationaleGeneration:
     def test_generate_rationale_includes_company(self, generator):
         """Test rationale includes company name."""
         rationale = generator._generate_rationale(
-            "Test Corp",
-            InvestmentRecommendation.BUY,
-            20.0,
-            ["Growth", "Margins"],
-            ["Competition"]
+            "Test Corp", InvestmentRecommendation.BUY, 20.0, ["Growth", "Margins"], ["Competition"]
         )
         assert "Test Corp" in rationale
 
     def test_generate_rationale_includes_recommendation(self, generator):
         """Test rationale includes recommendation."""
         rationale = generator._generate_rationale(
-            "Test Corp",
-            InvestmentRecommendation.STRONG_BUY,
-            30.0,
-            ["Growth"],
-            ["Risk"]
+            "Test Corp", InvestmentRecommendation.STRONG_BUY, 30.0, ["Growth"], ["Risk"]
         )
         assert "Strong Buy" in rationale
 
     def test_generate_rationale_includes_upside(self, generator):
         """Test rationale includes upside."""
         rationale = generator._generate_rationale(
-            "Test Corp",
-            InvestmentRecommendation.BUY,
-            25.5,
-            [],
-            []
+            "Test Corp", InvestmentRecommendation.BUY, 25.5, [], []
         )
         assert "25.5%" in rationale
 
@@ -657,12 +658,7 @@ class TestSummaryGeneration:
 
     def test_generate_summary(self, generator):
         """Test summary generation."""
-        summary = generator._generate_summary(
-            "Test Corp",
-            InvestmentRecommendation.BUY,
-            20.0,
-            75.0
-        )
+        summary = generator._generate_summary("Test Corp", InvestmentRecommendation.BUY, 20.0, 75.0)
 
         assert "Test Corp" in summary
         assert "Buy" in summary
@@ -684,17 +680,13 @@ class TestFullThesisGeneration:
             "earnings_per_share": 6.67,
             "revenue_growth": 15.0,
             "profit_margin": 20.0,
-            "debt_to_equity": 0.5
+            "debt_to_equity": 0.5,
         }
-        market_data = {
-            "market_share": 20.0,
-            "peer_average_pe": 18.0,
-            "market_growth": 8.0
-        }
+        market_data = {"market_share": 20.0, "peer_average_pe": 18.0, "market_growth": 8.0}
         risk_assessment = {
             "overall_risk_score": 40.0,
             "risk_grade": "B",
-            "key_risks": ["Competition", "Regulation"]
+            "key_risks": ["Competition", "Regulation"],
         }
 
         thesis = generator.generate_thesis(
@@ -702,7 +694,7 @@ class TestFullThesisGeneration:
             company_data=company_data,
             financial_data=financial_data,
             market_data=market_data,
-            risk_assessment=risk_assessment
+            risk_assessment=risk_assessment,
         )
 
         assert isinstance(thesis, InvestmentThesis)
@@ -723,10 +715,7 @@ class TestFullThesisGeneration:
         """Test thesis generation with minimal data."""
         generator = InvestmentThesisGenerator()
 
-        thesis = generator.generate_thesis(
-            company_name="Unknown Corp",
-            company_data={}
-        )
+        thesis = generator.generate_thesis(company_name="Unknown Corp", company_data={})
 
         assert thesis.company_name == "Unknown Corp"
         assert thesis.recommendation is not None
@@ -742,30 +731,27 @@ class TestFullThesisGeneration:
             "pe_ratio": 10.0,
             "earnings_per_share": 10.0,
             "revenue_growth": 30.0,
-            "profit_margin": 25.0
+            "profit_margin": 25.0,
         }
         market_data = {
             "market_share": 30.0,
             "peer_average_pe": 20.0,  # Fair value = 10 * 20 = 200, 100% upside
-            "market_growth": 15.0
+            "market_growth": 15.0,
         }
-        risk_assessment = {
-            "overall_risk_score": 20.0,
-            "risk_grade": "A"
-        }
+        risk_assessment = {"overall_risk_score": 20.0, "risk_grade": "A"}
 
         thesis = generator.generate_thesis(
             company_name="Growth Corp",
             company_data={},
             financial_data=financial_data,
             market_data=market_data,
-            risk_assessment=risk_assessment
+            risk_assessment=risk_assessment,
         )
 
         # With 100% upside and low risk, should be STRONG_BUY
         assert thesis.recommendation in [
             InvestmentRecommendation.STRONG_BUY,
-            InvestmentRecommendation.BUY
+            InvestmentRecommendation.BUY,
         ]
 
     def test_generate_thesis_sell(self):
@@ -777,26 +763,26 @@ class TestFullThesisGeneration:
             "pe_ratio": 50.0,
             "earnings_per_share": 2.0,
             "revenue_growth": -10.0,
-            "debt_to_equity": 3.0
+            "debt_to_equity": 3.0,
         }
         risk_assessment = {
             "overall_risk_score": 80.0,
             "risk_grade": "D",
-            "key_risks": ["High debt", "Revenue decline", "Market loss"]
+            "key_risks": ["High debt", "Revenue decline", "Market loss"],
         }
 
         thesis = generator.generate_thesis(
             company_name="Troubled Corp",
             company_data={},
             financial_data=financial_data,
-            risk_assessment=risk_assessment
+            risk_assessment=risk_assessment,
         )
 
         # With high risk and negative indicators, should be SELL or STRONG_SELL
         assert thesis.recommendation in [
             InvestmentRecommendation.SELL,
             InvestmentRecommendation.STRONG_SELL,
-            InvestmentRecommendation.HOLD
+            InvestmentRecommendation.HOLD,
         ]
 
 
@@ -814,8 +800,7 @@ class TestCreateThesisGenerator:
     def test_create_custom_generator(self):
         """Test creating custom generator."""
         generator = create_thesis_generator(
-            risk_tolerance="aggressive",
-            horizon=InvestmentHorizon.SHORT_TERM
+            risk_tolerance="aggressive", horizon=InvestmentHorizon.SHORT_TERM
         )
 
         assert generator.risk_tolerance == "aggressive"

@@ -23,9 +23,9 @@ Usage:
     )
 """
 
-from typing import Dict, Any, Callable, Optional, List, Union
-from dataclasses import dataclass, field
 import functools
+from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from ...state.workflow import OverallState
 from ...utils import get_logger
@@ -173,9 +173,7 @@ def with_fallback_chain(
 
                 if not _is_failed_result(result):
                     if i > 0 and config.log_fallbacks:
-                        logger.info(
-                            f"[FALLBACK] Succeeded with fallback #{i}: {node.__name__}"
-                        )
+                        logger.info(f"[FALLBACK] Succeeded with fallback #{i}: {node.__name__}")
 
                     if isinstance(result, dict):
                         result["_fallback_index"] = i
@@ -229,6 +227,7 @@ def _is_failed_result(result: Any) -> bool:
 # ============================================================================
 # Error Boundary
 # ============================================================================
+
 
 def create_error_boundary(
     node: Callable,
@@ -298,6 +297,7 @@ def safe_node(
         def my_node(state):
             ...
     """
+
     def decorator(func: Callable) -> Callable:
         return create_error_boundary(func, fallback_value=default_value)
 
@@ -307,6 +307,7 @@ def safe_node(
 # ============================================================================
 # Partial Result Handling
 # ============================================================================
+
 
 def with_partial_results(
     node: Callable,
@@ -330,6 +331,7 @@ def with_partial_results(
         def extraction_node(state):
             ...
     """
+
     @functools.wraps(node)
     def wrapper(state: OverallState) -> Dict[str, Any]:
         try:
@@ -341,9 +343,7 @@ def with_partial_results(
                 if missing:
                     result["_partial_result"] = True
                     result["_missing_required_fields"] = missing
-                    logger.warning(
-                        f"[PARTIAL] {node.__name__} missing required fields: {missing}"
-                    )
+                    logger.warning(f"[PARTIAL] {node.__name__} missing required fields: {missing}")
 
             return result
 
@@ -363,6 +363,7 @@ def with_partial_results(
 # ============================================================================
 # Graceful Degradation
 # ============================================================================
+
 
 class GracefulDegradation:
     """

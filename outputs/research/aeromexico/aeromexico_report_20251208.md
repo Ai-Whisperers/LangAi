@@ -4,7 +4,7 @@
 
 ---
 
-I apologize, but it seems that no actual research sources were provided in your request. Without specific sources to analyze, I cannot create a comprehensive research report about Aeromexico. 
+I apologize, but it seems that no actual research sources were provided in your request. Without specific sources to analyze, I cannot create a comprehensive research report about Aeromexico.
 
 To proceed, I would need:
 1. Specific research sources (academic papers, financial reports, news articles, etc.)
@@ -30,4 +30,3 @@ Would you like me to help you locate appropriate research sources for Aeromexico
 ---
 
 ## Sources
-

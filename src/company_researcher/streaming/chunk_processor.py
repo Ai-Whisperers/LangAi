@@ -8,10 +8,11 @@ Handles:
 - Content assembly
 """
 
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import AsyncIterator, Callable, List, Optional
-import uuid
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -20,6 +21,7 @@ logger = get_logger(__name__)
 def _utcnow() -> datetime:
     """Get current UTC time (timezone-aware)."""
     return datetime.now(timezone.utc)
+
 
 from .stream_wrapper import StreamChunk
 
@@ -31,6 +33,7 @@ class ChunkBuffer:
 
     Supports batching chunks for efficient processing.
     """
+
     buffer_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     max_size: int = 100
     flush_interval: float = 0.1  # seconds
@@ -50,9 +53,9 @@ class ChunkBuffer:
 
         # Check if we should flush
         should_flush = (
-            len(self._chunks) >= self.max_size or
-            chunk.is_final or
-            (_utcnow() - self._last_flush).total_seconds() >= self.flush_interval
+            len(self._chunks) >= self.max_size
+            or chunk.is_final
+            or (_utcnow() - self._last_flush).total_seconds() >= self.flush_interval
         )
 
         if should_flush:
@@ -92,6 +95,7 @@ class ChunkAggregator:
     - Token counts
     - Timing metrics
     """
+
     aggregator_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
     _content: str = ""
@@ -171,11 +175,7 @@ class ChunkProcessor:
             print(processed)
     """
 
-    def __init__(
-        self,
-        buffer_size: int = 100,
-        flush_interval: float = 0.1
-    ):
+    def __init__(self, buffer_size: int = 100, flush_interval: float = 0.1):
         self._buffer = ChunkBuffer(max_size=buffer_size, flush_interval=flush_interval)
         self._aggregator = ChunkAggregator()
         self._filters: List[Callable[[StreamChunk], bool]] = []
@@ -217,10 +217,7 @@ class ChunkProcessor:
             result = transform_fn(result)
         return result
 
-    async def process(
-        self,
-        chunks: AsyncIterator[StreamChunk]
-    ) -> AsyncIterator[StreamChunk]:
+    async def process(self, chunks: AsyncIterator[StreamChunk]) -> AsyncIterator[StreamChunk]:
         """
         Process stream of chunks.
 
@@ -281,7 +278,7 @@ async def process_chunks(
     chunks: AsyncIterator[StreamChunk],
     filters: Optional[List[Callable[[StreamChunk], bool]]] = None,
     transforms: Optional[List[Callable[[StreamChunk], StreamChunk]]] = None,
-    on_chunk: Optional[Callable[[StreamChunk], None]] = None
+    on_chunk: Optional[Callable[[StreamChunk], None]] = None,
 ) -> AsyncIterator[StreamChunk]:
     """
     Convenience function to process chunks.
@@ -313,8 +310,7 @@ async def process_chunks(
 
 
 async def accumulate_response(
-    chunks: AsyncIterator[StreamChunk],
-    include_empty: bool = False
+    chunks: AsyncIterator[StreamChunk], include_empty: bool = False
 ) -> str:
     """
     Accumulate all chunks into a single response string.

@@ -77,4 +77,3 @@ Provide:
 Apply standards from `.cursor/rules/naming-conventions.mdc`.
 
 Note: Do not make changes yet, provide the analysis first.
-

@@ -17,16 +17,15 @@ It uses ParsingMixin for standardized extraction but doesn't inherit from
 BaseSpecialistAgent due to its different input signature.
 """
 
-from typing import Dict, Any, List
 from dataclasses import dataclass, field
+from typing import Any, Dict, List
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
+from ...llm.client_factory import calculate_cost, get_anthropic_client, safe_extract_text
 from ...state import OverallState
-from ...types import InvestmentRating, RiskLevel, MoatStrength, GrowthStage  # Centralized enums
-from ..base import get_agent_logger, create_empty_result
+from ...types import GrowthStage, InvestmentRating, MoatStrength, RiskLevel  # Centralized enums
+from ..base import create_empty_result, get_agent_logger
 from ..base.specialist import ParsingMixin
-
 
 # ============================================================================
 # Data Models
@@ -37,6 +36,7 @@ from ..base.specialist import ParsingMixin
 @dataclass
 class RiskFactor:
     """An identified risk factor."""
+
     category: str  # Market, Financial, Operational, Regulatory, etc.
     description: str
     severity: RiskLevel
@@ -49,13 +49,14 @@ class RiskFactor:
             "description": self.description,
             "severity": self.severity.value,
             "likelihood": self.likelihood,
-            "mitigation": self.mitigation
+            "mitigation": self.mitigation,
         }
 
 
 @dataclass
 class GrowthDriver:
     """A growth driver for the company."""
+
     driver: str
     impact: str  # HIGH/MEDIUM/LOW
     timeline: str  # SHORT/MEDIUM/LONG term
@@ -68,13 +69,14 @@ class GrowthDriver:
             "impact": self.impact,
             "timeline": self.timeline,
             "confidence": self.confidence,
-            "evidence": self.evidence
+            "evidence": self.evidence,
         }
 
 
 @dataclass
 class ValuationMetric:
     """A valuation metric."""
+
     metric: str
     value: str
     benchmark: str
@@ -85,13 +87,14 @@ class ValuationMetric:
             "metric": self.metric,
             "value": self.value,
             "benchmark": self.benchmark,
-            "assessment": self.assessment
+            "assessment": self.assessment,
         }
 
 
 @dataclass
 class InvestmentAnalysisResult:
     """Complete investment analysis result."""
+
     company_name: str
     investment_rating: InvestmentRating = InvestmentRating.HOLD
     overall_risk: RiskLevel = RiskLevel.MODERATE
@@ -126,7 +129,7 @@ class InvestmentAnalysisResult:
             "moat_sources": self.moat_sources,
             "catalysts": self.catalysts,
             "exit_opportunities": self.exit_opportunities,
-            "recommendation": self.recommendation
+            "recommendation": self.recommendation,
         }
 
 
@@ -238,6 +241,7 @@ Begin your investment analysis:"""
 # Investment Analyst Agent
 # ============================================================================
 
+
 class InvestmentAnalystAgent(ParsingMixin):
     """
     Investment Analyst Agent for due diligence.
@@ -268,11 +272,7 @@ class InvestmentAnalystAgent(ParsingMixin):
         self._config = config or get_config()
         self._client = get_anthropic_client()
 
-    def analyze(
-        self,
-        company_name: str,
-        research_data: Dict[str, Any]
-    ) -> InvestmentAnalysisResult:
+    def analyze(self, company_name: str, research_data: Dict[str, Any]) -> InvestmentAnalysisResult:
         """
         Perform investment analysis.
 
@@ -286,22 +286,18 @@ class InvestmentAnalystAgent(ParsingMixin):
         formatted_data = self._format_research_data(research_data)
 
         prompt = INVESTMENT_ANALYSIS_PROMPT.format(
-            company_name=company_name,
-            research_data=formatted_data
+            company_name=company_name, research_data=formatted_data
         )
 
         response = self._client.messages.create(
             model=self._config.llm_model,
             max_tokens=self._config.investment_analyst_max_tokens,
             temperature=self._config.investment_analyst_temperature,
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
         )
 
         analysis = safe_extract_text(response, agent_name="investment_analyst")
-        cost = calculate_cost(
-            response.usage.input_tokens,
-            response.usage.output_tokens
-        )
+        cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
 
         result = self._parse_analysis(company_name, analysis)
         result.analysis = analysis
@@ -323,11 +319,7 @@ class InvestmentAnalystAgent(ParsingMixin):
 
         return "\n\n".join(sections[:10]) if sections else "Limited data available"
 
-    def _parse_analysis(
-        self,
-        company_name: str,
-        analysis: str
-    ) -> InvestmentAnalysisResult:
+    def _parse_analysis(self, company_name: str, analysis: str) -> InvestmentAnalysisResult:
         """Parse analysis into structured result."""
         result = InvestmentAnalysisResult(company_name=company_name)
 
@@ -434,7 +426,7 @@ class InvestmentAnalystAgent(ParsingMixin):
         points = []
         if f"{case_type} Case" in analysis:
             start = analysis.find(f"{case_type} Case")
-            section = analysis[start:start+800]
+            section = analysis[start : start + 800]
             lines = section.split("\n")
             for line in lines[1:]:
                 if line.strip().startswith(("1.", "2.", "3.", "4.", "5.", "-", "•")):
@@ -457,13 +449,15 @@ class InvestmentAnalystAgent(ParsingMixin):
 
         for cat in categories:
             if cat in analysis:
-                factors.append(RiskFactor(
-                    category=cat,
-                    description=f"{cat} risk identified",
-                    severity=RiskLevel.MODERATE,
-                    likelihood="MEDIUM",
-                    mitigation="Monitor closely"
-                ))
+                factors.append(
+                    RiskFactor(
+                        category=cat,
+                        description=f"{cat} risk identified",
+                        severity=RiskLevel.MODERATE,
+                        likelihood="MEDIUM",
+                        mitigation="Monitor closely",
+                    )
+                )
 
         return factors[:5]
 
@@ -477,13 +471,15 @@ class InvestmentAnalystAgent(ParsingMixin):
                 if "driver" in line.lower() and "|" not in line:
                     cleaned = line.strip().lstrip("0123456789.-•* ").strip()
                     if cleaned and len(cleaned) > 10:
-                        drivers.append(GrowthDriver(
-                            driver=cleaned[:100],
-                            impact="MEDIUM",
-                            timeline="MEDIUM",
-                            confidence="MEDIUM",
-                            evidence="Research data"
-                        ))
+                        drivers.append(
+                            GrowthDriver(
+                                driver=cleaned[:100],
+                                impact="MEDIUM",
+                                timeline="MEDIUM",
+                                confidence="MEDIUM",
+                                evidence="Research data",
+                            )
+                        )
 
         return drivers[:5]
 
@@ -497,6 +493,7 @@ class InvestmentAnalystAgent(ParsingMixin):
 # ============================================================================
 # Agent Node Function
 # ============================================================================
+
 
 def investment_analyst_agent_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -531,19 +528,16 @@ def investment_analyst_agent_node(state: OverallState) -> Dict[str, Any]:
 
         return {
             "agent_outputs": {
-                "investment": {
-                    **result.to_dict(),
-                    "analysis": result.analysis,
-                    "cost": cost
-                }
+                "investment": {**result.to_dict(), "analysis": result.analysis, "cost": cost}
             },
-            "total_cost": cost
+            "total_cost": cost,
         }
 
 
 # ============================================================================
 # Factory Function
 # ============================================================================
+
 
 def create_investment_analyst() -> InvestmentAnalystAgent:
     """Create an Investment Analyst Agent instance."""

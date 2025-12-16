@@ -6,8 +6,8 @@ MeterProvider, Meter, and metric instruments.
 
 from typing import Dict, List
 
-from .models import MetricPoint
 from ...utils import utc_now
+from .models import MetricPoint
 
 
 class Instrument:
@@ -22,11 +22,9 @@ class Instrument:
 
     def _record(self, value: float, attributes: Dict[str, str] = None) -> None:
         """Record a measurement."""
-        self._points.append(MetricPoint(
-            timestamp=utc_now(),
-            value=value,
-            attributes=attributes or {}
-        ))
+        self._points.append(
+            MetricPoint(timestamp=utc_now(), value=value, attributes=attributes or {})
+        )
 
 
 class Counter(Instrument):
@@ -62,14 +60,14 @@ class Histogram(Instrument):
         # Update bucket counts
         attr_key = str(sorted((attributes or {}).items()))
         if attr_key not in self._buckets:
-            self._buckets[attr_key] = {b: 0 for b in self._boundaries + [float('inf')]}
+            self._buckets[attr_key] = {b: 0 for b in self._boundaries + [float("inf")]}
 
         for boundary in self._boundaries:
             if value <= boundary:
                 self._buckets[attr_key][boundary] += 1
                 break
         else:
-            self._buckets[attr_key][float('inf')] += 1
+            self._buckets[attr_key][float("inf")] += 1
 
 
 class Gauge(Instrument):
@@ -101,7 +99,9 @@ class Meter:
         self._instruments[name] = counter
         return counter
 
-    def create_up_down_counter(self, name: str, description: str = "", unit: str = "") -> UpDownCounter:
+    def create_up_down_counter(
+        self, name: str, description: str = "", unit: str = ""
+    ) -> UpDownCounter:
         """Create an up/down counter metric."""
         counter = UpDownCounter(name, description, unit, self)
         self._instruments[name] = counter
