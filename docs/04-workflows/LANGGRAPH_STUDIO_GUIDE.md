@@ -321,15 +321,18 @@ workflow.add_conditional_edges(
 
 ### LangSmith Integration
 
-Your graphs automatically trace to LangSmith because `.env` has:
+LangSmith tracing is optional. If enabled in `.env`, LangGraph runs can be traced to LangSmith.
+
+Typical `.env` settings:
 ```bash
 LANGCHAIN_TRACING_V2=true
-LANGCHAIN_API_KEY=lsv2_pt_...
+LANGSMITH_API_KEY=lsv2_...
+LANGCHAIN_PROJECT=langai-research
 ```
 
 **View traces:**
 1. Go to https://smith.langchain.com/
-2. Project: `maga-campaign-generator`
+2. Project: value of `LANGCHAIN_PROJECT` (example: `langai-research`)
 3. See every execution with:
    - Input/output for each node
    - Token usage
@@ -339,7 +342,7 @@ LANGCHAIN_API_KEY=lsv2_pt_...
 
 ### Langfuse Integration
 
-Add Langfuse callback to graph:
+Langfuse is also supported (see `env.example` for `LANGFUSE_*` variables). Add a Langfuse callback to a graph invocation:
 
 ```python
 from langfuse.callback import CallbackHandler

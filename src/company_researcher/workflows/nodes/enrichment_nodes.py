@@ -146,9 +146,9 @@ def competitive_analysis_node(state: OverallState) -> Dict[str, Any]:
     # Convert to dict for state storage
     matrix_dict = {
         "company": {
-            "name": matrix.company.name,
-            "scores": matrix.company.scores,
-            "position": matrix.company.position.value if matrix.company.position else None,
+            "name": matrix.company_name,
+            "scores": matrix.matrix_data.get(matrix.company_name, {}),
+            "position": None,
         },
         "competitors": [
             {

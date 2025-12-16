@@ -87,6 +87,12 @@ cp env.example .env   # macOS/Linux
 python run_research.py --company "Microsoft"
 ```
 
+## Codebase Tour
+
+If you want a guided map of the code (entrypoints, workflows, agents, outputs), read:
+
+- [Codebase Tour](CODEBASE_TOUR.md)
+
 ## Project Structure
 
 ```

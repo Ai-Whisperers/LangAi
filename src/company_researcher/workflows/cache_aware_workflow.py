@@ -460,6 +460,84 @@ def research_with_cache(company_name: str, force: bool = False) -> OutputState:
     return output
 
 
+def run_cache_aware_workflow_with_state(
+    company_name: str, force: bool = False
+) -> tuple[OutputState, OverallState]:
+    """
+    Run the cache-aware workflow and return both output and the final workflow state.
+
+    This is the preferred entrypoint for disk-first orchestration because it preserves
+    provenance (queries, per-query search trace, provider stats, scraped_content, etc.).
+
+    Args:
+        company_name: Name of company to research
+        force: If True, research even if cache is complete
+
+    Returns:
+        Tuple of (OutputState, final OverallState)
+    """
+    cache = get_workflow_cache()
+
+    decision = cache.should_research(company_name, force=force)
+    if not decision["needs_research"]:
+        output = _create_output_from_cache(company_name, cache)
+        state = create_initial_state(company_name)
+
+        cached_data = cache.get_company_data(company_name)
+        if cached_data:
+            state["sources"] = cached_data.all_sources
+            state["company_overview"] = cached_data.overview
+            state["competitors"] = cached_data.competitors
+            state["products_services"] = cached_data.products
+            state["risk_profile"] = cached_data.risks
+            state["news_sentiment"] = cached_data.news
+
+        state["report_path"] = output.get("report_path")
+        state["quality_score"] = output.get("metrics", {}).get("quality_score")
+        state["iteration_count"] = output.get("metrics", {}).get("iterations", 0)
+        state["total_cost"] = output.get("metrics", {}).get("cost_usd", 0.0)
+        state["total_tokens"] = output.get("metrics", {}).get("tokens", {"input": 0, "output": 0})
+        return output, state
+
+    from langgraph.graph import END, StateGraph
+
+    workflow = StateGraph(OverallState, input=InputState, output=OutputState)
+    workflow.add_node("check_cache", check_cache_node)
+    workflow.add_node("generate_queries", generate_queries_node)
+    workflow.add_node("search", cache_aware_search_node)
+    workflow.add_node("analyze", analyze_node)
+    workflow.add_node("news_sentiment", news_sentiment_node)
+    workflow.add_node("extract_data", extract_data_node)
+    workflow.add_node("check_quality", check_quality_node)
+    workflow.add_node("merge_cached", merge_with_cached_node)
+    workflow.add_node("store_results", store_results_node)
+    workflow.add_node("competitive_analysis", competitive_analysis_node)
+    workflow.add_node("risk_assessment", risk_assessment_node)
+    workflow.add_node("investment_thesis", investment_thesis_node)
+    workflow.add_node("save_report", save_report_node)
+
+    workflow.set_entry_point("check_cache")
+    workflow.add_edge("check_cache", "generate_queries")
+    workflow.add_edge("generate_queries", "search")
+    workflow.add_edge("search", "analyze")
+    workflow.add_edge("analyze", "news_sentiment")
+    workflow.add_edge("news_sentiment", "extract_data")
+    workflow.add_edge("extract_data", "check_quality")
+    workflow.add_edge("check_quality", "merge_cached")
+    workflow.add_edge("merge_cached", "store_results")
+    workflow.add_edge("store_results", "competitive_analysis")
+    workflow.add_edge("competitive_analysis", "risk_assessment")
+    workflow.add_edge("risk_assessment", "investment_thesis")
+    workflow.add_edge("investment_thesis", "save_report")
+    workflow.add_edge("save_report", END)
+
+    compiled = workflow.compile()
+    initial_state = create_initial_state(company_name)
+    final_state = compiled.invoke(initial_state)
+    output = create_output_state(final_state)
+    return output, final_state
+
+
 def research_gaps_only(company_name: str) -> OutputState:
     """
     Only research missing sections for a company.

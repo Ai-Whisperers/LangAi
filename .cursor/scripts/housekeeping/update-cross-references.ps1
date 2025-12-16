@@ -56,12 +56,27 @@ try {
             $parts = $link -split '#'
             $pathPart = $parts[0]
             if ([string]::IsNullOrWhiteSpace($pathPart)) { continue }
+            $pathPart = $pathPart.Trim()
+
+            # Only validate links that look like local file/folder paths.
+            # This avoids false positives for template placeholders like "repository-url/..." or "link-to-tag".
+            $looksLocal =
+                ($pathPart.StartsWith('./') -or $pathPart.StartsWith('../') -or $pathPart.StartsWith('/') -or $pathPart.StartsWith('.\\') -or $pathPart.StartsWith('..\\')) -or
+                ($pathPart -match '\.(md|mdc|prompt\.md|yml|yaml|json|ps1|py|txt)$')
+            if (-not $looksLocal) { continue }
+
+            $isFolderLink = $pathPart.EndsWith('/') -or $pathPart.EndsWith('\')
+            if ($isFolderLink) { $pathPart = $pathPart.TrimEnd('/', '\') }
             $candidate = if ($pathPart.StartsWith('/')) {
                 Join-Path $root.Path $pathPart.TrimStart('/')
             } else {
                 Join-Path $f.DirectoryName $pathPart
             }
-            if (-not (Test-Path -Path $candidate -PathType Leaf)) {
+            $exists = Test-Path -Path $candidate -PathType Leaf
+            if (-not $exists -and $isFolderLink) {
+                $exists = Test-Path -Path $candidate -PathType Container
+            }
+            if (-not $exists) {
                 $resolvedBase = Resolve-Path -LiteralPath (Split-Path -Path $candidate -Parent) -ErrorAction SilentlyContinue
                 $resolvedPath = $null
                 if ($resolvedBase) {

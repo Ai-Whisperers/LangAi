@@ -256,6 +256,7 @@ my_agent_temperature: float = 0.0
 | [Core Agents](core/) | Researcher, Analyst, Synthesizer |
 | [Specialist Agents](specialists/) | Financial, Market, Product, etc. |
 | [Quality Agents](quality/) | Logic Critic, Quality Checker |
+| [Agents Catalog](AGENTS_CATALOG.md) | Quick code map (agents → files) |
 | [Agent Patterns](../02-architecture/AGENT_PATTERNS.md) | Implementation patterns |
 
 ---

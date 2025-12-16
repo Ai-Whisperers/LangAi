@@ -342,11 +342,14 @@ for event in app.stream({"company_name": "Microsoft"}):
 
 ```json
 {
-    "dependencies": ["."],
-    "graphs": {
-        "company_research": "./src/company_researcher/workflows/parallel_agent_research.py:app"
-    },
-    "env": ".env"
+  "dependencies": [
+    "."
+  ],
+  "graphs": {
+    "company_research": "./src/graphs/research_graph.py:graph",
+    "simple_test": "./src/graphs/simple_graph.py:graph"
+  },
+  "env": ".env"
 }
 ```
 
@@ -376,14 +379,18 @@ langgraph studio
 |----------|----------|-------------|
 | `parallel_agent_research` | `workflows/parallel_agent_research.py` | Main research workflow |
 | `basic_research` | `workflows/basic_research.py` | Simple sequential workflow |
-| `deep_research` | `workflows/deep_research.py` | Comprehensive analysis |
+| `comprehensive_research` | `workflows/comprehensive_research.py` | Full-feature research workflow |
+| `cache_aware_workflow` | `workflows/cache_aware_workflow.py` | Cache-aware workflow helpers |
+| `multi_agent_research` | `workflows/multi_agent_research.py` | Multi-agent workflow variant |
+
+See also: [Workflow Deep Dive](WORKFLOW_DEEP_DIVE.md)
 
 ---
 
 **Related Documentation**:
 - [Agent Documentation](../03-agents/)
 - [State Management](../07-state-management/)
-- [LangGraph Guide](../guides/LANGGRAPH_STUDIO_GUIDE.md)
+- [LangGraph Studio Guide](LANGGRAPH_STUDIO_GUIDE.md)
 
 ---
 

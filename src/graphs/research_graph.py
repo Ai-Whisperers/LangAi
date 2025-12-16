@@ -7,9 +7,8 @@ that can be visualized and executed in LangGraph Studio.
 
 from company_researcher.workflows.comprehensive_research import create_comprehensive_workflow
 
-# Create and compile the workflow for LangGraph Studio
-workflow = create_comprehensive_workflow()
-graph = workflow.compile()
+# `create_comprehensive_workflow()` already returns a compiled LangGraph runnable.
+# LangGraph Studio expects an exported variable (by default `graph`) that is runnable.
+graph = create_comprehensive_workflow()
 
-# Export for LangGraph Studio
-__all__ = ["graph", "workflow"]
+__all__ = ["graph"]

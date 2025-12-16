@@ -8,12 +8,11 @@ This module contains nodes responsible for data gathering:
 - website_scraping_node: Scrape Wikipedia and company websites (FREE)
 """
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 # Date-aware query generation
 from ...agents.base.query_generation import get_leadership_queries, get_market_data_queries
 from ...agents.research.multilingual_search import Region, create_multilingual_generator
-from ...config import get_config
 from ...integrations.search_router import get_search_router
 from ...llm.smart_client import TaskType, get_smart_client
 from ...prompts import GENERATE_QUERIES_PROMPT
@@ -57,7 +56,6 @@ def generate_queries_node(state: OverallState) -> Dict[str, Any]:
     Returns:
         State update with generated queries
     """
-    config = get_config()
     smart_client = get_smart_client()
 
     print(f"\n[NODE] Generating search queries for: {state['company_name']}")
@@ -148,7 +146,7 @@ def generate_queries_node(state: OverallState) -> Dict[str, Any]:
     new_output_tokens = existing_tokens.get("output", 0) + result.output_tokens
 
     return {
-        "queries": all_queries,
+        "search_queries": all_queries,
         "total_cost": state.get("total_cost", 0.0) + result.cost,
         "total_tokens": {"input": new_input_tokens, "output": new_output_tokens},
     }
@@ -174,12 +172,31 @@ def search_node(state: OverallState) -> Dict[str, Any]:
     # Execute searches for each query
     search_results = []
     sources = []
+    search_trace: List[Dict[str, Any]] = []
     total_search_cost = 0.0
 
-    for query in state["queries"][:5]:  # Limit to 5 queries for cost control
+    search_queries = state.get("search_queries", []) or []
+    for query in search_queries[:5]:  # Limit to 5 queries for cost control
         try:
             # Use premium tier for automatic fallback: Tavily → Serper → DuckDuckGo
             response = router.search(query=query, quality="premium", max_results=5)
+
+            # Always record per-query provenance (provider/cost/cache/errors)
+            try:
+                search_trace.append(response.to_dict())
+            except Exception:
+                search_trace.append(
+                    {
+                        "query": query,
+                        "provider": getattr(response, "provider", ""),
+                        "quality_tier": getattr(response, "quality_tier", ""),
+                        "cost": getattr(response, "cost", 0.0),
+                        "cached": getattr(response, "cached", False),
+                        "success": getattr(response, "success", False),
+                        "error": getattr(response, "error", None),
+                        "results": [],
+                    }
+                )
 
             if response.success and response.results:
                 for item in response.results:
@@ -211,14 +228,87 @@ def search_node(state: OverallState) -> Dict[str, Any]:
 
     # Log search stats
     stats = router.get_stats()
-    print(f"[OK] Found {len(search_results)} results from {len(state['queries'][:5])} queries")
+    print(f"[OK] Found {len(search_results)} results from {len(search_queries[:5])} queries")
     print(f"[STATS] Providers used: {stats['by_provider']}")
 
     return {
         "search_results": search_results,
         "sources": sources,
+        "search_trace": search_trace,
+        "search_stats": stats,
         "total_cost": state.get("total_cost", 0.0) + total_search_cost,
     }
+
+
+def _should_skip_sec_edgar(detected_region: str) -> bool:
+    return bool(detected_region and detected_region not in ["north_america", "global", ""])
+
+
+def _add_sec_filing_entries(
+    sec_data: Dict[str, Any],
+    filings: List[Any],
+    *,
+    description: str,
+    limit: int,
+) -> int:
+    added = 0
+    for filing in filings[:limit]:
+        sec_data["filings"].append(
+            {
+                "type": getattr(filing, "form_type", ""),
+                "date": getattr(filing, "filing_date", ""),
+                "url": getattr(filing, "file_url", ""),
+                "description": getattr(filing, "description", None) or description,
+            }
+        )
+        added += 1
+    return added
+
+
+def _populate_sec_filings(edgar: Any, ticker_or_cik: str, sec_data: Dict[str, Any]) -> None:
+    annual_result = edgar.get_10k_filings(ticker_or_cik, years=2)
+    if annual_result.success and annual_result.filings:
+        added = _add_sec_filing_entries(
+            sec_data,
+            annual_result.filings,
+            description="Annual Report",
+            limit=2,
+        )
+        print(f"  [10-K] Found {len(annual_result.filings)} annual reports (saved {added})")
+
+    quarterly_result = edgar.get_10q_filings(ticker_or_cik, quarters=4)
+    if quarterly_result.success and quarterly_result.filings:
+        added = _add_sec_filing_entries(
+            sec_data,
+            quarterly_result.filings,
+            description="Quarterly Report",
+            limit=2,
+        )
+        print(f"  [10-Q] Found {len(quarterly_result.filings)} quarterly reports (saved {added})")
+
+    events_result = edgar.get_8k_filings(ticker_or_cik, max_results=5)
+    if events_result.success and events_result.filings:
+        added = _add_sec_filing_entries(
+            sec_data,
+            events_result.filings,
+            description="Material Event",
+            limit=3,
+        )
+        print(f"  [8-K] Found {len(events_result.filings)} material events (saved {added})")
+
+
+def _build_sec_sources(sec_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    sec_sources: List[Dict[str, Any]] = []
+    for filing in sec_data.get("filings", [])[:5]:
+        sec_sources.append(
+            {
+                "title": f"SEC {filing.get('type')}: {filing.get('description')} ({filing.get('date')})",
+                "url": filing.get("url", ""),
+                "score": 0.95,
+                "source_type": "sec_filing",
+            }
+        )
+    return sec_sources
 
 
 def sec_edgar_node(state: OverallState) -> Dict[str, Any]:
@@ -239,10 +329,10 @@ def sec_edgar_node(state: OverallState) -> Dict[str, Any]:
         return {}
 
     company_name = state["company_name"]
-    detected_region = state.get("detected_region", "")
+    detected_region = state.get("detected_region", "") or ""
 
     # Only fetch SEC data for US/North American companies or if no region detected
-    if detected_region and detected_region not in ["north_america", "global", ""]:
+    if _should_skip_sec_edgar(detected_region):
         print(f"\n[NODE] SEC EDGAR: Non-US region ({detected_region}), skipping")
         return {}
 
@@ -277,59 +367,8 @@ def sec_edgar_node(state: OverallState) -> Dict[str, Any]:
         # Get recent filings
         ticker_or_cik = company.ticker or company.cik
 
-        # Fetch 10-K (annual)
-        annual_result = edgar.get_10k_filings(ticker_or_cik, years=2)
-        if annual_result.success and annual_result.filings:
-            for filing in annual_result.filings[:2]:
-                sec_data["filings"].append(
-                    {
-                        "type": filing.form_type,
-                        "date": filing.filing_date,
-                        "url": filing.file_url,
-                        "description": "Annual Report",
-                    }
-                )
-            print(f"  [10-K] Found {len(annual_result.filings)} annual reports")
-
-        # Fetch 10-Q (quarterly)
-        quarterly_result = edgar.get_10q_filings(ticker_or_cik, quarters=4)
-        if quarterly_result.success and quarterly_result.filings:
-            for filing in quarterly_result.filings[:2]:
-                sec_data["filings"].append(
-                    {
-                        "type": filing.form_type,
-                        "date": filing.filing_date,
-                        "url": filing.file_url,
-                        "description": "Quarterly Report",
-                    }
-                )
-            print(f"  [10-Q] Found {len(quarterly_result.filings)} quarterly reports")
-
-        # Fetch 8-K (material events)
-        events_result = edgar.get_8k_filings(ticker_or_cik, max_results=5)
-        if events_result.success and events_result.filings:
-            for filing in events_result.filings[:3]:
-                sec_data["filings"].append(
-                    {
-                        "type": filing.form_type,
-                        "date": filing.filing_date,
-                        "url": filing.file_url,
-                        "description": filing.description or "Material Event",
-                    }
-                )
-            print(f"  [8-K] Found {len(events_result.filings)} material events")
-
-        # Add SEC sources to the sources list
-        sec_sources = []
-        for filing in sec_data["filings"][:5]:
-            sec_sources.append(
-                {
-                    "title": f"SEC {filing['type']}: {filing['description']} ({filing['date']})",
-                    "url": filing["url"],
-                    "score": 0.95,  # SEC filings are authoritative
-                    "source_type": "sec_filing",
-                }
-            )
+        _populate_sec_filings(edgar, ticker_or_cik, sec_data)
+        sec_sources = _build_sec_sources(sec_data)
 
         # Get existing sources and merge
         existing_sources = list(state.get("sources", []))
@@ -345,6 +384,98 @@ def sec_edgar_node(state: OverallState) -> Dict[str, Any]:
     except Exception as e:
         print(f"  [ERROR] SEC EDGAR error: {e}")
         return {}
+
+
+def _scrape_wikipedia(company_name: str) -> tuple[Dict[str, Any], List[Dict[str, Any]]]:
+    if not WIKIPEDIA_AVAILABLE:
+        return {}, []
+    try:
+        wiki = get_wikipedia_client()
+        wiki_result = wiki.get_company_info(company_name)
+        if not (wiki_result.success and wiki_result.summary):
+            return {}, []
+
+        content = {
+            "wikipedia": {
+                "title": wiki_result.title,
+                "summary": wiki_result.summary[:3000],
+                "url": wiki_result.url,
+                "categories": wiki_result.categories[:5],
+                "infobox": wiki_result.infobox.to_dict() if wiki_result.infobox else None,
+            }
+        }
+        sources = [
+            {
+                "title": f"Wikipedia: {wiki_result.title}",
+                "url": wiki_result.url,
+                "score": 0.85,
+                "source_type": "wikipedia",
+            }
+        ]
+        return content, sources
+    except Exception:
+        return {}, []
+
+
+def _select_company_urls(company_name: str, search_results: List[Dict[str, Any]]) -> List[str]:
+    urls: List[str] = []
+    company_lc = company_name.lower()
+    for result in search_results:
+        url = (result.get("url") or "").strip()
+        title = (result.get("title") or "").lower()
+        if not url:
+            continue
+        url_lc = url.lower()
+        if any(s in url_lc for s in ["linkedin.com", "facebook.com", "twitter.com", "x.com"]):
+            continue
+        if any(
+            term in url_lc for term in ["/about", "/company", "/who-we-are", "/our-story"]
+        ) or any(term in title for term in ["about us", "company", "who we are", company_lc]):
+            urls.append(url)
+
+    deduped: List[str] = []
+    for u in urls:
+        if u not in deduped:
+            deduped.append(u)
+        if len(deduped) >= 2:
+            break
+    return deduped
+
+
+def _scrape_urls_with_jina(urls: List[str]) -> tuple[Dict[str, Any], List[Dict[str, Any]]]:
+    if not (JINA_AVAILABLE and urls):
+        return {}, []
+
+    from ...integrations.jina_reader import get_jina_reader
+
+    reader = get_jina_reader()
+    scraped: Dict[str, Any] = {}
+    sources: List[Dict[str, Any]] = []
+
+    for url in urls:
+        result = reader.read_url(url)
+        if not result.success:
+            continue
+        if not result.content or len(result.content) <= 500:
+            continue
+
+        url_key = url.replace("https://", "").replace("http://", "").replace("/", "_")[:50]
+        scraped[f"website_{url_key}"] = {
+            "url": url,
+            "content": result.content[:5000],
+            "length": len(result.content),
+            "title": result.title,
+        }
+        sources.append(
+            {
+                "title": f"Company Website: {url[:50]}...",
+                "url": url,
+                "score": 0.90,
+                "source_type": "company_website",
+            }
+        )
+
+    return scraped, sources
 
 
 def website_scraping_node(state: OverallState) -> Dict[str, Any]:
@@ -367,102 +498,26 @@ def website_scraping_node(state: OverallState) -> Dict[str, Any]:
 
     print(f"\n[NODE] Scraping company websites for: {company_name}")
 
-    # 1. Wikipedia (always try - FREE and reliable)
-    if WIKIPEDIA_AVAILABLE:
-        try:
-            wiki = get_wikipedia_client()
-            wiki_result = wiki.get_company_info(company_name)
+    wiki_content, wiki_sources = _scrape_wikipedia(company_name)
+    if wiki_content:
+        scraped_content.update(wiki_content)
+        sources.extend(wiki_sources)
+        print("  [WIKI] Added Wikipedia content")
+    else:
+        print(f"  [WIKI] No Wikipedia article found for '{company_name}'")
 
-            if wiki_result.success and wiki_result.summary:
-                scraped_content["wikipedia"] = {
-                    "title": wiki_result.title,
-                    "summary": wiki_result.summary[:3000],  # Limit for LLM context
-                    "url": wiki_result.url,
-                    "categories": wiki_result.categories[:5],
-                    "infobox": wiki_result.infobox.to_dict() if wiki_result.infobox else None,
-                }
-                sources.append(
-                    {
-                        "title": f"Wikipedia: {wiki_result.title}",
-                        "url": wiki_result.url,
-                        "score": 0.85,
-                        "source_type": "wikipedia",
-                    }
-                )
-                print(f"  [WIKI] Found: {wiki_result.title} ({len(wiki_result.summary):,} chars)")
-            else:
-                print(f"  [WIKI] No Wikipedia article found for '{company_name}'")
-        except Exception as e:
-            print(f"  [WIKI] Error: {e}")
-
-    # 2. Company website via Jina Reader (FREE - if we have a URL)
-    if JINA_AVAILABLE:
-        # Find company website URLs from search results
-        company_urls = []
-        search_results = state.get("search_results", [])
-
-        for result in search_results:
-            url = result.get("url", "")
-            title = result.get("title", "").lower()
-
-            # Look for official about pages or company info
-            if any(
-                term in url.lower() for term in ["/about", "/company", "/who-we-are", "/our-story"]
-            ):
-                company_urls.append(url)
-            elif any(
-                term in title
-                for term in ["about us", "company", "who we are", company_name.lower()]
-            ):
-                if "linkedin" not in url and "facebook" not in url and "twitter" not in url:
-                    company_urls.append(url)
-
-        # Limit to first 2 URLs (avoid rate limits)
-        company_urls = company_urls[:2]
-
-        if company_urls:
-            try:
-                import requests
-
-                jina_headers = {"Accept": "text/plain", "User-Agent": "CompanyResearcher/1.0"}
-
-                for url in company_urls:
-                    try:
-                        jina_url = f"https://r.jina.ai/{url}"
-                        resp = requests.get(jina_url, headers=jina_headers, timeout=20)
-
-                        if resp.status_code == 200 and len(resp.text) > 500:
-                            # Limit content for LLM context
-                            content = resp.text[:5000]
-                            url_key = (
-                                url.replace("https://", "")
-                                .replace("http://", "")
-                                .replace("/", "_")[:50]
-                            )
-
-                            scraped_content[f"website_{url_key}"] = {
-                                "url": url,
-                                "content": content,
-                                "length": len(resp.text),
-                            }
-                            sources.append(
-                                {
-                                    "title": f"Company Website: {url[:50]}...",
-                                    "url": url,
-                                    "score": 0.90,
-                                    "source_type": "company_website",
-                                }
-                            )
-                            print(f"  [JINA] Scraped: {url[:60]}... ({len(resp.text):,} chars)")
-                        else:
-                            print(f"  [JINA] Skip: {url[:60]}... (status: {resp.status_code})")
-                    except Exception as e:
-                        print(f"  [JINA] Error scraping {url[:40]}: {e}")
-
-            except Exception as e:
-                print(f"  [JINA] Import/setup error: {e}")
+    search_results = state.get("search_results", []) or []
+    company_urls = _select_company_urls(company_name, search_results)
+    if not company_urls:
+        print("  [JINA] No company website URLs found in search results")
+    else:
+        jina_content, jina_sources = _scrape_urls_with_jina(company_urls)
+        scraped_content.update(jina_content)
+        sources.extend(jina_sources)
+        if jina_sources:
+            print(f"  [JINA] Added {len(jina_sources)} company pages")
         else:
-            print("  [JINA] No company website URLs found in search results")
+            print("  [JINA] No content scraped from selected URLs")
 
     # Summary
     total_scraped = len(scraped_content)

@@ -34,6 +34,9 @@ py-spy>=0.3.14              # Sampling profiler
 memray>=1.14.0              # Memory profiler
 line-profiler>=4.1.0        # Line-by-line profiling
 
+# Execution (optional)
+ray>=2.0.0                   # Ray local/cluster execution backend (optional)
+
 # Jupyter (for experimentation)
 jupyter>=1.1.0              # Jupyter notebook
 jupyterlab>=4.3.0           # JupyterLab

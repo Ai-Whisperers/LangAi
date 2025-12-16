@@ -51,80 +51,67 @@ Usage:
     )
 """
 
-# Centralized types (shared enums and dataclasses)
-# Core modules
-from . import agents, graphs, tools, types, workflows
+from __future__ import annotations
 
-# Initialize observability on import
-from .observability import init_observability
-from .types import (
-    AgentMetrics,
-    ConfidenceLevel,
-    DataQuality,
-    EventType,
-    FreshnessLevel,
-    HealthStatus,
-    InsightType,
-    ReasoningType,
-)
-from .types import (
-    ResearchDepth as ResearchDepthType,  # Research types; Quality types; Infrastructure types; Common dataclasses
-)
-from .types import SourceInfo, SourceQuality, TaskStatus, TokenUsage
-
-init_observability()
-
-# Production module (Phase 20)
-# Monitoring module (Phase 19)
-# API module (Phase 18)
-# Orchestration module (Phase 17)
-# Output module (Phase 16)
-# Context module (Phase 12)
-# Memory module (Phase 11)
-# Quality module (Phases 10-11)
-from . import api, context, memory, monitoring, orchestration, output, production, quality
-from .orchestration import ResearchDepth, execute_research
-
-__all__ = [
-    # Core
-    "agents",
-    "workflows",
-    "tools",
-    "graphs",
-    "init_observability",
-    # Types
-    "types",
-    "ResearchDepthType",
-    "DataQuality",
-    "ReasoningType",
-    "InsightType",
-    "ConfidenceLevel",
-    "SourceQuality",
-    "FreshnessLevel",
-    "TaskStatus",
-    "EventType",
-    "HealthStatus",
-    "TokenUsage",
-    "AgentMetrics",
-    "SourceInfo",
-    # Quality
-    "quality",
-    # Memory
-    "memory",
-    # Context
-    "context",
-    # Output
-    "output",
-    # Orchestration
-    "orchestration",
-    "execute_research",
-    "ResearchDepth",
-    # API
-    "api",
-    # Monitoring
-    "monitoring",
-    # Production
-    "production",
-]
+from typing import Any
 
 __version__ = "1.0.0"
+
+
+def init_observability() -> None:
+    """
+    Initialize observability integrations (if installed).
+
+    This is intentionally NOT executed on import so optional dependencies
+    (AgentOps/LangSmith/etc.) don't break lightweight usage and unit tests.
+    """
+    from .observability import init_observability as _init
+
+    _init()
+
+
+def __getattr__(name: str) -> Any:  # pragma: no cover
+    """
+    Lazy attribute loader to avoid importing heavy optional dependencies at import time.
+    """
+    if name in {"execute_research", "ResearchDepth"}:
+        from .orchestration import ResearchDepth, execute_research
+
+        return {"execute_research": execute_research, "ResearchDepth": ResearchDepth}[name]
+
+    if name in {
+        "api",
+        "context",
+        "memory",
+        "monitoring",
+        "output",
+        "production",
+        "quality",
+        "agents",
+        "graphs",
+        "tools",
+        "types",
+        "workflows",
+    }:
+        return __import__(f"{__name__}.{name}", fromlist=[name])
+
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
+__all__ = [
+    "init_observability",
+    "execute_research",
+    "ResearchDepth",
+    "api",
+    "context",
+    "memory",
+    "monitoring",
+    "output",
+    "production",
+    "quality",
+    "agents",
+    "graphs",
+    "tools",
+    "types",
+    "workflows",
+]
