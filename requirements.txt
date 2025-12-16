@@ -125,13 +125,15 @@ agentops==0.3.0             # Agent observability (highly recommended!)
 langsmith==0.1.147          # LangChain debugging & tracing (compatible with langchain-core==0.3.15)
 
 # =============================================================================
-# LANGFLOW - Visual Workflow Builder
+# LANGFLOW - Visual Workflow Builder (OPTIONAL)
 # =============================================================================
-
-# LangFlow for visual workflow design
-# Install with: pip install langflow
-# Or full: pip install langflow[all]
-langflow==1.0.0             # Visual workflow builder (optional but recommended)
+#
+# LangFlow is optional and intentionally not installed by default in CI because it
+# has its own evolving dependency constraints that can conflict with a pinned
+# LangChain/LangGraph stack.
+#
+# Install locally if you need it:
+#   pip install "langflow>=1.6.9"
 
 # Error tracking
 sentry-sdk[fastapi]==2.16.0 # Error monitoring (optional)
