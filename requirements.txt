@@ -146,7 +146,7 @@ prometheus-client==0.21.0   # Metrics export (optional)
 # CLI
 typer==0.12.0               # CLI framework
 rich==13.9.0                # Terminal formatting
-click==8.1.0                # CLI utilities
+click==8.1.7                # CLI utilities (duckduckgo-search requires click>=8.1.7)
 
 # Progress bars
 tqdm==4.66.0                # Progress bars
