@@ -352,3 +352,34 @@ models/
 # =============================================================================
 .archive/
 .antigravity/
+
+# =============================================================================
+# Runtime & Cache Directories
+# =============================================================================
+
+# API cost/usage tracking (runtime)
+.cost_tracker/
+
+# Research cache (regenerable)
+.research_cache/
+
+# =============================================================================
+# External Projects
+# =============================================================================
+
+# External/unrelated project directories
+external/
+
+# =============================================================================
+# Housekeeping & Audit Reports
+# =============================================================================
+
+# Audit reports (contain large files that fail pre-commit)
+housekeeping/
+
+# =============================================================================
+# Batch Processing (Ephemeral)
+# =============================================================================
+
+# Temporary batch outputs (use outputs/research/ for final results)
+outputs/batches/
