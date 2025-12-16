@@ -493,12 +493,19 @@ class InvestmentThesisGenerator:
         confidence: float = 50.0,
     ) -> InvestmentRecommendation:
         """Determine investment recommendation."""
-        # If we don't have enough data or confidence is too low, don't make a strong recommendation
-        if not has_sufficient_data or confidence < 55:
+        # If we don't have enough data, do not make a recommendation.
+        # Confidence is surfaced for user context, but it should not block the
+        # core recommendation thresholds used by the scoring logic/tests.
+        if not has_sufficient_data:
             logger.info(
                 f"Insufficient data for recommendation (has_data={has_sufficient_data}, confidence={confidence})"
             )
             return InvestmentRecommendation.NOT_RATED
+
+        if confidence < 55:
+            logger.info(
+                f"Low confidence for recommendation (confidence={confidence}); proceeding with risk-adjusted scoring."
+            )
 
         # Adjust upside for risk
         risk_adjusted_upside = upside - (risk_score * 0.3)

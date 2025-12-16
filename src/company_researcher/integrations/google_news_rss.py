@@ -200,7 +200,7 @@ class GoogleNewsRSS:
         # Check cache first (6-hour TTL)
         cache_key = f"{query}:{max_results}:{when or 'all'}"
         try:
-            from .result_cache import cache_news, get_cached_news
+            from ..cache.result_cache import cache_news, get_cached_news
 
             cached = get_cached_news(cache_key)
             if cached:
@@ -233,7 +233,7 @@ class GoogleNewsRSS:
 
             # Cache results (6 hours)
             try:
-                from .result_cache import cache_news
+                from ..cache.result_cache import cache_news
 
                 cache_news(cache_key, [a.to_dict() for a in articles])
                 logger.debug(f"[CACHED] News search: '{query}'")

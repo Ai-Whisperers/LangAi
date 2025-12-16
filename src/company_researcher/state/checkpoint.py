@@ -10,7 +10,7 @@ Provides:
 import json
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -82,6 +82,7 @@ class CheckpointManager:
         self.storage_dir = Path(storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         self._checkpoints: Dict[str, Checkpoint] = {}
+        self._last_created_at_by_thread: Dict[str, datetime] = {}
 
     def create(
         self,
@@ -104,11 +105,17 @@ class CheckpointManager:
         Returns:
             Created Checkpoint
         """
+        created_at = utc_now()
+        last_created_at = self._last_created_at_by_thread.get(thread_id)
+        if last_created_at is not None and created_at <= last_created_at:
+            created_at = last_created_at + timedelta(microseconds=1)
+        self._last_created_at_by_thread[thread_id] = created_at
+
         checkpoint = Checkpoint(
             id=str(uuid.uuid4()),
             thread_id=thread_id,
             state=state.copy(),
-            created_at=utc_now(),
+            created_at=created_at,
             metadata=metadata or {},
             step=step,
             parent_id=parent_id,

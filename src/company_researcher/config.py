@@ -211,6 +211,14 @@ class ResearchConfig(BaseSettings):
         default=15, description="Maximum total search results to process"
     )
 
+    paid_search_budget_usd: float = Field(
+        default=0.0,
+        description=(
+            "Per-run budget in USD for paid web search providers (Serper/Tavily). "
+            "Set via PAID_SEARCH_BUDGET_USD."
+        ),
+    )
+
     # ========================================================================
     # Research Parameters
     # ========================================================================
@@ -226,6 +234,11 @@ class ResearchConfig(BaseSettings):
     # ========================================================================
 
     output_dir: str = Field(default="outputs", description="Directory for research reports")
+
+    reports_dir: str = Field(
+        default="outputs/research",
+        description="Canonical directory for human-facing research reports (company + topic)",
+    )
 
     report_format: str = Field(
         default="markdown", description="Report output format (markdown only for Phase 1)"

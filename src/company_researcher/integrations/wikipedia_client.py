@@ -327,7 +327,7 @@ class WikipediaClient:
         """
         # Check cache first (30-day TTL)
         try:
-            from .result_cache import cache_wikipedia, get_cached_wikipedia
+            from ..cache.result_cache import cache_wikipedia, get_cached_wikipedia
 
             cached = get_cached_wikipedia(company_name)
             if cached:
@@ -377,7 +377,7 @@ class WikipediaClient:
         # Cache results (30 days)
         if article.success:
             try:
-                from .result_cache import cache_wikipedia
+                from ..cache.result_cache import cache_wikipedia
 
                 cache_wikipedia(company_name, article.to_dict())
                 logger.debug(f"[CACHED] Wikipedia: '{company_name}'")

@@ -631,7 +631,8 @@ def _create_output_from_cache(company_name: str, cache: ResearchCache) -> Output
         raise ValueError(f"No cached data found for {company_name}")
 
     config = get_config()
-    output_dir = Path(config.output_dir) / company_name.replace(" ", "_").lower()
+    reports_root = Path(getattr(config, "reports_dir", config.output_dir))
+    output_dir = reports_root / "companies" / company_name.replace(" ", "_").lower()
 
     # Check for existing report
     report_path = output_dir / "00_full_report.md"

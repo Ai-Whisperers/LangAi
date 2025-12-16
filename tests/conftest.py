@@ -32,6 +32,9 @@ def setup_test_environment():
     # Disable external API calls in tests by default
     os.environ.setdefault("MOCK_EXTERNAL_APIS", "true")
 
+    # Ensure coverage data directory exists (pytest-cov writes here via pytest.ini).
+    (ROOT_DIR / ".cache" / "coverage").mkdir(parents=True, exist_ok=True)
+
     yield
 
     # Cleanup if needed

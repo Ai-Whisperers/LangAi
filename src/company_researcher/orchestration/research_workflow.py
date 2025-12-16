@@ -321,16 +321,21 @@ def create_research_workflow(
         Configured WorkflowEngine
     """
     cfg = config or ResearchConfig()
+    _ = use_actual_agents
 
     engine = create_workflow_engine(max_parallel=cfg.max_parallel, enable_retries=True)
 
     # Start with search
+    search_children = [
+        "parallel_analysis",
+        "quality" if cfg.enable_quality_check else "synthesis",
+    ]
     engine.add_node(
         NodeConfig(
             name="search",
             node_type=NodeType.AGENT,
             handler=_create_search_node(),
-            children=["parallel_analysis"],
+            children=search_children,
         )
     )
 
@@ -395,7 +400,6 @@ def create_research_workflow(
             name="parallel_analysis", node_type=NodeType.PARALLEL, children=parallel_children
         )
     )
-    engine.connect("parallel_analysis", "quality" if cfg.enable_quality_check else "synthesis")
 
     # Quality check
     if cfg.enable_quality_check:
@@ -473,6 +477,11 @@ def execute_research(
 ) -> WorkflowState:
     """
     Execute research for a company.
+
+    Note:
+        This orchestration-engine path is kept for backward compatibility.
+        New code should prefer the canonical LangGraph runner:
+            `company_researcher.runner.run_with_state(research_type="company", subject=...)`
 
     Args:
         company_name: Company to research

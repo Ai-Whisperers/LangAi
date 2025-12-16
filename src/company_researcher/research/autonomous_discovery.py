@@ -227,7 +227,7 @@ def discovery_phase(company_name: str) -> DiscoveredContext:
                     )
                     sources.append(result_dict.get("url", ""))
                 logger.debug(f"  [OK] '{query[:40]}...' - {len(response.results)} results")
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, AttributeError) as e:
             logger.warning(f"  [WARN] Discovery search failed: {query[:40]}... - {e}")
 
     if not all_results:
@@ -292,7 +292,7 @@ def discovery_phase(company_name: str) -> DiscoveredContext:
 
         return context
 
-    except Exception as e:
+    except (json.JSONDecodeError, ValueError, TypeError, KeyError) as e:
         logger.error(f"[DISCOVERY] Failed to parse LLM response: {e}")
         return DiscoveredContext(company_name=company_name, discovery_sources=sources)
 
@@ -525,7 +525,7 @@ def semantic_field_extraction(text: str, field_name: str, company_name: str) -> 
 
         return result if result and result.upper() != "NOT_FOUND" else None
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.warning(f"Semantic extraction failed for {field_name}: {e}")
         return None
 
@@ -711,7 +711,7 @@ def run_autonomous_discovery(
                                 "url": result_dict.get("url", ""),
                             }
                         )
-            except Exception as e:
+            except (RuntimeError, ValueError, TypeError, AttributeError) as e:
                 logger.warning(f"Targeted search failed: {query[:40]}... - {e}")
 
         # Phase 5: Semantic extraction from additional results
@@ -774,7 +774,7 @@ def _get_outputs_dir() -> Path:
 
         config = get_config()
         return Path(config.output_dir)
-    except Exception:
+    except (ImportError, AttributeError, RuntimeError, ValueError, TypeError):
         # Fallback to outputs in project root
         return Path("outputs")
 
@@ -816,7 +816,7 @@ def load_previous_research(company_name: str) -> Optional[PreviousResearchResult
     # Read report content
     try:
         raw_content = report_path.read_text(encoding="utf-8")
-    except Exception as e:
+    except (OSError, UnicodeError) as e:
         logger.error(f"[PREVIOUS] Failed to read report: {e}")
         return None
 
@@ -834,7 +834,7 @@ def load_previous_research(company_name: str) -> Optional[PreviousResearchResult
             quality_score = metrics.get("quality_score", 0.0)
             timestamp = metrics.get("timestamp")
             sources_count = metrics.get("sources_count", 0)
-        except Exception as e:
+        except (OSError, json.JSONDecodeError, ValueError, TypeError) as e:
             logger.warning(f"[PREVIOUS] Failed to load metrics: {e}")
 
     # Extract fields from report using LLM
@@ -920,7 +920,7 @@ def _extract_fields_from_report(content: str, company_name: str) -> Dict[str, An
 
         return json.loads(result)
 
-    except Exception as e:
+    except (json.JSONDecodeError, ValueError, TypeError, KeyError) as e:
         logger.error(f"[EXTRACT] Failed to extract fields: {e}")
         return {}
 
@@ -977,7 +977,7 @@ def load_all_previous_research() -> Dict[str, PreviousResearchResult]:
             result = load_previous_research(company_name)
             if result:
                 results[company_dir.name] = result
-        except Exception as e:
+        except (OSError, UnicodeError, ValueError, TypeError) as e:
             logger.warning(f"[PREVIOUS] Failed to load {company_dir.name}: {e}")
 
     logger.info(f"[PREVIOUS] Loaded {len(results)} previous research results")
@@ -1064,7 +1064,7 @@ def analyze_research_gaps(previous: PreviousResearchResult) -> GapAnalysis:
             if age_days > 180:
                 # Revenue, market share, subscribers can change frequently
                 stale_fields = ["revenue", "market_share", "subscribers", "employees"]
-        except Exception:
+        except (ValueError, TypeError):
             pass
 
     # Generate recommendations

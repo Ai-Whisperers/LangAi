@@ -274,7 +274,7 @@ class SECEdgarClient:
         # Check cache first (30-day TTL)
         cache_key = f"search:{query}:{max_results}"
         try:
-            from .result_cache import cache_sec_filing, get_cached_sec_filing
+            from ..cache.result_cache import cache_sec_filing, get_cached_sec_filing
 
             cached = get_cached_sec_filing(query, cache_key)
             if cached:
@@ -329,7 +329,7 @@ class SECEdgarClient:
 
             # Cache results (30 days)
             try:
-                from .result_cache import cache_sec_filing
+                from ..cache.result_cache import cache_sec_filing
 
                 cache_sec_filing(query, cache_key, result.to_dict())
                 logger.debug(f"[CACHED] SEC company search: '{query}'")
@@ -408,7 +408,7 @@ class SECEdgarClient:
         # Check cache first (30-day TTL)
         cache_key = f"{ticker_or_cik}:{form_type or 'all'}:{max_results}:{start_date or 'none'}:{end_date or 'none'}"
         try:
-            from .result_cache import cache_sec_filing, get_cached_sec_filing
+            from ..cache.result_cache import cache_sec_filing, get_cached_sec_filing
 
             cached = get_cached_sec_filing(ticker_or_cik, cache_key)
             if cached:
@@ -499,7 +499,7 @@ class SECEdgarClient:
 
             # Cache results (30 days)
             try:
-                from .result_cache import cache_sec_filing
+                from ..cache.result_cache import cache_sec_filing
 
                 cache_sec_filing(ticker_or_cik, cache_key, result.to_dict())
                 logger.debug(f"[CACHED] SEC filings: '{ticker_or_cik}' form={form_type}")

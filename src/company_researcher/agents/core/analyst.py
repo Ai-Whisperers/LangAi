@@ -27,8 +27,7 @@ from ...state import OverallState
 
 # Import quality validation modules
 try:
-    from ..research.metrics_validator import create_metrics_validator
-    from ..research.quality_enforcer import create_quality_enforcer
+    from ..research import create_metrics_validator, create_quality_enforcer
 
     QUALITY_MODULES_AVAILABLE = True
 except ImportError:

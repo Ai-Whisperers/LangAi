@@ -96,34 +96,6 @@ where = ["src"]
 "" = "src"
 
 # ============================================================================
-# Pytest Configuration
-# ============================================================================
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-addopts = [
-    "-v",
-    "--tb=short",
-    "--strict-markers",
-    "-ra",
-]
-markers = [
-    "unit: Unit tests (fast, no external dependencies)",
-    "integration: Integration tests (may require external services)",
-    "slow: Slow tests (skip with -m 'not slow')",
-    "requires_api: Tests requiring external API keys",
-    "requires_llm: Tests requiring LLM access",
-]
-filterwarnings = [
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-]
-asyncio_mode = "auto"
-
-# ============================================================================
 # Coverage Configuration
 # ============================================================================
 

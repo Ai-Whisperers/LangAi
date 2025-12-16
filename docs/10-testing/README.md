@@ -49,7 +49,7 @@ pytest tests/ --cov=src/company_researcher --cov-report=term-missing
 
 ### Run by marker
 
-Markers are defined in `pyproject.toml` under `[tool.pytest.ini_options]`.
+Markers are defined in `pytest.ini` under `[pytest]`.
 
 ```bash
 pytest tests/ -m unit
@@ -71,3 +71,12 @@ pytest tests/test_quality_modules.py
 ## Notes for Windows
 
 All commands above work in PowerShell as-is. If you are using a virtual environment, activate it before running `pytest`.
+
+For convenience, you can also use the repository runner:
+
+```powershell
+.\scripts\run_tests.ps1
+.\scripts\run_tests.ps1 -Suite unit
+.\scripts\run_tests.ps1 -Suite integration
+.\scripts\run_tests.ps1 -Coverage
+```

@@ -1,5 +1,7 @@
 """AI-powered quality assessment using LLM."""
 
+import asyncio
+import inspect
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
@@ -61,7 +63,19 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
         super().__init__()
         self._fallback_handler = FallbackHandler("quality_assessment")
 
-    def assess_content_quality(
+    async def _call_llm_safe(self, **kwargs: Any) -> str:
+        """
+        Call the underlying LLM helper without blocking the event loop.
+
+        The core LLM client is synchronous today. In tests, the call path may be
+        patched with an async mock; in that case we must await the returned coroutine.
+        """
+        result = await asyncio.to_thread(self._call_llm, **kwargs)
+        if inspect.isawaitable(result):
+            result = await result
+        return str(result)
+
+    async def assess_content_quality(
         self,
         content: str,
         section_name: str,
@@ -103,7 +117,9 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
         )
 
         try:
-            result = self._call_llm(prompt=prompt, task_type="reflection", complexity="medium")
+            result = await self._call_llm_safe(
+                prompt=prompt, task_type="reflection", complexity="medium"
+            )
 
             parsed = parse_json_response(result, default={})
             return self._parse_content_assessment(parsed, section_name)
@@ -112,7 +128,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
             logger.error(f"Content quality assessment failed: {e}")
             return self._fallback_content_assessment(content, section_name)
 
-    def assess_source_quality(
+    async def assess_source_quality(
         self, url: str, title: str, snippet: str, company_name: str
     ) -> SourceQualityAssessment:
         """
@@ -138,7 +154,9 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
         )
 
         try:
-            result = self._call_llm(prompt=prompt, task_type="classification", complexity="low")
+            result = await self._call_llm_safe(
+                prompt=prompt, task_type="classification", complexity="low"
+            )
 
             parsed = parse_json_response(result, default={})
             return self._parse_source_assessment(parsed, url, domain, title)
@@ -147,7 +165,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
             logger.error(f"Source quality assessment failed: {e}")
             return self._fallback_source_assessment(url, domain, title)
 
-    def assess_confidence(
+    async def assess_confidence(
         self, claim: str, evidence: List[Dict[str, Any]], company_name: str
     ) -> ConfidenceAssessment:
         """
@@ -175,7 +193,9 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
         )
 
         try:
-            result = self._call_llm(prompt=prompt, task_type="reasoning", complexity="low")
+            result = await self._call_llm_safe(
+                prompt=prompt, task_type="reasoning", complexity="low"
+            )
 
             parsed = parse_json_response(result, default={})
             return self._parse_confidence_assessment(parsed, claim)
@@ -190,7 +210,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
                 reasoning=f"Assessment failed: {str(e)}",
             )
 
-    def generate_overall_report(
+    async def generate_overall_report(
         self,
         company_name: str,
         section_assessments: List[ContentQualityAssessment],
@@ -243,7 +263,9 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
         )
 
         try:
-            result = self._call_llm(prompt=prompt, task_type="reasoning", complexity="medium")
+            result = await self._call_llm_safe(
+                prompt=prompt, task_type="reasoning", complexity="medium"
+            )
 
             parsed = parse_json_response(result, default={})
             return self._build_overall_report(
@@ -254,7 +276,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
             logger.error(f"Overall report generation failed: {e}")
             return self._fallback_overall_report(section_assessments, source_assessments, threshold)
 
-    def assess_batch_sources(
+    async def assess_batch_sources(
         self, sources: List[Dict[str, str]], company_name: str
     ) -> List[SourceQualityAssessment]:
         """
@@ -275,7 +297,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
             batch = sources[i : i + batch_size]
 
             for source in batch:
-                assessment = self.assess_source_quality(
+                assessment = await self.assess_source_quality(
                     url=source.get("url", ""),
                     title=source.get("title", ""),
                     snippet=source.get("snippet", ""),
@@ -518,20 +540,20 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
             quality_threshold=threshold,
         )
 
-    def process(
+    async def process(
         self, company_name: str, sections: Dict[str, str], sources: List[Dict]
     ) -> OverallQualityReport:
         """Main processing method (implements AIComponent interface)."""
         # Assess each section
         section_assessments = []
         for name, content in sections.items():
-            assessment = self.assess_content_quality(content, name, company_name)
+            assessment = await self.assess_content_quality(content, name, company_name)
             section_assessments.append(assessment)
 
         # Assess sources
         source_assessments = []
         for source in sources[:20]:  # Limit to 20 sources
-            assessment = self.assess_source_quality(
+            assessment = await self.assess_source_quality(
                 url=source.get("url", ""),
                 title=source.get("title", ""),
                 snippet=source.get("snippet", ""),
@@ -540,7 +562,7 @@ class AIQualityAssessor(AIComponent[OverallQualityReport]):
             source_assessments.append(assessment)
 
         # Generate overall report
-        return self.generate_overall_report(
+        return await self.generate_overall_report(
             company_name=company_name,
             section_assessments=section_assessments,
             source_assessments=source_assessments,

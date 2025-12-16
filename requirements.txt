@@ -67,7 +67,16 @@ firecrawl-py>=1.0.0         # Firecrawl API - scrape, crawl, extract
 # =============================================================================
 
 # Free Web Scraping
-crawl4ai>=0.3.0             # FREE - Firecrawl alternative, async, LLM-ready
+# Crawl4AI is optional and intentionally not installed by default because it can
+# force newer dependency versions (notably aiohttp / playwright) that may conflict
+# with this repo's pinned LangChain/LangGraph stack on some platforms.
+#
+# Install locally if you need it (also required: `playwright install`):
+#   pip install "crawl4ai>=0.3.0"
+#   playwright install
+# NOTE: If pip reports a dependency conflict, allow pip to upgrade aiohttp/playwright
+# for your environment or install Crawl4AI in an isolated venv dedicated to scraping.
+# crawl4ai>=0.3.0            # FREE - Firecrawl alternative, async, LLM-ready
 feedparser>=6.0.0           # FREE - RSS parsing for Google News
 
 # Free Observability

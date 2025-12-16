@@ -8,6 +8,7 @@ REST API endpoints for company research:
 - Health checks
 """
 
+import asyncio
 import time
 from typing import Any, Dict, Optional
 
@@ -104,11 +105,15 @@ if FASTAPI_AVAILABLE:
         """
         if _use_disk_backend():
             orchestrator = get_orchestrator()
+            research_type = request.research_type.value
+            subject = request.company_name if research_type == "company" else request.topic
+            subject = (subject or "").strip()
             job = orchestrator.start_batch(
-                [request.company_name],
+                [subject],
                 depth=request.depth.value,
                 force=False,
                 metadata=request.metadata,
+                research_type=research_type,
             )
             task_id = job["task_ids"][0]
         else:
@@ -118,7 +123,14 @@ if FASTAPI_AVAILABLE:
             # Create task data
             task_data = {
                 "task_id": task_id,
+                "research_type": request.research_type.value,
                 "company_name": request.company_name,
+                "topic": request.topic,
+                "subject": (
+                    request.company_name
+                    if request.research_type.value == "company"
+                    else request.topic
+                ),
                 "depth": request.depth.value,
                 "status": TaskStatusEnum.PENDING.value,
                 "created_at": utc_now(),
@@ -149,7 +161,14 @@ if FASTAPI_AVAILABLE:
 
         return ResearchResponse(
             task_id=task_id,
+            research_type=request.research_type,
+            subject=(
+                request.company_name
+                if request.research_type.value == "company"
+                else (request.topic or "")
+            ),
             company_name=request.company_name,
+            topic=request.topic,
             status=TaskStatusEnum.PENDING,
             depth=request.depth,
             created_at=utc_now(),
@@ -206,7 +225,11 @@ if FASTAPI_AVAILABLE:
 
         return {
             "task_id": task_id,
-            "company_name": task["company_name"],
+            "research_type": task.get("research_type")
+            or ("topic" if task.get("topic") else "company"),
+            "subject": task.get("subject") or task.get("company_name") or task.get("topic"),
+            "company_name": task.get("company_name"),
+            "topic": task.get("topic"),
             "status": task["status"],
             "result": (
                 task.get("result", {}) if not _use_disk_backend() else task.get("result") or task
@@ -266,11 +289,14 @@ if FASTAPI_AVAILABLE:
         """Start batch research for multiple companies."""
         if _use_disk_backend():
             orchestrator = get_orchestrator()
+            research_type = request.research_type.value
+            items = request.companies if research_type == "company" else request.topics
             job = orchestrator.start_batch(
-                request.companies,
+                items,
                 depth=request.depth.value,
                 force=False,
                 metadata=request.metadata,
+                research_type=research_type,
             )
             batch_id = job["batch_id"]
             task_ids = job["task_ids"]
@@ -280,13 +306,19 @@ if FASTAPI_AVAILABLE:
             task_ids = []
 
             # Create individual tasks
-            for company in request.companies:
+            items = (
+                request.companies if request.research_type.value == "company" else request.topics
+            )
+            for item in items:
                 task_id = f"task_{int(time.time() * 1000)}_{len(task_ids)}"
                 task_ids.append(task_id)
 
                 task_data = {
                     "task_id": task_id,
-                    "company_name": company,
+                    "research_type": request.research_type.value,
+                    "company_name": item if request.research_type.value == "company" else None,
+                    "topic": item if request.research_type.value == "topic" else None,
+                    "subject": item,
                     "batch_id": batch_id,
                     "depth": request.depth.value,
                     "status": TaskStatusEnum.PENDING.value,
@@ -299,7 +331,8 @@ if FASTAPI_AVAILABLE:
             # Store batch
             batch_data = {
                 "batch_id": batch_id,
-                "companies": request.companies,
+                "research_type": request.research_type.value,
+                "items": items,
                 "task_ids": task_ids,
                 "status": TaskStatusEnum.PENDING.value,
                 "created_at": utc_now(),
@@ -313,7 +346,10 @@ if FASTAPI_AVAILABLE:
 
         return BatchResponse(
             batch_id=batch_id,
-            total_companies=len(request.companies),
+            research_type=request.research_type,
+            total_items=len(
+                request.companies if request.research_type.value == "company" else request.topics
+            ),
             status=TaskStatusEnum.PENDING,
             created_at=utc_now(),
             task_ids=task_ids,
@@ -463,34 +499,50 @@ async def _execute_research(task_id: str, request: ResearchRequest):
     )
 
     try:
-        # Import and execute workflow
-        from ..orchestration.research_workflow import ResearchDepth, execute_research
+        from ..runner import run_with_state
 
-        depth_map = {
-            "quick": ResearchDepth.QUICK,
-            "standard": ResearchDepth.STANDARD,
-            "comprehensive": ResearchDepth.COMPREHENSIVE,
-        }
+        research_type = request.research_type.value
+        subject = request.company_name if research_type == "company" else request.topic
+        subject = (subject or "").strip()
 
-        result = execute_research(
-            company_name=request.company_name,
-            depth=depth_map.get(request.depth.value, ResearchDepth.STANDARD),
-        )
-
-        # Update to completed
-        await storage.update_task(
-            task_id,
-            {
-                "status": TaskStatusEnum.COMPLETED.value,
-                "completed_at": utc_now(),
-                "result": {
-                    "agent_outputs": result.data.get("agent_outputs", {}),
-                    "synthesis": result.data.get("synthesis"),
-                    "total_cost": result.total_cost,
-                    "duration_seconds": result.duration_seconds,
+        if research_type == "topic":
+            output, final_state = await asyncio.to_thread(
+                run_with_state, research_type="topic", subject=subject, force=False, output_dir=None
+            )
+            await storage.update_task(
+                task_id,
+                {
+                    "status": TaskStatusEnum.COMPLETED.value,
+                    "completed_at": utc_now(),
+                    "result": {
+                        "output": output,
+                        "report_path": output.get("report_path"),
+                        "sources_count": len(final_state.get("sources") or []),
+                    },
                 },
-            },
-        )
+            )
+        else:
+            output, final_state = await asyncio.to_thread(
+                run_with_state,
+                research_type="company",
+                subject=subject,
+                force=False,
+                output_dir=None,
+            )
+
+            # Update to completed
+            await storage.update_task(
+                task_id,
+                {
+                    "status": TaskStatusEnum.COMPLETED.value,
+                    "completed_at": utc_now(),
+                    "result": {
+                        "output": output,
+                        "report_path": output.get("report_path"),
+                        "sources_count": len(final_state.get("sources") or []),
+                    },
+                },
+            )
 
         # Send webhook if configured
         if request.webhook_url:
@@ -522,8 +574,12 @@ async def _execute_batch(batch_id: str, request: BatchRequest):
         task = await storage.get_task(task_id)
         if task:
             # Create individual request
+            research_type = task.get("research_type") or request.research_type.value
             individual_request = ResearchRequest(
-                company_name=task["company_name"], depth=ResearchDepthEnum(task["depth"])
+                research_type=research_type,
+                company_name=task.get("company_name"),
+                topic=task.get("topic"),
+                depth=ResearchDepthEnum(task["depth"]),
             )
             await _execute_research(task_id, individual_request)
 

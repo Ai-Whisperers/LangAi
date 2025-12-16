@@ -49,11 +49,11 @@ TaskStatus = str  # "pending" | "running" | "completed" | "failed"
 TaskStatusLiteral = Literal["pending", "running", "completed", "failed", "cancelled"]
 
 
-def _slugify(value: str, max_len: int = 80) -> str:
-    value = value.strip().lower()
+def _slugify(value: str, max_len: int = 80, *, fallback: str = "company") -> str:
+    value = (value or "").strip().lower()
     value = re.sub(r"[^\w\s-]", "", value)
     value = re.sub(r"[\s_-]+", "-", value).strip("-")
-    return value[:max_len] or "company"
+    return value[:max_len] or fallback
 
 
 def _ensure_dir(path: Path) -> None:
@@ -75,16 +75,21 @@ def _read_json(path: Path) -> Optional[Dict[str, Any]]:
     except json.JSONDecodeError as exc:
         logger.warning("Invalid JSON file path=%s error=%s", str(path), str(exc))
         return None
+    except UnicodeError as exc:
+        logger.warning("Failed to decode JSON file as UTF-8 path=%s error=%s", str(path), str(exc))
+        return None
     except OSError as exc:
         logger.warning("Failed to read JSON file path=%s error=%s", str(path), str(exc))
         return None
-    except Exception as exc:  # noqa: BLE001 - defensive; return None but keep context
-        logger.warning("Unexpected error reading JSON file path=%s error=%s", str(path), str(exc))
-        return None
+
+
+def _manifest_path_for_subject_dir(subject_dir: Path) -> Path:
+    return subject_dir / TASK_MANIFEST_FILENAME
 
 
 def _manifest_path_for_company_dir(company_dir: Path) -> Path:
-    return company_dir / TASK_MANIFEST_FILENAME
+    # Backward-compatible helper name.
+    return _manifest_path_for_subject_dir(company_dir)
 
 
 @dataclass(frozen=True)
@@ -184,10 +189,22 @@ class DiskBatchOrchestrator:
         depth: str = "standard",
         force: bool = False,
         metadata: Optional[Dict[str, Any]] = None,
+        research_type: Literal["company", "topic"] = "company",
     ) -> Dict[str, Any]:
-        companies_list = [c.strip() for c in companies if c and c.strip()]
-        if not companies_list:
-            raise ValueError("companies must contain at least one non-empty company name")
+        if research_type not in {"company", "topic"}:
+            raise ValueError(
+                "❌ ERROR: Unsupported research_type\n\n"
+                f"Explanation: research_type must be 'company' or 'topic', got: {research_type!r}\n\n"
+                "Solution: Pass research_type='company' for company research, or research_type='topic' for topic research.\n\n"
+                "Location: executors/orchestrator.py:DiskBatchOrchestrator.start_batch\n"
+            )
+
+        items_list = [c.strip() for c in companies if c and str(c).strip()]
+        if not items_list:
+            noun = "company name" if research_type == "company" else "topic"
+            raise ValueError(
+                f"companies must contain at least one non-empty {noun} (use research_type to switch modes)"
+            )
 
         batch_id = f"batch_{uuid.uuid4().hex[:12]}"
         created_at = utc_now().isoformat()
@@ -199,7 +216,11 @@ class DiskBatchOrchestrator:
             "status": "pending",
             "depth": depth,
             "force": force,
-            "companies": companies_list,
+            "research_type": research_type,
+            "subjects": items_list,
+            # Backward-compatible keys
+            "companies": items_list if research_type == "company" else [],
+            "topics": items_list if research_type == "topic" else [],
             "task_ids": [],
             "tasks": [],
             "metadata": metadata or {},
@@ -211,32 +232,54 @@ class DiskBatchOrchestrator:
         tasks: List[Dict[str, Any]] = []
         task_ids: List[str] = []
         used_slugs: Dict[str, int] = {}
-        for company_name in companies_list:
-            base_slug = _slugify(company_name)
+        for item in items_list:
+            base_slug = _slugify(item, fallback="topic" if research_type == "topic" else "company")
             suffix = used_slugs.get(base_slug, 0)
             used_slugs[base_slug] = suffix + 1
-            company_slug = base_slug if suffix == 0 else f"{base_slug}-{suffix}"
+            subject_slug = base_slug if suffix == 0 else f"{base_slug}-{suffix}"
 
             task_id = f"task_{uuid.uuid4().hex[:12]}"
             task_ids.append(task_id)
-            company_dir, manifest_path = self._init_company_folder(
-                batch_id=batch_id,
-                task_id=task_id,
-                company_name=company_name,
-                company_slug=company_slug,
-                depth=depth,
-                force=force,
-                metadata=metadata,
-            )
-            tasks.append(
-                {
-                    "task_id": task_id,
-                    "company_name": company_name,
-                    "company_slug": company_slug,
-                    "outputs_dir": str(company_dir),
-                    "manifest_path": str(manifest_path),
-                }
-            )
+            if research_type == "company":
+                company_dir, manifest_path = self._init_company_folder(
+                    batch_id=batch_id,
+                    task_id=task_id,
+                    company_name=item,
+                    company_slug=subject_slug,
+                    depth=depth,
+                    force=force,
+                    metadata=metadata,
+                )
+                tasks.append(
+                    {
+                        "task_id": task_id,
+                        "research_type": "company",
+                        "company_name": item,
+                        "company_slug": subject_slug,
+                        "outputs_dir": str(company_dir),
+                        "manifest_path": str(manifest_path),
+                    }
+                )
+            else:
+                topic_dir, manifest_path = self._init_topic_folder(
+                    batch_id=batch_id,
+                    task_id=task_id,
+                    topic=item,
+                    topic_slug=subject_slug,
+                    depth=depth,
+                    force=force,
+                    metadata=metadata,
+                )
+                tasks.append(
+                    {
+                        "task_id": task_id,
+                        "research_type": "topic",
+                        "topic": item,
+                        "topic_slug": subject_slug,
+                        "outputs_dir": str(topic_dir),
+                        "manifest_path": str(manifest_path),
+                    }
+                )
             with self._task_index_lock:
                 self._task_index[task_id] = str(manifest_path)
 
@@ -246,15 +289,26 @@ class DiskBatchOrchestrator:
         self._tracker.set_batch(batch_id, dict(batch_manifest))
 
         for task in tasks:
-            self._submit_company_task(
-                batch_id=batch_id,
-                task_id=task["task_id"],
-                company_name=task["company_name"],
-                company_slug=task["company_slug"],
-                depth=depth,
-                force=force,
-                metadata=metadata,
-            )
+            if task.get("research_type") == "topic":
+                self._submit_topic_task(
+                    batch_id=batch_id,
+                    task_id=task["task_id"],
+                    topic=task["topic"],
+                    topic_slug=task["topic_slug"],
+                    depth=depth,
+                    force=force,
+                    metadata=metadata,
+                )
+            else:
+                self._submit_company_task(
+                    batch_id=batch_id,
+                    task_id=task["task_id"],
+                    company_name=task["company_name"],
+                    company_slug=task["company_slug"],
+                    depth=depth,
+                    force=force,
+                    metadata=metadata,
+                )
 
         self._tracker.update_batch(batch_id, {"status": "running"})
         _write_json(batch_dir / BATCH_MANIFEST_FILENAME, {**batch_manifest, "status": "running"})
@@ -421,8 +475,16 @@ class DiskBatchOrchestrator:
                 continue
             if wanted_status and (data.get("status") or "").lower() != wanted_status:
                 continue
-            if wanted_company and wanted_company not in (data.get("company_name") or "").lower():
-                continue
+            if wanted_company:
+                haystack = " ".join(
+                    [
+                        str(data.get("company_name") or ""),
+                        str(data.get("topic") or ""),
+                        str(data.get("subject") or ""),
+                    ]
+                ).lower()
+                if wanted_company not in haystack:
+                    continue
             items.append(data)
 
         items.sort(key=lambda x: x.get("created_at", ""), reverse=True)
@@ -437,6 +499,9 @@ class DiskBatchOrchestrator:
 
     def _company_dir(self, batch_id: str, company_slug: str) -> Path:
         return self._batch_dir(batch_id) / "companies" / company_slug
+
+    def _topic_dir(self, batch_id: str, topic_slug: str) -> Path:
+        return self._batch_dir(batch_id) / "topics" / topic_slug
 
     def _init_company_folder(
         self,
@@ -476,6 +541,46 @@ class DiskBatchOrchestrator:
         self._tracker.set_task(task_id, dict(manifest))
         return company_dir, manifest_path
 
+    def _init_topic_folder(
+        self,
+        *,
+        batch_id: str,
+        task_id: str,
+        topic: str,
+        topic_slug: str,
+        depth: str,
+        force: bool,
+        metadata: Optional[Dict[str, Any]],
+    ) -> Tuple[Path, Path]:
+        topic_dir = self._topic_dir(batch_id, topic_slug)
+        _ensure_dir(topic_dir)
+        _ensure_dir(topic_dir / "02_search")
+        _ensure_dir(topic_dir / "03_pages" / "content")
+        _ensure_dir(topic_dir / "06_reports")
+
+        manifest = {
+            "task_id": task_id,
+            "batch_id": batch_id,
+            "research_type": "topic",
+            "subject": topic,
+            "topic": topic,
+            "topic_slug": topic_slug,
+            "depth": depth,
+            "force": force,
+            "status": "pending",
+            "created_at": utc_now().isoformat(),
+            "outputs_dir": str(topic_dir),
+            "result_path": str(topic_dir / "06_reports" / "result.json"),
+            "report_path": None,
+            "error": None,
+            "metadata": metadata or {},
+        }
+        manifest_path = topic_dir / TASK_MANIFEST_FILENAME
+        manifest["manifest_path"] = str(manifest_path)
+        _write_json(manifest_path, manifest)
+        self._tracker.set_task(task_id, dict(manifest))
+        return topic_dir, manifest_path
+
     def _submit_company_task(
         self,
         *,
@@ -511,6 +616,78 @@ class DiskBatchOrchestrator:
         )
         with self._futures_lock:
             self._futures[task_id] = future
+
+    def _submit_topic_task(
+        self,
+        *,
+        batch_id: str,
+        task_id: str,
+        topic: str,
+        topic_slug: str,
+        depth: str,
+        force: bool,
+        metadata: Optional[Dict[str, Any]],
+    ) -> None:
+        if self.config.enable_ray:
+            self._submit_topic_task_ray(
+                batch_id=batch_id,
+                task_id=task_id,
+                topic=topic,
+                topic_slug=topic_slug,
+                depth=depth,
+                force=force,
+                metadata=metadata,
+            )
+            return
+
+        future = self._executor.submit(
+            self._run_topic_task,
+            batch_id=batch_id,
+            task_id=task_id,
+            topic=topic,
+            topic_slug=topic_slug,
+            depth=depth,
+            force=force,
+            metadata=metadata,
+        )
+        with self._futures_lock:
+            self._futures[task_id] = future
+
+    def _submit_topic_task_ray(
+        self,
+        *,
+        batch_id: str,
+        task_id: str,
+        topic: str,
+        topic_slug: str,
+        depth: str,
+        force: bool,
+        metadata: Optional[Dict[str, Any]],
+    ) -> None:
+        if not RAY_AVAILABLE:
+            raise RuntimeError(
+                "❌ ERROR: Ray execution requested but Ray is not installed\n\n"
+                "Explanation: COMPANY_RESEARCH_EXECUTOR=ray requires the 'ray' Python package.\n\n"
+                "Solution: Install Ray and restart the API:\n"
+                "  pip install ray\n\n"
+                "Help: See docs/ for local-first execution (thread pool) by unsetting COMPANY_RESEARCH_EXECUTOR."
+            )
+        if not self._ray_initialized:
+            ray.init(ignore_reinit_error=True, local_mode=self.config.ray_local_mode)
+            self._ray_initialized = True
+
+        _run_topic_task_ray.remote(
+            batch_id=batch_id,
+            task_id=task_id,
+            topic=topic,
+            topic_slug=topic_slug,
+            depth=depth,
+            force=force,
+            metadata=metadata or {},
+            outputs_dir=str(self.config.outputs_dir),
+            store_page_content=self.config.store_page_content,
+            max_pages=self.config.max_pages,
+        )
 
     def _submit_company_task_ray(
         self,
@@ -578,11 +755,44 @@ class DiskBatchOrchestrator:
                 manifest_path, task_id, company_name, company_dir, final_state
             )
             self._mark_task_completed(manifest_path, output)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - boundary: always mark manifest failed
             self._mark_task_failed(manifest_path, exc)
             logger.exception(
                 "Research task failed task_id=%s company_name=%s", task_id, company_name
             )
+
+    def _run_topic_task(
+        self,
+        *,
+        batch_id: str,
+        task_id: str,
+        topic: str,
+        topic_slug: str,
+        depth: str,
+        force: bool,
+        metadata: Optional[Dict[str, Any]],
+    ) -> None:
+        _ = depth  # reserved for future depth mapping in topic workflow
+        _ = metadata
+
+        topic_dir = self._topic_dir(batch_id, topic_slug)
+        manifest_path = _manifest_path_for_subject_dir(topic_dir)
+
+        self._update_manifest(
+            manifest_path,
+            {"status": "running", "started_at": utc_now().isoformat()},
+        )
+
+        try:
+            output, final_state = _run_topic_with_state(topic=topic, force=force)
+
+            self._write_provenance_artifacts(topic_dir, final_state)
+            self._write_result(topic_dir, output, final_state)
+            self._maybe_store_page_content(manifest_path, task_id, topic, topic_dir, final_state)
+            self._mark_task_completed(manifest_path, output)
+        except Exception as exc:  # noqa: BLE001 - boundary: always mark manifest failed
+            self._mark_task_failed(manifest_path, exc)
+            logger.exception("Topic research task failed task_id=%s topic=%s", task_id, topic)
 
     def _write_provenance_artifacts(self, company_dir: Path, final_state: Dict[str, Any]) -> None:
         """
@@ -610,6 +820,18 @@ class DiskBatchOrchestrator:
             company_dir / "02_search" / "sources.json", {"sources": final_state.get("sources", [])}
         )
 
+        # Optional topic artifacts
+        if final_state.get("github_repos") is not None:
+            _write_json(
+                company_dir / "04_github" / "repos.json",
+                {"github_repos": final_state.get("github_repos", [])},
+            )
+        if final_state.get("topic_news") is not None:
+            _write_json(
+                company_dir / "05_news" / "news.json",
+                {"topic_news": final_state.get("topic_news")},
+            )
+
     def _write_result(
         self, company_dir: Path, output: Dict[str, Any], final_state: Dict[str, Any]
     ) -> None:
@@ -630,7 +852,7 @@ class DiskBatchOrchestrator:
         try:
             self._store_page_content(company_dir, final_state.get("sources", []) or [])
             self._update_manifest(manifest_path, {"page_content_status": "completed"})
-        except Exception as exc:  # noqa: BLE001 - page content is best-effort
+        except Exception as exc:  # noqa: BLE001 - best-effort optional artifact generation
             self._update_manifest(
                 manifest_path,
                 {
@@ -685,27 +907,20 @@ class DiskBatchOrchestrator:
 
         with pages_log_path.open("a", encoding="utf-8") as f:
             for url in urls:
-                try:
-                    result = reader.read_url(url)
-                    record: Dict[str, Any] = {
-                        "url": url,
-                        "success": result.success,
-                        "error": result.error,
-                        "response_time_ms": result.response_time_ms,
-                        "token_count_estimate": result.token_count,
-                        "title": result.title,
-                    }
-                    if result.success and result.content:
-                        file_name = f"{uuid.uuid4().hex}.md"
-                        out_path = content_dir / file_name
-                        out_path.write_text(result.content, encoding="utf-8")
-                        record["content_path"] = str(out_path)
-                except Exception as exc:  # noqa: BLE001 - per-URL best-effort
-                    record = {
-                        "url": url,
-                        "success": False,
-                        "error": str(exc),
-                    }
+                result = reader.read_url(url)
+                record: Dict[str, Any] = {
+                    "url": url,
+                    "success": result.success,
+                    "error": result.error,
+                    "response_time_ms": result.response_time_ms,
+                    "token_count_estimate": result.token_count,
+                    "title": result.title,
+                }
+                if result.success and result.content:
+                    file_name = f"{uuid.uuid4().hex}.md"
+                    out_path = content_dir / file_name
+                    out_path.write_text(result.content, encoding="utf-8")
+                    record["content_path"] = str(out_path)
                 f.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
 
     def _select_source_urls(self, sources: List[Dict[str, Any]], max_pages: int) -> List[str]:
@@ -781,10 +996,14 @@ class DiskBatchOrchestrator:
         if not root.exists():
             return None
         # Legacy fallback: scan manifests. Avoid in hot paths; prefer batch index-based lookup.
-        for manifest_path in root.glob(f"*/companies/*/{TASK_MANIFEST_FILENAME}"):
-            data = _read_json(manifest_path)
-            if data and data.get("task_id") == task_id:
-                return data
+        for pattern in (
+            f"*/companies/*/{TASK_MANIFEST_FILENAME}",
+            f"*/topics/*/{TASK_MANIFEST_FILENAME}",
+        ):
+            for manifest_path in root.glob(pattern):
+                data = _read_json(manifest_path)
+                if data and data.get("task_id") == task_id:
+                    return data
         return None
 
 
@@ -796,9 +1015,18 @@ def _run_research_with_state(
 
     Kept as a tiny wrapper so the orchestrator can be tested/mocked cleanly.
     """
-    from ..workflows.cache_aware_workflow import run_cache_aware_workflow_with_state
+    from ..runner import run_with_state
 
-    return run_cache_aware_workflow_with_state(company_name=company_name, force=force)
+    return run_with_state(research_type="company", subject=company_name, force=force)
+
+
+def _run_topic_with_state(*, topic: str, force: bool) -> tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    Run the topic workflow and return (output, final_state).
+    """
+    from ..runner import run_with_state
+
+    return run_with_state(research_type="topic", subject=topic, force=force, output_dir=None)
 
 
 if RAY_AVAILABLE:  # pragma: no cover - exercised only when Ray is installed
@@ -834,6 +1062,40 @@ if RAY_AVAILABLE:  # pragma: no cover - exercised only when Ray is installed
             task_id=task_id,
             company_name=company_name,
             company_slug=company_slug,
+            depth=depth,
+            force=force,
+            metadata=metadata,
+        )
+
+    @ray.remote
+    def _run_topic_task_ray(
+        *,
+        batch_id: str,
+        task_id: str,
+        topic: str,
+        topic_slug: str,
+        depth: str,
+        force: bool,
+        metadata: Dict[str, Any],
+        outputs_dir: str,
+        store_page_content: bool,
+        max_pages: int,
+    ) -> None:
+        orchestrator = DiskBatchOrchestrator(
+            OrchestratorConfig(
+                outputs_dir=Path(outputs_dir),
+                max_workers=1,
+                enable_ray=False,
+                ray_local_mode=True,
+                store_page_content=store_page_content,
+                max_pages=max_pages,
+            )
+        )
+        orchestrator._run_topic_task(
+            batch_id=batch_id,
+            task_id=task_id,
+            topic=topic,
+            topic_slug=topic_slug,
             depth=depth,
             force=force,
             metadata=metadata,

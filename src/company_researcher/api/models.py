@@ -18,7 +18,7 @@ from urllib.parse import urlparse
 from ..utils import utc_now
 
 try:
-    from pydantic import BaseModel, Field, field_validator
+    from pydantic import BaseModel, Field, field_validator, model_validator
 
     PYDANTIC_AVAILABLE = True
 except ImportError:
@@ -176,11 +176,26 @@ if PYDANTIC_AVAILABLE:
 
         return url
 
-    class ResearchRequest(BaseModel):
-        """Request to start company research."""
+    class ResearchTypeEnum(str, Enum):
+        """Type of research request."""
 
-        company_name: str = Field(
-            ..., min_length=1, max_length=200, description="Company name to research"
+        COMPANY = "company"
+        TOPIC = "topic"
+
+    class ResearchRequest(BaseModel):
+        """Request to start research (company or general topic)."""
+
+        research_type: ResearchTypeEnum = Field(
+            default=ResearchTypeEnum.COMPANY,
+            description="Research mode: company or topic",
+        )
+
+        company_name: Optional[str] = Field(
+            default=None, min_length=1, max_length=200, description="Company name to research"
+        )
+
+        topic: Optional[str] = Field(
+            default=None, min_length=1, max_length=200, description="Topic to research"
         )
         depth: ResearchDepthEnum = Field(
             default=ResearchDepthEnum.STANDARD, description="Research depth level"
@@ -220,6 +235,28 @@ if PYDANTIC_AVAILABLE:
                     raise ValueError("Company name contains suspicious content")
             return v
 
+        @field_validator("topic")
+        @classmethod
+        def validate_topic(cls, v: Optional[str]) -> Optional[str]:
+            if v is None:
+                return None
+            v = v.strip()
+            if not v:
+                raise ValueError("Topic cannot be empty")
+            if len(v) > 200:
+                raise ValueError("Topic exceeds 200 characters")
+            return v
+
+        @model_validator(mode="after")
+        def validate_subject(self) -> "ResearchRequest":
+            if self.research_type == ResearchTypeEnum.COMPANY:
+                if not (self.company_name and self.company_name.strip()):
+                    raise ValueError("company_name is required when research_type='company'")
+            else:
+                if not (self.topic and self.topic.strip()):
+                    raise ValueError("topic is required when research_type='topic'")
+            return self
+
         @field_validator("webhook_url")
         @classmethod
         def validate_webhook_url(cls, v: Optional[str]) -> Optional[str]:
@@ -229,6 +266,7 @@ if PYDANTIC_AVAILABLE:
         class Config:
             json_schema_extra = {
                 "example": {
+                    "research_type": "company",
                     "company_name": "Tesla",
                     "depth": "standard",
                     "include_financial": True,
@@ -239,10 +277,21 @@ if PYDANTIC_AVAILABLE:
             }
 
     class BatchRequest(BaseModel):
-        """Request for batch research."""
+        """Request for batch research (companies or topics)."""
+
+        research_type: ResearchTypeEnum = Field(
+            default=ResearchTypeEnum.COMPANY,
+            description="Batch mode: company or topic",
+        )
 
         companies: List[str] = Field(
-            ..., min_length=1, max_length=100, description="List of company names"
+            default_factory=list,
+            description="List of company names (used when research_type='company')",
+        )
+
+        topics: List[str] = Field(
+            default_factory=list,
+            description="List of topics (used when research_type='topic')",
         )
         depth: ResearchDepthEnum = Field(default=ResearchDepthEnum.STANDARD)
         priority: int = Field(default=3, ge=1, le=5, description="Priority (1=highest)")
@@ -254,7 +303,7 @@ if PYDANTIC_AVAILABLE:
         def validate_companies(cls, v: List[str]) -> List[str]:
             """Validate list of company names."""
             if not v:
-                raise ValueError("Companies list cannot be empty")
+                return []
             validated = []
             for i, company in enumerate(v):
                 company = company.strip()
@@ -273,6 +322,33 @@ if PYDANTIC_AVAILABLE:
                 validated.append(company)
             return validated
 
+        @field_validator("topics")
+        @classmethod
+        def validate_topics(cls, v: List[str]) -> List[str]:
+            if not v:
+                return []
+            validated: List[str] = []
+            for i, t in enumerate(v):
+                t = t.strip()
+                if not t:
+                    raise ValueError(f"Topic at index {i} cannot be empty")
+                if len(t) > 200:
+                    raise ValueError(f"Topic at index {i} exceeds 200 characters")
+                if t.lower() in [x.lower() for x in validated]:
+                    raise ValueError(f"Duplicate topic: {t}")
+                validated.append(t)
+            return validated
+
+        @model_validator(mode="after")
+        def validate_items(self) -> "BatchRequest":
+            if self.research_type == ResearchTypeEnum.COMPANY:
+                if not self.companies:
+                    raise ValueError("companies must be non-empty when research_type='company'")
+            else:
+                if not self.topics:
+                    raise ValueError("topics must be non-empty when research_type='topic'")
+            return self
+
         @field_validator("webhook_url")
         @classmethod
         def validate_webhook_url(cls, v: Optional[str]) -> Optional[str]:
@@ -282,6 +358,7 @@ if PYDANTIC_AVAILABLE:
         class Config:
             json_schema_extra = {
                 "example": {
+                    "research_type": "company",
                     "companies": ["Tesla", "Apple", "Microsoft"],
                     "depth": "standard",
                     "priority": 2,
@@ -330,7 +407,10 @@ if PYDANTIC_AVAILABLE:
         """Response for research request."""
 
         task_id: str = Field(..., description="Unique task identifier")
-        company_name: str
+        research_type: ResearchTypeEnum = ResearchTypeEnum.COMPANY
+        subject: str
+        company_name: Optional[str] = None
+        topic: Optional[str] = None
         status: TaskStatusEnum
         depth: ResearchDepthEnum
         created_at: datetime
@@ -341,6 +421,8 @@ if PYDANTIC_AVAILABLE:
             json_schema_extra = {
                 "example": {
                     "task_id": "task_1234567890",
+                    "research_type": "company",
+                    "subject": "Tesla",
                     "company_name": "Tesla",
                     "status": "pending",
                     "depth": "standard",
@@ -369,7 +451,8 @@ if PYDANTIC_AVAILABLE:
         """Response for batch request."""
 
         batch_id: str
-        total_companies: int
+        research_type: ResearchTypeEnum = ResearchTypeEnum.COMPANY
+        total_items: int
         status: TaskStatusEnum
         created_at: datetime
         task_ids: List[str]
@@ -476,7 +559,9 @@ else:
 
     @dataclass
     class ResearchRequest:
-        company_name: str
+        research_type: str = "company"
+        company_name: Optional[str] = None
+        topic: Optional[str] = None
         depth: str = "standard"
         include_financial: bool = True
         include_market: bool = True
@@ -492,7 +577,10 @@ else:
     @dataclass
     class ResearchResponse:
         task_id: str
-        company_name: str
+        research_type: str = "company"
+        subject: str = ""
+        company_name: Optional[str] = None
+        topic: Optional[str] = None
         status: str
         depth: str
         created_at: datetime
@@ -501,7 +589,9 @@ else:
 
     @dataclass
     class BatchRequest:
-        companies: List[str]
+        research_type: str = "company"
+        companies: List[str] = dc_field(default_factory=list)
+        topics: List[str] = dc_field(default_factory=list)
         depth: str = "standard"
         priority: int = 3
         webhook_url: Optional[str] = None
@@ -510,7 +600,8 @@ else:
     @dataclass
     class BatchResponse:
         batch_id: str
-        total_companies: int
+        research_type: str = "company"
+        total_items: int = 0
         status: str
         created_at: datetime
         task_ids: List[str]

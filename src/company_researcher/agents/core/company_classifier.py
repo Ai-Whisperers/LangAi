@@ -536,7 +536,7 @@ def classify_company_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
     # Check cache first (30 day TTL)
     try:
-        from ...integrations.result_cache import cache_classification, get_cached_classification
+        from ...cache.result_cache import cache_classification, get_cached_classification
 
         cached = get_cached_classification(company_name)
         if cached:
@@ -565,7 +565,7 @@ def classify_company_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
     # Cache result for next time (30 days)
     try:
-        from ...integrations.result_cache import cache_classification
+        from ...cache.result_cache import cache_classification
 
         cache_classification(company_name, result.to_dict())
         print("  [CACHED] Classification saved for 30 days")

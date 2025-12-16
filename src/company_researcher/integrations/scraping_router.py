@@ -154,34 +154,47 @@ class ScrapingRouter:
 
     def _init_providers(self):
         """Lazy initialize providers."""
+
+        def _try_init(label: str, init_fn):
+            try:
+                return init_fn()
+            except Exception as e:  # noqa: BLE001 - best-effort optional dependencies
+                logger.warning(f"{label} not available: {e}")
+                return None
+
         # Import here to avoid circular imports
-        try:
-            from .crawl4ai_client import get_crawl4ai
+        if self._crawl4ai is None:
+            self._crawl4ai = _try_init(
+                "Crawl4AI",
+                lambda: __import__(
+                    "company_researcher.integrations.crawl4ai_client", fromlist=["get_crawl4ai"]
+                ).get_crawl4ai(),
+            )
 
-            self._crawl4ai = get_crawl4ai()
-        except Exception as e:
-            logger.warning(f"Crawl4AI not available: {e}")
+        if self._jina is None:
+            self._jina = _try_init(
+                "Jina Reader",
+                lambda: __import__(
+                    "company_researcher.integrations.jina_reader", fromlist=["get_jina_reader"]
+                ).get_jina_reader(),
+            )
 
-        try:
-            from .jina_reader import get_jina_reader
+        if self._firecrawl is None:
+            self._firecrawl = _try_init(
+                "Firecrawl",
+                lambda: __import__(
+                    "company_researcher.integrations.firecrawl_client", fromlist=["FirecrawlClient"]
+                ).FirecrawlClient(),
+            )
 
-            self._jina = get_jina_reader()
-        except Exception as e:
-            logger.warning(f"Jina Reader not available: {e}")
-
-        try:
-            from .firecrawl_client import FirecrawlClient
-
-            self._firecrawl = FirecrawlClient()
-        except Exception as e:
-            logger.warning(f"Firecrawl not available: {e}")
-
-        try:
-            from .scrapegraph_client import ScrapeGraphClient
-
-            self._scrapegraph = ScrapeGraphClient()
-        except Exception as e:
-            logger.warning(f"ScrapeGraph not available: {e}")
+        if self._scrapegraph is None:
+            self._scrapegraph = _try_init(
+                "ScrapeGraph",
+                lambda: __import__(
+                    "company_researcher.integrations.scrapegraph_client",
+                    fromlist=["ScrapeGraphClient"],
+                ).ScrapeGraphClient(),
+            )
 
     def _get_cache_key(self, url: str) -> str:
         """Generate cache key for URL."""
@@ -216,7 +229,7 @@ class ScrapingRouter:
                 timestamp=timestamp,
                 cost=0.0,  # Cached = free
             )
-        except Exception as e:
+        except (OSError, KeyError, ValueError, TypeError, json.JSONDecodeError) as e:
             logger.warning(f"Cache read error: {e}")
             return None
 
@@ -241,7 +254,7 @@ class ScrapingRouter:
 
             with open(cache_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
-        except Exception as e:
+        except (OSError, TypeError, ValueError) as e:
             logger.warning(f"Cache write error: {e}")
 
     def _select_provider(self, url: str, quality: ScrapingQuality) -> list[ScrapingProvider]:
@@ -317,28 +330,16 @@ class ScrapingRouter:
                 error="Crawl4AI not available",
             )
 
-        try:
-            result = await self._crawl4ai.scrape(url)
-            return ScrapeResult(
-                url=url,
-                content=result.markdown or result.text or "",
-                html=result.html,
-                title=result.title,
-                provider=ScrapingProvider.CRAWL4AI,
-                success=True,
-                metadata={"links": result.links, "images": result.images},
-            )
-        except Exception as e:
-            logger.warning(f"Crawl4AI failed for {url}: {e}")
-            return ScrapeResult(
-                url=url,
-                content="",
-                html=None,
-                title=None,
-                provider=ScrapingProvider.CRAWL4AI,
-                success=False,
-                error=str(e),
-            )
+        result = await self._crawl4ai.scrape(url)
+        return ScrapeResult(
+            url=url,
+            content=result.markdown or result.text or "",
+            html=result.html,
+            title=result.title,
+            provider=ScrapingProvider.CRAWL4AI,
+            success=True,
+            metadata={"links": result.links, "images": result.images},
+        )
 
     async def _scrape_with_jina(self, url: str) -> ScrapeResult:
         """Scrape using Jina Reader."""
@@ -356,28 +357,16 @@ class ScrapingRouter:
                 error="Jina Reader not available",
             )
 
-        try:
-            result = await self._jina.read(url)
-            return ScrapeResult(
-                url=url,
-                content=result.content,
-                html=None,  # Jina returns markdown only
-                title=result.title,
-                provider=ScrapingProvider.JINA_READER,
-                success=True,
-                metadata={"word_count": result.word_count},
-            )
-        except Exception as e:
-            logger.warning(f"Jina Reader failed for {url}: {e}")
-            return ScrapeResult(
-                url=url,
-                content="",
-                html=None,
-                title=None,
-                provider=ScrapingProvider.JINA_READER,
-                success=False,
-                error=str(e),
-            )
+        result = await self._jina.read(url)
+        return ScrapeResult(
+            url=url,
+            content=result.content,
+            html=None,  # Jina returns markdown only
+            title=result.title,
+            provider=ScrapingProvider.JINA_READER,
+            success=True,
+            metadata={"word_count": result.word_count},
+        )
 
     async def _scrape_with_firecrawl(self, url: str) -> ScrapeResult:
         """Scrape using Firecrawl."""
@@ -395,31 +384,19 @@ class ScrapingRouter:
                 error="Firecrawl not available",
             )
 
-        try:
-            # Firecrawl has sync API, wrap in executor
-            loop = asyncio.get_running_loop()
-            result = await loop.run_in_executor(None, self._firecrawl.scrape_url, url)
+        # Firecrawl has sync API, wrap in executor
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(None, self._firecrawl.scrape_url, url)
 
-            return ScrapeResult(
-                url=url,
-                content=result.get("markdown", "") or result.get("content", ""),
-                html=result.get("html"),
-                title=result.get("title"),
-                provider=ScrapingProvider.FIRECRAWL,
-                success=True,
-                cost=0.01,  # ~$0.01/page
-            )
-        except Exception as e:
-            logger.warning(f"Firecrawl failed for {url}: {e}")
-            return ScrapeResult(
-                url=url,
-                content="",
-                html=None,
-                title=None,
-                provider=ScrapingProvider.FIRECRAWL,
-                success=False,
-                error=str(e),
-            )
+        return ScrapeResult(
+            url=url,
+            content=result.get("markdown", "") or result.get("content", ""),
+            html=result.get("html"),
+            title=result.get("title"),
+            provider=ScrapingProvider.FIRECRAWL,
+            success=True,
+            cost=0.01,  # ~$0.01/page
+        )
 
     async def _scrape_with_scrapegraph(self, url: str) -> ScrapeResult:
         """Scrape using ScrapeGraph."""
@@ -437,30 +414,18 @@ class ScrapingRouter:
                 error="ScrapeGraph not available",
             )
 
-        try:
-            loop = asyncio.get_running_loop()
-            result = await loop.run_in_executor(None, self._scrapegraph.scrape, url)
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(None, self._scrapegraph.scrape, url)
 
-            return ScrapeResult(
-                url=url,
-                content=result.get("content", ""),
-                html=result.get("html"),
-                title=result.get("title"),
-                provider=ScrapingProvider.SCRAPEGRAPH,
-                success=True,
-                cost=0.01,
-            )
-        except Exception as e:
-            logger.warning(f"ScrapeGraph failed for {url}: {e}")
-            return ScrapeResult(
-                url=url,
-                content="",
-                html=None,
-                title=None,
-                provider=ScrapingProvider.SCRAPEGRAPH,
-                success=False,
-                error=str(e),
-            )
+        return ScrapeResult(
+            url=url,
+            content=result.get("content", ""),
+            html=result.get("html"),
+            title=result.get("title"),
+            provider=ScrapingProvider.SCRAPEGRAPH,
+            success=True,
+            cost=0.01,
+        )
 
     async def scrape(
         self,
@@ -500,16 +465,20 @@ class ScrapingRouter:
         last_error = None
         for provider in providers:
             logger.info(f"Trying {provider.value} for {url}")
-
-            if provider == ScrapingProvider.CRAWL4AI:
-                result = await self._scrape_with_crawl4ai(url)
-            elif provider == ScrapingProvider.JINA_READER:
-                result = await self._scrape_with_jina(url)
-            elif provider == ScrapingProvider.FIRECRAWL:
-                result = await self._scrape_with_firecrawl(url)
-            elif provider == ScrapingProvider.SCRAPEGRAPH:
-                result = await self._scrape_with_scrapegraph(url)
-            else:
+            try:
+                if provider == ScrapingProvider.CRAWL4AI:
+                    result = await self._scrape_with_crawl4ai(url)
+                elif provider == ScrapingProvider.JINA_READER:
+                    result = await self._scrape_with_jina(url)
+                elif provider == ScrapingProvider.FIRECRAWL:
+                    result = await self._scrape_with_firecrawl(url)
+                elif provider == ScrapingProvider.SCRAPEGRAPH:
+                    result = await self._scrape_with_scrapegraph(url)
+                else:
+                    continue
+            except Exception as e:  # noqa: BLE001 - per-provider failures are expected
+                logger.warning(f"{provider.value} failed for {url}: {e}")
+                last_error = str(e)
                 continue
 
             if result.success and result.content:
@@ -518,7 +487,7 @@ class ScrapingRouter:
                     from .cost_tracker import track_cost
 
                     track_cost(provider.value.replace("_", "-"), 1)
-                except Exception as e:
+                except (ImportError, AttributeError, OSError, ValueError, TypeError) as e:
                     logger.debug(f"Failed to track cost for {provider.value}: {e}")
 
                 # Cache successful result
@@ -629,7 +598,7 @@ class ScrapingRouter:
 
                 cache_file.unlink()
                 cleared += 1
-            except Exception as e:
+            except (OSError, KeyError, ValueError, TypeError, json.JSONDecodeError) as e:
                 logger.warning(f"Error clearing cache file {cache_file}: {e}")
 
         logger.info(f"Cleared {cleared} cache entries")

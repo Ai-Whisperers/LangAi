@@ -349,13 +349,15 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
     # Calculate duration
     duration = (utc_now() - state.get("start_time", utc_now())).total_seconds()
 
-    # Create output directory
-    output_dir = Path(config.output_dir) / state["company_name"].replace(" ", "_")
+    # Create canonical report directory (human-facing)
+    reports_root = Path(getattr(config, "reports_dir", config.output_dir))
+    output_dir = reports_root / "companies" / state["company_name"].replace(" ", "_")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Generate report filename
+    # Generate report filename (stable + timestamped snapshot)
     timestamp = utc_now().strftime("%Y%m%d_%H%M%S")
-    report_path = output_dir / f"report_{timestamp}.md"
+    report_path = output_dir / "00_full_report.md"
+    timestamped_path = output_dir / f"report_{timestamp}.md"
 
     # Format sources for report
     formatted_sources = format_sources_for_report(state["sources"])
@@ -422,6 +424,11 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
     # Save report
     with open(report_path, "w", encoding="utf-8") as f:
         f.write(report_content)
+    try:
+        with open(timestamped_path, "w", encoding="utf-8") as f:
+            f.write(report_content)
+    except Exception:
+        pass
 
     print(f"[OK] Report saved to: {report_path}")
 

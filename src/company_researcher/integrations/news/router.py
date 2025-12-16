@@ -102,33 +102,41 @@ class NewsRouter:
         if self._providers_initialized:
             return
 
-        try:
+        def _try_init(label: str, init_fn):
+            try:
+                return init_fn()
+            except Exception as e:  # noqa: BLE001 - optional providers are best-effort
+                logger.warning(f"{label} not available: {e}")
+                return None
+
+        def _init_google_rss():
             from ..google_news_rss import get_google_news
 
-            self._google_rss = get_google_news()
-        except Exception as e:
-            logger.warning(f"Google News RSS not available: {e}")
+            return get_google_news()
 
-        try:
+        def _init_gnews():
             from ..gnews import GNewsClient
 
-            self._gnews = GNewsClient()
-        except Exception as e:
-            logger.warning(f"GNews not available: {e}")
+            return GNewsClient()
 
-        try:
+        def _init_newsapi():
             from ..news_api import NewsAPIClient
 
-            self._newsapi = NewsAPIClient()
-        except Exception as e:
-            logger.warning(f"NewsAPI not available: {e}")
+            return NewsAPIClient()
 
-        try:
+        def _init_mediastack():
             from ..mediastack import MediastackClient
 
-            self._mediastack = MediastackClient()
-        except Exception as e:
-            logger.warning(f"Mediastack not available: {e}")
+            return MediastackClient()
+
+        if self._google_rss is None:
+            self._google_rss = _try_init("Google News RSS", _init_google_rss)
+        if self._gnews is None:
+            self._gnews = _try_init("GNews", _init_gnews)
+        if self._newsapi is None:
+            self._newsapi = _try_init("NewsAPI", _init_newsapi)
+        if self._mediastack is None:
+            self._mediastack = _try_init("Mediastack", _init_mediastack)
 
         self._providers_initialized = True
 
@@ -186,7 +194,7 @@ class NewsRouter:
                 cached=True,
                 cost=0.0,
             )
-        except Exception as e:
+        except (OSError, KeyError, ValueError, TypeError, json.JSONDecodeError) as e:
             logger.warning(f"Cache read error: {e}")
             return None
 
@@ -208,7 +216,7 @@ class NewsRouter:
 
             with open(cache_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
-        except Exception as e:
+        except (OSError, TypeError, ValueError) as e:
             logger.warning(f"Cache write error: {e}")
 
     def _select_providers(self, quality: NewsQuality) -> list[NewsProvider]:
@@ -247,42 +255,34 @@ class NewsRouter:
                 error="Google News RSS not available",
             )
 
-        try:
-            result = await self._google_rss.search(
-                query, language=language, max_results=max_results
-            )
+        # google_news_rss.GoogleNewsRSS is synchronous; run in a worker thread.
+        _ = language  # best-effort; locale selection is handled by GoogleNewsRSS instance
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(
+            None, lambda: self._google_rss.search(query, max_results=max_results)
+        )
 
-            articles = [
+        articles = []
+        for a in result.articles or []:
+            articles.append(
                 NewsArticle(
-                    title=a.title,
-                    description=a.description,
-                    url=a.url,
-                    source=a.source,
-                    published_at=a.published_at,
+                    title=getattr(a, "title", "") or "",
+                    description=getattr(a, "summary", None),
+                    url=getattr(a, "link", "") or "",
+                    source=getattr(a, "source", "") or "Google News",
+                    published_at=getattr(a, "published", None),
                     provider=NewsProvider.GOOGLE_RSS,
-                    image_url=getattr(a, "image_url", None),
                 )
-                for a in result.articles
-            ]
+            )
 
-            return NewsSearchResult(
-                query=query,
-                articles=articles,
-                total_results=len(articles),
-                provider=NewsProvider.GOOGLE_RSS,
-                success=True,
-                cost=0.0,
-            )
-        except Exception as e:
-            logger.warning(f"Google News RSS failed for '{query}': {e}")
-            return NewsSearchResult(
-                query=query,
-                articles=[],
-                total_results=0,
-                provider=NewsProvider.GOOGLE_RSS,
-                success=False,
-                error=str(e),
-            )
+        return NewsSearchResult(
+            query=query,
+            articles=articles,
+            total_results=len(articles),
+            provider=NewsProvider.GOOGLE_RSS,
+            success=True,
+            cost=0.0,
+        )
 
     async def _search_gnews(self, query: str, max_results: int, language: str) -> NewsSearchResult:
         """Search using GNews."""
@@ -296,47 +296,36 @@ class NewsRouter:
                 error="GNews not available",
             )
 
-        try:
-            loop = asyncio.get_running_loop()
-            result = await loop.run_in_executor(
-                None, lambda: self._gnews.search(query, max_results=max_results, language=language)
-            )
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(
+            None, lambda: self._gnews.search(query, max_results=max_results, language=language)
+        )
 
-            articles = [
-                NewsArticle(
-                    title=a.get("title", ""),
-                    description=a.get("description"),
-                    url=a.get("url", ""),
-                    source=a.get("source", {}).get("name", "Unknown"),
-                    published_at=(
-                        datetime.fromisoformat(a["publishedAt"].replace("Z", "+00:00"))
-                        if a.get("publishedAt")
-                        else None
-                    ),
-                    provider=NewsProvider.GNEWS,
-                    image_url=a.get("image"),
-                )
-                for a in result.get("articles", [])
-            ]
+        articles = [
+            NewsArticle(
+                title=a.get("title", ""),
+                description=a.get("description"),
+                url=a.get("url", ""),
+                source=a.get("source", {}).get("name", "Unknown"),
+                published_at=(
+                    datetime.fromisoformat(a["publishedAt"].replace("Z", "+00:00"))
+                    if a.get("publishedAt")
+                    else None
+                ),
+                provider=NewsProvider.GNEWS,
+                image_url=a.get("image"),
+            )
+            for a in result.get("articles", [])
+        ]
 
-            return NewsSearchResult(
-                query=query,
-                articles=articles,
-                total_results=len(articles),
-                provider=NewsProvider.GNEWS,
-                success=True,
-                cost=0.003,  # ~$0.003/request after free tier
-            )
-        except Exception as e:
-            logger.warning(f"GNews failed for '{query}': {e}")
-            return NewsSearchResult(
-                query=query,
-                articles=[],
-                total_results=0,
-                provider=NewsProvider.GNEWS,
-                success=False,
-                error=str(e),
-            )
+        return NewsSearchResult(
+            query=query,
+            articles=articles,
+            total_results=len(articles),
+            provider=NewsProvider.GNEWS,
+            success=True,
+            cost=0.003,  # ~$0.003/request after free tier
+        )
 
     async def _search_newsapi(
         self, query: str, max_results: int, language: str
@@ -352,49 +341,38 @@ class NewsRouter:
                 error="NewsAPI not available",
             )
 
-        try:
-            loop = asyncio.get_running_loop()
-            result = await loop.run_in_executor(
-                None, lambda: self._newsapi.search(query, page_size=max_results, language=language)
-            )
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(
+            None, lambda: self._newsapi.search(query, page_size=max_results, language=language)
+        )
 
-            articles = [
-                NewsArticle(
-                    title=a.get("title", ""),
-                    description=a.get("description"),
-                    url=a.get("url", ""),
-                    source=a.get("source", {}).get("name", "Unknown"),
-                    published_at=(
-                        datetime.fromisoformat(a["publishedAt"].replace("Z", "+00:00"))
-                        if a.get("publishedAt")
-                        else None
-                    ),
-                    provider=NewsProvider.NEWSAPI,
-                    image_url=a.get("urlToImage"),
-                    author=a.get("author"),
-                    content=a.get("content"),
-                )
-                for a in result.get("articles", [])
-            ]
+        articles = [
+            NewsArticle(
+                title=a.get("title", ""),
+                description=a.get("description"),
+                url=a.get("url", ""),
+                source=a.get("source", {}).get("name", "Unknown"),
+                published_at=(
+                    datetime.fromisoformat(a["publishedAt"].replace("Z", "+00:00"))
+                    if a.get("publishedAt")
+                    else None
+                ),
+                provider=NewsProvider.NEWSAPI,
+                image_url=a.get("urlToImage"),
+                author=a.get("author"),
+                content=a.get("content"),
+            )
+            for a in result.get("articles", [])
+        ]
 
-            return NewsSearchResult(
-                query=query,
-                articles=articles,
-                total_results=result.get("totalResults", len(articles)),
-                provider=NewsProvider.NEWSAPI,
-                success=True,
-                cost=0.003,
-            )
-        except Exception as e:
-            logger.warning(f"NewsAPI failed for '{query}': {e}")
-            return NewsSearchResult(
-                query=query,
-                articles=[],
-                total_results=0,
-                provider=NewsProvider.NEWSAPI,
-                success=False,
-                error=str(e),
-            )
+        return NewsSearchResult(
+            query=query,
+            articles=articles,
+            total_results=result.get("totalResults", len(articles)),
+            provider=NewsProvider.NEWSAPI,
+            success=True,
+            cost=0.003,
+        )
 
     async def _search_mediastack(
         self, query: str, max_results: int, language: str
@@ -410,43 +388,71 @@ class NewsRouter:
                 error="Mediastack not available",
             )
 
-        try:
-            loop = asyncio.get_running_loop()
-            result = await loop.run_in_executor(
-                None, lambda: self._mediastack.search(query, limit=max_results, languages=language)
-            )
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(
+            None, lambda: self._mediastack.search(query, limit=max_results, languages=language)
+        )
 
-            articles = [
-                NewsArticle(
-                    title=a.get("title", ""),
-                    description=a.get("description"),
-                    url=a.get("url", ""),
-                    source=a.get("source", "Unknown"),
-                    published_at=(
-                        datetime.fromisoformat(a["published_at"]) if a.get("published_at") else None
-                    ),
-                    provider=NewsProvider.MEDIASTACK,
-                    image_url=a.get("image"),
-                    author=a.get("author"),
-                )
-                for a in result.get("data", [])
-            ]
-
-            return NewsSearchResult(
-                query=query,
-                articles=articles,
-                total_results=result.get("pagination", {}).get("total", len(articles)),
+        articles = [
+            NewsArticle(
+                title=a.get("title", ""),
+                description=a.get("description"),
+                url=a.get("url", ""),
+                source=a.get("source", "Unknown"),
+                published_at=(
+                    datetime.fromisoformat(a["published_at"]) if a.get("published_at") else None
+                ),
                 provider=NewsProvider.MEDIASTACK,
-                success=True,
-                cost=0.002,
+                image_url=a.get("image"),
+                author=a.get("author"),
             )
-        except Exception as e:
-            logger.warning(f"Mediastack failed for '{query}': {e}")
+            for a in result.get("data", [])
+        ]
+
+        return NewsSearchResult(
+            query=query,
+            articles=articles,
+            total_results=result.get("pagination", {}).get("total", len(articles)),
+            provider=NewsProvider.MEDIASTACK,
+            success=True,
+            cost=0.002,
+        )
+
+    async def _search_provider_safe(
+        self, provider: NewsProvider, query: str, max_results: int, language: str
+    ) -> NewsSearchResult:
+        try:
+            if provider == NewsProvider.GOOGLE_RSS:
+                return await self._search_google_rss(query, max_results, language)
+            if provider == NewsProvider.GNEWS:
+                return await self._search_gnews(query, max_results, language)
+            if provider == NewsProvider.NEWSAPI:
+                return await self._search_newsapi(query, max_results, language)
+            if provider == NewsProvider.MEDIASTACK:
+                return await self._search_mediastack(query, max_results, language)
             return NewsSearchResult(
                 query=query,
                 articles=[],
                 total_results=0,
-                provider=NewsProvider.MEDIASTACK,
+                provider=provider,
+                success=False,
+                error=f"Unknown provider: {provider.value}",
+            )
+        except (
+            OSError,
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            RuntimeError,
+            asyncio.TimeoutError,
+        ) as e:
+            logger.warning(f"{provider.value} failed for '{query}': {e}")
+            return NewsSearchResult(
+                query=query,
+                articles=[],
+                total_results=0,
+                provider=provider,
                 success=False,
                 error=str(e),
             )
@@ -505,16 +511,7 @@ class NewsRouter:
             # Record usage
             self._quotas[provider].use()
 
-            if provider == NewsProvider.GOOGLE_RSS:
-                result = await self._search_google_rss(query, max_results, language)
-            elif provider == NewsProvider.GNEWS:
-                result = await self._search_gnews(query, max_results, language)
-            elif provider == NewsProvider.NEWSAPI:
-                result = await self._search_newsapi(query, max_results, language)
-            elif provider == NewsProvider.MEDIASTACK:
-                result = await self._search_mediastack(query, max_results, language)
-            else:
-                continue
+            result = await self._search_provider_safe(provider, query, max_results, language)
 
             if result.success and result.articles:
                 # Check if we have enough results (Cost-First: only escalate if insufficient)
@@ -523,8 +520,11 @@ class NewsRouter:
                     try:
                         from ..cost_tracker import track_cost
 
-                        track_cost(provider.value.replace("_", "-"), 1)
-                    except Exception as e:
+                        if provider == NewsProvider.GOOGLE_RSS:
+                            track_cost("google-news-rss", 1)
+                        else:
+                            track_cost(provider.value.replace("_", "-"), 1)
+                    except (ImportError, AttributeError, OSError, ValueError, TypeError) as e:
                         logger.debug(f"Failed to track cost for {provider.value}: {e}")
 
                     # Cache successful result
@@ -651,7 +651,7 @@ class NewsRouter:
 
                 cache_file.unlink()
                 cleared += 1
-            except Exception as e:
+            except (OSError, KeyError, ValueError, TypeError, json.JSONDecodeError) as e:
                 logger.warning(f"Error clearing cache file {cache_file}: {e}")
 
         logger.info(f"Cleared {cleared} news cache entries")

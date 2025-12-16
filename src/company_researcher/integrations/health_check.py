@@ -286,7 +286,9 @@ class IntegrationHealthChecker:
                 future = executor.submit(self._run_check, check, timeout)
                 futures[future] = check
 
-            for future in as_completed(futures, timeout=timeout * 2):
+            # NOTE: Per-check timeouts are not reliably enforceable via threads if integrations
+            # do not implement their own request timeouts. Keep this best-effort and resilient.
+            for future in as_completed(futures):
                 try:
                     result = future.result()
                     results.append(result)
@@ -398,8 +400,6 @@ class IntegrationHealthChecker:
             return False, "No data returned", {}
         except ImportError:
             return False, "yfinance not installed", {}
-        except Exception as e:
-            return False, str(e), {}
 
     def _check_fmp(self) -> tuple:
         """Check Financial Modeling Prep."""
@@ -411,8 +411,8 @@ class IntegrationHealthChecker:
             if profile:
                 return True, "OK", {"company": "Apple Inc."}
             return False, "No data returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "FMP client not available", {}
 
     def _check_finnhub(self) -> tuple:
         """Check Finnhub."""
@@ -424,8 +424,8 @@ class IntegrationHealthChecker:
             if quote and quote.get("c"):
                 return True, "OK", {"price": quote.get("c")}
             return False, "No data returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "Finnhub client not available", {}
 
     def _check_polygon(self) -> tuple:
         """Check Polygon."""
@@ -437,8 +437,8 @@ class IntegrationHealthChecker:
             if details:
                 return True, "OK", {"name": details.get("name")}
             return False, "No data returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "Polygon client not available", {}
 
     def _check_newsapi(self) -> tuple:
         """Check NewsAPI."""
@@ -450,8 +450,8 @@ class IntegrationHealthChecker:
             if articles:
                 return True, "OK", {"articles": len(articles)}
             return False, "No articles returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "NewsAPI client not available", {}
 
     def _check_gnews(self) -> tuple:
         """Check GNews."""
@@ -463,8 +463,8 @@ class IntegrationHealthChecker:
             if articles:
                 return True, "OK", {"articles": len(articles)}
             return False, "No articles returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "GNews client not available", {}
 
     def _check_mediastack(self) -> tuple:
         """Check Mediastack."""
@@ -476,8 +476,8 @@ class IntegrationHealthChecker:
             if articles:
                 return True, "OK", {"articles": len(articles)}
             return False, "No articles returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "Mediastack client not available", {}
 
     def _check_tavily(self) -> tuple:
         """Check Tavily."""
@@ -489,8 +489,8 @@ class IntegrationHealthChecker:
             if results.get("results"):
                 return True, "OK", {"results": len(results.get("results", []))}
             return False, "No results returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "tavily not installed", {}
 
     def _check_hunter(self) -> tuple:
         """Check Hunter.io."""
@@ -503,8 +503,8 @@ class IntegrationHealthChecker:
             if result:
                 return True, "OK", {}
             return False, "No response", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "Hunter client not available", {}
 
     def _check_domainsdb(self) -> tuple:
         """Check DomainsDB (free, no key)."""
@@ -516,8 +516,8 @@ class IntegrationHealthChecker:
             if result:
                 return True, "OK", {}
             return False, "No results", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "DomainsDB client not available", {}
 
     def _check_github(self) -> tuple:
         """Check GitHub API."""
@@ -529,8 +529,8 @@ class IntegrationHealthChecker:
             if result:
                 return True, "OK", {"remaining": result.get("remaining", 0)}
             return False, "No response", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "GitHub client not available", {}
 
     def _check_opencage(self) -> tuple:
         """Check OpenCage Geocoding."""
@@ -542,8 +542,8 @@ class IntegrationHealthChecker:
             if result:
                 return True, "OK", {}
             return False, "No results", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "OpenCage client not available", {}
 
     def _check_nominatim(self) -> tuple:
         """Check Nominatim (free, no key)."""
@@ -555,8 +555,8 @@ class IntegrationHealthChecker:
             if result:
                 return True, "OK", {}
             return False, "No results", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "Nominatim client not available", {}
 
     def _check_anthropic(self) -> tuple:
         """Check Anthropic API."""
@@ -568,8 +568,8 @@ class IntegrationHealthChecker:
             if self.config.anthropic_api_key.startswith("sk-ant-"):
                 return True, "Key format valid", {}
             return False, "Invalid key format", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "anthropic not installed", {}
 
 
 def check_integration_health(

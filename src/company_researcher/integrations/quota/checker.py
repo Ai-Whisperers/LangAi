@@ -54,6 +54,13 @@ class APIQuotaChecker:
             "langsmith": get_config("LANGSMITH_API_KEY"),
         }
 
+    def _error_info(self, *, api_name: str, error: Exception) -> QuotaInfo:
+        return QuotaInfo(
+            api_name=api_name,
+            status=QuotaStatus.ERROR,
+            error_message=f"{type(error).__name__}: {error}",
+        )
+
     async def check_all(self) -> QuotaReport:
         """Check quotas for all configured APIs."""
         report = QuotaReport()
@@ -155,10 +162,8 @@ class APIQuotaChecker:
                     error_message=f"HTTP {response.status_code}",
                 )
 
-        except Exception as e:
-            return QuotaInfo(
-                api_name="Anthropic (Claude)", status=QuotaStatus.ERROR, error_message=str(e)
-            )
+        except (httpx.TimeoutException, httpx.RequestError, ValueError, KeyError, TypeError) as e:
+            return self._error_info(api_name="Anthropic (Claude)", error=e)
 
     async def _check_tavily(self) -> QuotaInfo:
         """
@@ -214,10 +219,8 @@ class APIQuotaChecker:
                     error_message=f"HTTP {response.status_code}",
                 )
 
-        except Exception as e:
-            return QuotaInfo(
-                api_name="Tavily Search", status=QuotaStatus.ERROR, error_message=str(e)
-            )
+        except (httpx.TimeoutException, httpx.RequestError, ValueError, KeyError, TypeError) as e:
+            return self._error_info(api_name="Tavily Search", error=e)
 
     async def _check_fmp(self) -> QuotaInfo:
         """
@@ -280,12 +283,8 @@ class APIQuotaChecker:
                     error_message=f"HTTP {response.status_code}",
                 )
 
-        except Exception as e:
-            return QuotaInfo(
-                api_name="FMP (Financial Modeling Prep)",
-                status=QuotaStatus.ERROR,
-                error_message=str(e),
-            )
+        except (httpx.TimeoutException, httpx.RequestError, ValueError, KeyError, TypeError) as e:
+            return self._error_info(api_name="FMP (Financial Modeling Prep)", error=e)
 
     async def _check_finnhub(self) -> QuotaInfo:
         """
@@ -342,8 +341,8 @@ class APIQuotaChecker:
                     error_message=f"HTTP {response.status_code}",
                 )
 
-        except Exception as e:
-            return QuotaInfo(api_name="Finnhub", status=QuotaStatus.ERROR, error_message=str(e))
+        except (httpx.TimeoutException, httpx.RequestError, ValueError, KeyError, TypeError) as e:
+            return self._error_info(api_name="Finnhub", error=e)
 
     async def _check_polygon(self) -> QuotaInfo:
         """
@@ -390,8 +389,8 @@ class APIQuotaChecker:
                     error_message=f"HTTP {response.status_code}",
                 )
 
-        except Exception as e:
-            return QuotaInfo(api_name="Polygon.io", status=QuotaStatus.ERROR, error_message=str(e))
+        except (httpx.TimeoutException, httpx.RequestError, ValueError, KeyError, TypeError) as e:
+            return self._error_info(api_name="Polygon.io", error=e)
 
     async def _check_newsapi(self) -> QuotaInfo:
         """
@@ -453,8 +452,8 @@ class APIQuotaChecker:
                     error_message=f"HTTP {response.status_code}",
                 )
 
-        except Exception as e:
-            return QuotaInfo(api_name="NewsAPI", status=QuotaStatus.ERROR, error_message=str(e))
+        except (httpx.TimeoutException, httpx.RequestError, ValueError, KeyError, TypeError) as e:
+            return self._error_info(api_name="NewsAPI", error=e)
 
     async def _check_gnews(self) -> QuotaInfo:
         """
@@ -500,8 +499,8 @@ class APIQuotaChecker:
                     error_message=f"HTTP {response.status_code}",
                 )
 
-        except Exception as e:
-            return QuotaInfo(api_name="GNews", status=QuotaStatus.ERROR, error_message=str(e))
+        except (httpx.TimeoutException, httpx.RequestError, ValueError, KeyError, TypeError) as e:
+            return self._error_info(api_name="GNews", error=e)
 
     async def _check_mediastack(self) -> QuotaInfo:
         """
@@ -541,8 +540,8 @@ class APIQuotaChecker:
                     error_message=f"HTTP {response.status_code}",
                 )
 
-        except Exception as e:
-            return QuotaInfo(api_name="Mediastack", status=QuotaStatus.ERROR, error_message=str(e))
+        except (httpx.TimeoutException, httpx.RequestError, ValueError, KeyError, TypeError) as e:
+            return self._error_info(api_name="Mediastack", error=e)
 
     async def _check_hunter(self) -> QuotaInfo:
         """
@@ -606,8 +605,8 @@ class APIQuotaChecker:
                     error_message=f"HTTP {response.status_code}",
                 )
 
-        except Exception as e:
-            return QuotaInfo(api_name="Hunter.io", status=QuotaStatus.ERROR, error_message=str(e))
+        except (httpx.TimeoutException, httpx.RequestError, ValueError, KeyError, TypeError) as e:
+            return self._error_info(api_name="Hunter.io", error=e)
 
     async def _check_firecrawl(self) -> QuotaInfo:
         """
@@ -653,8 +652,8 @@ class APIQuotaChecker:
                     error_message=f"HTTP {response.status_code}",
                 )
 
-        except Exception as e:
-            return QuotaInfo(api_name="Firecrawl", status=QuotaStatus.ERROR, error_message=str(e))
+        except (httpx.TimeoutException, httpx.RequestError, ValueError, KeyError, TypeError) as e:
+            return self._error_info(api_name="Firecrawl", error=e)
 
     async def _check_github(self) -> QuotaInfo:
         """
@@ -708,8 +707,8 @@ class APIQuotaChecker:
                     error_message=f"HTTP {response.status_code}",
                 )
 
-        except Exception as e:
-            return QuotaInfo(api_name="GitHub", status=QuotaStatus.ERROR, error_message=str(e))
+        except (httpx.TimeoutException, httpx.RequestError, ValueError, KeyError, TypeError) as e:
+            return self._error_info(api_name="GitHub", error=e)
 
     async def _check_opencage(self) -> QuotaInfo:
         """
@@ -771,7 +770,5 @@ class APIQuotaChecker:
                     error_message=f"HTTP {response.status_code}",
                 )
 
-        except Exception as e:
-            return QuotaInfo(
-                api_name="OpenCage Geocoding", status=QuotaStatus.ERROR, error_message=str(e)
-            )
+        except (httpx.TimeoutException, httpx.RequestError, ValueError, KeyError, TypeError) as e:
+            return self._error_info(api_name="OpenCage Geocoding", error=e)

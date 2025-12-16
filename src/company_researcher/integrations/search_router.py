@@ -39,6 +39,7 @@ Usage:
 
 import hashlib
 import json
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -184,7 +185,7 @@ class PersistentCache:
             # Check expiry
             timestamp = data.get("cache_timestamp")
             if timestamp:
-                cache_time = datetime.fromisoformat(timestamp)
+                cache_time = datetime.fromisoformat(str(timestamp))
                 if utc_now() - cache_time > timedelta(days=self.ttl_days):
                     # Expired - delete and return None
                     cache_path.unlink(missing_ok=True)
@@ -195,8 +196,8 @@ class PersistentCache:
             logger.info(f"[CACHE HIT] Query: '{query[:40]}...' (saved ${data.get('cost', 0):.4f})")
             return response
 
-        except Exception as e:
-            logger.warning(f"Cache read error: {e}")
+        except (OSError, ValueError, TypeError) as e:
+            logger.warning(f"Cache read error (path={cache_path}): {e}")
             return None
 
     def set(self, query: str, max_results: int, response: SearchResponse) -> None:
@@ -224,8 +225,8 @@ class PersistentCache:
 
             logger.debug(f"[CACHE SAVE] Query: '{query[:40]}...'")
 
-        except Exception as e:
-            logger.warning(f"Cache write error: {e}")
+        except (OSError, TypeError, ValueError) as e:
+            logger.warning(f"Cache write error (path={cache_path}): {e}")
 
     def clear(self) -> int:
         """Clear all cache files. Returns count of files deleted."""
@@ -234,7 +235,7 @@ class PersistentCache:
             try:
                 cache_file.unlink()
                 count += 1
-            except Exception as e:
+            except OSError as e:
                 logger.debug(f"Failed to delete cache file {cache_file}: {e}")
         return count
 
@@ -263,6 +264,7 @@ class SearchRouter:
     # Provider costs per query (sorted cheapest to most expensive)
     PROVIDER_COSTS = {
         "duckduckgo": 0.0,  # FREE (unlimited)
+        "wikipedia": 0.0,  # FREE (no key)
         "brave": 0.0,  # FREE (2000/month free tier)
         "serper": 0.001,  # $0.001/query ($50/50K)
         "tavily": 0.005,  # $0.005/query (best quality)
@@ -274,16 +276,17 @@ class SearchRouter:
         "serper": 0.90,  # Google results
         "brave": 0.85,  # Good with AI summaries
         "duckduckgo": 0.75,  # Good for most queries
+        "wikipedia": 0.70,  # Useful fallback when web search is rate-limited
     }
 
     # COST-FIRST tier ordering (cheapest first, paid only as fallback)
     TIER_PROVIDERS = {
         # FREE tier: Only free providers
-        "free": ["duckduckgo"],
+        "free": ["duckduckgo", "wikipedia"],
         # STANDARD tier: Free first, then cheap paid as fallback
-        "standard": ["duckduckgo", "brave", "serper"],
+        "standard": ["duckduckgo", "wikipedia", "brave", "serper"],
         # PREMIUM tier: Free first, then escalate through all paid options
-        "premium": ["duckduckgo", "brave", "serper", "tavily"],
+        "premium": ["duckduckgo", "wikipedia", "brave", "serper", "tavily"],
     }
 
     # Minimum results to consider search successful (before trying next provider)
@@ -297,6 +300,7 @@ class SearchRouter:
         default_tier: QualityTier = "standard",
         cache_dir: str = ".cache/search",
         cache_ttl_days: int = 30,
+        paid_search_budget_usd: Optional[float] = None,
     ):
         """
         Initialize search router.
@@ -313,11 +317,23 @@ class SearchRouter:
         self.serper_api_key = serper_api_key or get_config("SERPER_API_KEY")
         self.brave_api_key = brave_api_key or get_config("BRAVE_API_KEY")
         self.default_tier = default_tier
+        self.paid_search_budget_usd = (
+            paid_search_budget_usd
+            if paid_search_budget_usd is not None
+            else float(get_config("PAID_SEARCH_BUDGET_USD", default=0.0, cast=float) or 0.0)
+        )
 
         # Track usage and costs
-        self._usage: Dict[str, int] = {"duckduckgo": 0, "brave": 0, "serper": 0, "tavily": 0}
+        self._usage: Dict[str, int] = {
+            "duckduckgo": 0,
+            "wikipedia": 0,
+            "brave": 0,
+            "serper": 0,
+            "tavily": 0,
+        }
         self._costs: Dict[str, float] = {
             "duckduckgo": 0.0,
+            "wikipedia": 0.0,
             "brave": 0.0,
             "serper": 0.0,
             "tavily": 0.0,
@@ -334,7 +350,7 @@ class SearchRouter:
 
     def _get_available_providers(self) -> List[str]:
         """Get list of available providers based on API keys."""
-        available = ["duckduckgo"]  # Always available (no API key needed)
+        available = ["duckduckgo", "wikipedia"]  # Always available (no API key needed)
 
         # Brave - check for API key (has free tier)
         if self.brave_api_key:
@@ -349,6 +365,156 @@ class SearchRouter:
             available.append("tavily")
 
         return available
+
+    def _get_cached_response(
+        self,
+        *,
+        query: str,
+        quality: QualityTier,
+        max_results: int,
+        min_results: int,
+        use_cache: bool,
+        require_min_results: bool = True,
+    ) -> Optional[SearchResponse]:
+        if not use_cache:
+            return None
+        cached = self._persistent_cache.get(query, max_results)
+        if not cached:
+            return None
+        if require_min_results and len(cached.results) < min_results:
+            return None
+        _ = quality  # cached responses are always allowed (cached results cost $0 at runtime)
+
+        with self._lock:
+            self._cache_hits += 1
+        return cached
+
+    def _get_providers(self, *, quality: QualityTier, provider: Optional[str]) -> List[str]:
+        return [provider] if provider else self._get_provider_order(quality)
+
+    def _safe_search_provider(
+        self, provider: str, query: str, max_results: int
+    ) -> Optional[SearchResponse]:
+        try:
+            return self._search_provider(provider, query, max_results)
+        except Exception as e:  # noqa: BLE001 - boundary: router must try fallbacks safely
+            logger.warning(f"[ERROR] {provider}: {e}")
+            with self._lock:
+                self._errors[provider] = self._errors.get(provider, 0) + 1
+            return None
+
+    def _pick_best_result(
+        self, best: Optional[SearchResponse], candidate: SearchResponse
+    ) -> Optional[SearchResponse]:
+        if best is None:
+            return candidate
+        if len(candidate.results) > len(best.results):
+            return candidate
+        return best
+
+    def _cache_if_enabled(
+        self, *, use_cache: bool, query: str, max_results: int, result: SearchResponse
+    ) -> None:
+        if not use_cache:
+            return
+        self._persistent_cache.set(query, max_results, result)
+
+    def _paid_spend_usd(self) -> float:
+        with self._lock:
+            return float(
+                sum(
+                    c
+                    for p, c in self._costs.items()
+                    if float(self.PROVIDER_COSTS.get(p, 0.0) or 0.0) > 0
+                )
+            )
+
+    def _paid_budget_status(self, provider: str) -> Optional[str]:
+        """
+        Return a skip reason if the paid budget disallows using this provider, else None.
+        """
+        prov_cost = float(self.PROVIDER_COSTS.get(provider, 0.0) or 0.0)
+        if prov_cost <= 0:
+            return None
+
+        budget = float(self.paid_search_budget_usd or 0.0)
+        if budget <= 0:
+            return (
+                "Paid search budget is 0. "
+                "Set PAID_SEARCH_BUDGET_USD to enable paid providers (serper/tavily)."
+            )
+
+        spent = self._paid_spend_usd()
+        if spent + prov_cost > budget:
+            return (
+                f"Paid search budget exhausted: need ${prov_cost:.4f}, remaining "
+                f"${max(0.0, budget - spent):.4f}. Increase PAID_SEARCH_BUDGET_USD."
+            )
+        return None
+
+    def _try_providers(
+        self,
+        *,
+        providers: List[str],
+        query: str,
+        quality: QualityTier,
+        max_results: int,
+        min_results: int,
+        use_cache: bool,
+        seed_result: Optional[SearchResponse] = None,
+    ) -> SearchResponse:
+        last_error: Optional[str] = None
+        best_result: Optional[SearchResponse] = seed_result
+
+        for prov in providers:
+            skip_reason = self._paid_budget_status(prov)
+            if skip_reason:
+                last_error = skip_reason
+                continue
+
+            result = self._safe_search_provider(prov, query, max_results)
+            if result is None:
+                last_error = f"provider_error:{prov}"
+                continue
+
+            if not (result.success and result.results):
+                last_error = result.error or f"provider_failed:{prov}"
+                logger.warning(f"[FAIL] {prov}: {result.error}")
+                continue
+
+            result.quality_tier = quality
+            if len(result.results) >= min_results:
+                logger.info(
+                    f"[OK] {prov}: {len(result.results)} results (sufficient, not escalating)"
+                )
+                self._cache_if_enabled(
+                    use_cache=use_cache, query=query, max_results=max_results, result=result
+                )
+                return result
+
+            picked = self._pick_best_result(best_result, result)
+            if picked is not best_result:
+                best_result = picked
+                logger.info(
+                    f"[PARTIAL] {prov}: {len(result.results)} results (below threshold, trying next)"
+                )
+
+        if best_result:
+            logger.info(
+                f"[DONE] Returning best result: {len(best_result.results)} from {best_result.provider}"
+            )
+            self._cache_if_enabled(
+                use_cache=use_cache, query=query, max_results=max_results, result=best_result
+            )
+            return best_result
+
+        return SearchResponse(
+            query=query,
+            provider="none",
+            quality_tier=quality,
+            success=False,
+            error=f"All providers failed. Last error: {last_error}",
+        )
 
     def search(
         self,
@@ -381,77 +547,27 @@ class SearchRouter:
         quality = quality or self.default_tier
         min_results = min_results if min_results is not None else self.MIN_RESULTS_THRESHOLD
 
-        # 1. Check persistent disk cache first (FREE!)
-        if use_cache:
-            cached = self._persistent_cache.get(query, max_results)
-            if cached and len(cached.results) >= min_results:
-                with self._lock:
-                    self._cache_hits += 1
-                return cached
-
-        # 2. Determine provider order (COST-FIRST)
-        if provider:
-            providers = [provider]
-        else:
-            providers = self._get_provider_order(quality)
-
-        logger.info(f"[SEARCH] Query: '{query[:50]}...' | Tier: {quality} | Providers: {providers}")
-
-        # 3. Try providers in COST-FIRST order
-        last_error = None
-        best_result = None
-
-        for prov in providers:
-            try:
-                result = self._search_provider(prov, query, max_results)
-
-                if result.success and result.results:
-                    result.quality_tier = quality
-
-                    # If we got enough results, stop here (save money!)
-                    if len(result.results) >= min_results:
-                        logger.info(
-                            f"[OK] {prov}: {len(result.results)} results (sufficient, not escalating)"
-                        )
-
-                        # Save to persistent cache
-                        if use_cache:
-                            self._persistent_cache.set(query, max_results, result)
-
-                        return result
-
-                    # Got some results but not enough - save as best so far
-                    if best_result is None or len(result.results) > len(best_result.results):
-                        best_result = result
-                        logger.info(
-                            f"[PARTIAL] {prov}: {len(result.results)} results (below threshold, trying next)"
-                        )
-                else:
-                    last_error = result.error
-                    logger.warning(f"[FAIL] {prov}: {result.error}")
-
-            except Exception as e:
-                last_error = str(e)
-                logger.warning(f"[ERROR] {prov}: {e}")
-                with self._lock:
-                    self._errors[prov] = self._errors.get(prov, 0) + 1
-
-        # 4. Return best result we got (even if below threshold)
-        if best_result:
-            logger.info(
-                f"[DONE] Returning best result: {len(best_result.results)} from {best_result.provider}"
-            )
-            if use_cache:
-                self._persistent_cache.set(query, max_results, best_result)
-            return best_result
-
-        # 5. All providers failed
-        return SearchResponse(
+        cached = self._get_cached_response(
             query=query,
-            provider="none",
-            quality_tier=quality,
-            success=False,
-            error=f"All providers failed. Last error: {last_error}",
+            quality=quality,
+            max_results=max_results,
+            min_results=min_results,
+            use_cache=use_cache,
+            require_min_results=False,
+        )
+        if cached is not None and len(cached.results) >= min_results:
+            return cached
+
+        providers = self._get_providers(quality=quality, provider=provider)
+        logger.info(f"[SEARCH] Query: '{query[:50]}...' | Tier: {quality} | Providers: {providers}")
+        return self._try_providers(
+            providers=providers,
+            query=query,
+            quality=quality,
+            max_results=max_results,
+            min_results=min_results,
+            use_cache=use_cache,
+            seed_result=cached,
         )
 
     def _get_provider_order(self, quality: QualityTier) -> List[str]:
@@ -466,6 +582,8 @@ class SearchRouter:
         """Execute search on specific provider."""
         if provider == "duckduckgo":
             return self._search_duckduckgo(query, max_results)
+        elif provider == "wikipedia":
+            return self._search_wikipedia(query, max_results)
         elif provider == "brave":
             return self._search_brave(query, max_results)
         elif provider == "serper":
@@ -480,19 +598,28 @@ class SearchRouter:
     def _search_duckduckgo(self, query: str, max_results: int) -> SearchResponse:
         """Search using DuckDuckGo (FREE - unlimited)."""
         try:
-            from duckduckgo_search import DDGS
+            from duckduckgo_search import DDGS  # type: ignore[import-not-found]
 
-            results = []
-            with DDGS() as ddgs:
-                for r in ddgs.text(query, max_results=max_results):
-                    results.append(
-                        SearchResult(
-                            title=r.get("title", ""),
-                            url=r.get("href", ""),
-                            snippet=r.get("body", ""),
-                            source="duckduckgo",
-                        )
-                    )
+            results: List[SearchResult] = []
+            for attempt in range(2):
+                try:
+                    with DDGS() as ddgs:
+                        for r in ddgs.text(query, max_results=max_results):
+                            results.append(
+                                SearchResult(
+                                    title=r.get("title", ""),
+                                    url=r.get("href", ""),
+                                    snippet=r.get("body", ""),
+                                    source="duckduckgo",
+                                )
+                            )
+                    break
+                except Exception as exc:  # noqa: BLE001 - DDG client raises broad exceptions
+                    msg = str(exc)
+                    if attempt == 0 and ("ratelimit" in msg.lower() or "202" in msg):
+                        time.sleep(0.75)
+                        continue
+                    raise
 
             cost = self.PROVIDER_COSTS["duckduckgo"]
             with self._lock:
@@ -503,9 +630,91 @@ class SearchRouter:
                 query=query, results=results, provider="duckduckgo", cost=cost, success=True
             )
 
-        except Exception as e:
+        except ImportError as e:
+            msg = (
+                "DuckDuckGo provider unavailable: 'duckduckgo_search' is not installed. "
+                "Install with: pip install duckduckgo-search"
+            )
+            logger.warning(msg)
+            return SearchResponse(query=query, provider="duckduckgo", success=False, error=str(e))
+        except Exception as e:  # noqa: BLE001 - DDG client errors vary
             logger.error(f"DuckDuckGo search error: {e}")
             return SearchResponse(query=query, provider="duckduckgo", success=False, error=str(e))
+
+    def _search_wikipedia(self, query: str, max_results: int) -> SearchResponse:
+        """Search using Wikipedia (FREE)."""
+        try:
+            import wikipedia  # type: ignore[import-not-found]
+
+            wiki_exc = wikipedia.exceptions.WikipediaException  # type: ignore[attr-defined]
+        except Exception:
+            wiki_exc = Exception
+        try:
+
+            # Wikipedia search works best with the canonical topic, not long "tutorial/2025" queries.
+            cleaned = query
+            for token in (
+                "tutorial",
+                "introduction",
+                "overview",
+                "guide",
+                "survey",
+                "2024",
+                "2025",
+                "state of the art",
+            ):
+                cleaned = cleaned.replace(token, " ")
+                cleaned = cleaned.replace(token.title(), " ")
+            cleaned = " ".join(cleaned.split()).strip() or query
+
+            titles = wikipedia.search(cleaned, results=min(max_results, 5))
+            results: List[SearchResult] = []
+            for t in titles:
+                if not t:
+                    continue
+                try:
+                    page = wikipedia.page(t, auto_suggest=True, redirect=True)
+                    url = getattr(page, "url", "") or ""
+                    title = getattr(page, "title", "") or t
+                except wiki_exc:
+                    # Last-resort URL construction (keeps the source usable even if page fetch fails).
+                    from urllib.parse import quote
+
+                    url = f"https://en.wikipedia.org/wiki/{quote(t.replace(' ', '_'))}"
+                    title = t
+                try:
+                    summary = wikipedia.summary(
+                        title, sentences=2, auto_suggest=False, redirect=True
+                    )
+                except wiki_exc:
+                    summary = ""
+                results.append(
+                    SearchResult(
+                        title=title,
+                        url=url,
+                        snippet=summary,
+                        source="wikipedia",
+                    )
+                )
+
+            cost = self.PROVIDER_COSTS["wikipedia"]
+            with self._lock:
+                self._usage["wikipedia"] += 1
+                self._costs["wikipedia"] += cost
+
+            return SearchResponse(
+                query=query, results=results, provider="wikipedia", cost=cost, success=True
+            )
+        except ImportError as e:
+            msg = (
+                "Wikipedia provider unavailable: 'wikipedia' is not installed. "
+                "Install with: pip install wikipedia"
+            )
+            logger.warning(msg)
+            return SearchResponse(query=query, provider="wikipedia", success=False, error=str(e))
+        except Exception as e:  # noqa: BLE001 - wikipedia client may raise broadly
+            logger.error(f"Wikipedia search error: {e}")
+            return SearchResponse(query=query, provider="wikipedia", success=False, error=str(e))
 
     def _search_brave(self, query: str, max_results: int) -> SearchResponse:
         """Search using Brave Search API (FREE tier: 2000/month)."""
@@ -515,7 +724,7 @@ class SearchRouter:
             )
 
         try:
-            import requests
+            import requests  # type: ignore[import-not-found]
 
             response = requests.get(
                 "https://api.search.brave.com/res/v1/web/search",
@@ -547,7 +756,13 @@ class SearchRouter:
                 query=query, results=results, provider="brave", cost=cost, success=True
             )
 
-        except Exception as e:
+        except requests.RequestException as e:
+            logger.error(f"Brave search request failed: {e}")
+            return SearchResponse(query=query, provider="brave", success=False, error=str(e))
+        except (ValueError, TypeError) as e:
+            logger.error(f"Brave search parse error: {e}")
+            return SearchResponse(query=query, provider="brave", success=False, error=str(e))
+        except Exception as e:  # noqa: BLE001 - defensive
             logger.error(f"Brave search error: {e}")
             return SearchResponse(query=query, provider="brave", success=False, error=str(e))
 
@@ -559,7 +774,7 @@ class SearchRouter:
             )
 
         try:
-            import requests
+            import requests  # type: ignore[import-not-found]
 
             response = requests.post(
                 "https://google.serper.dev/search",
@@ -591,7 +806,13 @@ class SearchRouter:
                 query=query, results=results, provider="serper", cost=cost, success=True
             )
 
-        except Exception as e:
+        except requests.RequestException as e:
+            logger.error(f"Serper search request failed: {e}")
+            return SearchResponse(query=query, provider="serper", success=False, error=str(e))
+        except (ValueError, TypeError) as e:
+            logger.error(f"Serper search parse error: {e}")
+            return SearchResponse(query=query, provider="serper", success=False, error=str(e))
+        except Exception as e:  # noqa: BLE001 - defensive
             logger.error(f"Serper search error: {e}")
             return SearchResponse(query=query, provider="serper", success=False, error=str(e))
 
@@ -603,7 +824,7 @@ class SearchRouter:
             )
 
         try:
-            from tavily import TavilyClient
+            from tavily import TavilyClient  # type: ignore[import-not-found]
 
             client = TavilyClient(api_key=self.tavily_api_key)
             response = client.search(query, max_results=max_results)
@@ -630,7 +851,14 @@ class SearchRouter:
                 query=query, results=results, provider="tavily", cost=cost, success=True
             )
 
-        except Exception as e:
+        except ImportError as e:
+            msg = (
+                "Tavily provider unavailable: 'tavily-python' is not installed. "
+                "Install with: pip install tavily-python"
+            )
+            logger.warning(msg)
+            return SearchResponse(query=query, provider="tavily", success=False, error=str(e))
+        except Exception as e:  # noqa: BLE001 - tavily client errors vary
             logger.error(f"Tavily search error: {e}")
             return SearchResponse(query=query, provider="tavily", success=False, error=str(e))
 

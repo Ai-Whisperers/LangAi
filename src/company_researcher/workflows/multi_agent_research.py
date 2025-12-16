@@ -125,20 +125,28 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
 ---
 """
 
-    # Save report
-    import os
+    # Save report (canonical)
+    from pathlib import Path
 
-    output_dir = f"outputs/{company_name}"
-    os.makedirs(output_dir, exist_ok=True)
+    from ..config import get_config
 
-    report_path = f"{output_dir}/report_{timestamp}.md"
+    config = get_config()
+    reports_root = Path(getattr(config, "reports_dir", config.output_dir))
+    output_dir = reports_root / "companies" / company_name.replace(" ", "_")
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write(report_content)
+    report_path = output_dir / "00_full_report.md"
+    timestamped_path = output_dir / f"report_{timestamp}.md"
+
+    report_path.write_text(report_content, encoding="utf-8")
+    try:
+        timestamped_path.write_text(report_content, encoding="utf-8")
+    except Exception:
+        pass
 
     print(f"[OK] Report saved to: {report_path}")
 
-    return {"report_path": report_path}
+    return {"report_path": str(report_path)}
 
 
 # ============================================================================

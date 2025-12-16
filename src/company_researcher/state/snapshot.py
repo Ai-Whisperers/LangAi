@@ -12,7 +12,7 @@ import hashlib
 import json
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -145,6 +145,7 @@ class SnapshotStore:
         self.storage_dir = Path(storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         self._cache: Dict[str, StateSnapshot] = {}
+        self._last_created_at: Optional[datetime] = None
 
     def _calculate_checksum(self, state: Dict[str, Any]) -> str:
         """Calculate checksum for state."""
@@ -168,10 +169,15 @@ class SnapshotStore:
         Returns:
             Created StateSnapshot
         """
+        created_at = utc_now()
+        if self._last_created_at is not None and created_at <= self._last_created_at:
+            created_at = self._last_created_at + timedelta(microseconds=1)
+        self._last_created_at = created_at
+
         snapshot = StateSnapshot(
             id=str(uuid.uuid4()),
             state=state,
-            created_at=utc_now(),
+            created_at=created_at,
             checksum=self._calculate_checksum(state),
             label=label,
             metadata=metadata or {},
