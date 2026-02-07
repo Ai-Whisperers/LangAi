@@ -10,8 +10,8 @@ Documentation: https://api.domainsdb.info/v1/
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from .base_client import BaseAPIClient
 from ..utils import get_logger
+from .base_client import BaseAPIClient
 
 logger = get_logger(__name__)
 
@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 @dataclass
 class DomainInfo:
     """Domain information."""
+
     domain: str
     create_date: Optional[str]
     update_date: Optional[str]
@@ -42,7 +43,7 @@ class DomainInfo:
             ns_record=data.get("NS"),
             cname_record=data.get("CNAME"),
             mx_record=data.get("MX"),
-            txt_record=data.get("TXT")
+            txt_record=data.get("TXT"),
         )
 
 
@@ -69,7 +70,7 @@ class DomainsDBClient(BaseAPIClient):
             api_key="free",  # Placeholder
             cache_ttl=3600,  # 1 hour cache
             rate_limit_calls=10,
-            rate_limit_period=1.0  # Be nice to free API
+            rate_limit_period=1.0,  # Be nice to free API
         )
 
     def is_available(self) -> bool:
@@ -82,7 +83,7 @@ class DomainsDBClient(BaseAPIClient):
         zone: str = "com",
         page: int = 1,
         limit: int = 50,
-        is_dead: Optional[bool] = None
+        is_dead: Optional[bool] = None,
     ) -> List[DomainInfo]:
         """
         Search for domains containing query string.
@@ -101,12 +102,7 @@ class DomainsDBClient(BaseAPIClient):
             # Find all domains containing "techcorp" with .com TLD
             results = await client.search_domains("techcorp", zone="com")
         """
-        params = {
-            "domain": query,
-            "zone": zone,
-            "page": page,
-            "limit": min(limit, 100)
-        }
+        params = {"domain": query, "zone": zone, "page": page, "limit": min(limit, 100)}
 
         if is_dead is not None:
             params["isDead"] = str(is_dead).lower()
@@ -116,9 +112,7 @@ class DomainsDBClient(BaseAPIClient):
         return [DomainInfo.from_dict(d) for d in domains]
 
     async def find_related_domains(
-        self,
-        company_name: str,
-        zones: Optional[List[str]] = None
+        self, company_name: str, zones: Optional[List[str]] = None
     ) -> Dict[str, List[DomainInfo]]:
         """
         Find all related domains across popular TLDs.
@@ -144,9 +138,7 @@ class DomainsDBClient(BaseAPIClient):
         return results
 
     async def find_company_domains(
-        self,
-        company_name: str,
-        include_variations: bool = True
+        self, company_name: str, include_variations: bool = True
     ) -> List[DomainInfo]:
         """
         Find domains that might belong to a company.
@@ -185,10 +177,7 @@ class DomainsDBClient(BaseAPIClient):
 
         return all_domains
 
-    async def check_domain_availability(
-        self,
-        domain_name: str
-    ) -> Dict[str, bool]:
+    async def check_domain_availability(self, domain_name: str) -> Dict[str, bool]:
         """
         Check if a domain name is available across TLDs.
 
@@ -215,9 +204,7 @@ class DomainsDBClient(BaseAPIClient):
         return availability
 
     async def get_competitor_domains(
-        self,
-        company_domain: str,
-        limit: int = 20
+        self, company_domain: str, limit: int = 20
     ) -> List[DomainInfo]:
         """
         Find similar/competitor domains.

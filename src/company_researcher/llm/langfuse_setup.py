@@ -33,9 +33,10 @@ Usage:
     llm = ChatAnthropic(callbacks=[handler])
 """
 
-from typing import Optional, Dict, Any, List
-from threading import Lock
 from dataclasses import dataclass
+from threading import Lock
+from typing import Any, Dict, List, Optional
+
 from ..utils import get_config, get_logger
 
 logger = get_logger(__name__)
@@ -46,6 +47,7 @@ LANGFUSE_AVAILABLE = False
 try:
     from langfuse import Langfuse
     from langfuse.callback import CallbackHandler
+
     LANGFUSE_AVAILABLE = True
 except ImportError:
     logger.info("Langfuse not installed. Run: pip install langfuse")
@@ -56,6 +58,7 @@ except ImportError:
 @dataclass
 class LangfuseConfig:
     """Langfuse configuration."""
+
     public_key: Optional[str] = None
     secret_key: Optional[str] = None
     host: str = "https://cloud.langfuse.com"
@@ -90,7 +93,7 @@ class LangfuseManager:
             "spans": 0,
             "generations": 0,
             "total_tokens": 0,
-            "total_cost": 0.0
+            "total_cost": 0.0,
         }
 
     def _load_config_from_env(self) -> LangfuseConfig:
@@ -101,7 +104,7 @@ class LangfuseManager:
             host=get_config("LANGFUSE_HOST", default="https://cloud.langfuse.com"),
             enabled=get_config("LANGFUSE_ENABLED", default="true").lower() == "true",
             debug=get_config("LANGFUSE_DEBUG", default="false").lower() == "true",
-            release=get_config("LANGFUSE_RELEASE")
+            release=get_config("LANGFUSE_RELEASE"),
         )
 
     def _initialize(self) -> bool:
@@ -137,7 +140,7 @@ class LangfuseManager:
                     secret_key=self.config.secret_key,
                     host=self.config.host,
                     debug=self.config.debug,
-                    release=self.config.release
+                    release=self.config.release,
                 )
                 logger.info(f"Langfuse initialized: {self.config.host}")
                 self._initialized = True
@@ -166,7 +169,7 @@ class LangfuseManager:
         user_id: Optional[str] = None,
         session_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
-        tags: Optional[List[str]] = None
+        tags: Optional[List[str]] = None,
     ) -> Optional["CallbackHandler"]:
         """
         Get LangChain callback handler.
@@ -193,7 +196,7 @@ class LangfuseManager:
                 user_id=user_id,
                 session_id=session_id,
                 metadata=metadata,
-                tags=tags
+                tags=tags,
             )
             return handler
 
@@ -208,7 +211,7 @@ class LangfuseManager:
         session_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
         tags: Optional[List[str]] = None,
-        input: Optional[Any] = None
+        input: Optional[Any] = None,
     ):
         """
         Create a new trace.
@@ -235,7 +238,7 @@ class LangfuseManager:
                 session_id=session_id,
                 metadata=metadata,
                 tags=tags,
-                input=input
+                input=input,
             )
             self._local_stats["traces"] += 1
             return trace
@@ -252,7 +255,7 @@ class LangfuseManager:
         input: Any,
         output: Any,
         usage: Optional[Dict[str, int]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ):
         """
         Log an LLM generation.
@@ -280,7 +283,7 @@ class LangfuseManager:
                 input=input,
                 output=output,
                 usage=usage,
-                metadata=metadata
+                metadata=metadata,
             )
             self._local_stats["generations"] += 1
 
@@ -293,7 +296,7 @@ class LangfuseManager:
         name: str,
         input: Optional[Any] = None,
         output: Optional[Any] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ):
         """
         Log a span within a trace.
@@ -311,24 +314,14 @@ class LangfuseManager:
 
         try:
             self._client.span(
-                trace_id=trace_id,
-                name=name,
-                input=input,
-                output=output,
-                metadata=metadata
+                trace_id=trace_id, name=name, input=input, output=output, metadata=metadata
             )
             self._local_stats["spans"] += 1
 
         except Exception as e:
             logger.error(f"Failed to log span: {e}")
 
-    def log_score(
-        self,
-        trace_id: str,
-        name: str,
-        value: float,
-        comment: Optional[str] = None
-    ):
+    def log_score(self, trace_id: str, name: str, value: float, comment: Optional[str] = None):
         """
         Log a score for a trace.
 
@@ -342,12 +335,7 @@ class LangfuseManager:
             return
 
         try:
-            self._client.score(
-                trace_id=trace_id,
-                name=name,
-                value=value,
-                comment=comment
-            )
+            self._client.score(trace_id=trace_id, name=name, value=value, comment=comment)
 
         except Exception as e:
             logger.error(f"Failed to log score: {e}")
@@ -374,7 +362,7 @@ class LangfuseManager:
             "enabled": self.is_enabled,
             "host": self.config.host if self.config else None,
             "local_stats": self._local_stats.copy(),
-            "cost": 0.0  # FREE!
+            "cost": 0.0,  # FREE!
         }
 
 
@@ -404,7 +392,7 @@ def reset_langfuse() -> None:
 def get_langchain_handler(
     trace_name: Optional[str] = None,
     user_id: Optional[str] = None,
-    session_id: Optional[str] = None
+    session_id: Optional[str] = None,
 ) -> Optional["CallbackHandler"]:
     """
     Get LangChain callback handler for Langfuse.
@@ -418,11 +406,7 @@ def get_langchain_handler(
         CallbackHandler or None if not configured
     """
     manager = get_langfuse()
-    return manager.get_handler(
-        trace_name=trace_name,
-        user_id=user_id,
-        session_id=session_id
-    )
+    return manager.get_handler(trace_name=trace_name, user_id=user_id, session_id=session_id)
 
 
 # Convenience context manager
@@ -434,7 +418,7 @@ class LangfuseTrace:
         name: str,
         user_id: Optional[str] = None,
         session_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ):
         self.name = name
         self.user_id = user_id
@@ -445,10 +429,7 @@ class LangfuseTrace:
 
     def __enter__(self):
         self.trace = self.manager.trace(
-            name=self.name,
-            user_id=self.user_id,
-            session_id=self.session_id,
-            metadata=self.metadata
+            name=self.name, user_id=self.user_id, session_id=self.session_id, metadata=self.metadata
         )
         return self.trace
 
@@ -456,9 +437,9 @@ class LangfuseTrace:
         if self.trace and exc_type:
             # Log error if exception occurred
             self.manager.log_span(
-                trace_id=self.trace.id if hasattr(self.trace, 'id') else None,
+                trace_id=self.trace.id if hasattr(self.trace, "id") else None,
                 name="error",
-                output={"error": str(exc_val), "type": exc_type.__name__}
+                output={"error": str(exc_val), "type": exc_type.__name__},
             )
         self.manager.flush()
         return False

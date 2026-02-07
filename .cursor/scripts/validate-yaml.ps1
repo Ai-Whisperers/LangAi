@@ -105,4 +105,3 @@ foreach ($file in $yamlFiles) {
 }
 
 Write-Summary -Checked $checked -Failed $failed
-

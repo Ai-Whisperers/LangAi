@@ -21,8 +21,8 @@
 ## User Story
 
 ### Main Story
-**As a** system administrator  
-**I want to** extract bootstrapped configuration data from different EBASE environments in various formats  
+**As a** system administrator
+**I want to** extract bootstrapped configuration data from different EBASE environments in various formats
 **So that** I can analyze, compare, and backup core configuration data for standardization purposes
 
 ### User Type
@@ -30,8 +30,8 @@
   - Responsible for environment configuration and maintenance
   - Needs to ensure consistency across environments
   - Performs configuration backup and restore operations
-  
-- **Secondary Users**: 
+
+- **Secondary Users**:
   - **Data Analyst**: Uses extracted data for analysis and reporting
   - **Configuration Manager**: Manages configuration templates and standards
 
@@ -47,40 +47,40 @@
 ### Given-When-Then Format
 
 #### Scenario 1: Extract all configuration tables
-**Given** I have access to an EBASE environment with proper credentials  
-**When** I run the extraction process for all 11 bootstrapped configuration tables  
-**Then** I receive data in the selected format (Excel, JSON, CSV, SQL)  
-**And** the data includes all records from the specified tables  
-**And** the data includes metadata (timestamp, environment name, table structure)  
+**Given** I have access to an EBASE environment with proper credentials
+**When** I run the extraction process for all 11 bootstrapped configuration tables
+**Then** I receive data in the selected format (Excel, JSON, CSV, SQL)
+**And** the data includes all records from the specified tables
+**And** the data includes metadata (timestamp, environment name, table structure)
 **And** the extraction completes within 5 minutes for up to 10,000 records per table
 
 #### Scenario 2: Extract specific table with filtering
-**Given** I have access to an EBASE environment  
-**When** I run the extraction process for a specific table with filtering criteria (e.g., WHERE Switch = 1)  
-**Then** I receive only the filtered data in the selected format  
-**And** the filtering criteria are correctly applied (verified by record count)  
+**Given** I have access to an EBASE environment
+**When** I run the extraction process for a specific table with filtering criteria (e.g., WHERE Switch = 1)
+**Then** I receive only the filtered data in the selected format
+**And** the filtering criteria are correctly applied (verified by record count)
 **And** the filtered data matches what I would get from a manual SQL query
 
 #### Scenario 3: Handle large datasets
-**Given** I have access to an EBASE environment with large datasets (>10,000 records)  
-**When** I run the extraction process  
-**Then** the process completes successfully without memory issues  
-**And** progress is reported every second throughout the extraction  
-**And** the process can be cancelled at any time without leaving incomplete files  
+**Given** I have access to an EBASE environment with large datasets (>10,000 records)
+**When** I run the extraction process
+**Then** the process completes successfully without memory issues
+**And** progress is reported every second throughout the extraction
+**And** the process can be cancelled at any time without leaving incomplete files
 **And** memory usage stays under 500MB
 
 #### Scenario 4: Handle connection failures
-**Given** I am extracting data from an EBASE environment  
-**When** a database connection failure occurs during extraction  
-**Then** the system retries the operation up to 3 times with exponential backoff  
-**And** if all retries fail, I receive a clear error message indicating the connection problem  
+**Given** I am extracting data from an EBASE environment
+**When** a database connection failure occurs during extraction
+**Then** the system retries the operation up to 3 times with exponential backoff
+**And** if all retries fail, I receive a clear error message indicating the connection problem
 **And** any partially extracted data is cleaned up
 
 #### Scenario 5: Export in multiple formats simultaneously
-**Given** I have access to an EBASE environment  
-**When** I select multiple export formats (e.g., Excel, JSON, CSV)  
-**Then** the system exports the data in all selected formats  
-**And** all format files contain the same data  
+**Given** I have access to an EBASE environment
+**When** I select multiple export formats (e.g., Excel, JSON, CSV)
+**Then** the system exports the data in all selected formats
+**And** all format files contain the same data
 **And** each format is properly structured and valid
 
 ### Functional Requirements
@@ -584,5 +584,3 @@
 - [ ] Monitoring and alerting configured
 - [ ] Support team trained on new feature
 ```
-
-

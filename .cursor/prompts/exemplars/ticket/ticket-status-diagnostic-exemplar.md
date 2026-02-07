@@ -55,4 +55,3 @@ Sources: context.md, progress.md (no timeline.md found).
 
 ## When to Reference
 Use as a model for lean, source-backed status checks before reviews or handoffs.
-

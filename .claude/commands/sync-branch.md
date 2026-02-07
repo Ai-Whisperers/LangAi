@@ -14,4 +14,3 @@ argument-hint: [target]
    ```bash
    git push --force-with-lease origin $(git branch --show-current)
    ```
-

@@ -18,10 +18,11 @@ Usage:
     )
 """
 
-from enum import Enum
-from typing import Dict, Any, Optional, Tuple, List
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
 from ..utils import get_config, get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -29,27 +30,30 @@ logger = get_logger(__name__)
 
 class TaskType(Enum):
     """Types of tasks for model routing."""
-    REASONING = "reasoning"           # Complex analysis, synthesis
-    EXTRACTION = "extraction"         # Structured data extraction
-    SEARCH_QUERY = "search_query"     # Query generation
-    SUMMARIZATION = "summarization"   # Text summarization
-    CLASSIFICATION = "classification" # Categorization tasks
-    REFLECTION = "reflection"         # Quality assessment
-    SYNTHESIS = "synthesis"           # Report generation
-    SIMPLE = "simple"                 # Basic tasks
+
+    REASONING = "reasoning"  # Complex analysis, synthesis
+    EXTRACTION = "extraction"  # Structured data extraction
+    SEARCH_QUERY = "search_query"  # Query generation
+    SUMMARIZATION = "summarization"  # Text summarization
+    CLASSIFICATION = "classification"  # Categorization tasks
+    REFLECTION = "reflection"  # Quality assessment
+    SYNTHESIS = "synthesis"  # Report generation
+    SIMPLE = "simple"  # Basic tasks
 
 
 class ModelTier(Enum):
     """Model capability tiers."""
-    PREMIUM = "premium"     # Best quality, highest cost
-    STANDARD = "standard"   # Good balance
-    ECONOMY = "economy"     # Cost-effective
-    FAST = "fast"           # Low latency
+
+    PREMIUM = "premium"  # Best quality, highest cost
+    STANDARD = "standard"  # Good balance
+    ECONOMY = "economy"  # Cost-effective
+    FAST = "fast"  # Low latency
 
 
 @dataclass
 class ModelConfig:
     """Configuration for a specific model."""
+
     model_id: str
     provider: str
     tier: ModelTier
@@ -71,6 +75,7 @@ class ModelConfig:
 @dataclass
 class RoutingDecision:
     """Result of model routing decision."""
+
     model_config: ModelConfig
     task_type: TaskType
     complexity: str
@@ -94,7 +99,7 @@ class ModelRegistry:
         context_window=200000,
         strengths=[TaskType.REASONING, TaskType.SYNTHESIS, TaskType.REFLECTION],
         latency_ms=3000,
-        supports_vision=True
+        supports_vision=True,
     )
 
     CLAUDE_SONNET = ModelConfig(
@@ -107,7 +112,7 @@ class ModelRegistry:
         context_window=200000,
         strengths=[TaskType.REASONING, TaskType.EXTRACTION, TaskType.SYNTHESIS],
         latency_ms=1500,
-        supports_vision=True
+        supports_vision=True,
     )
 
     CLAUDE_HAIKU = ModelConfig(
@@ -120,7 +125,7 @@ class ModelRegistry:
         context_window=200000,
         strengths=[TaskType.EXTRACTION, TaskType.CLASSIFICATION, TaskType.SIMPLE],
         latency_ms=500,
-        supports_vision=True
+        supports_vision=True,
     )
 
     # OpenAI Models
@@ -134,7 +139,7 @@ class ModelRegistry:
         context_window=128000,
         strengths=[TaskType.REASONING, TaskType.SYNTHESIS],
         latency_ms=2000,
-        supports_vision=True
+        supports_vision=True,
     )
 
     GPT4O = ModelConfig(
@@ -147,7 +152,7 @@ class ModelRegistry:
         context_window=128000,
         strengths=[TaskType.EXTRACTION, TaskType.SUMMARIZATION, TaskType.SEARCH_QUERY],
         latency_ms=1000,
-        supports_vision=True
+        supports_vision=True,
     )
 
     GPT4O_MINI = ModelConfig(
@@ -160,7 +165,7 @@ class ModelRegistry:
         context_window=128000,
         strengths=[TaskType.SIMPLE, TaskType.CLASSIFICATION, TaskType.SEARCH_QUERY],
         latency_ms=300,
-        supports_vision=True
+        supports_vision=True,
     )
 
     GPT35_TURBO = ModelConfig(
@@ -172,7 +177,7 @@ class ModelRegistry:
         max_tokens=4096,
         context_window=16385,
         strengths=[TaskType.SIMPLE, TaskType.SEARCH_QUERY],
-        latency_ms=200
+        latency_ms=200,
     )
 
     # DeepSeek Models (ULTRA LOW COST)
@@ -184,9 +189,14 @@ class ModelRegistry:
         cost_per_1k_output=0.00027,  # $0.27/1M
         max_tokens=8000,
         context_window=128000,
-        strengths=[TaskType.EXTRACTION, TaskType.SUMMARIZATION, TaskType.CLASSIFICATION, TaskType.SIMPLE],
+        strengths=[
+            TaskType.EXTRACTION,
+            TaskType.SUMMARIZATION,
+            TaskType.CLASSIFICATION,
+            TaskType.SIMPLE,
+        ],
         latency_ms=800,
-        supports_tools=True
+        supports_tools=True,
     )
 
     DEEPSEEK_R1 = ModelConfig(
@@ -199,7 +209,7 @@ class ModelRegistry:
         context_window=128000,
         strengths=[TaskType.REASONING, TaskType.REFLECTION, TaskType.SYNTHESIS],
         latency_ms=2000,
-        supports_tools=True
+        supports_tools=True,
     )
 
     # Groq (FAST + CHEAP)
@@ -211,9 +221,14 @@ class ModelRegistry:
         cost_per_1k_output=0.00079,  # $0.79/1M
         max_tokens=32768,
         context_window=128000,
-        strengths=[TaskType.EXTRACTION, TaskType.SUMMARIZATION, TaskType.SEARCH_QUERY, TaskType.SIMPLE],
+        strengths=[
+            TaskType.EXTRACTION,
+            TaskType.SUMMARIZATION,
+            TaskType.SEARCH_QUERY,
+            TaskType.SIMPLE,
+        ],
         latency_ms=200,  # Very fast
-        supports_tools=True
+        supports_tools=True,
     )
 
     @classmethod
@@ -255,12 +270,7 @@ class ModelRouter:
     """
 
     # Complexity multipliers for cost estimation
-    COMPLEXITY_MULTIPLIERS = {
-        "low": 0.5,
-        "medium": 1.0,
-        "high": 2.0,
-        "very_high": 3.0
-    }
+    COMPLEXITY_MULTIPLIERS = {"low": 0.5, "medium": 1.0, "high": 2.0, "very_high": 3.0}
 
     # Task type to typical token counts
     TASK_TOKEN_ESTIMATES = {
@@ -279,9 +289,11 @@ class ModelRouter:
         preferred_provider: Optional[str] = None,
         max_cost_per_call: float = 0.10,
         quality_priority: float = 0.5,  # 0 = cost focused, 1 = quality focused
-        enable_fallbacks: bool = True
+        enable_fallbacks: bool = True,
     ):
-        self.preferred_provider = preferred_provider or get_config("PREFERRED_LLM_PROVIDER", default="groq")
+        self.preferred_provider = preferred_provider or get_config(
+            "PREFERRED_LLM_PROVIDER", default="groq"
+        )
         self.max_cost_per_call = max_cost_per_call
         self.quality_priority = quality_priority
         self.enable_fallbacks = enable_fallbacks
@@ -295,7 +307,7 @@ class ModelRouter:
         require_vision: bool = False,
         require_tools: bool = False,
         prefer_low_latency: bool = False,
-        context_size_needed: int = 0
+        context_size_needed: int = 0,
     ) -> RoutingDecision:
         """
         Select optimal model for a task.
@@ -317,7 +329,7 @@ class ModelRouter:
             task_type=task_type,
             require_vision=require_vision,
             require_tools=require_tools,
-            context_size_needed=context_size_needed
+            context_size_needed=context_size_needed,
         )
 
         if not candidates:
@@ -332,7 +344,7 @@ class ModelRouter:
                 task_type=task_type,
                 complexity=complexity,
                 max_cost=max_cost,
-                prefer_low_latency=prefer_low_latency
+                prefer_low_latency=prefer_low_latency,
             )
             if score > 0:
                 scored.append((model, score, reasoning))
@@ -349,7 +361,7 @@ class ModelRouter:
                 complexity=complexity,
                 estimated_cost=self._estimate_cost(default, task_type, complexity),
                 reasoning="No suitable model found, using default",
-                fallback_models=[]
+                fallback_models=[],
             )
 
         selected, _, reasoning = scored[0]
@@ -361,7 +373,7 @@ class ModelRouter:
             complexity=complexity,
             estimated_cost=self._estimate_cost(selected, task_type, complexity),
             reasoning=reasoning,
-            fallback_models=fallbacks
+            fallback_models=fallbacks,
         )
 
     def _get_candidates(
@@ -369,7 +381,7 @@ class ModelRouter:
         task_type: TaskType,
         require_vision: bool,
         require_tools: bool,
-        context_size_needed: int
+        context_size_needed: int,
     ) -> List[ModelConfig]:
         """Filter models that meet requirements."""
         candidates = []
@@ -410,7 +422,7 @@ class ModelRouter:
         task_type: TaskType,
         complexity: str,
         max_cost: float,
-        prefer_low_latency: bool
+        prefer_low_latency: bool,
     ) -> Tuple[float, str]:
         """Score a model for the given task."""
         score = 100.0
@@ -428,7 +440,7 @@ class ModelRouter:
             ModelTier.PREMIUM: 40,
             ModelTier.STANDARD: 30,
             ModelTier.ECONOMY: 20,
-            ModelTier.FAST: 10
+            ModelTier.FAST: 10,
         }
         quality_score = tier_scores[model.tier] * self.quality_priority
         score += quality_score
@@ -456,7 +468,10 @@ class ModelRouter:
             reasons.append(f"Latency: +{latency_score:.1f}")
 
         # Complexity matching
-        if complexity in ["high", "very_high"] and model.tier in [ModelTier.PREMIUM, ModelTier.STANDARD]:
+        if complexity in ["high", "very_high"] and model.tier in [
+            ModelTier.PREMIUM,
+            ModelTier.STANDARD,
+        ]:
             score += 15
             reasons.append("High complexity match: +15")
         elif complexity in ["low"] and model.tier in [ModelTier.ECONOMY, ModelTier.FAST]:
@@ -465,12 +480,7 @@ class ModelRouter:
 
         return score, " | ".join(reasons)
 
-    def _estimate_cost(
-        self,
-        model: ModelConfig,
-        task_type: TaskType,
-        complexity: str
-    ) -> float:
+    def _estimate_cost(self, model: ModelConfig, task_type: TaskType, complexity: str) -> float:
         """Estimate cost for a task."""
         tokens = self.TASK_TOKEN_ESTIMATES.get(task_type, {"input": 1000, "output": 500})
         multiplier = self.COMPLEXITY_MULTIPLIERS.get(complexity, 1.0)
@@ -478,10 +488,9 @@ class ModelRouter:
         input_tokens = tokens["input"] * multiplier
         output_tokens = tokens["output"] * multiplier
 
-        cost = (
-            (input_tokens / 1000) * model.cost_per_1k_input +
-            (output_tokens / 1000) * model.cost_per_1k_output
-        )
+        cost = (input_tokens / 1000) * model.cost_per_1k_input + (
+            output_tokens / 1000
+        ) * model.cost_per_1k_output
 
         return cost
 
@@ -492,7 +501,7 @@ class ModelRouter:
         input_tokens: int,
         output_tokens: int,
         latency_ms: int,
-        success: bool
+        success: bool,
     ):
         """Record model usage for analytics."""
         if model_id not in self.usage_stats:
@@ -502,7 +511,7 @@ class ModelRouter:
                 "total_input_tokens": 0,
                 "total_output_tokens": 0,
                 "total_latency_ms": 0,
-                "by_task_type": {}
+                "by_task_type": {},
             }
 
         stats = self.usage_stats[model_id]
@@ -523,12 +532,7 @@ class ModelRouter:
         """Get usage statistics report."""
         report = {
             "models": {},
-            "totals": {
-                "calls": 0,
-                "input_tokens": 0,
-                "output_tokens": 0,
-                "estimated_cost": 0.0
-            }
+            "totals": {"calls": 0, "input_tokens": 0, "output_tokens": 0, "estimated_cost": 0.0},
         }
 
         for model_id, stats in self.usage_stats.items():
@@ -540,10 +544,9 @@ class ModelRouter:
                     break
 
             if model_config:
-                cost = (
-                    (stats["total_input_tokens"] / 1000) * model_config.cost_per_1k_input +
-                    (stats["total_output_tokens"] / 1000) * model_config.cost_per_1k_output
-                )
+                cost = (stats["total_input_tokens"] / 1000) * model_config.cost_per_1k_input + (
+                    stats["total_output_tokens"] / 1000
+                ) * model_config.cost_per_1k_output
             else:
                 cost = 0.0
 
@@ -551,7 +554,7 @@ class ModelRouter:
                 **stats,
                 "estimated_cost": cost,
                 "avg_latency_ms": stats["total_latency_ms"] / max(stats["total_calls"], 1),
-                "success_rate": stats["successful_calls"] / max(stats["total_calls"], 1)
+                "success_rate": stats["successful_calls"] / max(stats["total_calls"], 1),
             }
 
             report["totals"]["calls"] += stats["total_calls"]
@@ -564,9 +567,7 @@ class ModelRouter:
 
 # Convenience functions
 def get_model_for_task(
-    task_type: TaskType,
-    complexity: str = "medium",
-    **kwargs
+    task_type: TaskType, complexity: str = "medium", **kwargs
 ) -> Tuple[str, str]:
     """
     Quick function to get model ID and provider for a task.
@@ -585,7 +586,7 @@ def create_router_for_research() -> ModelRouter:
         preferred_provider="groq",
         max_cost_per_call=0.15,
         quality_priority=0.7,  # Favor quality for research
-        enable_fallbacks=True
+        enable_fallbacks=True,
     )
 
 
@@ -595,5 +596,5 @@ def create_router_for_extraction() -> ModelRouter:
         preferred_provider="openai",
         max_cost_per_call=0.05,
         quality_priority=0.3,  # Favor cost for extraction
-        enable_fallbacks=True
+        enable_fallbacks=True,
     )

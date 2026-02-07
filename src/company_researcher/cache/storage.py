@@ -41,29 +41,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .models import (
-    SourceQuality,
-    DataCompleteness,
-    CachedSource,
-    CachedCompanyData,
-)
 from ..utils import get_logger
+from .models import CachedCompanyData, CachedSource, DataCompleteness, SourceQuality
 
 # Support both package and standalone imports
 try:
+    from .data_completeness import CompletenessChecker, CompletenessReport, DataSection
     from .url_registry import URLRegistry, URLStatus
-    from .data_completeness import (
-        CompletenessChecker,
-        CompletenessReport,
-        DataSection,
-    )
 except ImportError:
+    from data_completeness import CompletenessChecker, CompletenessReport, DataSection
     from url_registry import URLRegistry, URLStatus
-    from data_completeness import (
-        CompletenessChecker,
-        CompletenessReport,
-        DataSection,
-    )
 
 logger = get_logger(__name__)
 
@@ -91,6 +78,8 @@ class ResearchCache:
         self.storage_path.mkdir(parents=True, exist_ok=True)
         self.companies_path = self.storage_path / "companies"
         self.companies_path.mkdir(exist_ok=True)
+        self.topics_path = self.storage_path / "topics"
+        self.topics_path.mkdir(exist_ok=True)
 
         # Sub-components
         self.url_registry = URLRegistry(self.storage_path)
@@ -100,8 +89,13 @@ class ResearchCache:
         self._company_index: Dict[str, str] = {}  # normalized_name -> folder_name
         self._load_index()
 
+        # In-memory index of topics (normalized_topic -> folder_name)
+        self._topic_index: Dict[str, str] = {}
+        self._load_topic_index()
+
         logger.info(f"Research cache initialized at {self.storage_path}")
         logger.info(f"Cached companies: {len(self._company_index)}")
+        logger.info(f"Cached topics: {len(self._topic_index)}")
 
     def _normalize_name(self, company_name: str) -> str:
         """Normalize company name for consistent lookup."""
@@ -118,8 +112,22 @@ class ResearchCache:
                             data = json.load(f)
                             normalized = data.get("normalized_name", folder.name)
                             self._company_index[normalized] = folder.name
-                    except Exception as e:
+                    except (OSError, json.JSONDecodeError, ValueError, TypeError, KeyError) as e:
                         logger.warning(f"Failed to load {folder.name}: {e}")
+
+    def _load_topic_index(self) -> None:
+        """Load topic index from disk."""
+        for folder in self.topics_path.iterdir():
+            if folder.is_dir():
+                data_file = folder / "data.json"
+                if data_file.exists():
+                    try:
+                        with open(data_file, "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                            normalized = data.get("normalized_topic", folder.name)
+                            self._topic_index[normalized] = folder.name
+                    except (OSError, json.JSONDecodeError, ValueError, TypeError, KeyError) as e:
+                        logger.warning(f"Failed to load topic {folder.name}: {e}")
 
     def _get_company_path(self, company_name: str) -> Path:
         """Get storage path for a company."""
@@ -136,6 +144,17 @@ class ResearchCache:
         path.mkdir(exist_ok=True)
         return path
 
+    def _get_topic_path(self, topic: str) -> Path:
+        normalized = self._normalize_name(topic)
+        if normalized in self._topic_index:
+            folder_name = self._topic_index[normalized]
+        else:
+            folder_name = normalized[:50]
+            self._topic_index[normalized] = folder_name
+        path = self.topics_path / folder_name
+        path.mkdir(exist_ok=True)
+        return path
+
     # =========================================================================
     # Core API
     # =========================================================================
@@ -144,6 +163,111 @@ class ResearchCache:
         """Check if we have any cached data for a company."""
         normalized = self._normalize_name(company_name)
         return normalized in self._company_index
+
+    def has_topic_data(self, topic: str) -> bool:
+        """Check if we have any cached data for a topic."""
+        normalized = self._normalize_name(topic)
+        return normalized in self._topic_index
+
+    def get_topic_data(self, topic: str) -> Optional[Dict[str, Any]]:
+        """
+        Get cached topic data (schema-light dict).
+        """
+        if not self.has_topic_data(topic):
+            return None
+        path = self._get_topic_path(topic)
+        data_file = path / "data.json"
+        if not data_file.exists():
+            return None
+        try:
+            with open(data_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data if isinstance(data, dict) else None
+        except (OSError, json.JSONDecodeError, ValueError, TypeError) as e:
+            logger.error(f"Failed to load topic data: {e}")
+            return None
+
+    def should_research_topic(
+        self, topic: str, *, force: bool = False, max_age_days: int = 7
+    ) -> Dict[str, Any]:
+        """
+        Determine if topic research should run.
+
+        Policy:
+        - If force=True -> run.
+        - If no cached topic -> run.
+        - If cached topic updated within max_age_days -> skip.
+        """
+        if force:
+            return {"needs_research": True, "reason": "Forced research"}
+        cached = self.get_topic_data(topic)
+        if not cached:
+            return {"needs_research": True, "reason": "No existing topic data"}
+        # If the cached run is missing essential artifacts, refresh even if it's "fresh".
+        cached_sources = cached.get("sources") or []
+        if not isinstance(cached_sources, list) or len(cached_sources) == 0:
+            return {"needs_research": True, "reason": "Cached topic has no sources"}
+        report_path = str(cached.get("report_path") or "")
+        if report_path:
+            try:
+                if not Path(report_path).exists():
+                    return {"needs_research": True, "reason": "Cached topic report file is missing"}
+            except OSError:
+                return {
+                    "needs_research": True,
+                    "reason": "Could not validate cached topic report path",
+                }
+        updated_at = cached.get("updated_at")
+        try:
+            if updated_at:
+                dt = datetime.fromisoformat(str(updated_at))
+            else:
+                dt = None
+        except (ValueError, TypeError):
+            dt = None
+        if not dt:
+            return {"needs_research": True, "reason": "Missing cache timestamp"}
+        age_days = (datetime.now(timezone.utc) - dt).total_seconds() / 86400
+        if age_days <= max(0, int(max_age_days)):
+            return {
+                "needs_research": False,
+                "reason": f"Cached topic is fresh ({age_days:.1f}d old)",
+            }
+        return {"needs_research": True, "reason": f"Cached topic is stale ({age_days:.1f}d old)"}
+
+    def store_topic_run(
+        self,
+        topic: str,
+        *,
+        report_path: str,
+        sources: Optional[List[Dict[str, Any]]] = None,
+        github_repos: Optional[List[Dict[str, Any]]] = None,
+        topic_news: Optional[Dict[str, Any]] = None,
+        topic_plan: Optional[Dict[str, Any]] = None,
+    ) -> bool:
+        """
+        Store topic research outputs for future reuse.
+        """
+        path = self._get_topic_path(topic)
+        data_file = path / "data.json"
+
+        payload: Dict[str, Any] = {
+            "topic": topic,
+            "normalized_topic": self._normalize_name(topic),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "report_path": report_path,
+            "sources": sources or [],
+            "github_repos": github_repos or [],
+            "topic_news": topic_news,
+            "topic_plan": topic_plan,
+        }
+        try:
+            with open(data_file, "w", encoding="utf-8") as f:
+                json.dump(payload, f, ensure_ascii=False, indent=2, default=str)
+            return True
+        except (OSError, TypeError, ValueError) as e:
+            logger.warning(f"Failed to store topic data: {e}")
+            return False
 
     def get_company_data(self, company_name: str) -> Optional[CachedCompanyData]:
         """
@@ -168,7 +292,7 @@ class ResearchCache:
             with open(data_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 return CachedCompanyData.from_dict(data)
-        except Exception as e:
+        except (OSError, json.JSONDecodeError, ValueError, TypeError, KeyError) as e:
             logger.error(f"Failed to load company data: {e}")
             return None
 
@@ -186,9 +310,7 @@ class ResearchCache:
 
         if not cached_data:
             # No data at all - everything is a gap
-            return self.completeness_checker.check_completeness(
-                company_name, {}
-            )
+            return self.completeness_checker.check_completeness(company_name, {})
 
         # Convert cached data to dict for completeness check
         data_dict = {
@@ -212,9 +334,7 @@ class ResearchCache:
             "risks_updated": cached_data.section_updated.get("risks"),
         }
 
-        return self.completeness_checker.check_completeness(
-            company_name, data_dict
-        )
+        return self.completeness_checker.check_completeness(company_name, data_dict)
 
     def get_research_priority(self, company_name: str) -> Dict[str, Any]:
         """
@@ -456,8 +576,7 @@ class ResearchCache:
             if key in section_mapping and data:
                 section = section_mapping[key]
                 section_sources = [
-                    s for s in sources
-                    if section in s.get("used_for", []) or not s.get("used_for")
+                    s for s in sources if section in s.get("used_for", []) or not s.get("used_for")
                 ]
                 self.store_company_data(
                     company_name=company_name,
@@ -484,14 +603,16 @@ class ResearchCache:
             try:
                 with open(history_file, "r", encoding="utf-8") as f:
                     history = json.load(f)
-            except Exception as e:
+            except (OSError, json.JSONDecodeError, ValueError, TypeError) as e:
                 logger.debug(f"Failed to load history for {company_name}: {e}")
 
-        history.append({
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "sections_updated": list(data.keys()),
-            "sources_count": len(sources),
-        })
+        history.append(
+            {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "sections_updated": list(data.keys()),
+                "sources_count": len(sources),
+            }
+        )
 
         # Keep last 100 entries
         history = history[-100:]
@@ -507,8 +628,9 @@ class ResearchCache:
         """Extract domain from URL."""
         try:
             from urllib.parse import urlparse
+
             return urlparse(url).netloc.lower()
-        except Exception:
+        except (ValueError, TypeError):
             return ""
 
     def _calculate_completeness(self, data: CachedCompanyData) -> DataCompleteness:
@@ -574,12 +696,12 @@ class ResearchCache:
         print(f"Storage: {stats['storage_path']}")
         print(f"\nCompanies cached: {stats['companies']['total_companies']}")
 
-        for name in list(stats['companies']['companies'])[:10]:
+        for name in list(stats["companies"]["companies"])[:10]:
             data = self.get_company_data(name.replace("_", " "))
             if data:
                 print(f"  - {data.company_name}: {data.completeness.value}")
 
-        if stats['companies']['total_companies'] > 10:
+        if stats["companies"]["total_companies"] > 10:
             print(f"  ... and {stats['companies']['total_companies'] - 10} more")
 
         print(f"\nURLs tracked: {stats['urls']['total_urls']}")

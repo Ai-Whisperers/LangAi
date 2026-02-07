@@ -61,11 +61,11 @@ Use when a JSON API response needs quick schema/business-rule validation.
 
 ## Examples
 ### Example 1: Valid
-Input: minimal valid JSON  
+Input: minimal valid JSON
 Expected Output: PASS summary + checked items
 
 ### Example 2: Invalid
-Input: missing field + bad type  
+Input: missing field + bad type
 Expected Output: FAIL with two specific issues and severities
 
 ## Expected Output
@@ -88,4 +88,3 @@ Expected Output: FAIL with two specific issues and severities
 
 ## When to Reference
 Use as a reference when enhancing prompts that already work but need clarity, examples, or validation without growing large. Suitable for quick/medium/deep passes; scale the number of examples and checks to the gap, not habit.
-

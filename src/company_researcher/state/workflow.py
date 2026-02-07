@@ -5,9 +5,10 @@ This module defines the state schemas used by LangGraph to manage
 the research workflow state transitions.
 """
 
-from typing import TypedDict, Annotated, List, Dict, Any, Optional
 from datetime import datetime
 from operator import add
+from typing import Annotated, Any, Dict, List, Literal, Optional, TypedDict
+
 from ..utils import utc_now
 
 
@@ -42,13 +43,14 @@ def add_tokens(left: Dict[str, int], right: Dict[str, int]) -> Dict[str, int]:
     """
     return {
         "input": left.get("input", 0) + right.get("input", 0),
-        "output": left.get("output", 0) + right.get("output", 0)
+        "output": left.get("output", 0) + right.get("output", 0),
     }
 
 
 # ============================================================================
 # Input State
 # ============================================================================
+
 
 class InputState(TypedDict):
     """
@@ -57,12 +59,20 @@ class InputState(TypedDict):
     Attributes:
         company_name: Name of the company to research
     """
+
+    # Backward-compatible input key for company research
     company_name: str
+
+    # Generic subject support (topic or company)
+    # NOTE: TypedDict does not enforce runtime validation; this is mainly for type hints.
+    research_type: Literal["company", "topic"]
+    subject: str
 
 
 # ============================================================================
 # Overall State
 # ============================================================================
+
 
 class OverallState(TypedDict):
     """
@@ -74,13 +84,20 @@ class OverallState(TypedDict):
 
     # Input
     company_name: str
+    research_type: Literal["company", "topic"]
+    subject: str
+    topic: Optional[str]
 
     # Query Generation
     search_queries: List[str]
+    news_queries: Optional[List[str]]
+    github_queries: Optional[List[str]]
 
     # Search Results
     # Using 'add' operator means each node appends to the list
     search_results: Annotated[List[Dict[str, Any]], add]
+    search_trace: Optional[List[Dict[str, Any]]]
+    search_stats: Optional[Dict[str, Any]]
 
     # Analysis
     notes: List[str]  # LLM summaries of search results
@@ -119,6 +136,17 @@ class OverallState(TypedDict):
     detected_region: Optional[str]  # Detected geographic region
     detected_language: Optional[str]  # Primary language for searches
 
+    # Topic Research (Phase Topic)
+    topic_plan: Optional[Dict[str, Any]]  # Canonical topic, subtopics, keywords, etc.
+    topic_subtopics: Optional[List[str]]  # Flattened list of subtopics for convenience
+    topic_news: Optional[Dict[str, Any]]  # NewsResult-like dict for topic searches
+    github_repos: Optional[List[Dict[str, Any]]]  # Discovered GitHub repositories
+    topic_report: Optional[
+        str
+    ]  # Generated topic report markdown (optional; report_path is canonical)
+    topic_quality: Optional[Dict[str, Any]]  # Best-effort quality evaluation for topic_report
+    topic_quality_passed: Optional[bool]  # Convenience boolean for routing
+
     # Agent Coordination (Phase 3+)
     # Using merge_dicts allows concurrent updates from parallel agents (Phase 4)
     agent_outputs: Annotated[Optional[Dict[str, Any]], merge_dicts]  # Track agent contributions
@@ -136,6 +164,7 @@ class OverallState(TypedDict):
 # Output State
 # ============================================================================
 
+
 class OutputState(TypedDict):
     """
     Final output from the research workflow.
@@ -146,7 +175,11 @@ class OutputState(TypedDict):
         metrics: Performance metrics (time, cost, tokens)
         success: Whether research completed successfully
     """
+
+    # Backward-compatible field: set to the researched company name (or subject for topic mode)
     company_name: str
+    research_type: str
+    subject: str
     report_path: str
     metrics: Dict[str, Any]
     success: bool
@@ -156,7 +189,13 @@ class OutputState(TypedDict):
 # Helper Functions
 # ============================================================================
 
-def create_initial_state(company_name: str) -> OverallState:
+
+def create_initial_state(
+    company_name: Optional[str] = None,
+    *,
+    research_type: Literal["company", "topic"] = "company",
+    subject: Optional[str] = None,
+) -> OverallState:
     """
     Create initial state for a new research workflow.
 
@@ -166,10 +205,20 @@ def create_initial_state(company_name: str) -> OverallState:
     Returns:
         Initialized OverallState
     """
+    resolved_subject = (subject or company_name or "").strip()
+    resolved_company_name = (company_name or resolved_subject or "").strip()
+
     return {
-        "company_name": company_name,
+        "company_name": resolved_company_name,
+        "research_type": research_type,
+        "subject": resolved_subject or resolved_company_name,
+        "topic": resolved_subject if research_type == "topic" else None,
         "search_queries": [],
+        "news_queries": None,
+        "github_queries": None,
         "search_results": [],
+        "search_trace": None,
+        "search_stats": None,
         "notes": [],
         "company_overview": None,
         "key_metrics": None,
@@ -195,11 +244,19 @@ def create_initial_state(company_name: str) -> OverallState:
         "news_sentiment": None,
         "detected_region": None,
         "detected_language": None,
+        # Topic research fields
+        "topic_plan": None,
+        "topic_subtopics": None,
+        "topic_news": None,
+        "github_repos": None,
+        "topic_report": None,
+        "topic_quality": None,
+        "topic_quality_passed": None,
         "agent_outputs": {},
         "start_time": utc_now(),
         "total_cost": 0.0,
         "total_tokens": {"input": 0, "output": 0},
-        "report_path": None
+        "report_path": None,
     }
 
 
@@ -216,7 +273,9 @@ def create_output_state(state: OverallState) -> OutputState:
     duration = (utc_now() - state.get("start_time", utc_now())).total_seconds()
 
     return {
-        "company_name": state.get("company_name", ""),
+        "company_name": state.get("company_name", "") or state.get("subject", ""),
+        "research_type": state.get("research_type", "company"),
+        "subject": state.get("subject", "") or state.get("company_name", ""),
         "report_path": state.get("report_path", ""),
         "metrics": {
             "duration_seconds": duration,
@@ -224,7 +283,7 @@ def create_output_state(state: OverallState) -> OutputState:
             "tokens": state.get("total_tokens", {"input": 0, "output": 0}),
             "sources_count": len(state.get("sources", [])),
             "quality_score": state.get("quality_score", 0.0),
-            "iterations": state.get("iteration_count", 0)
+            "iterations": state.get("iteration_count", 0),
         },
-        "success": state.get("report_path") is not None
+        "success": state.get("report_path") is not None,
     }

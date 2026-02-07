@@ -26,31 +26,26 @@ Usage:
 """
 
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, List, Optional
 
-from ..cache import (
-    ResearchCache,
-    get_cache,
-    CachedCompanyData,
-    URLStatus,
-)
-from ..state import OverallState, InputState, OutputState, create_initial_state, create_output_state
+from ..cache import CachedCompanyData, ResearchCache, URLStatus, get_cache
 from ..config import get_config
+from ..state import InputState, OutputState, OverallState, create_initial_state, create_output_state
+from ..utils import get_logger
 
 # Import base workflows
 from .basic_research import (
-    generate_queries_node,
-    search_node as base_search_node,
     analyze_node,
-    extract_data_node,
     check_quality_node,
-    news_sentiment_node,
     competitive_analysis_node,
-    risk_assessment_node,
+    extract_data_node,
+    generate_queries_node,
     investment_thesis_node,
+    news_sentiment_node,
+    risk_assessment_node,
     save_report_node,
 )
-from ..utils import get_logger
+from .basic_research import search_node as base_search_node
 
 logger = get_logger(__name__)
 
@@ -69,6 +64,7 @@ def get_workflow_cache() -> ResearchCache:
 # =============================================================================
 # Cache-Aware Workflow Nodes
 # =============================================================================
+
 
 def check_cache_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -131,17 +127,17 @@ def cache_aware_search_node(state: OverallState) -> Dict[str, Any]:
     urls = [s.get("url", "") for s in search_result.get("sources", [])]
     filtered = cache.filter_urls(urls)
 
-    logger.info(f"[CACHE] URL filtering: {len(filtered['new'])} new, {len(filtered['useful'])} useful, {len(filtered['useless'])} blocked")
+    logger.info(
+        f"[CACHE] URL filtering: {len(filtered['new'])} new, {len(filtered['useful'])} useful, {len(filtered['useless'])} blocked"
+    )
 
     # Remove useless URLs from results
     useless_urls = set(filtered["useless"])
     filtered_results = [
-        r for r in search_result.get("search_results", [])
-        if r.get("url", "") not in useless_urls
+        r for r in search_result.get("search_results", []) if r.get("url", "") not in useless_urls
     ]
     filtered_sources = [
-        s for s in search_result.get("sources", [])
-        if s.get("url", "") not in useless_urls
+        s for s in search_result.get("sources", []) if s.get("url", "") not in useless_urls
     ]
 
     # Add priority for useful URLs
@@ -150,7 +146,9 @@ def cache_aware_search_node(state: OverallState) -> Dict[str, Any]:
             source["priority"] = "high"
             source["cached_quality"] = "verified_useful"
 
-    logger.info(f"[SEARCH] {len(filtered_results)} results after filtering (removed {len(useless_urls)} known useless)")
+    logger.info(
+        f"[SEARCH] {len(filtered_results)} results after filtering (removed {len(useless_urls)} known useless)"
+    )
 
     return {
         "search_results": filtered_results,
@@ -275,10 +273,7 @@ def merge_with_cached_node(state: OverallState) -> Dict[str, Any]:
 
     # Merge sources (don't duplicate)
     existing_urls = {s.get("url") for s in cached_data.all_sources}
-    new_sources = [
-        s for s in state.get("sources", [])
-        if s.get("url") not in existing_urls
-    ]
+    new_sources = [s for s in state.get("sources", []) if s.get("url") not in existing_urls]
     if new_sources:
         updates["sources"] = cached_data.all_sources + new_sources
         logger.info(f"[CACHE] Added {len(new_sources)} new sources")
@@ -298,6 +293,7 @@ def merge_with_cached_node(state: OverallState) -> Dict[str, Any]:
 # =============================================================================
 # Helper Functions
 # =============================================================================
+
 
 def _format_cached_overview(data: CachedCompanyData) -> str:
     """Format cached data as overview text."""
@@ -377,6 +373,7 @@ def _classify_source_urls(cache: ResearchCache, sources: List[Dict], company_nam
 # Main Research Functions
 # =============================================================================
 
+
 def research_with_cache(company_name: str, force: bool = False) -> OutputState:
     """
     Research a company using the cache-aware workflow.
@@ -394,7 +391,7 @@ def research_with_cache(company_name: str, force: bool = False) -> OutputState:
     Returns:
         OutputState with results and metrics
     """
-    from langgraph.graph import StateGraph, END
+    from langgraph.graph import END, StateGraph
 
     cache = get_workflow_cache()
 
@@ -461,6 +458,84 @@ def research_with_cache(company_name: str, force: bool = False) -> OutputState:
     logger.info(f"{'='*60}\n")
 
     return output
+
+
+def run_cache_aware_workflow_with_state(
+    company_name: str, force: bool = False
+) -> tuple[OutputState, OverallState]:
+    """
+    Run the cache-aware workflow and return both output and the final workflow state.
+
+    This is the preferred entrypoint for disk-first orchestration because it preserves
+    provenance (queries, per-query search trace, provider stats, scraped_content, etc.).
+
+    Args:
+        company_name: Name of company to research
+        force: If True, research even if cache is complete
+
+    Returns:
+        Tuple of (OutputState, final OverallState)
+    """
+    cache = get_workflow_cache()
+
+    decision = cache.should_research(company_name, force=force)
+    if not decision["needs_research"]:
+        output = _create_output_from_cache(company_name, cache)
+        state = create_initial_state(company_name)
+
+        cached_data = cache.get_company_data(company_name)
+        if cached_data:
+            state["sources"] = cached_data.all_sources
+            state["company_overview"] = cached_data.overview
+            state["competitors"] = cached_data.competitors
+            state["products_services"] = cached_data.products
+            state["risk_profile"] = cached_data.risks
+            state["news_sentiment"] = cached_data.news
+
+        state["report_path"] = output.get("report_path")
+        state["quality_score"] = output.get("metrics", {}).get("quality_score")
+        state["iteration_count"] = output.get("metrics", {}).get("iterations", 0)
+        state["total_cost"] = output.get("metrics", {}).get("cost_usd", 0.0)
+        state["total_tokens"] = output.get("metrics", {}).get("tokens", {"input": 0, "output": 0})
+        return output, state
+
+    from langgraph.graph import END, StateGraph
+
+    workflow = StateGraph(OverallState, input=InputState, output=OutputState)
+    workflow.add_node("check_cache", check_cache_node)
+    workflow.add_node("generate_queries", generate_queries_node)
+    workflow.add_node("search", cache_aware_search_node)
+    workflow.add_node("analyze", analyze_node)
+    workflow.add_node("news_sentiment", news_sentiment_node)
+    workflow.add_node("extract_data", extract_data_node)
+    workflow.add_node("check_quality", check_quality_node)
+    workflow.add_node("merge_cached", merge_with_cached_node)
+    workflow.add_node("store_results", store_results_node)
+    workflow.add_node("competitive_analysis", competitive_analysis_node)
+    workflow.add_node("risk_assessment", risk_assessment_node)
+    workflow.add_node("investment_thesis", investment_thesis_node)
+    workflow.add_node("save_report", save_report_node)
+
+    workflow.set_entry_point("check_cache")
+    workflow.add_edge("check_cache", "generate_queries")
+    workflow.add_edge("generate_queries", "search")
+    workflow.add_edge("search", "analyze")
+    workflow.add_edge("analyze", "news_sentiment")
+    workflow.add_edge("news_sentiment", "extract_data")
+    workflow.add_edge("extract_data", "check_quality")
+    workflow.add_edge("check_quality", "merge_cached")
+    workflow.add_edge("merge_cached", "store_results")
+    workflow.add_edge("store_results", "competitive_analysis")
+    workflow.add_edge("competitive_analysis", "risk_assessment")
+    workflow.add_edge("risk_assessment", "investment_thesis")
+    workflow.add_edge("investment_thesis", "save_report")
+    workflow.add_edge("save_report", END)
+
+    compiled = workflow.compile()
+    initial_state = create_initial_state(company_name)
+    final_state = compiled.invoke(initial_state)
+    output = create_output_state(final_state)
+    return output, final_state
 
 
 def research_gaps_only(company_name: str) -> OutputState:
@@ -556,7 +631,8 @@ def _create_output_from_cache(company_name: str, cache: ResearchCache) -> Output
         raise ValueError(f"No cached data found for {company_name}")
 
     config = get_config()
-    output_dir = Path(config.output_dir) / company_name.replace(" ", "_").lower()
+    reports_root = Path(getattr(config, "reports_dir", config.output_dir))
+    output_dir = reports_root / "companies" / company_name.replace(" ", "_").lower()
 
     # Check for existing report
     report_path = output_dir / "00_full_report.md"

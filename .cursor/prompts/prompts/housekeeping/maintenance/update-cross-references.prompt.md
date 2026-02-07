@@ -12,8 +12,8 @@ argument-hint: "Folder path to check for broken references (e.g., .cursor/rules/
 
 Please scan artifacts for broken links, outdated references, and missing cross-references, then fix or report issues found.
 
-**Pattern**: Reference Integrity Maintenance Pattern ⭐⭐⭐⭐  
-**Effectiveness**: Essential for maintaining navigable, usable artifact library  
+**Pattern**: Reference Integrity Maintenance Pattern ⭐⭐⭐⭐
+**Effectiveness**: Essential for maintaining navigable, usable artifact library
 **Use When**: After refactoring, quarterly maintenance, or noticing broken links
 
 ---
@@ -144,7 +144,7 @@ For **Broken Internal Links**:
    ```markdown
    # Before
    See `.cursor/rules/old-location/rule.mdc`
-   
+
    # After
    See `.cursor/rules/new-location/rule.mdc`
    ```
@@ -165,7 +165,7 @@ For **Missing Cross-References**:
    ```markdown
    ## Related Rules
    - `rule.domain.specific-topic.v1` - [Brief description]
-   
+
    ## Related Prompts
    - `@prompt-name` - [Brief description]
    ```
@@ -185,10 +185,10 @@ For **External Links**:
    ```markdown
    # If moved
    Update to new URL
-   
+
    # If dead
    Replace with web.archive.org link or alternative source
-   
+
    # If obsolete
    Remove or replace with current reference
    ```
@@ -284,7 +284,7 @@ After updating:
 
 ### Suggestion 1: Link Related Rules
 
-**Artifacts**: 
+**Artifacts**:
 - `.cursor/rules/ticket/plan-rule.mdc`
 - `.cursor/rules/ticket/context-rule.mdc`
 
@@ -420,7 +420,7 @@ See `.cursor/rules/ticket/timeline-tracking-rule.mdc` for timestamp tracking
 ```markdown
 ## Missing Cross-Reference Suggestion
 
-**Artifacts**: 
+**Artifacts**:
 - `.cursor/rules/prompts/prompt-creation-rule.mdc`
 - `.cursor/prompts/rule-authoring/extract-prompts-from-conversation.prompt.md`
 
@@ -667,6 +667,6 @@ Before completing:
 
 ---
 
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)

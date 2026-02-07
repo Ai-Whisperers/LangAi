@@ -41,8 +41,8 @@ Quickly surface high-value prompt/rule/ticket artifacts that should be turned in
 
 ## Process
 
-1. **Scan (fast)**  
-   - Run the script:  
+1. **Scan (fast)**
+   - Run the script:
 
      ```powershell
      ./.cursor/scripts/housekeeping/find-extraction-candidates.ps1 `
@@ -54,20 +54,20 @@ Quickly surface high-value prompt/rule/ticket artifacts that should be turned in
 
    - Repeat for rules or tickets if needed (adjust `-Root`).
 
-2. **Triage Results**  
-   - Sort by score (script output) and check top candidates.  
+2. **Triage Results**
+   - Sort by score (script output) and check top candidates.
    - Validate signals: size, example density, templar/exemplar language, duplication of sections.
 
-3. **Classify**  
-   - Mark each candidate: **Templar**, **Exemplar**, **Both**, or **Skip**.  
+3. **Classify**
+   - Mark each candidate: **Templar**, **Exemplar**, **Both**, or **Skip**.
    - Prefer **Both** when structure is reusable and implementation is exemplary.
 
-4. **Plan Extraction**  
-   - For each candidate: define destination paths under `.cursor/prompts/templars/` or `.cursor/prompts/exemplars/` (or rules/tickets equivalents).  
+4. **Plan Extraction**
+   - For each candidate: define destination paths under `.cursor/prompts/templars/` or `.cursor/prompts/exemplars/` (or rules/tickets equivalents).
    - Note any trimming required in the source (move bulk examples to exemplar, keep concise pointers).
 
-5. **Document Output**  
-   - Produce a concise report per Output Format.  
+5. **Document Output**
+   - Produce a concise report per Output Format.
    - Attach the script JSON/CSV snippet for traceability.
 
 ## Output Format
@@ -86,11 +86,11 @@ Quickly surface high-value prompt/rule/ticket artifacts that should be turned in
 
 ## Validation Checklist
 
-- [ ] Script executed on intended roots with thresholds recorded  
-- [ ] Top candidates reviewed (score rationale captured)  
-- [ ] Each candidate classified (Templar/Exemplar/Both/Skip) with reason  
-- [ ] Destinations selected using correct folders and naming conventions  
-- [ ] Trim plan noted (what to move out, what to keep)  
+- [ ] Script executed on intended roots with thresholds recorded
+- [ ] Top candidates reviewed (score rationale captured)
+- [ ] Each candidate classified (Templar/Exemplar/Both/Skip) with reason
+- [ ] Destinations selected using correct folders and naming conventions
+- [ ] Trim plan noted (what to move out, what to keep)
 - [ ] Report saved/linked for follow-up work
 
 ## Usage

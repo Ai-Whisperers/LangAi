@@ -16,19 +16,15 @@ This file maintains backward compatibility with existing imports:
 """
 
 # Re-export all components from modular structure
-from .compression import (
-    # Enums
+from .compression import (  # Enums; Data Models; Classes; Factory Functions
     CompressionLevel,
-    ContentType,
-    # Data Models
     CompressionResult,
-    KeyPoint,
-    # Classes
-    KeyPointExtractor,
-    TextCompressor,
-    ProgressiveSummarizer,
+    ContentType,
     ContextWindowOptimizer,
-    # Factory Functions
+    KeyPoint,
+    KeyPointExtractor,
+    ProgressiveSummarizer,
+    TextCompressor,
     compress_text,
     extract_key_points,
     optimize_for_context,

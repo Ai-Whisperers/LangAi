@@ -12,8 +12,8 @@ argument-hint: "Artifact file path (e.g., .cursor/rules/ticket/plan-rule.mdc) or
 
 Please analyze existing artifacts (rules, prompts, tickets, etc.) to identify reusable template patterns (templars) or exceptional reference examples (exemplars) worth promoting to dedicated folders.
 
-**Pattern**: Pattern Extraction Pattern ⭐⭐⭐⭐⭐  
-**Effectiveness**: Essential for building reusable pattern library  
+**Pattern**: Pattern Extraction Pattern ⭐⭐⭐⭐⭐
+**Effectiveness**: Essential for building reusable pattern library
 **Use When**: Found excellent artifact worth reusing, or noticing repeated patterns
 
 ---
@@ -86,7 +86,7 @@ This prompt will produce:
 ## Cross-References & Automation (for best results)
 
 - **Scripts (place here)**: `.cursor/scripts/housekeeping/` — keep reusable extraction/trimming helpers here (e.g., extract + trim + link updater). Reference them when invoking this prompt so runs stay consistent.
-- **Example invocation**:  
+- **Example invocation**:
   ```powershell
   ./.cursor/scripts/housekeeping/extract-templar-exemplar.ps1 `
     -Source ".cursor/prompts/prompt/improve-prompt.prompt.md" `
@@ -892,6 +892,6 @@ Good extraction achieves:
 
 ---
 
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)

@@ -6,11 +6,11 @@ Agents for ensuring research quality:
 """
 
 from .logic_critic import (
-    LogicCriticAgent,
-    logic_critic_agent_node,
-    create_logic_critic,
-    QualityIssue,
     IssueSeverity,
+    LogicCriticAgent,
+    QualityIssue,
+    create_logic_critic,
+    logic_critic_agent_node,
 )
 
 __all__ = [

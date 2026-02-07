@@ -15,11 +15,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
+
 from ..utils import utc_now
 
 
 class SourceType(str, Enum):
     """Types of sources."""
+
     OFFICIAL = "official"  # Company website, SEC filings
     NEWS = "news"  # News articles
     FINANCIAL = "financial"  # Financial data providers
@@ -32,6 +34,7 @@ class SourceType(str, Enum):
 
 class SourceQuality(str, Enum):
     """Quality rating of sources."""
+
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
@@ -41,6 +44,7 @@ class SourceQuality(str, Enum):
 @dataclass
 class Source:
     """A research source with metadata."""
+
     url: str
     title: str
     source_type: SourceType = SourceType.OTHER
@@ -95,13 +99,14 @@ class Source:
             "author": self.author,
             "relevance_score": self.relevance_score,
             "freshness": self.freshness_label,
-            "snippet": self.snippet[:200] if self.snippet else ""
+            "snippet": self.snippet[:200] if self.snippet else "",
         }
 
 
 @dataclass
 class Citation:
     """A citation reference."""
+
     id: str
     source: Source
     context: str  # Where this citation is used
@@ -120,7 +125,9 @@ class Citation:
     def to_apa(self) -> str:
         """Get APA format citation."""
         author = self.source.author or self.source.domain
-        date = self.source.published_at.strftime("%Y, %B %d") if self.source.published_at else "n.d."
+        date = (
+            self.source.published_at.strftime("%Y, %B %d") if self.source.published_at else "n.d."
+        )
         return f"{author}. ({date}). {self.source.title}. Retrieved from {self.source.url}"
 
     def to_markdown_link(self) -> str:
@@ -134,40 +141,80 @@ class SourceClassifier:
     # Domain patterns for classification
     DOMAIN_PATTERNS = {
         SourceType.OFFICIAL: [
-            r"\.gov$", r"\.edu$", r"sec\.gov", r"investor\.", r"ir\.",
-            r"tesla\.com", r"apple\.com", r"microsoft\.com", r"google\.com"
+            r"\.gov$",
+            r"\.edu$",
+            r"sec\.gov",
+            r"investor\.",
+            r"ir\.",
+            r"tesla\.com",
+            r"apple\.com",
+            r"microsoft\.com",
+            r"google\.com",
         ],
         SourceType.NEWS: [
-            r"reuters\.", r"bloomberg\.", r"wsj\.", r"nytimes\.",
-            r"ft\.com", r"cnbc\.", r"bbc\.", r"theguardian\."
+            r"reuters\.",
+            r"bloomberg\.",
+            r"wsj\.",
+            r"nytimes\.",
+            r"ft\.com",
+            r"cnbc\.",
+            r"bbc\.",
+            r"theguardian\.",
         ],
         SourceType.FINANCIAL: [
-            r"yahoo\.finance", r"marketwatch\.", r"morningstar\.",
-            r"seekingalpha\.", r"fool\.", r"investopedia\."
+            r"yahoo\.finance",
+            r"marketwatch\.",
+            r"morningstar\.",
+            r"seekingalpha\.",
+            r"fool\.",
+            r"investopedia\.",
         ],
         SourceType.SOCIAL: [
-            r"twitter\.", r"x\.com", r"linkedin\.", r"reddit\.",
-            r"facebook\.", r"instagram\."
+            r"twitter\.",
+            r"x\.com",
+            r"linkedin\.",
+            r"reddit\.",
+            r"facebook\.",
+            r"instagram\.",
         ],
         SourceType.RESEARCH: [
-            r"mckinsey\.", r"deloitte\.", r"pwc\.", r"kpmg\.",
-            r"gartner\.", r"forrester\.", r"idc\."
+            r"mckinsey\.",
+            r"deloitte\.",
+            r"pwc\.",
+            r"kpmg\.",
+            r"gartner\.",
+            r"forrester\.",
+            r"idc\.",
         ],
         SourceType.ACADEMIC: [
-            r"arxiv\.", r"scholar\.google", r"researchgate\.",
-            r"sciencedirect\.", r"springer\.", r"nature\."
-        ]
+            r"arxiv\.",
+            r"scholar\.google",
+            r"researchgate\.",
+            r"sciencedirect\.",
+            r"springer\.",
+            r"nature\.",
+        ],
     }
 
     # Quality scores by domain
     HIGH_QUALITY_DOMAINS = {
-        "sec.gov", "reuters.com", "bloomberg.com", "wsj.com",
-        "ft.com", "nytimes.com", "gov", "edu"
+        "sec.gov",
+        "reuters.com",
+        "bloomberg.com",
+        "wsj.com",
+        "ft.com",
+        "nytimes.com",
+        "gov",
+        "edu",
     }
 
     MEDIUM_QUALITY_DOMAINS = {
-        "cnbc.com", "bbc.com", "yahoo.com", "morningstar.com",
-        "seekingalpha.com", "marketwatch.com"
+        "cnbc.com",
+        "bbc.com",
+        "yahoo.com",
+        "morningstar.com",
+        "seekingalpha.com",
+        "marketwatch.com",
     }
 
     def classify_type(self, url: str) -> SourceType:
@@ -211,12 +258,7 @@ class SourceClassifier:
 class RelevanceScorer:
     """Scores relevance of sources to research queries."""
 
-    def score(
-        self,
-        source: Source,
-        query: str,
-        company_name: str
-    ) -> float:
+    def score(self, source: Source, query: str, company_name: str) -> float:
         """
         Score source relevance.
 
@@ -234,7 +276,7 @@ class RelevanceScorer:
             "snippet_match": 0.2,
             "quality": 0.2,
             "freshness": 0.15,
-            "domain_trust": 0.15
+            "domain_trust": 0.15,
         }
 
         # Title match
@@ -250,7 +292,7 @@ class RelevanceScorer:
             SourceQuality.HIGH: 1.0,
             SourceQuality.MEDIUM: 0.6,
             SourceQuality.LOW: 0.2,
-            SourceQuality.UNKNOWN: 0.4
+            SourceQuality.UNKNOWN: 0.4,
         }
         score += weights["quality"] * quality_scores.get(source.quality, 0.4)
 
@@ -277,9 +319,8 @@ class RelevanceScorer:
         if not text:
             return False
         text_lower = text.lower()
-        return (
-            company_name.lower() in text_lower or
-            any(word.lower() in text_lower for word in query.split() if len(word) > 3)
+        return company_name.lower() in text_lower or any(
+            word.lower() in text_lower for word in query.split() if len(word) > 3
         )
 
 
@@ -324,7 +365,7 @@ class CitationManager:
         snippet: str = "",
         published_at: datetime = None,
         author: str = None,
-        metadata: Dict[str, Any] = None
+        metadata: Dict[str, Any] = None,
     ) -> Source:
         """
         Add a source.
@@ -357,17 +398,14 @@ class CitationManager:
             published_at=published_at,
             author=author,
             snippet=snippet,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         self._sources[source_id] = source
         return source
 
     def add_sources_from_search(
-        self,
-        search_results: List[Dict[str, Any]],
-        company_name: str = "",
-        query: str = ""
+        self, search_results: List[Dict[str, Any]], company_name: str = "", query: str = ""
     ) -> List[Source]:
         """Add multiple sources from search results."""
         sources = []
@@ -378,7 +416,7 @@ class CitationManager:
                 snippet=result.get("snippet", result.get("content", "")),
                 published_at=self._parse_date(result.get("published_date")),
                 author=result.get("author"),
-                metadata=result
+                metadata=result,
             )
 
             # Score relevance
@@ -390,11 +428,7 @@ class CitationManager:
         return sources
 
     def cite(
-        self,
-        source_url: str,
-        claim: str,
-        context: str = "",
-        confidence: float = 1.0
+        self, source_url: str, claim: str, context: str = "", confidence: float = 1.0
     ) -> Optional[Citation]:
         """
         Create a citation for a source.
@@ -420,7 +454,7 @@ class CitationManager:
             source=source,
             context=context,
             claim=claim,
-            confidence=confidence
+            confidence=confidence,
         )
 
         self._citations.append(citation)
@@ -487,20 +521,14 @@ class CitationManager:
         return {
             "total_sources": len(sources),
             "total_citations": len(self._citations),
-            "quality_distribution": {
-                q.value: len(sources) for q, sources in by_quality.items()
-            },
-            "type_distribution": {
-                t.value: len(sources) for t, sources in by_type.items()
-            },
+            "quality_distribution": {q.value: len(sources) for q, sources in by_quality.items()},
+            "type_distribution": {t.value: len(sources) for t, sources in by_type.items()},
             "average_relevance": (
-                sum(s.relevance_score for s in sources) / len(sources)
-                if sources else 0
+                sum(s.relevance_score for s in sources) / len(sources) if sources else 0
             ),
             "high_quality_percentage": (
-                len(by_quality[SourceQuality.HIGH]) / len(sources) * 100
-                if sources else 0
-            )
+                len(by_quality[SourceQuality.HIGH]) / len(sources) * 100 if sources else 0
+            ),
         }
 
     def _generate_source_id(self, url: str) -> str:
@@ -516,6 +544,7 @@ class CitationManager:
             return date_str
         try:
             from dateutil import parser
+
             return parser.parse(str(date_str))
         except Exception:
             return None
@@ -558,12 +587,13 @@ class CitationManager:
             SourceQuality.HIGH: "[HIGH]",
             SourceQuality.MEDIUM: "[MED]",
             SourceQuality.LOW: "[LOW]",
-            SourceQuality.UNKNOWN: "[?]"
+            SourceQuality.UNKNOWN: "[?]",
         }
         return badges.get(quality, "")
 
 
 # Convenience functions
+
 
 def create_citation_manager() -> CitationManager:
     """Create a citation manager."""
@@ -575,8 +605,4 @@ def classify_source(url: str) -> Dict[str, str]:
     classifier = SourceClassifier()
     source_type = classifier.classify_type(url)
     quality = classifier.assess_quality(url, source_type)
-    return {
-        "url": url,
-        "type": source_type.value,
-        "quality": quality.value
-    }
+    return {"url": url, "type": source_type.value, "quality": quality.value}

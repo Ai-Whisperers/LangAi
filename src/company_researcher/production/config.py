@@ -7,19 +7,21 @@ Centralized configuration management:
 - Secure defaults
 """
 
-from typing import Dict, Any, Optional, List
+import os
 from dataclasses import dataclass, field
 from enum import Enum
-import os
-from ..utils import get_logger
+from typing import Any, Dict, List, Optional
 
+from ..utils import get_logger
 
 # ============================================================================
 # Environment
 # ============================================================================
 
+
 class Environment(str, Enum):
     """Deployment environments."""
+
     DEVELOPMENT = "development"
     STAGING = "staging"
     PRODUCTION = "production"
@@ -30,9 +32,11 @@ class Environment(str, Enum):
 # Configuration Models
 # ============================================================================
 
+
 @dataclass
 class LLMConfig:
     """LLM configuration."""
+
     provider: str = "anthropic"
     model: str = "claude-3-sonnet-20240229"
     api_key: str = ""
@@ -50,13 +54,14 @@ class LLMConfig:
             max_tokens=int(os.getenv("LLM_MAX_TOKENS", "4096")),
             temperature=float(os.getenv("LLM_TEMPERATURE", "0.1")),
             timeout_seconds=float(os.getenv("LLM_TIMEOUT", "60")),
-            max_retries=int(os.getenv("LLM_MAX_RETRIES", "3"))
+            max_retries=int(os.getenv("LLM_MAX_RETRIES", "3")),
         )
 
 
 @dataclass
 class SearchConfig:
     """Search API configuration."""
+
     provider: str = "tavily"
     api_key: str = ""
     max_results: int = 10
@@ -68,13 +73,14 @@ class SearchConfig:
             provider=os.getenv("SEARCH_PROVIDER", "tavily"),
             api_key=os.getenv("TAVILY_API_KEY", ""),
             max_results=int(os.getenv("SEARCH_MAX_RESULTS", "10")),
-            timeout_seconds=float(os.getenv("SEARCH_TIMEOUT", "30"))
+            timeout_seconds=float(os.getenv("SEARCH_TIMEOUT", "30")),
         )
 
 
 @dataclass
 class APIConfig:
     """API server configuration."""
+
     host: str = "0.0.0.0"
     port: int = 8000
     workers: int = 4
@@ -94,13 +100,14 @@ class APIConfig:
             cors_origins=[o.strip() for o in cors],
             rate_limit_rpm=int(os.getenv("RATE_LIMIT_RPM", "60")),
             rate_limit_rph=int(os.getenv("RATE_LIMIT_RPH", "1000")),
-            api_key_required=os.getenv("API_KEY_REQUIRED", "false").lower() == "true"
+            api_key_required=os.getenv("API_KEY_REQUIRED", "false").lower() == "true",
         )
 
 
 @dataclass
 class MonitoringConfig:
     """Monitoring configuration."""
+
     enabled: bool = True
     metrics_port: int = 9090
     log_level: str = "INFO"
@@ -116,13 +123,14 @@ class MonitoringConfig:
             log_level=os.getenv("LOG_LEVEL", "INFO"),
             log_format=os.getenv("LOG_FORMAT", "json"),
             alert_email=os.getenv("ALERT_EMAIL", ""),
-            alert_slack_webhook=os.getenv("ALERT_SLACK_WEBHOOK", "")
+            alert_slack_webhook=os.getenv("ALERT_SLACK_WEBHOOK", ""),
         )
 
 
 @dataclass
 class CostConfig:
     """Cost management configuration."""
+
     daily_budget: float = 10.0
     monthly_budget: float = 300.0
     alert_threshold: float = 0.8
@@ -134,13 +142,14 @@ class CostConfig:
             daily_budget=float(os.getenv("DAILY_BUDGET", "10.0")),
             monthly_budget=float(os.getenv("MONTHLY_BUDGET", "300.0")),
             alert_threshold=float(os.getenv("COST_ALERT_THRESHOLD", "0.8")),
-            track_costs=os.getenv("TRACK_COSTS", "true").lower() == "true"
+            track_costs=os.getenv("TRACK_COSTS", "true").lower() == "true",
         )
 
 
 @dataclass
 class ProductionConfig:
     """Complete production configuration."""
+
     environment: Environment = Environment.DEVELOPMENT
     debug: bool = False
     version: str = "1.0.0"
@@ -181,7 +190,7 @@ class ProductionConfig:
             enable_caching=os.getenv("ENABLE_CACHING", "true").lower() == "true",
             enable_quality_checks=os.getenv("ENABLE_QUALITY_CHECKS", "true").lower() == "true",
             enable_deep_research=os.getenv("ENABLE_DEEP_RESEARCH", "true").lower() == "true",
-            max_parallel_agents=int(os.getenv("MAX_PARALLEL_AGENTS", "4"))
+            max_parallel_agents=int(os.getenv("MAX_PARALLEL_AGENTS", "4")),
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -195,29 +204,27 @@ class ProductionConfig:
                 "provider": self.llm.provider,
                 "model": self.llm.model,
                 "api_key_set": bool(self.llm.api_key),
-                "max_tokens": self.llm.max_tokens
+                "max_tokens": self.llm.max_tokens,
             },
-            "search": {
-                "provider": self.search.provider,
-                "api_key_set": bool(self.search.api_key)
-            },
+            "search": {"provider": self.search.provider, "api_key_set": bool(self.search.api_key)},
             "api": {
                 "host": self.api.host,
                 "port": self.api.port,
-                "rate_limit_rpm": self.api.rate_limit_rpm
+                "rate_limit_rpm": self.api.rate_limit_rpm,
             },
             "features": {
                 "caching": self.enable_caching,
                 "quality_checks": self.enable_quality_checks,
                 "deep_research": self.enable_deep_research,
-                "max_parallel_agents": self.max_parallel_agents
-            }
+                "max_parallel_agents": self.max_parallel_agents,
+            },
         }
 
 
 # ============================================================================
 # Configuration Validation
 # ============================================================================
+
 
 class ConfigValidationError(Exception):
     """Configuration validation error."""
@@ -271,8 +278,7 @@ def validate_or_raise(config: ProductionConfig):
     errors = validate_config(config)
     if errors:
         raise ConfigValidationError(
-            f"Configuration validation failed:\n" +
-            "\n".join(f"  - {e}" for e in errors)
+            f"Configuration validation failed:\n" + "\n".join(f"  - {e}" for e in errors)
         )
 
 
@@ -283,10 +289,7 @@ def validate_or_raise(config: ProductionConfig):
 _global_config: Optional[ProductionConfig] = None
 
 
-def load_config(
-    env_file: Optional[str] = None,
-    validate: bool = True
-) -> ProductionConfig:
+def load_config(env_file: Optional[str] = None, validate: bool = True) -> ProductionConfig:
     """
     Load configuration from environment.
 
@@ -303,6 +306,7 @@ def load_config(
     if env_file:
         try:
             from dotenv import load_dotenv
+
             load_dotenv(env_file)
         except ImportError:
             pass
@@ -339,6 +343,7 @@ def reload_config():
 # ============================================================================
 # Environment Helpers
 # ============================================================================
+
 
 def is_production() -> bool:
     """Check if running in production."""

@@ -15,8 +15,8 @@ This folder contains interactive prompts for setting up and enforcing developmen
 ## Available Prompts
 
 ### 1. Setup Project Standards
-**File**: `setup-project-standards.md`  
-**Use When**: Configuring individual project (`.csproj` level)  
+**File**: `setup-project-standards.md`
+**Use When**: Configuring individual project (`.csproj` level)
 **Scope**: Single project configuration
 
 **What it configures:**
@@ -40,8 +40,8 @@ setup project standards (interactive)
 ---
 
 ### 2. Setup Repository Standards
-**File**: `setup-repository-standards.md`  
-**Use When**: Initializing or auditing entire repository  
+**File**: `setup-repository-standards.md`
+**Use When**: Initializing or auditing entire repository
 **Scope**: Repository-wide configuration
 
 **What it configures:**
@@ -295,7 +295,7 @@ Both prompts follow security best practices:
 
 ### Build fails after applying project standards
 
-**Issue**: `TreatWarningsAsErrors` causes build to fail  
+**Issue**: `TreatWarningsAsErrors` causes build to fail
 **Fix**:
 1. Review warnings: `dotnet build`
 2. Fix warnings incrementally
@@ -304,7 +304,7 @@ Both prompts follow security best practices:
 
 ### Directory creation fails
 
-**Issue**: Permission denied or conflicts  
+**Issue**: Permission denied or conflicts
 **Fix**:
 1. Check file system permissions
 2. Verify no conflicting files exist
@@ -313,7 +313,7 @@ Both prompts follow security best practices:
 
 ### Git ignores expected files
 
-**Issue**: .gitignore too aggressive  
+**Issue**: .gitignore too aggressive
 **Fix**:
 1. Review .gitignore entries
 2. Use `git add -f <file>` to force add specific files
@@ -394,7 +394,6 @@ Both prompts follow security best practices:
 
 ---
 
-**Created**: 2025-12-02  
-**Maintained By**: Development Standards Team  
+**Created**: 2025-12-02
+**Maintained By**: Development Standards Team
 **Related**: EBASE-TEMP-004 (Architectural improvements)
-

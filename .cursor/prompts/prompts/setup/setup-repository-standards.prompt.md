@@ -10,8 +10,8 @@ argument-hint: "interactive|default|[repo-path]"
 
 Please check and configure an entire repository to follow Energy21 development standards, including solution structure, documentation architecture, ticket system, and CI/CD setup.
 
-**Pattern**: Repository Standards Setup Pattern ⭐⭐⭐⭐⭐  
-**Effectiveness**: 95% coverage of repository requirements  
+**Pattern**: Repository Standards Setup Pattern ⭐⭐⭐⭐⭐
+**Effectiveness**: 95% coverage of repository requirements
 **Use When**: Initializing new repository, auditing existing repository, enforcing organizational standards
 
 ---
@@ -91,39 +91,39 @@ Before executing, the AI should:
   <PropertyGroup>
     <!-- Central Package Management -->
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    
+
     <!-- Shared Settings -->
     <TargetFramework>net9.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    
+
     <!-- Code Analysis -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    
+
     <!-- Documentation -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    
+
     <!-- Deterministic Builds -->
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
-    
+
     <!-- Package Metadata -->
     <Authors>Your Team</Authors>
     <Company>Your Company</Company>
     <Copyright>Copyright © Your Company</Copyright>
     <RepositoryUrl>https://dev.azure.com/org/repo</RepositoryUrl>
-    
+
     <!-- Source Link -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <!-- Package Versions (Central) -->
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
@@ -357,19 +357,19 @@ stages:
             displayName: 'Restore'
             inputs:
               command: 'restore'
-          
+
           - task: DotNetCoreCLI@2
             displayName: 'Build'
             inputs:
               command: 'build'
               arguments: '--configuration $(buildConfiguration) --no-restore'
-          
+
           - task: DotNetCoreCLI@2
             displayName: 'Test'
             inputs:
               command: 'test'
               arguments: '--configuration $(buildConfiguration) --no-build --collect:"XPlat Code Coverage"'
-          
+
           - script: |
               dotnet list package --vulnerable --include-transitive
             displayName: 'Security Scan'
@@ -568,10 +568,10 @@ After applying standards, verify:
 
 ---
 
-**Created**: 2025-12-02  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
-**Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)  
-**Updated**: 2025-12-04 (Added professional setup items - Directory.Build.props, security scanning, SBOM)  
+**Created**: 2025-12-02
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
+**Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)
+**Updated**: 2025-12-04 (Added professional setup items - Directory.Build.props, security scanning, SBOM)
 **Pattern ID**: #8 Repository Standards Setup
 
 ---
@@ -580,7 +580,7 @@ After applying standards, verify:
 
 ### 2025-12-08 - Comprehensive Improvement (PROMPTS-OPTIMIZE)
 - Added Purpose section
-- Added User Process section  
+- Added User Process section
 - Added Few-Shot examples
 - Renamed validation to Quality Criteria
 - Fixed Related Standards format

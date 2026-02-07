@@ -35,17 +35,14 @@ Usage:
 """
 
 # Import from trends package
-from .trends import (
-    # Models
-    TrendDirection,
-    MetricCategory,
+from .trends import (  # Models; Analyzer; Factory
     DataPoint,
-    TrendMetric,
-    TrendAnalysis,
-    TrendTable,
-    # Analyzer
     HistoricalTrendAnalyzer,
-    # Factory
+    MetricCategory,
+    TrendAnalysis,
+    TrendDirection,
+    TrendMetric,
+    TrendTable,
     create_trend_analyzer,
 )
 
@@ -114,8 +111,7 @@ if __name__ == "__main__":
     print("\n3. Generating trend table...")
     if metrics:
         table = analyzer.generate_trend_table(
-            list(metrics.values()),
-            title="Multi-Year Financial Trends"
+            list(metrics.values()), title="Multi-Year Financial Trends"
         )
         print("\n" + table.markdown)
 

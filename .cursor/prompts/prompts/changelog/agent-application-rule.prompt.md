@@ -10,8 +10,8 @@ argument-hint: "User request or scenario description"
 
 Please determine when and how to apply CHANGELOG generation prompts based on user requests.
 
-**Pattern**: Agent Decision Pattern ⭐⭐⭐⭐  
-**Effectiveness**: Essential for routing CHANGELOG requests correctly  
+**Pattern**: Agent Decision Pattern ⭐⭐⭐⭐
+**Effectiveness**: Essential for routing CHANGELOG requests correctly
 **Use When**: User mentions CHANGELOG, release notes, or CI/CD validation failures
 
 ---
@@ -220,7 +220,7 @@ git push
 
 **User Request**:
 ```
-We have 10 release tags but CHANGELOG.md only has 3 entries. 
+We have 10 release tags but CHANGELOG.md only has 3 entries.
 Can you rebuild it from git history?
 ```
 
@@ -420,6 +420,6 @@ git push --tags
 
 ---
 
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)

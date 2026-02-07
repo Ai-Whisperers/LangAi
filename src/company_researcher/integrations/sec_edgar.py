@@ -32,17 +32,16 @@ Usage:
 """
 
 import json
-import requests
-from requests.exceptions import (
-    ConnectionError as RequestsConnectionError,
-    HTTPError,
-    Timeout as RequestsTimeout,
-    RequestException,
-)
-from typing import Optional, Dict, Any, List
+import time
 from dataclasses import dataclass, field
 from threading import Lock
-import time
+from typing import Any, Dict, List, Optional
+
+import requests
+from requests.exceptions import ConnectionError as RequestsConnectionError
+from requests.exceptions import HTTPError, RequestException
+from requests.exceptions import Timeout as RequestsTimeout
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -59,6 +58,7 @@ DEFAULT_USER_AGENT = "CompanyResearcher/1.0 (research@example.com)"
 @dataclass
 class SECCompany:
     """SEC registered company information."""
+
     cik: str
     name: str
     ticker: Optional[str] = None
@@ -75,13 +75,14 @@ class SECCompany:
             "sic": self.sic,
             "sic_description": self.sic_description,
             "state": self.state,
-            "fiscal_year_end": self.fiscal_year_end
+            "fiscal_year_end": self.fiscal_year_end,
         }
 
 
 @dataclass
 class SECFiling:
     """SEC filing information."""
+
     accession_number: str
     form_type: str
     filing_date: str
@@ -98,13 +99,14 @@ class SECFiling:
             "report_date": self.report_date,
             "primary_document": self.primary_document,
             "file_url": self.file_url,
-            "description": self.description
+            "description": self.description,
         }
 
 
 @dataclass
 class SECSearchResult:
     """Result from SEC search operations."""
+
     query: str
     companies: List[SECCompany] = field(default_factory=list)
     filings: List[SECFiling] = field(default_factory=list)
@@ -117,7 +119,7 @@ class SECSearchResult:
             "companies": [c.to_dict() for c in self.companies],
             "filings": [f.to_dict() for f in self.filings],
             "success": self.success,
-            "error": self.error
+            "error": self.error,
         }
 
 
@@ -156,7 +158,7 @@ class SECEdgarClient:
         self,
         user_agent: str = DEFAULT_USER_AGENT,
         timeout: int = 30,
-        rate_limit_delay: float = 0.1  # SEC requests max 10/sec
+        rate_limit_delay: float = 0.1,  # SEC requests max 10/sec
     ):
         """
         Initialize SEC EDGAR client.
@@ -171,10 +173,7 @@ class SECEdgarClient:
         self.rate_limit_delay = rate_limit_delay
 
         self._session = requests.Session()
-        self._session.headers.update({
-            "User-Agent": user_agent,
-            "Accept": "application/json"
-        })
+        self._session.headers.update({"User-Agent": user_agent, "Accept": "application/json"})
 
         self._last_request_time = 0.0
         self._total_queries = 0
@@ -237,7 +236,7 @@ class SECEdgarClient:
                 sic=data.get("sic"),
                 sic_description=data.get("sicDescription"),
                 state=data.get("stateOfIncorporation"),
-                fiscal_year_end=data.get("fiscalYearEnd")
+                fiscal_year_end=data.get("fiscalYearEnd"),
             )
 
         except RequestsTimeout:
@@ -247,7 +246,9 @@ class SECEdgarClient:
             logger.warning(f"SEC EDGAR connection error for CIK {cik}: {e}")
             return None
         except HTTPError as e:
-            logger.error(f"SEC EDGAR HTTP error for CIK {cik}: {e.response.status_code if e.response else 'unknown'}")
+            logger.error(
+                f"SEC EDGAR HTTP error for CIK {cik}: {e.response.status_code if e.response else 'unknown'}"
+            )
             return None
         except json.JSONDecodeError as e:
             logger.error(f"SEC EDGAR invalid JSON response for CIK {cik}: {e}")
@@ -259,11 +260,7 @@ class SECEdgarClient:
             logger.error(f"SEC EDGAR unexpected error for CIK {cik}: {type(e).__name__}: {e}")
             return None
 
-    def search_company(
-        self,
-        query: str,
-        max_results: int = 10
-    ) -> SECSearchResult:
+    def search_company(self, query: str, max_results: int = 10) -> SECSearchResult:
         """
         Search for companies by name or ticker (with caching).
 
@@ -277,13 +274,16 @@ class SECEdgarClient:
         # Check cache first (30-day TTL)
         cache_key = f"search:{query}:{max_results}"
         try:
-            from .result_cache import get_cached_sec_filing, cache_sec_filing
+            from ..cache.result_cache import cache_sec_filing, get_cached_sec_filing
+
             cached = get_cached_sec_filing(query, cache_key)
             if cached:
                 logger.debug(f"[CACHE HIT] SEC company search: '{query}'")
                 # Reconstruct SECSearchResult from cached dict
                 result_dict = cached.copy()
-                result_dict["companies"] = [SECCompany(**c) for c in result_dict.get("companies", [])]
+                result_dict["companies"] = [
+                    SECCompany(**c) for c in result_dict.get("companies", [])
+                ]
                 result_dict["filings"] = [SECFiling(**f) for f in result_dict.get("filings", [])]
                 return SECSearchResult(**result_dict)
         except ImportError:
@@ -311,11 +311,13 @@ class SECEdgarClient:
                 if ticker == query_lower or query_lower in name:
                     cik = str(company_data.get("cik_str", ""))
 
-                    companies.append(SECCompany(
-                        cik=cik,
-                        name=company_data.get("title", ""),
-                        ticker=company_data.get("ticker")
-                    ))
+                    companies.append(
+                        SECCompany(
+                            cik=cik,
+                            name=company_data.get("title", ""),
+                            ticker=company_data.get("ticker"),
+                        )
+                    )
 
                     if len(companies) >= max_results:
                         break
@@ -323,15 +325,12 @@ class SECEdgarClient:
             with self._lock:
                 self._total_queries += 1
 
-            result = SECSearchResult(
-                query=query,
-                companies=companies,
-                success=True
-            )
+            result = SECSearchResult(query=query, companies=companies, success=True)
 
             # Cache results (30 days)
             try:
-                from .result_cache import cache_sec_filing
+                from ..cache.result_cache import cache_sec_filing
+
                 cache_sec_filing(query, cache_key, result.to_dict())
                 logger.debug(f"[CACHED] SEC company search: '{query}'")
             except ImportError:
@@ -356,7 +355,9 @@ class SECEdgarClient:
             logger.error(f"SEC company search request error for '{query}': {e}")
             return SECSearchResult(query=query, success=False, error=f"Request error: {e}")
         except Exception as e:
-            logger.error(f"SEC company search unexpected error for '{query}': {type(e).__name__}: {e}")
+            logger.error(
+                f"SEC company search unexpected error for '{query}': {type(e).__name__}: {e}"
+            )
             return SECSearchResult(query=query, success=False, error=str(e))
 
     def get_cik(self, ticker: str) -> Optional[str]:
@@ -389,7 +390,7 @@ class SECEdgarClient:
         form_type: Optional[str] = None,
         max_results: int = 20,
         start_date: Optional[str] = None,
-        end_date: Optional[str] = None
+        end_date: Optional[str] = None,
     ) -> SECSearchResult:
         """
         Get SEC filings for a company (with caching).
@@ -407,14 +408,17 @@ class SECEdgarClient:
         # Check cache first (30-day TTL)
         cache_key = f"{ticker_or_cik}:{form_type or 'all'}:{max_results}:{start_date or 'none'}:{end_date or 'none'}"
         try:
-            from .result_cache import get_cached_sec_filing, cache_sec_filing
+            from ..cache.result_cache import cache_sec_filing, get_cached_sec_filing
+
             cached = get_cached_sec_filing(ticker_or_cik, cache_key)
             if cached:
                 logger.debug(f"[CACHE HIT] SEC filings: '{ticker_or_cik}' form={form_type}")
                 # Reconstruct SECSearchResult from cached dict
                 result_dict = cached.copy()
                 result_dict["filings"] = [SECFiling(**f) for f in result_dict.get("filings", [])]
-                result_dict["companies"] = [SECCompany(**c) for c in result_dict.get("companies", [])]
+                result_dict["companies"] = [
+                    SECCompany(**c) for c in result_dict.get("companies", [])
+                ]
                 return SECSearchResult(**result_dict)
         except ImportError:
             pass
@@ -427,7 +431,7 @@ class SECEdgarClient:
                     return SECSearchResult(
                         query=ticker_or_cik,
                         success=False,
-                        error=f"Could not find CIK for ticker: {ticker_or_cik}"
+                        error=f"Could not find CIK for ticker: {ticker_or_cik}",
                     )
             else:
                 cik = ticker_or_cik
@@ -469,17 +473,21 @@ class SECEdgarClient:
                 # Build file URL
                 accession = accession_numbers[i].replace("-", "")
                 primary_doc = primary_docs[i] if i < len(primary_docs) else ""
-                file_url = f"https://www.sec.gov/Archives/edgar/data/{cik}/{accession}/{primary_doc}"
+                file_url = (
+                    f"https://www.sec.gov/Archives/edgar/data/{cik}/{accession}/{primary_doc}"
+                )
 
-                filings.append(SECFiling(
-                    accession_number=accession_numbers[i],
-                    form_type=form_types[i],
-                    filing_date=filing_date,
-                    report_date=report_dates[i] if i < len(report_dates) else None,
-                    primary_document=primary_doc,
-                    file_url=file_url,
-                    description=descriptions[i] if i < len(descriptions) else None
-                ))
+                filings.append(
+                    SECFiling(
+                        accession_number=accession_numbers[i],
+                        form_type=form_types[i],
+                        filing_date=filing_date,
+                        report_date=report_dates[i] if i < len(report_dates) else None,
+                        primary_document=primary_doc,
+                        file_url=file_url,
+                        description=descriptions[i] if i < len(descriptions) else None,
+                    )
+                )
 
                 if len(filings) >= max_results:
                     break
@@ -487,15 +495,12 @@ class SECEdgarClient:
             with self._lock:
                 self._total_queries += 1
 
-            result = SECSearchResult(
-                query=ticker_or_cik,
-                filings=filings,
-                success=True
-            )
+            result = SECSearchResult(query=ticker_or_cik, filings=filings, success=True)
 
             # Cache results (30 days)
             try:
-                from .result_cache import cache_sec_filing
+                from ..cache.result_cache import cache_sec_filing
+
                 cache_sec_filing(ticker_or_cik, cache_key, result.to_dict())
                 logger.debug(f"[CACHED] SEC filings: '{ticker_or_cik}' form={form_type}")
             except ImportError:
@@ -508,11 +513,15 @@ class SECEdgarClient:
             return SECSearchResult(query=ticker_or_cik, success=False, error=ERR_REQUEST_TIMEOUT)
         except RequestsConnectionError as e:
             logger.warning(f"SEC filings connection error for '{ticker_or_cik}': {e}")
-            return SECSearchResult(query=ticker_or_cik, success=False, error=f"Connection error: {e}")
+            return SECSearchResult(
+                query=ticker_or_cik, success=False, error=f"Connection error: {e}"
+            )
         except HTTPError as e:
             status_code = e.response.status_code if e.response else "unknown"
             logger.error(f"SEC filings HTTP error for '{ticker_or_cik}': {status_code}")
-            return SECSearchResult(query=ticker_or_cik, success=False, error=f"HTTP error: {status_code}")
+            return SECSearchResult(
+                query=ticker_or_cik, success=False, error=f"HTTP error: {status_code}"
+            )
         except json.JSONDecodeError as e:
             logger.error(f"SEC filings invalid JSON for '{ticker_or_cik}': {e}")
             return SECSearchResult(query=ticker_or_cik, success=False, error=ERR_INVALID_JSON)
@@ -520,14 +529,12 @@ class SECEdgarClient:
             logger.error(f"SEC filings request error for '{ticker_or_cik}': {e}")
             return SECSearchResult(query=ticker_or_cik, success=False, error=f"Request error: {e}")
         except Exception as e:
-            logger.error(f"SEC filings unexpected error for '{ticker_or_cik}': {type(e).__name__}: {e}")
+            logger.error(
+                f"SEC filings unexpected error for '{ticker_or_cik}': {type(e).__name__}: {e}"
+            )
             return SECSearchResult(query=ticker_or_cik, success=False, error=str(e))
 
-    def get_10k_filings(
-        self,
-        ticker_or_cik: str,
-        years: int = 5
-    ) -> SECSearchResult:
+    def get_10k_filings(self, ticker_or_cik: str, years: int = 5) -> SECSearchResult:
         """
         Get annual 10-K filings.
 
@@ -540,11 +547,7 @@ class SECEdgarClient:
         """
         return self.get_filings(ticker_or_cik, form_type="10-K", max_results=years)
 
-    def get_10q_filings(
-        self,
-        ticker_or_cik: str,
-        quarters: int = 8
-    ) -> SECSearchResult:
+    def get_10q_filings(self, ticker_or_cik: str, quarters: int = 8) -> SECSearchResult:
         """
         Get quarterly 10-Q filings.
 
@@ -557,11 +560,7 @@ class SECEdgarClient:
         """
         return self.get_filings(ticker_or_cik, form_type="10-Q", max_results=quarters)
 
-    def get_8k_filings(
-        self,
-        ticker_or_cik: str,
-        max_results: int = 20
-    ) -> SECSearchResult:
+    def get_8k_filings(self, ticker_or_cik: str, max_results: int = 20) -> SECSearchResult:
         """
         Get 8-K current event filings.
 
@@ -574,11 +573,7 @@ class SECEdgarClient:
         """
         return self.get_filings(ticker_or_cik, form_type="8-K", max_results=max_results)
 
-    def get_insider_filings(
-        self,
-        ticker_or_cik: str,
-        max_results: int = 50
-    ) -> SECSearchResult:
+    def get_insider_filings(self, ticker_or_cik: str, max_results: int = 50) -> SECSearchResult:
         """
         Get insider trading filings (Form 4).
 
@@ -591,11 +586,7 @@ class SECEdgarClient:
         """
         return self.get_filings(ticker_or_cik, form_type="4", max_results=max_results)
 
-    def get_filing_content(
-        self,
-        filing_url: str,
-        as_text: bool = True
-    ) -> Optional[str]:
+    def get_filing_content(self, filing_url: str, as_text: bool = True) -> Optional[str]:
         """
         Download filing content.
 
@@ -620,7 +611,9 @@ class SECEdgarClient:
             return response.content
 
         except RequestsTimeout:
-            logger.warning(f"SEC filing download timeout for {filing_url} (timeout={self.timeout}s)")
+            logger.warning(
+                f"SEC filing download timeout for {filing_url} (timeout={self.timeout}s)"
+            )
             return None
         except RequestsConnectionError as e:
             logger.warning(f"SEC filing download connection error for {filing_url}: {e}")
@@ -633,7 +626,9 @@ class SECEdgarClient:
             logger.error(f"SEC filing download request error for {filing_url}: {e}")
             return None
         except Exception as e:
-            logger.error(f"SEC filing download unexpected error for {filing_url}: {type(e).__name__}: {e}")
+            logger.error(
+                f"SEC filing download unexpected error for {filing_url}: {type(e).__name__}: {e}"
+            )
             return None
 
     def full_text_search(
@@ -642,7 +637,7 @@ class SECEdgarClient:
         form_types: Optional[List[str]] = None,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
-        max_results: int = 20
+        max_results: int = 20,
     ) -> SECSearchResult:
         """
         Full-text search across all SEC filings.
@@ -672,11 +667,7 @@ class SECEdgarClient:
                 params["forms"] = ",".join(form_types)
 
             url = "https://efts.sec.gov/LATEST/search-index"
-            response = self._session.get(
-                url,
-                params=params,
-                timeout=self.timeout
-            )
+            response = self._session.get(url, params=params, timeout=self.timeout)
             response.raise_for_status()
 
             data = response.json()
@@ -687,21 +678,23 @@ class SECEdgarClient:
             for hit in hits[:max_results]:
                 source = hit.get("_source", {})
 
-                filings.append(SECFiling(
-                    accession_number=source.get("adsh", ""),
-                    form_type=source.get("form", ""),
-                    filing_date=source.get("file_date", ""),
-                    description=source.get("display_names", [""])[0] if source.get("display_names") else ""
-                ))
+                filings.append(
+                    SECFiling(
+                        accession_number=source.get("adsh", ""),
+                        form_type=source.get("form", ""),
+                        filing_date=source.get("file_date", ""),
+                        description=(
+                            source.get("display_names", [""])[0]
+                            if source.get("display_names")
+                            else ""
+                        ),
+                    )
+                )
 
             with self._lock:
                 self._total_queries += 1
 
-            return SECSearchResult(
-                query=query,
-                filings=filings,
-                success=True
-            )
+            return SECSearchResult(query=query, filings=filings, success=True)
 
         except RequestsTimeout:
             logger.warning(f"SEC full-text search timeout for '{query}' (timeout={self.timeout}s)")
@@ -720,7 +713,9 @@ class SECEdgarClient:
             logger.error(f"SEC full-text search request error for '{query}': {e}")
             return SECSearchResult(query=query, success=False, error=str(e))
         except Exception as e:
-            logger.error(f"SEC full-text search unexpected error for '{query}': {type(e).__name__}: {e}")
+            logger.error(
+                f"SEC full-text search unexpected error for '{query}': {type(e).__name__}: {e}"
+            )
             return SECSearchResult(query=query, success=False, error=str(e))
 
     def get_stats(self) -> Dict[str, Any]:
@@ -729,7 +724,7 @@ class SECEdgarClient:
             return {
                 "total_queries": self._total_queries,
                 "cached_tickers": len(self._cik_cache),
-                "cost": 0.0  # FREE!
+                "cost": 0.0,  # FREE!
             }
 
     def reset_stats(self) -> None:
@@ -760,7 +755,9 @@ def reset_sec_edgar() -> None:
 
 
 # Convenience functions
-def get_company_filings(ticker: str, form_type: str = "10-K", max_results: int = 5) -> List[Dict[str, Any]]:
+def get_company_filings(
+    ticker: str, form_type: str = "10-K", max_results: int = 5
+) -> List[Dict[str, Any]]:
     """Quick function to get company filings."""
     edgar = get_sec_edgar()
     result = edgar.get_filings(ticker, form_type=form_type, max_results=max_results)

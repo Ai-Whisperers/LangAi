@@ -46,17 +46,17 @@ Technical specification documentation structure containing:
 ## When to Apply This Rule
 
 ### **Use This Architecture When**
-✅ **C++ to C# Migration Projects**: Legacy system migration requiring detailed technical analysis  
-✅ **Complex Database Schemas**: Systems with extensive database structures requiring detailed analysis  
-✅ **Rich Business Domains**: Systems with complex business logic requiring domain modeling  
-✅ **Multiple Stakeholders**: Technical teams, business analysts, and domain experts need different views  
-✅ **Layered System Architecture**: Systems with clear separation between data, domain, and application layers  
+✅ **C++ to C# Migration Projects**: Legacy system migration requiring detailed technical analysis
+✅ **Complex Database Schemas**: Systems with extensive database structures requiring detailed analysis
+✅ **Rich Business Domains**: Systems with complex business logic requiring domain modeling
+✅ **Multiple Stakeholders**: Technical teams, business analysts, and domain experts need different views
+✅ **Layered System Architecture**: Systems with clear separation between data, domain, and application layers
 
 ### **Don't Use This Architecture When**
-❌ **Simple Systems**: Basic applications without complex business domains or database schemas  
-❌ **Pure Technical Documentation**: Systems requiring only technical documentation without business context  
-❌ **Single-Layer Applications**: Applications without clear domain/database separation  
-❌ **Prototype Projects**: Early-stage projects without established architecture patterns  
+❌ **Simple Systems**: Basic applications without complex business domains or database schemas
+❌ **Pure Technical Documentation**: Systems requiring only technical documentation without business context
+❌ **Single-Layer Applications**: Applications without clear domain/database separation
+❌ **Prototype Projects**: Early-stage projects without established architecture patterns
 
 ### **Key Indicators for Application**
 - **Database Complexity**: 10+ tables with complex relationships
@@ -72,7 +72,7 @@ Technical specification documentation structure containing:
 ```text
 docs/
 ├── technical/          # "WHAT" - Current System Specifications
-├── implementation/     # "HOW" - C# Target Design Documents  
+├── implementation/     # "HOW" - C# Target Design Documents
 └── rfcs/              # "FUTURE" - Request for Comments & Proposals
 ```
 
@@ -87,7 +87,7 @@ The architecture uses **different documentation patterns** depending on the **ab
 ```text
 docs/technical/[domain]/
 ├── [domain]-database-schema.md                           # WHAT exists
-├── [domain]-database-constraints-and-relationships.md    # HOW it's constrained  
+├── [domain]-database-constraints-and-relationships.md    # HOW it's constrained
 └── [domain]-database-analysis-summary.md                 # WHY it matters
 ```
 
@@ -155,7 +155,7 @@ docs/technical/[domain]/
 
 ##### **Database Schema Files (3-File Pattern)**
 - Complete table structures with Oracle/MSSQL compatibility
-- Constraints and referential integrity rules  
+- Constraints and referential integrity rules
 - Business context and migration guidance
 
 ##### **Entity Files** - EF Core Data Contracts
@@ -198,7 +198,7 @@ docs/technical/[domain]/
 
 ##### **Cache Strategy Files**
 - Distributed caching patterns and policies
-- Cache key generation strategies  
+- Cache key generation strategies
 - Invalidation rules and dependency management
 - Serialization patterns for domain objects
 
@@ -256,7 +256,7 @@ docs/implementation/[domain]/use-cases/
 
 ### **Database Files (3-File Pattern)**
 - `[domain]-database-schema.md`
-- `[domain]-database-constraints-and-relationships.md`  
+- `[domain]-database-constraints-and-relationships.md`
 - `[domain]-database-analysis-summary.md`
 
 ### **Domain Files (DDD Pattern)**
@@ -362,7 +362,7 @@ When applying this architecture to a new domain:
 
 1. **Assess Applicability**: Verify domain meets criteria (10+ tables, complex business logic, migration project)
 2. **Create Domain Folder**: Create `docs/technical/[domain]/` directory structure
-3. **Create Database Layer**: 
+3. **Create Database Layer**:
    - Create `docs/technical/[domain]/database/` folder
    - Create `[domain]-database-schema.md` with table structures
    - Create `[domain]-database-constraints.md` with relationships

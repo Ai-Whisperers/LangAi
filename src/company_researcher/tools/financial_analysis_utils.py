@@ -9,12 +9,12 @@ Provides calculation functions for financial metrics and analysis:
 - Trend analysis
 """
 
-from typing import List, Tuple, Dict, Optional
-
+from typing import Dict, List, Optional, Tuple
 
 # ==============================================================================
 # Revenue Analysis
 # ==============================================================================
+
 
 def calculate_yoy_growth(current: float, previous: float) -> float:
     """
@@ -34,11 +34,7 @@ def calculate_yoy_growth(current: float, previous: float) -> float:
     return round(growth, 2)
 
 
-def calculate_cagr(
-    initial_value: float,
-    final_value: float,
-    num_years: int
-) -> float:
+def calculate_cagr(initial_value: float, final_value: float, num_years: int) -> float:
     """
     Calculate Compound Annual Growth Rate.
 
@@ -57,9 +53,7 @@ def calculate_cagr(
     return round(cagr, 2)
 
 
-def analyze_revenue_trend(
-    revenue_history: List[Tuple[str, float]]
-) -> Dict[str, any]:
+def analyze_revenue_trend(revenue_history: List[Tuple[str, float]]) -> Dict[str, any]:
     """
     Analyze revenue trend over time.
 
@@ -75,10 +69,7 @@ def analyze_revenue_trend(
         - trend: "accelerating", "decelerating", or "stable"
     """
     if len(revenue_history) < 2:
-        return {
-            "available": False,
-            "reason": "Insufficient data (need at least 2 periods)"
-        }
+        return {"available": False, "reason": "Insufficient data (need at least 2 periods)"}
 
     # Sort by period
     sorted_history = sorted(revenue_history, key=lambda x: x[0])
@@ -86,13 +77,10 @@ def analyze_revenue_trend(
     # Calculate YoY growth for each period
     yoy_growth = []
     for i in range(1, len(sorted_history)):
-        prev_revenue = sorted_history[i-1][1]
+        prev_revenue = sorted_history[i - 1][1]
         curr_revenue = sorted_history[i][1]
         growth = calculate_yoy_growth(curr_revenue, prev_revenue)
-        yoy_growth.append({
-            "period": sorted_history[i][0],
-            "growth": growth
-        })
+        yoy_growth.append({"period": sorted_history[i][0], "growth": growth})
 
     # Calculate CAGR
     num_years = len(sorted_history) - 1
@@ -120,13 +108,14 @@ def analyze_revenue_trend(
         "yoy_growth": yoy_growth,
         "average_growth": round(sum(g["growth"] for g in yoy_growth) / len(yoy_growth), 2),
         "cagr": cagr,
-        "trend": trend
+        "trend": trend,
     }
 
 
 # ==============================================================================
 # Profitability Analysis
 # ==============================================================================
+
 
 def calculate_gross_margin(revenue: float, cogs: float) -> float:
     """
@@ -207,7 +196,7 @@ def analyze_profitability(
     operating_income: Optional[float] = None,
     net_income: Optional[float] = None,
     ebitda: Optional[float] = None,
-    cogs: Optional[float] = None
+    cogs: Optional[float] = None,
 ) -> Dict[str, any]:
     """
     Comprehensive profitability analysis.
@@ -228,22 +217,18 @@ def analyze_profitability(
         "gross_margin": None,
         "operating_margin": None,
         "net_margin": None,
-        "ebitda_margin": None
+        "ebitda_margin": None,
     }
 
     # Gross margin
     if gross_profit is not None:
-        profitability["gross_margin"] = calculate_gross_margin(
-            revenue, revenue - gross_profit
-        )
+        profitability["gross_margin"] = calculate_gross_margin(revenue, revenue - gross_profit)
     elif cogs is not None:
         profitability["gross_margin"] = calculate_gross_margin(revenue, cogs)
 
     # Operating margin
     if operating_income is not None:
-        profitability["operating_margin"] = calculate_operating_margin(
-            revenue, operating_income
-        )
+        profitability["operating_margin"] = calculate_operating_margin(revenue, operating_income)
 
     # Net margin
     if net_income is not None:
@@ -260,6 +245,7 @@ def analyze_profitability(
 # Financial Health Ratios
 # ==============================================================================
 
+
 def calculate_debt_to_equity(total_debt: float, total_equity: float) -> float:
     """
     Calculate debt-to-equity ratio.
@@ -272,7 +258,7 @@ def calculate_debt_to_equity(total_debt: float, total_equity: float) -> float:
         Debt-to-equity ratio
     """
     if total_equity == 0:
-        return float('inf')
+        return float("inf")
 
     ratio = total_debt / total_equity
     return round(ratio, 2)
@@ -290,16 +276,14 @@ def calculate_current_ratio(current_assets: float, current_liabilities: float) -
         Current ratio
     """
     if current_liabilities == 0:
-        return float('inf')
+        return float("inf")
 
     ratio = current_assets / current_liabilities
     return round(ratio, 2)
 
 
 def calculate_quick_ratio(
-    current_assets: float,
-    inventory: float,
-    current_liabilities: float
+    current_assets: float, inventory: float, current_liabilities: float
 ) -> float:
     """
     Calculate quick ratio (acid-test ratio).
@@ -313,17 +297,14 @@ def calculate_quick_ratio(
         Quick ratio
     """
     if current_liabilities == 0:
-        return float('inf')
+        return float("inf")
 
     quick_assets = current_assets - inventory
     ratio = quick_assets / current_liabilities
     return round(ratio, 2)
 
 
-def calculate_free_cash_flow(
-    operating_cash_flow: float,
-    capital_expenditures: float
-) -> float:
+def calculate_free_cash_flow(operating_cash_flow: float, capital_expenditures: float) -> float:
     """
     Calculate free cash flow.
 
@@ -346,7 +327,7 @@ def analyze_financial_health(
     current_liabilities: float,
     inventory: Optional[float] = None,
     operating_cash_flow: Optional[float] = None,
-    capex: Optional[float] = None
+    capex: Optional[float] = None,
 ) -> Dict[str, any]:
     """
     Comprehensive financial health analysis.
@@ -371,7 +352,7 @@ def analyze_financial_health(
         "current_ratio": calculate_current_ratio(current_assets, current_liabilities),
         "quick_ratio": None,
         "free_cash_flow": None,
-        "assessment": None
+        "assessment": None,
     }
 
     # Quick ratio
@@ -382,9 +363,7 @@ def analyze_financial_health(
 
     # Free cash flow
     if operating_cash_flow is not None and capex is not None:
-        health["free_cash_flow"] = calculate_free_cash_flow(
-            operating_cash_flow, capex
-        )
+        health["free_cash_flow"] = calculate_free_cash_flow(operating_cash_flow, capex)
 
     # Overall assessment
     health["assessment"] = assess_financial_health(health)
@@ -453,6 +432,7 @@ def assess_financial_health(health_metrics: Dict) -> str:
 # Valuation Metrics
 # ==============================================================================
 
+
 def calculate_pe_ratio(stock_price: float, earnings_per_share: float) -> float:
     """
     Calculate Price-to-Earnings ratio.
@@ -465,7 +445,7 @@ def calculate_pe_ratio(stock_price: float, earnings_per_share: float) -> float:
         P/E ratio
     """
     if earnings_per_share == 0:
-        return float('inf')
+        return float("inf")
 
     pe = stock_price / earnings_per_share
     return round(pe, 2)
@@ -483,17 +463,14 @@ def calculate_pb_ratio(stock_price: float, book_value_per_share: float) -> float
         P/B ratio
     """
     if book_value_per_share == 0:
-        return float('inf')
+        return float("inf")
 
     pb = stock_price / book_value_per_share
     return round(pb, 2)
 
 
 def calculate_ev_to_ebitda(
-    market_cap: float,
-    total_debt: float,
-    cash: float,
-    ebitda: float
+    market_cap: float, total_debt: float, cash: float, ebitda: float
 ) -> float:
     """
     Calculate EV/EBITDA ratio.
@@ -508,7 +485,7 @@ def calculate_ev_to_ebitda(
         EV/EBITDA ratio
     """
     if ebitda == 0:
-        return float('inf')
+        return float("inf")
 
     enterprise_value = market_cap + total_debt - cash
     ev_ebitda = enterprise_value / ebitda

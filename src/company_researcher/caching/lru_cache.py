@@ -10,6 +10,7 @@ from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Generic, Optional, TypeVar
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -19,13 +20,15 @@ def _utcnow() -> datetime:
     """Get current UTC time (timezone-aware)."""
     return datetime.now(timezone.utc)
 
-K = TypeVar('K')
-V = TypeVar('V')
+
+K = TypeVar("K")
+V = TypeVar("V")
 
 
 @dataclass
 class LRUCacheConfig:
     """Configuration for LRU cache."""
+
     max_size: int = 1000
     max_memory_mb: Optional[float] = None  # Optional memory limit
     on_evict: Optional[Callable[[Any, Any], None]] = None  # Callback when item evicted
@@ -34,6 +37,7 @@ class LRUCacheConfig:
 @dataclass
 class CacheItem(Generic[V]):
     """Item stored in cache with metadata."""
+
     value: V
     created_at: datetime
     last_accessed: datetime
@@ -120,7 +124,7 @@ class LRUCache(Generic[K, V]):
                 created_at=now,
                 last_accessed=now,
                 access_count=1,
-                size_bytes=size_bytes
+                size_bytes=size_bytes,
             )
             self._cache[key] = item
             self._total_size_bytes += size_bytes
@@ -188,11 +192,11 @@ class LRUCache(Generic[K, V]):
         """Estimate memory size of value in bytes."""
         try:
             # Try JSON serialization for size estimate
-            return len(json.dumps(value, default=str).encode('utf-8'))
+            return len(json.dumps(value, default=str).encode("utf-8"))
         except Exception as e:
             # Fallback to string representation
             logger.debug(f"JSON size estimation failed, using string fallback: {e}")
-            return len(str(value).encode('utf-8'))
+            return len(str(value).encode("utf-8"))
 
     def get_stats(self) -> Dict[str, Any]:
         """Get cache statistics."""
@@ -208,7 +212,7 @@ class LRUCache(Generic[K, V]):
                 "evictions": self._evictions,
                 "hit_rate": hit_rate,
                 "total_size_bytes": self._total_size_bytes,
-                "total_size_mb": self._total_size_bytes / (1024 * 1024)
+                "total_size_mb": self._total_size_bytes / (1024 * 1024),
             }
 
     def get_keys(self) -> list:
@@ -225,15 +229,13 @@ class LRUCache(Generic[K, V]):
                     "created_at": item.created_at.isoformat(),
                     "last_accessed": item.last_accessed.isoformat(),
                     "access_count": item.access_count,
-                    "size_bytes": item.size_bytes
+                    "size_bytes": item.size_bytes,
                 }
             return None
 
 
 def create_lru_cache(
-    max_size: int = 1000,
-    max_memory_mb: Optional[float] = None,
-    on_evict: Optional[Callable] = None
+    max_size: int = 1000, max_memory_mb: Optional[float] = None, on_evict: Optional[Callable] = None
 ) -> LRUCache:
     """
     Factory function to create LRU cache.
@@ -246,9 +248,5 @@ def create_lru_cache(
     Returns:
         Configured LRUCache instance
     """
-    config = LRUCacheConfig(
-        max_size=max_size,
-        max_memory_mb=max_memory_mb,
-        on_evict=on_evict
-    )
+    config = LRUCacheConfig(max_size=max_size, max_memory_mb=max_memory_mb, on_evict=on_evict)
     return LRUCache(config)

@@ -5,19 +5,13 @@ Tracks all research facts with source attribution, calculates multi-factor
 quality scores, and generates comprehensive quality reports.
 """
 
-from typing import List, Dict
-from datetime import timedelta
 from collections import defaultdict
+from datetime import timedelta
+from typing import Dict, List
 
-from .models import (
-    Source,
-    ResearchFact,
-    QualityReport,
-    SourceQuality,
-    ConfidenceLevel
-)
-from .source_assessor import SourceQualityAssessor
 from ..utils import utc_now
+from .models import ConfidenceLevel, QualityReport, ResearchFact, Source, SourceQuality
+from .source_assessor import SourceQualityAssessor
 
 
 class SourceTracker:
@@ -36,12 +30,7 @@ class SourceTracker:
         self.facts_by_agent: Dict[str, List[ResearchFact]] = defaultdict(list)
 
     def add_fact(
-        self,
-        content: str,
-        url: str,
-        title: str,
-        agent_name: str,
-        verified: bool = False
+        self, content: str, url: str, title: str, agent_name: str, verified: bool = False
     ) -> ResearchFact:
         """
         Add a fact with automatic source assessment.
@@ -64,10 +53,7 @@ class SourceTracker:
 
         # Create fact
         fact = ResearchFact(
-            content=content,
-            source=source,
-            extracted_by=agent_name,
-            verified=verified
+            content=content, source=source, extracted_by=agent_name, verified=verified
         )
 
         # Assess fact (adds confidence)
@@ -113,7 +99,7 @@ class SourceTracker:
                 source_quality_score=0.0,
                 verification_rate=0.0,
                 recency_score=0.0,
-                completeness_score=0.0
+                completeness_score=0.0,
             )
 
         # 1. Source Quality Score (40% weight)
@@ -131,10 +117,10 @@ class SourceTracker:
 
         # Overall Score (weighted average)
         overall = (
-            source_quality * 0.4 +
-            verification_rate * 0.3 +
-            recency_score * 0.2 +
-            completeness_score * 0.1
+            source_quality * 0.4
+            + verification_rate * 0.3
+            + recency_score * 0.2
+            + completeness_score * 0.1
         )
 
         # Count source quality distribution
@@ -152,7 +138,7 @@ class SourceTracker:
             verified_facts=verified_count,
             high_quality_sources=high_quality,
             medium_quality_sources=medium_quality,
-            low_quality_sources=low_quality
+            low_quality_sources=low_quality,
         )
 
     def _calculate_recency_score(self) -> float:
@@ -241,11 +227,13 @@ class SourceTracker:
             },
             "quality_distribution": {
                 "official": sum(1 for s in self.sources if s.quality == SourceQuality.OFFICIAL),
-                "authoritative": sum(1 for s in self.sources if s.quality == SourceQuality.AUTHORITATIVE),
+                "authoritative": sum(
+                    1 for s in self.sources if s.quality == SourceQuality.AUTHORITATIVE
+                ),
                 "reputable": sum(1 for s in self.sources if s.quality == SourceQuality.REPUTABLE),
                 "community": sum(1 for s in self.sources if s.quality == SourceQuality.COMMUNITY),
                 "unknown": sum(1 for s in self.sources if s.quality == SourceQuality.UNKNOWN),
-            }
+            },
         }
 
     def generate_citations(self, format: str = "markdown") -> str:

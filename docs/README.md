@@ -11,13 +11,14 @@ Comprehensive documentation for the AI-powered multi-agent company research syst
 | Get started quickly | [Quick Start](01-overview/QUICKSTART.md) |
 | Install the system | [Installation Guide](01-overview/INSTALLATION.md) |
 | Understand how it works | [Architecture](02-architecture/README.md) |
+| Understand the code layout | [Codebase Tour](01-overview/CODEBASE_TOUR.md) |
 | Learn about agents | [Agent Documentation](03-agents/README.md) |
 | Configure the system | [Configuration Guide](06-configuration/README.md) |
 | Run research | [Scripts & CLI](09-scripts/README.md) |
 | Write tests | [Testing Guide](10-testing/README.md) |
 | Deploy the system | [Deployment](11-deployment/README.md) |
 | Call the API | [API Reference](12-api-reference/README.md) |
-| See future plans | [Roadmap](roadmap/) |
+| See future plans | [Roadmap](roadmap/README.md) |
 
 ---
 

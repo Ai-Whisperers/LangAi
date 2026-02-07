@@ -128,11 +128,11 @@ def main(argv: list[str]) -> int:
             print(f"- {issue.file}: {issue.message}")
         return 1
 
-    print(f"OK: All prompt collections are valid ({len(collection_files)} collection file(s) checked).")
+    print(
+        f"OK: All prompt collections are valid ({len(collection_files)} collection file(s) checked)."
+    )
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
-
-

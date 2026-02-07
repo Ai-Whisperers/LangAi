@@ -45,24 +45,18 @@ Usage:
     )
 """
 
-from .extractor import (
-    AIDataExtractor,
-    get_data_extractor,
-    reset_data_extractor,
-)
-from .models import (
-    # Enums
+from .extractor import AIDataExtractor, get_data_extractor, reset_data_extractor
+from .models import (  # Enums; Models
+    CompanyClassification,
     CompanyType,
+    ContradictionAnalysis,
+    ContradictionSeverity,
+    CountryDetectionResult,
+    ExtractedFact,
+    ExtractionResult,
     FactCategory,
     FactType,
-    ContradictionSeverity,
-    # Models
-    CompanyClassification,
-    ExtractedFact,
     FinancialData,
-    ContradictionAnalysis,
-    ExtractionResult,
-    CountryDetectionResult,
 )
 
 __all__ = [

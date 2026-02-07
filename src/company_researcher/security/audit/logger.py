@@ -11,13 +11,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
-from .models import (
-    _utcnow,
-    AuditEventType,
-    AuditSeverity,
-    AuditEntry,
-    AuditConfig,
-)
+from .models import AuditConfig, AuditEntry, AuditEventType, AuditSeverity, _utcnow
 
 
 class AuditLogger:
@@ -47,11 +41,7 @@ class AuditLogger:
         entries = audit.query(user_id="user123", event_type=AuditEventType.LOGIN)
     """
 
-    def __init__(
-        self,
-        config: AuditConfig = None,
-        log_file: str = None
-    ):
+    def __init__(self, config: AuditConfig = None, log_file: str = None):
         self.config = config or AuditConfig(log_file=log_file)
         self._entries: List[AuditEntry] = []
         self._lock = threading.RLock()
@@ -70,16 +60,14 @@ class AuditLogger:
         log_path.parent.mkdir(parents=True, exist_ok=True)
 
         handler = logging.FileHandler(str(log_path))
-        handler.setFormatter(logging.Formatter('%(message)s'))
+        handler.setFormatter(logging.Formatter("%(message)s"))
         self._logger.addHandler(handler)
         self._logger.setLevel(logging.DEBUG)
 
     def _setup_console_handler(self) -> None:
         """Setup console handler for audit logs."""
         handler = logging.StreamHandler()
-        handler.setFormatter(logging.Formatter(
-            '[AUDIT] %(message)s'
-        ))
+        handler.setFormatter(logging.Formatter("[AUDIT] %(message)s"))
         self._logger.addHandler(handler)
 
     def log(
@@ -92,7 +80,7 @@ class AuditLogger:
         outcome: str = "success",
         severity: AuditSeverity = AuditSeverity.INFO,
         details: Dict[str, Any] = None,
-        **kwargs
+        **kwargs,
     ) -> AuditEntry:
         """
         Log an audit event.
@@ -125,7 +113,7 @@ class AuditLogger:
             resource_id=resource_id,
             outcome=outcome,
             details=details or {},
-            **kwargs
+            **kwargs,
         )
 
         self._store_entry(entry)
@@ -140,7 +128,7 @@ class AuditLogger:
 
             # Enforce max entries
             if len(self._entries) > self.config.max_entries:
-                self._entries = self._entries[-self.config.max_entries:]
+                self._entries = self._entries[-self.config.max_entries :]
 
         # Log to file
         if self.config.log_file:
@@ -162,11 +150,7 @@ class AuditLogger:
     # Convenience logging methods
 
     def log_auth(
-        self,
-        user_id: str,
-        event: AuditEventType,
-        outcome: str = "success",
-        **kwargs
+        self, user_id: str, event: AuditEventType, outcome: str = "success", **kwargs
     ) -> AuditEntry:
         """Log authentication event."""
         severity = AuditSeverity.INFO if outcome == "success" else AuditSeverity.WARNING
@@ -177,7 +161,7 @@ class AuditLogger:
             resource="auth",
             outcome=outcome,
             severity=severity,
-            **kwargs
+            **kwargs,
         )
 
     def log_data_access(
@@ -187,7 +171,7 @@ class AuditLogger:
         resource: str,
         resource_id: str = None,
         outcome: str = "success",
-        **kwargs
+        **kwargs,
     ) -> AuditEntry:
         """Log data access event."""
         event_map = {
@@ -195,7 +179,7 @@ class AuditLogger:
             "create": AuditEventType.DATA_CREATE,
             "update": AuditEventType.DATA_UPDATE,
             "delete": AuditEventType.DATA_DELETE,
-            "export": AuditEventType.DATA_EXPORT
+            "export": AuditEventType.DATA_EXPORT,
         }
         event_type = event_map.get(action.lower(), AuditEventType.DATA_READ)
 
@@ -206,16 +190,11 @@ class AuditLogger:
             resource=resource,
             resource_id=resource_id,
             outcome=outcome,
-            **kwargs
+            **kwargs,
         )
 
     def log_research(
-        self,
-        user_id: str,
-        company: str,
-        event: AuditEventType,
-        outcome: str = "success",
-        **kwargs
+        self, user_id: str, company: str, event: AuditEventType, outcome: str = "success", **kwargs
     ) -> AuditEntry:
         """Log research operation."""
         return self.log(
@@ -225,7 +204,7 @@ class AuditLogger:
             resource="research",
             resource_id=company,
             outcome=outcome,
-            **kwargs
+            **kwargs,
         )
 
     def log_security(
@@ -233,15 +212,11 @@ class AuditLogger:
         event: AuditEventType,
         severity: AuditSeverity = AuditSeverity.WARNING,
         user_id: str = None,
-        **kwargs
+        **kwargs,
     ) -> AuditEntry:
         """Log security event."""
         return self.log(
-            event_type=event,
-            severity=severity,
-            user_id=user_id,
-            resource="security",
-            **kwargs
+            event_type=event, severity=severity, user_id=user_id, resource="security", **kwargs
         )
 
     # Query methods
@@ -254,7 +229,7 @@ class AuditLogger:
         start_time: datetime = None,
         end_time: datetime = None,
         severity: AuditSeverity = None,
-        limit: int = 100
+        limit: int = 100,
     ) -> List[AuditEntry]:
         """
         Query audit logs.
@@ -297,11 +272,7 @@ class AuditLogger:
 
             return results
 
-    def get_user_activity(
-        self,
-        user_id: str,
-        limit: int = 50
-    ) -> List[AuditEntry]:
+    def get_user_activity(self, user_id: str, limit: int = 50) -> List[AuditEntry]:
         """Get activity for a specific user."""
         return self.query(user_id=user_id, limit=limit)
 
@@ -313,7 +284,7 @@ class AuditLogger:
     def export(self, filepath: str) -> int:
         """Export audit logs to file."""
         with self._lock:
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 for entry in self._entries:
                     f.write(entry.to_json() + "\n")
             return len(self._entries)
@@ -321,10 +292,7 @@ class AuditLogger:
     # Decorator
 
     def audited(
-        self,
-        event_type: AuditEventType,
-        resource: str = None,
-        include_args: bool = False
+        self, event_type: AuditEventType, resource: str = None, include_args: bool = False
     ) -> Callable:
         """
         Decorator to automatically audit function calls.
@@ -334,14 +302,15 @@ class AuditLogger:
             def get_data(user_id, company):
                 ...
         """
+
         def decorator(func: Callable) -> Callable:
             def wrapper(*args, **kwargs):
-                user_id = kwargs.get('user_id') or (args[0] if args else None)
+                user_id = kwargs.get("user_id") or (args[0] if args else None)
                 details = {}
 
                 if include_args:
-                    details['args'] = str(args)
-                    details['kwargs'] = str(kwargs)
+                    details["args"] = str(args)
+                    details["kwargs"] = str(kwargs)
 
                 try:
                     result = func(*args, **kwargs)
@@ -351,11 +320,11 @@ class AuditLogger:
                         action=func.__name__,
                         resource=resource or func.__name__,
                         outcome="success",
-                        details=details
+                        details=details,
                     )
                     return result
                 except Exception as e:
-                    details['error'] = str(e)
+                    details["error"] = str(e)
                     self.log(
                         event_type=event_type,
                         user_id=str(user_id) if user_id else None,
@@ -363,9 +332,10 @@ class AuditLogger:
                         resource=resource or func.__name__,
                         outcome="error",
                         severity=AuditSeverity.ERROR,
-                        details=details
+                        details=details,
                     )
                     raise
 
             return wrapper
+
         return decorator

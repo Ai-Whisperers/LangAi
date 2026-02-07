@@ -14,12 +14,13 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, Generator, List, Optional, TypeVar
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 @dataclass
 class GenerationConfig:
     """Configuration for data generation."""
+
     seed: Optional[int] = None
     max_size: int = 100
     min_size: int = 0
@@ -38,11 +39,9 @@ class PropertyTestResult:
     def add_failure(self, example: Any, error: Exception) -> None:
         """Record a failure."""
         self.passed = False
-        self.failures.append({
-            "example": example,
-            "error": str(error),
-            "error_type": type(error).__name__
-        })
+        self.failures.append(
+            {"example": example, "error": str(error), "error_type": type(error).__name__}
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -51,7 +50,7 @@ class PropertyTestResult:
             "examples_run": self.examples_run,
             "failure_count": len(self.failures),
             "failures": self.failures[:5],  # First 5 failures
-            "smallest_failure": self.smallest_failure
+            "smallest_failure": self.smallest_failure,
         }
 
 
@@ -77,9 +76,7 @@ class Gen:
     """
 
     def __init__(
-        self,
-        generator: Callable[[], T],
-        shrinker: Callable[[T], Generator[T, None, None]] = None
+        self, generator: Callable[[], T], shrinker: Callable[[T], Generator[T, None, None]] = None
     ):
         self._generator = generator
         self._shrinker = shrinker
@@ -120,12 +117,9 @@ class Gen:
     # Built-in generators
 
     @classmethod
-    def integers(
-        cls,
-        min_value: int = -1000000,
-        max_value: int = 1000000
-    ) -> "Gen[int]":
+    def integers(cls, min_value: int = -1000000, max_value: int = 1000000) -> "Gen[int]":
         """Generate random integers."""
+
         def gen():
             return random.randint(min_value, max_value)
 
@@ -144,12 +138,10 @@ class Gen:
 
     @classmethod
     def floats(
-        cls,
-        min_value: float = -1e6,
-        max_value: float = 1e6,
-        allow_nan: bool = False
+        cls, min_value: float = -1e6, max_value: float = 1e6, allow_nan: bool = False
     ) -> "Gen[float]":
         """Generate random floats."""
+
         def gen():
             return random.uniform(min_value, max_value)
 
@@ -162,24 +154,21 @@ class Gen:
 
     @classmethod
     def strings(
-        cls,
-        min_length: int = 0,
-        max_length: int = 100,
-        alphabet: str = None
+        cls, min_length: int = 0, max_length: int = 100, alphabet: str = None
     ) -> "Gen[str]":
         """Generate random strings."""
         chars = alphabet or string.ascii_letters + string.digits
 
         def gen():
             length = random.randint(min_length, max_length)
-            return ''.join(random.choice(chars) for _ in range(length))
+            return "".join(random.choice(chars) for _ in range(length))
 
         def shrink(s):
             if len(s) == 0:
                 return
             yield ""
             if len(s) > 1:
-                yield s[:len(s)//2]
+                yield s[: len(s) // 2]
                 yield s[1:]
                 yield s[:-1]
 
@@ -191,13 +180,9 @@ class Gen:
         return cls(lambda: random.choice(choices))
 
     @classmethod
-    def lists(
-        cls,
-        element_gen: "Gen[T]",
-        min_size: int = 0,
-        max_size: int = 20
-    ) -> "Gen[List[T]]":
+    def lists(cls, element_gen: "Gen[T]", min_size: int = 0, max_size: int = 20) -> "Gen[List[T]]":
         """Generate random lists."""
+
         def gen():
             size = random.randint(min_size, max_size)
             return [element_gen.generate() for _ in range(size)]
@@ -207,7 +192,7 @@ class Gen:
                 return
             yield []
             if len(lst) > 1:
-                yield lst[:len(lst)//2]
+                yield lst[: len(lst) // 2]
                 yield lst[1:]
                 yield lst[:-1]
 
@@ -215,13 +200,10 @@ class Gen:
 
     @classmethod
     def dicts(
-        cls,
-        key_gen: "Gen",
-        value_gen: "Gen",
-        min_size: int = 0,
-        max_size: int = 10
+        cls, key_gen: "Gen", value_gen: "Gen", min_size: int = 0, max_size: int = 10
     ) -> "Gen[Dict]":
         """Generate random dictionaries."""
+
         def gen():
             size = random.randint(min_size, max_size)
             return {key_gen.generate(): value_gen.generate() for _ in range(size)}
@@ -231,6 +213,7 @@ class Gen:
     @classmethod
     def tuples(cls, *generators: "Gen") -> "Gen[tuple]":
         """Generate random tuples."""
+
         def gen():
             return tuple(g.generate() for g in generators)
 
@@ -239,6 +222,7 @@ class Gen:
     @classmethod
     def one_of(cls, *generators: "Gen") -> "Gen":
         """Randomly choose from multiple generators."""
+
         def gen():
             chosen = random.choice(generators)
             return chosen.generate()
@@ -256,11 +240,7 @@ class Gen:
         return cls.one_of(gen, cls.none())
 
     @classmethod
-    def datetimes(
-        cls,
-        min_date: datetime = None,
-        max_date: datetime = None
-    ) -> "Gen[datetime]":
+    def datetimes(cls, min_date: datetime = None, max_date: datetime = None) -> "Gen[datetime]":
         """Generate random datetimes."""
         min_dt = min_date or datetime(2000, 1, 1)
         max_dt = max_date or datetime(2030, 12, 31)
@@ -275,10 +255,11 @@ class Gen:
     @classmethod
     def emails(cls) -> "Gen[str]":
         """Generate random email addresses."""
+
         def gen():
-            user = ''.join(random.choices(string.ascii_lowercase, k=random.randint(5, 10)))
-            domain = ''.join(random.choices(string.ascii_lowercase, k=random.randint(3, 8)))
-            tld = random.choice(['com', 'org', 'net', 'io'])
+            user = "".join(random.choices(string.ascii_lowercase, k=random.randint(5, 10)))
+            domain = "".join(random.choices(string.ascii_lowercase, k=random.randint(3, 8)))
+            tld = random.choice(["com", "org", "net", "io"])
             return f"{user}@{domain}.{tld}"
 
         return cls(gen)
@@ -329,6 +310,7 @@ class ResearchGen:
     @classmethod
     def metrics(cls) -> Gen[Dict[str, Any]]:
         """Generate financial metrics."""
+
         def gen():
             return {
                 "revenue": random.uniform(1e6, 1e12),
@@ -336,7 +318,7 @@ class ResearchGen:
                 "growth_rate": random.uniform(-0.3, 0.5),
                 "market_cap": random.uniform(1e6, 1e12),
                 "pe_ratio": random.uniform(5, 100),
-                "employees": random.randint(10, 500000)
+                "employees": random.randint(10, 500000),
             }
 
         return Gen(gen)
@@ -355,6 +337,7 @@ def given(*generators: Gen):
             assert len(s) >= 0
             assert x + 0 == x
     """
+
     def decorator(test_func: Callable) -> Callable:
         def wrapper(max_examples: int = 100, seed: int = None) -> PropertyTestResult:
             if seed is not None:
@@ -375,16 +358,13 @@ def given(*generators: Gen):
                     smallest = args
                     for i, (gen, arg) in enumerate(zip(generators, args)):
                         for shrunk in gen.shrink(arg):
-                            shrunk_args = args[:i] + [shrunk] + args[i+1:]
+                            shrunk_args = args[:i] + [shrunk] + args[i + 1 :]
                             try:
                                 test_func(*shrunk_args)
                             except Exception:
                                 smallest = shrunk_args
 
-                    result.smallest_failure = {
-                        "args": smallest,
-                        "error": str(e)
-                    }
+                    result.smallest_failure = {"args": smallest, "error": str(e)}
 
             return result
 
@@ -396,9 +376,7 @@ def given(*generators: Gen):
 
 
 def check_property(
-    property_func: Callable[..., bool],
-    *generators: Gen,
-    max_examples: int = 100
+    property_func: Callable[..., bool], *generators: Gen, max_examples: int = 100
 ) -> PropertyTestResult:
     """
     Check a property over random examples.
@@ -431,22 +409,29 @@ def check_property(
 
 def is_idempotent(f: Callable[[T], T], gen: Gen[T], max_examples: int = 100) -> PropertyTestResult:
     """Check if f(f(x)) == f(x)."""
+
     def check(x):
         return f(f(x)) == f(x)
 
     return check_property(check, gen, max_examples=max_examples)
 
 
-def is_commutative(f: Callable[[T, T], Any], gen: Gen[T], max_examples: int = 100) -> PropertyTestResult:
+def is_commutative(
+    f: Callable[[T, T], Any], gen: Gen[T], max_examples: int = 100
+) -> PropertyTestResult:
     """Check if f(x, y) == f(y, x)."""
+
     def check(x, y):
         return f(x, y) == f(y, x)
 
     return check_property(check, gen, gen, max_examples=max_examples)
 
 
-def is_associative(f: Callable[[T, T], T], gen: Gen[T], max_examples: int = 100) -> PropertyTestResult:
+def is_associative(
+    f: Callable[[T, T], T], gen: Gen[T], max_examples: int = 100
+) -> PropertyTestResult:
     """Check if f(f(x, y), z) == f(x, f(y, z))."""
+
     def check(x, y, z):
         return f(f(x, y), z) == f(x, f(y, z))
 
@@ -454,12 +439,10 @@ def is_associative(f: Callable[[T, T], T], gen: Gen[T], max_examples: int = 100)
 
 
 def preserves_invariant(
-    f: Callable,
-    gen: Gen,
-    invariant: Callable[[Any], bool],
-    max_examples: int = 100
+    f: Callable, gen: Gen, invariant: Callable[[Any], bool], max_examples: int = 100
 ) -> PropertyTestResult:
     """Check if function preserves an invariant."""
+
     def check(x):
         if not invariant(x):
             return True  # Skip invalid inputs

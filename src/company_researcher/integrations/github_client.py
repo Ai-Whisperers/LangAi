@@ -10,8 +10,8 @@ Documentation: https://docs.github.com/en/rest
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from .base_client import BaseAPIClient
 from ..utils import get_logger
+from .base_client import APIError, BaseAPIClient, RateLimitError
 
 logger = get_logger(__name__)
 
@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 @dataclass
 class GitHubRepo:
     """GitHub repository data."""
+
     name: str
     full_name: str
     description: str
@@ -54,13 +55,14 @@ class GitHubRepo:
             pushed_at=data.get("pushed_at", ""),
             topics=data.get("topics", []),
             is_fork=data.get("fork", False),
-            is_archived=data.get("archived", False)
+            is_archived=data.get("archived", False),
         )
 
 
 @dataclass
 class GitHubOrg:
     """GitHub organization data."""
+
     login: str
     name: str
     description: str
@@ -88,13 +90,14 @@ class GitHubOrg:
             followers=data.get("followers", 0),
             following=data.get("following", 0),
             created_at=data.get("created_at", ""),
-            avatar_url=data.get("avatar_url", "")
+            avatar_url=data.get("avatar_url", ""),
         )
 
 
 @dataclass
 class GitHubUser:
     """GitHub user data."""
+
     login: str
     name: str
     company: str
@@ -122,7 +125,7 @@ class GitHubUser:
             public_gists=data.get("public_gists", 0),
             followers=data.get("followers", 0),
             following=data.get("following", 0),
-            created_at=data.get("created_at", "")
+            created_at=data.get("created_at", ""),
         )
 
 
@@ -149,15 +152,12 @@ class GitHubClient(BaseAPIClient):
             env_var="GITHUB_TOKEN",
             cache_ttl=3600,
             rate_limit_calls=5000 if token else 60,
-            rate_limit_period=3600.0
+            rate_limit_period=3600.0,
         )
 
     def _get_headers(self) -> Dict[str, str]:
         """Add GitHub-specific headers."""
-        headers = {
-            "Accept": "application/vnd.github.v3+json",
-            "X-GitHub-Api-Version": "2022-11-28"
-        }
+        headers = {"Accept": "application/vnd.github.v3+json", "X-GitHub-Api-Version": "2022-11-28"}
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
         return headers
@@ -179,16 +179,12 @@ class GitHubClient(BaseAPIClient):
         try:
             data = await self._request(f"orgs/{org_name}")
             return GitHubOrg.from_dict(data) if data else None
-        except Exception as e:
+        except (APIError, RateLimitError) as e:
             logger.warning(f"Error fetching org {org_name}: {e}")
             return None
 
     async def get_org_repos(
-        self,
-        org_name: str,
-        sort: str = "stars",
-        per_page: int = 30,
-        page: int = 1
+        self, org_name: str, sort: str = "stars", per_page: int = 30, page: int = 1
     ) -> List[GitHubRepo]:
         """
         Get organization's repositories.
@@ -205,10 +201,10 @@ class GitHubClient(BaseAPIClient):
         try:
             data = await self._request(
                 f"orgs/{org_name}/repos",
-                {"sort": sort, "per_page": min(per_page, 100), "page": page}
+                {"sort": sort, "per_page": min(per_page, 100), "page": page},
             )
             return [GitHubRepo.from_dict(repo) for repo in (data or [])]
-        except Exception as e:
+        except (APIError, RateLimitError) as e:
             logger.warning(f"Error fetching repos for {org_name}: {e}")
             return []
 
@@ -229,15 +225,12 @@ class GitHubClient(BaseAPIClient):
         try:
             data = await self._request(f"users/{username}")
             return GitHubUser.from_dict(data) if data else None
-        except Exception as e:
+        except (APIError, RateLimitError) as e:
             logger.warning(f"Error fetching user {username}: {e}")
             return None
 
     async def get_user_repos(
-        self,
-        username: str,
-        sort: str = "stars",
-        per_page: int = 30
+        self, username: str, sort: str = "stars", per_page: int = 30
     ) -> List[GitHubRepo]:
         """
         Get user's repositories.
@@ -252,11 +245,10 @@ class GitHubClient(BaseAPIClient):
         """
         try:
             data = await self._request(
-                f"users/{username}/repos",
-                {"sort": sort, "per_page": min(per_page, 100)}
+                f"users/{username}/repos", {"sort": sort, "per_page": min(per_page, 100)}
             )
             return [GitHubRepo.from_dict(repo) for repo in (data or [])]
-        except Exception as e:
+        except (APIError, RateLimitError) as e:
             logger.warning(f"Error fetching repos for user {username}: {e}")
             return []
 
@@ -278,7 +270,7 @@ class GitHubClient(BaseAPIClient):
         try:
             data = await self._request(f"repos/{owner}/{repo}")
             return GitHubRepo.from_dict(data) if data else None
-        except Exception as e:
+        except (APIError, RateLimitError) as e:
             logger.warning(f"Error fetching repo {owner}/{repo}: {e}")
             return None
 
@@ -295,16 +287,11 @@ class GitHubClient(BaseAPIClient):
         """
         try:
             return await self._request(f"repos/{owner}/{repo}/languages") or {}
-        except Exception as e:
+        except (APIError, RateLimitError) as e:
             logger.warning(f"Error fetching languages for {owner}/{repo}: {e}")
             return {}
 
-    async def get_repo_contributors(
-        self,
-        owner: str,
-        repo: str,
-        per_page: int = 30
-    ) -> List[Dict]:
+    async def get_repo_contributors(self, owner: str, repo: str, per_page: int = 30) -> List[Dict]:
         """
         Get repository contributors.
 
@@ -317,11 +304,13 @@ class GitHubClient(BaseAPIClient):
             List of contributor dicts with login and contributions count
         """
         try:
-            return await self._request(
-                f"repos/{owner}/{repo}/contributors",
-                {"per_page": min(per_page, 100)}
-            ) or []
-        except Exception as e:
+            return (
+                await self._request(
+                    f"repos/{owner}/{repo}/contributors", {"per_page": min(per_page, 100)}
+                )
+                or []
+            )
+        except (APIError, RateLimitError) as e:
             logger.warning(f"Error fetching contributors for {owner}/{repo}: {e}")
             return []
 
@@ -334,7 +323,8 @@ class GitHubClient(BaseAPIClient):
         query: str,
         sort: str = "stars",
         order: str = "desc",
-        per_page: int = 10
+        per_page: int = 10,
+        page: int = 1,
     ) -> List[GitHubRepo]:
         """
         Search for repositories.
@@ -356,19 +346,21 @@ class GitHubClient(BaseAPIClient):
         try:
             data = await self._request(
                 "search/repositories",
-                {"q": query, "sort": sort, "order": order, "per_page": per_page}
+                {
+                    "q": query,
+                    "sort": sort,
+                    "order": order,
+                    "per_page": min(per_page, 100),
+                    "page": page,
+                },
             )
             items = data.get("items", []) if data else []
             return [GitHubRepo.from_dict(repo) for repo in items]
-        except Exception as e:
+        except (APIError, RateLimitError) as e:
             logger.warning(f"Error searching repos: {e}")
             return []
 
-    async def search_code(
-        self,
-        query: str,
-        per_page: int = 10
-    ) -> List[Dict]:
+    async def search_code(self, query: str, per_page: int = 10) -> List[Dict]:
         """
         Search for code.
 
@@ -384,12 +376,9 @@ class GitHubClient(BaseAPIClient):
             - "org:facebook filename:package.json"
         """
         try:
-            data = await self._request(
-                "search/code",
-                {"q": query, "per_page": per_page}
-            )
+            data = await self._request("search/code", {"q": query, "per_page": per_page})
             return data.get("items", []) if data else []
-        except Exception as e:
+        except (APIError, RateLimitError) as e:
             logger.warning(f"Error searching code: {e}")
             return []
 
@@ -397,10 +386,7 @@ class GitHubClient(BaseAPIClient):
     # Company Analysis
     # =========================================================================
 
-    async def analyze_company_github(
-        self,
-        org_name: str
-    ) -> Dict[str, Any]:
+    async def analyze_company_github(self, org_name: str) -> Dict[str, Any]:
         """
         Comprehensive GitHub analysis for a company.
 
@@ -418,10 +404,10 @@ class GitHubClient(BaseAPIClient):
                 "total_stars": 0,
                 "total_forks": 0,
                 "languages": {},
-                "avg_stars_per_repo": 0
+                "avg_stars_per_repo": 0,
             },
             "top_repos": [],
-            "popular_topics": []
+            "popular_topics": [],
         }
 
         # Get organization
@@ -433,7 +419,7 @@ class GitHubClient(BaseAPIClient):
                 "location": org.location,
                 "blog": org.blog,
                 "public_repos": org.public_repos,
-                "followers": org.followers
+                "followers": org.followers,
             }
 
         # Get repositories
@@ -467,7 +453,7 @@ class GitHubClient(BaseAPIClient):
                     "stars": r.stars,
                     "forks": r.forks,
                     "language": r.language,
-                    "url": r.url
+                    "url": r.url,
                 }
                 for r in top_repos
             ]

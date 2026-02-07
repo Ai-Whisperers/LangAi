@@ -1,20 +1,22 @@
 """Tests for AI integration and migration layer."""
-import pytest
+
 from datetime import datetime
 
+import pytest
+
+from company_researcher.ai.config import get_ai_config, reset_ai_config
 from company_researcher.ai.integration import (
     AIIntegrationLayer,
     get_ai_integration,
     reset_ai_integration,
 )
 from company_researcher.ai.migration import (
-    MigrationValidator,
     ComparisonResult,
+    MigrationValidator,
     get_migration_registry,
-    reset_migration_registry,
     gradual_rollout,
+    reset_migration_registry,
 )
-from company_researcher.ai.config import get_ai_config, reset_ai_config
 
 
 class TestAIIntegrationLayer:
@@ -65,7 +67,7 @@ class TestAIIntegrationLayer:
         state = {
             "company_name": "Test Corp",
             "company_overview": "Test content" * 100,
-            "sources": ["https://example.com"]
+            "sources": ["https://example.com"],
         }
         result = layer._legacy_quality_check(state)
         assert "score" in result
@@ -253,7 +255,7 @@ class TestComparisonResult:
             legacy_result={"a": 1},
             match=True,
             similarity_score=0.95,
-            differences=[]
+            differences=[],
         )
         assert result.match is True
         assert result.similarity_score == 0.95
@@ -268,7 +270,7 @@ class TestComparisonResult:
             legacy_result={"value": 24},
             match=False,
             similarity_score=0.6,
-            differences=["Field 'value' differs: 42 vs 24"]
+            differences=["Field 'value' differs: 42 vs 24"],
         )
         assert result.match is False
         assert len(result.differences) == 1
@@ -282,7 +284,7 @@ class TestComparisonResult:
             legacy_result={"a": 1},
             match=True,
             similarity_score=1.0,
-            differences=[]
+            differences=[],
         )
         d = result.to_dict()
         assert "component" in d
@@ -317,11 +319,11 @@ class TestAllWorkstreamsIntegration:
         config = get_ai_config()
 
         # Check config has expected attributes
-        assert hasattr(config, 'global_enabled')
-        assert hasattr(config, 'sentiment')
-        assert hasattr(config, 'query_generation')
-        assert hasattr(config, 'quality_assessment')
-        assert hasattr(config, 'data_extraction')
+        assert hasattr(config, "global_enabled")
+        assert hasattr(config, "sentiment")
+        assert hasattr(config, "query_generation")
+        assert hasattr(config, "quality_assessment")
+        assert hasattr(config, "data_extraction")
 
     def test_integration_layer_creation(self):
         """Test that integration layer can be created."""

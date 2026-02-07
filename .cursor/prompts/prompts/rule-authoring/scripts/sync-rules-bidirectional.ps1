@@ -22,15 +22,15 @@ param(
     [Parameter(Mandatory=$true, HelpMessage="Path to first repository")]
     [ValidateScript({Test-Path $_})]
     [string]$RepoA,
-    
+
     [Parameter(Mandatory=$true, HelpMessage="Path to second repository")]
     [ValidateScript({Test-Path $_})]
     [string]$RepoB,
-    
+
     [Parameter(Mandatory=$false, HelpMessage="Mode: analyze, sync, interactive")]
     [ValidateSet("analyze", "sync", "interactive")]
     [string]$Mode = "analyze",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="Output directory for conflict reports")]
     [string]$ConflictReportDir = ""
 )
@@ -130,7 +130,7 @@ $conflictsDetected = 0
 foreach ($rulePath in $allRulePaths) {
     $existsInA = $fileMapA.ContainsKey($rulePath)
     $existsInB = $fileMapB.ContainsKey($rulePath)
-    
+
     $action = [PSCustomObject]@{
         RulePath = $rulePath
         ExistsInA = $existsInA
@@ -144,7 +144,7 @@ foreach ($rulePath in $allRulePaths) {
         Reason = ""
         RequiresAIReview = $false
     }
-    
+
     # Extract version from A
     if ($existsInA) {
         $contentA = Get-Content $fileMapA[$rulePath] -Raw
@@ -158,7 +158,7 @@ foreach ($rulePath in $allRulePaths) {
             }
         }
     }
-    
+
     # Extract version from B
     if ($existsInB) {
         $contentB = Get-Content $fileMapB[$rulePath] -Raw
@@ -172,7 +172,7 @@ foreach ($rulePath in $allRulePaths) {
             }
         }
     }
-    
+
     # Determine sync direction
     if (-not $existsInA -and $existsInB) {
         $action.SyncDirection = "B→A"
@@ -188,12 +188,12 @@ foreach ($rulePath in $allRulePaths) {
         # Both exist - compare versions
         $versionA = $action.VersionA
         $versionB = $action.VersionB
-        
+
         if ($versionA -eq $versionB) {
             # Same version - check if content differs
             $hashA = (Get-FileHash -Path $fileMapA[$rulePath] -Algorithm SHA256).Hash
             $hashB = (Get-FileHash -Path $fileMapB[$rulePath] -Algorithm SHA256).Hash
-            
+
             if ($hashA -ne $hashB) {
                 $action.SyncDirection = "CONFLICT"
                 $action.ActionType = "CONTENT-MISMATCH"
@@ -209,7 +209,7 @@ foreach ($rulePath in $allRulePaths) {
             # Different versions - parse semantic version
             $partsA = $versionA.Split('.')
             $partsB = $versionB.Split('.')
-            
+
             if ($partsA.Count -eq 3 -and $partsB.Count -eq 3) {
                 $majorA = [int]$partsA[0]
                 $minorA = [int]$partsA[1]
@@ -217,16 +217,16 @@ foreach ($rulePath in $allRulePaths) {
                 $majorB = [int]$partsB[0]
                 $minorB = [int]$partsB[1]
                 $patchB = [int]$partsB[2]
-                
-                if ($majorA -gt $majorB -or 
-                    ($majorA -eq $majorB -and $minorA -gt $minorB) -or 
+
+                if ($majorA -gt $majorB -or
+                    ($majorA -eq $majorB -and $minorA -gt $minorB) -or
                     ($majorA -eq $majorB -and $minorA -eq $minorB -and $patchA -gt $patchB)) {
                     $action.SyncDirection = "A→B"
                     $action.ActionType = "UPDATE-B"
                     $action.Reason = "A has newer version ($versionA > $versionB)"
                 }
-                elseif ($majorB -gt $majorA -or 
-                       ($majorB -eq $majorA -and $minorB -gt $minorA) -or 
+                elseif ($majorB -gt $majorA -or
+                       ($majorB -eq $majorA -and $minorB -gt $minorA) -or
                        ($majorB -eq $majorA -and $minorB -eq $minorA -and $patchB -gt $patchA)) {
                     $action.SyncDirection = "B→A"
                     $action.ActionType = "UPDATE-A"
@@ -249,7 +249,7 @@ foreach ($rulePath in $allRulePaths) {
             }
         }
     }
-    
+
     $syncActions += $action
 }
 
@@ -299,14 +299,14 @@ Write-Host "[IN SYNC] Files already synchronized: $($inSync.Count)" -ForegroundC
 if ($conflicts.Count -gt 0) {
     Write-Host ""
     Write-Host "Generating conflict reports..." -ForegroundColor Cyan
-    
+
     if (-not (Test-Path $ConflictReportDir)) {
         New-Item -ItemType Directory -Path $ConflictReportDir -Force | Out-Null
     }
-    
+
     foreach ($conflict in $conflicts) {
         $reportPath = Join-Path $ConflictReportDir "$($conflict.RulePath.Replace('\', '_')).conflict.md"
-        
+
         $report = @"
 # Conflict Report: $($conflict.RulePath)
 
@@ -350,11 +350,11 @@ This conflict requires manual review and AI-assisted resolution. Compare the con
 - What the final resolution should be
 
 "@
-        
+
         Set-Content -Path $reportPath -Value $report
         Write-Host "  Generated: $reportPath" -ForegroundColor Gray
     }
-    
+
     Write-Host ""
     Write-Host "Conflict reports saved to: $ConflictReportDir" -ForegroundColor Green
 }
@@ -397,4 +397,3 @@ if ($Mode -eq "analyze") {
 }
 
 Write-Host ""
-

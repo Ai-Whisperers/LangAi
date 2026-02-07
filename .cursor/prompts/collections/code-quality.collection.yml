@@ -25,4 +25,3 @@ items:
     kind: prompt
   - path: prompts/code-quality/fix-diag-warn-err.prompt.md
     kind: prompt
-

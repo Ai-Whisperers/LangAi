@@ -245,38 +245,38 @@ Before finalizing:
 ## Customization Points
 
 ### Step 1: Define Phase
-**Placeholder**: `[Reasoning Step N]`  
+**Placeholder**: `[Reasoning Step N]`
 **Guidance**: Replace with specific questions users should answer about their creation task. Focus on purpose, audience, use cases, and expected output.
 
 ### Step 2: Choose Phase
-**Placeholder**: `[Option Category]`, `[option-1]`, etc.  
+**Placeholder**: `[Option Category]`, `[option-1]`, etc.
 **Guidance**: Replace with actual options/categories users choose from. Include decision trees if choices are complex.
 
 ### Step 3: Name/Configure Phase
-**Placeholder**: `[Configuration Rules]`  
+**Placeholder**: `[Configuration Rules]`
 **Guidance**: Replace with specific naming conventions, formatting rules, or configuration constraints for your domain.
 
 ### Step 4-5: Write/Configure Phases
-**Placeholder**: `[Configuration Aspect]`, `[Section N]`  
+**Placeholder**: `[Configuration Aspect]`, `[Section N]`
 **Guidance**: Replace with actual configuration fields or content sections users need to complete.
 
 ### Step 6: Validate Phase
-**Placeholder**: `[Validation N]`  
+**Placeholder**: `[Validation N]`
 **Guidance**: Replace with specific validation checks, quality gates, or testing steps.
 
 ### Examples Section
-**Placeholder**: `[Scenario N]`  
+**Placeholder**: `[Scenario N]`
 **Guidance**: Provide 2-3 concrete walkthroughs showing complete workflows from request to final output.
 
 ## Example Usage (Applying This Templar)
 
 ### Creating a "Setup Development Environment" Prompt
 
-**Step 1 - Define**: Environment setup for new developers  
-**Step 2 - Choose**: Category = `setup/`, Platform = Windows/Linux/Mac  
-**Step 3 - Name**: `setup-dev-environment.prompt.md`  
-**Step 4 - Configure Frontmatter**: Add platform detection logic  
-**Step 5 - Write Content**: Installation steps, verification commands  
+**Step 1 - Define**: Environment setup for new developers
+**Step 2 - Choose**: Category = `setup/`, Platform = Windows/Linux/Mac
+**Step 3 - Name**: `setup-dev-environment.prompt.md`
+**Step 4 - Configure Frontmatter**: Add platform detection logic
+**Step 5 - Write Content**: Installation steps, verification commands
 **Step 6 - Validate**: Test on fresh machine
 
 **Result**: Guided workflow helping new developers set up their environment step-by-step with platform-specific instructions.
@@ -316,4 +316,3 @@ Good application of this pattern achieves:
 ---
 
 **Pattern Provenance**: Extracted from `create-new-prompt.prompt.md` which demonstrates exceptional guided workflow implementation with decision trees, examples, and comprehensive templates.
-

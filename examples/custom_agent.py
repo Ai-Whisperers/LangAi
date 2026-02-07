@@ -11,18 +11,19 @@ Usage:
     python examples/custom_agent.py
 """
 
-from typing import Dict, Any, List
-from langchain_anthropic import ChatAnthropic
-from langgraph.graph import StateGraph, END
+from typing import Any, Dict, List
 
-from src.company_researcher.state import OverallState, InputState, OutputState
+from langchain_anthropic import ChatAnthropic
+from langgraph.graph import END, StateGraph
+
 from src.company_researcher.config import config
 from src.company_researcher.prompts import NEWS_AGENT_PROMPT
-
+from src.company_researcher.state import InputState, OutputState, OverallState
 
 # ==============================================================================
 # Custom Agent: News Agent
 # ==============================================================================
+
 
 def news_agent_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -48,9 +49,12 @@ def news_agent_node(state: OverallState) -> Dict[str, Any]:
 
     # Filter for news-related sources
     news_sources = [
-        r for r in search_results
-        if any(keyword in r.get("url", "").lower()
-               for keyword in ["news", "press", "announcement", "blog"])
+        r
+        for r in search_results
+        if any(
+            keyword in r.get("url", "").lower()
+            for keyword in ["news", "press", "announcement", "blog"]
+        )
     ]
 
     # 2. Create prompt
@@ -76,7 +80,7 @@ Format your analysis as a structured summary with dates and sources.
         model=config.llm_model,
         temperature=config.llm_temperature,
         max_tokens=config.llm_max_tokens,
-        api_key=config.anthropic_api_key
+        api_key=config.anthropic_api_key,
     )
 
     response = llm.invoke(prompt)
@@ -88,14 +92,9 @@ Format your analysis as a structured summary with dates and sources.
 
     # 5. Return state updates
     return {
-        "agent_outputs": {
-            "news": response.content
-        },
+        "agent_outputs": {"news": response.content},
         "total_cost": cost,
-        "total_tokens": {
-            "input": input_tokens,
-            "output": output_tokens
-        }
+        "total_tokens": {"input": input_tokens, "output": output_tokens},
     }
 
 
@@ -115,6 +114,7 @@ def format_search_results(results: List[Dict]) -> str:
 # Custom Workflow with News Agent
 # ==============================================================================
 
+
 def create_custom_workflow() -> StateGraph:
     """
     Create a workflow that includes the custom News Agent.
@@ -122,16 +122,16 @@ def create_custom_workflow() -> StateGraph:
     This workflow adds the News Agent in parallel with the standard
     Financial, Market, and Product agents.
     """
-    from src.company_researcher.agents.researcher import researcher_node
     from src.company_researcher.agents.financial import financial_agent_node
     from src.company_researcher.agents.market import market_agent_node
     from src.company_researcher.agents.product import product_agent_node
+    from src.company_researcher.agents.researcher import researcher_node
     from src.company_researcher.agents.synthesizer import synthesizer_node
     from src.company_researcher.quality.checker import check_quality_node
     from src.company_researcher.workflows.parallel_agent_research import (
+        create_initial_state,
         save_report_node,
         should_continue_research,
-        create_initial_state
     )
 
     # Create workflow
@@ -169,10 +169,7 @@ def create_custom_workflow() -> StateGraph:
     workflow.add_conditional_edges(
         "check_quality",
         should_continue_research,
-        {
-            "iterate": "researcher",
-            "finish": "save_report"
-        }
+        {"iterate": "researcher", "finish": "save_report"},
     )
 
     workflow.add_edge("save_report", END)
@@ -199,7 +196,7 @@ def research_with_news_agent(company_name: str) -> OutputState:
     # Create initial state
     from src.company_researcher.workflows.parallel_agent_research import (
         create_initial_state,
-        create_output_state
+        create_output_state,
     )
 
     initial_state = create_initial_state(company_name)

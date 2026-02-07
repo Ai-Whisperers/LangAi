@@ -79,4 +79,3 @@ Apply principles from:
 - `.cursor/rules/clean-code.mdc`
 - `.cursor/rules/dry-principle.mdc`
 - `.cursor/rules/function-length-and-responsibility.mdc`
-

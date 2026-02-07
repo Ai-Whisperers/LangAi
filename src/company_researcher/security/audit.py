@@ -41,29 +41,25 @@ Usage:
 import logging
 
 # Import from audit package
-from .audit import (
-    # Models
-    _utcnow,
-    AuditEventType,
-    AuditSeverity,
-    AuditEntry,
+from .audit import (  # Models; Logger; Factory functions; Convenience logging functions
     AuditConfig,
-    # Logger
+    AuditEntry,
+    AuditEventType,
     AuditLogger,
-    # Factory functions
+    AuditSeverity,
+    _utcnow,
     create_audit_logger,
     get_security_audit_logger,
-    # Convenience logging functions
     log_action,
-    log_rate_limit_exceeded,
-    log_rate_limit_ban,
-    log_input_validation_failed,
-    log_ssrf_blocked,
-    log_request_size_exceeded,
-    log_websocket_blocked,
     log_authentication_failed,
     log_authorization_denied,
+    log_input_validation_failed,
+    log_rate_limit_ban,
+    log_rate_limit_exceeded,
+    log_request_size_exceeded,
+    log_ssrf_blocked,
     log_suspicious_activity,
+    log_websocket_blocked,
 )
 
 # Re-export all public APIs
@@ -97,8 +93,7 @@ __all__ = [
 if __name__ == "__main__":
     # Set up logging
     logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     # Create audit logger
@@ -109,16 +104,10 @@ if __name__ == "__main__":
 
     # Test authentication events
     print("\n1. Testing authentication events...")
-    audit.log_auth(
-        user_id="demo_user",
-        event=AuditEventType.LOGIN,
-        ip_address="192.168.1.100"
-    )
+    audit.log_auth(user_id="demo_user", event=AuditEventType.LOGIN, ip_address="192.168.1.100")
 
     log_authentication_failed(
-        username="bad_user",
-        reason="Invalid password",
-        ip_address="192.168.1.101"
+        username="bad_user", reason="Invalid password", ip_address="192.168.1.101"
     )
 
     # Test data access events
@@ -128,23 +117,20 @@ if __name__ == "__main__":
         action="read",
         resource="research",
         resource_id="Tesla",
-        details={"query": "financial data"}
+        details={"query": "financial data"},
     )
 
     # Test security events
     print("3. Testing security events...")
     log_rate_limit_exceeded(
-        key="user:demo_user",
-        limit=100,
-        user_id="demo_user",
-        ip_address="192.168.1.100"
+        key="user:demo_user", limit=100, user_id="demo_user", ip_address="192.168.1.100"
     )
 
     log_ssrf_blocked(
         url="http://169.254.169.254/latest/meta-data/",
         reason="Blocked internal IP",
         user_id="demo_user",
-        ip_address="192.168.1.100"
+        ip_address="192.168.1.100",
     )
 
     # Test research operations
@@ -153,7 +139,7 @@ if __name__ == "__main__":
         user_id="demo_user",
         company="Apple Inc.",
         event=AuditEventType.RESEARCH_START,
-        details={"research_type": "comprehensive"}
+        details={"research_type": "comprehensive"},
     )
 
     audit.log_research(
@@ -161,7 +147,7 @@ if __name__ == "__main__":
         company="Apple Inc.",
         event=AuditEventType.RESEARCH_COMPLETE,
         outcome="success",
-        details={"duration_seconds": 45.2, "sources": 12}
+        details={"duration_seconds": 45.2, "sources": 12},
     )
 
     # Query logs
@@ -172,10 +158,7 @@ if __name__ == "__main__":
     user_activity = audit.get_user_activity("demo_user")
     print(f"Entries for demo_user: {len(user_activity)}")
 
-    security_events = audit.query(
-        resource="security",
-        severity=AuditSeverity.WARNING
-    )
+    security_events = audit.query(resource="security", severity=AuditSeverity.WARNING)
     print(f"Security warnings: {len(security_events)}")
 
     # Export logs
@@ -185,6 +168,7 @@ if __name__ == "__main__":
 
     # Test decorator
     print("\n7. Testing decorator...")
+
     @audit.audited(event_type=AuditEventType.DATA_READ)
     def get_research(user_id: str, company: str):
         print(f"  Getting research for {company} (user: {user_id})")

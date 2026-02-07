@@ -30,39 +30,16 @@ Usage:
     ctx = manager.create_context("financial_agent", "financial")
 """
 
-# WRITE Strategy
-from .write_strategy import (
-    Scratchpad,
-    ScratchpadNote,
-    WorkingMemory,
-    NoteType,
-    NotePriority,
-    create_scratchpad,
-    scratchpad_from_state,
-)
-
-# SELECT Strategy
-from .select_strategy import (
-    ContextSelector,
-    QueryProcessor,
-    RetrievalResult,
-    RetrievedChunk,
-    RetrievalMode,
-    RelevanceThreshold,
-    create_selector,
-    retrieve_for_agent,
-)
-
 # COMPRESS Strategy
 from .compress_strategy import (
-    TextCompressor,
+    CompressionLevel,
+    CompressionResult,
+    ContentType,
+    ContextWindowOptimizer,
+    KeyPoint,
     KeyPointExtractor,
     ProgressiveSummarizer,
-    ContextWindowOptimizer,
-    CompressionResult,
-    CompressionLevel,
-    ContentType,
-    KeyPoint,
+    TextCompressor,
     compress_text,
     extract_key_points,
     optimize_for_context,
@@ -70,16 +47,39 @@ from .compress_strategy import (
 
 # ISOLATE Strategy
 from .isolate_strategy import (
-    ContextIsolationManager,
-    ContextFilter,
-    AgentContextBuilder,
     AgentContext,
+    AgentContextBuilder,
+    ContextFilter,
+    ContextIsolationManager,
     ContextItem,
+    ContextVisibility,
     IsolationLevel,
     SharePolicy,
-    ContextVisibility,
-    create_isolation_manager,
     build_agent_context,
+    create_isolation_manager,
+)
+
+# SELECT Strategy
+from .select_strategy import (
+    ContextSelector,
+    QueryProcessor,
+    RelevanceThreshold,
+    RetrievalMode,
+    RetrievalResult,
+    RetrievedChunk,
+    create_selector,
+    retrieve_for_agent,
+)
+
+# WRITE Strategy
+from .write_strategy import (
+    NotePriority,
+    NoteType,
+    Scratchpad,
+    ScratchpadNote,
+    WorkingMemory,
+    create_scratchpad,
+    scratchpad_from_state,
 )
 
 __all__ = [

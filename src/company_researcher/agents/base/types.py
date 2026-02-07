@@ -4,14 +4,16 @@ Standard types for agent results.
 Provides consistent typing across all agents using TypedDict.
 """
 
-from typing import Dict, Any, List, Optional
-from typing_extensions import TypedDict, NotRequired
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from typing_extensions import NotRequired, TypedDict
 
 
 class AgentStatus(Enum):
     """Status of an agent execution."""
+
     SUCCESS = "success"
     PARTIAL = "partial"
     ERROR = "error"
@@ -20,12 +22,14 @@ class AgentStatus(Enum):
 
 class TokenUsage(TypedDict):
     """Token usage for an API call."""
+
     input: int
     output: int
 
 
 class AgentOutput(TypedDict):
     """Standard output from an individual agent."""
+
     analysis: str
     data_extracted: bool
     cost: float
@@ -38,6 +42,7 @@ class AgentOutput(TypedDict):
 
 class AgentResult(TypedDict):
     """Standardized result from an agent node function."""
+
     agent_outputs: Dict[str, AgentOutput]
     total_cost: float
     total_tokens: TokenUsage
@@ -50,6 +55,7 @@ class AgentResult(TypedDict):
 
 class SearchResult(TypedDict):
     """Standard format for search results."""
+
     title: str
     url: str
     content: str
@@ -59,6 +65,7 @@ class SearchResult(TypedDict):
 @dataclass
 class AgentConfig:
     """Configuration for an individual agent."""
+
     max_tokens: int = 1000
     temperature: float = 0.0
     max_retries: int = 3
@@ -71,6 +78,7 @@ class AgentConfig:
 @dataclass
 class AgentContext:
     """Context passed to agent execution."""
+
     company_name: str
     search_results: List[SearchResult] = field(default_factory=list)
     config: AgentConfig = field(default_factory=AgentConfig)
@@ -80,7 +88,7 @@ class AgentContext:
 def create_empty_result(
     agent_name: str,
     message: str = "No search results available",
-    status: AgentStatus = AgentStatus.NO_DATA
+    status: AgentStatus = AgentStatus.NO_DATA,
 ) -> AgentResult:
     """Create an empty/error result for an agent."""
     return {
@@ -90,11 +98,11 @@ def create_empty_result(
                 "data_extracted": False,
                 "cost": 0.0,
                 "tokens": {"input": 0, "output": 0},
-                "status": status.value
+                "status": status.value,
             }
         },
         "total_cost": 0.0,
-        "total_tokens": {"input": 0, "output": 0}
+        "total_tokens": {"input": 0, "output": 0},
     }
 
 
@@ -107,7 +115,7 @@ def create_agent_result(
     status: AgentStatus = AgentStatus.SUCCESS,
     sources_used: int = 0,
     confidence: Optional[float] = None,
-    **extra_fields
+    **extra_fields,
 ) -> AgentResult:
     """Create a standardized agent result."""
     agent_output: AgentOutput = {
@@ -116,7 +124,7 @@ def create_agent_result(
         "cost": cost,
         "tokens": {"input": input_tokens, "output": output_tokens},
         "status": status.value,
-        "sources_used": sources_used
+        "sources_used": sources_used,
     }
 
     if confidence is not None:
@@ -125,7 +133,7 @@ def create_agent_result(
     result: AgentResult = {
         "agent_outputs": {agent_name: agent_output},
         "total_cost": cost,
-        "total_tokens": {"input": input_tokens, "output": output_tokens}
+        "total_tokens": {"input": input_tokens, "output": output_tokens},
     }
 
     # Add any extra fields (dynamic key access is valid at runtime for TypedDict)
@@ -141,7 +149,7 @@ def merge_agent_results(*results: AgentResult) -> AgentResult:
     merged: AgentResult = {
         "agent_outputs": {},
         "total_cost": 0.0,
-        "total_tokens": {"input": 0, "output": 0}
+        "total_tokens": {"input": 0, "output": 0},
     }
 
     for result in results:

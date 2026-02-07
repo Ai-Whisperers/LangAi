@@ -10,20 +10,19 @@ This agent is responsible for:
 """
 
 from typing import Any, Dict, List, Optional
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
+from ...llm.client_factory import calculate_cost, get_anthropic_client, safe_extract_text
 from ...state import OverallState
 
 # Import trend analyst with fallback
 try:
-    from ..research.trend_analyst import (
-        create_trend_analyst,
-        TrendAnalysis,
-    )
+    from ..research.trend_analyst import TrendAnalysis, create_trend_analyst
+
     TREND_ANALYST_AVAILABLE = True
 except ImportError:
     TREND_ANALYST_AVAILABLE = False
@@ -37,9 +36,7 @@ class SynthesizerAgent:
         self.llm_client = llm_client or get_anthropic_client()
 
     def synthesize(
-        self,
-        company_name: str,
-        agent_outputs: Dict[str, Dict[str, Any]] = None
+        self, company_name: str, agent_outputs: Dict[str, Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Synthesize insights from multiple specialist agents.
@@ -47,10 +44,7 @@ class SynthesizerAgent:
         Note: This method is sync because the underlying node function is sync.
         The LangGraph workflow does not use async operations.
         """
-        state = {
-            "company_name": company_name,
-            "agent_outputs": agent_outputs or {}
-        }
+        state = {"company_name": company_name, "agent_outputs": agent_outputs or {}}
         return synthesizer_agent_node(state)
 
 
@@ -140,17 +134,15 @@ Based on the trend analysis above, summarize:
 - Opportunities identified from positive trends
 - Risks from declining metrics"""
 
-TREND_INSIGHT_INSTRUCTION = """- Include trend-based strategic recommendations if trend analysis is available"""
+TREND_INSIGHT_INSTRUCTION = (
+    """- Include trend-based strategic recommendations if trend analysis is available"""
+)
 
 
 def _format_trend_analysis(trend_analysis: Optional["TrendAnalysis"]) -> Dict[str, str]:
     """Format trend analysis results for the synthesis prompt."""
     if not trend_analysis or not TREND_ANALYST_AVAILABLE:
-        return {
-            "trend_section": "",
-            "trend_instructions": "",
-            "trend_insight_instruction": ""
-        }
+        return {"trend_section": "", "trend_instructions": "", "trend_insight_instruction": ""}
 
     # Format trends list
     trends_list = []
@@ -161,7 +153,7 @@ def _format_trend_analysis(trend_analysis: Optional["TrendAnalysis"]) -> Dict[st
             "stable": "➡️",
             "down": "↘️",
             "strong_down": "📉",
-            "volatile": "📊"
+            "volatile": "📊",
         }.get(trend.direction.value, "•")
         trends_list.append(
             f"{direction_emoji} {trend.metric}: {trend.change_percent:+.1f}% "
@@ -171,7 +163,11 @@ def _format_trend_analysis(trend_analysis: Optional["TrendAnalysis"]) -> Dict[st
     # Format forecasts
     forecasts_list = []
     for forecast in trend_analysis.forecasts[:4]:  # Next 4 periods
-        period_str = forecast.period.strftime("%b %Y") if hasattr(forecast.period, 'strftime') else str(forecast.period)
+        period_str = (
+            forecast.period.strftime("%b %Y")
+            if hasattr(forecast.period, "strftime")
+            else str(forecast.period)
+        )
         forecasts_list.append(
             f"- {forecast.metric} ({period_str}): "
             f"${forecast.predicted_value:,.0f} "
@@ -187,15 +183,23 @@ def _format_trend_analysis(trend_analysis: Optional["TrendAnalysis"]) -> Dict[st
     trend_section = TREND_SECTION_TEMPLATE.format(
         trend_summary=trend_analysis.summary,
         trends_list="\n".join(trends_list) if trends_list else "No significant trends detected",
-        forecasts_list="\n".join(forecasts_list) if forecasts_list else "Insufficient data for forecasting",
-        opportunities_list="\n".join(opportunities_list) if opportunities_list else "- No specific opportunities identified",
-        threats_list="\n".join(threats_list) if threats_list else "- No specific threats identified"
+        forecasts_list=(
+            "\n".join(forecasts_list) if forecasts_list else "Insufficient data for forecasting"
+        ),
+        opportunities_list=(
+            "\n".join(opportunities_list)
+            if opportunities_list
+            else "- No specific opportunities identified"
+        ),
+        threats_list=(
+            "\n".join(threats_list) if threats_list else "- No specific threats identified"
+        ),
     )
 
     return {
         "trend_section": trend_section,
         "trend_instructions": TREND_INSTRUCTIONS,
-        "trend_insight_instruction": TREND_INSIGHT_INSTRUCTION
+        "trend_insight_instruction": TREND_INSIGHT_INSTRUCTION,
     }
 
 
@@ -248,15 +252,23 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
     agent_outputs = state.get("agent_outputs", {})
 
     # Get outputs from each specialist
-    financial = agent_outputs.get("financial", {}).get("analysis", "No financial analysis available")
+    financial = agent_outputs.get("financial", {}).get(
+        "analysis", "No financial analysis available"
+    )
     market = agent_outputs.get("market", {}).get("analysis", "No market analysis available")
     product = agent_outputs.get("product", {}).get("analysis", "No product analysis available")
 
-    logger.debug(f"Combining insights - Financial: {len(financial)} chars, Market: {len(market)} chars, Product: {len(product)} chars")
+    logger.debug(
+        f"Combining insights - Financial: {len(financial)} chars, Market: {len(market)} chars, Product: {len(product)} chars"
+    )
 
     # Perform trend analysis if available
     trend_analysis = None
-    trend_formatting = {"trend_section": "", "trend_instructions": "", "trend_insight_instruction": ""}
+    trend_formatting = {
+        "trend_section": "",
+        "trend_instructions": "",
+        "trend_insight_instruction": "",
+    }
 
     if TREND_ANALYST_AVAILABLE:
         try:
@@ -270,7 +282,9 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
 
                 trend_analysis = analyst.analyze_trends()
                 trend_formatting = _format_trend_analysis(trend_analysis)
-                logger.info(f"Trend analysis complete: {len(trend_analysis.trends)} trends, {len(trend_analysis.forecasts)} forecasts")
+                logger.info(
+                    f"Trend analysis complete: {len(trend_analysis.trends)} trends, {len(trend_analysis.forecasts)} forecasts"
+                )
             else:
                 logger.debug("No historical data available for trend analysis")
         except Exception as e:
@@ -282,7 +296,7 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
         financial_analysis=financial,
         market_analysis=market,
         product_analysis=product,
-        **trend_formatting
+        **trend_formatting,
     )
 
     # Call Claude for synthesis
@@ -290,14 +304,11 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
         model=config.llm_model,
         max_tokens=config.synthesizer_max_tokens,
         temperature=config.synthesizer_temperature,
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
     )
 
     synthesized_overview = safe_extract_text(response, agent_name="synthesizer")
-    cost = calculate_cost(
-        response.usage.input_tokens,
-        response.usage.output_tokens
-    )
+    cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
 
     logger.info(f"Synthesizer agent complete - cost: ${cost:.4f}")
 
@@ -307,10 +318,7 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
         "specialists_combined": 3,
         "trend_analysis_included": trend_analysis is not None,
         "cost": cost,
-        "tokens": {
-            "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
-        }
+        "tokens": {"input": response.usage.input_tokens, "output": response.usage.output_tokens},
     }
 
     # Include trend data in output if available
@@ -321,7 +329,7 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
             "trend_count": len(trend_analysis.trends),
             "forecast_count": len(trend_analysis.forecasts),
             "opportunities": trend_analysis.opportunities,
-            "threats": trend_analysis.threats
+            "threats": trend_analysis.threats,
         }
 
     # Return only this agent's contribution
@@ -333,6 +341,6 @@ def synthesizer_agent_node(state: OverallState) -> Dict[str, Any]:
         "total_cost": cost,
         "total_tokens": {
             "input": response.usage.input_tokens,
-            "output": response.usage.output_tokens
-        }
+            "output": response.usage.output_tokens,
+        },
     }

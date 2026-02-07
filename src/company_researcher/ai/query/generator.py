@@ -1,23 +1,19 @@
 """AI-powered query generator using LLM."""
-from typing import List, Optional, Dict, Any
 
+from typing import Any, Dict, List, Optional
+
+from ...llm.response_parser import parse_json_response
 from ..base import AIComponent
 from ..fallback import FallbackHandler
 from ..utils import get_logger
-from ...llm.response_parser import parse_json_response
-
 from .models import (
     CompanyContext,
     GeneratedQuery,
     QueryGenerationResult,
+    QueryPurpose,
     QueryRefinementResult,
-    QueryPurpose
 )
-from .prompts import (
-    QUERY_GENERATION_PROMPT,
-    QUERY_REFINEMENT_PROMPT,
-    MULTILINGUAL_QUERY_PROMPT
-)
+from .prompts import MULTILINGUAL_QUERY_PROMPT, QUERY_GENERATION_PROMPT, QUERY_REFINEMENT_PROMPT
 
 logger = get_logger(__name__)
 
@@ -104,22 +100,27 @@ class AIQueryGenerator(AIComponent[QueryGenerationResult]):
             ticker=context.stock_ticker or "Unknown",
             exchange=context.stock_exchange or "Unknown",
             products=", ".join(context.known_products) if context.known_products else "Unknown",
-            competitors=", ".join(context.known_competitors) if context.known_competitors else "Unknown",
-            executives=", ".join(context.known_executives) if context.known_executives else "Unknown",
-            focus=", ".join(context.research_focus) if context.research_focus else "General research",
+            competitors=(
+                ", ".join(context.known_competitors) if context.known_competitors else "Unknown"
+            ),
+            executives=(
+                ", ".join(context.known_executives) if context.known_executives else "Unknown"
+            ),
+            focus=(
+                ", ".join(context.research_focus) if context.research_focus else "General research"
+            ),
             depth=context.research_depth,
             languages=", ".join(languages),
-            previous_queries="\n".join(context.previous_queries) if context.previous_queries else "None",
+            previous_queries=(
+                "\n".join(context.previous_queries) if context.previous_queries else "None"
+            ),
             gaps="\n".join(context.gaps_identified) if context.gaps_identified else "None",
-            num_queries=num_queries
+            num_queries=num_queries,
         )
 
         try:
             result = self._call_llm(
-                prompt=prompt,
-                task_type="search_query",
-                complexity="medium",
-                json_mode=True
+                prompt=prompt, task_type="search_query", complexity="medium", json_mode=True
             )
 
             parsed = parse_json_response(result, default={"queries": []})
@@ -135,7 +136,7 @@ class AIQueryGenerator(AIComponent[QueryGenerationResult]):
         original_result: QueryGenerationResult,
         coverage_scores: Dict[str, float],
         gaps: List[str],
-        num_queries: int = 5
+        num_queries: int = 5,
     ) -> QueryRefinementResult:
         """
         Refine queries based on search results quality.
@@ -150,15 +151,13 @@ class AIQueryGenerator(AIComponent[QueryGenerationResult]):
             QueryRefinementResult with refined queries
         """
         # Format original queries with results
-        original_summary = "\n".join([
-            f"- {q.query} ({q.purpose}): Priority {q.priority}"
-            for q in original_result.queries
-        ])
+        original_summary = "\n".join(
+            [f"- {q.query} ({q.purpose}): Priority {q.priority}" for q in original_result.queries]
+        )
 
-        coverage_summary = "\n".join([
-            f"- {cat}: {score:.1%}"
-            for cat, score in coverage_scores.items()
-        ])
+        coverage_summary = "\n".join(
+            [f"- {cat}: {score:.1%}" for cat, score in coverage_scores.items()]
+        )
 
         gaps_summary = "\n".join([f"- {gap}" for gap in gaps])
 
@@ -166,15 +165,12 @@ class AIQueryGenerator(AIComponent[QueryGenerationResult]):
             original_queries_with_results=original_summary,
             coverage_assessment=coverage_summary,
             gaps=gaps_summary,
-            num_queries=num_queries
+            num_queries=num_queries,
         )
 
         try:
             result = self._call_llm(
-                prompt=prompt,
-                task_type="search_query",
-                complexity="low",
-                json_mode=True
+                prompt=prompt, task_type="search_query", complexity="low", json_mode=True
             )
 
             parsed = parse_json_response(result, default={"refined_queries": []})
@@ -185,11 +181,7 @@ class AIQueryGenerator(AIComponent[QueryGenerationResult]):
             return QueryRefinementResult(confidence_in_refinement=0.0)
 
     def generate_multilingual_queries(
-        self,
-        company_name: str,
-        region: str,
-        languages: List[str],
-        purpose: QueryPurpose
+        self, company_name: str, region: str, languages: List[str], purpose: QueryPurpose
     ) -> Dict[str, List[str]]:
         """
         Generate queries in multiple languages.
@@ -210,15 +202,12 @@ class AIQueryGenerator(AIComponent[QueryGenerationResult]):
             region=region,
             country="",
             languages=", ".join(languages),
-            purpose=purpose_value
+            purpose=purpose_value,
         )
 
         try:
             result = self._call_llm(
-                prompt=prompt,
-                task_type="search_query",
-                complexity="low",
-                json_mode=True
+                prompt=prompt, task_type="search_query", complexity="low", json_mode=True
             )
 
             parsed = parse_json_response(result, default={})
@@ -229,9 +218,7 @@ class AIQueryGenerator(AIComponent[QueryGenerationResult]):
             return {lang: [f"{company_name}"] for lang in languages}
 
     def _parse_generation_result(
-        self,
-        data: Dict[str, Any],
-        languages: List[str]
+        self, data: Dict[str, Any], languages: List[str]
     ) -> QueryGenerationResult:
         """Parse LLM response into QueryGenerationResult."""
         queries = []
@@ -252,7 +239,7 @@ class AIQueryGenerator(AIComponent[QueryGenerationResult]):
                     language=q_data.get("language", "en"),
                     priority=int(q_data.get("priority", 3)),
                     reasoning=q_data.get("reasoning", ""),
-                    is_fallback=q_data.get("is_fallback", False)
+                    is_fallback=q_data.get("is_fallback", False),
                 )
                 if query.query:  # Only add non-empty queries
                     queries.append(query)
@@ -265,7 +252,7 @@ class AIQueryGenerator(AIComponent[QueryGenerationResult]):
             suggested_follow_ups=data.get("suggested_follow_ups", []),
             estimated_coverage=data.get("estimated_coverage", {}),
             total_queries=len(queries),
-            languages_used=list(set(q.language for q in queries))
+            languages_used=list(set(q.language for q in queries)),
         )
 
     def _parse_refinement_result(self, data: Dict[str, Any]) -> QueryRefinementResult:
@@ -288,7 +275,7 @@ class AIQueryGenerator(AIComponent[QueryGenerationResult]):
                     language=q_data.get("language", "en"),
                     priority=int(q_data.get("priority", 1)),
                     reasoning=q_data.get("reasoning", ""),
-                    is_fallback=q_data.get("is_fallback", False)
+                    is_fallback=q_data.get("is_fallback", False),
                 )
                 if query.query:
                     queries.append(query)
@@ -301,13 +288,11 @@ class AIQueryGenerator(AIComponent[QueryGenerationResult]):
             refined_queries=queries,
             gaps_addressed=data.get("gaps_addressed", []),
             dropped_purposes=dropped,
-            confidence_in_refinement=float(data.get("confidence_in_refinement", 0.5))
+            confidence_in_refinement=float(data.get("confidence_in_refinement", 0.5)),
         )
 
     def _generate_legacy_queries(
-        self,
-        company_name: str,
-        num_queries: int
+        self, company_name: str, num_queries: int
     ) -> QueryGenerationResult:
         """Generate queries using legacy templates (fallback)."""
         queries = []
@@ -324,7 +309,7 @@ class AIQueryGenerator(AIComponent[QueryGenerationResult]):
                     language="en",
                     priority=priority,
                     reasoning="Legacy template fallback",
-                    is_fallback=True
+                    is_fallback=True,
                 )
                 queries.append(query)
             priority += 1
@@ -335,7 +320,7 @@ class AIQueryGenerator(AIComponent[QueryGenerationResult]):
             suggested_follow_ups=[],
             estimated_coverage={},
             total_queries=len(queries[:num_queries]),
-            languages_used=["en"]
+            languages_used=["en"],
         )
 
     def process(self, context: CompanyContext) -> QueryGenerationResult:

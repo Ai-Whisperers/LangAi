@@ -1,11 +1,14 @@
 """Pydantic models for AI query generation."""
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class QueryPurpose(str, Enum):
     """Purpose/category of a search query."""
+
     OVERVIEW = "overview"
     FINANCIAL = "financial"
     PRODUCTS = "products"
@@ -49,7 +52,9 @@ class CompanyContext(BaseModel):
 
     # Known information (optional)
     known_industry: Optional[str] = Field(default=None, description="Industry if known")
-    known_region: Optional[str] = Field(default=None, description="Region: LATAM, North America, Europe, etc.")
+    known_region: Optional[str] = Field(
+        default=None, description="Region: LATAM, North America, Europe, etc."
+    )
     known_country: Optional[str] = Field(default=None, description="Country if known")
     is_public: Optional[bool] = Field(default=None, description="Whether publicly traded")
     stock_ticker: Optional[str] = Field(default=None, description="Stock ticker if public")
@@ -63,28 +68,23 @@ class CompanyContext(BaseModel):
 
     # Research focus
     research_focus: List[str] = Field(
-        default_factory=list,
-        description="Specific areas to focus on"
+        default_factory=list, description="Specific areas to focus on"
     )
     research_depth: str = Field(
-        default="standard",
-        description="Research depth: quick, standard, deep"
+        default="standard", description="Research depth: quick, standard, deep"
     )
 
     # Language preferences
     languages: List[str] = Field(
-        default_factory=lambda: ["en"],
-        description="Languages to search in"
+        default_factory=lambda: ["en"], description="Languages to search in"
     )
 
     # Previous research context
     previous_queries: List[str] = Field(
-        default_factory=list,
-        description="Queries already executed"
+        default_factory=list, description="Queries already executed"
     )
     gaps_identified: List[str] = Field(
-        default_factory=list,
-        description="Information gaps from previous searches"
+        default_factory=list, description="Information gaps from previous searches"
     )
 
     def get_inferred_languages(self) -> List[str]:
@@ -122,23 +122,12 @@ class GeneratedQuery(BaseModel):
     query: str = Field(description="The search query text")
     purpose: QueryPurpose = Field(description="What this query aims to find")
     expected_sources: List[str] = Field(
-        default_factory=list,
-        description="Types of sources expected (news, official, SEC, etc.)"
+        default_factory=list, description="Types of sources expected (news, official, SEC, etc.)"
     )
     language: str = Field(default="en", description="Language of the query")
-    priority: int = Field(
-        ge=1, le=5,
-        default=3,
-        description="Priority: 1=highest, 5=lowest"
-    )
-    reasoning: str = Field(
-        default="",
-        description="Why this query was generated"
-    )
-    is_fallback: bool = Field(
-        default=False,
-        description="Whether this is a fallback/backup query"
-    )
+    priority: int = Field(ge=1, le=5, default=3, description="Priority: 1=highest, 5=lowest")
+    reasoning: str = Field(default="", description="Why this query was generated")
+    is_fallback: bool = Field(default=False, description="Whether this is a fallback/backup query")
 
     class Config:
         use_enum_values = True
@@ -147,27 +136,21 @@ class GeneratedQuery(BaseModel):
 class QueryGenerationResult(BaseModel):
     """Result of AI query generation."""
 
-    queries: List[GeneratedQuery] = Field(
-        default_factory=list,
-        description="Generated queries"
-    )
+    queries: List[GeneratedQuery] = Field(default_factory=list, description="Generated queries")
 
     # Inferred context
     company_context_inferred: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="What was inferred about the company"
+        default_factory=dict, description="What was inferred about the company"
     )
 
     # Follow-up suggestions
     suggested_follow_ups: List[str] = Field(
-        default_factory=list,
-        description="Additional queries if initial ones fail"
+        default_factory=list, description="Additional queries if initial ones fail"
     )
 
     # Coverage estimation
     estimated_coverage: Dict[str, float] = Field(
-        default_factory=dict,
-        description="Expected coverage by category (0.0-1.0)"
+        default_factory=dict, description="Expected coverage by category (0.0-1.0)"
     )
 
     # Metadata
@@ -196,21 +179,17 @@ class QueryRefinementResult(BaseModel):
     """Result of query refinement based on search results."""
 
     refined_queries: List[GeneratedQuery] = Field(
-        default_factory=list,
-        description="Refined/new queries to address gaps"
+        default_factory=list, description="Refined/new queries to address gaps"
     )
     gaps_addressed: List[str] = Field(
-        default_factory=list,
-        description="Gaps these queries aim to fill"
+        default_factory=list, description="Gaps these queries aim to fill"
     )
     dropped_purposes: List[str] = Field(
         default_factory=list,
-        description="Purposes with sufficient coverage (no more queries needed)"
+        description="Purposes with sufficient coverage (no more queries needed)",
     )
     confidence_in_refinement: float = Field(
-        default=0.5,
-        ge=0.0, le=1.0,
-        description="Confidence that refined queries will help"
+        default=0.5, ge=0.0, le=1.0, description="Confidence that refined queries will help"
     )
 
     class Config:

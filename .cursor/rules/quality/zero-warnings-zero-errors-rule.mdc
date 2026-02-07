@@ -8,7 +8,7 @@ governs: "**/*"
 implements: pre-commit-validation
 requires: []
 model_hints: { temp: 0.2, top_p: 0.9 }
-provenance: 
+provenance:
   owner: quality-standards
   last_review: 2025-12-07
   extraction_source: .cursor/prompts/cicd/zero-warnings-zero-errors.md
@@ -153,7 +153,7 @@ Run validation → Review output → Categorize issues
 
 ### Step 2: Prioritize
 1. **Errors** (blocks functionality) - fix first
-2. **Critical warnings** (security, data loss) - fix immediately  
+2. **Critical warnings** (security, data loss) - fix immediately
 3. **Standard warnings** (style, best practices) - fix before commit
 4. **Informational** (suggestions) - fix if time permits
 
@@ -296,7 +296,7 @@ else { Write-Host " ✓" -ForegroundColor Green }
 # 2. Linter check
 Write-Host "  • Linting..." -NoNewline
 $lintResult = dotnet format --verify-no-changes 2>&1
-if ($LASTEXITCODE -ne 0) { 
+if ($LASTEXITCODE -ne 0) {
     if ($AutoFix) {
         dotnet format
         Write-Host " ⚠ Auto-fixed" -ForegroundColor Yellow
@@ -337,7 +337,7 @@ exit 0
 ## Notes
 
 - **Discipline over convenience**: This rule is strict by design
-- **Fast feedback**: Keep validation fast (<30s ideal) so developers run it frequently  
+- **Fast feedback**: Keep validation fast (<30s ideal) so developers run it frequently
 - **Clear errors**: Validation output should clearly explain what's wrong and how to fix it
 - **Progressive enhancement**: Start with basic checks, add more over time
 - **Project-specific**: Adapt validation checks to project needs, but keep zero-tolerance principle

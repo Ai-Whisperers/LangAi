@@ -1,0 +1,38 @@
+---
+id: rule.project.stack-guardrails.v1
+kind: rule
+version: 1.0.0
+description: Guardrails to keep Cursor decisions aligned to this repo's Python/LangGraph stack and deprioritize legacy .NET/XML guidance.
+globs: **/*
+governs: **/*
+implements: project.stack-guardrails
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-platform, last_review: 2025-12-15 }
+alwaysApply: true
+---
+
+# Project Stack Guardrails (Python-first)
+
+## Purpose & Scope
+
+This repo is **Python 3.11+** and uses **LangGraph + LangChain + Pydantic** (and optional FastAPI).
+
+These guardrails exist because the repository also contains a large cross-domain rules/prompt library (some of which references **.NET/XML** workflows). When there is any ambiguity, **treat Python as the default stack**.
+
+## Guardrails
+
+- **Prefer Python rules** for code changes: `rule.python.*`
+- **Prefer pytest** for tests and `tests/` for test code.
+- **Prefer Pydantic models** for structured data contracts and agent state.
+- **Treat C#/.NET/XML documentation prompts as legacy** unless the user explicitly asks to work on those artifacts (typically within `.cursor/` itself).
+
+## Practical decision rule
+
+If a prompt or rule recommendation conflicts with `.cursorrules` or the actual repo layout (`src/company_researcher/`, `run_research.py`, `docs/`, `deploy/`), follow the repo reality.
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Changes align with the Python/LangGraph stack unless explicitly requested otherwise
+- [ ] Any diagnostics are actionable (WHAT/WHY/HOW)
+- [ ] No secrets are added or logged

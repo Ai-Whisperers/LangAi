@@ -15,21 +15,21 @@ The schema supports:
 - Incremental research updates
 """
 
-
 from sqlalchemy import (
+    JSON,
+    Boolean,
     Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
     Integer,
     String,
     Text,
-    DateTime,
-    Float,
-    JSON,
-    ForeignKey,
-    Boolean,
-    Index,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+
 from ..utils import utc_now
 
 Base = declarative_base()
@@ -42,6 +42,7 @@ class Company(Base):
     Stores basic company information and provides a foreign key
     for research runs. Supports both public and private companies.
     """
+
     __tablename__ = "companies"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -60,7 +61,9 @@ class Company(Base):
     last_researched_at = Column(DateTime, nullable=True)
 
     # Relationships
-    research_runs = relationship("ResearchRun", back_populates="company", cascade="all, delete-orphan")
+    research_runs = relationship(
+        "ResearchRun", back_populates="company", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<Company(name='{self.name}', ticker='{self.ticker}')>"
@@ -69,10 +72,11 @@ class Company(Base):
     def normalize_name(cls, name: str) -> str:
         """Normalize company name for matching."""
         import re
+
         # Lowercase, remove punctuation, collapse whitespace
         normalized = name.lower()
-        normalized = re.sub(r'[^\w\s]', '', normalized)
-        normalized = re.sub(r'\s+', ' ', normalized).strip()
+        normalized = re.sub(r"[^\w\s]", "", normalized)
+        normalized = re.sub(r"\s+", " ", normalized).strip()
         return normalized
 
 
@@ -83,6 +87,7 @@ class ResearchRun(Base):
     Tracks a complete research workflow including configuration,
     status, timing, and costs.
     """
+
     __tablename__ = "research_runs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -92,7 +97,9 @@ class ResearchRun(Base):
     run_id = Column(String(50), unique=True, index=True)  # UUID or timestamp-based
 
     # Status tracking
-    status = Column(String(50), default="pending", index=True)  # pending, running, completed, failed
+    status = Column(
+        String(50), default="pending", index=True
+    )  # pending, running, completed, failed
     error_message = Column(Text, nullable=True)
 
     # Timing
@@ -121,14 +128,16 @@ class ResearchRun(Base):
 
     # Relationships
     company = relationship("Company", back_populates="research_runs")
-    agent_outputs = relationship("AgentOutput", back_populates="research_run", cascade="all, delete-orphan")
+    agent_outputs = relationship(
+        "AgentOutput", back_populates="research_run", cascade="all, delete-orphan"
+    )
     sources = relationship("Source", back_populates="research_run", cascade="all, delete-orphan")
     cost_logs = relationship("CostLog", back_populates="research_run", cascade="all, delete-orphan")
 
     # Indexes
     __table_args__ = (
-        Index('ix_research_runs_company_status', 'company_id', 'status'),
-        Index('ix_research_runs_started_at', 'started_at'),
+        Index("ix_research_runs_company_status", "company_id", "status"),
+        Index("ix_research_runs_started_at", "started_at"),
     )
 
     def __repr__(self):
@@ -137,6 +146,7 @@ class ResearchRun(Base):
     def mark_completed(self) -> None:
         """Mark run as completed with timing."""
         from datetime import timezone
+
         self.status = "completed"
         self.completed_at = utc_now()
         if self.started_at:
@@ -149,6 +159,7 @@ class ResearchRun(Base):
     def mark_failed(self, error: str) -> None:
         """Mark run as failed with error."""
         from datetime import timezone
+
         self.status = "failed"
         self.completed_at = utc_now()
         self.error_message = error
@@ -167,6 +178,7 @@ class AgentOutput(Base):
     Stores the analysis produced by each agent in a research run,
     along with cost and token metrics.
     """
+
     __tablename__ = "agent_outputs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -200,9 +212,7 @@ class AgentOutput(Base):
     research_run = relationship("ResearchRun", back_populates="agent_outputs")
 
     # Indexes
-    __table_args__ = (
-        Index('ix_agent_outputs_run_agent', 'research_run_id', 'agent_name'),
-    )
+    __table_args__ = (Index("ix_agent_outputs_run_agent", "research_run_id", "agent_name"),)
 
     def __repr__(self):
         return f"<AgentOutput(agent='{self.agent_name}', run_id={self.research_run_id})>"
@@ -217,6 +227,7 @@ class Source(Base):
     - Deduplication across runs
     - Quality assessment
     """
+
     __tablename__ = "sources"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -247,8 +258,8 @@ class Source(Base):
 
     # Indexes
     __table_args__ = (
-        Index('ix_sources_url_hash', 'url_hash'),
-        Index('ix_sources_domain', 'domain'),
+        Index("ix_sources_url_hash", "url_hash"),
+        Index("ix_sources_domain", "domain"),
     )
 
     def __repr__(self):
@@ -258,6 +269,7 @@ class Source(Base):
     def compute_url_hash(cls, url: str) -> str:
         """Compute hash of URL for deduplication."""
         import hashlib
+
         return hashlib.sha256(url.encode()).hexdigest()
 
 
@@ -268,6 +280,7 @@ class CostLog(Base):
     Provides granular tracking of every API call for
     cost analysis and optimization.
     """
+
     __tablename__ = "cost_logs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -296,8 +309,8 @@ class CostLog(Base):
 
     # Indexes
     __table_args__ = (
-        Index('ix_cost_logs_created_at', 'created_at'),
-        Index('ix_cost_logs_model_agent', 'model', 'agent_name'),
+        Index("ix_cost_logs_created_at", "created_at"),
+        Index("ix_cost_logs_model_agent", "model", "agent_name"),
     )
 
     def __repr__(self):
@@ -306,6 +319,7 @@ class CostLog(Base):
 
 # Additional utility models
 
+
 class ResearchCache(Base):
     """
     Cache for research results.
@@ -313,6 +327,7 @@ class ResearchCache(Base):
     Enables quick retrieval of recent research without
     re-running the full workflow.
     """
+
     __tablename__ = "research_cache"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -345,6 +360,7 @@ class ScheduledResearch(Base):
 
     Supports periodic research updates for tracked companies.
     """
+
     __tablename__ = "scheduled_research"
 
     id = Column(Integer, primary_key=True, autoincrement=True)

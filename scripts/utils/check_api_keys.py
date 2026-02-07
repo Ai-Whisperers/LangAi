@@ -2,6 +2,7 @@
 """Check which API keys are configured in .env file."""
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Load .env from project root explicitly
@@ -20,28 +21,39 @@ API_KEYS = {
     # REQUIRED
     "ANTHROPIC_API_KEY": {"required": True, "prefix": "sk-ant-", "desc": "Claude LLM", "alts": []},
     "TAVILY_API_KEY": {"required": True, "prefix": "tvly-", "desc": "Web Search", "alts": []},
-
     # LLM Providers
-    "GOOGLE_API_KEY": {"required": False, "prefix": "", "desc": "Gemini", "alts": ["GEMINI_API_KEY"]},
+    "GOOGLE_API_KEY": {
+        "required": False,
+        "prefix": "",
+        "desc": "Gemini",
+        "alts": ["GEMINI_API_KEY"],
+    },
     "GROQ_API_KEY": {"required": False, "prefix": "gsk_", "desc": "Groq", "alts": []},
     "OPENAI_API_KEY": {"required": False, "prefix": "sk-", "desc": "OpenAI", "alts": []},
-
     # Search Providers
     "SERPER_API_KEY": {"required": False, "prefix": "", "desc": "Serper", "alts": []},
     "BRAVE_API_KEY": {"required": False, "prefix": "", "desc": "Brave", "alts": []},
     "JINA_API_KEY": {"required": False, "prefix": "", "desc": "Jina", "alts": []},
     "LANGSEARCH_API_KEY": {"required": False, "prefix": "", "desc": "LangSearch", "alts": []},
-
     # Financial APIs
     "ALPHA_VANTAGE_API_KEY": {"required": False, "prefix": "", "desc": "Alpha Vantage", "alts": []},
-    "FMP_API_KEY": {"required": False, "prefix": "", "desc": "Financial Modeling", "alts": ["FINANCIAL_MODELING_PREP_API_KEY"]},
-
+    "FMP_API_KEY": {
+        "required": False,
+        "prefix": "",
+        "desc": "Financial Modeling",
+        "alts": ["FINANCIAL_MODELING_PREP_API_KEY"],
+    },
     # News APIs
     "NEWSAPI_KEY": {"required": False, "prefix": "", "desc": "NewsAPI", "alts": []},
-
     # Other
-    "GITHUB_TOKEN": {"required": False, "prefix": "", "desc": "GitHub", "alts": ["GITHUB_API_TOKEN"]},
+    "GITHUB_TOKEN": {
+        "required": False,
+        "prefix": "",
+        "desc": "GitHub",
+        "alts": ["GITHUB_API_TOKEN"],
+    },
 }
+
 
 def check_key(key_name, config):
     """Check if a key is configured and valid."""
@@ -67,6 +79,7 @@ def check_key(key_name, config):
     # Mask the value
     masked = value[:8] + "..." + value[-4:] if len(value) > 12 else "***"
     return f"SET ({masked})", "[OK]"
+
 
 print("=" * 70)
 print("API KEY CONFIGURATION CHECK")
@@ -94,11 +107,7 @@ print("\n" + "=" * 70)
 print("SUMMARY")
 print("=" * 70)
 
-required_ok = all(
-    check_key(k, c)[1] == "[OK]"
-    for k, c in API_KEYS.items()
-    if c["required"]
-)
+required_ok = all(check_key(k, c)[1] == "[OK]" for k, c in API_KEYS.items() if c["required"])
 
 if required_ok:
     print("[OK] All required keys are configured! Automated research should work.")
@@ -111,7 +120,8 @@ else:
 
 # Count configured optional keys
 optional_count = sum(
-    1 for k, c in API_KEYS.items()
-    if not c["required"] and check_key(k, c)[1] == "[OK]"
+    1 for k, c in API_KEYS.items() if not c["required"] and check_key(k, c)[1] == "[OK]"
 )
-print(f"\nOptional keys configured: {optional_count}/{len([k for k,c in API_KEYS.items() if not c['required']])}")
+print(
+    f"\nOptional keys configured: {optional_count}/{len([k for k,c in API_KEYS.items() if not c['required']])}"
+)

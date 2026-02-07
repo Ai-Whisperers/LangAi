@@ -39,4 +39,3 @@ items:
     kind: prompt
   - path: prompts/housekeeping/discovery/find-prompts-needing-review.prompt.md
     kind: prompt
-

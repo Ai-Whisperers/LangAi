@@ -28,7 +28,7 @@ Please validate the following rule file against the rule authoring framework:
    - version: Semantic versioning (X.Y.Z)?
    - created: Valid date (YYYY-MM-DD)?
    - status: active/draft/deprecated?
-   
+
    Optional but recommended:
    - tags: Relevant keywords?
    - governs: File patterns (if file-mask rule)?
@@ -107,4 +107,3 @@ Follow validation standards from:
 - `.cursor/rules/rule-authoring/rule-contracts-and-scope.mdc`
 - `.cursor/rules/rule-authoring/rule-invocation-strategies.mdc`
 - `.cursor/rules/rule-authoring/rule-naming-conventions.mdc`
-

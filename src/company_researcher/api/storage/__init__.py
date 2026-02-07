@@ -27,12 +27,13 @@ Environment Variables:
 
 from typing import Optional
 
-# Import all classes from submodules
-from .models import TaskStorage, _utcnow, _serialize_datetime
-from .sqlite import SQLiteTaskStorage
-from .redis import RedisTaskStorage
-from .memory import InMemoryTaskStorage
 from ...utils import get_config
+from .memory import InMemoryTaskStorage
+
+# Import all classes from submodules
+from .models import TaskStorage, _serialize_datetime, _utcnow
+from .redis import RedisTaskStorage
+from .sqlite import SQLiteTaskStorage
 
 # Re-export all public APIs
 __all__ = [
@@ -85,7 +86,7 @@ def get_task_storage() -> TaskStorage:
             _task_storage = RedisTaskStorage(
                 host=get_config("REDIS_HOST", default="localhost"),
                 port=int(get_config("REDIS_PORT", default="6379")),
-                password=get_config("REDIS_PASSWORD")
+                password=get_config("REDIS_PASSWORD"),
             )
         elif backend == "memory":
             _task_storage = InMemoryTaskStorage()

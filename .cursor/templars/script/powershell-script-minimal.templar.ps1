@@ -13,19 +13,19 @@
 
 .EXAMPLE
     .\{{SCRIPT_NAME}}.ps1
-    
+
     Runs with default settings
 
 .EXAMPLE
     .\{{SCRIPT_NAME}}.ps1 -Configuration Debug -{{PARAMETER_NAME}} "{{PARAMETER_VALUE}}"
-    
+
     Runs with custom configuration and parameters
 
 .NOTES
     File Name      : {{SCRIPT_NAME}}.ps1
     Author         : {{AUTHOR}}
     Prerequisite   : {{PREREQUISITES}}
-    
+
 .LINK
     {{DOCUMENTATION_URL}}
 #>
@@ -34,7 +34,7 @@ param(
     [Parameter(Mandatory=$false, HelpMessage="Build configuration (Debug or Release)")]
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release",
-    
+
     [Parameter(Mandatory=$false, HelpMessage="{{PARAMETER_DESCRIPTION}}")]
     [ValidateSet("{{VALID_VALUE_1}}", "{{VALID_VALUE_2}}")]
     [string]${{PARAMETER_NAME}} = "{{PARAMETER_DEFAULT}}"
@@ -54,11 +54,11 @@ try {
     # ======================================
     # Main script logic here
     # ======================================
-    
+
     Write-Host "Processing..." -ForegroundColor Yellow
-    
+
     # TODO: Replace with actual logic
-    
+
     Write-Host ""
     Write-Host "✅ Script completed successfully!" -ForegroundColor Green
     Write-Host ""
@@ -70,4 +70,3 @@ catch {
     Write-Host ""
     exit 1
 }
-

@@ -18,18 +18,18 @@ function Write-Log {
     param(
         [Parameter(Mandatory=$true)]
         [string]$Message,
-        
+
         [Parameter(Mandatory=$false)]
         [ValidateSet("INFO", "WARN", "ERROR", "DEBUG", "SUCCESS")]
         [string]$Level = "INFO",
-        
+
         [Parameter(Mandatory=$false)]
         [string]$LogFile
     )
-    
+
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     $logMessage = "[$timestamp] [$Level] $Message"
-    
+
     # Console output with colors
     switch ($Level) {
         "ERROR"   { Write-Host $logMessage -ForegroundColor Red }
@@ -38,7 +38,7 @@ function Write-Log {
         "DEBUG"   { Write-Verbose $logMessage }
         default   { Write-Host $logMessage }
     }
-    
+
     # Azure Pipelines task logging
     if ($env:AGENT_TEMPDIRECTORY) {
         switch ($Level) {
@@ -46,7 +46,7 @@ function Write-Log {
             "WARN"  { Write-Host "##vso[task.logissue type=warning]$Message" }
         }
     }
-    
+
     # File logging (optional)
     if ($LogFile) {
         Add-Content -Path $LogFile -Value $logMessage
@@ -98,11 +98,11 @@ Write-Host "Done"
 function Get-LogFilePath {
     $date = Get-Date -Format "yyyy-MM-dd"
     $logDir = "$env:TEMP/script-logs"
-    
+
     if (-not (Test-Path $logDir)) {
         New-Item -ItemType Directory -Path $logDir | Out-Null
     }
-    
+
     return Join-Path $logDir "script-$date.log"
 }
 
@@ -126,7 +126,7 @@ Write-Log "Operation completed in $($stopwatch.Elapsed.TotalSeconds)s" -Level IN
 ```powershell
 function Write-ContextLog {
     param($Message, $Level = "INFO", $Context = @{})
-    
+
     $contextStr = ($Context.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join ", "
     Write-Log "$Message | $contextStr" -Level $Level
 }
@@ -153,4 +153,3 @@ Write-ContextLog "Processing package" -Context @{
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

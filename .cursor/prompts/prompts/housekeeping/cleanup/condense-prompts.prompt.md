@@ -33,8 +33,8 @@ Reduce prompt size and redundancy while keeping effectiveness, clarity, and requ
 
 ## Keep / Condense / Remove Checklist
 
-- **Keep**: Frontmatter, purpose, required context, concise process, expected output, validation checklist, 3–5 key examples (max).  
-- **Condense**: Reasoning sections (shorten), duplicate Purpose/Description, repetitive separators, verbose example narratives (summarize).  
+- **Keep**: Frontmatter, purpose, required context, concise process, expected output, validation checklist, 3–5 key examples (max).
+- **Condense**: Reasoning sections (shorten), duplicate Purpose/Description, repetitive separators, verbose example narratives (summarize).
 - **Remove/Extract**: Star ratings, effectiveness claims, duplicate “Use When,” excessive `---`, long AI reasoning, large before/after blocks → move to exemplars; reusable structure → move to templars.
 
 ### Extraction & Removal Verification
@@ -47,39 +47,39 @@ Reduce prompt size and redundancy while keeping effectiveness, clarity, and requ
 
 ## Example Policy
 
-- Limit inline examples to 3–5 concise cases.  
-- Move long or numerous examples into an exemplar file and link to it.  
+- Limit inline examples to 3–5 concise cases.
+- Move long or numerous examples into an exemplar file and link to it.
 - Preserve one compact “golden” example inline if needed for quick orientation.
 
 ## Reasoning Process (for AI Agent)
 
-1. Identify icing signals (examples, verbose reasoning, stars, duplicated sections).  
-2. Decide what to keep vs extract (templar/exemplar) vs remove.  
-3. Rewrite the prompt to be concise, preserving structure and required sections.  
-4. If extracting, note destination paths for templar/exemplar and update links.  
+1. Identify icing signals (examples, verbose reasoning, stars, duplicated sections).
+2. Decide what to keep vs extract (templar/exemplar) vs remove.
+3. Rewrite the prompt to be concise, preserving structure and required sections.
+4. If extracting, note destination paths for templar/exemplar and update links.
 5. Validate against the checklist and standards.
 
 ## Process
 
-1. **Select Targets**  
-   - Use the candidate list (or specific paths).  
+1. **Select Targets**
+   - Use the candidate list (or specific paths).
    - Confirm destinations for extracted pieces (templars/exemplars).
 
-2. **Plan Condensation**  
-   - Apply the keep/condense/remove checklist.  
+2. **Plan Condensation**
+   - Apply the keep/condense/remove checklist.
    - Decide which examples stay inline vs move to exemplar.
 
-3. **Condense**  
-   - Trim duplicate sections and verbose reasoning.  
-   - Reduce examples to 3–5 concise ones.  
+3. **Condense**
+   - Trim duplicate sections and verbose reasoning.
+   - Reduce examples to 3–5 concise ones.
    - Move reusable structure to a templar; rich examples to an exemplar.
 
-4. **Link & Update**  
-   - Add pointers to extracted templars/exemplars.  
+4. **Link & Update**
+   - Add pointers to extracted templars/exemplars.
    - Ensure frontmatter and body still meet prompt rules.
 
-5. **Validate**  
-   - Run through the Validation Checklist.  
+5. **Validate**
+   - Run through the Validation Checklist.
    - Spot-check for clarity, completeness, and registry readiness.
 
 ## Troubleshooting
@@ -104,15 +104,15 @@ Reduce prompt size and redundancy while keeping effectiveness, clarity, and requ
 
 ## Validation Checklist
 
-- [ ] Required sections intact (purpose, context, process, output, validation)  
-- [ ] Frontmatter valid for registry (YAML, fields, no JSON arrays)  
-- [ ] Inline examples ≤ 5 and concise  
-- [ ] Long examples moved to exemplar (if present)  
-- [ ] Reusable structure moved to templar (if applicable)  
-- [ ] No stars/effectiveness claims/duplicate “Use When”  
-- [ ] Excessive separators/verbosity removed  
-- [ ] Links to extracted templar/exemplar added (if created)  
-- [ ] Tone and clarity match prompt standards  
+- [ ] Required sections intact (purpose, context, process, output, validation)
+- [ ] Frontmatter valid for registry (YAML, fields, no JSON arrays)
+- [ ] Inline examples ≤ 5 and concise
+- [ ] Long examples moved to exemplar (if present)
+- [ ] Reusable structure moved to templar (if applicable)
+- [ ] No stars/effectiveness claims/duplicate “Use When”
+- [ ] Excessive separators/verbosity removed
+- [ ] Links to extracted templar/exemplar added (if created)
+- [ ] Tone and clarity match prompt standards
 
 ## Usage
 

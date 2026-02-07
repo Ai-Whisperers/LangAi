@@ -7,7 +7,8 @@ Usage:
     python examples/batch_research.py
 """
 
-from typing import List, Dict
+from typing import Dict, List
+
 from src.company_researcher.workflows.parallel_agent_research import research_company
 
 
@@ -60,9 +61,7 @@ def compare_results(results: Dict[str, dict]):
         # Quality comparison
         print("Quality Scores:")
         for company, result in sorted(
-            successful.items(),
-            key=lambda x: x[1]["quality_score"],
-            reverse=True
+            successful.items(), key=lambda x: x[1]["quality_score"], reverse=True
         ):
             score = result["quality_score"]
             status = "✅" if score >= 85 else "⚠️"
@@ -77,12 +76,8 @@ def compare_results(results: Dict[str, dict]):
         print(f"  Average Cost per Company: ${avg_cost:.4f}")
 
         # Token usage
-        total_input_tokens = sum(
-            r["total_tokens"]["input"] for r in successful.values()
-        )
-        total_output_tokens = sum(
-            r["total_tokens"]["output"] for r in successful.values()
-        )
+        total_input_tokens = sum(r["total_tokens"]["input"] for r in successful.values())
+        total_output_tokens = sum(r["total_tokens"]["output"] for r in successful.values())
 
         print(f"\nToken Usage:")
         print(f"  Total Input Tokens: {total_input_tokens:,}")
@@ -98,13 +93,7 @@ def compare_results(results: Dict[str, dict]):
 def main():
     """Run batch research on multiple companies."""
     # Define companies to research
-    companies = [
-        "Microsoft",
-        "Tesla",
-        "Stripe",
-        "OpenAI",
-        "Anthropic"
-    ]
+    companies = ["Microsoft", "Tesla", "Stripe", "OpenAI", "Anthropic"]
 
     # Execute batch research
     results = batch_research(companies)

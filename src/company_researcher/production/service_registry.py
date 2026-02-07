@@ -25,6 +25,7 @@ def _utcnow() -> datetime:
 
 class ServiceStatus(str, Enum):
     """Status of a service instance."""
+
     UP = "up"
     DOWN = "down"
     STARTING = "starting"
@@ -34,6 +35,7 @@ class ServiceStatus(str, Enum):
 
 class LoadBalanceStrategy(str, Enum):
     """Load balancing strategies."""
+
     ROUND_ROBIN = "round_robin"
     RANDOM = "random"
     LEAST_CONNECTIONS = "least_connections"
@@ -43,6 +45,7 @@ class LoadBalanceStrategy(str, Enum):
 @dataclass
 class ServiceInstance:
     """A registered service instance."""
+
     id: str
     service_name: str
     host: str
@@ -84,7 +87,7 @@ class ServiceInstance:
             "weight": self.weight,
             "registered_at": self.registered_at.isoformat(),
             "last_heartbeat": self.last_heartbeat.isoformat(),
-            "connections": self.connections
+            "connections": self.connections,
         }
 
 
@@ -117,7 +120,7 @@ class ServiceRegistry:
         self,
         heartbeat_timeout: float = 30,
         cleanup_interval: float = 60,
-        load_balance_strategy: LoadBalanceStrategy = LoadBalanceStrategy.ROUND_ROBIN
+        load_balance_strategy: LoadBalanceStrategy = LoadBalanceStrategy.ROUND_ROBIN,
     ):
         self.heartbeat_timeout = heartbeat_timeout
         self.cleanup_interval = cleanup_interval
@@ -151,7 +154,8 @@ class ServiceRegistry:
         """Remove unhealthy instances."""
         with self._lock:
             unhealthy = [
-                instance_id for instance_id, instance in self._instances.items()
+                instance_id
+                for instance_id, instance in self._instances.items()
                 if not instance.is_healthy(self.heartbeat_timeout)
             ]
             for instance_id in unhealthy:
@@ -164,7 +168,7 @@ class ServiceRegistry:
         port: int,
         instance_id: str = None,
         metadata: Dict[str, Any] = None,
-        weight: float = 1.0
+        weight: float = 1.0,
     ) -> ServiceInstance:
         """
         Register a service instance.
@@ -192,7 +196,7 @@ class ServiceRegistry:
                 port=port,
                 status=ServiceStatus.UP,
                 metadata=metadata or {},
-                weight=weight
+                weight=weight,
             )
 
             self._instances[iid] = instance
@@ -241,11 +245,7 @@ class ServiceRegistry:
                 return True
             return False
 
-    def get_instances(
-        self,
-        service_name: str,
-        healthy_only: bool = True
-    ) -> List[ServiceInstance]:
+    def get_instances(self, service_name: str, healthy_only: bool = True) -> List[ServiceInstance]:
         """
         Get all instances of a service.
 
@@ -266,9 +266,7 @@ class ServiceRegistry:
             return instances
 
     def get_instance(
-        self,
-        service_name: str,
-        strategy: LoadBalanceStrategy = None
+        self, service_name: str, strategy: LoadBalanceStrategy = None
     ) -> Optional[ServiceInstance]:
         """
         Get a single instance using load balancing.
@@ -298,9 +296,7 @@ class ServiceRegistry:
         return instances[0]
 
     def _round_robin_select(
-        self,
-        service_name: str,
-        instances: List[ServiceInstance]
+        self, service_name: str, instances: List[ServiceInstance]
     ) -> ServiceInstance:
         """Round-robin selection."""
         with self._lock:
@@ -333,8 +329,7 @@ class ServiceRegistry:
             result = {}
             for service_name, instance_ids in self._services.items():
                 result[service_name] = [
-                    self._instances[iid] for iid in instance_ids
-                    if iid in self._instances
+                    self._instances[iid] for iid in instance_ids if iid in self._instances
                 ]
             return result
 
@@ -363,11 +358,7 @@ class ServiceClient:
         result = await client.call("research-api", "/health")
     """
 
-    def __init__(
-        self,
-        registry: ServiceRegistry,
-        timeout: float = 30.0
-    ):
+    def __init__(self, registry: ServiceRegistry, timeout: float = 30.0):
         self.registry = registry
         self.timeout = timeout
 
@@ -380,13 +371,7 @@ class ServiceClient:
         instance = self.get_instance(service_name)
         return instance.url if instance else None
 
-    async def call(
-        self,
-        service_name: str,
-        path: str,
-        method: str = "GET",
-        **kwargs
-    ) -> Any:
+    async def call(self, service_name: str, path: str, method: str = "GET", **kwargs) -> Any:
         """
         Call a service endpoint.
 
@@ -399,8 +384,8 @@ class ServiceClient:
         Returns:
             Response data
         """
-        import urllib.request
         import json
+        import urllib.request
 
         instance = self.get_instance(service_name)
         if not instance:
@@ -429,13 +414,9 @@ class ServiceClient:
 
 
 def create_service_registry(
-    heartbeat_timeout: float = 30,
-    strategy: LoadBalanceStrategy = LoadBalanceStrategy.ROUND_ROBIN
+    heartbeat_timeout: float = 30, strategy: LoadBalanceStrategy = LoadBalanceStrategy.ROUND_ROBIN
 ) -> ServiceRegistry:
     """Create a service registry."""
-    registry = ServiceRegistry(
-        heartbeat_timeout=heartbeat_timeout,
-        load_balance_strategy=strategy
-    )
+    registry = ServiceRegistry(heartbeat_timeout=heartbeat_timeout, load_balance_strategy=strategy)
     registry.start()
     return registry

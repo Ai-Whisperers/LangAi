@@ -1,25 +1,25 @@
 """AI-powered sentiment analyzer using LLM."""
-from typing import List, Optional, Dict, Any
 
+from typing import Any, Dict, List, Optional
+
+from ...llm.response_parser import parse_json_response
 from ..base import AIComponent
 from ..fallback import FallbackHandler
 from ..utils import get_logger, normalize_confidence, truncate_text
-from ...llm.response_parser import parse_json_response
-
 from .models import (
-    SentimentLevel,
-    SentimentAnalysisResult,
-    NewsCategorization,
-    SentimentAggregation,
-    NewsCategory,
     EntitySentiment,
-    SearchResultSentimentProfile
+    NewsCategorization,
+    NewsCategory,
+    SearchResultSentimentProfile,
+    SentimentAggregation,
+    SentimentAnalysisResult,
+    SentimentLevel,
 )
 from .prompts import (
-    SENTIMENT_ANALYSIS_PROMPT,
+    CATEGORIZATION_SYSTEM_PROMPT,
     NEWS_CATEGORIZATION_PROMPT,
+    SENTIMENT_ANALYSIS_PROMPT,
     SENTIMENT_SYSTEM_PROMPT,
-    CATEGORIZATION_SYSTEM_PROMPT
 )
 
 logger = get_logger(__name__)
@@ -55,7 +55,7 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
         article_text: str,
         company_name: str,
         include_entities: bool = True,
-        max_text_length: int = 8000
+        max_text_length: int = 8000,
     ) -> SentimentAnalysisResult:
         """
         Analyze sentiment of an article using LLM.
@@ -72,10 +72,7 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
         # Truncate text if needed
         text = truncate_text(article_text, max_text_length)
 
-        prompt = SENTIMENT_ANALYSIS_PROMPT.format(
-            company_name=company_name,
-            article_text=text
-        )
+        prompt = SENTIMENT_ANALYSIS_PROMPT.format(company_name=company_name, article_text=text)
 
         try:
             result = self._call_llm(
@@ -83,7 +80,7 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
                 task_type="classification",
                 complexity="medium",
                 system=SENTIMENT_SYSTEM_PROMPT,
-                json_mode=True
+                json_mode=True,
             )
 
             parsed = parse_json_response(result, default={})
@@ -96,14 +93,10 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
                 overall_sentiment=SentimentLevel.NEUTRAL,
                 overall_score=0.0,
                 overall_confidence=0.0,
-                summary=f"Analysis failed: {str(e)}"
+                summary=f"Analysis failed: {str(e)}",
             )
 
-    def categorize_news(
-        self,
-        article_text: str,
-        company_name: str
-    ) -> NewsCategorization:
+    def categorize_news(self, article_text: str, company_name: str) -> NewsCategorization:
         """
         Categorize a news article using LLM.
 
@@ -116,10 +109,7 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
         """
         text = truncate_text(article_text, 4000)
 
-        prompt = NEWS_CATEGORIZATION_PROMPT.format(
-            company_name=company_name,
-            article_text=text
-        )
+        prompt = NEWS_CATEGORIZATION_PROMPT.format(company_name=company_name, article_text=text)
 
         try:
             result = self._call_llm(
@@ -127,7 +117,7 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
                 task_type="classification",
                 complexity="low",
                 system=CATEGORIZATION_SYSTEM_PROMPT,
-                json_mode=True
+                json_mode=True,
             )
 
             parsed = parse_json_response(result, default={})
@@ -138,14 +128,11 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
             return NewsCategorization(
                 primary_category=NewsCategory.GENERAL,
                 relevance_to_company=0.5,
-                is_about_target_company=False
+                is_about_target_company=False,
             )
 
     def analyze_batch(
-        self,
-        articles: List[Dict[str, Any]],
-        company_name: str,
-        max_articles: int = 20
+        self, articles: List[Dict[str, Any]], company_name: str, max_articles: int = 20
     ) -> List[SentimentAnalysisResult]:
         """
         Analyze multiple articles efficiently.
@@ -167,10 +154,7 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
 
         return results
 
-    def aggregate_sentiment(
-        self,
-        results: List[SentimentAnalysisResult]
-    ) -> SentimentAggregation:
+    def aggregate_sentiment(self, results: List[SentimentAnalysisResult]) -> SentimentAggregation:
         """
         Aggregate sentiment across multiple articles.
 
@@ -188,7 +172,7 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
                 article_count=0,
                 positive_ratio=0.0,
                 negative_ratio=0.0,
-                neutral_ratio=1.0
+                neutral_ratio=1.0,
             )
 
         # Calculate weighted average score
@@ -205,7 +189,11 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
             total_weight += weight
 
             # Count sentiments
-            sentiment_key = r.overall_sentiment.value if isinstance(r.overall_sentiment, SentimentLevel) else r.overall_sentiment
+            sentiment_key = (
+                r.overall_sentiment.value
+                if isinstance(r.overall_sentiment, SentimentLevel)
+                else r.overall_sentiment
+            )
             sentiment_counts[sentiment_key] = sentiment_counts.get(sentiment_key, 0) + 1
 
             # Collect factors
@@ -216,7 +204,11 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
                     all_negative_factors.append(factor)
 
             # Count categories
-            cat = r.news_category.value if isinstance(r.news_category, NewsCategory) else r.news_category
+            cat = (
+                r.news_category.value
+                if isinstance(r.news_category, NewsCategory)
+                else r.news_category
+            )
             category_counts[cat] = category_counts.get(cat, 0) + 1
 
         # Calculate overall
@@ -225,8 +217,12 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
 
         # Calculate ratios
         n = len(results)
-        positive_count = sentiment_counts.get("very_positive", 0) + sentiment_counts.get("positive", 0)
-        negative_count = sentiment_counts.get("very_negative", 0) + sentiment_counts.get("negative", 0)
+        positive_count = sentiment_counts.get("very_positive", 0) + sentiment_counts.get(
+            "positive", 0
+        )
+        negative_count = sentiment_counts.get("very_negative", 0) + sentiment_counts.get(
+            "negative", 0
+        )
         neutral_count = sentiment_counts.get("neutral", 0)
 
         # Get top factors (deduplicated)
@@ -248,14 +244,11 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
             neutral_ratio=neutral_count / n if n > 0 else 0.0,
             top_positive_factors=top_positive,
             top_negative_factors=top_negative,
-            top_categories=top_categories
+            top_categories=top_categories,
         )
 
     def analyze_from_search_results(
-        self,
-        company_name: str,
-        search_results: List[Dict[str, Any]],
-        max_articles: int = 20
+        self, company_name: str, search_results: List[Dict[str, Any]], max_articles: int = 20
     ) -> SearchResultSentimentProfile:
         """
         Analyze sentiment from search results and return a high-level profile.
@@ -287,7 +280,11 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
         key_topics = []
         for r in results:
             if r.news_category and r.news_category != NewsCategory.GENERAL:
-                cat_name = r.news_category.value if isinstance(r.news_category, NewsCategory) else str(r.news_category)
+                cat_name = (
+                    r.news_category.value
+                    if isinstance(r.news_category, NewsCategory)
+                    else str(r.news_category)
+                )
                 if cat_name not in key_topics:
                     key_topics.append(cat_name)
             # Also extract from key factors
@@ -314,20 +311,24 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
             total_articles=aggregation.article_count,
             sentiment_score=aggregation.overall_score,
             sentiment_level=aggregation.overall_sentiment,
-            sentiment_trend="improving" if aggregation.positive_ratio > aggregation.negative_ratio + 0.2
-                          else "declining" if aggregation.negative_ratio > aggregation.positive_ratio + 0.2
-                          else "stable",
+            sentiment_trend=(
+                "improving"
+                if aggregation.positive_ratio > aggregation.negative_ratio + 0.2
+                else (
+                    "declining"
+                    if aggregation.negative_ratio > aggregation.positive_ratio + 0.2
+                    else "stable"
+                )
+            ),
             key_topics=key_topics,
             positive_highlights=aggregation.top_positive_factors,
             negative_highlights=aggregation.top_negative_factors,
             category_breakdown=category_breakdown,
-            confidence=aggregation.confidence
+            confidence=aggregation.confidence,
         )
 
     def _parse_sentiment_result(
-        self,
-        data: Dict[str, Any],
-        company_name: str
+        self, data: Dict[str, Any], company_name: str
     ) -> SentimentAnalysisResult:
         """Parse LLM response into SentimentAnalysisResult."""
         # Parse overall sentiment
@@ -353,7 +354,7 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
                     confidence=normalize_confidence(entity_data.get("confidence", 0.5)),
                     reasoning=entity_data.get("reasoning", ""),
                     context_snippet=entity_data.get("context_snippet", ""),
-                    is_target_company=entity_data.get("is_target_company", False)
+                    is_target_company=entity_data.get("is_target_company", False),
                 )
                 entity_sentiments.append(entity)
             except Exception as e:
@@ -399,7 +400,7 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
             has_sarcasm=data.get("has_sarcasm", False),
             news_category=news_category,
             secondary_categories=secondary,
-            summary=data.get("summary", "")
+            summary=data.get("summary", ""),
         )
 
     def _parse_categorization_result(self, data: Dict[str, Any]) -> NewsCategorization:
@@ -420,19 +421,13 @@ class AISentimentAnalyzer(AIComponent[SentimentAnalysisResult]):
         return NewsCategorization(
             primary_category=primary,
             secondary_categories=secondary,
-            relevance_to_company=normalize_confidence(
-                data.get("relevance_to_company", 0.5)
-            ),
+            relevance_to_company=normalize_confidence(data.get("relevance_to_company", 0.5)),
             is_about_target_company=data.get("is_about_target_company", False),
             mentioned_companies=data.get("mentioned_companies", []),
-            topic_keywords=data.get("topic_keywords", [])
+            topic_keywords=data.get("topic_keywords", []),
         )
 
-    def process(
-        self,
-        article_text: str,
-        company_name: str
-    ) -> SentimentAnalysisResult:
+    def process(self, article_text: str, company_name: str) -> SentimentAnalysisResult:
         """Main processing method (implements AIComponent interface)."""
         return self.analyze_sentiment(article_text, company_name)
 

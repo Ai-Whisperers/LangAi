@@ -30,4 +30,3 @@ Which approach would you prefer?
 ---
 
 ## Sources
-

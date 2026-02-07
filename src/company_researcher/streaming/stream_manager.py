@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Set
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -22,34 +23,27 @@ def _utcnow() -> datetime:
     """Get current UTC time (timezone-aware)."""
     return datetime.now(timezone.utc)
 
-from .stream_wrapper import (
-    StreamChunk,
-    StreamMetrics,
-    StreamStatus,
-    create_stream_wrapper
-)
-from .event_streaming import (
-    EventStreamer,
-    StreamEvent,
-    EventType,
-    create_event_streamer
-)
+
+from .event_streaming import EventStreamer, EventType, StreamEvent, create_event_streamer
+from .stream_wrapper import StreamChunk, StreamMetrics, StreamStatus, create_stream_wrapper
 
 
 class DisplayType(str, Enum):
     """Display types for stream output."""
-    BUBBLE = "bubble"          # Chat bubble display
-    INLINE = "inline"          # Inline text display
-    PANEL = "panel"            # Side panel display
+
+    BUBBLE = "bubble"  # Chat bubble display
+    INLINE = "inline"  # Inline text display
+    PANEL = "panel"  # Side panel display
     NOTIFICATION = "notification"  # Toast notification
-    HIDDEN = "hidden"          # No display (background processing)
-    MARKDOWN = "markdown"      # Markdown rendered display
-    CODE = "code"              # Code block display
+    HIDDEN = "hidden"  # No display (background processing)
+    MARKDOWN = "markdown"  # Markdown rendered display
+    CODE = "code"  # Code block display
 
 
 @dataclass
 class StreamConfig:
     """Configuration for a stream session."""
+
     # Display settings
     display_type: DisplayType = DisplayType.INLINE
     show_typing_indicator: bool = True
@@ -84,6 +78,7 @@ class StreamSession:
 
     Tracks all state and metrics for a single stream.
     """
+
     session_id: str
     config: StreamConfig
     status: StreamStatus = StreamStatus.PENDING
@@ -180,11 +175,17 @@ class StreamSession:
             "completed_at": self.completed_at.isoformat() if self.completed_at else None,
             "duration": self.get_duration(),
             "errors": self.errors,
-            "metrics": {
-                "total_tokens": self.metrics.total_tokens if self.metrics else 0,
-                "time_to_first_token": self.metrics.time_to_first_token if self.metrics else None,
-                "tokens_per_second": self.metrics.tokens_per_second if self.metrics else None
-            } if self.metrics else None
+            "metrics": (
+                {
+                    "total_tokens": self.metrics.total_tokens if self.metrics else 0,
+                    "time_to_first_token": (
+                        self.metrics.time_to_first_token if self.metrics else None
+                    ),
+                    "tokens_per_second": self.metrics.tokens_per_second if self.metrics else None,
+                }
+                if self.metrics
+                else None
+            ),
         }
 
 
@@ -212,7 +213,7 @@ class StreamManager:
     def __init__(
         self,
         default_config: Optional[StreamConfig] = None,
-        event_streamer: Optional[EventStreamer] = None
+        event_streamer: Optional[EventStreamer] = None,
     ):
         self._default_config = default_config or StreamConfig()
         self._sessions: Dict[str, StreamSession] = {}
@@ -222,7 +223,7 @@ class StreamManager:
             "on_session_start": [],
             "on_session_end": [],
             "on_chunk": [],
-            "on_error": []
+            "on_error": [],
         }
 
     def create_session(
@@ -230,7 +231,7 @@ class StreamManager:
         session_id: Optional[str] = None,
         config: Optional[StreamConfig] = None,
         display_type: Optional[DisplayType] = None,
-        **kwargs
+        **kwargs,
     ) -> StreamSession:
         """
         Create a new streaming session.
@@ -245,18 +246,13 @@ class StreamManager:
             New StreamSession instance
         """
         session_id = session_id or str(uuid.uuid4())
-        config = config or StreamConfig(**{
-            **self._default_config.__dict__,
-            **kwargs
-        })
+        config = config or StreamConfig(**{**self._default_config.__dict__, **kwargs})
 
         if display_type:
             config.display_type = display_type
 
         session = StreamSession(
-            session_id=session_id,
-            config=config,
-            display_type=config.display_type
+            session_id=session_id, config=config, display_type=config.display_type
         )
 
         self._sessions[session_id] = session
@@ -268,20 +264,14 @@ class StreamManager:
 
     def get_active_sessions(self) -> List[StreamSession]:
         """Get all active sessions."""
-        return [
-            s for s in self._sessions.values()
-            if s.status == StreamStatus.STREAMING
-        ]
+        return [s for s in self._sessions.values() if s.status == StreamStatus.STREAMING]
 
     def get_all_sessions(self) -> List[StreamSession]:
         """Get all sessions."""
         return list(self._sessions.values())
 
     async def stream_llm(
-        self,
-        llm_stream: Any,
-        session_id: str,
-        model: Optional[str] = None
+        self, llm_stream: Any, session_id: str, model: Optional[str] = None
     ) -> AsyncIterator[StreamChunk]:
         """
         Stream LLM response into a session.
@@ -300,10 +290,7 @@ class StreamManager:
 
         # Create wrapper
         wrapper = create_stream_wrapper(
-            llm_stream,
-            stream_type="llm",
-            model=model,
-            stream_id=session_id
+            llm_stream, stream_type="llm", model=model, stream_id=session_id
         )
 
         # Start session
@@ -320,11 +307,13 @@ class StreamManager:
 
         # Send stream start event
         if self._event_streamer:
-            await self._event_streamer.broadcast(StreamEvent(
-                event_type=EventType.STREAM_START,
-                data={"session_id": session_id, "display_type": session.display_type.value},
-                stream_id=session_id
-            ))
+            await self._event_streamer.broadcast(
+                StreamEvent(
+                    event_type=EventType.STREAM_START,
+                    data={"session_id": session_id, "display_type": session.display_type.value},
+                    stream_id=session_id,
+                )
+            )
 
         try:
             async for chunk in wrapper:
@@ -339,9 +328,7 @@ class StreamManager:
 
                 # Send chunk event
                 if self._event_streamer:
-                    await self._event_streamer.broadcast(
-                        StreamEvent.from_chunk(chunk, session_id)
-                    )
+                    await self._event_streamer.broadcast(StreamEvent.from_chunk(chunk, session_id))
 
                 yield chunk
 
@@ -358,12 +345,14 @@ class StreamManager:
 
             # Send stream end event
             if self._event_streamer:
-                await self._event_streamer.broadcast(StreamEvent(
-                    event_type=EventType.STREAM_END,
-                    data=session.to_dict(),
-                    stream_id=session_id,
-                    is_final=True
-                ))
+                await self._event_streamer.broadcast(
+                    StreamEvent(
+                        event_type=EventType.STREAM_END,
+                        data=session.to_dict(),
+                        stream_id=session_id,
+                        is_final=True,
+                    )
+                )
 
         except Exception as e:
             session.fail(str(e))
@@ -378,19 +367,18 @@ class StreamManager:
 
             # Send error event
             if self._event_streamer:
-                await self._event_streamer.broadcast(StreamEvent(
-                    event_type=EventType.ERROR,
-                    data={"error": str(e), "session_id": session_id},
-                    stream_id=session_id
-                ))
+                await self._event_streamer.broadcast(
+                    StreamEvent(
+                        event_type=EventType.ERROR,
+                        data={"error": str(e), "session_id": session_id},
+                        stream_id=session_id,
+                    )
+                )
 
             raise
 
     async def stream_tool(
-        self,
-        tool_stream: Any,
-        session_id: str,
-        tool_name: str
+        self, tool_stream: Any, session_id: str, tool_name: str
     ) -> AsyncIterator[StreamChunk]:
         """
         Stream tool execution into a session.
@@ -409,10 +397,7 @@ class StreamManager:
 
         # Create wrapper
         wrapper = create_stream_wrapper(
-            tool_stream,
-            stream_type="tool",
-            tool_name=tool_name,
-            stream_id=session_id
+            tool_stream, stream_type="tool", tool_name=tool_name, stream_id=session_id
         )
 
         # Start session
@@ -422,11 +407,13 @@ class StreamManager:
 
         # Send tool call event
         if self._event_streamer:
-            await self._event_streamer.broadcast(StreamEvent(
-                event_type=EventType.TOOL_CALL,
-                data={"session_id": session_id, "tool_name": tool_name},
-                stream_id=session_id
-            ))
+            await self._event_streamer.broadcast(
+                StreamEvent(
+                    event_type=EventType.TOOL_CALL,
+                    data={"session_id": session_id, "tool_name": tool_name},
+                    stream_id=session_id,
+                )
+            )
 
         try:
             async for chunk in wrapper:
@@ -434,9 +421,7 @@ class StreamManager:
 
                 # Send chunk event
                 if self._event_streamer:
-                    await self._event_streamer.broadcast(
-                        StreamEvent.from_chunk(chunk, session_id)
-                    )
+                    await self._event_streamer.broadcast(StreamEvent.from_chunk(chunk, session_id))
 
                 yield chunk
 
@@ -446,27 +431,31 @@ class StreamManager:
 
             # Send tool result event
             if self._event_streamer:
-                await self._event_streamer.broadcast(StreamEvent(
-                    event_type=EventType.TOOL_RESULT,
-                    data={
-                        "session_id": session_id,
-                        "tool_name": tool_name,
-                        "result": session.content
-                    },
-                    stream_id=session_id,
-                    is_final=True
-                ))
+                await self._event_streamer.broadcast(
+                    StreamEvent(
+                        event_type=EventType.TOOL_RESULT,
+                        data={
+                            "session_id": session_id,
+                            "tool_name": tool_name,
+                            "result": session.content,
+                        },
+                        stream_id=session_id,
+                        is_final=True,
+                    )
+                )
 
         except Exception as e:
             session.fail(str(e))
             self._active_streams.discard(session_id)
 
             if self._event_streamer:
-                await self._event_streamer.broadcast(StreamEvent(
-                    event_type=EventType.ERROR,
-                    data={"error": str(e), "session_id": session_id},
-                    stream_id=session_id
-                ))
+                await self._event_streamer.broadcast(
+                    StreamEvent(
+                        event_type=EventType.ERROR,
+                        data={"error": str(e), "session_id": session_id},
+                        stream_id=session_id,
+                    )
+                )
 
             raise
 
@@ -509,14 +498,12 @@ class StreamManager:
         sessions = list(self._sessions.values())
         completed = [s for s in sessions if s.status == StreamStatus.COMPLETED]
 
-        total_tokens = sum(
-            s.metrics.total_tokens for s in completed
-            if s.metrics
-        )
+        total_tokens = sum(s.metrics.total_tokens for s in completed if s.metrics)
 
         avg_ttft = None
         ttft_values = [
-            s.metrics.time_to_first_token for s in completed
+            s.metrics.time_to_first_token
+            for s in completed
             if s.metrics and s.metrics.time_to_first_token
         ]
         if ttft_values:
@@ -528,7 +515,7 @@ class StreamManager:
             "completed_sessions": len(completed),
             "failed_sessions": len([s for s in sessions if s.status == StreamStatus.ERROR]),
             "total_tokens": total_tokens,
-            "average_time_to_first_token": avg_ttft
+            "average_time_to_first_token": avg_ttft,
         }
 
     def cleanup_old_sessions(self, max_age_seconds: float = 3600) -> int:
@@ -550,7 +537,7 @@ class StreamManager:
 def create_stream_manager(
     event_streamer_type: Optional[str] = None,
     default_config: Optional[StreamConfig] = None,
-    **streamer_kwargs
+    **streamer_kwargs,
 ) -> StreamManager:
     """
     Factory function to create a StreamManager.
@@ -567,7 +554,4 @@ def create_stream_manager(
     if event_streamer_type:
         event_streamer = create_event_streamer(event_streamer_type, **streamer_kwargs)
 
-    return StreamManager(
-        default_config=default_config,
-        event_streamer=event_streamer
-    )
+    return StreamManager(default_config=default_config, event_streamer=event_streamer)

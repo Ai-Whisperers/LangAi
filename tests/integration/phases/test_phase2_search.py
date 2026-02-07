@@ -3,6 +3,7 @@
 Test script for Phase 2 workflow.
 """
 import sys
+
 from src.company_researcher.workflows.basic_research import research_company
 
 

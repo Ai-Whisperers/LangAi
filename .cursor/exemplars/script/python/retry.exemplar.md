@@ -27,16 +27,16 @@ def retry(
 ):
     """
     Retry decorator with exponential backoff.
-    
+
     Args:
         max_attempts: Maximum retry attempts
         delay: Initial delay in seconds
         backoff: Delay multiplier for exponential backoff
         exceptions: Tuple of exception types to catch
-    
+
     Returns:
         Decorated function with retry logic
-    
+
     Example:
         @retry(max_attempts=3, delay=5, backoff=2)
         def fetch_data():
@@ -47,7 +47,7 @@ def retry(
         def wrapper(*args, **kwargs) -> T:
             attempt = 1
             current_delay = delay
-            
+
             while attempt <= max_attempts:
                 try:
                     return func(*args, **kwargs)
@@ -55,7 +55,7 @@ def retry(
                     if attempt == max_attempts:
                         logger.error(f"{func.__name__} failed after {max_attempts} attempts: {e}")
                         raise
-                    
+
                     logger.warning(
                         f"{func.__name__} attempt {attempt} failed: {e}. "
                         f"Retrying in {current_delay}s..."
@@ -63,9 +63,9 @@ def retry(
                     time.sleep(current_delay)
                     current_delay *= backoff
                     attempt += 1
-            
+
             return None  # Should never reach here
-        
+
         return wrapper
     return decorator
 
@@ -124,4 +124,3 @@ def fetch_data(url):
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

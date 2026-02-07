@@ -8,11 +8,12 @@ Track and analyze costs:
 - Cost alerts
 """
 
-from typing import Dict, Any, List, Optional
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-import threading
+from typing import Any, Dict, List, Optional
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -22,19 +23,22 @@ logger = get_logger(__name__)
 # Enums and Data Models
 # ============================================================================
 
+
 class CostCategory(str, Enum):
     """Cost categories."""
-    LLM = "llm"              # Language model API
-    SEARCH = "search"        # Search API
+
+    LLM = "llm"  # Language model API
+    SEARCH = "search"  # Search API
     EMBEDDING = "embedding"  # Embedding API
-    STORAGE = "storage"      # Storage costs
-    COMPUTE = "compute"      # Compute resources
+    STORAGE = "storage"  # Storage costs
+    COMPUTE = "compute"  # Compute resources
     OTHER = "other"
 
 
 @dataclass
 class CostEntry:
     """A single cost entry."""
+
     amount: float
     category: CostCategory
     description: str
@@ -52,13 +56,14 @@ class CostEntry:
             "timestamp": self.timestamp.isoformat(),
             "task_id": self.task_id,
             "company_name": self.company_name,
-            "agent_name": self.agent_name
+            "agent_name": self.agent_name,
         }
 
 
 @dataclass
 class Budget:
     """Cost budget configuration."""
+
     name: str
     limit: float
     period: str  # "daily", "weekly", "monthly"
@@ -81,13 +86,14 @@ class Budget:
             "current": round(self.current, 4),
             "remaining": round(self.remaining, 4),
             "utilization": round(self.utilization, 2),
-            "period": self.period
+            "period": self.period,
         }
 
 
 @dataclass
 class CostSummary:
     """Cost summary for a period."""
+
     total: float = 0.0
     by_category: Dict[str, float] = field(default_factory=dict)
     by_agent: Dict[str, float] = field(default_factory=dict)
@@ -104,13 +110,14 @@ class CostSummary:
             "by_company": {k: round(v, 4) for k, v in self.by_company.items()},
             "entry_count": self.entry_count,
             "period_start": self.period_start.isoformat() if self.period_start else None,
-            "period_end": self.period_end.isoformat() if self.period_end else None
+            "period_end": self.period_end.isoformat() if self.period_end else None,
         }
 
 
 # ============================================================================
 # Cost Tracker
 # ============================================================================
+
 
 class CostTracker:
     """
@@ -155,7 +162,7 @@ class CostTracker:
         self,
         daily_budget: float = 10.0,
         monthly_budget: float = 300.0,
-        pricing: Optional[Dict[str, Dict[str, float]]] = None
+        pricing: Optional[Dict[str, Dict[str, float]]] = None,
     ):
         """
         Initialize cost tracker.
@@ -171,16 +178,8 @@ class CostTracker:
 
         # Budgets
         self._budgets: Dict[str, Budget] = {
-            "daily": Budget(
-                name="daily",
-                limit=daily_budget,
-                period="daily"
-            ),
-            "monthly": Budget(
-                name="monthly",
-                limit=monthly_budget,
-                period="monthly"
-            )
+            "daily": Budget(name="daily", limit=daily_budget, period="daily"),
+            "monthly": Budget(name="monthly", limit=monthly_budget, period="monthly"),
         }
 
         # Callbacks
@@ -198,7 +197,7 @@ class CostTracker:
         task_id: Optional[str] = None,
         company_name: Optional[str] = None,
         agent_name: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> CostEntry:
         """Record a cost entry."""
         entry = CostEntry(
@@ -208,7 +207,7 @@ class CostTracker:
             task_id=task_id,
             company_name=company_name,
             agent_name=agent_name,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         with self._lock:
@@ -224,15 +223,14 @@ class CostTracker:
         model: str = "claude-3-sonnet",
         task_id: Optional[str] = None,
         company_name: Optional[str] = None,
-        agent_name: Optional[str] = None
+        agent_name: Optional[str] = None,
     ) -> CostEntry:
         """Record LLM API cost."""
         pricing = self._pricing.get(model, {"input": 3.0, "output": 15.0})
 
-        cost = (
-            (tokens_in / 1_000_000) * pricing["input"] +
-            (tokens_out / 1_000_000) * pricing["output"]
-        )
+        cost = (tokens_in / 1_000_000) * pricing["input"] + (tokens_out / 1_000_000) * pricing[
+            "output"
+        ]
 
         return self.record_cost(
             amount=cost,
@@ -241,11 +239,7 @@ class CostTracker:
             task_id=task_id,
             company_name=company_name,
             agent_name=agent_name,
-            metadata={
-                "model": model,
-                "tokens_in": tokens_in,
-                "tokens_out": tokens_out
-            }
+            metadata={"model": model, "tokens_in": tokens_in, "tokens_out": tokens_out},
         )
 
     def record_search_cost(
@@ -253,7 +247,7 @@ class CostTracker:
         query_count: int,
         provider: str = "tavily",
         task_id: Optional[str] = None,
-        company_name: Optional[str] = None
+        company_name: Optional[str] = None,
     ) -> CostEntry:
         """Record search API cost."""
         # Typical search API pricing
@@ -266,7 +260,7 @@ class CostTracker:
             description=f"{provider}: {query_count} queries",
             task_id=task_id,
             company_name=company_name,
-            metadata={"provider": provider, "queries": query_count}
+            metadata={"provider": provider, "queries": query_count},
         )
 
     def record_embedding_cost(
@@ -274,7 +268,7 @@ class CostTracker:
         tokens: int,
         model: str = "text-embedding-3-small",
         task_id: Optional[str] = None,
-        company_name: Optional[str] = None
+        company_name: Optional[str] = None,
     ) -> CostEntry:
         """Record embedding API cost."""
         # Embedding pricing (per 1M tokens)
@@ -288,7 +282,7 @@ class CostTracker:
             description=f"{model}: {tokens} tokens",
             task_id=task_id,
             company_name=company_name,
-            metadata={"model": model, "tokens": tokens}
+            metadata={"model": model, "tokens": tokens},
         )
 
     # ==========================================================================
@@ -313,18 +307,11 @@ class CostTracker:
                 logger.debug(f"Budget alert callback failed for {budget.name}: {e}")
 
     def set_budget(
-        self,
-        name: str,
-        limit: float,
-        period: str = "daily",
-        alert_threshold: float = 0.8
+        self, name: str, limit: float, period: str = "daily", alert_threshold: float = 0.8
     ):
         """Set or update a budget."""
         self._budgets[name] = Budget(
-            name=name,
-            limit=limit,
-            period=period,
-            alert_threshold=alert_threshold
+            name=name, limit=limit, period=period, alert_threshold=alert_threshold
         )
 
     def get_budget(self, name: str) -> Optional[Budget]:
@@ -356,9 +343,7 @@ class CostTracker:
     # ==========================================================================
 
     def get_total_cost(
-        self,
-        since: Optional[datetime] = None,
-        until: Optional[datetime] = None
+        self, since: Optional[datetime] = None, until: Optional[datetime] = None
     ) -> float:
         """Get total cost for a period."""
         with self._lock:
@@ -366,19 +351,13 @@ class CostTracker:
             return sum(e.amount for e in entries)
 
     def get_summary(
-        self,
-        since: Optional[datetime] = None,
-        until: Optional[datetime] = None
+        self, since: Optional[datetime] = None, until: Optional[datetime] = None
     ) -> CostSummary:
         """Get cost summary for a period."""
         with self._lock:
             entries = self._filter_entries(since, until)
 
-            summary = CostSummary(
-                period_start=since,
-                period_end=until,
-                entry_count=len(entries)
-            )
+            summary = CostSummary(period_start=since, period_end=until, entry_count=len(entries))
 
             for entry in entries:
                 summary.total += entry.amount
@@ -419,32 +398,22 @@ class CostTracker:
         month_start = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         return self.get_summary(since=month_start)
 
-    def get_cost_by_company(
-        self,
-        company_name: str,
-        since: Optional[datetime] = None
-    ) -> float:
+    def get_cost_by_company(self, company_name: str, since: Optional[datetime] = None) -> float:
         """Get total cost for a specific company."""
         with self._lock:
             entries = self._filter_entries(since)
-            return sum(
-                e.amount for e in entries
-                if e.company_name == company_name
-            )
+            return sum(e.amount for e in entries if e.company_name == company_name)
 
     def get_cost_by_task(self, task_id: str) -> float:
         """Get total cost for a specific task."""
         with self._lock:
-            return sum(
-                e.amount for e in self._entries
-                if e.task_id == task_id
-            )
+            return sum(e.amount for e in self._entries if e.task_id == task_id)
 
     def get_entries(
         self,
         since: Optional[datetime] = None,
         until: Optional[datetime] = None,
-        category: Optional[CostCategory] = None
+        category: Optional[CostCategory] = None,
     ) -> List[CostEntry]:
         """Get filtered cost entries."""
         with self._lock:
@@ -454,9 +423,7 @@ class CostTracker:
             return entries
 
     def _filter_entries(
-        self,
-        since: Optional[datetime] = None,
-        until: Optional[datetime] = None
+        self, since: Optional[datetime] = None, until: Optional[datetime] = None
     ) -> List[CostEntry]:
         """Filter entries by time range."""
         entries = self._entries
@@ -477,7 +444,7 @@ class CostTracker:
             "budgets": {k: v.to_dict() for k, v in self._budgets.items()},
             "daily_summary": self.get_daily_summary().to_dict(),
             "monthly_summary": self.get_monthly_summary().to_dict(),
-            "entry_count": len(self._entries)
+            "entry_count": len(self._entries),
         }
 
 
@@ -485,12 +452,7 @@ class CostTracker:
 # Factory Function
 # ============================================================================
 
-def create_cost_tracker(
-    daily_budget: float = 10.0,
-    monthly_budget: float = 300.0
-) -> CostTracker:
+
+def create_cost_tracker(daily_budget: float = 10.0, monthly_budget: float = 300.0) -> CostTracker:
     """Create a cost tracker instance."""
-    return CostTracker(
-        daily_budget=daily_budget,
-        monthly_budget=monthly_budget
-    )
+    return CostTracker(daily_budget=daily_budget, monthly_budget=monthly_budget)

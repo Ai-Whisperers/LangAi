@@ -12,11 +12,13 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set
+
 from ..utils import utc_now
 
 
 class PermissionAction(str, Enum):
     """Standard permission actions."""
+
     CREATE = "create"
     READ = "read"
     UPDATE = "update"
@@ -32,6 +34,7 @@ class Permission:
 
     Format: action:resource (e.g., "read:research", "write:notes")
     """
+
     name: str
     description: str = ""
     resource: str = "*"
@@ -43,11 +46,7 @@ class Permission:
         """Parse permission from string format."""
         parts = permission_str.split(":")
         if len(parts) == 2:
-            return cls(
-                name=permission_str,
-                action=parts[0],
-                resource=parts[1]
-            )
+            return cls(name=permission_str, action=parts[0], resource=parts[1])
         return cls(name=permission_str)
 
     def matches(self, required: "Permission") -> bool:
@@ -78,6 +77,7 @@ class Role:
 
     Roles can inherit from parent roles.
     """
+
     name: str
     description: str = ""
     permissions: Set[str] = field(default_factory=set)
@@ -102,6 +102,7 @@ class User:
     """
     A user with assigned roles.
     """
+
     id: str
     username: str
     roles: Set[str] = field(default_factory=set)
@@ -158,7 +159,7 @@ class RBACManager:
         name: str,
         permissions: List[str] = None,
         parent_roles: List[str] = None,
-        description: str = ""
+        description: str = "",
     ) -> Role:
         """
         Add a role definition.
@@ -176,7 +177,7 @@ class RBACManager:
             name=name,
             description=description,
             permissions=set(permissions or []),
-            parent_roles=parent_roles or []
+            parent_roles=parent_roles or [],
         )
         self._roles[name] = role
         self._invalidate_cache()
@@ -195,11 +196,7 @@ class RBACManager:
         return False
 
     def create_user(
-        self,
-        user_id: str,
-        username: str,
-        roles: List[str] = None,
-        permissions: List[str] = None
+        self, user_id: str, username: str, roles: List[str] = None, permissions: List[str] = None
     ) -> User:
         """
         Create a user.
@@ -217,7 +214,7 @@ class RBACManager:
             id=user_id,
             username=username,
             roles=set(roles or []),
-            direct_permissions=set(permissions or [])
+            direct_permissions=set(permissions or []),
         )
         self._users[user_id] = user
         return user
@@ -287,12 +284,7 @@ class RBACManager:
 
         return permissions
 
-    def has_permission(
-        self,
-        user: User,
-        permission: str,
-        resource: Any = None
-    ) -> bool:
+    def has_permission(self, user: User, permission: str, resource: Any = None) -> bool:
         """
         Check if user has a specific permission.
 
@@ -338,10 +330,7 @@ class RBACManager:
         """Check if user has all of the specified roles."""
         return set(roles).issubset(user.roles)
 
-    def require_permission(
-        self,
-        permission: str
-    ) -> Callable:
+    def require_permission(self, permission: str) -> Callable:
         """
         Decorator to require a permission for a function.
 
@@ -352,10 +341,11 @@ class RBACManager:
             def save_notes(user: User, notes: str):
                 ...
         """
+
         def decorator(func: Callable) -> Callable:
             def wrapper(*args, **kwargs):
                 # Find user in args or kwargs
-                user = kwargs.get('user')
+                user = kwargs.get("user")
                 if user is None and args:
                     for arg in args:
                         if isinstance(arg, User):
@@ -369,13 +359,12 @@ class RBACManager:
                     raise PermissionError(f"Permission denied: {permission}")
 
                 return func(*args, **kwargs)
+
             return wrapper
+
         return decorator
 
-    def require_role(
-        self,
-        role: str
-    ) -> Callable:
+    def require_role(self, role: str) -> Callable:
         """
         Decorator to require a role for a function.
 
@@ -384,9 +373,10 @@ class RBACManager:
             def admin_action(user: User):
                 ...
         """
+
         def decorator(func: Callable) -> Callable:
             def wrapper(*args, **kwargs):
-                user = kwargs.get('user')
+                user = kwargs.get("user")
                 if user is None and args:
                     for arg in args:
                         if isinstance(arg, User):
@@ -400,7 +390,9 @@ class RBACManager:
                     raise PermissionError(f"Role required: {role}")
 
                 return func(*args, **kwargs)
+
             return wrapper
+
         return decorator
 
     def _invalidate_cache(self) -> None:
@@ -416,28 +408,24 @@ def create_default_roles(rbac: RBACManager) -> None:
     rbac.add_role(
         "viewer",
         permissions=["read:research", "read:reports"],
-        description="Can view research and reports"
+        description="Can view research and reports",
     )
 
     rbac.add_role(
         "analyst",
         permissions=["write:notes", "write:reports", "execute:research"],
         parent_roles=["viewer"],
-        description="Can conduct research and create reports"
+        description="Can conduct research and create reports",
     )
 
     rbac.add_role(
         "editor",
         permissions=["update:research", "update:reports", "delete:notes"],
         parent_roles=["analyst"],
-        description="Can edit and manage research"
+        description="Can edit and manage research",
     )
 
-    rbac.add_role(
-        "admin",
-        permissions=["*"],
-        description="Full access to all resources"
-    )
+    rbac.add_role("admin", permissions=["*"], description="Full access to all resources")
 
 
 # Convenience functions
@@ -451,10 +439,6 @@ def create_rbac_manager(with_defaults: bool = True) -> RBACManager:
     return rbac
 
 
-def check_permission(
-    user: User,
-    permission: str,
-    rbac: RBACManager
-) -> bool:
+def check_permission(user: User, permission: str, rbac: RBACManager) -> bool:
     """Quick permission check."""
     return rbac.has_permission(user, permission)

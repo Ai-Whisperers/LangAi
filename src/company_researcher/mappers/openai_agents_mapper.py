@@ -11,19 +11,13 @@ import inspect
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
-from .base_mapper import (
-    BaseMapper,
-    FrameworkType,
-    MappedEdge,
-    MappedGraph,
-    MappedNode,
-    NodeType,
-)
+from .base_mapper import BaseMapper, FrameworkType, MappedEdge, MappedGraph, MappedNode, NodeType
 
 
 @dataclass
 class OpenAITool:
     """Representation of an OpenAI Agent tool."""
+
     name: str
     description: str
     parameters: Dict[str, Any] = field(default_factory=dict)
@@ -33,6 +27,7 @@ class OpenAITool:
 @dataclass
 class OpenAIAgent:
     """Representation of an OpenAI Agent."""
+
     name: str
     instructions: str
     model: str = "gpt-4"
@@ -75,35 +70,39 @@ class OpenAIAgentsMapper(BaseMapper):
         """Extract agent information."""
         # Get tools
         tools = []
-        for tool in getattr(agent, 'tools', []):
-            if hasattr(tool, 'name'):
-                tools.append(OpenAITool(
-                    name=tool.name,
-                    description=getattr(tool, 'description', ''),
-                    parameters=getattr(tool, 'parameters', {}),
-                    function=getattr(tool, 'function', None)
-                ))
+        for tool in getattr(agent, "tools", []):
+            if hasattr(tool, "name"):
+                tools.append(
+                    OpenAITool(
+                        name=tool.name,
+                        description=getattr(tool, "description", ""),
+                        parameters=getattr(tool, "parameters", {}),
+                        function=getattr(tool, "function", None),
+                    )
+                )
             elif callable(tool):
-                tools.append(OpenAITool(
-                    name=getattr(tool, '__name__', 'unknown'),
-                    description=inspect.getdoc(tool) or '',
-                    function=tool
-                ))
+                tools.append(
+                    OpenAITool(
+                        name=getattr(tool, "__name__", "unknown"),
+                        description=inspect.getdoc(tool) or "",
+                        function=tool,
+                    )
+                )
 
         # Get handoffs
         handoffs = []
-        for handoff in getattr(agent, 'handoffs', []):
-            if hasattr(handoff, 'name'):
+        for handoff in getattr(agent, "handoffs", []):
+            if hasattr(handoff, "name"):
                 handoffs.append(handoff.name)
             elif isinstance(handoff, str):
                 handoffs.append(handoff)
 
         return OpenAIAgent(
-            name=getattr(agent, 'name', 'agent'),
-            instructions=getattr(agent, 'instructions', ''),
-            model=getattr(agent, 'model', 'gpt-4'),
+            name=getattr(agent, "name", "agent"),
+            instructions=getattr(agent, "instructions", ""),
+            model=getattr(agent, "model", "gpt-4"),
             tools=tools,
-            handoffs=handoffs
+            handoffs=handoffs,
         )
 
     def _build_graph(self, agents: List[OpenAIAgent]) -> MappedGraph:
@@ -120,7 +119,7 @@ class OpenAIAgentsMapper(BaseMapper):
                 framework=FrameworkType.OPENAI_AGENTS,
                 description=agent.instructions,
                 tools=[t.name for t in agent.tools],
-                config={"model": agent.model}
+                config={"model": agent.model},
             )
             nodes.append(agent_node)
 
@@ -133,24 +132,20 @@ class OpenAIAgentsMapper(BaseMapper):
                     framework=FrameworkType.OPENAI_AGENTS,
                     description=tool.description,
                     function=tool.function,
-                    config={"parameters": tool.parameters}
+                    config={"parameters": tool.parameters},
                 )
                 nodes.append(tool_node)
 
                 # Edge from agent to tool
-                edges.append(MappedEdge(
-                    source=agent_node.id,
-                    target=tool_node.id,
-                    edge_type="tool_call"
-                ))
+                edges.append(
+                    MappedEdge(source=agent_node.id, target=tool_node.id, edge_type="tool_call")
+                )
 
             # Add handoff edges
             for handoff in agent.handoffs:
-                edges.append(MappedEdge(
-                    source=agent_node.id,
-                    target=f"agent_{handoff}",
-                    edge_type="handoff"
-                ))
+                edges.append(
+                    MappedEdge(source=agent_node.id, target=f"agent_{handoff}", edge_type="handoff")
+                )
 
         entry_point = nodes[0].id if nodes else None
 
@@ -160,16 +155,17 @@ class OpenAIAgentsMapper(BaseMapper):
             nodes=nodes,
             edges=edges,
             entry_point=entry_point,
-            exit_points=[]
+            exit_points=[],
         )
 
     def to_langgraph(self, graph: MappedGraph) -> Any:
         """Convert to LangGraph StateGraph."""
         try:
-            from langgraph.graph import StateGraph, END
-            from langgraph.prebuilt import ToolNode
-            from typing import TypedDict, Annotated
             import operator
+            from typing import Annotated, TypedDict
+
+            from langgraph.graph import END, StateGraph
+            from langgraph.prebuilt import ToolNode
         except ImportError:
             raise ImportError("langgraph is required for conversion")
 
@@ -183,12 +179,16 @@ class OpenAIAgentsMapper(BaseMapper):
         agent_nodes = [n for n in graph.nodes if n.node_type == NodeType.AGENT]
 
         for node in agent_nodes:
+
             def make_agent_node(agent_node: MappedNode):
                 async def agent_func(state: AgentState) -> AgentState:
                     return {
-                        "messages": [{"role": "assistant", "content": f"Agent {agent_node.name} response"}],
-                        "current_agent": agent_node.name
+                        "messages": [
+                            {"role": "assistant", "content": f"Agent {agent_node.name} response"}
+                        ],
+                        "current_agent": agent_node.name,
                     }
+
                 return agent_func
 
             workflow.add_node(node.id, make_agent_node(node))
@@ -216,10 +216,7 @@ class OpenAIAgentsMapper(BaseMapper):
         return workflow
 
 
-def map_openai_to_langgraph(
-    agent: Any,
-    compile: bool = False
-) -> Any:
+def map_openai_to_langgraph(agent: Any, compile: bool = False) -> Any:
     """
     Convenience function to map OpenAI Agent to LangGraph.
 

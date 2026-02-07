@@ -20,13 +20,13 @@ Usage:
     # Client connects to: ws://localhost:8000/ws/research/Tesla
 """
 
-from typing import Dict, Any, Optional, List, Set
-from dataclasses import dataclass, field
 import asyncio
 import json
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Set
 
-from .event_stream import stream_research, StreamEvent, StreamConfig
 from ...utils import get_logger
+from .event_stream import StreamConfig, StreamEvent, stream_research
 
 logger = get_logger(__name__)
 
@@ -78,11 +78,7 @@ class WebSocketManager:
         self.company_subscriptions[company_name].add(connection_id)
         logger.info(f"[WS] {connection_id} subscribed to {company_name}")
 
-    async def send_personal_message(
-        self,
-        message: Dict[str, Any],
-        connection_id: str
-    ) -> None:
+    async def send_personal_message(self, message: Dict[str, Any], connection_id: str) -> None:
         """Send message to specific connection."""
         if connection_id in self.active_connections:
             websocket = self.active_connections[connection_id]
@@ -92,11 +88,7 @@ class WebSocketManager:
                 logger.error(f"[WS] Failed to send to {connection_id}: {e}")
                 self.disconnect(connection_id)
 
-    async def broadcast_to_company(
-        self,
-        message: Dict[str, Any],
-        company_name: str
-    ) -> None:
+    async def broadcast_to_company(self, message: Dict[str, Any], company_name: str) -> None:
         """Broadcast message to all connections subscribed to a company."""
         if company_name not in self.company_subscriptions:
             return
@@ -162,12 +154,14 @@ async def research_websocket_handler(
 
     try:
         # Send initial message
-        await websocket.send_json({
-            "type": "connected",
-            "connection_id": connection_id,
-            "company_name": company_name,
-            "message": f"Starting research for {company_name}",
-        })
+        await websocket.send_json(
+            {
+                "type": "connected",
+                "connection_id": connection_id,
+                "company_name": company_name,
+                "message": f"Starting research for {company_name}",
+            }
+        )
 
         # Stream research events
         async for event in stream_research(company_name):
@@ -179,10 +173,12 @@ async def research_websocket_handler(
     except Exception as e:
         logger.error(f"[WS] Error in handler: {e}")
         try:
-            await websocket.send_json({
-                "type": "error",
-                "error": str(e),
-            })
+            await websocket.send_json(
+                {
+                    "type": "error",
+                    "error": str(e),
+                }
+            )
         except Exception:
             pass  # Connection might be closed
 
@@ -229,17 +225,20 @@ def create_websocket_router():
         - workflow_error: Error occurred
         """
         import uuid
+
         connection_id = f"ws_{uuid.uuid4().hex[:8]}"
 
         await ws_manager.connect(websocket, connection_id)
         ws_manager.subscribe(connection_id, company_name)
 
         try:
-            await websocket.send_json({
-                "type": "connected",
-                "connection_id": connection_id,
-                "company_name": company_name,
-            })
+            await websocket.send_json(
+                {
+                    "type": "connected",
+                    "connection_id": connection_id,
+                    "company_name": company_name,
+                }
+            )
 
             # Start research and stream
             async for event in stream_research(company_name):
@@ -265,15 +264,18 @@ def create_websocket_router():
         Sends periodic status of active research.
         """
         import uuid
+
         connection_id = f"status_{uuid.uuid4().hex[:8]}"
 
         await ws_manager.connect(websocket, connection_id)
 
         try:
-            await websocket.send_json({
-                "type": "connected",
-                "connection_id": connection_id,
-            })
+            await websocket.send_json(
+                {
+                    "type": "connected",
+                    "connection_id": connection_id,
+                }
+            )
 
             # Keep connection alive with periodic status
             while True:
@@ -300,6 +302,7 @@ def create_websocket_router():
 # ============================================================================
 # Server-Sent Events (SSE) Support
 # ============================================================================
+
 
 async def sse_research_generator(company_name: str):
     """
@@ -357,7 +360,7 @@ def create_sse_router():
                 "Cache-Control": "no-cache",
                 "Connection": "keep-alive",
                 "X-Accel-Buffering": "no",
-            }
+            },
         )
 
     return router

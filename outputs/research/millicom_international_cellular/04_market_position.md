@@ -28,7 +28,7 @@
 ### Major Business Segments
 Based on company profile, Millicom operates in:
 - Mobile services
-- Fixed services  
+- Fixed services
 - Digital services
 - Enterprise solutions
 

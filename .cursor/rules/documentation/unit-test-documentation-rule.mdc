@@ -114,10 +114,10 @@ public void MethodName_Should_Behavior_When_Condition()
     // Arrange - Set up test data and preconditions
     var input = CreateTestInput();
     var expected = CalculateExpectedResult();
-    
+
     // Act - Execute the operation being tested
     var actual = _component.MethodName(input);
-    
+
     // Assert - Verify the expected behavior
     Assert.Equal(expected, actual);
 }

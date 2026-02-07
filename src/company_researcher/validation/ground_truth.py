@@ -9,9 +9,10 @@ This is the most critical anti-hallucination measure in the system.
 
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -19,15 +20,17 @@ logger = get_logger(__name__)
 
 class ValidationResult(Enum):
     """Result of validating a claim against ground truth."""
-    VERIFIED = "verified"           # Matches ground truth within tolerance
-    CONTRADICTED = "contradicted"   # Conflicts with ground truth
-    UNVERIFIABLE = "unverifiable"   # No ground truth available
-    APPROXIMATE = "approximate"     # Within extended tolerance
+
+    VERIFIED = "verified"  # Matches ground truth within tolerance
+    CONTRADICTED = "contradicted"  # Conflicts with ground truth
+    UNVERIFIABLE = "unverifiable"  # No ground truth available
+    APPROXIMATE = "approximate"  # Within extended tolerance
 
 
 @dataclass
 class GroundTruthData:
     """Authoritative data from financial APIs."""
+
     source: str
     ticker: str
     timestamp: datetime
@@ -42,6 +45,7 @@ class GroundTruthData:
 @dataclass
 class ValidationReport:
     """Report of validating a single claim."""
+
     field: str
     claimed_value: str
     ground_truth_value: Optional[str]
@@ -54,6 +58,7 @@ class ValidationReport:
 @dataclass
 class ValidationSummary:
     """Summary of all validation results."""
+
     reports: List[ValidationReport]
     verified_count: int = 0
     contradicted_count: int = 0
@@ -100,55 +105,55 @@ class GroundTruthValidator:
     # Fields we can validate with their tolerances
     VALIDATABLE_FIELDS = {
         "market_cap": {
-            "tolerance_pct": 5,      # 5% tolerance (changes daily)
+            "tolerance_pct": 5,  # 5% tolerance (changes daily)
             "sources": ["yahoo", "alpha_vantage"],
-            "aliases": ["market capitalization", "market value", "valuation"]
+            "aliases": ["market capitalization", "market value", "valuation"],
         },
         "revenue": {
-            "tolerance_pct": 2,      # 2% tolerance (should be exact)
+            "tolerance_pct": 2,  # 2% tolerance (should be exact)
             "sources": ["sec_edgar", "yahoo"],
-            "aliases": ["annual revenue", "total revenue", "sales"]
+            "aliases": ["annual revenue", "total revenue", "sales"],
         },
         "employees": {
-            "tolerance_pct": 10,     # 10% tolerance (estimates vary)
+            "tolerance_pct": 10,  # 10% tolerance (estimates vary)
             "sources": ["yahoo", "company_website"],
-            "aliases": ["employee count", "headcount", "workforce", "staff"]
+            "aliases": ["employee count", "headcount", "workforce", "staff"],
         },
         "pe_ratio": {
             "tolerance_pct": 5,
             "sources": ["yahoo", "alpha_vantage"],
-            "aliases": ["p/e ratio", "price to earnings", "price-to-earnings"]
+            "aliases": ["p/e ratio", "price to earnings", "price-to-earnings"],
         },
         "dividend_yield": {
             "tolerance_pct": 2,
             "sources": ["yahoo"],
-            "aliases": ["dividend", "yield"]
+            "aliases": ["dividend", "yield"],
         },
         "52_week_high": {
             "tolerance_pct": 1,
             "sources": ["yahoo"],
-            "aliases": ["52 week high", "52-week high", "yearly high"]
+            "aliases": ["52 week high", "52-week high", "yearly high"],
         },
         "52_week_low": {
             "tolerance_pct": 1,
             "sources": ["yahoo"],
-            "aliases": ["52 week low", "52-week low", "yearly low"]
+            "aliases": ["52 week low", "52-week low", "yearly low"],
         },
         "gross_margin": {
             "tolerance_pct": 3,
             "sources": ["yahoo", "sec_edgar"],
-            "aliases": ["gross profit margin", "gross margin"]
+            "aliases": ["gross profit margin", "gross margin"],
         },
         "operating_margin": {
             "tolerance_pct": 3,
             "sources": ["yahoo", "sec_edgar"],
-            "aliases": ["operating profit margin", "operating margin"]
+            "aliases": ["operating profit margin", "operating margin"],
         },
         "net_margin": {
             "tolerance_pct": 3,
             "sources": ["yahoo", "sec_edgar"],
-            "aliases": ["net profit margin", "net margin", "profit margin"]
-        }
+            "aliases": ["net profit margin", "net margin", "profit margin"],
+        },
     }
 
     def __init__(self, config: Any = None):
@@ -189,25 +194,27 @@ class GroundTruthValidator:
             info = stock.info
 
             if info:
-                data.update({
-                    "market_cap": info.get("marketCap"),
-                    "revenue": info.get("totalRevenue"),
-                    "employees": info.get("fullTimeEmployees"),
-                    "pe_ratio": info.get("trailingPE"),
-                    "forward_pe": info.get("forwardPE"),
-                    "dividend_yield": info.get("dividendYield"),
-                    "52_week_high": info.get("fiftyTwoWeekHigh"),
-                    "52_week_low": info.get("fiftyTwoWeekLow"),
-                    "gross_margin": info.get("grossMargins"),
-                    "operating_margin": info.get("operatingMargins"),
-                    "net_margin": info.get("profitMargins"),
-                    "sector": info.get("sector"),
-                    "industry": info.get("industry"),
-                    "website": info.get("website"),
-                    "ceo": self._extract_ceo(info.get("companyOfficers", [])),
-                    "company_name": info.get("longName") or info.get("shortName"),
-                    "description": info.get("longBusinessSummary"),
-                })
+                data.update(
+                    {
+                        "market_cap": info.get("marketCap"),
+                        "revenue": info.get("totalRevenue"),
+                        "employees": info.get("fullTimeEmployees"),
+                        "pe_ratio": info.get("trailingPE"),
+                        "forward_pe": info.get("forwardPE"),
+                        "dividend_yield": info.get("dividendYield"),
+                        "52_week_high": info.get("fiftyTwoWeekHigh"),
+                        "52_week_low": info.get("fiftyTwoWeekLow"),
+                        "gross_margin": info.get("grossMargins"),
+                        "operating_margin": info.get("operatingMargins"),
+                        "net_margin": info.get("profitMargins"),
+                        "sector": info.get("sector"),
+                        "industry": info.get("industry"),
+                        "website": info.get("website"),
+                        "ceo": self._extract_ceo(info.get("companyOfficers", [])),
+                        "company_name": info.get("longName") or info.get("shortName"),
+                        "description": info.get("longBusinessSummary"),
+                    }
+                )
 
                 logger.info(f"Fetched ground truth for {ticker} from Yahoo Finance")
 
@@ -224,11 +231,7 @@ class GroundTruthValidator:
             return None
 
         ground_truth = GroundTruthData(
-            source="yahoo_finance",
-            ticker=ticker,
-            timestamp=utc_now(),
-            data=data,
-            confidence=0.95
+            source="yahoo_finance", ticker=ticker, timestamp=utc_now(), data=data, confidence=0.95
         )
 
         self._cache[ticker] = ground_truth
@@ -247,9 +250,7 @@ class GroundTruthValidator:
         return None
 
     def validate_claims(
-        self,
-        claims: List[Dict[str, Any]],
-        ground_truth: GroundTruthData
+        self, claims: List[Dict[str, Any]], ground_truth: GroundTruthData
     ) -> ValidationSummary:
         """
         Validate research claims against ground truth.
@@ -272,29 +273,33 @@ class GroundTruthValidator:
             normalized_field = self._normalize_field(field)
 
             if normalized_field is None:
-                reports.append(ValidationReport(
-                    field=field,
-                    claimed_value=claimed,
-                    ground_truth_value=None,
-                    result=ValidationResult.UNVERIFIABLE,
-                    deviation_pct=None,
-                    source=source,
-                    recommendation="Cannot validate this field type"
-                ))
+                reports.append(
+                    ValidationReport(
+                        field=field,
+                        claimed_value=claimed,
+                        ground_truth_value=None,
+                        result=ValidationResult.UNVERIFIABLE,
+                        deviation_pct=None,
+                        source=source,
+                        recommendation="Cannot validate this field type",
+                    )
+                )
                 continue
 
             truth_value = ground_truth.get(normalized_field)
 
             if truth_value is None:
-                reports.append(ValidationReport(
-                    field=field,
-                    claimed_value=claimed,
-                    ground_truth_value=None,
-                    result=ValidationResult.UNVERIFIABLE,
-                    deviation_pct=None,
-                    source=ground_truth.source,
-                    recommendation=f"Ground truth not available for {field}"
-                ))
+                reports.append(
+                    ValidationReport(
+                        field=field,
+                        claimed_value=claimed,
+                        ground_truth_value=None,
+                        result=ValidationResult.UNVERIFIABLE,
+                        deviation_pct=None,
+                        source=ground_truth.source,
+                        recommendation=f"Ground truth not available for {field}",
+                    )
+                )
                 continue
 
             # Parse and compare
@@ -303,23 +308,21 @@ class GroundTruthValidator:
                 claimed, truth_value, tolerance, normalized_field
             )
 
-            reports.append(ValidationReport(
-                field=field,
-                claimed_value=claimed,
-                ground_truth_value=self._format_value(truth_value, normalized_field),
-                result=result,
-                deviation_pct=deviation,
-                source=ground_truth.source,
-                recommendation=self._get_recommendation(result, field, deviation, truth_value)
-            ))
+            reports.append(
+                ValidationReport(
+                    field=field,
+                    claimed_value=claimed,
+                    ground_truth_value=self._format_value(truth_value, normalized_field),
+                    result=result,
+                    deviation_pct=deviation,
+                    source=ground_truth.source,
+                    recommendation=self._get_recommendation(result, field, deviation, truth_value),
+                )
+            )
 
         return ValidationSummary(reports=reports)
 
-    def extract_claims_from_text(
-        self,
-        text: str,
-        company_name: str
-    ) -> List[Dict[str, Any]]:
+    def extract_claims_from_text(self, text: str, company_name: str) -> List[Dict[str, Any]]:
         """
         Extract validatable claims from research text.
 
@@ -335,8 +338,8 @@ class GroundTruthValidator:
 
         # Revenue claims
         revenue_patterns = [
-            r'revenue\s+(?:of|was|reached|totaled)\s+\$?([\d,.]+)\s*(billion|million|B|M)?',
-            r'\$?([\d,.]+)\s*(billion|million|B|M)?\s+(?:in\s+)?(?:annual\s+)?revenue',
+            r"revenue\s+(?:of|was|reached|totaled)\s+\$?([\d,.]+)\s*(billion|million|B|M)?",
+            r"\$?([\d,.]+)\s*(billion|million|B|M)?\s+(?:in\s+)?(?:annual\s+)?revenue",
         ]
 
         for pattern in revenue_patterns:
@@ -344,16 +347,14 @@ class GroundTruthValidator:
             for match in matches:
                 value = self._parse_match_to_value(match)
                 if value:
-                    claims.append({
-                        "field": "revenue",
-                        "claimed_value": value,
-                        "source": "research_text"
-                    })
+                    claims.append(
+                        {"field": "revenue", "claimed_value": value, "source": "research_text"}
+                    )
 
         # Market cap claims
         market_cap_patterns = [
-            r'market\s+cap(?:italization)?\s+(?:of|is|was|at)\s+\$?([\d,.]+)\s*(trillion|billion|million|T|B|M)?',
-            r'\$?([\d,.]+)\s*(trillion|billion|million|T|B|M)?\s+market\s+cap',
+            r"market\s+cap(?:italization)?\s+(?:of|is|was|at)\s+\$?([\d,.]+)\s*(trillion|billion|million|T|B|M)?",
+            r"\$?([\d,.]+)\s*(trillion|billion|million|T|B|M)?\s+market\s+cap",
         ]
 
         for pattern in market_cap_patterns:
@@ -361,42 +362,40 @@ class GroundTruthValidator:
             for match in matches:
                 value = self._parse_match_to_value(match)
                 if value:
-                    claims.append({
-                        "field": "market_cap",
-                        "claimed_value": value,
-                        "source": "research_text"
-                    })
+                    claims.append(
+                        {"field": "market_cap", "claimed_value": value, "source": "research_text"}
+                    )
 
         # Employee count claims
         employee_patterns = [
-            r'([\d,]+)\s*(?:full[- ]?time\s+)?employees',
-            r'(?:employs?|workforce\s+of|headcount\s+of)\s*([\d,]+)',
+            r"([\d,]+)\s*(?:full[- ]?time\s+)?employees",
+            r"(?:employs?|workforce\s+of|headcount\s+of)\s*([\d,]+)",
         ]
 
         for pattern in employee_patterns:
             matches = re.finditer(pattern, text, re.IGNORECASE)
             for match in matches:
-                value = match.group(1).replace(',', '')
-                claims.append({
-                    "field": "employees",
-                    "claimed_value": value,
-                    "source": "research_text"
-                })
+                value = match.group(1).replace(",", "")
+                claims.append(
+                    {"field": "employees", "claimed_value": value, "source": "research_text"}
+                )
 
         # PE ratio claims
         pe_patterns = [
-            r'(?:P/?E|price[- ]?(?:to[- ])?earnings)\s+(?:ratio\s+)?(?:of|is|at)\s*([\d.]+)',
-            r'([\d.]+)\s*(?:P/?E|price[- ]?(?:to[- ])?earnings)',
+            r"(?:P/?E|price[- ]?(?:to[- ])?earnings)\s+(?:ratio\s+)?(?:of|is|at)\s*([\d.]+)",
+            r"([\d.]+)\s*(?:P/?E|price[- ]?(?:to[- ])?earnings)",
         ]
 
         for pattern in pe_patterns:
             matches = re.finditer(pattern, text, re.IGNORECASE)
             for match in matches:
-                claims.append({
-                    "field": "pe_ratio",
-                    "claimed_value": match.group(1),
-                    "source": "research_text"
-                })
+                claims.append(
+                    {
+                        "field": "pe_ratio",
+                        "claimed_value": match.group(1),
+                        "source": "research_text",
+                    }
+                )
 
         # Remove duplicates
         seen = set()
@@ -412,7 +411,7 @@ class GroundTruthValidator:
     def _parse_match_to_value(self, match: re.Match) -> Optional[str]:
         """Parse a regex match to a normalized value string."""
         try:
-            number = match.group(1).replace(',', '')
+            number = match.group(1).replace(",", "")
             multiplier = match.group(2) if match.lastindex >= 2 else None
 
             if multiplier:
@@ -438,11 +437,7 @@ class GroundTruthValidator:
         return None
 
     def _compare_values(
-        self,
-        claimed: str,
-        truth: Any,
-        tolerance_pct: float,
-        field: str
+        self, claimed: str, truth: Any, tolerance_pct: float, field: str
     ) -> Tuple[ValidationResult, Optional[float]]:
         """Compare claimed value against ground truth."""
         try:
@@ -474,28 +469,33 @@ class GroundTruthValidator:
     def _parse_number(self, text: str, field: str) -> float:
         """Parse a number from text (handles $1.5B, 10M, etc.)."""
         # Remove currency symbols and commas
-        text = text.replace('$', '').replace(',', '').strip()
+        text = text.replace("$", "").replace(",", "").strip()
 
         # Handle multipliers
         multipliers = {
-            'T': 1e12, 'trillion': 1e12,
-            'B': 1e9, 'billion': 1e9,
-            'M': 1e6, 'million': 1e6,
-            'K': 1e3, 'thousand': 1e3, 'k': 1e3,
+            "T": 1e12,
+            "trillion": 1e12,
+            "B": 1e9,
+            "billion": 1e9,
+            "M": 1e6,
+            "million": 1e6,
+            "K": 1e3,
+            "thousand": 1e3,
+            "k": 1e3,
         }
 
         for suffix, mult in multipliers.items():
             if suffix.lower() in text.lower():
-                num_match = re.search(r'[\d.]+', text)
+                num_match = re.search(r"[\d.]+", text)
                 if num_match:
                     return float(num_match.group()) * mult
 
         # Handle percentage fields
-        if 'margin' in field or 'yield' in field:
-            text = text.replace('%', '')
+        if "margin" in field or "yield" in field:
+            text = text.replace("%", "")
 
         # Plain number
-        num_match = re.search(r'[\d.]+', text)
+        num_match = re.search(r"[\d.]+", text)
         if num_match:
             return float(num_match.group())
 
@@ -519,7 +519,7 @@ class GroundTruthValidator:
         if field == "employees":
             return f"{int(value):,}"
 
-        if 'margin' in field or 'yield' in field:
+        if "margin" in field or "yield" in field:
             if isinstance(value, float) and value < 1:
                 return f"{value*100:.1f}%"
             return f"{value:.1f}%"
@@ -530,11 +530,7 @@ class GroundTruthValidator:
         return str(value)
 
     def _get_recommendation(
-        self,
-        result: ValidationResult,
-        field: str,
-        deviation: Optional[float],
-        truth_value: Any
+        self, result: ValidationResult, field: str, deviation: Optional[float], truth_value: Any
     ) -> str:
         """Generate recommendation based on validation result."""
         if result == ValidationResult.VERIFIED:

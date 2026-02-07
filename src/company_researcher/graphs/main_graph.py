@@ -39,28 +39,29 @@ Architecture:
         └── Save Files
 """
 
-from typing import Dict, Any, Optional, Literal
 from dataclasses import dataclass
-from langgraph.graph import StateGraph, START, END
+from typing import Any, Dict, Literal, Optional
+
+from langgraph.graph import END, START, StateGraph
 
 from ..state.workflow import (
-    OverallState,
     InputState,
     OutputState,
+    OverallState,
     create_initial_state,
     create_output_state,
 )
-from .subgraphs import (
-    create_data_collection_subgraph,
-    create_analysis_subgraph,
-    create_quality_subgraph,
-    create_output_subgraph,
-    DataCollectionConfig,
-    AnalysisConfig,
-    QualityConfig,
-    OutputConfig,
-)
 from ..utils import get_logger
+from .subgraphs import (
+    AnalysisConfig,
+    DataCollectionConfig,
+    OutputConfig,
+    QualityConfig,
+    create_analysis_subgraph,
+    create_data_collection_subgraph,
+    create_output_subgraph,
+    create_quality_subgraph,
+)
 
 logger = get_logger(__name__)
 
@@ -120,6 +121,7 @@ class WorkflowConfig:
 # Routing Functions
 # ============================================================================
 
+
 def should_iterate(state: OverallState) -> str:
     """
     Determine if workflow should iterate for better quality.
@@ -155,9 +157,8 @@ def should_iterate(state: OverallState) -> str:
 # Main Workflow Creation
 # ============================================================================
 
-def create_research_workflow(
-    config: Optional[WorkflowConfig] = None
-) -> StateGraph:
+
+def create_research_workflow(config: Optional[WorkflowConfig] = None) -> StateGraph:
     """
     Create the main research workflow using subgraphs.
 
@@ -225,7 +226,7 @@ def create_research_workflow(
             {
                 "iterate": "data_collection",  # Loop back
                 "complete": "output",  # Proceed to output
-            }
+            },
         )
     else:
         graph.add_edge("quality", "output")
@@ -264,9 +265,8 @@ def create_comprehensive_workflow() -> StateGraph:
 # Adaptive Workflow (Phase 14)
 # ============================================================================
 
-def create_adaptive_workflow(
-    config: Optional[WorkflowConfig] = None
-) -> StateGraph:
+
+def create_adaptive_workflow(config: Optional[WorkflowConfig] = None) -> StateGraph:
     """
     Create an adaptive workflow that adjusts based on company type.
 
@@ -294,6 +294,7 @@ def create_adaptive_workflow(
     # ========================================
 
     from ..agents.core.company_classifier import classify_company_node
+
     graph.add_node("classify", classify_company_node)
 
     # ========================================
@@ -301,55 +302,63 @@ def create_adaptive_workflow(
     # ========================================
 
     # Public US companies: Full financial analysis
-    public_us_analysis = create_analysis_subgraph(AnalysisConfig(
-        enable_financial=True,
-        enable_market=True,
-        enable_product=True,
-        enable_competitor=True,
-        enable_esg=True,  # ESG for public companies
-        enable_brand=False,
-        enable_social_media=False,
-        enable_sales_intelligence=False,
-    ))
+    public_us_analysis = create_analysis_subgraph(
+        AnalysisConfig(
+            enable_financial=True,
+            enable_market=True,
+            enable_product=True,
+            enable_competitor=True,
+            enable_esg=True,  # ESG for public companies
+            enable_brand=False,
+            enable_social_media=False,
+            enable_sales_intelligence=False,
+        )
+    )
     graph.add_node("analysis_public_us", public_us_analysis)
 
     # Public international: Similar but different data sources
-    public_intl_analysis = create_analysis_subgraph(AnalysisConfig(
-        enable_financial=True,
-        enable_market=True,
-        enable_product=True,
-        enable_competitor=True,
-        enable_esg=True,
-        enable_brand=False,
-        enable_social_media=False,
-        enable_sales_intelligence=False,
-    ))
+    public_intl_analysis = create_analysis_subgraph(
+        AnalysisConfig(
+            enable_financial=True,
+            enable_market=True,
+            enable_product=True,
+            enable_competitor=True,
+            enable_esg=True,
+            enable_brand=False,
+            enable_social_media=False,
+            enable_sales_intelligence=False,
+        )
+    )
     graph.add_node("analysis_public_intl", public_intl_analysis)
 
     # Private companies: Focus on market and competitive
-    private_analysis = create_analysis_subgraph(AnalysisConfig(
-        enable_financial=True,
-        enable_market=True,
-        enable_product=True,
-        enable_competitor=True,
-        enable_esg=False,  # Less ESG data for private
-        enable_brand=True,  # Brand matters more
-        enable_social_media=True,  # Social presence
-        enable_sales_intelligence=True,  # Sales intel
-    ))
+    private_analysis = create_analysis_subgraph(
+        AnalysisConfig(
+            enable_financial=True,
+            enable_market=True,
+            enable_product=True,
+            enable_competitor=True,
+            enable_esg=False,  # Less ESG data for private
+            enable_brand=True,  # Brand matters more
+            enable_social_media=True,  # Social presence
+            enable_sales_intelligence=True,  # Sales intel
+        )
+    )
     graph.add_node("analysis_private", private_analysis)
 
     # Startups: Different focus
-    startup_analysis = create_analysis_subgraph(AnalysisConfig(
-        enable_financial=True,
-        enable_market=True,
-        enable_product=True,
-        enable_competitor=True,
-        enable_esg=False,
-        enable_brand=True,
-        enable_social_media=True,
-        enable_sales_intelligence=False,
-    ))
+    startup_analysis = create_analysis_subgraph(
+        AnalysisConfig(
+            enable_financial=True,
+            enable_market=True,
+            enable_product=True,
+            enable_competitor=True,
+            enable_esg=False,
+            enable_brand=True,
+            enable_social_media=True,
+            enable_sales_intelligence=False,
+        )
+    )
     graph.add_node("analysis_startup", startup_analysis)
 
     # ========================================
@@ -408,7 +417,7 @@ def create_adaptive_workflow(
             "analysis_public_intl": "analysis_public_intl",
             "analysis_private": "analysis_private",
             "analysis_startup": "analysis_startup",
-        }
+        },
     )
 
     # All analysis paths → Quality
@@ -427,6 +436,7 @@ def create_adaptive_workflow(
 # ============================================================================
 # Research Functions
 # ============================================================================
+
 
 def research_company(
     company_name: str,

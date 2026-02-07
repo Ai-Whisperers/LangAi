@@ -15,7 +15,7 @@
 - **Stock Ticker:** No data available
 - **Founded:** No data available
 - **Headquarters:** Paraguay
-- **Industry/Sector:** 
+- **Industry/Sector:**
   - Food and Beverage
   - Franchise Management
   - Potentially Technology/Supply Chain Services
@@ -26,12 +26,12 @@ A diversified company operating in food and beverage, franchise management, and 
 
 ## Key Facts
 - Number of Employees: No data available
-- Number of Offices/Locations: 
+- Number of Offices/Locations:
   - Paraguay
   - Spain
   - Portugal
   - Potential presence in Chile
-- Geographic Presence: 
+- Geographic Presence:
   - Primary operations in Paraguay
   - Franchise operations in Spain and Portugal
 - Public/Private Status: No data available

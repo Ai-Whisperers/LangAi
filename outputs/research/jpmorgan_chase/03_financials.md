@@ -31,7 +31,7 @@
 - **Dividend Yield**: 1.76%
 
 ### Revenue by Business Segment
-- **J.P. Morgan Payments**: 
+- **J.P. Morgan Payments**:
   - Q3 2025: $4.9 billion (13% YoY growth)
   - Q2 2025: $4.7 billion (4% YoY growth)
   - Q4 2024: $4.7 billion (6% YoY growth)

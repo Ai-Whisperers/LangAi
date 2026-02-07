@@ -26,6 +26,7 @@ logger = get_logger(__name__)
 
 class ResearchCacheStatus(str, Enum):
     """Status of a cache entry."""
+
     FRESH = "fresh"
     STALE = "stale"
     EXPIRED = "expired"
@@ -35,6 +36,7 @@ class ResearchCacheStatus(str, Enum):
 @dataclass
 class ResearchCacheEntry:
     """A cached research result."""
+
     key: str
     company_name: str
     research_depth: str
@@ -82,13 +84,14 @@ class ResearchCacheEntry:
             "last_accessed": self.last_accessed.isoformat(),
             "status": self.status.value,
             "age_seconds": self.age_seconds,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
 
 @dataclass
 class ResearchCacheStats:
     """Cache statistics."""
+
     hits: int = 0
     misses: int = 0
     evictions: int = 0
@@ -111,7 +114,7 @@ class ResearchCacheStats:
             "invalidations": self.invalidations,
             "total_entries": self.total_entries,
             "hit_rate": f"{self.hit_rate:.2%}",
-            "memory_bytes": self.memory_bytes
+            "memory_bytes": self.memory_bytes,
         }
 
 
@@ -147,7 +150,7 @@ class ResearchResultCache:
         max_entries: int = 1000,
         default_ttl_hours: float = 24,
         storage_path: str = None,
-        enable_persistence: bool = True
+        enable_persistence: bool = True,
     ):
         self.max_entries = max_entries
         self.default_ttl_hours = default_ttl_hours
@@ -168,7 +171,8 @@ class ResearchResultCache:
         self._db_path.parent.mkdir(parents=True, exist_ok=True)
 
         with sqlite3.connect(str(self._db_path)) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS research_cache (
                     key TEXT PRIMARY KEY,
                     company_name TEXT,
@@ -180,15 +184,20 @@ class ResearchResultCache:
                     last_accessed TEXT,
                     metadata TEXT
                 )
-            """)
-            conn.execute("""
+            """
+            )
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_company
                 ON research_cache(company_name)
-            """)
-            conn.execute("""
+            """
+            )
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_expires
                 ON research_cache(expires_at)
-            """)
+            """
+            )
             conn.commit()
 
     def _generate_key(self, company_name: str, depth: str) -> str:
@@ -203,7 +212,7 @@ class ResearchResultCache:
         result: Dict[str, Any],
         ttl_hours: float = None,
         metadata: Dict[str, Any] = None,
-        invalidation_triggers: Set[str] = None
+        invalidation_triggers: Set[str] = None,
     ) -> ResearchCacheEntry:
         """
         Cache a research result.
@@ -231,7 +240,7 @@ class ResearchResultCache:
             created_at=now,
             expires_at=now + timedelta(hours=ttl),
             metadata=metadata or {},
-            invalidation_triggers=invalidation_triggers or set()
+            invalidation_triggers=invalidation_triggers or set(),
         )
 
         with self._lock:
@@ -247,10 +256,7 @@ class ResearchResultCache:
         return entry
 
     def get(
-        self,
-        company_name: str,
-        depth: str,
-        allow_stale: bool = False
+        self, company_name: str, depth: str, allow_stale: bool = False
     ) -> Optional[ResearchCacheEntry]:
         """
         Get cached research result.
@@ -297,7 +303,8 @@ class ResearchResultCache:
         count = 0
         with self._lock:
             keys_to_remove = [
-                key for key, entry in self._cache.items()
+                key
+                for key, entry in self._cache.items()
                 if entry.company_name.lower() == company_name.lower()
             ]
             for key in keys_to_remove:
@@ -318,8 +325,7 @@ class ResearchResultCache:
         count = 0
         with self._lock:
             keys_to_remove = [
-                key for key, entry in self._cache.items()
-                if trigger in entry.invalidation_triggers
+                key for key, entry in self._cache.items() if trigger in entry.invalidation_triggers
             ]
             for key in keys_to_remove:
                 self._remove_entry(key)
@@ -333,10 +339,7 @@ class ResearchResultCache:
         if not self._cache:
             return
 
-        oldest_key = min(
-            self._cache.keys(),
-            key=lambda k: self._cache[k].last_accessed
-        )
+        oldest_key = min(self._cache.keys(), key=lambda k: self._cache[k].last_accessed)
         self._remove_entry(oldest_key)
         self._stats.evictions += 1
 
@@ -359,22 +362,25 @@ class ResearchResultCache:
         """Persist entry to database."""
         try:
             with sqlite3.connect(str(self._db_path)) as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO research_cache
                     (key, company_name, research_depth, result, created_at,
                      expires_at, access_count, last_accessed, metadata)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    entry.key,
-                    entry.company_name,
-                    entry.research_depth,
-                    pickle.dumps(entry.result),
-                    entry.created_at.isoformat(),
-                    entry.expires_at.isoformat(),
-                    entry.access_count,
-                    entry.last_accessed.isoformat(),
-                    json.dumps(entry.metadata)
-                ))
+                """,
+                    (
+                        entry.key,
+                        entry.company_name,
+                        entry.research_depth,
+                        pickle.dumps(entry.result),
+                        entry.created_at.isoformat(),
+                        entry.expires_at.isoformat(),
+                        entry.access_count,
+                        entry.last_accessed.isoformat(),
+                        json.dumps(entry.metadata),
+                    ),
+                )
                 conn.commit()
         except Exception as e:
             logger.warning(f"Failed to persist cache entry for {entry.company_name}: {e}")
@@ -383,10 +389,7 @@ class ResearchResultCache:
         """Load entry from database."""
         try:
             with sqlite3.connect(str(self._db_path)) as conn:
-                cursor = conn.execute(
-                    "SELECT * FROM research_cache WHERE key = ?",
-                    (key,)
-                )
+                cursor = conn.execute("SELECT * FROM research_cache WHERE key = ?", (key,))
                 row = cursor.fetchone()
 
                 if row:
@@ -399,7 +402,7 @@ class ResearchResultCache:
                         expires_at=datetime.fromisoformat(row[5]),
                         access_count=row[6],
                         last_accessed=datetime.fromisoformat(row[7]),
-                        metadata=json.loads(row[8])
+                        metadata=json.loads(row[8]),
                     )
         except Exception as e:
             logger.debug(f"Failed to load cache entry (key={key}): {e}")
@@ -410,10 +413,7 @@ class ResearchResultCache:
         """Remove all expired entries."""
         count = 0
         with self._lock:
-            expired_keys = [
-                key for key, entry in self._cache.items()
-                if entry.is_expired
-            ]
+            expired_keys = [key for key, entry in self._cache.items() if entry.is_expired]
             for key in expired_keys:
                 self._remove_entry(key)
                 count += 1
@@ -465,10 +465,7 @@ class CacheWarmer:
     """
 
     def __init__(
-        self,
-        cache: ResearchResultCache,
-        research_func: Callable,
-        max_concurrent: int = 3
+        self, cache: ResearchResultCache, research_func: Callable, max_concurrent: int = 3
     ):
         self.cache = cache
         self.research_func = research_func
@@ -482,11 +479,7 @@ class CacheWarmer:
     def add_from_popularity(self, top_n: int = 10) -> None:
         """Add most accessed companies to warming list."""
         entries = self.cache.get_all_entries()
-        sorted_entries = sorted(
-            entries,
-            key=lambda e: e.access_count,
-            reverse=True
-        )
+        sorted_entries = sorted(entries, key=lambda e: e.access_count, reverse=True)
         popular = [e.company_name for e in sorted_entries[:top_n]]
         self._companies.extend(popular)
 
@@ -506,11 +499,7 @@ class CacheWarmer:
                         return
 
                     result = await self.research_func(company, depth)
-                    self.cache.set(
-                        company_name=company,
-                        depth=depth,
-                        result=result
-                    )
+                    self.cache.set(company_name=company, depth=depth, result=result)
                     results[company] = True
 
                 except Exception as e:
@@ -518,9 +507,7 @@ class CacheWarmer:
                     results[company] = False
 
         unique_companies = list(set(self._companies))
-        await asyncio.gather(*[
-            warm_company(company) for company in unique_companies
-        ])
+        await asyncio.gather(*[warm_company(company) for company in unique_companies])
 
         return results
 
@@ -535,11 +522,7 @@ class NewsBasedInvalidator:
         await invalidator.monitor()
     """
 
-    def __init__(
-        self,
-        cache: ResearchResultCache,
-        check_interval: float = 300  # 5 minutes
-    ):
+    def __init__(self, cache: ResearchResultCache, check_interval: float = 300):  # 5 minutes
         self.cache = cache
         self.check_interval = check_interval
         self._news_sources: List[Callable] = []
@@ -549,7 +532,7 @@ class NewsBasedInvalidator:
             "leadership": ["ceo", "cfo", "appoint", "resign"],
             "merger": ["acquire", "merger", "acquisition"],
             "lawsuit": ["lawsuit", "litigation", "sec"],
-            "product": ["launch", "announce", "release"]
+            "product": ["launch", "announce", "release"],
         }
 
     def add_news_source(self, source: Callable) -> None:
@@ -598,14 +581,11 @@ class NewsBasedInvalidator:
 
 # Convenience functions
 
+
 def create_research_cache(
-    max_entries: int = 1000,
-    ttl_hours: float = 24,
-    storage_path: str = None
+    max_entries: int = 1000, ttl_hours: float = 24, storage_path: str = None
 ) -> ResearchResultCache:
     """Create a research result cache."""
     return ResearchResultCache(
-        max_entries=max_entries,
-        default_ttl_hours=ttl_hours,
-        storage_path=storage_path
+        max_entries=max_entries, default_ttl_hours=ttl_hours, storage_path=storage_path
     )

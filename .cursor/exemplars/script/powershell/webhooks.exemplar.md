@@ -18,27 +18,27 @@ function Send-TeamsNotification {
     param(
         [Parameter(Mandatory=$true)]
         [string]$WebhookUrl,
-        
+
         [Parameter(Mandatory=$true)]
         [string]$Title,
-        
+
         [Parameter(Mandatory=$true)]
         [string]$Message,
-        
+
         [Parameter(Mandatory=$false)]
         [hashtable]$Facts,
-        
+
         [Parameter(Mandatory=$false)]
         [ValidateSet("Good", "Warning", "Error")]
         [string]$Status = "Good"
     )
-    
+
     $color = switch ($Status) {
         "Good"    { "00FF00" }  # Green
         "Warning" { "FFA500" }  # Orange
         "Error"   { "FF0000" }  # Red
     }
-    
+
     $factsSections = if ($Facts) {
         @(
             @{
@@ -48,7 +48,7 @@ function Send-TeamsNotification {
             }
         )
     } else { @() }
-    
+
     $body = @{
         "@type" = "MessageCard"
         "@context" = "https://schema.org/extensions"
@@ -57,7 +57,7 @@ function Send-TeamsNotification {
         text = $Message
         sections = $factsSections
     } | ConvertTo-Json -Depth 10
-    
+
     try {
         Invoke-RestMethod -Uri $WebhookUrl -Method Post -Body $body -ContentType "application/json" | Out-Null
         Write-Verbose "Teams notification sent successfully"
@@ -70,7 +70,7 @@ function Send-TeamsNotification {
 # Usage:
 if ($env:TEAMS_WEBHOOK_URL) {
     $status = if ($failed) { "Error" } else { "Good" }
-    
+
     Send-TeamsNotification `
         -WebhookUrl $env:TEAMS_WEBHOOK_URL `
         -Title "Coverage Analysis: $env:BUILD_REPOSITORY_NAME" `
@@ -191,4 +191,3 @@ $adaptiveCard = @{
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

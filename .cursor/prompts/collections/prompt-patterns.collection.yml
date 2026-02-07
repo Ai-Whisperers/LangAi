@@ -22,4 +22,3 @@ items:
     kind: exemplar
   - path: exemplars/prompt/comprehensive-documentation-exemplar.md
     kind: exemplar
-

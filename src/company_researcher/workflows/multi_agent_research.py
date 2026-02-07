@@ -8,19 +8,20 @@ This workflow implements a two-agent system:
 Workflow: Researcher → Analyst → Quality Check → (iterate or finish)
 """
 
-from typing import Dict, Any
-from langgraph.graph import StateGraph, END
+from typing import Any, Dict
 
-from ..state import OverallState, InputState, OutputState, create_initial_state, create_output_state
-from ..agents import researcher_agent_node, analyst_agent_node
-from ..quality import check_research_quality
+from langgraph.graph import END, StateGraph
+
+from ..agents import analyst_agent_node, researcher_agent_node
 from ..prompts import format_sources_for_report
+from ..quality import check_research_quality
+from ..state import InputState, OutputState, OverallState, create_initial_state, create_output_state
 from ..utils import utc_now
-
 
 # ============================================================================
 # Workflow Nodes
 # ============================================================================
+
 
 def check_quality_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -38,7 +39,7 @@ def check_quality_node(state: OverallState) -> Dict[str, Any]:
     quality_result = check_research_quality(
         company_name=state["company_name"],
         extracted_data=state.get("company_overview", ""),
-        sources=state.get("sources", [])
+        sources=state.get("sources", []),
     )
 
     quality_score = quality_result["quality_score"]
@@ -55,9 +56,11 @@ def check_quality_node(state: OverallState) -> Dict[str, Any]:
         "iteration_count": state.get("iteration_count", 0) + 1,
         "total_cost": state.get("total_cost", 0.0) + quality_result["cost"],
         "total_tokens": {
-            "input": state.get("total_tokens", {"input": 0, "output": 0})["input"] + quality_result["tokens"]["input"],
-            "output": state.get("total_tokens", {"input": 0, "output": 0})["output"] + quality_result["tokens"]["output"]
-        }
+            "input": state.get("total_tokens", {"input": 0, "output": 0})["input"]
+            + quality_result["tokens"]["input"],
+            "output": state.get("total_tokens", {"input": 0, "output": 0})["output"]
+            + quality_result["tokens"]["output"],
+        },
     }
 
 
@@ -122,24 +125,34 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
 ---
 """
 
-    # Save report
-    import os
-    output_dir = f"outputs/{company_name}"
-    os.makedirs(output_dir, exist_ok=True)
+    # Save report (canonical)
+    from pathlib import Path
 
-    report_path = f"{output_dir}/report_{timestamp}.md"
+    from ..config import get_config
 
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write(report_content)
+    config = get_config()
+    reports_root = Path(getattr(config, "reports_dir", config.output_dir))
+    output_dir = reports_root / "companies" / company_name.replace(" ", "_")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    report_path = output_dir / "00_full_report.md"
+    timestamped_path = output_dir / f"report_{timestamp}.md"
+
+    report_path.write_text(report_content, encoding="utf-8")
+    try:
+        timestamped_path.write_text(report_content, encoding="utf-8")
+    except Exception:
+        pass
 
     print(f"[OK] Report saved to: {report_path}")
 
-    return {"report_path": report_path}
+    return {"report_path": str(report_path)}
 
 
 # ============================================================================
 # Decision Functions
 # ============================================================================
+
 
 def should_continue_research(state: OverallState) -> str:
     """
@@ -160,16 +173,21 @@ def should_continue_research(state: OverallState) -> str:
         print(f"[DECISION] Quality sufficient ({quality_score:.1f} >= 85). Proceeding to report.")
         return "finish"
     elif iteration_count >= max_iterations:
-        print(f"[DECISION] Max iterations reached ({iteration_count}/{max_iterations}). Proceeding to report.")
+        print(
+            f"[DECISION] Max iterations reached ({iteration_count}/{max_iterations}). Proceeding to report."
+        )
         return "finish"
     else:
-        print(f"[DECISION] Quality low ({quality_score:.1f} < 85), iteration {iteration_count}/{max_iterations}. Re-searching.")
+        print(
+            f"[DECISION] Quality low ({quality_score:.1f} < 85), iteration {iteration_count}/{max_iterations}. Re-searching."
+        )
         return "iterate"
 
 
 # ============================================================================
 # Workflow Creation
 # ============================================================================
+
 
 def create_multi_agent_workflow() -> StateGraph:
     """
@@ -201,8 +219,8 @@ def create_multi_agent_workflow() -> StateGraph:
         should_continue_research,
         {
             "iterate": "researcher",  # Loop back to improve
-            "finish": "save_report"  # Quality is good, save report
-        }
+            "finish": "save_report",  # Quality is good, save report
+        },
     )
 
     workflow.add_edge("save_report", END)
@@ -213,6 +231,7 @@ def create_multi_agent_workflow() -> StateGraph:
 # ============================================================================
 # Main Research Function
 # ============================================================================
+
 
 def research_company(company_name: str) -> OutputState:
     """
@@ -247,7 +266,9 @@ def research_company(company_name: str) -> OutputState:
     print(f"Report: {output['report_path']}")
     print(f"Duration: {output['metrics']['duration_seconds']:.1f}s")
     print(f"Cost: ${output['metrics']['cost_usd']:.4f}")
-    print(f"Tokens: {output['metrics']['tokens']['input']:,} in, {output['metrics']['tokens']['output']:,} out")
+    print(
+        f"Tokens: {output['metrics']['tokens']['input']:,} in, {output['metrics']['tokens']['output']:,} out"
+    )
     print(f"Sources: {output['metrics']['sources_count']}")
     print(f"Quality: {output['metrics']['quality_score']:.1f}/100")
     print(f"Iterations: {output['metrics']['iterations']}")

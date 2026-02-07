@@ -14,4 +14,3 @@ items:
     kind: prompt
   - path: prompts/setup/setup-repository-standards.prompt.md
     kind: prompt
-

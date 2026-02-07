@@ -4,7 +4,7 @@ kind: rule
 version: 1.0.0
 description: Defines local validation steps using CI/CD scripts to detect and fix errors before pushing to build pipeline
 globs: **/*.cs, **/*.csproj, **/azure-pipelines.yml
-governs: 
+governs:
 implements: pre-build-validation
 requires:
   - rule.cicd.tag-based-versioning.v2
@@ -388,7 +388,7 @@ When running validation locally:
 
 ### Failure Mode 1: Format Validation Fails
 
-**Detection**: 
+**Detection**:
 ```
 error IDE1006: Naming rule violation: Missing prefix: '_'
 ```

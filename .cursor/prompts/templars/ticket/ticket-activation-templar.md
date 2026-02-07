@@ -22,12 +22,12 @@ Activate/resume a ticket safely: align on the correct ticket, set ACTIVE status,
 - Optional: references.md for conversations
 
 ## Deterministic Steps
-1) Validate ticket ID (matches current.md if present)  
-2) Read context.md + progress.md (+ timeline.md if exists)  
-3) Summarize current focus, blockers, last actions  
-4) Set status ACTIVE and record switch-in note  
-5) Propose next 3 steps, with owners if known  
-6) Highlight missing artifacts (e.g., timeline absent)  
+1) Validate ticket ID (matches current.md if present)
+2) Read context.md + progress.md (+ timeline.md if exists)
+3) Summarize current focus, blockers, last actions
+4) Set status ACTIVE and record switch-in note
+5) Propose next 3 steps, with owners if known
+6) Highlight missing artifacts (e.g., timeline absent)
 
 ## Expected Output
 - Brief status snapshot (focus, blockers, last action)
@@ -46,4 +46,3 @@ Activate/resume a ticket safely: align on the correct ticket, set ACTIVE status,
 ```
 @activate-ticket PROMPTS-EXTRACT
 ```
-

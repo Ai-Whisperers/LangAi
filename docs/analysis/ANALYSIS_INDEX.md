@@ -200,7 +200,7 @@ INPUT: company_name
 ├─ PHASE 7: Metrics (cost, time, quality, sources)
 │
 OUTPUT: Report + Metrics
-  
+
 COST: $0.25-0.46 (1-2 iterations)
 TIME: 45-90 seconds
 QUALITY: 75-85/100 average
@@ -438,4 +438,3 @@ All documents have:
 **Scope:** Complete Company Researcher Workflow
 **Format:** 5 comprehensive markdown documents
 **Total Content:** 35,000+ words, 167 pages, 150+ diagrams/tables
-

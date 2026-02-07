@@ -22,13 +22,13 @@ Use this to refresh an existing tracker so it reflects the latest work: detect c
 
 ## Usage Modes
 
-- **Quick sync** (latest progress only):  
+- **Quick sync** (latest progress only):
   `/update-tracker tracker.md progress.md`
 
-- **Full reconciliation** (plan + progress + timeline):  
+- **Full reconciliation** (plan + progress + timeline):
   `/update-tracker tracker.md progress.md plan.md timeline.md`
 
-- **Windowed sync** (recent activity only):  
+- **Windowed sync** (recent activity only):
   `/update-tracker tracker.md progress.md plan.md timeline.md "since last commit"`
 
 ---
@@ -112,7 +112,7 @@ Optional time window:
 ## Examples
 
 ### Example 1: Quick Sync
-**Input**:  
+**Input**:
 `/update-tracker tracker.md progress.md`
 
 **Expected Output (excerpt)**:
@@ -129,7 +129,7 @@ Progress: 60% (3/5) | Next Priority: ValidationService tests
 ```
 
 ### Example 2: Windowed Sync
-**Input**:  
+**Input**:
 `/update-tracker tracker.md progress.md plan.md timeline.md "since last commit"`
 
 **Expected Output (excerpt)**:
@@ -152,4 +152,3 @@ Blockers: None
 
 - `tracker/create-tracker.prompt.md` — Build a tracker from scratch using ticket evidence.
 - `ticket/resume-tracker-work.prompt.md` — Continue systematic work using the tracker.
-

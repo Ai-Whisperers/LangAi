@@ -14,6 +14,7 @@ import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
 from ..utils import utc_now
 
 
@@ -21,7 +22,9 @@ class StatePersistence(ABC):
     """Abstract base class for state persistence."""
 
     @abstractmethod
-    def save(self, key: str, state: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None) -> str:
+    def save(
+        self, key: str, state: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Save state and return ID."""
 
     @abstractmethod
@@ -49,7 +52,9 @@ class InMemoryPersistence(StatePersistence):
         self._metadata: Dict[str, Dict[str, Any]] = {}
         self._lock = threading.RLock()
 
-    def save(self, key: str, state: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None) -> str:
+    def save(
+        self, key: str, state: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Save state to memory."""
         state_id = f"{key}:{uuid.uuid4()}"
         with self._lock:
@@ -57,7 +62,7 @@ class InMemoryPersistence(StatePersistence):
             self._metadata[state_id] = {
                 "key": key,
                 "created_at": utc_now().isoformat(),
-                **(metadata or {})
+                **(metadata or {}),
             }
         return state_id
 
@@ -112,18 +117,16 @@ class SQLitePersistence(StatePersistence):
 
     def _get_connection(self) -> sqlite3.Connection:
         """Get thread-local database connection."""
-        if not hasattr(self._local, 'connection'):
-            self._local.connection = sqlite3.connect(
-                str(self.db_path),
-                check_same_thread=False
-            )
+        if not hasattr(self._local, "connection"):
+            self._local.connection = sqlite3.connect(str(self.db_path), check_same_thread=False)
             self._local.connection.row_factory = sqlite3.Row
         return self._local.connection
 
     def _init_db(self) -> None:
         """Initialize database schema."""
         conn = self._get_connection()
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS states (
                 id TEXT PRIMARY KEY,
                 key TEXT NOT NULL,
@@ -132,16 +135,23 @@ class SQLitePersistence(StatePersistence):
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
-        """)
-        conn.execute("""
+        """
+        )
+        conn.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_states_key ON states(key)
-        """)
-        conn.execute("""
+        """
+        )
+        conn.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_states_created ON states(created_at)
-        """)
+        """
+        )
         conn.commit()
 
-    def save(self, key: str, state: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None) -> str:
+    def save(
+        self, key: str, state: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Save state to SQLite."""
         state_id = f"{key}:{uuid.uuid4()}"
         now = utc_now().isoformat()
@@ -158,8 +168,8 @@ class SQLitePersistence(StatePersistence):
                 json.dumps(state, default=str),
                 json.dumps(metadata or {}, default=str),
                 now,
-                now
-            )
+                now,
+            ),
         )
         conn.commit()
         return state_id
@@ -167,13 +177,10 @@ class SQLitePersistence(StatePersistence):
     def load(self, state_id: str) -> Optional[Dict[str, Any]]:
         """Load state from SQLite."""
         conn = self._get_connection()
-        cursor = conn.execute(
-            "SELECT state FROM states WHERE id = ?",
-            (state_id,)
-        )
+        cursor = conn.execute("SELECT state FROM states WHERE id = ?", (state_id,))
         row = cursor.fetchone()
         if row:
-            return json.loads(row['state'])
+            return json.loads(row["state"])
         return None
 
     def update(self, state_id: str, state: Dict[str, Any]) -> bool:
@@ -185,11 +192,7 @@ class SQLitePersistence(StatePersistence):
             SET state = ?, updated_at = ?
             WHERE id = ?
             """,
-            (
-                json.dumps(state, default=str),
-                utc_now().isoformat(),
-                state_id
-            )
+            (json.dumps(state, default=str), utc_now().isoformat(), state_id),
         )
         conn.commit()
         return cursor.rowcount > 0
@@ -199,14 +202,11 @@ class SQLitePersistence(StatePersistence):
         conn = self._get_connection()
         if prefix:
             cursor = conn.execute(
-                "SELECT id FROM states WHERE key LIKE ? ORDER BY created_at DESC",
-                (f"{prefix}%",)
+                "SELECT id FROM states WHERE key LIKE ? ORDER BY created_at DESC", (f"{prefix}%",)
             )
         else:
-            cursor = conn.execute(
-                "SELECT id FROM states ORDER BY created_at DESC"
-            )
-        return [row['id'] for row in cursor.fetchall()]
+            cursor = conn.execute("SELECT id FROM states ORDER BY created_at DESC")
+        return [row["id"] for row in cursor.fetchall()]
 
     def list_for_key(self, key: str, limit: int = 100) -> List[Dict[str, Any]]:
         """List all states for a key."""
@@ -219,18 +219,20 @@ class SQLitePersistence(StatePersistence):
             ORDER BY created_at DESC
             LIMIT ?
             """,
-            (key, limit)
+            (key, limit),
         )
         results = []
         for row in cursor.fetchall():
-            results.append({
-                "id": row['id'],
-                "key": row['key'],
-                "state": json.loads(row['state']),
-                "metadata": json.loads(row['metadata']),
-                "created_at": row['created_at'],
-                "updated_at": row['updated_at']
-            })
+            results.append(
+                {
+                    "id": row["id"],
+                    "key": row["key"],
+                    "state": json.loads(row["state"]),
+                    "metadata": json.loads(row["metadata"]),
+                    "created_at": row["created_at"],
+                    "updated_at": row["updated_at"],
+                }
+            )
         return results
 
     def get_latest(self, key: str) -> Optional[Dict[str, Any]]:
@@ -241,20 +243,14 @@ class SQLitePersistence(StatePersistence):
     def delete(self, state_id: str) -> bool:
         """Delete state from SQLite."""
         conn = self._get_connection()
-        cursor = conn.execute(
-            "DELETE FROM states WHERE id = ?",
-            (state_id,)
-        )
+        cursor = conn.execute("DELETE FROM states WHERE id = ?", (state_id,))
         conn.commit()
         return cursor.rowcount > 0
 
     def delete_for_key(self, key: str) -> int:
         """Delete all states for a key."""
         conn = self._get_connection()
-        cursor = conn.execute(
-            "DELETE FROM states WHERE key = ?",
-            (key,)
-        )
+        cursor = conn.execute("DELETE FROM states WHERE key = ?", (key,))
         conn.commit()
         return cursor.rowcount
 
@@ -270,36 +266,33 @@ class SQLitePersistence(StatePersistence):
             ORDER BY created_at DESC
             LIMIT ?
             """,
-            (key, keep_count)
+            (key, keep_count),
         )
-        keep_ids = [row['id'] for row in cursor.fetchall()]
+        keep_ids = [row["id"] for row in cursor.fetchall()]
 
         if not keep_ids:
             return 0
 
         # Delete older entries
-        placeholders = ','.join('?' * len(keep_ids))
+        placeholders = ",".join("?" * len(keep_ids))
         cursor = conn.execute(
             f"""
             DELETE FROM states
             WHERE key = ? AND id NOT IN ({placeholders})
             """,
-            (key, *keep_ids)
+            (key, *keep_ids),
         )
         conn.commit()
         return cursor.rowcount
 
     def close(self) -> None:
         """Close database connection."""
-        if hasattr(self._local, 'connection'):
+        if hasattr(self._local, "connection"):
             self._local.connection.close()
             del self._local.connection
 
 
-def create_persistence(
-    backend: str = "sqlite",
-    **kwargs
-) -> StatePersistence:
+def create_persistence(backend: str = "sqlite", **kwargs) -> StatePersistence:
     """
     Factory function to create persistence backend.
 

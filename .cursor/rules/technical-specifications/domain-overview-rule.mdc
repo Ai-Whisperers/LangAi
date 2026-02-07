@@ -102,7 +102,7 @@ The domain overview provides navigation to all layers and cross-references all d
 - [Database Constraints](database/[domain]-database-constraints.md) - Relationships and integrity
 - [Database Analysis](database/[domain]-database-analysis.md) - Business context and migration
 
-### Domain Layer  
+### Domain Layer
 - [Domain Objects](domain/domain-objects/) - Rich business models
 - [Enumerations](domain/enumerations/) - Business value objects
 
@@ -158,7 +158,7 @@ The domain overview provides navigation to all layers and cross-references all d
 
 ### **For Business Analysts**
 - Start with overview and business context sections
-- Use entity relationship diagram to understand data structures  
+- Use entity relationship diagram to understand data structures
 - Follow business rules links for detailed logic
 - Review integration points for external dependencies
 

@@ -22,11 +22,12 @@ Usage:
 
 import hashlib
 import json
-from enum import Enum
-from typing import Dict, Any, List, Optional, Tuple
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from collections import defaultdict
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -34,15 +35,17 @@ logger = get_logger(__name__)
 
 class EvidenceType(Enum):
     """Types of evidence supporting a fact."""
-    DIRECT_QUOTE = "direct_quote"       # Exact text from source
-    PARAPHRASE = "paraphrase"           # Reworded information
-    INFERENCE = "inference"             # Derived from multiple facts
-    CALCULATION = "calculation"         # Computed from source data
-    AGGREGATION = "aggregation"         # Combined from multiple sources
+
+    DIRECT_QUOTE = "direct_quote"  # Exact text from source
+    PARAPHRASE = "paraphrase"  # Reworded information
+    INFERENCE = "inference"  # Derived from multiple facts
+    CALCULATION = "calculation"  # Computed from source data
+    AGGREGATION = "aggregation"  # Combined from multiple sources
 
 
 class CitationStyle(Enum):
     """Citation formatting styles."""
+
     APA = "apa"
     MLA = "mla"
     CHICAGO = "chicago"
@@ -54,6 +57,7 @@ class CitationStyle(Enum):
 @dataclass
 class SourceDocument:
     """A source document with full metadata."""
+
     id: str
     url: str
     title: str
@@ -87,18 +91,19 @@ class SourceDocument:
             domain=domain,
             retrieved_at=utc_now(),
             word_count=len(content.split()),
-            **kwargs
+            **kwargs,
         )
 
 
 @dataclass
 class Evidence:
     """Evidence supporting a fact."""
+
     id: str
     source_id: str
     evidence_type: EvidenceType
-    text: str                          # The actual evidence text
-    location: Optional[str] = None     # Where in source (paragraph, section)
+    text: str  # The actual evidence text
+    location: Optional[str] = None  # Where in source (paragraph, section)
     confidence: float = 0.8
     extracted_at: datetime = field(default_factory=utc_now)
     extraction_method: str = "llm"
@@ -107,6 +112,7 @@ class Evidence:
 @dataclass
 class EvidenceChain:
     """Complete chain of evidence for a fact."""
+
     fact_id: str
     fact_text: str
     fact_value: Any
@@ -122,7 +128,8 @@ class EvidenceChain:
             return None
         # Return source with highest tier evidence
         direct_sources = [
-            doc for doc, ev in zip(self.source_documents, self.evidences)
+            doc
+            for doc, ev in zip(self.source_documents, self.evidences)
             if ev.evidence_type == EvidenceType.DIRECT_QUOTE
         ]
         return direct_sources[0] if direct_sources else self.source_documents[0]
@@ -136,11 +143,12 @@ class EvidenceChain:
 @dataclass
 class Citation:
     """A formatted citation."""
+
     source: SourceDocument
     style: CitationStyle
     formatted: str
-    inline: str              # Short inline reference
-    footnote: str            # Footnote format
+    inline: str  # Short inline reference
+    footnote: str  # Footnote format
 
 
 class SourceTracker:
@@ -164,7 +172,7 @@ class SourceTracker:
         content: str,
         publication_date: Optional[datetime] = None,
         author: Optional[str] = None,
-        **metadata
+        **metadata,
     ) -> str:
         """
         Add a source document to the tracker.
@@ -178,7 +186,7 @@ class SourceTracker:
             content=content,
             publication_date=publication_date,
             author=author,
-            metadata=metadata
+            metadata=metadata,
         )
 
         self.sources[doc.id] = doc
@@ -193,7 +201,7 @@ class SourceTracker:
             title=result.get("title", "Untitled"),
             content=result.get("content", result.get("snippet", "")),
             score=result.get("score"),
-            search_query=result.get("query")
+            search_query=result.get("query"),
         )
 
     def attribute_fact(
@@ -205,7 +213,7 @@ class SourceTracker:
         evidence_text: str,
         evidence_type: EvidenceType = EvidenceType.PARAPHRASE,
         confidence: float = 0.8,
-        location: Optional[str] = None
+        location: Optional[str] = None,
     ) -> EvidenceChain:
         """
         Attribute a fact to a source with evidence.
@@ -232,7 +240,7 @@ class SourceTracker:
                 content="",
                 content_hash="",
                 domain="unknown",
-                retrieved_at=utc_now()
+                retrieved_at=utc_now(),
             )
 
         # Create evidence
@@ -242,7 +250,7 @@ class SourceTracker:
             evidence_type=evidence_type,
             text=evidence_text,
             location=location,
-            confidence=confidence
+            confidence=confidence,
         )
 
         self.evidences[fact_id].append(evidence)
@@ -260,7 +268,7 @@ class SourceTracker:
         source_id: str,
         evidence_text: str,
         evidence_type: EvidenceType = EvidenceType.PARAPHRASE,
-        confidence: float = 0.8
+        confidence: float = 0.8,
     ):
         """Add additional evidence to an existing fact."""
         if fact_id not in self.fact_chains:
@@ -272,7 +280,7 @@ class SourceTracker:
             source_id=source_id,
             evidence_type=evidence_type,
             text=evidence_text,
-            confidence=confidence
+            confidence=confidence,
         )
 
         self.evidences[fact_id].append(evidence)
@@ -280,19 +288,10 @@ class SourceTracker:
 
         # Rebuild chain with new evidence
         chain = self.fact_chains[fact_id]
-        chain = self._build_evidence_chain(
-            fact_id,
-            chain.fact_text,
-            chain.fact_value
-        )
+        chain = self._build_evidence_chain(fact_id, chain.fact_text, chain.fact_value)
         self.fact_chains[fact_id] = chain
 
-    def _build_evidence_chain(
-        self,
-        fact_id: str,
-        fact_text: str,
-        fact_value: Any
-    ) -> EvidenceChain:
+    def _build_evidence_chain(self, fact_id: str, fact_text: str, fact_value: Any) -> EvidenceChain:
         """Build complete evidence chain for a fact."""
         evidences = self.evidences.get(fact_id, [])
         source_docs = []
@@ -306,9 +305,9 @@ class SourceTracker:
             # Higher confidence with more corroborating sources
             base_confidence = sum(e.confidence for e in evidences) / len(evidences)
             source_bonus = min(len(set(e.source_id for e in evidences)) * 0.05, 0.2)
-            direct_quote_bonus = 0.1 if any(
-                e.evidence_type == EvidenceType.DIRECT_QUOTE for e in evidences
-            ) else 0
+            direct_quote_bonus = (
+                0.1 if any(e.evidence_type == EvidenceType.DIRECT_QUOTE for e in evidences) else 0
+            )
             chain_confidence = min(base_confidence + source_bonus + direct_quote_bonus, 0.99)
         else:
             chain_confidence = 0.0
@@ -319,7 +318,7 @@ class SourceTracker:
             fact_value=fact_value,
             evidences=evidences,
             source_documents=source_docs,
-            chain_confidence=chain_confidence
+            chain_confidence=chain_confidence,
         )
 
     def get_evidence_chain(self, fact_id: str) -> Optional[EvidenceChain]:
@@ -327,22 +326,25 @@ class SourceTracker:
         return self.fact_chains.get(fact_id)
 
     def generate_citation(
-        self,
-        source_id: str,
-        style: CitationStyle = CitationStyle.SIMPLE
+        self, source_id: str, style: CitationStyle = CitationStyle.SIMPLE
     ) -> Citation:
         """Generate a formatted citation for a source."""
         source = self.sources.get(source_id)
         if not source:
             return Citation(
                 source=SourceDocument(
-                    id=source_id, url="", title="Unknown", content="",
-                    content_hash="", domain="", retrieved_at=utc_now()
+                    id=source_id,
+                    url="",
+                    title="Unknown",
+                    content="",
+                    content_hash="",
+                    domain="",
+                    retrieved_at=utc_now(),
                 ),
                 style=style,
                 formatted="[Source not found]",
                 inline="[?]",
-                footnote="Source not found"
+                footnote="Source not found",
             )
 
         if style == CitationStyle.APA:
@@ -367,11 +369,7 @@ class SourceTracker:
             footnote = f"{source.title} ({source.publication_date.strftime('%Y')}). {source.url}"
 
         return Citation(
-            source=source,
-            style=style,
-            formatted=formatted,
-            inline=inline,
-            footnote=footnote
+            source=source, style=style, formatted=formatted, inline=inline, footnote=footnote
         )
 
     def _format_apa(self, source: SourceDocument) -> str:
@@ -390,7 +388,7 @@ class SourceTracker:
         date = source.publication_date.strftime("%d %b. %Y") if source.publication_date else ""
         access_date = source.retrieved_at.strftime("%d %b. %Y")
 
-        return f'{author}. {title}. {site}, {date}. Web. {access_date}.'
+        return f"{author}. {title}. {site}, {date}. Web. {access_date}."
 
     def _format_chicago(self, source: SourceDocument) -> str:
         """Format citation in Chicago style."""
@@ -399,11 +397,11 @@ class SourceTracker:
         date = source.publication_date.strftime("%B %d, %Y") if source.publication_date else ""
         access_date = source.retrieved_at.strftime("%B %d, %Y")
 
-        return f'{author}. {title}. {date}. Accessed {access_date}. {source.url}.'
+        return f"{author}. {title}. {date}. Accessed {access_date}. {source.url}."
 
     def _format_markdown(self, source: SourceDocument) -> str:
         """Format citation in Markdown link style."""
-        return f'[{source.title}]({source.url})'
+        return f"[{source.title}]({source.url})"
 
     def _format_simple(self, source: SourceDocument) -> str:
         """Format simple citation."""
@@ -413,31 +411,22 @@ class SourceTracker:
         return f"{source.title}{date_str} - {source.url}"
 
     def generate_all_citations(
-        self,
-        style: CitationStyle = CitationStyle.SIMPLE,
-        sort_by: str = "usage"
+        self, style: CitationStyle = CitationStyle.SIMPLE, sort_by: str = "usage"
     ) -> List[Citation]:
         """Generate citations for all sources used."""
         if sort_by == "usage":
             sorted_ids = sorted(
-                self.source_usage.keys(),
-                key=lambda x: self.source_usage[x],
-                reverse=True
+                self.source_usage.keys(), key=lambda x: self.source_usage[x], reverse=True
             )
         elif sort_by == "domain":
-            sorted_ids = sorted(
-                self.sources.keys(),
-                key=lambda x: self.sources[x].domain
-            )
+            sorted_ids = sorted(self.sources.keys(), key=lambda x: self.sources[x].domain)
         else:
             sorted_ids = list(self.sources.keys())
 
         return [self.generate_citation(sid, style) for sid in sorted_ids]
 
     def get_fact_with_citations(
-        self,
-        fact_id: str,
-        style: CitationStyle = CitationStyle.MARKDOWN
+        self, fact_id: str, style: CitationStyle = CitationStyle.MARKDOWN
     ) -> Tuple[str, List[str]]:
         """Get fact text with inline citations."""
         chain = self.fact_chains.get(fact_id)
@@ -464,7 +453,7 @@ class SourceTracker:
             "by_domain": defaultdict(int),
             "by_evidence_type": defaultdict(int),
             "source_reliability": {},
-            "most_cited": []
+            "most_cited": [],
         }
 
         for source in self.sources.values():
@@ -475,17 +464,13 @@ class SourceTracker:
                 summary["by_evidence_type"][ev.evidence_type.value] += 1
 
         # Most cited sources
-        most_cited = sorted(
-            self.source_usage.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )[:10]
+        most_cited = sorted(self.source_usage.items(), key=lambda x: x[1], reverse=True)[:10]
         summary["most_cited"] = [
             {
                 "source_id": sid,
                 "domain": self.sources[sid].domain if sid in self.sources else "unknown",
                 "title": self.sources[sid].title if sid in self.sources else "Unknown",
-                "citations": count
+                "citations": count,
             }
             for sid, count in most_cited
         ]
@@ -505,7 +490,7 @@ class SourceTracker:
                     "value": chain.fact_value,
                     "confidence": chain.chain_confidence,
                     "source_count": chain.source_count,
-                    "primary_source": chain.primary_source.url if chain.primary_source else None
+                    "primary_source": chain.primary_source.url if chain.primary_source else None,
                 }
                 for chain in self.fact_chains.values()
             ],
@@ -515,10 +500,10 @@ class SourceTracker:
                     "url": source.url,
                     "title": source.title,
                     "domain": source.domain,
-                    "citations": self.source_usage.get(source.id, 0)
+                    "citations": self.source_usage.get(source.id, 0),
                 }
                 for source in self.sources.values()
-            ]
+            ],
         }
 
     def to_json(self) -> str:

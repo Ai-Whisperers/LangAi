@@ -12,19 +12,13 @@ import inspect
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Type
 
-from .base_mapper import (
-    BaseMapper,
-    FrameworkType,
-    MappedEdge,
-    MappedGraph,
-    MappedNode,
-    NodeType,
-)
+from .base_mapper import BaseMapper, FrameworkType, MappedEdge, MappedGraph, MappedNode, NodeType
 
 
 @dataclass
 class CrewAIAgent:
     """Representation of a CrewAI Agent."""
+
     name: str
     role: str
     goal: str
@@ -39,6 +33,7 @@ class CrewAIAgent:
 @dataclass
 class CrewAITask:
     """Representation of a CrewAI Task."""
+
     name: str
     description: str
     expected_output: str
@@ -52,6 +47,7 @@ class CrewAITask:
 @dataclass
 class CrewAICrew:
     """Representation of a CrewAI Crew."""
+
     name: str
     agents: List[CrewAIAgent] = field(default_factory=list)
     tasks: List[CrewAITask] = field(default_factory=list)
@@ -92,7 +88,7 @@ class CrewAIMapper(BaseMapper):
         """
         if isinstance(source, str):
             return self.analyze_code(source)
-        elif hasattr(source, 'agents') and hasattr(source, 'tasks'):
+        elif hasattr(source, "agents") and hasattr(source, "tasks"):
             return self.analyze_crew(source)
         elif inspect.isclass(source):
             return self.analyze_class(source)
@@ -111,39 +107,43 @@ class CrewAIMapper(BaseMapper):
         """Analyze CrewAI Crew instance."""
         # Extract agents
         agents = []
-        for agent in getattr(crew, 'agents', []):
-            agents.append(CrewAIAgent(
-                name=getattr(agent, 'role', 'unknown'),
-                role=getattr(agent, 'role', ''),
-                goal=getattr(agent, 'goal', ''),
-                backstory=getattr(agent, 'backstory', ''),
-                tools=[str(t) for t in getattr(agent, 'tools', [])],
-                allow_delegation=getattr(agent, 'allow_delegation', False),
-                verbose=getattr(agent, 'verbose', False)
-            ))
+        for agent in getattr(crew, "agents", []):
+            agents.append(
+                CrewAIAgent(
+                    name=getattr(agent, "role", "unknown"),
+                    role=getattr(agent, "role", ""),
+                    goal=getattr(agent, "goal", ""),
+                    backstory=getattr(agent, "backstory", ""),
+                    tools=[str(t) for t in getattr(agent, "tools", [])],
+                    allow_delegation=getattr(agent, "allow_delegation", False),
+                    verbose=getattr(agent, "verbose", False),
+                )
+            )
 
         # Extract tasks
         tasks = []
-        for task in getattr(crew, 'tasks', []):
-            agent_name = 'unknown'
-            if hasattr(task, 'agent') and task.agent:
-                agent_name = getattr(task.agent, 'role', 'unknown')
+        for task in getattr(crew, "tasks", []):
+            agent_name = "unknown"
+            if hasattr(task, "agent") and task.agent:
+                agent_name = getattr(task.agent, "role", "unknown")
 
-            tasks.append(CrewAITask(
-                name=getattr(task, 'name', f"task_{len(tasks)}"),
-                description=getattr(task, 'description', ''),
-                expected_output=getattr(task, 'expected_output', ''),
-                agent=agent_name,
-                tools=[str(t) for t in getattr(task, 'tools', [])],
-                async_execution=getattr(task, 'async_execution', False)
-            ))
+            tasks.append(
+                CrewAITask(
+                    name=getattr(task, "name", f"task_{len(tasks)}"),
+                    description=getattr(task, "description", ""),
+                    expected_output=getattr(task, "expected_output", ""),
+                    agent=agent_name,
+                    tools=[str(t) for t in getattr(task, "tools", [])],
+                    async_execution=getattr(task, "async_execution", False),
+                )
+            )
 
         crew_data = CrewAICrew(
-            name=getattr(crew, '__class__', type(crew)).__name__,
+            name=getattr(crew, "__class__", type(crew)).__name__,
             agents=agents,
             tasks=tasks,
-            process=getattr(crew, 'process', 'sequential'),
-            verbose=getattr(crew, 'verbose', False)
+            process=getattr(crew, "process", "sequential"),
+            verbose=getattr(crew, "verbose", False),
         )
 
         return self._build_graph(crew_data)
@@ -156,32 +156,32 @@ class CrewAIMapper(BaseMapper):
         # Look for @agent and @task decorated methods
         for name, method in inspect.getmembers(cls, predicate=inspect.isfunction):
             # Check for agent decorator markers
-            if hasattr(method, '_agent_config'):
+            if hasattr(method, "_agent_config"):
                 config = method._agent_config
-                agents.append(CrewAIAgent(
-                    name=name,
-                    role=config.get('role', name),
-                    goal=config.get('goal', ''),
-                    backstory=config.get('backstory', ''),
-                    tools=config.get('tools', [])
-                ))
+                agents.append(
+                    CrewAIAgent(
+                        name=name,
+                        role=config.get("role", name),
+                        goal=config.get("goal", ""),
+                        backstory=config.get("backstory", ""),
+                        tools=config.get("tools", []),
+                    )
+                )
 
             # Check for task decorator markers
-            if hasattr(method, '_task_config'):
+            if hasattr(method, "_task_config"):
                 config = method._task_config
-                tasks.append(CrewAITask(
-                    name=name,
-                    description=config.get('description', ''),
-                    expected_output=config.get('expected_output', ''),
-                    agent=config.get('agent', 'unknown'),
-                    context=config.get('context', [])
-                ))
+                tasks.append(
+                    CrewAITask(
+                        name=name,
+                        description=config.get("description", ""),
+                        expected_output=config.get("expected_output", ""),
+                        agent=config.get("agent", "unknown"),
+                        context=config.get("context", []),
+                    )
+                )
 
-        crew_data = CrewAICrew(
-            name=cls.__name__,
-            agents=agents,
-            tasks=tasks
-        )
+        crew_data = CrewAICrew(name=cls.__name__, agents=agents, tasks=tasks)
 
         return self._build_graph(crew_data)
 
@@ -192,65 +192,56 @@ class CrewAIMapper(BaseMapper):
 
         # Add agent nodes
         for agent in crew.agents:
-            nodes.append(MappedNode(
-                id=f"agent_{agent.name}",
-                name=agent.name,
-                node_type=NodeType.AGENT,
-                framework=FrameworkType.CREWAI,
-                role=agent.role,
-                goal=agent.goal,
-                backstory=agent.backstory,
-                tools=agent.tools,
-                config={
-                    "allow_delegation": agent.allow_delegation,
-                    "verbose": agent.verbose,
-                    "llm": agent.llm
-                }
-            ))
+            nodes.append(
+                MappedNode(
+                    id=f"agent_{agent.name}",
+                    name=agent.name,
+                    node_type=NodeType.AGENT,
+                    framework=FrameworkType.CREWAI,
+                    role=agent.role,
+                    goal=agent.goal,
+                    backstory=agent.backstory,
+                    tools=agent.tools,
+                    config={
+                        "allow_delegation": agent.allow_delegation,
+                        "verbose": agent.verbose,
+                        "llm": agent.llm,
+                    },
+                )
+            )
 
         # Add task nodes and edges
         prev_task_id = None
         for i, task in enumerate(crew.tasks):
             task_id = f"task_{task.name}"
 
-            nodes.append(MappedNode(
-                id=task_id,
-                name=task.name,
-                node_type=NodeType.TASK,
-                framework=FrameworkType.CREWAI,
-                description=task.description,
-                expected_output=task.expected_output,
-                tools=task.tools,
-                context=task.context,
-                config={
-                    "agent": task.agent,
-                    "async_execution": task.async_execution
-                }
-            ))
+            nodes.append(
+                MappedNode(
+                    id=task_id,
+                    name=task.name,
+                    node_type=NodeType.TASK,
+                    framework=FrameworkType.CREWAI,
+                    description=task.description,
+                    expected_output=task.expected_output,
+                    tools=task.tools,
+                    context=task.context,
+                    config={"agent": task.agent, "async_execution": task.async_execution},
+                )
+            )
 
             # Add edge from agent to task
             agent_id = f"agent_{task.agent}"
-            edges.append(MappedEdge(
-                source=agent_id,
-                target=task_id,
-                edge_type="executes"
-            ))
+            edges.append(MappedEdge(source=agent_id, target=task_id, edge_type="executes"))
 
             # Add sequential edge between tasks
             if crew.process == "sequential" and prev_task_id:
-                edges.append(MappedEdge(
-                    source=prev_task_id,
-                    target=task_id,
-                    edge_type="default"
-                ))
+                edges.append(MappedEdge(source=prev_task_id, target=task_id, edge_type="default"))
 
             # Add context edges
             for ctx_task in task.context:
-                edges.append(MappedEdge(
-                    source=f"task_{ctx_task}",
-                    target=task_id,
-                    edge_type="context"
-                ))
+                edges.append(
+                    MappedEdge(source=f"task_{ctx_task}", target=task_id, edge_type="context")
+                )
 
             prev_task_id = task_id
 
@@ -265,10 +256,7 @@ class CrewAIMapper(BaseMapper):
             edges=edges,
             entry_point=entry_point,
             exit_points=exit_points,
-            config={
-                "process": crew.process,
-                "verbose": crew.verbose
-            }
+            config={"process": crew.process, "verbose": crew.verbose},
         )
 
     def to_langgraph(self, graph: MappedGraph) -> Any:
@@ -279,9 +267,10 @@ class CrewAIMapper(BaseMapper):
             LangGraph StateGraph (not compiled)
         """
         try:
-            from langgraph.graph import StateGraph, END
-            from typing import TypedDict, Annotated
             import operator
+            from typing import Annotated, TypedDict
+
+            from langgraph.graph import END, StateGraph
         except ImportError:
             raise ImportError("langgraph is required for conversion")
 
@@ -311,8 +300,9 @@ class CrewAIMapper(BaseMapper):
                         "messages": [{"role": "assistant", "content": result}],
                         "task_results": {task_name: result},
                         "current_task": task_name,
-                        "completed_tasks": [task_name]
+                        "completed_tasks": [task_name],
                     }
+
                 return task_func
 
             workflow.add_node(node.id, make_task_node(node))
@@ -363,14 +353,14 @@ class CrewAIASTVisitor(ast.NodeVisitor):
             if isinstance(decorator, ast.Name) and decorator.id == "agent":
                 self._extract_agent(node)
             elif isinstance(decorator, ast.Call):
-                if hasattr(decorator.func, 'id') and decorator.func.id == "agent":
+                if hasattr(decorator.func, "id") and decorator.func.id == "agent":
                     self._extract_agent(node)
 
             # Check for @task decorator
             if isinstance(decorator, ast.Name) and decorator.id == "task":
                 self._extract_task(node)
             elif isinstance(decorator, ast.Call):
-                if hasattr(decorator.func, 'id') and decorator.func.id == "task":
+                if hasattr(decorator.func, "id") and decorator.func.id == "task":
                     self._extract_task(node)
 
         self.generic_visit(node)
@@ -378,17 +368,12 @@ class CrewAIASTVisitor(ast.NodeVisitor):
     def _extract_agent(self, node: ast.FunctionDef):
         """Extract agent info from function."""
         # Try to extract from return statement
-        agent = CrewAIAgent(
-            name=node.name,
-            role=node.name,
-            goal="",
-            backstory=""
-        )
+        agent = CrewAIAgent(name=node.name, role=node.name, goal="", backstory="")
 
         # Look for Agent() call in return
         for child in ast.walk(node):
             if isinstance(child, ast.Call):
-                if hasattr(child.func, 'id') and child.func.id == "Agent":
+                if hasattr(child.func, "id") and child.func.id == "Agent":
                     for keyword in child.keywords:
                         if keyword.arg == "role" and isinstance(keyword.value, ast.Constant):
                             agent.role = keyword.value.value
@@ -401,35 +386,29 @@ class CrewAIASTVisitor(ast.NodeVisitor):
 
     def _extract_task(self, node: ast.FunctionDef):
         """Extract task info from function."""
-        task = CrewAITask(
-            name=node.name,
-            description="",
-            expected_output="",
-            agent=""
-        )
+        task = CrewAITask(name=node.name, description="", expected_output="", agent="")
 
         # Look for Task() call in return
         for child in ast.walk(node):
             if isinstance(child, ast.Call):
-                if hasattr(child.func, 'id') and child.func.id == "Task":
+                if hasattr(child.func, "id") and child.func.id == "Task":
                     for keyword in child.keywords:
                         if keyword.arg == "description" and isinstance(keyword.value, ast.Constant):
                             task.description = keyword.value.value
-                        elif keyword.arg == "expected_output" and isinstance(keyword.value, ast.Constant):
+                        elif keyword.arg == "expected_output" and isinstance(
+                            keyword.value, ast.Constant
+                        ):
                             task.expected_output = keyword.value.value
                         elif keyword.arg == "agent":
                             # Try to resolve agent reference
                             if isinstance(keyword.value, ast.Call):
-                                if hasattr(keyword.value.func, 'attr'):
+                                if hasattr(keyword.value.func, "attr"):
                                     task.agent = keyword.value.func.attr
 
         self.crew.tasks.append(task)
 
 
-def map_crewai_to_langgraph(
-    source: Any,
-    compile: bool = False
-) -> Any:
+def map_crewai_to_langgraph(source: Any, compile: bool = False) -> Any:
     """
     Convenience function to map CrewAI to LangGraph.
 

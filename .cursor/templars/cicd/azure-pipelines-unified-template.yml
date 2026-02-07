@@ -10,7 +10,7 @@ provenance:
 ---
 # UNIFIED REFERENCE CI/CD PIPELINE
 # Tag-Based Versioning with Two-Stage RC Workflow
-# 
+#
 # IMPLEMENTATION STATUS: 60/60 (Gold Standard)
 # - ✅ Full 5-stage pipeline operational
 # - ✅ Tag parsing and version extraction
@@ -76,7 +76,7 @@ variables:
   buildConfiguration: 'Release'
   dotnetVersion: '9.x'
   solutionPath: '**/*.sln'  # Adjust per repo
-  
+
   # Dynamic coverage threshold based on branch/tag
   ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/tags/release-')) }}:
     coverageThreshold: 80
@@ -84,7 +84,7 @@ variables:
     coverageThreshold: 75
   ${{ else }}:
     coverageThreshold: 70
-  
+
   # Determine if this is a tag-triggered build
   isTagBuild: ${{ startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}
 
@@ -102,7 +102,7 @@ stages:
   - job: Build
     displayName: 'Build and Test'
     steps:
-    
+
     # Install .NET SDK
     - task: UseDotNet@2
       displayName: 'Install .NET SDK $(dotnetVersion)'
@@ -175,7 +175,7 @@ stages:
   - job: VulnerabilityScan
     displayName: 'Vulnerability Analysis'
     steps:
-    
+
     - task: UseDotNet@2
       displayName: 'Install .NET SDK'
       inputs:
@@ -199,21 +199,21 @@ stages:
           Write-Host "=" * 80
           Write-Host "SECURITY VULNERABILITY SCAN"
           Write-Host "=" * 80
-          
+
           $result = dotnet list package --vulnerable --include-transitive 2>&1
-          
+
           if ($result -match "has the following vulnerable packages") {
             Write-Host ""
             Write-Host "⚠️  VULNERABLE PACKAGES DETECTED!" -ForegroundColor Yellow
             Write-Host ""
             Write-Host $result
-            
+
             # Count severity levels
             $critical = ($result | Select-String -Pattern "Critical" -AllMatches).Matches.Count
             $high = ($result | Select-String -Pattern "High" -AllMatches).Matches.Count
             $moderate = ($result | Select-String -Pattern "Moderate" -AllMatches).Matches.Count
             $low = ($result | Select-String -Pattern "Low" -AllMatches).Matches.Count
-            
+
             Write-Host ""
             Write-Host "Vulnerability Summary:" -ForegroundColor Yellow
             Write-Host "  🔴 Critical: $critical"
@@ -221,7 +221,7 @@ stages:
             Write-Host "  🟡 Moderate: $moderate"
             Write-Host "  🔵 Low: $low"
             Write-Host ""
-            
+
             # Fail on Critical or High
             if ($result -match "Critical|High") {
               Write-Host "##vso[task.logissue type=error]Critical or High severity vulnerabilities found!"
@@ -250,7 +250,7 @@ stages:
   - job: CoverageCheck
     displayName: 'Check Coverage Threshold'
     steps:
-    
+
     - task: UseDotNet@2
       displayName: 'Install .NET SDK'
       inputs:
@@ -289,40 +289,40 @@ stages:
           Write-Host "=" * 80
           Write-Host "CODE COVERAGE ANALYSIS"
           Write-Host "=" * 80
-          
+
           $coverageFiles = Get-ChildItem -Path "$(Agent.TempDirectory)/TestResults" -Recurse -Filter "coverage.cobertura.xml"
-          
+
           if ($coverageFiles.Count -eq 0) {
             Write-Host "##vso[task.logissue type=warning]No coverage files found"
             Write-Host "⚠️  Warning: No coverage data available" -ForegroundColor Yellow
             exit 0
           }
-          
+
           Write-Host ""
           Write-Host "Found $($coverageFiles.Count) coverage file(s)"
           Write-Host ""
-          
+
           # Merge coverage files and generate HTML report
           $inputFiles = ($coverageFiles | ForEach-Object { $_.FullName }) -join ";"
           reportgenerator "-reports:$inputFiles" "-targetdir:$(Build.ArtifactStagingDirectory)/coverage" "-reporttypes:Cobertura;HtmlSummary;Html"
-          
+
           # Parse coverage percentage
           [xml]$coverage = Get-Content "$(Build.ArtifactStagingDirectory)/coverage/Cobertura.xml"
           $lineRate = [double]$coverage.coverage.'line-rate' * 100
           $branchRate = [double]$coverage.coverage.'branch-rate' * 100
-          
+
           Write-Host "Coverage Results:" -ForegroundColor Cyan
           Write-Host "  Line Coverage:   $([math]::Round($lineRate, 2))%"
           Write-Host "  Branch Coverage: $([math]::Round($branchRate, 2))%"
           Write-Host "  Required Threshold: $(coverageThreshold)%"
           Write-Host ""
-          
+
           if ($lineRate -lt $(coverageThreshold)) {
             Write-Host "##vso[task.logissue type=error]Code coverage ($([math]::Round($lineRate, 2))%) is below threshold ($(coverageThreshold)%)"
             Write-Host "❌ BUILD FAILED: Coverage below threshold!" -ForegroundColor Red
             exit 1
           }
-          
+
           Write-Host "✅ Coverage threshold met!" -ForegroundColor Green
           Write-Host "##vso[task.complete result=Succeeded;]Coverage check passed"
 
@@ -340,7 +340,7 @@ stages:
 
 - stage: Package_and_SBOM
   displayName: 'Package and Generate SBOM'
-  dependsOn: 
+  dependsOn:
     - Build_and_Validate
     - Security_Scan
     - Coverage_Analysis
@@ -350,7 +350,7 @@ stages:
   - job: Package
     displayName: 'Create NuGet Packages and SBOM'
     steps:
-    
+
     - task: UseDotNet@2
       displayName: 'Install .NET SDK'
       inputs:
@@ -368,46 +368,46 @@ stages:
           Write-Host "=" * 80
           Write-Host "PARSING VERSION TAG: $tagName"
           Write-Host "=" * 80
-          
+
           # Split tag by hyphens
           $parts = $tagName.Split("-")
-          
+
           if ($parts.Length -lt 2) {
             Write-Host "##vso[task.logissue type=error]Invalid tag format. Expected: [type]-[version] or [type]-[version]-[suffix]"
             exit 1
           }
-          
+
           $type = $parts[0]           # release | test | coverage
           $version = $parts[1]        # X.Y.Z
           $suffix = ""
-          
+
           # Check for suffix (rc1, rc2, beta, alpha, etc.)
           if ($parts.Length -gt 2) {
             $suffix = $parts[2]
           }
-          
+
           # Validate type
           $validTypes = @("release", "test", "coverage")
           if ($type -notin $validTypes) {
             Write-Host "##vso[task.logissue type=error]Invalid tag type '$type'. Must be: release, test, or coverage"
             exit 1
           }
-          
+
           # Validate version format (X.Y.Z)
           if ($version -notmatch '^\d+\.\d+\.\d+$') {
             Write-Host "##vso[task.logissue type=error]Invalid version format '$version'. Expected: X.Y.Z (e.g., 1.0.0)"
             exit 1
           }
-          
+
           # Determine full package version
           $fullVersion = if ($suffix) { "$version-$suffix" } else { $version }
-          
+
           # Output variables for Azure DevOps
           Write-Host "##vso[task.setvariable variable=releaseType;isoutput=true]$type"
           Write-Host "##vso[task.setvariable variable=packageVersion;isoutput=true]$version"
           Write-Host "##vso[task.setvariable variable=versionSuffix;isoutput=true]$suffix"
           Write-Host "##vso[task.setvariable variable=fullPackageVersion;isoutput=true]$fullVersion"
-          
+
           Write-Host ""
           Write-Host "✅ Parsed successfully:" -ForegroundColor Green
           Write-Host "   Type: $type"
@@ -471,20 +471,20 @@ stages:
           Write-Host "=" * 80
           Write-Host "GENERATING SOFTWARE BILL OF MATERIALS (SBOM)"
           Write-Host "=" * 80
-          
+
           # Install CycloneDX tool
           dotnet tool install --global CycloneDX --version 3.0.0 2>&1 | Out-Null
-          
+
           # Generate SBOM
           $version = if ("$(parseVersion.fullPackageVersion)") { "$(parseVersion.fullPackageVersion)" } else { "build-$(Build.BuildId)" }
           $outputDir = "$(Build.ArtifactStagingDirectory)/sbom"
           New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
-          
+
           dotnet CycloneDX "$(solutionPath)" `
             -o "$outputDir" `
             -f "sbom-$version.json" `
             -sv "$version"
-          
+
           Write-Host ""
           Write-Host "✅ SBOM generated: sbom-$version.json" -ForegroundColor Green
           Write-Host ""
@@ -539,7 +539,7 @@ stages:
   - job: Report
     displayName: 'Generate Documentation Report'
     steps:
-    
+
     - task: UseDotNet@2
       displayName: 'Install .NET SDK'
       inputs:

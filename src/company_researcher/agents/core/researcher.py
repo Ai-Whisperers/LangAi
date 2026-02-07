@@ -14,26 +14,22 @@ Enhanced with multilingual search support for LATAM and international companies.
 
 from typing import Any, Callable, Dict, List, Optional, Set
 from urllib.parse import urlparse
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
 
 from ...config import get_config
-from ...llm.client_factory import (
-    get_anthropic_client, get_tavily_client, safe_extract_json
-)
-from ...state import OverallState
-from ...prompts import GENERATE_QUERIES_PROMPT
 from ...crawling.domain_explorer import DomainExplorer, format_exploration_for_research
+from ...llm.client_factory import get_anthropic_client, get_tavily_client, safe_extract_json
+from ...prompts import GENERATE_QUERIES_PROMPT
+from ...state import OverallState
 
 # Import enhancement modules
 try:
-    from ..research.multilingual_search import (
-        create_multilingual_generator
-    )
-    from ..research.data_threshold import (
-        create_threshold_checker
-    )
+    from ..research.data_threshold import create_threshold_checker
+    from ..research.multilingual_search import create_multilingual_generator
+
     ENHANCEMENTS_AVAILABLE = True
 except ImportError:
     ENHANCEMENTS_AVAILABLE = False
@@ -43,11 +39,7 @@ except ImportError:
 class ResearcherAgent:
     """Researcher agent for finding and gathering quality sources."""
 
-    def __init__(
-        self,
-        search_tool: Optional[Callable] = None,
-        llm_client: Optional[Any] = None
-    ):
+    def __init__(self, search_tool: Optional[Callable] = None, llm_client: Optional[Any] = None):
         self.search_tool = search_tool
         self.llm_client = llm_client or get_anthropic_client()
 
@@ -58,16 +50,12 @@ class ResearcherAgent:
         Note: This method is sync because the underlying node function is sync.
         The LangGraph workflow does not use async operations.
         """
-        state = {
-            "company_name": company_name,
-            "missing_info": missing_info or []
-        }
+        state = {"company_name": company_name, "missing_info": missing_info or []}
         return researcher_agent_node(state)
 
 
 def create_researcher_agent(
-    search_tool: Callable = None,
-    llm_client: Any = None
+    search_tool: Callable = None, llm_client: Any = None
 ) -> ResearcherAgent:
     """Factory function to create a ResearcherAgent."""
     return ResearcherAgent(search_tool=search_tool, llm_client=llm_client)
@@ -105,10 +93,9 @@ def _detect_company_region(company_name: str, initial_results: List[Dict] = None
 
     # Check initial search results for location hints
     if initial_results:
-        all_text = " ".join([
-            r.get("content", "") + " " + r.get("title", "")
-            for r in initial_results[:5]
-        ]).lower()
+        all_text = " ".join(
+            [r.get("content", "") + " " + r.get("title", "") for r in initial_results[:5]]
+        ).lower()
 
         for country, indicators in latam_indicators.items():
             matches = sum(1 for ind in indicators if ind in all_text)
@@ -135,9 +122,19 @@ def _identify_company_domains(results: List[Dict], company_name: str) -> List[st
 
     # Patterns that suggest official company sites
     official_patterns = [
-        "about", "company", "corporate", "oficial", "official",
-        "who-we-are", "quienes-somos", "nosotros", "sobre-nos",
-        "empresa", "institucional", "investors", "inversionistas"
+        "about",
+        "company",
+        "corporate",
+        "oficial",
+        "official",
+        "who-we-are",
+        "quienes-somos",
+        "nosotros",
+        "sobre-nos",
+        "empresa",
+        "institucional",
+        "investors",
+        "inversionistas",
     ]
 
     seen_domains: Set[str] = set()
@@ -173,10 +170,7 @@ def _identify_company_domains(results: List[Dict], company_name: str) -> List[st
     return company_domains[:2]  # Limit to top 2 domains
 
 
-def _explore_company_domains(
-    domains: List[str],
-    config: Any
-) -> List[Dict[str, Any]]:
+def _explore_company_domains(domains: List[str], config: Any) -> List[Dict[str, Any]]:
     """
     Explore identified company domains for additional content.
 
@@ -207,10 +201,7 @@ def _explore_company_domains(
             formatted = format_exploration_for_research(result)
             all_exploration_results.extend(formatted)
 
-            logger.info(
-                f"Domain exploration found {len(formatted)} pages "
-                f"from {result.domain}"
-            )
+            logger.info(f"Domain exploration found {len(formatted)} pages " f"from {result.domain}")
         except Exception as e:
             logger.warning(f"Domain exploration failed for {domain_url}: {e}")
 
@@ -218,9 +209,7 @@ def _explore_company_domains(
 
 
 def _generate_multilingual_queries(
-    company_name: str,
-    country: str,
-    topics: List[str] = None
+    company_name: str, country: str, topics: List[str] = None
 ) -> List[str]:
     """
     Generate multilingual search queries for a company.
@@ -240,7 +229,7 @@ def _generate_multilingual_queries(
             f"{company_name} revenue financial performance",
             f"{company_name} products services",
             f"{company_name} competitors market position",
-            f"{company_name} recent news developments"
+            f"{company_name} recent news developments",
         ]
 
     generator = create_multilingual_generator()
@@ -250,9 +239,7 @@ def _generate_multilingual_queries(
 
     # Generate queries
     query_dict = generator.generate_queries(
-        company_name=company_name,
-        country=country,
-        topics=topics
+        company_name=company_name, country=country, topics=topics
     )
 
     # Flatten into list
@@ -276,9 +263,7 @@ def _generate_multilingual_queries(
 
 
 def _check_data_threshold(
-    results: List[Dict],
-    company_name: str,
-    company_type: str = "public"
+    results: List[Dict], company_name: str, company_type: str = "public"
 ) -> Dict[str, Any]:
     """
     Check if search results meet minimum data thresholds.
@@ -296,19 +281,19 @@ def _check_data_threshold(
             "passes_threshold": True,
             "coverage": 50.0,
             "recommendations": [],
-            "retry_strategies": []
+            "retry_strategies": [],
         }
 
     checker = create_threshold_checker()
 
     # Combine content from results
-    combined_content = "\n\n".join([
-        f"Title: {r.get('title', '')}\n{r.get('content', '')}"
-        for r in results
-    ])
+    combined_content = "\n\n".join(
+        [f"Title: {r.get('title', '')}\n{r.get('content', '')}" for r in results]
+    )
 
     # Import CompanyType
     from ...research.metrics_validator import CompanyType
+
     type_map = {
         "public": CompanyType.PUBLIC,
         "private": CompanyType.PRIVATE,
@@ -317,9 +302,7 @@ def _check_data_threshold(
     ctype = type_map.get(company_type.lower(), CompanyType.PUBLIC)
 
     result = checker.check_threshold(
-        content=combined_content,
-        company_name=company_name,
-        company_type=ctype
+        content=combined_content, company_name=company_name, company_type=ctype
     )
 
     return {
@@ -327,7 +310,7 @@ def _check_data_threshold(
         "coverage": result.overall_coverage,
         "recommendations": result.recommendations,
         "retry_strategies": [s.value for s in result.retry_strategies],
-        "section_coverage": {k: v for k, v in result.section_coverage.items()}
+        "section_coverage": {k: v for k, v in result.section_coverage.items()},
     }
 
 
@@ -397,7 +380,14 @@ def researcher_agent_node(state: OverallState) -> Dict[str, Any]:
             else:
                 query_topics.append("news")
     else:
-        query_topics = ["revenue", "annual_report", "market_share", "competitors", "leadership", "news"]
+        query_topics = [
+            "revenue",
+            "annual_report",
+            "market_share",
+            "competitors",
+            "leadership",
+            "news",
+        ]
 
     # Generate multilingual queries
     if ENHANCEMENTS_AVAILABLE and company_region != "united_states":
@@ -405,10 +395,7 @@ def researcher_agent_node(state: OverallState) -> Dict[str, Any]:
         logger.info(f"Generated {len(queries)} multilingual queries for {company_region}")
     else:
         # Use LLM to generate queries
-        prompt = GENERATE_QUERIES_PROMPT.format(
-            company_name=company_name,
-            num_queries=5
-        )
+        prompt = GENERATE_QUERIES_PROMPT.format(company_name=company_name, num_queries=5)
 
         if missing_info:
             query_context = f"""
@@ -421,7 +408,7 @@ Previous research had gaps. Focus queries on:
             model=config.llm_model,
             max_tokens=config.researcher_max_tokens,
             temperature=config.researcher_temperature,
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
         )
 
         fallback_queries = [
@@ -429,14 +416,10 @@ Previous research had gaps. Focus queries on:
             f"{company_name} revenue financial performance",
             f"{company_name} products services",
             f"{company_name} competitors market position",
-            f"{company_name} recent news developments"
+            f"{company_name} recent news developments",
         ]
 
-        queries = safe_extract_json(
-            response,
-            default=fallback_queries,
-            agent_name="researcher"
-        )
+        queries = safe_extract_json(response, default=fallback_queries, agent_name="researcher")
 
         if not isinstance(queries, list):
             queries = fallback_queries
@@ -457,31 +440,32 @@ Previous research had gaps. Focus queries on:
 
     # Add initial results to sources
     for result in initial_results:
-        sources.append({
-            "title": result.get("title", ""),
-            "url": result.get("url", ""),
-            "score": result.get("score", 0.0)
-        })
+        sources.append(
+            {
+                "title": result.get("title", ""),
+                "url": result.get("url", ""),
+                "score": result.get("score", 0.0),
+            }
+        )
 
     # Execute remaining queries
     for query in queries:
         logger.debug(f"Executing search: {query}")
         try:
-            search_response = tavily_client.search(
-                query=query,
-                max_results=3
-            )
+            search_response = tavily_client.search(query=query, max_results=3)
 
             for result in search_response.get("results", []):
                 # Avoid duplicate URLs
                 result_url = result.get("url", "")
                 if not any(s.get("url") == result_url for s in sources):
                     all_results.append(result)
-                    sources.append({
-                        "title": result.get("title", ""),
-                        "url": result_url,
-                        "score": result.get("score", 0.0)
-                    })
+                    sources.append(
+                        {
+                            "title": result.get("title", ""),
+                            "url": result_url,
+                            "score": result.get("score", 0.0),
+                        }
+                    )
         except Exception as e:
             logger.warning(f"Search failed for query '{query}': {e}")
 
@@ -523,11 +507,13 @@ Previous research had gaps. Focus queries on:
                             result_url = result.get("url", "")
                             if not any(s.get("url") == result_url for s in sources):
                                 all_results.append(result)
-                                sources.append({
-                                    "title": result.get("title", ""),
-                                    "url": result_url,
-                                    "score": result.get("score", 0.0)
-                                })
+                                sources.append(
+                                    {
+                                        "title": result.get("title", ""),
+                                        "url": result_url,
+                                        "score": result.get("score", 0.0),
+                                    }
+                                )
                     except Exception as e:
                         logger.warning(f"Retry search failed: {e}")
 
@@ -547,11 +533,13 @@ Previous research had gaps. Focus queries on:
                             result_url = result.get("url", "")
                             if not any(s.get("url") == result_url for s in sources):
                                 all_results.append(result)
-                                sources.append({
-                                    "title": result.get("title", ""),
-                                    "url": result_url,
-                                    "score": result.get("score", 0.0)
-                                })
+                                sources.append(
+                                    {
+                                        "title": result.get("title", ""),
+                                        "url": result_url,
+                                        "score": result.get("score", 0.0),
+                                    }
+                                )
                     except Exception as e:
                         logger.warning(f"Parent company search failed: {e}")
 
@@ -584,12 +572,14 @@ Previous research had gaps. Focus queries on:
             # Add exploration results to all_results
             for exp_result in exploration_results:
                 all_results.append(exp_result)
-                sources.append({
-                    "title": exp_result.get("title", ""),
-                    "url": exp_result.get("url", ""),
-                    "score": exp_result.get("score", 0.0),
-                    "source": "domain_explorer"
-                })
+                sources.append(
+                    {
+                        "title": exp_result.get("title", ""),
+                        "url": exp_result.get("url", ""),
+                        "score": exp_result.get("score", 0.0),
+                        "source": "domain_explorer",
+                    }
+                )
 
     logger.info(f"Total sources after exploration: {len(all_results)}")
 

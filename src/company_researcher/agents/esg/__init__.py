@@ -18,29 +18,20 @@ Usage:
     )
 """
 
-from .models import (
-    # Enums
-    ESGCategory,
-    ESGRating,
-    ControversySeverity,
-    # Dataclasses
-    ESGMetric,
-    Controversy,
-    ESGScore,
-    ESGAnalysis,
-    # Indicator frameworks
+from .agent import ESGAgent, create_esg_agent, esg_agent_node
+from .models import (  # Enums; Dataclasses; Indicator frameworks
     ENVIRONMENTAL_INDICATORS,
-    SOCIAL_INDICATORS,
     GOVERNANCE_INDICATORS,
+    SOCIAL_INDICATORS,
+    Controversy,
+    ControversySeverity,
+    ESGAnalysis,
+    ESGCategory,
+    ESGMetric,
+    ESGRating,
+    ESGScore,
 )
-
 from .scorer import ESGScorer
-
-from .agent import (
-    ESGAgent,
-    esg_agent_node,
-    create_esg_agent,
-)
 
 __all__ = [
     # Enums

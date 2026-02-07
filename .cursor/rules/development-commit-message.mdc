@@ -1,6 +1,6 @@
 ---
 description: Enforces standards and required steps for clear, reliable commit messages and commits.
-globs: 
+globs:
 alwaysApply: false
 ---
 ---
@@ -85,14 +85,3 @@ To ensure all commit messages are clear, consistent, and meaningful, improving p
 - [ ] Verify that the commit was successful (check for confirmation in the output or use `git log -1`).
 - [ ] If the commit fails or is not executed, do not assume success—retry the commit or alert the user.
 - [ ] Never leave files staged but uncommitted at the end of the process.
-
-
-
-
-
-
-
-
-
-
-

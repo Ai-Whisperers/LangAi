@@ -5,7 +5,7 @@
 ### 1. Brand Identity
 - Visual Identity: Strong, consistent Latin American e-commerce platform with recognizable blue and yellow color palette
 - Brand Voice: Friendly, accessible, tech-forward with a regional empowerment narrative
-- Core Values: 
+- Core Values:
   * Digital inclusion
   * Economic opportunity
   * Technological innovation
@@ -21,7 +21,7 @@
 
 ### 3. Brand Positioning
 - Market Position: Dominant e-commerce and fintech ecosystem in Latin America
-- Differentiation: 
+- Differentiation:
   * Integrated marketplace + financial services
   * Deep regional understanding
   * Comprehensive digital infrastructure

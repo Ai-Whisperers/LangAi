@@ -9,7 +9,7 @@ implements: scripts.python-standards
 requires:
   - rule.scripts.core-principles.v1
 model_hints: { temp: 0.2, top_p: 0.9 }
-provenance: 
+provenance:
   owner: team-devops
   last_review: 2025-12-07
   created: 2025-12-07
@@ -380,13 +380,13 @@ StatusType = Literal['success', 'warning', 'error', 'info']
 def supports_unicode() -> bool:
     """
     Detect if the environment supports Unicode output.
-    
+
     Checks Python version, Azure Pipelines environment, and stdout encoding
     to determine if Unicode (emojis) can be safely displayed.
-    
+
     Returns:
         bool: True if Unicode is supported, False otherwise.
-    
+
     Example:
         >>> if supports_unicode():
         ...     print("✅ Unicode supported")
@@ -396,11 +396,11 @@ def supports_unicode() -> bool:
     # PowerShell 7+ environments (check PSModulePath)
     if sys.version_info >= (3, 9) and os.getenv('PSModulePath'):
         return True
-    
+
     # Azure Pipelines supports Unicode
     if os.getenv('AGENT_TEMPDIRECTORY'):
         return True
-    
+
     # Check if stdout encoding is UTF-8
     try:
         encoding = sys.stdout.encoding.lower()
@@ -412,28 +412,28 @@ def supports_unicode() -> bool:
 def get_status_emoji(status: StatusType) -> str:
     """
     Get status indicator (emoji or ASCII fallback).
-    
+
     Returns appropriate Unicode emoji or ASCII text based on environment
     support detected by supports_unicode().
-    
+
     Args:
         status: Status type ('success', 'warning', 'error', 'info')
-    
+
     Returns:
         str: Emoji or ASCII representation of status.
-    
+
     Example:
         >>> checkmark = get_status_emoji('success')
         >>> print(f"{checkmark} All tests passed!")
         ✅ All tests passed!  # (or "[OK] All tests passed!" in ASCII mode)
-    
+
     Raises:
         ValueError: If status is not one of the valid types.
     """
     valid_statuses = {'success', 'warning', 'error', 'info'}
     if status not in valid_statuses:
         raise ValueError(f"Invalid status '{status}'. Must be one of {valid_statuses}")
-    
+
     if supports_unicode():
         emoji_map = {
             'success': '✅',
@@ -448,7 +448,7 @@ def get_status_emoji(status: StatusType) -> str:
             'error': '[ERR]',
             'info': '[INFO]'
         }
-    
+
     return emoji_map[status]
 
 
@@ -489,14 +489,14 @@ def main() -> int:
     try:
         checkmark = get_status_emoji('success')
         warning = get_status_emoji('warning')
-        
+
         print(f"{checkmark} Validation started")
-        
+
         # Script logic here...
-        
+
         print(f"{warning} Some issues found")
         return 0
-        
+
     except Exception as e:
         error = get_status_emoji('error')
         print(f"{error} Error: {e}", file=sys.stderr)

@@ -12,20 +12,21 @@ This subgraph routes dynamically based on company type to optimize
 data source selection and reduce unnecessary API calls.
 """
 
-from typing import Dict, Any, Optional, Literal
 from dataclasses import dataclass, field
-from langgraph.graph import StateGraph, START, END
+from typing import Any, Dict, Literal, Optional
 
-from ...state.workflow import OverallState
+from langgraph.graph import END, START, StateGraph
+
 from ...agents.core.company_classifier import classify_company_node
+from ...state.workflow import OverallState
+from ...utils import get_logger
 from ...workflows.nodes import (
+    SEC_EDGAR_AVAILABLE,
     generate_queries_node,
     search_node,
     sec_edgar_node,
     website_scraping_node,
-    SEC_EDGAR_AVAILABLE,
 )
-from ...utils import get_logger
 
 logger = get_logger(__name__)
 
@@ -55,6 +56,7 @@ class DataCollectionConfig:
 # ============================================================================
 # Routing Functions
 # ============================================================================
+
 
 def route_by_company_type(state: OverallState) -> str:
     """
@@ -119,6 +121,7 @@ def route_after_search(state: OverallState) -> str:
 # ============================================================================
 # Enhanced Nodes for Specific Company Types
 # ============================================================================
+
 
 def startup_search_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -200,9 +203,8 @@ def international_search_node(state: OverallState) -> Dict[str, Any]:
 # Subgraph Creation
 # ============================================================================
 
-def create_data_collection_subgraph(
-    config: Optional[DataCollectionConfig] = None
-) -> StateGraph:
+
+def create_data_collection_subgraph(config: Optional[DataCollectionConfig] = None) -> StateGraph:
     """
     Create the data collection subgraph.
 
@@ -270,7 +272,7 @@ def create_data_collection_subgraph(
                 "public_intl": "search_international",
                 "startup": "search_startup",
                 "private": "search_standard",
-            }
+            },
         )
 
         # After search, route to SEC or skip
@@ -279,8 +281,10 @@ def create_data_collection_subgraph(
             route_after_search,
             {
                 "sec_edgar": "sec_edgar" if config.enable_sec_edgar else "website_scraping",
-                "website_scraping": "website_scraping" if config.enable_website_scraping else "merge_results",
-            }
+                "website_scraping": (
+                    "website_scraping" if config.enable_website_scraping else "merge_results"
+                ),
+            },
         )
 
         # International and startup routes skip SEC
@@ -374,6 +378,7 @@ def merge_data_results_node(state: OverallState) -> Dict[str, Any]:
 # ============================================================================
 # Simple Linear Subgraph (Alternative)
 # ============================================================================
+
 
 def create_simple_data_collection_subgraph() -> StateGraph:
     """

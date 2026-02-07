@@ -28,4 +28,3 @@ Would you like to provide some sources for me to analyze?
 ---
 
 ## Sources
-

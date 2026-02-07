@@ -12,11 +12,13 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List
+
 from ...utils import utc_now
 
 
 class ConfidenceLevel(str, Enum):
     """Confidence level classifications."""
+
     VERY_HIGH = "very_high"  # >90%
     HIGH = "high"  # 75-90%
     MEDIUM = "medium"  # 50-75%
@@ -26,6 +28,7 @@ class ConfidenceLevel(str, Enum):
 
 class ReflectionAspect(str, Enum):
     """Aspects to reflect on."""
+
     COMPLETENESS = "completeness"
     ACCURACY = "accuracy"
     RELEVANCE = "relevance"
@@ -37,6 +40,7 @@ class ReflectionAspect(str, Enum):
 @dataclass
 class ReflectionScore:
     """Score for a reflection aspect."""
+
     aspect: ReflectionAspect
     score: float  # 0-1
     confidence: float  # 0-1
@@ -47,6 +51,7 @@ class ReflectionScore:
 @dataclass
 class SelfReflectionResult:
     """Result of agent self-reflection."""
+
     overall_confidence: float
     confidence_level: ConfidenceLevel
     aspect_scores: List[ReflectionScore]
@@ -76,7 +81,7 @@ class SelfReflectionResult:
                     "aspect": s.aspect.value,
                     "score": s.score,
                     "confidence": s.confidence,
-                    "reasoning": s.reasoning
+                    "reasoning": s.reasoning,
                 }
                 for s in self.aspect_scores
             ],
@@ -85,7 +90,7 @@ class SelfReflectionResult:
             "strengths": self.strengths,
             "weaknesses": self.weaknesses,
             "improvement_suggestions": self.improvement_suggestions,
-            "reflected_at": self.reflected_at.isoformat()
+            "reflected_at": self.reflected_at.isoformat(),
         }
 
 
@@ -114,13 +119,10 @@ class SelfReflectionMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._reflection_history: List[SelfReflectionResult] = []
-        self._llm_client = kwargs.get('llm_client')
+        self._llm_client = kwargs.get("llm_client")
 
     async def reflect_on_output(
-        self,
-        output: Dict[str, Any],
-        query: str = "",
-        sources: List[Dict] = None
+        self, output: Dict[str, Any], query: str = "", sources: List[Dict] = None
     ) -> SelfReflectionResult:
         """
         Perform self-reflection on agent output.
@@ -145,14 +147,8 @@ class SelfReflectionMixin:
         confidence_level = self._classify_confidence(overall_confidence)
 
         # Identify strengths and weaknesses
-        strengths = [
-            s.aspect.value for s in aspect_scores
-            if s.score >= 0.7
-        ]
-        weaknesses = [
-            s.aspect.value for s in aspect_scores
-            if s.score < 0.5
-        ]
+        strengths = [s.aspect.value for s in aspect_scores if s.score >= 0.7]
+        weaknesses = [s.aspect.value for s in aspect_scores if s.score < 0.5]
 
         # Determine if re-research needed
         needs_re_research = overall_confidence < self.RE_RESEARCH_THRESHOLD
@@ -161,9 +157,7 @@ class SelfReflectionMixin:
         if needs_re_research:
             for score in aspect_scores:
                 if score.score < 0.4:
-                    re_research_reasons.append(
-                        f"Low {score.aspect.value} score: {score.score:.2f}"
-                    )
+                    re_research_reasons.append(f"Low {score.aspect.value} score: {score.score:.2f}")
 
         # Collect improvement suggestions
         improvements = []
@@ -184,18 +178,14 @@ class SelfReflectionMixin:
             strengths=strengths,
             weaknesses=weaknesses,
             improvement_suggestions=improvements[:5],
-            reflection_reasoning=reasoning
+            reflection_reasoning=reasoning,
         )
 
         self._reflection_history.append(result)
         return result
 
     async def _evaluate_aspect(
-        self,
-        aspect: ReflectionAspect,
-        output: Dict[str, Any],
-        query: str,
-        sources: List[Dict]
+        self, aspect: ReflectionAspect, output: Dict[str, Any], query: str, sources: List[Dict]
     ) -> ReflectionScore:
         """Evaluate a specific aspect."""
         evaluators = {
@@ -211,10 +201,7 @@ class SelfReflectionMixin:
         return await evaluator(output, query, sources)
 
     async def _evaluate_completeness(
-        self,
-        output: Dict[str, Any],
-        query: str,
-        sources: List[Dict]
+        self, output: Dict[str, Any], query: str, sources: List[Dict]
     ) -> ReflectionScore:
         """Evaluate output completeness."""
         score = 0.5
@@ -245,14 +232,11 @@ class SelfReflectionMixin:
             score=min(score, 1.0),
             confidence=0.8,
             reasoning=reasoning,
-            improvements=improvements
+            improvements=improvements,
         )
 
     async def _evaluate_accuracy(
-        self,
-        output: Dict[str, Any],
-        query: str,
-        sources: List[Dict]
+        self, output: Dict[str, Any], query: str, sources: List[Dict]
     ) -> ReflectionScore:
         """Evaluate potential accuracy."""
         score = 0.7  # Default to moderate confidence
@@ -285,14 +269,11 @@ class SelfReflectionMixin:
             score=score,
             confidence=0.6,  # Lower confidence in accuracy assessment
             reasoning=reasoning,
-            improvements=improvements
+            improvements=improvements,
         )
 
     async def _evaluate_relevance(
-        self,
-        output: Dict[str, Any],
-        query: str,
-        sources: List[Dict]
+        self, output: Dict[str, Any], query: str, sources: List[Dict]
     ) -> ReflectionScore:
         """Evaluate relevance to query."""
         score = 0.7
@@ -305,7 +286,7 @@ class SelfReflectionMixin:
                 score=0.7,
                 confidence=0.5,
                 reasoning="No query to evaluate relevance against",
-                improvements=[]
+                improvements=[],
             )
 
         # Check if query terms appear in output
@@ -329,14 +310,11 @@ class SelfReflectionMixin:
             score=score,
             confidence=0.7,
             reasoning=reasoning,
-            improvements=improvements
+            improvements=improvements,
         )
 
     async def _evaluate_recency(
-        self,
-        output: Dict[str, Any],
-        query: str,
-        sources: List[Dict]
+        self, output: Dict[str, Any], query: str, sources: List[Dict]
     ) -> ReflectionScore:
         """Evaluate data recency."""
         score = 0.7
@@ -374,14 +352,11 @@ class SelfReflectionMixin:
             score=score,
             confidence=0.6,
             reasoning=reasoning,
-            improvements=improvements
+            improvements=improvements,
         )
 
     async def _evaluate_source_quality(
-        self,
-        output: Dict[str, Any],
-        query: str,
-        sources: List[Dict]
+        self, output: Dict[str, Any], query: str, sources: List[Dict]
     ) -> ReflectionScore:
         """Evaluate source quality."""
         score = 0.7
@@ -394,13 +369,21 @@ class SelfReflectionMixin:
                 score=0.4,
                 confidence=0.5,
                 reasoning="No sources provided for quality assessment",
-                improvements=["Include source information"]
+                improvements=["Include source information"],
             )
 
         # Check for high-quality domains
         high_quality_domains = {
-            "gov", "edu", "reuters", "bloomberg", "wsj", "ft.com",
-            "sec.gov", "nytimes", "bbc", "official"
+            "gov",
+            "edu",
+            "reuters",
+            "bloomberg",
+            "wsj",
+            "ft.com",
+            "sec.gov",
+            "nytimes",
+            "bbc",
+            "official",
         }
 
         quality_sources = 0
@@ -426,14 +409,11 @@ class SelfReflectionMixin:
             score=score,
             confidence=0.7,
             reasoning=reasoning,
-            improvements=improvements
+            improvements=improvements,
         )
 
     async def _evaluate_reasoning(
-        self,
-        output: Dict[str, Any],
-        query: str,
-        sources: List[Dict]
+        self, output: Dict[str, Any], query: str, sources: List[Dict]
     ) -> ReflectionScore:
         """Evaluate reasoning quality."""
         score = 0.7
@@ -443,13 +423,17 @@ class SelfReflectionMixin:
         # Check for reasoning indicators
         output_text = str(output)
         reasoning_indicators = [
-            "because", "therefore", "indicates", "suggests",
-            "based on", "according to", "analysis shows"
+            "because",
+            "therefore",
+            "indicates",
+            "suggests",
+            "based on",
+            "according to",
+            "analysis shows",
         ]
 
         indicator_count = sum(
-            1 for indicator in reasoning_indicators
-            if indicator in output_text.lower()
+            1 for indicator in reasoning_indicators if indicator in output_text.lower()
         )
 
         if indicator_count >= 5:
@@ -468,14 +452,11 @@ class SelfReflectionMixin:
             score=score,
             confidence=0.6,
             reasoning=reasoning,
-            improvements=improvements
+            improvements=improvements,
         )
 
     async def _evaluate_generic(
-        self,
-        output: Dict[str, Any],
-        query: str,
-        sources: List[Dict]
+        self, output: Dict[str, Any], query: str, sources: List[Dict]
     ) -> ReflectionScore:
         """Generic aspect evaluation."""
         return ReflectionScore(
@@ -483,13 +464,10 @@ class SelfReflectionMixin:
             score=0.5,
             confidence=0.5,
             reasoning="Generic evaluation",
-            improvements=[]
+            improvements=[],
         )
 
-    def _calculate_overall_confidence(
-        self,
-        aspect_scores: List[ReflectionScore]
-    ) -> float:
+    def _calculate_overall_confidence(self, aspect_scores: List[ReflectionScore]) -> float:
         """Calculate weighted overall confidence."""
         if not aspect_scores:
             return 0.5
@@ -501,17 +479,13 @@ class SelfReflectionMixin:
             ReflectionAspect.RELEVANCE: 1.3,
             ReflectionAspect.SOURCE_QUALITY: 1.0,
             ReflectionAspect.RECENCY: 0.8,
-            ReflectionAspect.REASONING: 1.0
+            ReflectionAspect.REASONING: 1.0,
         }
 
         weighted_sum = sum(
-            s.score * s.confidence * weights.get(s.aspect, 1.0)
-            for s in aspect_scores
+            s.score * s.confidence * weights.get(s.aspect, 1.0) for s in aspect_scores
         )
-        total_weight = sum(
-            s.confidence * weights.get(s.aspect, 1.0)
-            for s in aspect_scores
-        )
+        total_weight = sum(s.confidence * weights.get(s.aspect, 1.0) for s in aspect_scores)
 
         return weighted_sum / total_weight if total_weight > 0 else 0.5
 
@@ -532,7 +506,7 @@ class SelfReflectionMixin:
         self,
         output: Dict[str, Any],
         aspect_scores: List[ReflectionScore],
-        overall_confidence: float
+        overall_confidence: float,
     ) -> str:
         """Generate reasoning for reflection."""
         # Build reasoning text
@@ -558,12 +532,16 @@ class SelfReflectionMixin:
         """Get average confidence across all reflections."""
         if not self._reflection_history:
             return 0.0
-        return sum(r.overall_confidence for r in self._reflection_history) / len(self._reflection_history)
+        return sum(r.overall_confidence for r in self._reflection_history) / len(
+            self._reflection_history
+        )
 
 
 # Convenience function
 def create_reflective_agent(agent_class, **kwargs):
     """Create an agent with self-reflection capabilities."""
+
     class ReflectiveAgent(SelfReflectionMixin, agent_class):
         pass
+
     return ReflectiveAgent(**kwargs)

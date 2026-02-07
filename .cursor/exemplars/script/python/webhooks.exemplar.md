@@ -31,13 +31,13 @@ def send_teams_notification(
 ) -> bool:
     """Send notification to Microsoft Teams."""
     color, icon = status.value
-    
+
     sections = []
     if facts:
         sections.append({
             "facts": [{"name": k, "value": str(v)} for k, v in facts.items()]
         })
-    
+
     payload = {
         "@type": "MessageCard",
         "@context": "https://schema.org/extensions",
@@ -46,7 +46,7 @@ def send_teams_notification(
         "text": message,
         "sections": sections
     }
-    
+
     try:
         response = requests.post(webhook_url, json=payload, timeout=10)
         response.raise_for_status()
@@ -61,7 +61,7 @@ webhook_url = os.getenv('TEAMS_WEBHOOK_URL')
 
 if webhook_url:
     status = NotificationStatus.SUCCESS if all_passed else NotificationStatus.ERROR
-    
+
     send_teams_notification(
         webhook_url=webhook_url,
         title="Coverage Analysis Complete",
@@ -83,4 +83,3 @@ if webhook_url:
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

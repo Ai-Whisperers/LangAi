@@ -17,6 +17,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
+
 from ..utils import get_config, get_logger
 
 logger = get_logger(__name__)
@@ -25,6 +26,7 @@ logger = get_logger(__name__)
 @dataclass
 class TokenPayload:
     """JWT token payload (claims)."""
+
     sub: str  # Subject (user ID)
     iat: int  # Issued at
     exp: int  # Expiration
@@ -42,7 +44,7 @@ class TokenPayload:
             "jti": self.jti,
             "roles": self.roles,
             "permissions": self.permissions,
-            **self.metadata
+            **self.metadata,
         }
 
     @classmethod
@@ -55,8 +57,11 @@ class TokenPayload:
             jti=data.get("jti"),
             roles=data.get("roles", []),
             permissions=data.get("permissions", []),
-            metadata={k: v for k, v in data.items()
-                     if k not in ("sub", "iat", "exp", "jti", "roles", "permissions")}
+            metadata={
+                k: v
+                for k, v in data.items()
+                if k not in ("sub", "iat", "exp", "jti", "roles", "permissions")
+            },
         )
 
     def is_expired(self) -> bool:
@@ -79,18 +84,25 @@ MIN_KEY_LENGTHS = {
 ALLOWED_ALGORITHMS = frozenset(["HS256", "HS384", "HS512"])
 
 # Common weak/default secrets to reject
-WEAK_SECRETS = frozenset([
-    "secret", "password", "changeme", "your-secret-key",
-    "secret-key", "supersecret", "change-me", "test",
-    "development", "dev", "prod", "production",
-])
+WEAK_SECRETS = frozenset(
+    [
+        "secret",
+        "password",
+        "changeme",
+        "your-secret-key",
+        "secret-key",
+        "supersecret",
+        "change-me",
+        "test",
+        "development",
+        "dev",
+        "prod",
+        "production",
+    ]
+)
 
 
-def validate_secret_key(
-    secret_key: str,
-    algorithm: str = "HS256",
-    strict: bool = True
-) -> None:
+def validate_secret_key(secret_key: str, algorithm: str = "HS256", strict: bool = True) -> None:
     """
     Validate JWT secret key meets security requirements.
 
@@ -147,6 +159,7 @@ def validate_secret_key(
 @dataclass
 class JWTConfig:
     """JWT configuration."""
+
     secret_key: str
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
@@ -184,7 +197,7 @@ class JWTManager:
         refresh_token_expire_days: int = 7,
         issuer: Optional[str] = None,
         audience: Optional[str] = None,
-        validate_key: bool = True
+        validate_key: bool = True,
     ):
         # Security: Validate algorithm is in allowlist
         if algorithm not in ALLOWED_ALGORITHMS:
@@ -217,7 +230,7 @@ class JWTManager:
         roles: List[str] = None,
         permissions: List[str] = None,
         expires_delta: timedelta = None,
-        **metadata
+        **metadata,
     ) -> str:
         """
         Create a new JWT token.
@@ -244,22 +257,15 @@ class JWTManager:
             jti=str(uuid.uuid4()),
             roles=roles or [],
             permissions=permissions or [],
-            metadata=metadata
+            metadata=metadata,
         )
 
         return self._encode(payload)
 
-    def create_refresh_token(
-        self,
-        user_id: str,
-        roles: List[str] = None
-    ) -> str:
+    def create_refresh_token(self, user_id: str, roles: List[str] = None) -> str:
         """Create a refresh token with longer expiration."""
         return self.create_token(
-            user_id=user_id,
-            roles=roles,
-            expires_delta=self.refresh_expire,
-            token_type="refresh"
+            user_id=user_id, roles=roles, expires_delta=self.refresh_expire, token_type="refresh"
         )
 
     def verify_token(self, token: str) -> Optional[TokenPayload]:
@@ -320,7 +326,7 @@ class JWTManager:
             user_id=payload.sub,
             roles=payload.roles,
             permissions=payload.permissions,
-            **payload.metadata
+            **payload.metadata,
         )
 
     def revoke_token(self, token: str) -> bool:
@@ -360,10 +366,7 @@ class JWTManager:
 
             # Remove tokens that have expired
             # Once a token expires, we no longer need to track it as revoked
-            expired_jtis = [
-                jti for jti, exp_time in self._revoked_tokens.items()
-                if exp_time < now
-            ]
+            expired_jtis = [jti for jti, exp_time in self._revoked_tokens.items() if exp_time < now]
 
             for jti in expired_jtis:
                 del self._revoked_tokens[jti]
@@ -389,10 +392,7 @@ class JWTManager:
         cleaned = 0
 
         with self._revoked_lock:
-            expired_jtis = [
-                jti for jti, exp_time in self._revoked_tokens.items()
-                if exp_time < now
-            ]
+            expired_jtis = [jti for jti, exp_time in self._revoked_tokens.items() if exp_time < now]
 
             for jti in expired_jtis:
                 del self._revoked_tokens[jti]
@@ -432,7 +432,7 @@ class JWTManager:
 
             # Security: Validate algorithm in header matches expected
             # This prevents algorithm confusion attacks
-            header_json = self._base64url_decode(header_b64).decode('utf-8')
+            header_json = self._base64url_decode(header_b64).decode("utf-8")
             header = json.loads(header_json)
 
             token_algorithm = header.get("alg")
@@ -453,7 +453,7 @@ class JWTManager:
                 return None
 
             # Decode payload
-            payload_json = self._base64url_decode(payload_b64).decode('utf-8')
+            payload_json = self._base64url_decode(payload_b64).decode("utf-8")
             payload_dict = json.loads(payload_json)
 
             return TokenPayload.from_dict(payload_dict)
@@ -465,21 +465,15 @@ class JWTManager:
         """Sign message with secret key."""
         if self.algorithm == "HS256":
             return hmac.new(
-                self.secret_key.encode('utf-8'),
-                message.encode('utf-8'),
-                hashlib.sha256
+                self.secret_key.encode("utf-8"), message.encode("utf-8"), hashlib.sha256
             ).digest()
         elif self.algorithm == "HS384":
             return hmac.new(
-                self.secret_key.encode('utf-8'),
-                message.encode('utf-8'),
-                hashlib.sha384
+                self.secret_key.encode("utf-8"), message.encode("utf-8"), hashlib.sha384
             ).digest()
         elif self.algorithm == "HS512":
             return hmac.new(
-                self.secret_key.encode('utf-8'),
-                message.encode('utf-8'),
-                hashlib.sha512
+                self.secret_key.encode("utf-8"), message.encode("utf-8"), hashlib.sha512
             ).digest()
         else:
             raise ValueError(f"Unsupported algorithm: {self.algorithm}")
@@ -487,24 +481,21 @@ class JWTManager:
     def _base64url_encode(self, data: str | bytes) -> str:
         """Base64url encode data."""
         if isinstance(data, str):
-            data = data.encode('utf-8')
-        return base64.urlsafe_b64encode(data).rstrip(b'=').decode('utf-8')
+            data = data.encode("utf-8")
+        return base64.urlsafe_b64encode(data).rstrip(b"=").decode("utf-8")
 
     def _base64url_decode(self, data: str) -> bytes:
         """Base64url decode data."""
         padding = 4 - len(data) % 4
         if padding != 4:
-            data += '=' * padding
+            data += "=" * padding
         return base64.urlsafe_b64decode(data)
 
 
 # Convenience functions
 
 
-def create_jwt_manager(
-    secret_key: str,
-    config: JWTConfig = None
-) -> JWTManager:
+def create_jwt_manager(secret_key: str, config: JWTConfig = None) -> JWTManager:
     """Create a JWT manager."""
     if config:
         return JWTManager(
@@ -513,26 +504,20 @@ def create_jwt_manager(
             access_token_expire_minutes=config.access_token_expire_minutes,
             refresh_token_expire_days=config.refresh_token_expire_days,
             issuer=config.issuer,
-            audience=config.audience
+            audience=config.audience,
         )
     return JWTManager(secret_key=secret_key)
 
 
 def encode_token(
-    user_id: str,
-    secret_key: str,
-    roles: List[str] = None,
-    expire_minutes: int = 30
+    user_id: str, secret_key: str, roles: List[str] = None, expire_minutes: int = 30
 ) -> str:
     """Quick token encoding."""
     jwt = JWTManager(secret_key=secret_key, access_token_expire_minutes=expire_minutes)
     return jwt.create_token(user_id=user_id, roles=roles)
 
 
-def decode_token(
-    token: str,
-    secret_key: str
-) -> Optional[TokenPayload]:
+def decode_token(token: str, secret_key: str) -> Optional[TokenPayload]:
     """Quick token decoding."""
     jwt = JWTManager(secret_key=secret_key)
     return jwt.verify_token(token)

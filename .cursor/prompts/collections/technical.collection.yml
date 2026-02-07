@@ -16,4 +16,3 @@ items:
     kind: prompt
   - path: prompts/technical/create-integration-points.prompt.md
     kind: prompt
-

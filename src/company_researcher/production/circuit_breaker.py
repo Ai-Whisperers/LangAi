@@ -7,27 +7,28 @@ Prevent cascading failures:
 - Gradual recovery with half-open state
 """
 
-from typing import Dict, Any, Optional, Callable, TypeVar
+import logging
+import threading
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from functools import wraps
-import threading
-import logging
-from ..utils import utc_now
+from typing import Any, Callable, Dict, Optional, TypeVar
 
+from ..utils import utc_now
 
 # ============================================================================
 # Types and Enums
 # ============================================================================
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class CircuitState(str, Enum):
     """Circuit breaker states."""
-    CLOSED = "closed"      # Normal operation
-    OPEN = "open"          # Failing fast
+
+    CLOSED = "closed"  # Normal operation
+    OPEN = "open"  # Failing fast
     HALF_OPEN = "half_open"  # Testing recovery
 
 
@@ -37,18 +38,18 @@ class CircuitOpenError(Exception):
     def __init__(self, breaker_name: str, retry_after: float):
         self.breaker_name = breaker_name
         self.retry_after = retry_after
-        super().__init__(
-            f"Circuit '{breaker_name}' is open. Retry after {retry_after:.1f}s"
-        )
+        super().__init__(f"Circuit '{breaker_name}' is open. Retry after {retry_after:.1f}s")
 
 
 # ============================================================================
 # Circuit Breaker
 # ============================================================================
 
+
 @dataclass
 class CircuitStats:
     """Circuit breaker statistics."""
+
     total_calls: int = 0
     successful_calls: int = 0
     failed_calls: int = 0
@@ -70,7 +71,7 @@ class CircuitStats:
             "failed_calls": self.failed_calls,
             "rejected_calls": self.rejected_calls,
             "failure_rate": round(self.failure_rate, 2),
-            "state_changes": self.state_changes
+            "state_changes": self.state_changes,
         }
 
 
@@ -105,7 +106,7 @@ class CircuitBreaker:
         success_threshold: int = 3,
         timeout_seconds: float = 30.0,
         half_open_timeout: float = 10.0,
-        excluded_exceptions: Optional[tuple] = None
+        excluded_exceptions: Optional[tuple] = None,
     ):
         """
         Initialize circuit breaker.
@@ -171,9 +172,11 @@ class CircuitBreaker:
 
     def __call__(self, func: Callable[..., T]) -> Callable[..., T]:
         """Use as decorator."""
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             return self.call(func, *args, **kwargs)
+
         return wrapper
 
     # ==========================================================================
@@ -284,7 +287,9 @@ class CircuitBreaker:
 
         if new_state == CircuitState.OPEN:
             self._opened_at = utc_now()
-            self._logger.warning(f"Circuit '{self.name}' OPENED after {self._failure_count} failures")
+            self._logger.warning(
+                f"Circuit '{self.name}' OPENED after {self._failure_count} failures"
+            )
         elif new_state == CircuitState.HALF_OPEN:
             self._success_count = 0
             self._logger.info(f"Circuit '{self.name}' entering HALF_OPEN state")
@@ -329,7 +334,7 @@ class CircuitBreaker:
             "state": self.state.value,
             "failure_count": self._failure_count,
             "success_count": self._success_count,
-            "stats": self._stats.to_dict()
+            "stats": self._stats.to_dict(),
         }
 
 
@@ -337,16 +342,13 @@ class CircuitBreaker:
 # Factory Function
 # ============================================================================
 
+
 def create_circuit_breaker(
-    name: str = "default",
-    failure_threshold: int = 5,
-    timeout_seconds: float = 30.0
+    name: str = "default", failure_threshold: int = 5, timeout_seconds: float = 30.0
 ) -> CircuitBreaker:
     """Create a circuit breaker instance."""
     return CircuitBreaker(
-        name=name,
-        failure_threshold=failure_threshold,
-        timeout_seconds=timeout_seconds
+        name=name, failure_threshold=failure_threshold, timeout_seconds=timeout_seconds
     )
 
 

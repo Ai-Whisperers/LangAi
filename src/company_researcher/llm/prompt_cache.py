@@ -15,8 +15,8 @@ Usage:
     )
 """
 
-from typing import Dict, Any, Optional, List
 from threading import Lock
+from typing import Any, Dict, List, Optional
 
 from anthropic import Anthropic
 
@@ -40,11 +40,7 @@ class PromptCache:
                    singleton from client_factory.
         """
         self.client = client or get_anthropic_client()
-        self._cache_stats = {
-            "cache_hits": 0,
-            "cache_misses": 0,
-            "tokens_saved": 0
-        }
+        self._cache_stats = {"cache_hits": 0, "cache_misses": 0, "tokens_saved": 0}
         self._lock = Lock()
 
     def create_cached_message(
@@ -54,7 +50,7 @@ class PromptCache:
         user_message: str,
         max_tokens: int = 1000,
         temperature: float = 0.0,
-        **kwargs
+        **kwargs,
     ) -> Any:
         """
         Create message with prompt caching enabled on system prompt.
@@ -78,14 +74,10 @@ class PromptCache:
             max_tokens=max_tokens,
             temperature=temperature,
             system=[
-                {
-                    "type": "text",
-                    "text": system_prompt,
-                    "cache_control": {"type": "ephemeral"}
-                }
+                {"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}
             ],
             messages=[{"role": "user", "content": user_message}],
-            **kwargs
+            **kwargs,
         )
 
     def create_with_cached_context(
@@ -96,7 +88,7 @@ class PromptCache:
         max_tokens: int = 1000,
         temperature: float = 0.0,
         system: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> Any:
         """
         Create message with large context cached in user message.
@@ -123,13 +115,10 @@ class PromptCache:
                     {
                         "type": "text",
                         "text": cached_context,
-                        "cache_control": {"type": "ephemeral"}
+                        "cache_control": {"type": "ephemeral"},
                     },
-                    {
-                        "type": "text",
-                        "text": dynamic_content
-                    }
-                ]
+                    {"type": "text", "text": dynamic_content},
+                ],
             }
         ]
 
@@ -138,7 +127,7 @@ class PromptCache:
             "max_tokens": max_tokens,
             "temperature": temperature,
             "messages": messages,
-            **kwargs
+            **kwargs,
         }
 
         if system:
@@ -154,7 +143,7 @@ class PromptCache:
         new_message: str,
         max_tokens: int = 1000,
         temperature: float = 0.0,
-        **kwargs
+        **kwargs,
     ) -> Any:
         """
         Create message with conversation history cached.
@@ -182,11 +171,7 @@ class PromptCache:
             # Add cache control to the last history message
             if i == len(conversation_history) - 1:
                 message["content"] = [
-                    {
-                        "type": "text",
-                        "text": msg["content"],
-                        "cache_control": {"type": "ephemeral"}
-                    }
+                    {"type": "text", "text": msg["content"], "cache_control": {"type": "ephemeral"}}
                 ]
             messages.append(message)
 
@@ -198,14 +183,10 @@ class PromptCache:
             max_tokens=max_tokens,
             temperature=temperature,
             system=[
-                {
-                    "type": "text",
-                    "text": system_prompt,
-                    "cache_control": {"type": "ephemeral"}
-                }
+                {"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}
             ],
             messages=messages,
-            **kwargs
+            **kwargs,
         )
 
     def update_stats(self, response: Any) -> None:
@@ -217,10 +198,10 @@ class PromptCache:
         """
         with self._lock:
             usage = response.usage
-            if hasattr(usage, 'cache_creation_input_tokens'):
+            if hasattr(usage, "cache_creation_input_tokens"):
                 self._cache_stats["cache_misses"] += 1
-            if hasattr(usage, 'cache_read_input_tokens'):
-                cached = getattr(usage, 'cache_read_input_tokens', 0)
+            if hasattr(usage, "cache_read_input_tokens"):
+                cached = getattr(usage, "cache_read_input_tokens", 0)
                 if cached > 0:
                     self._cache_stats["cache_hits"] += 1
                     # Cached tokens cost ~90% less
@@ -239,11 +220,7 @@ class PromptCache:
     def reset_stats(self) -> None:
         """Reset cache statistics."""
         with self._lock:
-            self._cache_stats = {
-                "cache_hits": 0,
-                "cache_misses": 0,
-                "tokens_saved": 0
-            }
+            self._cache_stats = {"cache_hits": 0, "cache_misses": 0, "tokens_saved": 0}
 
 
 # Singleton instance
@@ -271,7 +248,7 @@ def create_cached_analysis_request(
     analysis_type: str,
     search_results: str,
     model: str = "claude-sonnet-4-20250514",
-    max_tokens: int = 1000
+    max_tokens: int = 1000,
 ) -> Any:
     """
     Convenience function for cached analysis requests.
@@ -308,7 +285,6 @@ Requirements:
 - Include sources for each data point
 - Note if data is missing or unavailable
 - Format as bullet points""",
-
         "market": """You are a market analyst reviewing search results about a company.
 Extract ALL market positioning and competitive information.
 
@@ -323,7 +299,6 @@ Requirements:
 - Be specific with market data
 - Include competitor comparisons
 - Note market trends and dynamics""",
-
         "product": """You are a product analyst reviewing search results about a company.
 Extract ALL product and technology information.
 
@@ -337,7 +312,7 @@ Focus on:
 Requirements:
 - List all products and services
 - Note technology differentiators
-- Include customer segments"""
+- Include customer segments""",
     }
 
     system_prompt = prompts.get(analysis_type, prompts["financial"])
@@ -350,8 +325,5 @@ Search Results:
 Extract the {analysis_type} data now:"""
 
     return cache.create_cached_message(
-        model=model,
-        system_prompt=system_prompt,
-        user_message=user_message,
-        max_tokens=max_tokens
+        model=model, system_prompt=system_prompt, user_message=user_message, max_tokens=max_tokens
     )

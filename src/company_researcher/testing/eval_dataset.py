@@ -13,12 +13,14 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
 from ..utils import utc_now
 
 
 @dataclass
 class EvalCase:
     """Single evaluation test case."""
+
     id: str
     name: str
     input: Dict[str, Any]
@@ -46,7 +48,7 @@ class EvalCase:
             "company_name": self.company_name,
             "expected_facts": self.expected_facts,
             "expected_sources": self.expected_sources,
-            "difficulty": self.difficulty
+            "difficulty": self.difficulty,
         }
 
     @classmethod
@@ -69,13 +71,14 @@ class EvalCase:
             company_name=data.get("company_name"),
             expected_facts=data.get("expected_facts", []),
             expected_sources=data.get("expected_sources", []),
-            difficulty=data.get("difficulty", "medium")
+            difficulty=data.get("difficulty", "medium"),
         )
 
 
 @dataclass
 class EvalResult:
     """Result of evaluating a single test case."""
+
     case_id: str
     passed: bool
     score: float  # 0.0 to 1.0
@@ -95,7 +98,7 @@ class EvalResult:
             "errors": self.errors,
             "metrics": self.metrics,
             "duration_seconds": self.duration_seconds,
-            "timestamp": self.timestamp.isoformat()
+            "timestamp": self.timestamp.isoformat(),
         }
 
 
@@ -168,16 +171,13 @@ class EvalDataset:
             "version": self.version,
             "created_at": self.created_at.isoformat(),
             "metadata": self.metadata,
-            "cases": [c.to_dict() for c in self.cases]
+            "cases": [c.to_dict() for c in self.cases],
         }
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "EvalDataset":
         """Create dataset from dictionary."""
-        dataset = cls(
-            name=data.get("name", "unnamed"),
-            description=data.get("description", "")
-        )
+        dataset = cls(name=data.get("name", "unnamed"), description=data.get("description", ""))
         dataset.version = data.get("version", "1.0")
         dataset.metadata = data.get("metadata", {})
 
@@ -195,13 +195,13 @@ class EvalDataset:
         filepath = Path(path)
         filepath.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(self.to_dict(), f, indent=2, default=str)
 
     @classmethod
     def load(cls, path: str) -> "EvalDataset":
         """Load dataset from JSON file."""
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             data = json.load(f)
         return cls.from_dict(data)
 
@@ -213,8 +213,7 @@ class EvalDataset:
 
 
 def create_research_dataset(
-    name: str = "research-eval",
-    include_companies: Optional[List[str]] = None
+    name: str = "research-eval", include_companies: Optional[List[str]] = None
 ) -> EvalDataset:
     """
     Create a standard research evaluation dataset.
@@ -226,41 +225,40 @@ def create_research_dataset(
     Returns:
         EvalDataset with pre-defined test cases
     """
-    companies = include_companies or [
-        "Apple", "Tesla", "Microsoft", "Google", "Amazon"
-    ]
+    companies = include_companies or ["Apple", "Tesla", "Microsoft", "Google", "Amazon"]
 
-    dataset = EvalDataset(
-        name=name,
-        description="Standard research evaluation dataset"
-    )
+    dataset = EvalDataset(name=name, description="Standard research evaluation dataset")
 
     for company in companies:
         # Basic research test
-        dataset.add_case(EvalCase(
-            id=f"basic-{company.lower()}",
-            name=f"Basic {company} Research",
-            input={"company_name": company, "depth": "basic"},
-            expected_output={"has_overview": True},
-            tags=["basic", "company-research"],
-            company_name=company,
-            difficulty="easy"
-        ))
+        dataset.add_case(
+            EvalCase(
+                id=f"basic-{company.lower()}",
+                name=f"Basic {company} Research",
+                input={"company_name": company, "depth": "basic"},
+                expected_output={"has_overview": True},
+                tags=["basic", "company-research"],
+                company_name=company,
+                difficulty="easy",
+            )
+        )
 
         # Comprehensive research test
-        dataset.add_case(EvalCase(
-            id=f"comprehensive-{company.lower()}",
-            name=f"Comprehensive {company} Research",
-            input={"company_name": company, "depth": "comprehensive"},
-            expected_output={
-                "has_overview": True,
-                "has_financials": True,
-                "has_competitors": True
-            },
-            tags=["comprehensive", "company-research"],
-            company_name=company,
-            difficulty="hard"
-        ))
+        dataset.add_case(
+            EvalCase(
+                id=f"comprehensive-{company.lower()}",
+                name=f"Comprehensive {company} Research",
+                input={"company_name": company, "depth": "comprehensive"},
+                expected_output={
+                    "has_overview": True,
+                    "has_financials": True,
+                    "has_competitors": True,
+                },
+                tags=["comprehensive", "company-research"],
+                company_name=company,
+                difficulty="hard",
+            )
+        )
 
     return dataset
 

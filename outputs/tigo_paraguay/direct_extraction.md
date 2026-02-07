@@ -30,7 +30,7 @@ Here are the extracted information with source URLs:
 5. Business Segments:
    - Tigo Sports details: Tigo Sports is a sports channel that transmits football matches, including the Paraguayan football league
    - Tigo Money users: NOT FOUND (number of users not mentioned)
-   - Source URLs: 
+   - Source URLs:
      - https://www.tigosports.com.py/
      - https://es.wikipedia.org/wiki/Tigo_Sports
      - https://onefootball.com/es/noticias/la-liga-espanola-vuelve-a-las-pantallas-de-tigo-sports-38029539

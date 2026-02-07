@@ -3,14 +3,14 @@
 import pytest
 
 from company_researcher.quality.confidence_scorer import (
-    ConfidenceLevel,
-    SourceType,
-    SourceInfo,
     ConfidenceFactors,
-    ScoredFact,
+    ConfidenceLevel,
     ConfidenceScorer,
-    score_facts,
+    ScoredFact,
+    SourceInfo,
+    SourceType,
     create_confidence_scorer,
+    score_facts,
 )
 
 
@@ -79,9 +79,7 @@ class TestSourceInfo:
     def test_custom_values(self):
         """SourceInfo should accept custom values."""
         info = SourceInfo(
-            url="http://sec.gov/file.html",
-            source_type=SourceType.OFFICIAL,
-            authority_score=0.9
+            url="http://sec.gov/file.html", source_type=SourceType.OFFICIAL, authority_score=0.9
         )
         assert info.source_type == SourceType.OFFICIAL
         assert info.authority_score == 0.9
@@ -108,7 +106,7 @@ class TestConfidenceFactors:
             source_authority=0.9,
             recency=0.7,
             specificity=0.6,
-            language_certainty=0.4
+            language_certainty=0.4,
         )
         assert factors.source_count == 5
         assert factors.source_agreement == 0.8
@@ -128,7 +126,7 @@ class TestScoredFact:
             claim="Test claim",
             confidence=0.75,
             confidence_level=ConfidenceLevel.HIGH,
-            factors=sample_factors
+            factors=sample_factors,
         )
         assert fact.claim == "Test claim"
         assert fact.confidence == 0.75
@@ -140,7 +138,7 @@ class TestScoredFact:
             claim="Test",
             confidence=0.5,
             confidence_level=ConfidenceLevel.MEDIUM,
-            factors=sample_factors
+            factors=sample_factors,
         )
         assert fact.sources == []
 
@@ -150,7 +148,7 @@ class TestScoredFact:
             claim="Test",
             confidence=0.5,
             confidence_level=ConfidenceLevel.MEDIUM,
-            factors=sample_factors
+            factors=sample_factors,
         )
         assert fact.explanation == ""
 
@@ -160,7 +158,7 @@ class TestScoredFact:
             claim="Test claim",
             confidence=0.75,
             confidence_level=ConfidenceLevel.HIGH,
-            factors=sample_factors
+            factors=sample_factors,
         )
         result = fact.to_dict()
         assert result["claim"] == "Test claim"
@@ -187,8 +185,14 @@ class TestConfidenceScorer:
 
     def test_custom_weights(self):
         """ConfidenceScorer should accept custom weights."""
-        custom_weights = {"source_count": 0.5, "source_agreement": 0.5,
-                        "source_authority": 0, "recency": 0, "specificity": 0, "language_certainty": 0}
+        custom_weights = {
+            "source_count": 0.5,
+            "source_agreement": 0.5,
+            "source_authority": 0,
+            "recency": 0,
+            "specificity": 0,
+            "language_certainty": 0,
+        }
         scorer = ConfidenceScorer(weights=custom_weights)
         assert scorer.weights["source_count"] == 0.5
 
@@ -209,32 +213,22 @@ class TestConfidenceScorer:
 
     def test_score_fact_with_official_source(self, scorer):
         """score_fact should give higher confidence for official sources."""
-        official_result = scorer.score_fact(
-            "Test claim",
-            [{"url": "http://sec.gov/filing"}]
-        )
-        unknown_result = scorer.score_fact(
-            "Test claim",
-            [{"url": "http://randomsite.com"}]
-        )
+        official_result = scorer.score_fact("Test claim", [{"url": "http://sec.gov/filing"}])
+        unknown_result = scorer.score_fact("Test claim", [{"url": "http://randomsite.com"}])
         assert official_result.confidence >= unknown_result.confidence
 
     def test_score_fact_with_news_source(self, scorer):
         """score_fact should recognize news sources."""
-        news_result = scorer.score_fact(
-            "Test claim",
-            [{"url": "http://reuters.com/article"}]
-        )
+        news_result = scorer.score_fact("Test claim", [{"url": "http://reuters.com/article"}])
         assert news_result.confidence > 0
 
     def test_score_fact_multiple_sources_increase_confidence(self, scorer):
         """score_fact with more sources should have higher confidence."""
         single = scorer.score_fact("Test", [{"url": "http://test.com"}])
-        multiple = scorer.score_fact("Test", [
-            {"url": "http://test1.com"},
-            {"url": "http://test2.com"},
-            {"url": "http://test3.com"}
-        ])
+        multiple = scorer.score_fact(
+            "Test",
+            [{"url": "http://test1.com"}, {"url": "http://test2.com"}, {"url": "http://test3.com"}],
+        )
         assert multiple.confidence >= single.confidence
 
     def test_score_fact_with_numbers_more_specific(self, scorer):
@@ -378,7 +372,7 @@ class TestCalculateAuthority:
         """_calculate_authority averages multiple sources."""
         sources = [
             SourceInfo(url="http://test1.com", authority_score=0.8),
-            SourceInfo(url="http://test2.com", authority_score=0.4)
+            SourceInfo(url="http://test2.com", authority_score=0.4),
         ]
         authority = scorer._calculate_authority(sources)
         assert authority == pytest.approx(0.6)
@@ -389,10 +383,7 @@ class TestConvenienceFunctions:
 
     def test_score_facts(self):
         """score_facts should score list of facts."""
-        facts = [
-            {"claim": "First claim", "sources": []},
-            {"claim": "Second claim", "sources": []}
-        ]
+        facts = [{"claim": "First claim", "sources": []}, {"claim": "Second claim", "sources": []}]
         results = score_facts(facts)
         assert len(results) == 2
         assert all(isinstance(r, ScoredFact) for r in results)
@@ -409,8 +400,14 @@ class TestConvenienceFunctions:
 
     def test_create_confidence_scorer_with_weights(self):
         """create_confidence_scorer should accept custom weights."""
-        custom_weights = {"source_count": 1.0, "source_agreement": 0,
-                        "source_authority": 0, "recency": 0, "specificity": 0, "language_certainty": 0}
+        custom_weights = {
+            "source_count": 1.0,
+            "source_agreement": 0,
+            "source_authority": 0,
+            "recency": 0,
+            "specificity": 0,
+            "language_certainty": 0,
+        }
         scorer = create_confidence_scorer(weights=custom_weights)
         assert scorer.weights["source_count"] == 1.0
 

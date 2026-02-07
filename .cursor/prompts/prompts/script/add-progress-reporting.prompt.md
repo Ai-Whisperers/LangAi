@@ -20,11 +20,11 @@ Use `Write-Progress` from [progress exemplar](../../exemplars/script/powershell/
 foreach ($item in $items) {
     $current++
     $percent = ($current / $total) * 100
-    
+
     Write-Progress -Activity "Processing" `
                    -Status "$current of $total" `
                    -PercentComplete $percent
-    
+
     # Process item
 }
 
@@ -45,4 +45,3 @@ Use Rich Progress from [rich-ui exemplar](../../exemplars/script/python/rich-ui.
 
 ---
 Produced-by: prompt.scripts.add-progress.v1 | ts=2025-12-07T00:00:00Z
-

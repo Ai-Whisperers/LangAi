@@ -14,14 +14,15 @@ Unlike V3 which manually reimplemented everything, V4 uses the existing
 infrastructure that was already built in the codebase.
 """
 
+import logging
 import os
 import sys
-import logging
-import yaml
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
+import yaml
 
 # Setup path
 project_root = Path(__file__).parent
@@ -29,27 +30,23 @@ sys.path.insert(0, str(project_root))
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger("ParaguayResearchV4")
+
+from src.company_researcher.config import get_config
+from src.company_researcher.integrations.search_router import SearchRouter
+from src.company_researcher.llm.smart_client import smart_completion
+from src.company_researcher.state import OverallState, create_initial_state, create_output_state
 
 # ============================================================================
 # Import from EXISTING comprehensive workflow system
 # ============================================================================
 from src.company_researcher.workflows import (
+    create_comprehensive_workflow,
     research_company_comprehensive,
     research_with_cache,
-    create_comprehensive_workflow,
 )
-from src.company_researcher.config import get_config
-from src.company_researcher.state import (
-    create_initial_state,
-    create_output_state,
-    OverallState,
-)
-from src.company_researcher.llm.smart_client import smart_completion
-from src.company_researcher.integrations.search_router import SearchRouter
 
 # ============================================================================
 # Configuration
@@ -76,7 +73,6 @@ Include:
 {context_hint}
 
 Note: This analysis is based on training data. Verify with current sources for the most up-to-date information.""",
-
     "financial": """You are a financial analyst. Based on your training knowledge, analyze the financial profile of {company_name}.
 
 Include:
@@ -90,7 +86,6 @@ Include:
 {context_hint}
 
 Note: Financial figures should be verified with current filings and official sources.""",
-
     "market": """You are a market analyst. Based on your training knowledge, analyze the market position of {company_name}.
 
 Include:
@@ -104,7 +99,6 @@ Include:
 {context_hint}
 
 Provide industry-specific context for the telecommunications/telecom sector in Paraguay.""",
-
     "esg": """You are an ESG analyst. Based on your training knowledge, analyze the ESG profile of {company_name}.
 
 Include:
@@ -118,7 +112,6 @@ Include:
 {context_hint}
 
 Consider regional and industry context for telecommunications companies in Latin America.""",
-
     "risk": """You are a risk analyst. Based on your training knowledge, assess the risk profile of {company_name}.
 
 Include:
@@ -132,7 +125,6 @@ Include:
 {context_hint}
 
 Provide a risk score (0-100) and letter grade (A-F).""",
-
     "investment": """You are an investment analyst. Based on your training knowledge, create an investment thesis for {company_name}.
 
 Include:
@@ -146,7 +138,6 @@ Include:
 {context_hint}
 
 Consider the broader Latin American telecom market dynamics.""",
-
     "competitive": """You are a competitive intelligence analyst. Based on your training knowledge, analyze the competitive landscape for {company_name}.
 
 Primary competitors: {competitors}
@@ -160,7 +151,6 @@ Include:
 6. Future competitive outlook
 
 {context_hint}""",
-
     "brand": """You are a brand analyst. Based on your training knowledge, analyze the brand and reputation of {company_name}.
 
 Include:
@@ -192,15 +182,11 @@ class ComprehensiveResearcherV4:
 
     def load_profile(self, profile_path: str) -> Dict[str, Any]:
         """Load company profile from YAML."""
-        with open(profile_path, encoding='utf-8') as f:
+        with open(profile_path, encoding="utf-8") as f:
             return yaml.safe_load(f)
 
     def generate_fallback_content(
-        self,
-        company_name: str,
-        section: str,
-        context_hint: str = "",
-        competitors: List[str] = None
+        self, company_name: str, section: str, context_hint: str = "", competitors: List[str] = None
     ) -> str:
         """Generate content using LLM knowledge when searches fail."""
         logger.info(f"[FALLBACK] Generating {section} using LLM knowledge...")
@@ -209,16 +195,12 @@ class ComprehensiveResearcherV4:
         prompt = prompt_template.format(
             company_name=company_name,
             context_hint=context_hint,
-            competitors=", ".join(competitors) if competitors else "Unknown"
+            competitors=", ".join(competitors) if competitors else "Unknown",
         )
 
         try:
-            result = smart_completion(
-                prompt=prompt,
-                task_type="synthesis",
-                max_tokens=4000
-            )
-            content = result.content if hasattr(result, 'content') else str(result)
+            result = smart_completion(prompt=prompt, task_type="synthesis", max_tokens=4000)
+            content = result.content if hasattr(result, "content") else str(result)
 
             # Add fallback disclaimer
             disclaimer = "\n\n---\n*Note: This section was generated using AI knowledge due to limited search results. Verify with current official sources.*\n"
@@ -259,7 +241,9 @@ class ComprehensiveResearcherV4:
                 return self._enhance_result(result, company_name, profile)
             else:
                 # Low sources - supplement with fallback
-                logger.warning(f"[WARNING] Only {sources_count} sources retrieved, applying fallback...")
+                logger.warning(
+                    f"[WARNING] Only {sources_count} sources retrieved, applying fallback..."
+                )
                 return self._apply_fallback(result, company_name, profile, competitors)
 
         except Exception as e:
@@ -268,10 +252,7 @@ class ComprehensiveResearcherV4:
             return self._full_fallback_research(company_name, profile, competitors, start_time)
 
     def _enhance_result(
-        self,
-        result: Dict[str, Any],
-        company_name: str,
-        profile: Dict[str, Any]
+        self, result: Dict[str, Any], company_name: str, profile: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Enhance successful results with additional metadata."""
         # Recalculate quality score based on actual content
@@ -294,7 +275,7 @@ class ComprehensiveResearcherV4:
         result: Dict[str, Any],
         company_name: str,
         profile: Dict[str, Any],
-        competitors: List[str]
+        competitors: List[str],
     ) -> Dict[str, Any]:
         """Apply fallback generation for sections with missing content."""
         logger.info("[PHASE 2] Supplementing with fallback content...")
@@ -326,25 +307,19 @@ class ComprehensiveResearcherV4:
             # Check if file is empty or has placeholder content
             needs_fallback = True
             if filepath.exists():
-                content = filepath.read_text(encoding='utf-8')
+                content = filepath.read_text(encoding="utf-8")
                 if len(content) > 500 and "don't see any search results" not in content.lower():
                     needs_fallback = False
 
             if needs_fallback:
                 logger.info(f"  Generating fallback for: {section_key}")
                 fallback = self.generate_fallback_content(
-                    company_name,
-                    section_key,
-                    context_hint,
-                    competitors
+                    company_name, section_key, context_hint, competitors
                 )
                 fallback_content[section_key] = fallback
 
                 # Write fallback content
-                filepath.write_text(
-                    f"# {company_name} - {title}\n\n{fallback}",
-                    encoding='utf-8'
-                )
+                filepath.write_text(f"# {company_name} - {title}\n\n{fallback}", encoding="utf-8")
 
         # Regenerate full report with fallback content
         self._regenerate_full_report(output_dir, company_name, fallback_content)
@@ -365,7 +340,7 @@ class ComprehensiveResearcherV4:
         company_name: str,
         profile: Dict[str, Any],
         competitors: List[str],
-        start_time: datetime
+        start_time: datetime,
     ) -> Dict[str, Any]:
         """Full fallback research when workflow completely fails."""
         logger.info("[FULL FALLBACK] Generating complete report from LLM knowledge...")
@@ -392,18 +367,12 @@ class ComprehensiveResearcherV4:
         for section_key, filename, title in section_configs:
             logger.info(f"  Generating: {section_key}")
             content = self.generate_fallback_content(
-                company_name,
-                section_key,
-                context_hint,
-                competitors
+                company_name, section_key, context_hint, competitors
             )
             sections[section_key] = content
 
             filepath = output_dir / filename
-            filepath.write_text(
-                f"# {company_name} - {title}\n\n{content}",
-                encoding='utf-8'
-            )
+            filepath.write_text(f"# {company_name} - {title}\n\n{content}", encoding="utf-8")
 
             # Small delay to avoid rate limits
             time.sleep(1)
@@ -421,12 +390,8 @@ Market Position: {sections.get('market', '')[:800]}
 Create a comprehensive executive summary (500-800 words)."""
 
         try:
-            result = smart_completion(
-                prompt=summary_prompt,
-                task_type="synthesis",
-                max_tokens=2000
-            )
-            executive_summary = result.content if hasattr(result, 'content') else str(result)
+            result = smart_completion(prompt=summary_prompt, task_type="synthesis", max_tokens=2000)
+            executive_summary = result.content if hasattr(result, "content") else str(result)
         except Exception as e:
             executive_summary = f"*Executive summary unavailable: {e}*"
 
@@ -434,14 +399,13 @@ Create a comprehensive executive summary (500-800 words)."""
 
         # Save executive summary
         (output_dir / "01_executive_summary.md").write_text(
-            f"# {company_name} - Executive Summary\n\n{executive_summary}",
-            encoding='utf-8'
+            f"# {company_name} - Executive Summary\n\n{executive_summary}", encoding="utf-8"
         )
 
         # Save sources (empty since fallback)
         (output_dir / "07_sources.md").write_text(
             f"# {company_name} - Sources\n\n*Note: This report was generated using AI knowledge due to search limitations. No external sources were available.*",
-            encoding='utf-8'
+            encoding="utf-8",
         )
 
         # Generate full report
@@ -451,6 +415,7 @@ Create a comprehensive executive summary (500-800 words)."""
 
         # Save metrics
         import json
+
         metrics = {
             "company_name": company_name,
             "quality_score": 40,  # Low score for full fallback
@@ -459,9 +424,9 @@ Create a comprehensive executive summary (500-800 words)."""
             "fallback_sections": list(sections.keys()),
             "duration_seconds": duration,
             "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
-            "warning": "Report generated using AI knowledge only - verify with official sources"
+            "warning": "Report generated using AI knowledge only - verify with official sources",
         }
-        (output_dir / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding='utf-8')
+        (output_dir / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
 
         logger.info(f"[OK] Fallback report saved to {output_dir}")
 
@@ -469,14 +434,11 @@ Create a comprehensive executive summary (500-800 words)."""
             "company_name": company_name,
             "report_path": str(output_dir / "00_full_report.md"),
             "output_dir": str(output_dir),
-            "metrics": metrics
+            "metrics": metrics,
         }
 
     def _regenerate_full_report(
-        self,
-        output_dir: Path,
-        company_name: str,
-        sections: Dict[str, str]
+        self, output_dir: Path, company_name: str, sections: Dict[str, str]
     ):
         """Regenerate the full report combining all sections."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -485,10 +447,10 @@ Create a comprehensive executive summary (500-800 words)."""
         def read_section(filename: str) -> str:
             filepath = output_dir / filename
             if filepath.exists():
-                content = filepath.read_text(encoding='utf-8')
+                content = filepath.read_text(encoding="utf-8")
                 # Remove the header line
-                lines = content.split('\n')
-                return '\n'.join(lines[2:]) if len(lines) > 2 else content
+                lines = content.split("\n")
+                return "\n".join(lines[2:]) if len(lines) > 2 else content
             return "*Section not available*"
 
         full_report = f"""# {company_name} - Comprehensive Research Report
@@ -561,7 +523,7 @@ Create a comprehensive executive summary (500-800 words)."""
 *This report was generated by Company Researcher V4 (Comprehensive with Fallback)*
 """
 
-        (output_dir / "00_full_report.md").write_text(full_report, encoding='utf-8')
+        (output_dir / "00_full_report.md").write_text(full_report, encoding="utf-8")
 
     def research_company(self, profile_path: str) -> Dict[str, Any]:
         """Main entry point for researching a company."""
@@ -609,6 +571,7 @@ def main():
             except Exception as e:
                 logger.error(f"Research failed for {profile_path}: {e}")
                 import traceback
+
                 traceback.print_exc()
         else:
             logger.error(f"Profile not found: {profile_path}")
@@ -624,13 +587,15 @@ def main():
         print(f"    Quality Score: {metrics.get('quality_score', 0)}/100")
         print(f"    Sources: {metrics.get('sources_count', 0)}")
         print(f"    Used Fallback: {metrics.get('used_fallback', False)}")
-        if metrics.get('fallback_sections'):
+        if metrics.get("fallback_sections"):
             print(f"    Fallback Sections: {len(metrics.get('fallback_sections', []))}")
         print(f"    Duration: {metrics.get('duration_seconds', 0):.1f}s")
         print(f"    Output: {r.get('output_dir', 'N/A')}")
 
     if results:
-        avg_quality = sum(r.get("metrics", {}).get("quality_score", 0) for r in results) / len(results)
+        avg_quality = sum(r.get("metrics", {}).get("quality_score", 0) for r in results) / len(
+            results
+        )
         total_sources = sum(r.get("metrics", {}).get("sources_count", 0) for r in results)
         print(f"\n  Totals:")
         print(f"    Average Quality: {avg_quality:.1f}/100")

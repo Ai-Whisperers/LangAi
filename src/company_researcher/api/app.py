@@ -9,16 +9,19 @@ Main application setup and configuration:
 - Server startup
 """
 
-from typing import Dict, Optional, List, Set
 import logging
 import re
+from typing import Dict, List, Optional, Set
+
 from ..utils import get_config, utc_now
 
 try:
+    from contextlib import asynccontextmanager
+
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import JSONResponse
-    from contextlib import asynccontextmanager
+
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
@@ -32,7 +35,7 @@ DEFAULT_CORS_ORIGINS: Set[str] = {
 }
 
 # Security: Origin validation pattern
-ORIGIN_PATTERN = re.compile(r'^https?://[a-zA-Z0-9][-a-zA-Z0-9.]*[a-zA-Z0-9](:\d+)?$')
+ORIGIN_PATTERN = re.compile(r"^https?://[a-zA-Z0-9][-a-zA-Z0-9.]*[a-zA-Z0-9](:\d+)?$")
 
 
 def _get_allowed_origins(cors_origins: Optional[List[str]] = None) -> List[str]:
@@ -90,6 +93,7 @@ def get_ws_manager():
     global _ws_manager
     if _ws_manager is None:
         from .websocket import WebSocketManager
+
         _ws_manager = WebSocketManager()
     return _ws_manager
 
@@ -97,6 +101,7 @@ def get_ws_manager():
 # ============================================================================
 # Application Factory
 # ============================================================================
+
 
 def create_app(
     title: str = "Company Researcher API",
@@ -107,7 +112,7 @@ def create_app(
     rate_limit_rpm: int = 60,
     enable_logging: bool = True,
     api_keys: Optional[Dict[str, str]] = None,
-    require_auth: bool = False
+    require_auth: bool = False,
 ) -> "FastAPI":
     """
     Create and configure the FastAPI application.
@@ -172,7 +177,7 @@ Include your API key in the `X-API-Key` header.
         lifespan=lifespan,
         docs_url="/docs",
         redoc_url="/redoc",
-        openapi_url="/openapi.json"
+        openapi_url="/openapi.json",
     )
 
     # Configure CORS (with security validation)
@@ -190,27 +195,24 @@ Include your API key in the `X-API-Key` header.
     # Add rate limiting
     if enable_rate_limiting:
         from .middleware import RateLimitMiddleware
-        app.add_middleware(
-            RateLimitMiddleware,
-            requests_per_minute=rate_limit_rpm
-        )
+
+        app.add_middleware(RateLimitMiddleware, requests_per_minute=rate_limit_rpm)
 
     # Add request logging
     if enable_logging:
         from .middleware import RequestLoggingMiddleware
+
         app.add_middleware(RequestLoggingMiddleware)
 
     # Add authentication
     if require_auth and api_keys:
         from .middleware import APIKeyMiddleware
-        app.add_middleware(
-            APIKeyMiddleware,
-            api_keys=api_keys,
-            require_auth=True
-        )
+
+        app.add_middleware(APIKeyMiddleware, api_keys=api_keys, require_auth=True)
 
     # Mount routes
     from .routes import router as research_router
+
     app.include_router(research_router)
 
     # Root endpoint
@@ -222,7 +224,7 @@ Include your API key in the `X-API-Key` header.
             "version": version,
             "status": "running",
             "docs": "/docs",
-            "timestamp": utc_now().isoformat()
+            "timestamp": utc_now().isoformat(),
         }
 
     # Health endpoint (used by Docker/Kubernetes health checks)
@@ -259,8 +261,8 @@ Include your API key in the `X-API-Key` header.
             content={
                 "error": "Not found",
                 "path": str(request.url.path),
-                "timestamp": utc_now().isoformat()
-            }
+                "timestamp": utc_now().isoformat(),
+            },
         )
 
     @app.exception_handler(500)
@@ -268,10 +270,7 @@ Include your API key in the `X-API-Key` header.
         logging.error(f"Server error: {exc}")
         return JSONResponse(
             status_code=500,
-            content={
-                "error": "Internal server error",
-                "timestamp": utc_now().isoformat()
-            }
+            content={"error": "Internal server error", "timestamp": utc_now().isoformat()},
         )
 
     return app
@@ -281,12 +280,13 @@ Include your API key in the `X-API-Key` header.
 # Server Runner
 # ============================================================================
 
+
 def run_server(
     host: str = "0.0.0.0",
     port: int = 8000,
     reload: bool = False,
     workers: int = 1,
-    log_level: str = "info"
+    log_level: str = "info",
 ):
     """
     Run the API server.
@@ -305,21 +305,10 @@ def run_server(
 
     app = get_app()
 
-    uvicorn.run(
-        app,
-        host=host,
-        port=port,
-        reload=reload,
-        workers=workers,
-        log_level=log_level
-    )
+    uvicorn.run(app, host=host, port=port, reload=reload, workers=workers, log_level=log_level)
 
 
-def run_server_async(
-    host: str = "0.0.0.0",
-    port: int = 8000,
-    log_level: str = "info"
-):
+def run_server_async(host: str = "0.0.0.0", port: int = 8000, log_level: str = "info"):
     """
     Run server asynchronously (for embedding in async apps).
     """
@@ -328,12 +317,7 @@ def run_server_async(
     except ImportError:
         raise ImportError("uvicorn not installed. Run: pip install uvicorn")
 
-    config = uvicorn.Config(
-        get_app(),
-        host=host,
-        port=port,
-        log_level=log_level
-    )
+    config = uvicorn.Config(get_app(), host=host, port=port, log_level=log_level)
     server = uvicorn.Server(config)
     return server
 
@@ -341,6 +325,7 @@ def run_server_async(
 # ============================================================================
 # CLI Entry Point
 # ============================================================================
+
 
 def main():
     """CLI entry point for running the server."""
@@ -360,7 +345,7 @@ def main():
         port=args.port,
         reload=args.reload,
         workers=args.workers,
-        log_level=args.log_level
+        log_level=args.log_level,
     )
 
 

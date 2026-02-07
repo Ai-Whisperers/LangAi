@@ -5,20 +5,26 @@ Tests comprehensive quality assessment including fact extraction,
 contradiction detection, gap identification, and quality scoring.
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 from company_researcher.agents.quality.logic_critic import (
-    logic_critic_agent_node,
-    quick_logic_critic_node,
-    identify_gaps,
+    REQUIRED_SECTIONS,
+    ResearchGap,
     calculate_comprehensive_quality,
     extract_recommendations,
-    ResearchGap,
-    REQUIRED_SECTIONS
+    identify_gaps,
+    logic_critic_agent_node,
+    quick_logic_critic_node,
 )
+
 # Use the AI extraction ExtractedFact which is what logic_critic.py uses
 from company_researcher.ai.extraction import ExtractedFact, FactCategory, FactType
-from company_researcher.quality.contradiction_detector import ContradictionReport, ContradictionSeverity
+from company_researcher.quality.contradiction_detector import (
+    ContradictionReport,
+    ContradictionSeverity,
+)
 
 
 @pytest.mark.unit
@@ -32,7 +38,7 @@ class TestResearchGap:
             section="Financial Analysis",
             field="revenue",
             severity="high",
-            recommendation="Add revenue information"
+            recommendation="Add revenue information",
         )
 
         assert gap.section == "Financial Analysis"
@@ -46,7 +52,7 @@ class TestResearchGap:
             section="Market Analysis",
             field="market_size",
             severity="medium",
-            recommendation="Include TAM/SAM/SOM data"
+            recommendation="Include TAM/SAM/SOM data",
         )
 
         gap_dict = gap.to_dict()
@@ -84,7 +90,7 @@ class TestIdentifyGaps:
                     fact_type=FactType.OTHER,
                     value=f"Fact about {section_id} - {i}",
                     source_text=f"Source text for {section_id} fact {i}",
-                    confidence=0.8
+                    confidence=0.8,
                 )
                 facts.append(fact)
 
@@ -102,7 +108,7 @@ class TestIdentifyGaps:
                 fact_type=FactType.REVENUE,
                 value="$1B",
                 source_text="Company revenue is $1B",
-                confidence=0.8
+                confidence=0.8,
             )
             # Only 1 fact (< minimum of 3)
         ]
@@ -122,22 +128,22 @@ class TestIdentifyGaps:
                 fact_type=FactType.OTHER,
                 value="The company is doing well",
                 source_text="The company is doing well",
-                confidence=0.7
+                confidence=0.7,
             ),
             ExtractedFact(
                 category=FactCategory.FINANCIAL,
                 fact_type=FactType.OTHER,
                 value="The market is growing",
                 source_text="The market is growing",
-                confidence=0.7
+                confidence=0.7,
             ),
             ExtractedFact(
                 category=FactCategory.FINANCIAL,
                 fact_type=FactType.OTHER,
                 value="Good performance overall",
                 source_text="Good performance overall",
-                confidence=0.7
-            )
+                confidence=0.7,
+            ),
         ]
 
         gaps = identify_gaps(facts, {})
@@ -162,16 +168,13 @@ class TestCalculateComprehensiveQuality:
                 fact_type=FactType.OTHER,
                 value=f"High quality fact {i}",
                 source_text=f"Source text for high quality fact {i}",
-                confidence=0.9
+                confidence=0.9,
             )
             for i in range(50)
         ]
 
         # No contradictions
-        contradiction_report = ContradictionReport(
-            contradictions=[],
-            total_facts_analyzed=50
-        )
+        contradiction_report = ContradictionReport(contradictions=[], total_facts_analyzed=50)
 
         # No gaps
         gaps = []
@@ -188,13 +191,16 @@ class TestCalculateComprehensiveQuality:
         """Test quality calculation with contradictions."""
         from company_researcher.quality.contradiction_detector import Contradiction
 
-        facts = [ExtractedFact(
-            category=FactCategory.COMPANY_INFO,
-            fact_type=FactType.OTHER,
-            value=f"Fact {i}",
-            source_text=f"Source text for fact {i}",
-            confidence=0.8
-        ) for i in range(30)]
+        facts = [
+            ExtractedFact(
+                category=FactCategory.COMPANY_INFO,
+                fact_type=FactType.OTHER,
+                value=f"Fact {i}",
+                source_text=f"Source text for fact {i}",
+                confidence=0.8,
+            )
+            for i in range(30)
+        ]
 
         # Create critical contradiction
         contradiction = Contradiction(
@@ -205,12 +211,11 @@ class TestCalculateComprehensiveQuality:
             fact_b="Revenue is $3B",
             agent_a="a1",
             agent_b="a2",
-            explanation="Critical disagreement"
+            explanation="Critical disagreement",
         )
 
         contradiction_report = ContradictionReport(
-            contradictions=[contradiction],
-            total_facts_analyzed=30
+            contradictions=[contradiction], total_facts_analyzed=30
         )
 
         gaps = []
@@ -224,13 +229,16 @@ class TestCalculateComprehensiveQuality:
 
     def test_calculate_quality_with_gaps(self):
         """Test quality calculation with research gaps."""
-        facts = [ExtractedFact(
-            category=FactCategory.COMPANY_INFO,
-            fact_type=FactType.OTHER,
-            value=f"Fact {i}",
-            source_text=f"Source text for fact {i}",
-            confidence=0.8
-        ) for i in range(30)]
+        facts = [
+            ExtractedFact(
+                category=FactCategory.COMPANY_INFO,
+                fact_type=FactType.OTHER,
+                value=f"Fact {i}",
+                source_text=f"Source text for fact {i}",
+                confidence=0.8,
+            )
+            for i in range(30)
+        ]
 
         contradiction_report = ContradictionReport(contradictions=[], total_facts_analyzed=30)
 
@@ -239,7 +247,7 @@ class TestCalculateComprehensiveQuality:
             ResearchGap("Financial", "revenue", "high", "Add revenue"),
             ResearchGap("Market", "market_size", "high", "Add TAM"),
             ResearchGap("Product", "products", "high", "Add products"),
-            ResearchGap("Leadership", "ceo", "high", "Add CEO")
+            ResearchGap("Leadership", "ceo", "high", "Add CEO"),
         ]
 
         quality = calculate_comprehensive_quality(facts, contradiction_report, gaps)
@@ -258,7 +266,7 @@ class TestCalculateComprehensiveQuality:
                 fact_type=FactType.OTHER,
                 value=f"Uncertain fact {i}",
                 source_text=f"Source text for uncertain fact {i}",
-                confidence=0.3  # Low confidence
+                confidence=0.3,  # Low confidence
             )
             for i in range(30)
         ]
@@ -316,10 +324,7 @@ class TestQuickLogicCriticNode:
 
     def test_quick_logic_critic_node(self, sample_agent_outputs):
         """Test quick logic critic without LLM."""
-        state = {
-            "company_name": "TestCorp",
-            "agent_outputs": sample_agent_outputs
-        }
+        state = {"company_name": "TestCorp", "agent_outputs": sample_agent_outputs}
 
         result = quick_logic_critic_node(state)
 
@@ -334,10 +339,7 @@ class TestQuickLogicCriticNode:
 
     def test_quick_logic_critic_quality_metrics(self, sample_agent_outputs):
         """Test quality metrics from quick logic critic."""
-        state = {
-            "company_name": "TestCorp",
-            "agent_outputs": sample_agent_outputs
-        }
+        state = {"company_name": "TestCorp", "agent_outputs": sample_agent_outputs}
 
         result = quick_logic_critic_node(state)
         metrics = result["agent_outputs"]["logic_critic"]["quality_metrics"]
@@ -352,7 +354,7 @@ class TestQuickLogicCriticNode:
 
 @pytest.mark.unit
 @pytest.mark.quality
-@patch('company_researcher.agents.quality.logic_critic.get_anthropic_client')
+@patch("company_researcher.agents.quality.logic_critic.get_anthropic_client")
 class TestLogicCriticAgent:
     """Test full logic critic agent (with mocked LLM)."""
 
@@ -367,10 +369,7 @@ class TestLogicCriticAgent:
         mock_client.messages.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
-        state = {
-            "company_name": "TestCorp",
-            "agent_outputs": sample_agent_outputs
-        }
+        state = {"company_name": "TestCorp", "agent_outputs": sample_agent_outputs}
 
         result = logic_critic_agent_node(state)
 
@@ -390,10 +389,7 @@ class TestLogicCriticAgent:
         mock_client.messages.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
-        state = {
-            "company_name": "TestCorp",
-            "agent_outputs": sample_agent_outputs
-        }
+        state = {"company_name": "TestCorp", "agent_outputs": sample_agent_outputs}
 
         result = logic_critic_agent_node(state)
         output = result["agent_outputs"]["logic_critic"]
@@ -422,18 +418,11 @@ class TestLogicCriticAgent:
 
         # Create agent outputs with contradictory information
         agent_outputs = {
-            "financial": {
-                "financial_analysis": "Revenue is $1.5 billion with strong margins."
-            },
-            "market": {
-                "market_analysis": "Company revenue reached $2.1 billion last year."
-            }
+            "financial": {"financial_analysis": "Revenue is $1.5 billion with strong margins."},
+            "market": {"market_analysis": "Company revenue reached $2.1 billion last year."},
         }
 
-        state = {
-            "company_name": "TestCorp",
-            "agent_outputs": agent_outputs
-        }
+        state = {"company_name": "TestCorp", "agent_outputs": agent_outputs}
 
         result = logic_critic_agent_node(state)
         contradictions = result["agent_outputs"]["logic_critic"]["contradictions"]

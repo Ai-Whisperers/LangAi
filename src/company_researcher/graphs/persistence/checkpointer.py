@@ -27,10 +27,10 @@ Usage:
     )
 """
 
-from typing import Optional, Literal, Any
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
-import os
+from typing import Any, Literal, Optional
 
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph
@@ -167,8 +167,7 @@ def _get_postgres_checkpointer(connection_string: Optional[str] = None) -> Any:
         from langgraph.checkpoint.postgres import PostgresSaver
     except ImportError:
         logger.warning(
-            "[CHECKPOINT] langgraph.checkpoint.postgres not available, "
-            "falling back to SQLite"
+            "[CHECKPOINT] langgraph.checkpoint.postgres not available, " "falling back to SQLite"
         )
         return _get_sqlite_checkpointer()
 
@@ -177,8 +176,7 @@ def _get_postgres_checkpointer(connection_string: Optional[str] = None) -> Any:
 
     if not connection_string:
         logger.warning(
-            "[CHECKPOINT] No PostgreSQL connection string provided, "
-            "falling back to SQLite"
+            "[CHECKPOINT] No PostgreSQL connection string provided, " "falling back to SQLite"
         )
         return _get_sqlite_checkpointer()
 
@@ -232,6 +230,7 @@ def create_checkpointed_workflow(
 # ============================================================================
 # Async Checkpointer Support
 # ============================================================================
+
 
 async def get_async_checkpointer(
     backend: CheckpointerBackend = "sqlite",

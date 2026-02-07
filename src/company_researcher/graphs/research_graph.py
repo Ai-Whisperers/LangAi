@@ -9,14 +9,15 @@ Visualizes the complete company research process:
 """
 
 import json
-import re
-from typing import TypedDict, Annotated, List, Dict, Any
-from langgraph.graph import StateGraph, START, END
 import operator
+import re
+from typing import Annotated, Any, Dict, List, TypedDict
 
+from langgraph.graph import END, START, StateGraph
+
+from ..config import get_config
 from ..llm.client_factory import get_tavily_client
 from ..llm.smart_client import smart_completion
-from ..config import get_config
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -24,6 +25,7 @@ logger = get_logger(__name__)
 
 class ResearchState(TypedDict):
     """State for company research workflow"""
+
     # Input
     company_name: str
 
@@ -74,14 +76,14 @@ Return ONLY a JSON array of strings:
             prompt=prompt,
             task_type="extraction",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=512,
-            temperature=0.0
+            temperature=0.0,
         )
 
         # Parse queries using safe JSON parsing
         queries_text = result.content.strip()
 
         # Extract JSON array from response
-        json_match = re.search(r'\[.*\]', queries_text, re.DOTALL)
+        json_match = re.search(r"\[.*\]", queries_text, re.DOTALL)
         if json_match:
             queries = json.loads(json_match.group())
         else:
@@ -93,7 +95,7 @@ Return ONLY a JSON array of strings:
         return {
             "queries": queries,
             "total_tokens": result.input_tokens + result.output_tokens,
-            "total_cost": result.cost
+            "total_cost": result.cost,
         }
 
     except json.JSONDecodeError as e:
@@ -102,9 +104,9 @@ Return ONLY a JSON array of strings:
             "queries": [
                 f"{company} company overview",
                 f"{company} revenue financials",
-                f"{company} products services"
+                f"{company} products services",
             ],
-            "error": f"JSON parsing error: {str(e)}"
+            "error": f"JSON parsing error: {str(e)}",
         }
     except Exception as e:
         logger.error(f"Error generating queries: {e}", exc_info=True)
@@ -112,9 +114,9 @@ Return ONLY a JSON array of strings:
             "queries": [
                 f"{company} company overview",
                 f"{company} revenue financials",
-                f"{company} products services"
+                f"{company} products services",
             ],
-            "error": str(e)
+            "error": str(e),
         }
 
 
@@ -136,32 +138,26 @@ def node_search_web(state: ResearchState) -> dict:
         for query in queries:
             logger.debug(f"Searching: {query[:50]}...")
 
-            response = client.search(
-                query=query,
-                max_results=config.search_results_per_query
-            )
+            response = client.search(query=query, max_results=config.search_results_per_query)
 
-            for result in response.get('results', []):
-                all_results.append({
-                    'query': query,
-                    'title': result.get('title', ''),
-                    'url': result.get('url', ''),
-                    'content': result.get('content', ''),
-                    'score': result.get('score', 0)
-                })
+            for result in response.get("results", []):
+                all_results.append(
+                    {
+                        "query": query,
+                        "title": result.get("title", ""),
+                        "url": result.get("url", ""),
+                        "content": result.get("content", ""),
+                        "score": result.get("score", 0),
+                    }
+                )
 
         logger.info(f"Found {len(all_results)} search results")
 
-        return {
-            "search_results": all_results
-        }
+        return {"search_results": all_results}
 
     except Exception as e:
         logger.error(f"Error searching web: {e}", exc_info=True)
-        return {
-            "search_results": [],
-            "error": str(e)
-        }
+        return {"search_results": [], "error": str(e)}
 
 
 def node_extract_data(state: ResearchState) -> dict:
@@ -178,10 +174,12 @@ def node_extract_data(state: ResearchState) -> dict:
 
     try:
         # Combine top results
-        combined_content = "\n\n".join([
-            f"Source: {r.get('title', 'N/A')}\nURL: {r.get('url', 'N/A')}\n{r.get('content', '')[:500]}"
-            for r in results[:10]
-        ])
+        combined_content = "\n\n".join(
+            [
+                f"Source: {r.get('title', 'N/A')}\nURL: {r.get('url', 'N/A')}\n{r.get('content', '')[:500]}"
+                for r in results[:10]
+            ]
+        )
 
         prompt = f"""Extract structured information about {company} from these search results.
 
@@ -209,12 +207,12 @@ Return ONLY valid JSON."""
             prompt=prompt,
             task_type="extraction",  # Routes to DeepSeek V3 ($0.14/1M)
             max_tokens=2048,
-            temperature=0.0
+            temperature=0.0,
         )
 
         # Parse JSON safely
         response_text = result.content.strip()
-        json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+        json_match = re.search(r"\{.*\}", response_text, re.DOTALL)
 
         if json_match:
             extracted = json.loads(json_match.group())
@@ -225,22 +223,18 @@ Return ONLY valid JSON."""
 
         return {
             "extracted_data": extracted,
-            "total_tokens": state.get("total_tokens", 0) + result.input_tokens + result.output_tokens,
-            "total_cost": state.get("total_cost", 0) + result.cost
+            "total_tokens": state.get("total_tokens", 0)
+            + result.input_tokens
+            + result.output_tokens,
+            "total_cost": state.get("total_cost", 0) + result.cost,
         }
 
     except json.JSONDecodeError as e:
         logger.warning(f"JSON parsing error for extracted data: {e}")
-        return {
-            "extracted_data": {"error": f"JSON parsing error: {str(e)}"},
-            "error": str(e)
-        }
+        return {"extracted_data": {"error": f"JSON parsing error: {str(e)}"}, "error": str(e)}
     except Exception as e:
         logger.error(f"Error extracting data: {e}", exc_info=True)
-        return {
-            "extracted_data": {"error": str(e)},
-            "error": str(e)
-        }
+        return {"extracted_data": {"error": str(e)}, "error": str(e)}
 
 
 def _format_list_section(items: List[Any], empty_message: str) -> str:
@@ -283,7 +277,7 @@ def _format_sources_section(sources: List[Dict[str, Any]], sources_per_domain: i
     # Group sources by domain
     source_domains: Dict[str, List[Dict]] = {}
     for source in sources:
-        url = source.get('url', '')
+        url = source.get("url", "")
         if not url:
             continue
         try:
@@ -299,8 +293,8 @@ def _format_sources_section(sources: List[Dict[str, Any]], sources_per_domain: i
     for domain, domain_sources in source_domains.items():
         section += f"\n### {domain}\n\n"
         for source in domain_sources[:sources_per_domain]:
-            title = source.get('title', 'Untitled')
-            url = source.get('url', '#')
+            title = source.get("title", "Untitled")
+            url = source.get("url", "#")
             section += f"- [{title}]({url})\n"
 
     section += f"\n---\n\nTotal Sources: {len(sources)}\n"
@@ -316,25 +310,23 @@ def node_generate_report(state: ResearchState) -> dict:
     config = get_config()
     data = state.get("extracted_data", {})
     sources = state.get("search_results", [])
-    company_name = state.get('company_name', 'Unknown Company')
+    company_name = state.get("company_name", "Unknown Company")
 
     logger.info("Generating report...")
 
     # Build report from sections
     report = _format_overview_section(data, company_name)
-    report += _format_list_section(data.get('products', []), "No products listed.")
+    report += _format_list_section(data.get("products", []), "No products listed.")
     report += "\n---\n\n## Competitors\n\n"
-    report += _format_list_section(data.get('competitors', []), "No competitors listed.")
+    report += _format_list_section(data.get("competitors", []), "No competitors listed.")
     report += "\n---\n\n## Key Facts\n\n"
-    report += _format_list_section(data.get('key_facts', []), "No key facts extracted.")
+    report += _format_list_section(data.get("key_facts", []), "No key facts extracted.")
     report += "\n---\n\n## Sources\n\n"
     report += _format_sources_section(sources, config.report_sources_per_domain)
 
     logger.info(f"Report generated ({len(report)} characters)")
 
-    return {
-        "report": report
-    }
+    return {"report": report}
 
 
 # Build the workflow graph
@@ -363,16 +355,18 @@ if __name__ == "__main__":
     print("  Company Research Graph Test")
     print("=" * 60)
 
-    result = graph.invoke({
-        "company_name": "Tesla",
-        "queries": [],
-        "search_results": [],
-        "extracted_data": {},
-        "report": "",
-        "total_cost": 0.0,
-        "total_tokens": 0,
-        "error": None
-    })
+    result = graph.invoke(
+        {
+            "company_name": "Tesla",
+            "queries": [],
+            "search_results": [],
+            "extracted_data": {},
+            "report": "",
+            "total_cost": 0.0,
+            "total_tokens": 0,
+            "error": None,
+        }
+    )
 
     print("\n" + "=" * 60)
     print("  Research Complete!")
@@ -383,9 +377,9 @@ if __name__ == "__main__":
     print(f"Total Cost: ${result.get('total_cost', 0):.4f}")
     print(f"Total Tokens: {result.get('total_tokens', 0)}")
 
-    if result.get('report'):
+    if result.get("report"):
         print(f"\n✅ Report generated ({len(result['report'])} chars)")
         print("\nFirst 500 characters of report:")
         print("-" * 60)
-        print(result['report'][:500])
+        print(result["report"][:500])
         print("-" * 60)

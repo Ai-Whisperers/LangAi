@@ -63,7 +63,7 @@ class InMemoryTaskStorage(TaskStorage):
         status: Optional[str] = None,
         company: Optional[str] = None,
         limit: int = 50,
-        offset: int = 0
+        offset: int = 0,
     ) -> List[Dict[str, Any]]:
         with self._lock:
             tasks = list(self._tasks.values())
@@ -75,7 +75,7 @@ class InMemoryTaskStorage(TaskStorage):
             tasks = [t for t in tasks if company_lower in t.get("company_name", "").lower()]
 
         tasks.sort(key=lambda t: t.get("created_at", ""), reverse=True)
-        return tasks[offset:offset + limit]
+        return tasks[offset : offset + limit]
 
     async def save_batch(self, batch_id: str, batch: Dict[str, Any]) -> bool:
         with self._lock:
@@ -116,7 +116,7 @@ class InMemoryTaskStorage(TaskStorage):
                         to_delete.append(task_id)
                 elif isinstance(created_at, str):
                     try:
-                        parsed = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                        parsed = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
                         if parsed < cutoff:
                             to_delete.append(task_id)
                     except ValueError:

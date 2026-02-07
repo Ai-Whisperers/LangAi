@@ -1,17 +1,18 @@
 """Tests for state checkpointing functionality."""
 
-import pytest
-import tempfile
 import shutil
+import tempfile
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from datetime import datetime, timezone, timedelta
+
+import pytest
 
 from company_researcher.state.checkpoint import (
     Checkpoint,
     CheckpointManager,
     create_checkpoint,
-    restore_checkpoint,
     list_checkpoints,
+    restore_checkpoint,
 )
 
 
@@ -27,7 +28,7 @@ class TestCheckpoint:
             created_at=datetime.now(timezone.utc),
             metadata={"source": "test"},
             step=5,
-            parent_id="parent-id"
+            parent_id="parent-id",
         )
         assert cp.id == "test-id"
         assert cp.thread_id == "thread-123"
@@ -45,7 +46,7 @@ class TestCheckpoint:
             created_at=created,
             metadata={"tag": "test"},
             step=2,
-            parent_id=None
+            parent_id=None,
         )
         result = cp.to_dict()
 
@@ -66,7 +67,7 @@ class TestCheckpoint:
             "created_at": "2024-06-01T10:30:00+00:00",
             "metadata": {"source": "backup"},
             "step": 10,
-            "parent_id": "prev-id"
+            "parent_id": "prev-id",
         }
         cp = Checkpoint.from_dict(data)
 
@@ -107,12 +108,7 @@ class TestCheckpointManager:
     def test_create_checkpoint(self, manager):
         """create should create and store a checkpoint."""
         state = {"company": "TestCorp", "revenue": 1000000}
-        cp = manager.create(
-            thread_id="thread-1",
-            state=state,
-            step=1,
-            metadata={"source": "test"}
-        )
+        cp = manager.create(thread_id="thread-1", state=state, step=1, metadata={"source": "test"})
 
         assert cp.thread_id == "thread-1"
         assert cp.state == state

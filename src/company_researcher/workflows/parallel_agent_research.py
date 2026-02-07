@@ -25,32 +25,29 @@ Phase 10 Quality Assurance:
 - Comprehensive quality scoring
 """
 
-from typing import Dict, Any
-from langgraph.graph import StateGraph, END
+from typing import Any, Dict
 
-from ..state import OverallState, InputState, OutputState, create_initial_state, create_output_state
+from langgraph.graph import END, StateGraph
+
+from ..agents import competitor_scout_agent_node  # Phase 9
 from ..agents import (
-    competitor_scout_agent_node,  # Phase 9
-    researcher_agent_node,
     financial_agent_node,
     market_agent_node,
     product_agent_node,
-    synthesizer_agent_node
+    researcher_agent_node,
+    synthesizer_agent_node,
 )
 from ..agents.quality.logic_critic import logic_critic_agent_node  # Phase 10
-from ..quality import check_research_quality
+from ..observability import is_observability_enabled, record_quality_check, track_research_session
 from ..prompts import format_sources_for_report
-from ..observability import (
-    track_research_session,
-    record_quality_check,
-    is_observability_enabled
-)
+from ..quality import check_research_quality
+from ..state import InputState, OutputState, OverallState, create_initial_state, create_output_state
 from ..utils import utc_now
-
 
 # ============================================================================
 # Workflow Nodes
 # ============================================================================
+
 
 def check_quality_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -74,29 +71,29 @@ def check_quality_node(state: OverallState) -> Dict[str, Any]:
 
         print(f"[QUALITY] Logic Critic Score: {quality_score:.1f}/100")
         print(f"  - Facts Analyzed: {logic_critic_output.get('facts_analyzed', 0)}")
-        print(f"  - Contradictions: {logic_critic_output.get('contradictions', {}).get('total', 0)}")
+        print(
+            f"  - Contradictions: {logic_critic_output.get('contradictions', {}).get('total', 0)}"
+        )
         print(f"  - Gaps: {logic_critic_output.get('gaps', {}).get('total', 0)}")
 
         missing_info = []
         if quality_score < 85:
             print("[QUALITY] Below threshold (85). Issues identified:")
             # Extract gap information as missing info
-            for gap in logic_critic_output.get('gaps', {}).get('items', [])[:3]:
+            for gap in logic_critic_output.get("gaps", {}).get("items", [])[:3]:
                 missing_info.append(f"{gap['section']}: {gap['recommendation']}")
                 print(f"  - {gap['section']}: {gap['field']}")
 
         # Record quality check to observability (Phase 4)
         iteration_count = state.get("iteration_count", 0) + 1
         record_quality_check(
-            quality_score=quality_score,
-            missing_info=missing_info,
-            iteration=iteration_count
+            quality_score=quality_score, missing_info=missing_info, iteration=iteration_count
         )
 
         return {
             "quality_score": quality_score,
             "missing_info": missing_info,
-            "iteration_count": iteration_count
+            "iteration_count": iteration_count,
         }
 
     else:
@@ -104,7 +101,7 @@ def check_quality_node(state: OverallState) -> Dict[str, Any]:
         quality_result = check_research_quality(
             company_name=state["company_name"],
             extracted_data=state.get("company_overview", ""),
-            sources=state.get("sources", [])
+            sources=state.get("sources", []),
         )
 
         quality_score = quality_result["quality_score"]
@@ -120,7 +117,7 @@ def check_quality_node(state: OverallState) -> Dict[str, Any]:
         record_quality_check(
             quality_score=quality_score,
             missing_info=quality_result["missing_information"],
-            iteration=iteration_count
+            iteration=iteration_count,
         )
 
         return {
@@ -129,9 +126,11 @@ def check_quality_node(state: OverallState) -> Dict[str, Any]:
             "iteration_count": iteration_count,
             "total_cost": state.get("total_cost", 0.0) + quality_result["cost"],
             "total_tokens": {
-                "input": state.get("total_tokens", {"input": 0, "output": 0})["input"] + quality_result["tokens"]["input"],
-                "output": state.get("total_tokens", {"input": 0, "output": 0})["output"] + quality_result["tokens"]["output"]
-            }
+                "input": state.get("total_tokens", {"input": 0, "output": 0})["input"]
+                + quality_result["tokens"]["input"],
+                "output": state.get("total_tokens", {"input": 0, "output": 0})["output"]
+                + quality_result["tokens"]["output"],
+            },
         }
 
 
@@ -233,24 +232,34 @@ def save_report_node(state: OverallState) -> Dict[str, Any]:
 ---
 """
 
-    # Save report
-    import os
-    output_dir = f"outputs/{company_name}"
-    os.makedirs(output_dir, exist_ok=True)
+    # Save report (canonical)
+    from pathlib import Path
 
-    report_path = f"{output_dir}/report_{timestamp}.md"
+    from ..config import get_config
 
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write(report_content)
+    config = get_config()
+    reports_root = Path(getattr(config, "reports_dir", config.output_dir))
+    output_dir = reports_root / "companies" / company_name.replace(" ", "_")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    report_path = output_dir / "00_full_report.md"
+    timestamped_path = output_dir / f"report_{timestamp}.md"
+
+    report_path.write_text(report_content, encoding="utf-8")
+    try:
+        timestamped_path.write_text(report_content, encoding="utf-8")
+    except Exception:
+        pass
 
     print(f"[OK] Report saved to: {report_path}")
 
-    return {"report_path": report_path}
+    return {"report_path": str(report_path)}
 
 
 # ============================================================================
 # Decision Functions
 # ============================================================================
+
 
 def should_continue_research(state: OverallState) -> str:
     """
@@ -271,16 +280,21 @@ def should_continue_research(state: OverallState) -> str:
         print(f"[DECISION] Quality sufficient ({quality_score:.1f} >= 85). Proceeding to report.")
         return "finish"
     elif iteration_count >= max_iterations:
-        print(f"[DECISION] Max iterations reached ({iteration_count}/{max_iterations}). Proceeding to report.")
+        print(
+            f"[DECISION] Max iterations reached ({iteration_count}/{max_iterations}). Proceeding to report."
+        )
         return "finish"
     else:
-        print(f"[DECISION] Quality low ({quality_score:.1f} < 85), iteration {iteration_count}/{max_iterations}. Re-researching.")
+        print(
+            f"[DECISION] Quality low ({quality_score:.1f} < 85), iteration {iteration_count}/{max_iterations}. Re-researching."
+        )
         return "iterate"
 
 
 # ============================================================================
 # Workflow Creation
 # ============================================================================
+
 
 def create_parallel_agent_workflow() -> StateGraph:
     """
@@ -337,8 +351,8 @@ def create_parallel_agent_workflow() -> StateGraph:
         should_continue_research,
         {
             "iterate": "researcher",  # Loop back to improve
-            "finish": "save_report"  # Quality is good, save report
-        }
+            "finish": "save_report",  # Quality is good, save report
+        },
     )
 
     workflow.add_edge("save_report", END)
@@ -349,6 +363,7 @@ def create_parallel_agent_workflow() -> StateGraph:
 # ============================================================================
 # Main Research Function
 # ============================================================================
+
 
 def research_company(company_name: str) -> OutputState:
     """
@@ -389,7 +404,9 @@ def research_company(company_name: str) -> OutputState:
         print(f"Report: {output['report_path']}")
         print(f"Duration: {output['metrics']['duration_seconds']:.1f}s")
         print(f"Cost: ${output['metrics']['cost_usd']:.4f}")
-        print(f"Tokens: {output['metrics']['tokens']['input']:,} in, {output['metrics']['tokens']['output']:,} out")
+        print(
+            f"Tokens: {output['metrics']['tokens']['input']:,} in, {output['metrics']['tokens']['output']:,} out"
+        )
         print(f"Sources: {output['metrics']['sources_count']}")
         print(f"Quality: {output['metrics']['quality_score']:.1f}/100")
         print(f"Iterations: {output['metrics']['iterations']}")

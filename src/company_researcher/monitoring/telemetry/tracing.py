@@ -8,9 +8,9 @@ import uuid
 from contextlib import contextmanager
 from typing import Any, Dict, Iterator, List, Optional
 
-from .models import Span, SpanContext
-from .exporters import SpanExporter
 from ...utils import get_logger, utc_now
+from .exporters import SpanExporter
+from .models import Span, SpanContext
 
 logger = get_logger(__name__)
 
@@ -32,7 +32,7 @@ class TracerProvider:
         self,
         service_name: str,
         service_version: str = "1.0.0",
-        exporters: List[SpanExporter] = None
+        exporters: List[SpanExporter] = None,
     ):
         self.service_name = service_name
         self.service_version = service_version
@@ -42,7 +42,7 @@ class TracerProvider:
             "service.name": service_name,
             "service.version": service_version,
             "telemetry.sdk.name": "company-researcher-otel",
-            "telemetry.sdk.version": "1.0.0"
+            "telemetry.sdk.version": "1.0.0",
         }
 
     def get_tracer(self, name: str, version: str = "") -> "Tracer":
@@ -80,14 +80,16 @@ class Tracer:
         name: str,
         kind: str = "INTERNAL",
         attributes: Dict[str, Any] = None,
-        links: List[SpanContext] = None
+        links: List[SpanContext] = None,
     ) -> Iterator[Span]:
         """Start a new span as a context manager."""
         # Create span context
         context = SpanContext(
-            trace_id=self._current_span.context.trace_id if self._current_span else uuid.uuid4().hex,
+            trace_id=(
+                self._current_span.context.trace_id if self._current_span else uuid.uuid4().hex
+            ),
             span_id=uuid.uuid4().hex[:16],
-            parent_span_id=self._current_span.context.span_id if self._current_span else None
+            parent_span_id=self._current_span.context.span_id if self._current_span else None,
         )
 
         span = Span(
@@ -96,7 +98,7 @@ class Tracer:
             start_time=utc_now(),
             kind=kind,
             attributes=attributes or {},
-            links=links or []
+            links=links or [],
         )
 
         # Set as current span
@@ -115,24 +117,19 @@ class Tracer:
             self.provider.export_span(span)
 
     def start_as_current_span(
-        self,
-        name: str,
-        kind: str = "INTERNAL",
-        attributes: Dict[str, Any] = None
+        self, name: str, kind: str = "INTERNAL", attributes: Dict[str, Any] = None
     ) -> Span:
         """Start a span and set it as current (must be ended manually)."""
         context = SpanContext(
-            trace_id=self._current_span.context.trace_id if self._current_span else uuid.uuid4().hex,
+            trace_id=(
+                self._current_span.context.trace_id if self._current_span else uuid.uuid4().hex
+            ),
             span_id=uuid.uuid4().hex[:16],
-            parent_span_id=self._current_span.context.span_id if self._current_span else None
+            parent_span_id=self._current_span.context.span_id if self._current_span else None,
         )
 
         span = Span(
-            name=name,
-            context=context,
-            start_time=utc_now(),
-            kind=kind,
-            attributes=attributes or {}
+            name=name, context=context, start_time=utc_now(), kind=kind, attributes=attributes or {}
         )
 
         self._current_span = span

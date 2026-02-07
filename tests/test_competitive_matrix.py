@@ -12,12 +12,13 @@ Tests cover:
 """
 
 import pytest
+
 from src.company_researcher.agents.research.competitive_matrix import (
-    MatrixDimension,
-    CompetitivePosition,
-    CompetitorProfile,
     CompetitiveMatrix,
     CompetitiveMatrixGenerator,
+    CompetitivePosition,
+    CompetitorProfile,
+    MatrixDimension,
     create_competitive_matrix,
 )
 
@@ -80,7 +81,7 @@ class TestCompetitorProfile:
             products=["Product A", "Product B"],
             position=CompetitivePosition.LEADER,
             threat_level="high",
-            scores={"market_share": 8.5, "technology": 7.0}
+            scores={"market_share": 8.5, "technology": 7.0},
         )
 
         assert profile.name == "Big Corp"
@@ -127,7 +128,7 @@ class TestCompetitiveMatrixGenerator:
                 "strengths": ["Market dominance", "Brand recognition"],
                 "weaknesses": ["Legacy systems"],
                 "threat_level": "high",
-                "scores": {"technology": 7, "innovation": 6}
+                "scores": {"technology": 7, "innovation": 6},
             },
             {
                 "name": "Challenger Inc",
@@ -137,7 +138,7 @@ class TestCompetitiveMatrixGenerator:
                 "strengths": ["Innovation", "Agility"],
                 "weaknesses": ["Limited reach"],
                 "threat_level": "moderate",
-                "scores": {"technology": 9, "innovation": 9}
+                "scores": {"technology": 9, "innovation": 9},
             },
             {
                 "name": "Niche Player",
@@ -147,8 +148,8 @@ class TestCompetitiveMatrixGenerator:
                 "strengths": ["Specialized expertise"],
                 "weaknesses": ["Small scale"],
                 "threat_level": "low",
-                "scores": {"technology": 5, "innovation": 4}
-            }
+                "scores": {"technology": 5, "innovation": 4},
+            },
         ]
 
     def test_init_default_weights(self, generator):
@@ -172,10 +173,7 @@ class TestCompetitiveMatrixGenerator:
 
     def test_weights_sum_to_one(self, generator):
         """Test that default weights sum to 1.0."""
-        total_weight = sum(
-            generator.SCORING_CRITERIA[dim]["weight"]
-            for dim in MatrixDimension
-        )
+        total_weight = sum(generator.SCORING_CRITERIA[dim]["weight"] for dim in MatrixDimension)
         assert abs(total_weight - 1.0) < 0.01
 
 
@@ -253,10 +251,7 @@ class TestBuildCompetitorProfiles:
 
     def test_build_profiles_with_market_share(self, generator):
         """Test building profiles with market share data."""
-        data = [
-            {"name": "Leader", "market_share": 40.0},
-            {"name": "Niche", "market_share": 2.0}
-        ]
+        data = [{"name": "Leader", "market_share": 40.0}, {"name": "Niche", "market_share": 2.0}]
         profiles = generator._build_competitor_profiles(data)
 
         assert profiles[0].position == CompetitivePosition.LEADER
@@ -264,17 +259,19 @@ class TestBuildCompetitorProfiles:
 
     def test_build_profiles_preserves_all_data(self, generator):
         """Test that all data is preserved in profiles."""
-        data = [{
-            "name": "Full Corp",
-            "market_share": 25.0,
-            "revenue": 100.0,
-            "employees": 1000,
-            "strengths": ["Strong R&D"],
-            "weaknesses": ["High costs"],
-            "products": ["Widget Pro"],
-            "threat_level": "high",
-            "scores": {"technology": 9}
-        }]
+        data = [
+            {
+                "name": "Full Corp",
+                "market_share": 25.0,
+                "revenue": 100.0,
+                "employees": 1000,
+                "strengths": ["Strong R&D"],
+                "weaknesses": ["High costs"],
+                "products": ["Widget Pro"],
+                "threat_level": "high",
+                "scores": {"technology": 9},
+            }
+        ]
         profiles = generator._build_competitor_profiles(data)
 
         p = profiles[0]
@@ -304,12 +301,12 @@ class TestScoring:
 
     def test_score_company_with_explicit_scores(self, generator):
         """Test scoring company with explicit dimension scores."""
-        data = {
-            "market_share_score": 8.0,
-            "revenue_score": 7.0,
-            "technology_score": 9.0
-        }
-        dimensions = [MatrixDimension.MARKET_SHARE, MatrixDimension.REVENUE, MatrixDimension.TECHNOLOGY]
+        data = {"market_share_score": 8.0, "revenue_score": 7.0, "technology_score": 9.0}
+        dimensions = [
+            MatrixDimension.MARKET_SHARE,
+            MatrixDimension.REVENUE,
+            MatrixDimension.TECHNOLOGY,
+        ]
         scores = generator._score_company(data, dimensions)
 
         assert scores["market_share"] == 8.0
@@ -325,10 +322,7 @@ class TestScoring:
 
     def test_score_competitor_from_stored_scores(self, generator):
         """Test scoring competitor from stored scores."""
-        profile = CompetitorProfile(
-            name="Comp",
-            scores={"technology": 8.0, "innovation": 7.0}
-        )
+        profile = CompetitorProfile(name="Comp", scores={"technology": 8.0, "innovation": 7.0})
         dimensions = [MatrixDimension.TECHNOLOGY, MatrixDimension.INNOVATION]
         scores = generator._score_competitor(profile, dimensions)
 
@@ -362,7 +356,7 @@ class TestScoring:
             CompetitivePosition.LEADER: 8.0,
             CompetitivePosition.CHALLENGER: 6.5,
             CompetitivePosition.FOLLOWER: 5.0,
-            CompetitivePosition.NICHE: 4.0
+            CompetitivePosition.NICHE: 4.0,
         }
 
         for position, expected_score in positions_expected.items():
@@ -416,7 +410,7 @@ class TestNormalizeScores:
         matrix = {
             "Company A": {"market_share": 10.0},
             "Company B": {"market_share": 50.0},
-            "Company C": {"market_share": 30.0}
+            "Company C": {"market_share": 30.0},
         }
         dimensions = [MatrixDimension.MARKET_SHARE]
         normalized = generator._normalize_scores(matrix, dimensions)
@@ -447,7 +441,7 @@ class TestStrategicGroups:
         company_data = {"market_share": 25, "product_range_score": 8}
         competitors = [
             CompetitorProfile(name="Leader", market_share=40, position=CompetitivePosition.LEADER),
-            CompetitorProfile(name="Niche", market_share=3, position=CompetitivePosition.NICHE)
+            CompetitorProfile(name="Niche", market_share=3, position=CompetitivePosition.NICHE),
         ]
 
         groups = generator._identify_strategic_groups("MyCompany", company_data, competitors)
@@ -491,9 +485,7 @@ class TestMarketMap:
     def test_generate_market_map(self, generator):
         """Test market map generation."""
         company_data = {"pricing_score": 7, "product_range_score": 8}
-        competitors = [
-            CompetitorProfile(name="Comp", scores={"pricing": 5, "product_range": 6})
-        ]
+        competitors = [CompetitorProfile(name="Comp", scores={"pricing": 5, "product_range": 6})]
 
         market_map = generator._generate_market_map("MyCompany", company_data, competitors)
 
@@ -523,22 +515,20 @@ class TestInsightsAndRecommendations:
 
     def test_generate_insights_with_strengths(self, generator):
         """Test insight generation identifies strengths."""
-        matrix = {
-            "MyCompany": {"technology": 85, "innovation": 75, "pricing": 25}
-        }
+        matrix = {"MyCompany": {"technology": 85, "innovation": 75, "pricing": 25}}
         competitors = []
 
         insights = generator._generate_insights("MyCompany", {}, competitors, matrix)
 
         # Should identify technology and innovation as strengths (>70)
-        assert any("technology" in insight.lower() or "innovation" in insight.lower()
-                   for insight in insights)
+        assert any(
+            "technology" in insight.lower() or "innovation" in insight.lower()
+            for insight in insights
+        )
 
     def test_generate_insights_with_weaknesses(self, generator):
         """Test insight generation identifies weaknesses."""
-        matrix = {
-            "MyCompany": {"technology": 20, "brand_strength": 15}
-        }
+        matrix = {"MyCompany": {"technology": 20, "brand_strength": 15}}
         competitors = []
 
         insights = generator._generate_insights("MyCompany", {}, competitors, matrix)
@@ -548,9 +538,7 @@ class TestInsightsAndRecommendations:
 
     def test_generate_insights_with_leaders(self, generator):
         """Test insight generation notes market leaders."""
-        competitors = [
-            CompetitorProfile(name="Big Leader", position=CompetitivePosition.LEADER)
-        ]
+        competitors = [CompetitorProfile(name="Big Leader", position=CompetitivePosition.LEADER)]
         matrix = {"MyCompany": {}}
 
         insights = generator._generate_insights("MyCompany", {}, competitors, matrix)
@@ -565,12 +553,10 @@ class TestInsightsAndRecommendations:
         ]
         matrix = {
             "MyCompany": {"tech": 30, "brand": 30},
-            **{f"Comp{i}": {"tech": 80, "brand": 80} for i in range(10)}
+            **{f"Comp{i}": {"tech": 80, "brand": 80} for i in range(10)},
         }
 
-        recommendations = generator._generate_recommendations(
-            "MyCompany", {}, competitors, matrix
-        )
+        recommendations = generator._generate_recommendations("MyCompany", {}, competitors, matrix)
 
         assert len(recommendations) <= 5
 
@@ -586,7 +572,7 @@ class TestSummary:
         """Test basic summary generation."""
         competitors = [
             CompetitorProfile(name="Comp A", position=CompetitivePosition.LEADER),
-            CompetitorProfile(name="Comp B", position=CompetitivePosition.CHALLENGER)
+            CompetitorProfile(name="Comp B", position=CompetitivePosition.CHALLENGER),
         ]
         insights = ["Key insight about the market"]
 
@@ -622,18 +608,17 @@ class TestMarkdownFormatting:
             dimensions=[MatrixDimension.MARKET_SHARE, MatrixDimension.TECHNOLOGY],
             matrix_data={
                 "MyCompany": {"market_share": 75.0, "technology": 80.0},
-                "Competitor": {"market_share": 60.0, "technology": 70.0}
+                "Competitor": {"market_share": 60.0, "technology": 70.0},
             },
             strategic_groups={},
             market_map={},
             insights=[],
             recommendations=[],
-            summary=""
+            summary="",
         )
 
         table = generator.format_as_markdown_table(
-            matrix,
-            dimensions=["market_share", "technology"]
+            matrix, dimensions=["market_share", "technology"]
         )
 
         assert "| Company |" in table
@@ -652,13 +637,11 @@ class TestCreateCompetitiveMatrix:
         company_data = {"market_share": 25.0}
         competitors_data = [
             {"name": "Competitor A", "market_share": 30.0},
-            {"name": "Competitor B", "market_share": 15.0}
+            {"name": "Competitor B", "market_share": 15.0},
         ]
 
         matrix = create_competitive_matrix(
-            company_name="MyCompany",
-            company_data=company_data,
-            competitors_data=competitors_data
+            company_name="MyCompany", company_data=company_data, competitors_data=competitors_data
         )
 
         assert isinstance(matrix, CompetitiveMatrix)
@@ -676,7 +659,7 @@ class TestCreateCompetitiveMatrix:
             company_name="MyCompany",
             company_data={},
             competitors_data=[{"name": "Comp"}],
-            dimensions=dimensions
+            dimensions=dimensions,
         )
 
         assert matrix.dimensions == dimensions
@@ -703,7 +686,7 @@ class TestFullMatrixGeneration:
                 "revenue": 200.0,
                 "threat_level": "high",
                 "strengths": ["Brand recognition", "Scale"],
-                "weaknesses": ["Slow innovation"]
+                "weaknesses": ["Slow innovation"],
             },
             {
                 "name": "Fast Challenger",
@@ -711,15 +694,15 @@ class TestFullMatrixGeneration:
                 "revenue": 70.0,
                 "threat_level": "moderate",
                 "strengths": ["Innovation", "Agility"],
-                "scores": {"technology": 9}
+                "scores": {"technology": 9},
             },
             {
                 "name": "Niche Specialist",
                 "market_share": 4.0,
                 "revenue": 15.0,
                 "threat_level": "low",
-                "strengths": ["Deep expertise"]
-            }
+                "strengths": ["Deep expertise"],
+            },
         ]
 
         matrix = create_competitive_matrix(
@@ -730,8 +713,8 @@ class TestFullMatrixGeneration:
                 MatrixDimension.MARKET_SHARE,
                 MatrixDimension.REVENUE,
                 MatrixDimension.TECHNOLOGY,
-                MatrixDimension.BRAND_STRENGTH
-            ]
+                MatrixDimension.BRAND_STRENGTH,
+            ],
         )
 
         # Verify structure

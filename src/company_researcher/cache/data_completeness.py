@@ -8,10 +8,11 @@ Determines what research data is complete vs missing for a company:
 - Tracks freshness of existing data
 """
 
-from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from enum import Enum
+from typing import Any, Dict, List, Optional, Set
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -19,6 +20,7 @@ logger = get_logger(__name__)
 
 class DataSection(str, Enum):
     """Research data sections."""
+
     OVERVIEW = "overview"
     FINANCIALS = "financials"
     LEADERSHIP = "leadership"
@@ -37,16 +39,18 @@ class DataSection(str, Enum):
 
 class SectionStatus(str, Enum):
     """Status of a data section."""
-    COMPLETE = "complete"       # All required fields present
-    PARTIAL = "partial"         # Some data but missing fields
-    MISSING = "missing"         # No data at all
-    STALE = "stale"             # Data exists but too old
-    UNKNOWN = "unknown"         # Cannot determine
+
+    COMPLETE = "complete"  # All required fields present
+    PARTIAL = "partial"  # Some data but missing fields
+    MISSING = "missing"  # No data at all
+    STALE = "stale"  # Data exists but too old
+    UNKNOWN = "unknown"  # Cannot determine
 
 
 @dataclass
 class SectionRequirements:
     """Requirements for a data section."""
+
     section: DataSection
     required_fields: List[str]
     optional_fields: List[str] = field(default_factory=list)
@@ -151,6 +155,7 @@ SECTION_REQUIREMENTS = {
 @dataclass
 class ResearchGap:
     """A specific gap in research data."""
+
     section: DataSection
     field: str
     importance: str  # "critical", "high", "medium", "low"
@@ -161,6 +166,7 @@ class ResearchGap:
 @dataclass
 class CompletenessReport:
     """Report on data completeness for a company."""
+
     company_name: str
     overall_completeness: float  # 0-100
     section_status: Dict[DataSection, SectionStatus]
@@ -260,9 +266,7 @@ class CompletenessChecker:
                     logger.debug(f"Failed to check section staleness: {e}")
 
             # Calculate completeness for this section
-            status, completeness, section_gaps = self._check_section(
-                section, section_data, reqs
-            )
+            status, completeness, section_gaps = self._check_section(section, section_data, reqs)
 
             section_status[section] = status
             section_completeness[section] = completeness
@@ -287,10 +291,12 @@ class CompletenessChecker:
 
         total_weight = sum(weights.get(s, 0) for s in section_completeness)
         if total_weight > 0:
-            overall = sum(
-                section_completeness.get(s, 0) * weights.get(s, 0)
-                for s in section_completeness
-            ) / total_weight
+            overall = (
+                sum(
+                    section_completeness.get(s, 0) * weights.get(s, 0) for s in section_completeness
+                )
+                / total_weight
+            )
         else:
             overall = 0
 
@@ -306,15 +312,9 @@ class CompletenessChecker:
                 priority_sections.append(section)
 
         # Generate recommendations
-        recommendations = self._generate_recommendations(
-            section_status, gaps, stale_sections
-        )
+        recommendations = self._generate_recommendations(section_status, gaps, stale_sections)
 
-        needs_research = (
-            overall < 70
-            or len(priority_sections) > 0
-            or len(stale_sections) > 2
-        )
+        needs_research = overall < 70 or len(priority_sections) > 0 or len(stale_sections) > 2
 
         return CompletenessReport(
             company_name=company_name,
@@ -340,13 +340,15 @@ class CompletenessChecker:
         if not data:
             # Section completely missing
             for field in reqs.required_fields:
-                gaps.append(ResearchGap(
-                    section=section,
-                    field=field,
-                    importance="critical" if field in reqs.required_fields[:2] else "high",
-                    recommended_sources=reqs.recommended_sources,
-                    reason="Field not present in cached data",
-                ))
+                gaps.append(
+                    ResearchGap(
+                        section=section,
+                        field=field,
+                        importance="critical" if field in reqs.required_fields[:2] else "high",
+                        recommended_sources=reqs.recommended_sources,
+                        reason="Field not present in cached data",
+                    )
+                )
             return SectionStatus.MISSING, 0.0, gaps
 
         # Count fields present
@@ -359,13 +361,15 @@ class CompletenessChecker:
         # Check required fields
         for field in reqs.required_fields:
             if not data.get(field):
-                gaps.append(ResearchGap(
-                    section=section,
-                    field=field,
-                    importance="critical",
-                    recommended_sources=reqs.recommended_sources,
-                    reason="Required field missing",
-                ))
+                gaps.append(
+                    ResearchGap(
+                        section=section,
+                        field=field,
+                        importance="critical",
+                        recommended_sources=reqs.recommended_sources,
+                        reason="Required field missing",
+                    )
+                )
 
         # Calculate completeness
         if total_required == 0:
@@ -400,9 +404,7 @@ class CompletenessChecker:
         # Missing sections
         missing = [s for s, st in section_status.items() if st == SectionStatus.MISSING]
         if missing:
-            recommendations.append(
-                f"Missing data for: {', '.join(s.value for s in missing)}"
-            )
+            recommendations.append(f"Missing data for: {', '.join(s.value for s in missing)}")
 
         # Stale sections
         if stale_sections:
@@ -417,9 +419,7 @@ class CompletenessChecker:
                 sources_needed.update(gap.recommended_sources)
 
         if sources_needed:
-            recommendations.append(
-                f"Recommended data sources: {', '.join(sources_needed)}"
-            )
+            recommendations.append(f"Recommended data sources: {', '.join(sources_needed)}")
 
         # Financial-specific
         if DataSection.FINANCIALS in missing:
@@ -453,8 +453,12 @@ class CompletenessChecker:
                 continue
 
             if status in [SectionStatus.MISSING, SectionStatus.STALE]:
-                if section in [DataSection.OVERVIEW, DataSection.FINANCIALS,
-                               DataSection.PRODUCTS, DataSection.COMPETITORS]:
+                if section in [
+                    DataSection.OVERVIEW,
+                    DataSection.FINANCIALS,
+                    DataSection.PRODUCTS,
+                    DataSection.COMPETITORS,
+                ]:
                     high_priority.append(section.value)
                 else:
                     medium_priority.append(section.value)

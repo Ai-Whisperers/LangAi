@@ -224,4 +224,4 @@ When fixing errors in SQL scripts, especially during onboarding of new code or r
    - Document all changes in the change history section
    - Use consistent formatting for change history entries
    - Include the date, author, and description of changes
-   - When fixing similar issues across multiple files, use the same description 
+   - When fixing similar issues across multiple files, use the same description

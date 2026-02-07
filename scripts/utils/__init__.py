@@ -8,7 +8,7 @@ Consolidated utilities for repository maintenance:
 
 from pathlib import Path
 
-__all__ = ['cleanup', 'imports']
+__all__ = ["cleanup", "imports"]
 
 # Package root
 SCRIPTS_ROOT = Path(__file__).parent.parent

@@ -11,24 +11,25 @@ Provides comprehensive competitive intelligence including:
 - Customer sentiment comparison
 """
 
-from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, List, Optional
 
 from ...config import get_config
-from ...llm.client_factory import get_anthropic_client, calculate_cost, safe_extract_text
+from ...llm.client_factory import calculate_cost, get_anthropic_client, safe_extract_text
 from ...state import OverallState
-from ..base import get_agent_logger, create_empty_result
 from ...tools.competitor_analysis_utils import (
-    classify_competitor,
-    assess_threat_level,
     TechStackAnalyzer,
-    analyze_competitive_positioning
+    analyze_competitive_positioning,
+    assess_threat_level,
+    classify_competitor,
 )
+from ..base import create_empty_result, get_agent_logger
 
 
 @dataclass
 class CompetitorProfile:
     """Profile of a competitor company."""
+
     name: str
     market_share: Optional[float] = None
     strengths: List[str] = field(default_factory=list)
@@ -40,6 +41,7 @@ class CompetitorProfile:
 @dataclass
 class CompetitivePosition:
     """Company's competitive position in the market."""
+
     market_rank: Optional[int] = None
     market_share: Optional[float] = None
     competitive_advantages: List[str] = field(default_factory=list)
@@ -62,7 +64,9 @@ class CompetitorScoutAgent:
         return competitor_scout_agent_node(state)
 
 
-def create_competitor_scout(search_tool: Callable = None, llm_client: Any = None) -> CompetitorScoutAgent:
+def create_competitor_scout(
+    search_tool: Callable = None, llm_client: Any = None
+) -> CompetitorScoutAgent:
     """Factory function to create a CompetitorScoutAgent."""
     return CompetitorScoutAgent(search_tool=search_tool, llm_client=llm_client)
 
@@ -187,6 +191,7 @@ Begin your competitive intelligence analysis:"""
 # Competitor Scout Agent
 # ==============================================================================
 
+
 def competitor_scout_agent_node(state: OverallState) -> Dict[str, Any]:
     """
     Competitor Scout Agent Node: Comprehensive competitive intelligence.
@@ -226,14 +231,11 @@ def competitor_scout_agent_node(state: OverallState) -> Dict[str, Any]:
             model=config.llm_model,
             max_tokens=config.competitor_scout_max_tokens,
             temperature=config.llm_temperature,
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
         )
 
         competitor_analysis = safe_extract_text(response, agent_name="competitor_scout")
-        cost = calculate_cost(
-            response.usage.input_tokens,
-            response.usage.output_tokens
-        )
+        cost = calculate_cost(response.usage.input_tokens, response.usage.output_tokens)
 
         # Extract structured data from analysis
         extracted_data = extract_competitor_data(competitor_analysis)
@@ -251,8 +253,8 @@ def competitor_scout_agent_node(state: OverallState) -> Dict[str, Any]:
             "cost": cost,
             "tokens": {
                 "input": response.usage.input_tokens,
-                "output": response.usage.output_tokens
-            }
+                "output": response.usage.output_tokens,
+            },
         }
 
         return {
@@ -260,8 +262,8 @@ def competitor_scout_agent_node(state: OverallState) -> Dict[str, Any]:
             "total_cost": cost,
             "total_tokens": {
                 "input": response.usage.input_tokens,
-                "output": response.usage.output_tokens
-            }
+                "output": response.usage.output_tokens,
+            },
         }
 
 
@@ -269,10 +271,8 @@ def competitor_scout_agent_node(state: OverallState) -> Dict[str, Any]:
 # Helper Functions
 # ==============================================================================
 
-def create_competitor_analysis_prompt(
-    company_name: str,
-    search_results: list
-) -> str:
+
+def create_competitor_analysis_prompt(company_name: str, search_results: list) -> str:
     """
     Create comprehensive competitor analysis prompt.
 
@@ -288,8 +288,7 @@ def create_competitor_analysis_prompt(
 
     # Create prompt
     prompt = COMPETITOR_SCOUT_PROMPT.format(
-        company_name=company_name,
-        search_results=formatted_results
+        company_name=company_name, search_results=formatted_results
     )
 
     return prompt
@@ -307,9 +306,18 @@ def format_competitor_search_results(search_results: list) -> str:
     """
     # Prioritize results with competitor-related keywords
     competitor_keywords = [
-        "competitor", "alternative", "versus", "vs", "compare",
-        "rival", "competition", "market share", "similar",
-        "against", "better than", "switch from"
+        "competitor",
+        "alternative",
+        "versus",
+        "vs",
+        "compare",
+        "rival",
+        "competition",
+        "market share",
+        "similar",
+        "against",
+        "better than",
+        "switch from",
     ]
 
     # Score results by relevance
@@ -320,8 +328,7 @@ def format_competitor_search_results(search_results: list) -> str:
 
         # Count competitor keyword matches
         relevance_score = sum(
-            1 for keyword in competitor_keywords
-            if keyword in content or keyword in title
+            1 for keyword in competitor_keywords if keyword in content or keyword in title
         )
 
         # Boost for explicit competitor mentions
@@ -358,17 +365,19 @@ def extract_competitor_data(analysis_text: str) -> Dict[str, Any]:
         - threat_summary: Summary of threat levels
         - competitive_intensity: Overall market intensity
     """
-    data = {
-        "competitor_count": 0,
-        "threat_summary": {},
-        "competitive_intensity": None
-    }
+    data = {"competitor_count": 0, "threat_summary": {}, "competitive_intensity": None}
 
     text_upper = analysis_text.upper()
 
     # Count competitor mentions (look for "Competitor Name" patterns)
     # Simple heuristic: count major section headers
-    competitor_markers = ["**COMPETITOR", "### COMPETITOR", "COMPETITOR A", "COMPETITOR B", "COMPETITOR C"]
+    competitor_markers = [
+        "**COMPETITOR",
+        "### COMPETITOR",
+        "COMPETITOR A",
+        "COMPETITOR B",
+        "COMPETITOR C",
+    ]
     for marker in competitor_markers:
         if marker in text_upper:
             data["competitor_count"] += 1
@@ -380,14 +389,16 @@ def extract_competitor_data(analysis_text: str) -> Dict[str, Any]:
         count = text_upper.count(pattern)
         if count > 0:
             data["threat_summary"][level.lower()] = count
-            data["competitor_count"] = max(data["competitor_count"], sum(data["threat_summary"].values()))
+            data["competitor_count"] = max(
+                data["competitor_count"], sum(data["threat_summary"].values())
+            )
 
     # Extract competitive intensity
     intensity_keywords = {
         "INTENSE": ["INTENSE COMPETITION", "HIGHLY COMPETITIVE", "INTENSE RIVALRY"],
         "HIGH": ["HIGH COMPETITION", "HIGHLY CONTESTED", "FIERCE COMPETITION"],
         "MODERATE": ["MODERATE COMPETITION", "MODERATELY COMPETITIVE"],
-        "LOW": ["LOW COMPETITION", "LIMITED COMPETITION", "FEW COMPETITORS"]
+        "LOW": ["LOW COMPETITION", "LIMITED COMPETITION", "FEW COMPETITORS"],
     }
 
     for intensity, keywords in intensity_keywords.items():
@@ -409,9 +420,7 @@ def extract_competitor_data(analysis_text: str) -> Dict[str, Any]:
     return data
 
 
-def assess_competitors_from_data(
-    competitors: List[Dict[str, Any]]
-) -> List[Dict[str, Any]]:
+def assess_competitors_from_data(competitors: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Assess competitors using the competitor analysis utilities.
 
@@ -437,7 +446,7 @@ def assess_competitors_from_data(
         comp_type = classify_competitor(
             market_overlap=comp.get("market_overlap", 50),
             product_similarity=comp.get("product_similarity", 50),
-            target_customer_overlap=comp.get("customer_overlap", 50)
+            target_customer_overlap=comp.get("customer_overlap", 50),
         )
 
         # Assess threat level
@@ -446,22 +455,15 @@ def assess_competitors_from_data(
             growth_rate=comp.get("growth_rate", 10),
             funding_strength=comp.get("funding_strength", 5),
             product_quality=comp.get("product_quality", 5),
-            brand_strength=comp.get("brand_strength", 5)
+            brand_strength=comp.get("brand_strength", 5),
         )
 
-        assessed.append({
-            **comp,
-            "competitor_type": comp_type.value,
-            "threat_level": threat.value
-        })
+        assessed.append({**comp, "competitor_type": comp_type.value, "threat_level": threat.value})
 
     return assessed
 
 
-def compare_tech_stacks(
-    company_stack: List[str],
-    competitor_stack: List[str]
-) -> Dict[str, Any]:
+def compare_tech_stacks(company_stack: List[str], competitor_stack: List[str]) -> Dict[str, Any]:
     """
     Compare technology stacks between company and competitor.
 
@@ -482,7 +484,7 @@ def compare_tech_stacks(
     return {
         "company_stack": company_categorized,
         "competitor_stack": competitor_categorized,
-        "comparison": comparison
+        "comparison": comparison,
     }
 
 
@@ -490,7 +492,7 @@ def generate_competitive_positioning(
     company_name: str,
     company_strengths: List[str],
     company_weaknesses: List[str],
-    competitors: List[Dict[str, Any]]
+    competitors: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
     """
     Generate competitive positioning analysis.
@@ -511,23 +513,20 @@ def generate_competitive_positioning(
             company_strengths=company_strengths,
             company_weaknesses=company_weaknesses,
             competitor_strengths=comp.get("strengths", []),
-            competitor_weaknesses=comp.get("weaknesses", [])
+            competitor_weaknesses=comp.get("weaknesses", []),
         )
 
-        positioning_results.append({
-            "competitor": comp.get("name", "Unknown"),
-            "positioning": positioning
-        })
+        positioning_results.append(
+            {"competitor": comp.get("name", "Unknown"), "positioning": positioning}
+        )
 
-    return {
-        "company": company_name,
-        "positioning_vs_competitors": positioning_results
-    }
+    return {"company": company_name, "positioning_vs_competitors": positioning_results}
 
 
 # ==============================================================================
 # Integration with Traced LLM (Optional)
 # ==============================================================================
+
 
 def competitor_scout_agent_node_traced(state: OverallState) -> Dict[str, Any]:
     """
@@ -566,8 +565,8 @@ def competitor_scout_agent_node_traced(state: OverallState) -> Dict[str, Any]:
                 metadata={
                     "agent": "competitor_scout",
                     "company": company_name,
-                    "source_count": len(search_results)
-                }
+                    "source_count": len(search_results),
+                },
             )
 
             # Extract data
@@ -589,16 +588,13 @@ def competitor_scout_agent_node_traced(state: OverallState) -> Dict[str, Any]:
                         "cost": response.cost_usd,
                         "tokens": {
                             "input": response.input_tokens,
-                            "output": response.output_tokens
+                            "output": response.output_tokens,
                         },
-                        "trace_url": response.trace_url
+                        "trace_url": response.trace_url,
                     }
                 },
                 "total_cost": response.cost_usd,
-                "total_tokens": {
-                    "input": response.input_tokens,
-                    "output": response.output_tokens
-                }
+                "total_tokens": {"input": response.input_tokens, "output": response.output_tokens},
             }
 
         except ImportError:

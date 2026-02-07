@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
+
 from ...utils import utc_now
 
 
@@ -50,7 +51,7 @@ class LegalMatterType(str, Enum):
     REGULATORY_ACTION = "regulatory_action"
     CLASS_ACTION = "class_action"
     PATENT_DISPUTE = "patent_dispute"
-    ANTITRUST  = "antitrust"
+    ANTITRUST = "antitrust"
     OTHER = "other"
 
 
@@ -118,7 +119,11 @@ class ComplianceAnalysis:
     sources: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"company_name": self.company_name, "overall_compliance_score": self.overall_compliance_score, "overall_risk_level": self.overall_risk_level.value}
+        return {
+            "company_name": self.company_name,
+            "overall_compliance_score": self.overall_compliance_score,
+            "overall_risk_level": self.overall_risk_level.value,
+        }
 
 
 class RegulatoryComplianceAgent:
@@ -128,11 +133,18 @@ class RegulatoryComplianceAgent:
 
     async def analyze(self, company_name: str, ticker: str = None) -> ComplianceAnalysis:
         return ComplianceAnalysis(
-            company_name=company_name, analyzed_at=utc_now(),
-            overall_compliance_score=85.0, overall_risk_level=RiskLevel.LOW,
-            filings=[], compliance_issues=[], legal_matters=[],
-            regulatory_risks=[], industry_regulations=[],
-            compliance_summary="No issues found", key_findings=[], recommendations=[]
+            company_name=company_name,
+            analyzed_at=utc_now(),
+            overall_compliance_score=85.0,
+            overall_risk_level=RiskLevel.LOW,
+            filings=[],
+            compliance_issues=[],
+            legal_matters=[],
+            regulatory_risks=[],
+            industry_regulations=[],
+            compliance_summary="No issues found",
+            key_findings=[],
+            recommendations=[],
         )
 
 
@@ -143,5 +155,7 @@ async def regulatory_compliance_agent_node(state: Dict[str, Any]) -> Dict[str, A
     return {**state, "regulatory_analysis": analysis.to_dict()}
 
 
-def create_regulatory_compliance_agent(search_tool: Callable = None, llm_client: Any = None) -> RegulatoryComplianceAgent:
+def create_regulatory_compliance_agent(
+    search_tool: Callable = None, llm_client: Any = None
+) -> RegulatoryComplianceAgent:
     return RegulatoryComplianceAgent(search_tool=search_tool, llm_client=llm_client)

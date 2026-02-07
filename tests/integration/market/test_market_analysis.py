@@ -12,22 +12,22 @@ Usage:
     python test_phase8_market.py
 """
 
+from src.company_researcher.agents.market.enhanced_market import (
+    get_industry_context,
+    infer_industry_category,
+)
 from src.company_researcher.tools.market_sizing_utils import (
-    calculate_tam,
-    calculate_sam,
-    calculate_som,
-    calculate_market_sizing,
-    calculate_penetration_rate,
-    calculate_growth_potential,
-    classify_trend,
     analyze_industry_trend,
     assess_competitive_intensity,
+    calculate_growth_potential,
     calculate_market_share_distribution,
-    format_currency
-)
-from src.company_researcher.agents.market.enhanced_market import (
-    infer_industry_category,
-    get_industry_context
+    calculate_market_sizing,
+    calculate_penetration_rate,
+    calculate_sam,
+    calculate_som,
+    calculate_tam,
+    classify_trend,
+    format_currency,
 )
 
 
@@ -41,7 +41,7 @@ def test_market_sizing():
     print("\n  Testing TAM calculation...")
     tam = calculate_tam(
         total_potential_customers=1_400_000_000,  # 1.4B car buyers
-        average_revenue_per_customer=50_000       # $50K per car
+        average_revenue_per_customer=50_000,  # $50K per car
     )
     print(f"  TAM (Global Automotive): {format_currency(tam)}")
 
@@ -61,7 +61,7 @@ def test_market_sizing():
         total_potential_customers=1_400_000_000,
         average_revenue_per_customer=50_000,
         addressable_percentage=15,
-        market_share_percentage=2
+        market_share_percentage=2,
     )
     print(f"  Complete sizing:")
     print(f"    TAM: {format_currency(sizing['tam'])}")
@@ -80,17 +80,17 @@ def test_penetration_and_growth():
     # Test penetration rate
     print("\n  Testing penetration rate calculation...")
     penetration = calculate_penetration_rate(
-        current_customers=5_000_000,      # 5M Tesla customers
-        total_addressable_customers=250_000_000  # 250M EV buyers
+        current_customers=5_000_000,  # 5M Tesla customers
+        total_addressable_customers=250_000_000,  # 250M EV buyers
     )
     print(f"  Market Penetration: {penetration}%")
 
     # Test growth potential
     print("\n  Testing growth potential calculation...")
     growth = calculate_growth_potential(
-        current_market_size=2_500_000_000_000,   # $2.5T current
-        projected_market_size=5_000_000_000_000, # $5.0T projected
-        years=5
+        current_market_size=2_500_000_000_000,  # $2.5T current
+        projected_market_size=5_000_000_000_000,  # $5.0T projected
+        years=5,
     )
     print(f"  Total Growth: {format_currency(growth['total_growth'])}")
     print(f"  Growth Rate: {growth['growth_rate']}%")
@@ -143,41 +143,36 @@ def test_competitive_analysis():
 
     # Test competitive intensity assessment
     print("\n  Testing competitive intensity...")
-    intensity1 = assess_competitive_intensity(
-        number_of_competitors=3,
-        barriers_to_entry="high"
-    )
+    intensity1 = assess_competitive_intensity(number_of_competitors=3, barriers_to_entry="high")
     print(f"  3 competitors, high barriers: {intensity1.value}")
 
-    intensity2 = assess_competitive_intensity(
-        number_of_competitors=50,
-        barriers_to_entry="low"
-    )
+    intensity2 = assess_competitive_intensity(number_of_competitors=50, barriers_to_entry="low")
     print(f"  50 competitors, low barriers: {intensity2.value}")
 
     # Test HHI-based assessment
     intensity3 = assess_competitive_intensity(
-        number_of_competitors=10,
-        market_concentration_hhi=7500  # High concentration
+        number_of_competitors=10, market_concentration_hhi=7500  # High concentration
     )
     print(f"  HHI 7500 (monopolistic): {intensity3.value}")
 
     # Test market share distribution
     print("\n  Testing market share distribution...")
     competitor_revenues = {
-        "Tesla": 96_000_000_000,       # $96B
-        "BYD": 85_000_000_000,         # $85B
-        "VW": 75_000_000_000,          # $75B
-        "GM": 45_000_000_000,          # $45B
-        "Others": 200_000_000_000      # $200B
+        "Tesla": 96_000_000_000,  # $96B
+        "BYD": 85_000_000_000,  # $85B
+        "VW": 75_000_000_000,  # $75B
+        "GM": 45_000_000_000,  # $45B
+        "Others": 200_000_000_000,  # $200B
     }
 
     distribution = calculate_market_share_distribution(competitor_revenues)
-    print(f"  Market Leader: {distribution.get('market_leader')} ({distribution.get('market_leader_share')}%)")
+    print(
+        f"  Market Leader: {distribution.get('market_leader')} ({distribution.get('market_leader_share')}%)"
+    )
     print(f"  HHI: {distribution.get('hhi')}")
     print(f"  Top 4 Concentration (CR4): {distribution.get('top_4_concentration')}%")
     print(f"  Market Shares:")
-    for company, share in distribution.get('market_shares', {}).items():
+    for company, share in distribution.get("market_shares", {}).items():
         print(f"    {company}: {share}%")
 
     print("\n[OK] Competitive analysis tests complete\n")
@@ -192,10 +187,10 @@ def test_helper_functions():
     # Test currency formatting
     print("\n  Testing currency formatting...")
     amounts = [
-        1_500_000_000_000,   # $1.5T
-        250_000_000_000,     # $250B
-        50_000_000,          # $50M
-        75_000               # $75K
+        1_500_000_000_000,  # $1.5T
+        250_000_000_000,  # $250B
+        50_000_000,  # $50M
+        75_000,  # $75K
     ]
 
     for amount in amounts:
@@ -203,13 +198,7 @@ def test_helper_functions():
 
     # Test industry classification
     print("\n  Testing industry classification...")
-    companies = [
-        "Tesla",
-        "Microsoft",
-        "Stripe",
-        "Moderna",
-        "Shopify"
-    ]
+    companies = ["Tesla", "Microsoft", "Stripe", "Moderna", "Shopify"]
 
     for company in companies:
         industry = infer_industry_category(company)
@@ -258,7 +247,7 @@ def run_all_tests():
         ("Trend Analysis", test_trend_analysis),
         ("Competitive Analysis", test_competitive_analysis),
         ("Helper Functions", test_helper_functions),
-        ("Market Agent Structure", test_market_agent_structure)
+        ("Market Agent Structure", test_market_agent_structure),
     ]
 
     results = []

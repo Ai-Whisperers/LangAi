@@ -279,7 +279,7 @@ Query: "Tesla revenue 2024"
 ### Quality Assessment Example
 
 ```
-Input: extracted_data = "Tesla Inc... headquartered in Austin... 
+Input: extracted_data = "Tesla Inc... headquartered in Austin...
         CEO: Elon Musk... revenue $81.4B... 250,000+ employees..."
        sources = [{url: "...", title: "..."}]
   │
@@ -433,4 +433,3 @@ print(f"Decision: {decision}")  # "continue_research" or "finish"
 | Slow searches | Bad provider health | Check provider API status, reset health tracking |
 | Empty results | All providers failing | Check API keys configured, network connectivity |
 | Contradictions | Conflicting data sources | Review contradiction_detector rules, adjust thresholds |
-

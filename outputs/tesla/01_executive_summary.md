@@ -114,7 +114,7 @@ EV-Focused Manufacturers:
 
 **Note:** This overview is based on research notes and should be verified with the most recent company reports and market data. Financial and market details are subject to change.
 
-Sources: 
+Sources:
 - Primary: Tesla.com, Yahoo Finance, Bloomberg
 - Verification: Britannica, Wikipedia
 - Financial Tracking: CNBC, Yahoo Finance

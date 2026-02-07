@@ -25,4 +25,3 @@ items:
     kind: prompt
   - path: prompts/cicd/validate-documentation-setup.prompt.md
     kind: prompt
-

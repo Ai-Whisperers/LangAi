@@ -1,0 +1,39 @@
+---
+id: rule.project.context-efficiency.v1
+kind: rule
+version: 1.0.0
+description: Keep agent context small and focused (3-file rule) to improve accuracy, speed, and cost.
+globs: **/*
+governs: **/*
+implements: project.context-efficiency
+requires: []
+model_hints: { temp: 0.2, top_p: 0.9 }
+provenance: { owner: team-platform, last_review: 2025-12-15 }
+alwaysApply: true
+---
+
+# Context Efficiency (3-file rule)
+
+## Purpose & Scope
+
+Keep context focused to reduce token bloat and improve decision quality.
+
+## Default behavior
+
+- Prefer working with **1–3 primary files** at a time:
+  - the file being edited
+  - the most relevant test file
+  - one doc/config file (only if needed)
+- If more context is needed, rotate: close the least relevant file and open the next.
+
+## Practical workflow
+
+- Prefer `grep` / `codebase_search` to locate the right file before reading large files.
+- When reading, batch only what is needed (specific files / limited line ranges).
+- Avoid “read the whole repo” behavior unless the user explicitly asks for it.
+
+## FINAL MUST-PASS CHECKLIST
+
+- [ ] Working set stays small (prefer 1–3 files) unless task requires broader review
+- [ ] Searches used to target reading
+- [ ] Avoids unnecessary context bloat

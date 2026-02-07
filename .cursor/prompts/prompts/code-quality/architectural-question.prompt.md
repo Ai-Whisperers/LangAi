@@ -10,8 +10,8 @@ argument-hint: "@code/folders and your question about structure"
 
 This prompt asks respectful questions about design decisions, structure, or architecture.
 
-**Pattern**: Architectural Question Pattern ⭐⭐⭐⭐  
-**Effectiveness**: Resolves design confusion, validates approaches  
+**Pattern**: Architectural Question Pattern ⭐⭐⭐⭐
+**Effectiveness**: Resolves design confusion, validates approaches
 **Use When**: Unclear about design decisions, questioning structure, seeking guidance
 
 ---
@@ -64,7 +64,7 @@ or do I misunderstand
 
 ### Question Approach
 ```
-@ExportService.cs 
+@ExportService.cs
 
 Is this the right way to implement parent reference resolution?
 
@@ -99,7 +99,7 @@ Approach B: [description]
 
 **Example:**
 ```
-@src/Adapters @src/Commands 
+@src/Adapters @src/Commands
 
 Why are these at the same level as Shared?
 
@@ -173,11 +173,11 @@ Why not pre-load them all at startup?
 
 ## What This Pattern Does
 
-✅ Opens respectful dialogue about design  
-✅ Reveals assumptions and rationale  
-✅ Helps understand existing patterns  
-✅ Validates or corrects architecture  
-✅ Prevents wrong implementations  
+✅ Opens respectful dialogue about design
+✅ Reveals assumptions and rationale
+✅ Helps understand existing patterns
+✅ Validates or corrects architecture
+✅ Prevents wrong implementations
 
 ---
 
@@ -428,8 +428,7 @@ For AI responses:
 
 ---
 
-**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)  
-**Pattern ID**: #10 Architectural Question Pattern  
-**Evidence**: conversations/JP/extracted/pattern-discovery-report.md  
+**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)
+**Pattern ID**: #10 Architectural Question Pattern
+**Evidence**: conversations/JP/extracted/pattern-discovery-report.md
 **Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
-

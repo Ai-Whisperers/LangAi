@@ -34,7 +34,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from threading import Lock
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -43,6 +44,7 @@ logger = get_logger(__name__)
 @dataclass
 class GeneratedReport:
     """Information about a generated report."""
+
     format: str
     filepath: Path
     size_bytes: int
@@ -57,7 +59,7 @@ class GeneratedReport:
             "size_bytes": self.size_bytes,
             "generated_at": self.generated_at.isoformat(),
             "company_name": self.company_name,
-            "run_id": self.run_id
+            "run_id": self.run_id,
         }
 
 
@@ -69,11 +71,7 @@ class ReportPipeline:
     with optional database integration.
     """
 
-    def __init__(
-        self,
-        output_dir: str = "./reports",
-        use_database: bool = True
-    ):
+    def __init__(self, output_dir: str = "./reports", use_database: bool = True):
         """
         Initialize the report pipeline.
 
@@ -94,6 +92,7 @@ class ReportPipeline:
         """Lazy load markdown generator."""
         if self._markdown_generator is None:
             from .report_generator import MarkdownReportGenerator
+
             self._markdown_generator = MarkdownReportGenerator()
         return self._markdown_generator
 
@@ -103,16 +102,14 @@ class ReportPipeline:
         if self._excel_generator is None:
             try:
                 from .excel_generator import ExcelReportGenerator
+
                 self._excel_generator = ExcelReportGenerator()
             except ImportError:
                 self._excel_generator = None
         return self._excel_generator
 
     def generate_from_state(
-        self,
-        state: Dict[str, Any],
-        formats: List[str] = None,
-        output_dir: Optional[str] = None
+        self, state: Dict[str, Any], formats: List[str] = None, output_dir: Optional[str] = None
     ) -> Dict[str, GeneratedReport]:
         """
         Generate reports directly from workflow state.
@@ -144,17 +141,11 @@ class ReportPipeline:
         for fmt in formats:
             try:
                 if fmt == "markdown":
-                    report = self._generate_markdown(
-                        report_data, output_path, base_name
-                    )
+                    report = self._generate_markdown(report_data, output_path, base_name)
                 elif fmt == "excel":
-                    report = self._generate_excel(
-                        report_data, output_path, base_name
-                    )
+                    report = self._generate_excel(report_data, output_path, base_name)
                 elif fmt == "json":
-                    report = self._generate_json(
-                        report_data, output_path, base_name
-                    )
+                    report = self._generate_json(report_data, output_path, base_name)
                 else:
                     continue
 
@@ -167,10 +158,7 @@ class ReportPipeline:
         return generated
 
     def generate_from_research_run(
-        self,
-        run_id: str,
-        formats: List[str] = None,
-        output_dir: Optional[str] = None
+        self, run_id: str, formats: List[str] = None, output_dir: Optional[str] = None
     ) -> Dict[str, GeneratedReport]:
         """
         Generate reports from a database research run.
@@ -199,22 +187,19 @@ class ReportPipeline:
 
         # Build state from database
         state = {
-            "company_name": run.company.name if hasattr(run, 'company') else "Unknown",
+            "company_name": run.company.name if hasattr(run, "company") else "Unknown",
             "run_id": run_id,
             "company_overview": "",
             "agent_outputs": {},
             "total_cost": run.total_cost,
-            "completed_at": run.completed_at.isoformat() if run.completed_at else None
+            "completed_at": run.completed_at.isoformat() if run.completed_at else None,
         }
 
         for output in outputs:
             state["agent_outputs"][output.agent_name] = {
                 "analysis": output.analysis,
                 "cost": output.cost,
-                "tokens": {
-                    "input": output.input_tokens,
-                    "output": output.output_tokens
-                }
+                "tokens": {"input": output.input_tokens, "output": output.output_tokens},
             }
             # Get synthesized overview
             if output.agent_name == "synthesizer":
@@ -226,7 +211,7 @@ class ReportPipeline:
         self,
         states: List[Dict[str, Any]],
         formats: List[str] = None,
-        output_dir: Optional[str] = None
+        output_dir: Optional[str] = None,
     ) -> List[Dict[str, GeneratedReport]]:
         """
         Generate reports for multiple research results.
@@ -281,37 +266,31 @@ class ReportPipeline:
             "company_name": company_name,
             "generated_at": utc_now(),
             "run_id": state.get("run_id"),
-
             # Analyses
             "executive_summary": synthesized,
             "financial_analysis": financial_analysis,
             "market_analysis": market_analysis,
             "product_analysis": product_analysis,
-
             # Metadata
             "total_cost": total_cost,
             "source_count": len(sources),
             "sources": sources,
             "agent_outputs": agent_outputs,
-
             # Optional data
             "key_metrics": state.get("key_metrics", {}),
             "competitors": state.get("competitors", []),
-            "quality_score": state.get("quality_score")
+            "quality_score": state.get("quality_score"),
         }
 
     def _generate_markdown(
-        self,
-        data: Dict[str, Any],
-        output_dir: Path,
-        base_name: str
+        self, data: Dict[str, Any], output_dir: Path, base_name: str
     ) -> GeneratedReport:
         """Generate Markdown report."""
         filepath = output_dir / f"{base_name}.md"
 
         content = self._build_markdown_content(data)
 
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             f.write(content)
 
         return GeneratedReport(
@@ -320,7 +299,7 @@ class ReportPipeline:
             size_bytes=filepath.stat().st_size,
             generated_at=utc_now(),
             company_name=data["company_name"],
-            run_id=data.get("run_id")
+            run_id=data.get("run_id"),
         )
 
     def _build_markdown_content(self, data: Dict[str, Any]) -> str:
@@ -389,10 +368,7 @@ class ReportPipeline:
         return "\n".join(lines)
 
     def _generate_excel(
-        self,
-        data: Dict[str, Any],
-        output_dir: Path,
-        base_name: str
+        self, data: Dict[str, Any], output_dir: Path, base_name: str
     ) -> Optional[GeneratedReport]:
         """Generate Excel report."""
         if self.excel_generator is None:
@@ -410,25 +386,19 @@ class ReportPipeline:
             size_bytes=filepath.stat().st_size,
             generated_at=utc_now(),
             company_name=data["company_name"],
-            run_id=data.get("run_id")
+            run_id=data.get("run_id"),
         )
 
     def _generate_json(
-        self,
-        data: Dict[str, Any],
-        output_dir: Path,
-        base_name: str
+        self, data: Dict[str, Any], output_dir: Path, base_name: str
     ) -> GeneratedReport:
         """Generate JSON export."""
         filepath = output_dir / f"{base_name}.json"
 
         # Convert datetime to string for JSON
-        json_data = {
-            k: (v.isoformat() if isinstance(v, datetime) else v)
-            for k, v in data.items()
-        }
+        json_data = {k: (v.isoformat() if isinstance(v, datetime) else v) for k, v in data.items()}
 
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             json.dump(json_data, f, indent=2, default=str)
 
         return GeneratedReport(
@@ -437,7 +407,7 @@ class ReportPipeline:
             size_bytes=filepath.stat().st_size,
             generated_at=utc_now(),
             company_name=data["company_name"],
-            run_id=data.get("run_id")
+            run_id=data.get("run_id"),
         )
 
     def _sanitize_filename(self, name: str) -> str:
@@ -457,24 +427,24 @@ class ReportPipeline:
             return "unknown"
 
         # Remove null bytes (security)
-        sanitized = name.replace('\x00', '')
+        sanitized = name.replace("\x00", "")
 
         # Remove path traversal sequences
-        sanitized = sanitized.replace('..', '')
-        sanitized = sanitized.replace('./', '')
-        sanitized = sanitized.replace('.\\', '')
+        sanitized = sanitized.replace("..", "")
+        sanitized = sanitized.replace("./", "")
+        sanitized = sanitized.replace(".\\", "")
 
         # Remove invalid filename characters (Windows + Unix)
-        sanitized = re.sub(r'[<>:"/\\|?*\x00-\x1f]', '', sanitized)
+        sanitized = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", sanitized)
 
         # Replace whitespace with underscores
-        sanitized = re.sub(r'\s+', '_', sanitized)
+        sanitized = re.sub(r"\s+", "_", sanitized)
 
         # Remove leading/trailing dots and spaces (Windows issue)
-        sanitized = sanitized.strip('. ')
+        sanitized = sanitized.strip(". ")
 
         # Remove any remaining path-like patterns
-        sanitized = re.sub(r'[/\\]', '', sanitized)
+        sanitized = re.sub(r"[/\\]", "", sanitized)
 
         # Ensure not empty after sanitization
         if not sanitized:
@@ -508,12 +478,8 @@ class ReportPipeline:
         try:
             resolved_filepath.relative_to(resolved_base)
         except ValueError:
-            logger.error(
-                f"Path traversal attempt blocked: {filepath} is outside {base_dir}"
-            )
-            raise ValueError(
-                f"Output path '{filepath}' would escape the allowed directory"
-            )
+            logger.error(f"Path traversal attempt blocked: {filepath} is outside {base_dir}")
+            raise ValueError(f"Output path '{filepath}' would escape the allowed directory")
 
         return resolved_filepath
 
@@ -524,8 +490,7 @@ _pipeline_lock = Lock()
 
 
 def get_report_pipeline(
-    output_dir: Optional[str] = None,
-    use_database: bool = True
+    output_dir: Optional[str] = None, use_database: bool = True
 ) -> ReportPipeline:
     """
     Get singleton report pipeline instance.
@@ -543,8 +508,7 @@ def get_report_pipeline(
         with _pipeline_lock:
             if _report_pipeline is None:
                 _report_pipeline = ReportPipeline(
-                    output_dir=output_dir or "./reports",
-                    use_database=use_database
+                    output_dir=output_dir or "./reports", use_database=use_database
                 )
 
     return _report_pipeline

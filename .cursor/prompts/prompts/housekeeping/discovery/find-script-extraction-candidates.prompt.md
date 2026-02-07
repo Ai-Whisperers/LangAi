@@ -109,4 +109,3 @@ Identify scripts that should become templars or exemplars so common patterns are
 - `housekeeping/extract-templar-exemplar.prompt.md`
 - `housekeeping/find-extraction-candidates.prompt.md`
 - `script/validate-script-standards.prompt.md`
-

@@ -117,4 +117,3 @@ Claro Paraguay, operating as AMX Paraguay S.A., is a significant telecommunicati
 ---
 
 ## Sources
-

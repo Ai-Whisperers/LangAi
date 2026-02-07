@@ -31,4 +31,3 @@ Perform a complete review pass:
    done
    ```
 7. Summarize results in the commit template’s Testing section. Fix any failures before continuing.
-

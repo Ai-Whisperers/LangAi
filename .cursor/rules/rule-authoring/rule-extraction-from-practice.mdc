@@ -350,7 +350,7 @@ Before declaring rule complete:
 
 **Fix**: Change to "validate structure (check sections: X, Y, Z present)"
 
-**Rationale**: During use, I needed to guess what "validate" meant. 
+**Rationale**: During use, I needed to guess what "validate" meant.
 Making it explicit will help next time.
 
 **Version bump**: 1.1.0 -> 1.1.1 (clarification, not new behavior)
@@ -421,7 +421,7 @@ You solved problem 2-3 times -> notice pattern -> extract rule
 
 [X] **Good**: Extract from what worked
 ```
-"In practice, we always needed objectives and criteria. 
+"In practice, we always needed objectives and criteria.
 Risks and dependencies were optional, only when relevant."
 ```
 

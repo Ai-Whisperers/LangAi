@@ -11,8 +11,8 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
-from .base_client import BaseAPIClient
 from ..utils import get_logger, utc_now
+from .base_client import BaseAPIClient
 
 logger = get_logger(__name__)
 
@@ -20,6 +20,7 @@ logger = get_logger(__name__)
 @dataclass
 class StockBar:
     """OHLCV bar data."""
+
     ticker: str
     timestamp: int
     open: float
@@ -41,13 +42,14 @@ class StockBar:
             close=data.get("c", 0),
             volume=data.get("v", 0),
             vwap=data.get("vw", 0),
-            num_transactions=data.get("n", 0)
+            num_transactions=data.get("n", 0),
         )
 
 
 @dataclass
 class TickerDetails:
     """Detailed ticker information."""
+
     ticker: str
     name: str
     market: str
@@ -82,13 +84,14 @@ class TickerDetails:
             total_employees=results.get("total_employees"),
             list_date=results.get("list_date"),
             sic_code=results.get("sic_code"),
-            sic_description=results.get("sic_description")
+            sic_description=results.get("sic_description"),
         )
 
 
 @dataclass
 class NewsArticle:
     """News article from Polygon."""
+
     id: str
     publisher: Dict[str, str]
     title: str
@@ -110,7 +113,7 @@ class NewsArticle:
             article_url=data.get("article_url", ""),
             tickers=data.get("tickers", []),
             description=data.get("description", ""),
-            keywords=data.get("keywords", [])
+            keywords=data.get("keywords", []),
         )
 
 
@@ -137,15 +140,10 @@ class PolygonClient(BaseAPIClient):
             env_var="POLYGON_API_KEY",
             cache_ttl=3600,  # 1 hour for historical data
             rate_limit_calls=5,
-            rate_limit_period=60.0  # Free tier: 5/minute
+            rate_limit_period=60.0,  # Free tier: 5/minute
         )
 
-    async def _request(
-        self,
-        endpoint: str,
-        params: Optional[Dict] = None,
-        **kwargs
-    ) -> Any:
+    async def _request(self, endpoint: str, params: Optional[Dict] = None, **kwargs) -> Any:
         """Override to add API key to all requests."""
         params = params or {}
         params["apiKey"] = self.api_key
@@ -162,7 +160,7 @@ class PolygonClient(BaseAPIClient):
         timespan: str = "day",
         from_date: Optional[str] = None,
         to_date: Optional[str] = None,
-        limit: int = 120
+        limit: int = 120,
     ) -> List[StockBar]:
         """
         Get aggregate bars for a stock.
@@ -191,11 +189,7 @@ class PolygonClient(BaseAPIClient):
             bars.append(StockBar.from_dict(ticker, bar))
         return bars
 
-    async def get_daily_bars(
-        self,
-        ticker: str,
-        days: int = 30
-    ) -> List[StockBar]:
+    async def get_daily_bars(self, ticker: str, days: int = 30) -> List[StockBar]:
         """
         Get daily bars for recent period.
 
@@ -230,11 +224,7 @@ class PolygonClient(BaseAPIClient):
         return None
 
     async def search_tickers(
-        self,
-        search: str,
-        type: str = "CS",  # Common Stock
-        market: str = "stocks",
-        limit: int = 10
+        self, search: str, type: str = "CS", market: str = "stocks", limit: int = 10  # Common Stock
     ) -> List[Dict]:
         """
         Search for tickers.
@@ -248,12 +238,10 @@ class PolygonClient(BaseAPIClient):
         Returns:
             List of matching tickers
         """
-        data = await self._request("/v3/reference/tickers", {
-            "search": search,
-            "type": type,
-            "market": market,
-            "limit": limit
-        })
+        data = await self._request(
+            "/v3/reference/tickers",
+            {"search": search, "type": type, "market": market, "limit": limit},
+        )
         return data.get("results", []) if data else []
 
     # =========================================================================
@@ -278,10 +266,7 @@ class PolygonClient(BaseAPIClient):
     # =========================================================================
 
     async def get_ticker_news(
-        self,
-        ticker: Optional[str] = None,
-        limit: int = 10,
-        order: str = "desc"
+        self, ticker: Optional[str] = None, limit: int = 10, order: str = "desc"
     ) -> List[NewsArticle]:
         """
         Get news for a ticker or general market news.
@@ -323,11 +308,7 @@ class PolygonClient(BaseAPIClient):
     # Grouped Daily
     # =========================================================================
 
-    async def get_grouped_daily(
-        self,
-        date: str,
-        adjusted: bool = True
-    ) -> List[Dict]:
+    async def get_grouped_daily(self, date: str, adjusted: bool = True) -> List[Dict]:
         """
         Get daily bars for all stocks on a given date.
 
@@ -339,8 +320,7 @@ class PolygonClient(BaseAPIClient):
             List of bars for all stocks
         """
         data = await self._request(
-            f"/v2/aggs/grouped/locale/us/market/stocks/{date}",
-            {"adjusted": str(adjusted).lower()}
+            f"/v2/aggs/grouped/locale/us/market/stocks/{date}", {"adjusted": str(adjusted).lower()}
         )
         return data.get("results", []) if data else []
 
@@ -364,7 +344,7 @@ class PolygonClient(BaseAPIClient):
             "previous_close": None,
             "daily_bars": [],
             "news": [],
-            "related": []
+            "related": [],
         }
 
         result["details"] = await self.get_ticker_details(ticker)

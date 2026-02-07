@@ -9,7 +9,7 @@ implements: scripts.quality-levels
 requires:
   - rule.scripts.core-principles.v1
 model_hints: { temp: 0.2, top_p: 0.9 }
-provenance: 
+provenance:
   owner: team-devops
   last_review: 2025-12-07
   created: 2025-12-07
@@ -188,7 +188,7 @@ An enterprise-grade script with advanced features for performance, observability
 
 - [ ] **ALL Standard criteria met** (Level 2)
 - [ ] **2+ Advanced Features** from list:
-  - **Parallel/Concurrent Processing**: 
+  - **Parallel/Concurrent Processing**:
     - PowerShell: `ForEach-Object -Parallel`
     - Python: `multiprocessing.Pool` or `asyncio` for I/O-bound
   - **Progress Reporting**:

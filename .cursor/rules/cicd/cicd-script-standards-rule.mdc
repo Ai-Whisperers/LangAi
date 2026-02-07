@@ -144,7 +144,7 @@ if is_azure_pipeline:
 else:
     print(f"ERROR: {error_message}", file=sys.stderr)
 
-# Warning logging  
+# Warning logging
 if is_azure_pipeline:
     print(f"##vso[task.logissue type=warning]{warning_message}")
 else:
@@ -330,7 +330,7 @@ if (-not $BuildNumber) {
 
 This rule **requires and builds upon**:
 
-1. **rule.scripts.core-principles.v1**: 
+1. **rule.scripts.core-principles.v1**:
    - Portability (CI + local)
    - Parameterization with defaults
    - Error handling with try/catch

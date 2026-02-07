@@ -17,25 +17,12 @@ Usage:
     )
 """
 
-from .models import (
-    CompressionLevel,
-    ContentType,
-    CompressionResult,
-    KeyPoint,
-)
-
-from .extractor import KeyPointExtractor
-
-from .compressor import TextCompressor
-
-from .summarizer import ProgressiveSummarizer
-
-from .optimizer import ContextWindowOptimizer
-
 # Factory functions
-from .compressor import compress_text
-from .extractor import extract_key_points
-from .optimizer import optimize_for_context
+from .compressor import TextCompressor, compress_text
+from .extractor import KeyPointExtractor, extract_key_points
+from .models import CompressionLevel, CompressionResult, ContentType, KeyPoint
+from .optimizer import ContextWindowOptimizer, optimize_for_context
+from .summarizer import ProgressiveSummarizer
 
 __all__ = [
     # Enums

@@ -14,8 +14,8 @@ rules:
 
 Please analyze and organize prompts into appropriate category folders following a logical structure.
 
-**Pattern**: Categorization Workflow Pattern ⭐⭐⭐⭐  
-**Effectiveness**: Essential for maintaining organized prompt library  
+**Pattern**: Categorization Workflow Pattern ⭐⭐⭐⭐
+**Effectiveness**: Essential for maintaining organized prompt library
 **Use When**: Prompts are misplaced, uncategorized, or library needs cleanup
 
 ---
@@ -221,7 +221,7 @@ Reading prompt contents and determining categories:
 
 ### Prompts to Move (5 total)
 
-1. `extracted/check-test-coverage.md` 
+1. `extracted/check-test-coverage.md`
    → `unit-testing/analyze-test-coverage.prompt.md`
    **Reason**: Primary purpose is testing coverage analysis
 
@@ -352,7 +352,7 @@ New prompt in extracted/ called "generate-unit-tests.md" needs organization
 **Purpose**: Generate unit tests for untested code
 **Category Match**: unit-testing/ (handles testing operations)
 
-**Action**: 
+**Action**:
 Move to: `unit-testing/generate-unit-tests.prompt.md`
 
 **PowerShell Command**:
@@ -542,6 +542,6 @@ This prompt demonstrates exceptional quality and has been extracted into:
 
 ---
 
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)

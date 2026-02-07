@@ -501,6 +501,3 @@ Context:
 - `.cursor/rules/prompts/prompt-registry-integration-rule.mdc` - Registry integration standards
 - `.cursor/rules/general-coding-rules.mdc` - General quality standards
 - `.cursor/rules/code-writing-standards.mdc` - Language-specific standards
-
-
-

@@ -11,22 +11,25 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
 from ...utils import utc_now
 
 
 class QuotaStatus(Enum):
     """Quota check status."""
-    OK = "ok"                    # Has remaining quota
-    LOW = "low"                  # Below 20% remaining
-    EXHAUSTED = "exhausted"     # No quota remaining
-    UNKNOWN = "unknown"         # Couldn't determine quota
-    ERROR = "error"             # API error
-    NO_KEY = "no_key"           # API key not configured
+
+    OK = "ok"  # Has remaining quota
+    LOW = "low"  # Below 20% remaining
+    EXHAUSTED = "exhausted"  # No quota remaining
+    UNKNOWN = "unknown"  # Couldn't determine quota
+    ERROR = "error"  # API error
+    NO_KEY = "no_key"  # API key not configured
 
 
 @dataclass
 class QuotaInfo:
     """Quota information for a single API."""
+
     api_name: str
     status: QuotaStatus
 
@@ -93,6 +96,7 @@ class QuotaInfo:
 @dataclass
 class QuotaReport:
     """Complete quota report for all APIs."""
+
     timestamp: datetime = field(default_factory=utc_now)
     apis: List[QuotaInfo] = field(default_factory=list)
 
@@ -113,7 +117,7 @@ class QuotaReport:
         return {
             "timestamp": self.timestamp.isoformat(),
             "summary": self.summary,
-            "apis": [api.to_dict() for api in self.apis]
+            "apis": [api.to_dict() for api in self.apis],
         }
 
     def to_string(self, show_raw: bool = False) -> str:
@@ -123,12 +127,18 @@ class QuotaReport:
             "API QUOTA & BALANCE REPORT",
             f"Generated: {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}",
             "=" * 70,
-            ""
+            "",
         ]
 
         # Group by status
-        status_order = [QuotaStatus.EXHAUSTED, QuotaStatus.LOW, QuotaStatus.ERROR,
-                       QuotaStatus.NO_KEY, QuotaStatus.OK, QuotaStatus.UNKNOWN]
+        status_order = [
+            QuotaStatus.EXHAUSTED,
+            QuotaStatus.LOW,
+            QuotaStatus.ERROR,
+            QuotaStatus.NO_KEY,
+            QuotaStatus.OK,
+            QuotaStatus.UNKNOWN,
+        ]
 
         for status in status_order:
             apis = [a for a in self.apis if a.status == status]
@@ -141,7 +151,7 @@ class QuotaReport:
                 QuotaStatus.EXHAUSTED: "[EMPTY]",
                 QuotaStatus.ERROR: "[ERR]",
                 QuotaStatus.NO_KEY: "[--]",
-                QuotaStatus.UNKNOWN: "[?]"
+                QuotaStatus.UNKNOWN: "[?]",
             }.get(status, "[?]")
 
             lines.append(f"\n[{status_icon}] {status.value.upper()}")
@@ -173,7 +183,9 @@ class QuotaReport:
                 # Show credits
                 if api.credits_remaining is not None:
                     if api.credits_total:
-                        lines.append(f"    Credits: ${api.credits_remaining:.2f} / ${api.credits_total:.2f}")
+                        lines.append(
+                            f"    Credits: ${api.credits_remaining:.2f} / ${api.credits_total:.2f}"
+                        )
                     else:
                         lines.append(f"    Credits: ${api.credits_remaining:.2f}")
 
@@ -183,15 +195,19 @@ class QuotaReport:
 
                 # Show rate limits
                 if api.rate_limit:
-                    lines.append(f"    Rate: {api.rate_remaining or '?'}/{api.rate_limit} per window")
+                    lines.append(
+                        f"    Rate: {api.rate_remaining or '?'}/{api.rate_limit} per window"
+                    )
 
         # Summary
-        lines.extend([
-            "",
-            "=" * 70,
-            "SUMMARY",
-            "-" * 40,
-        ])
+        lines.extend(
+            [
+                "",
+                "=" * 70,
+                "SUMMARY",
+                "-" * 40,
+            ]
+        )
 
         summary = self.summary
         total = len(self.apis)

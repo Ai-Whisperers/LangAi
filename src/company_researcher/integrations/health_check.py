@@ -15,11 +15,12 @@ Usage:
 """
 
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
-from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -27,16 +28,18 @@ logger = get_logger(__name__)
 
 class HealthStatus(Enum):
     """Health status for an integration."""
-    HEALTHY = "healthy"           # Working properly
-    DEGRADED = "degraded"         # Working but with issues
-    UNAVAILABLE = "unavailable"   # Not responding
-    UNCONFIGURED = "unconfigured" # API key not set
-    ERROR = "error"               # Error during check
+
+    HEALTHY = "healthy"  # Working properly
+    DEGRADED = "degraded"  # Working but with issues
+    UNAVAILABLE = "unavailable"  # Not responding
+    UNCONFIGURED = "unconfigured"  # API key not set
+    ERROR = "error"  # Error during check
 
 
 @dataclass
 class IntegrationHealth:
     """Health status for a single integration."""
+
     name: str
     status: HealthStatus
     latency_ms: Optional[float] = None
@@ -51,13 +54,14 @@ class IntegrationHealth:
             "latency_ms": self.latency_ms,
             "message": self.message,
             "last_checked": self.last_checked.isoformat(),
-            "details": self.details
+            "details": self.details,
         }
 
 
 @dataclass
 class HealthReport:
     """Overall health report for all integrations."""
+
     overall_status: HealthStatus
     healthy_count: int
     degraded_count: int
@@ -76,10 +80,10 @@ class HealthReport:
                 "unavailable": self.unavailable_count,
                 "unconfigured": self.unconfigured_count,
                 "error": self.error_count,
-                "total": len(self.integrations)
+                "total": len(self.integrations),
             },
             "integrations": [i.to_dict() for i in self.integrations],
-            "generated_at": self.generated_at.isoformat()
+            "generated_at": self.generated_at.isoformat(),
         }
 
     def print_report(self):
@@ -108,18 +112,20 @@ class HealthReport:
                     HealthStatus.DEGRADED: "[!!]",
                     HealthStatus.UNAVAILABLE: "[XX]",
                     HealthStatus.UNCONFIGURED: "[--]",
-                    HealthStatus.ERROR: "[ER]"
+                    HealthStatus.ERROR: "[ER]",
                 }.get(i.status, "[??]")
 
                 latency = f"{i.latency_ms:.0f}ms" if i.latency_ms else "N/A"
                 print(f"  {status_icon} {i.name:<25} {latency:<10} {i.message}")
 
         print("\n" + "=" * 60)
-        print(f"Summary: {self.healthy_count} healthy, "
-              f"{self.degraded_count} degraded, "
-              f"{self.unavailable_count} unavailable, "
-              f"{self.unconfigured_count} unconfigured, "
-              f"{self.error_count} errors")
+        print(
+            f"Summary: {self.healthy_count} healthy, "
+            f"{self.degraded_count} degraded, "
+            f"{self.unavailable_count} unavailable, "
+            f"{self.unconfigured_count} unconfigured, "
+            f"{self.error_count} errors"
+        )
         print("=" * 60 + "\n")
 
 
@@ -138,10 +144,7 @@ class IntegrationHealthChecker:
         self.config = config
 
     def check_all(
-        self,
-        categories: Optional[List[str]] = None,
-        parallel: bool = True,
-        timeout: float = 10.0
+        self, categories: Optional[List[str]] = None, parallel: bool = True, timeout: float = 10.0
     ) -> HealthReport:
         """
         Check health of all integrations.
@@ -167,30 +170,106 @@ class IntegrationHealthChecker:
         """Get list of checks to perform."""
         all_checks = [
             # Financial
-            {"name": "yfinance", "category": "financial", "check": self._check_yfinance, "requires_key": False},
-            {"name": "FMP", "category": "financial", "check": self._check_fmp, "requires_key": True, "key_attr": "fmp_api_key"},
-            {"name": "Finnhub", "category": "financial", "check": self._check_finnhub, "requires_key": True, "key_attr": "finnhub_api_key"},
-            {"name": "Polygon", "category": "financial", "check": self._check_polygon, "requires_key": True, "key_attr": "polygon_api_key"},
-
+            {
+                "name": "yfinance",
+                "category": "financial",
+                "check": self._check_yfinance,
+                "requires_key": False,
+            },
+            {
+                "name": "FMP",
+                "category": "financial",
+                "check": self._check_fmp,
+                "requires_key": True,
+                "key_attr": "fmp_api_key",
+            },
+            {
+                "name": "Finnhub",
+                "category": "financial",
+                "check": self._check_finnhub,
+                "requires_key": True,
+                "key_attr": "finnhub_api_key",
+            },
+            {
+                "name": "Polygon",
+                "category": "financial",
+                "check": self._check_polygon,
+                "requires_key": True,
+                "key_attr": "polygon_api_key",
+            },
             # News
-            {"name": "NewsAPI", "category": "news", "check": self._check_newsapi, "requires_key": True, "key_attr": "newsapi_key"},
-            {"name": "GNews", "category": "news", "check": self._check_gnews, "requires_key": True, "key_attr": "gnews_api_key"},
-            {"name": "Mediastack", "category": "news", "check": self._check_mediastack, "requires_key": True, "key_attr": "mediastack_api_key"},
-
+            {
+                "name": "NewsAPI",
+                "category": "news",
+                "check": self._check_newsapi,
+                "requires_key": True,
+                "key_attr": "newsapi_key",
+            },
+            {
+                "name": "GNews",
+                "category": "news",
+                "check": self._check_gnews,
+                "requires_key": True,
+                "key_attr": "gnews_api_key",
+            },
+            {
+                "name": "Mediastack",
+                "category": "news",
+                "check": self._check_mediastack,
+                "requires_key": True,
+                "key_attr": "mediastack_api_key",
+            },
             # Search
-            {"name": "Tavily", "category": "search", "check": self._check_tavily, "requires_key": True, "key_attr": "tavily_api_key"},
-
+            {
+                "name": "Tavily",
+                "category": "search",
+                "check": self._check_tavily,
+                "requires_key": True,
+                "key_attr": "tavily_api_key",
+            },
             # Company Data
-            {"name": "Hunter.io", "category": "company", "check": self._check_hunter, "requires_key": True, "key_attr": "hunter_api_key"},
-            {"name": "DomainsDB", "category": "company", "check": self._check_domainsdb, "requires_key": False},
-            {"name": "GitHub", "category": "company", "check": self._check_github, "requires_key": True, "key_attr": "github_token"},
-
+            {
+                "name": "Hunter.io",
+                "category": "company",
+                "check": self._check_hunter,
+                "requires_key": True,
+                "key_attr": "hunter_api_key",
+            },
+            {
+                "name": "DomainsDB",
+                "category": "company",
+                "check": self._check_domainsdb,
+                "requires_key": False,
+            },
+            {
+                "name": "GitHub",
+                "category": "company",
+                "check": self._check_github,
+                "requires_key": True,
+                "key_attr": "github_token",
+            },
             # Geocoding
-            {"name": "OpenCage", "category": "geocoding", "check": self._check_opencage, "requires_key": True, "key_attr": "opencage_api_key"},
-            {"name": "Nominatim", "category": "geocoding", "check": self._check_nominatim, "requires_key": False},
-
+            {
+                "name": "OpenCage",
+                "category": "geocoding",
+                "check": self._check_opencage,
+                "requires_key": True,
+                "key_attr": "opencage_api_key",
+            },
+            {
+                "name": "Nominatim",
+                "category": "geocoding",
+                "check": self._check_nominatim,
+                "requires_key": False,
+            },
             # LLM
-            {"name": "Anthropic", "category": "llm", "check": self._check_anthropic, "requires_key": True, "key_attr": "anthropic_api_key"},
+            {
+                "name": "Anthropic",
+                "category": "llm",
+                "check": self._check_anthropic,
+                "requires_key": True,
+                "key_attr": "anthropic_api_key",
+            },
         ]
 
         if categories:
@@ -207,18 +286,22 @@ class IntegrationHealthChecker:
                 future = executor.submit(self._run_check, check, timeout)
                 futures[future] = check
 
-            for future in as_completed(futures, timeout=timeout * 2):
+            # NOTE: Per-check timeouts are not reliably enforceable via threads if integrations
+            # do not implement their own request timeouts. Keep this best-effort and resilient.
+            for future in as_completed(futures):
                 try:
                     result = future.result()
                     results.append(result)
                 except Exception as e:
                     check = futures[future]
-                    results.append(IntegrationHealth(
-                        name=check["name"],
-                        status=HealthStatus.ERROR,
-                        message=str(e),
-                        details={"category": check["category"]}
-                    ))
+                    results.append(
+                        IntegrationHealth(
+                            name=check["name"],
+                            status=HealthStatus.ERROR,
+                            message=str(e),
+                            details={"category": check["category"]},
+                        )
+                    )
 
         return results
 
@@ -241,7 +324,7 @@ class IntegrationHealthChecker:
                         name=name,
                         status=HealthStatus.UNCONFIGURED,
                         message=f"{key_attr} not set",
-                        details={"category": category}
+                        details={"category": category},
                     )
 
         # Run the check
@@ -261,7 +344,7 @@ class IntegrationHealthChecker:
                 status=status,
                 latency_ms=latency,
                 message=message,
-                details={"category": category, **details}
+                details={"category": category, **details},
             )
 
         except Exception as e:
@@ -270,7 +353,7 @@ class IntegrationHealthChecker:
                 status=HealthStatus.ERROR,
                 latency_ms=(time.time() - start_time) * 1000,
                 message=str(e),
-                details={"category": category}
+                details={"category": category},
             )
 
     def _create_report(self, results: List[IntegrationHealth]) -> HealthReport:
@@ -298,7 +381,7 @@ class IntegrationHealthChecker:
             unavailable_count=unavailable,
             unconfigured_count=unconfigured,
             error_count=errors,
-            integrations=results
+            integrations=results,
         )
 
     # =========================================================================
@@ -309,6 +392,7 @@ class IntegrationHealthChecker:
         """Check yfinance availability."""
         try:
             import yfinance as yf
+
             stock = yf.Ticker("AAPL")
             info = stock.info
             if info and info.get("regularMarketPrice"):
@@ -316,171 +400,180 @@ class IntegrationHealthChecker:
             return False, "No data returned", {}
         except ImportError:
             return False, "yfinance not installed", {}
-        except Exception as e:
-            return False, str(e), {}
 
     def _check_fmp(self) -> tuple:
         """Check Financial Modeling Prep."""
         try:
             from .financial_modeling_prep import FMPClient
+
             client = FMPClient(self.config.fmp_api_key)
             profile = client.get_company_profile("AAPL")
             if profile:
                 return True, "OK", {"company": "Apple Inc."}
             return False, "No data returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "FMP client not available", {}
 
     def _check_finnhub(self) -> tuple:
         """Check Finnhub."""
         try:
             from .finnhub import FinnhubClient
+
             client = FinnhubClient(self.config.finnhub_api_key)
             quote = client.get_quote("AAPL")
             if quote and quote.get("c"):
                 return True, "OK", {"price": quote.get("c")}
             return False, "No data returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "Finnhub client not available", {}
 
     def _check_polygon(self) -> tuple:
         """Check Polygon."""
         try:
             from .polygon import PolygonClient
+
             client = PolygonClient(self.config.polygon_api_key)
             details = client.get_ticker_details("AAPL")
             if details:
                 return True, "OK", {"name": details.get("name")}
             return False, "No data returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "Polygon client not available", {}
 
     def _check_newsapi(self) -> tuple:
         """Check NewsAPI."""
         try:
             from .news_api import NewsAPIClient
+
             client = NewsAPIClient(self.config.newsapi_key)
             articles = client.search_everything("technology", page_size=1)
             if articles:
                 return True, "OK", {"articles": len(articles)}
             return False, "No articles returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "NewsAPI client not available", {}
 
     def _check_gnews(self) -> tuple:
         """Check GNews."""
         try:
             from .gnews import GNewsClient
+
             client = GNewsClient(self.config.gnews_api_key)
             articles = client.search("technology", max_results=1)
             if articles:
                 return True, "OK", {"articles": len(articles)}
             return False, "No articles returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "GNews client not available", {}
 
     def _check_mediastack(self) -> tuple:
         """Check Mediastack."""
         try:
             from .mediastack import MediastackClient
+
             client = MediastackClient(self.config.mediastack_api_key)
             articles = client.search(keywords="technology", limit=1)
             if articles:
                 return True, "OK", {"articles": len(articles)}
             return False, "No articles returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "Mediastack client not available", {}
 
     def _check_tavily(self) -> tuple:
         """Check Tavily."""
         try:
             from tavily import TavilyClient
+
             client = TavilyClient(api_key=self.config.tavily_api_key)
             results = client.search("test query", max_results=1)
             if results.get("results"):
                 return True, "OK", {"results": len(results.get("results", []))}
             return False, "No results returned", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "tavily not installed", {}
 
     def _check_hunter(self) -> tuple:
         """Check Hunter.io."""
         try:
             from .hunter_io import HunterClient
+
             client = HunterClient(self.config.hunter_api_key)
             # Use account info check instead of domain search to save quota
             result = client.get_account()
             if result:
                 return True, "OK", {}
             return False, "No response", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "Hunter client not available", {}
 
     def _check_domainsdb(self) -> tuple:
         """Check DomainsDB (free, no key)."""
         try:
             from .domainsdb import DomainsDBClient
+
             client = DomainsDBClient()
             result = client.search("google.com")
             if result:
                 return True, "OK", {}
             return False, "No results", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "DomainsDB client not available", {}
 
     def _check_github(self) -> tuple:
         """Check GitHub API."""
         try:
             from .github_client import GitHubClient
+
             client = GitHubClient(self.config.github_token)
             result = client.get_rate_limit()
             if result:
                 return True, "OK", {"remaining": result.get("remaining", 0)}
             return False, "No response", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "GitHub client not available", {}
 
     def _check_opencage(self) -> tuple:
         """Check OpenCage Geocoding."""
         try:
             from .opencage import OpenCageClient
+
             client = OpenCageClient(self.config.opencage_api_key)
             result = client.geocode("New York, USA")
             if result:
                 return True, "OK", {}
             return False, "No results", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "OpenCage client not available", {}
 
     def _check_nominatim(self) -> tuple:
         """Check Nominatim (free, no key)."""
         try:
             from .nominatim import NominatimClient
+
             client = NominatimClient()
             result = client.geocode("New York, USA")
             if result:
                 return True, "OK", {}
             return False, "No results", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "Nominatim client not available", {}
 
     def _check_anthropic(self) -> tuple:
         """Check Anthropic API."""
         try:
             from anthropic import Anthropic
+
             client = Anthropic(api_key=self.config.anthropic_api_key)
             # Just verify the key format - don't make actual API call
             if self.config.anthropic_api_key.startswith("sk-ant-"):
                 return True, "Key format valid", {}
             return False, "Invalid key format", {}
-        except Exception as e:
-            return False, str(e), {}
+        except ImportError:
+            return False, "anthropic not installed", {}
 
 
 def check_integration_health(
-    config: Any = None,
-    categories: Optional[List[str]] = None,
-    print_report: bool = False
+    config: Any = None, categories: Optional[List[str]] = None, print_report: bool = False
 ) -> HealthReport:
     """
     Check health of all integrations.
@@ -495,6 +588,7 @@ def check_integration_health(
     """
     if config is None:
         from ..config import get_config
+
         config = get_config()
 
     checker = IntegrationHealthChecker(config)

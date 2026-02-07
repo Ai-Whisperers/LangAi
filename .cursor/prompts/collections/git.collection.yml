@@ -19,4 +19,3 @@ items:
     kind: prompt
   - path: prompts/git/prepare-commit.prompt.md
     kind: prompt
-

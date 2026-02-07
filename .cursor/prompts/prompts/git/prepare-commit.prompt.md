@@ -31,9 +31,9 @@ Please help me prepare a proper Git commit for the current changes:
 3. **Commit Message Template**:
    ```
    <type>(<scope>): <subject>
-   
+
    <body explaining what and why>
-   
+
    Refs: [TICKET-ID]
    ```
 
@@ -69,10 +69,10 @@ Provide:
    ```bash
    # Stage specific files
    git add [file1] [file2]
-   
+
    # Commit with message
    git commit -m "[commit message]"
-   
+
    # Or commit with editor for multi-line message
    git commit
    ```
@@ -81,4 +81,3 @@ Provide:
 Apply commit standards from:
 - `.cursor/rules/development-commit-message.mdc`
 - `.cursor/rules/git/branch-lifecycle-rule.mdc`
-

@@ -62,7 +62,7 @@ This document summarizes the updates made to sync all technical specification ru
 ```text
 docs/technical/[domain]/
 ├── [domain]-domain-overview.md                   # Navigation hub (domain-overview-rule)
-├── [domain]-business-rules.md                    # Business logic (business-rules-rule) 
+├── [domain]-business-rules.md                    # Business logic (business-rules-rule)
 ├── [domain]-integration-points.md                # External interfaces (integration-points-rule)
 ├── database/                                     # Database layer (3-file pattern)
 │   ├── [domain]-database-schema.md              # (entity-relationship-rule applies)
@@ -78,7 +78,7 @@ docs/technical/[domain]/
 ### **Rule Application Map**
 - **hybrid-documentation-architecture-rule**: Overall structure and approach
 - **domain-overview-rule**: Domain root navigation file
-- **business-rules-rule**: Domain root business logic file  
+- **business-rules-rule**: Domain root business logic file
 - **integration-points-rule**: Domain root external interfaces file
 - **entity-relationship-rule**: Database layer schema and constraints files
 - **domain-object-rule**: Domain layer individual entity files

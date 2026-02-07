@@ -17,22 +17,21 @@ Uses SmartLLMClient for automatic provider fallback:
 """
 
 import json
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
-from ...state import OverallState
 from ...config import get_config
-from ...llm.smart_client import get_smart_client, TaskType
-from ...prompts import (
-    ANALYZE_RESULTS_PROMPT,
-    BRAND_AUDIT_PROMPT,
-)
+from ...llm.smart_client import TaskType, get_smart_client
+from ...prompts import ANALYZE_RESULTS_PROMPT, BRAND_AUDIT_PROMPT
 from ...quality.models import MarketShareValidator
+from ...state import OverallState
 from ...utils import get_logger
 
 logger = get_logger(__name__)
 
 
-def _create_completion(prompt: str, system: Optional[str] = None, max_tokens: int = 2000, temperature: float = 0.1):
+def _create_completion(
+    prompt: str, system: Optional[str] = None, max_tokens: int = 2000, temperature: float = 0.1
+):
     """Create a completion using SmartLLMClient with automatic provider fallback."""
     smart_client = get_smart_client()
 
@@ -46,7 +45,7 @@ def _create_completion(prompt: str, system: Optional[str] = None, max_tokens: in
         task_type=TaskType.REASONING,
         complexity="medium",
         max_tokens=max_tokens,
-        temperature=temperature
+        temperature=temperature,
     )
 
     logger.info(f"[LLM] Provider: {result.provider}/{result.model} ({result.routing_reason})")
@@ -56,7 +55,7 @@ def _create_completion(prompt: str, system: Optional[str] = None, max_tokens: in
         "input_tokens": result.input_tokens,
         "output_tokens": result.output_tokens,
         "provider": result.provider,
-        "cost": result.cost
+        "cost": result.cost,
     }
 
 
@@ -101,6 +100,7 @@ Be specific with data points and cite sources when available.
 # Analysis Nodes
 # =============================================================================
 
+
 def core_analysis_node(state: OverallState) -> Dict[str, Any]:
     """
     Core analysis of search results - company overview, products, etc.
@@ -113,14 +113,11 @@ def core_analysis_node(state: OverallState) -> Dict[str, Any]:
     formatted_results = _format_search_results(state["search_results"])
 
     prompt = ANALYZE_RESULTS_PROMPT.format(
-        company_name=state["company_name"],
-        search_results=formatted_results
+        company_name=state["company_name"], search_results=formatted_results
     )
 
     result = _create_completion(
-        prompt=prompt,
-        max_tokens=config.llm_max_tokens,
-        temperature=config.llm_temperature
+        prompt=prompt, max_tokens=config.llm_max_tokens, temperature=config.llm_temperature
     )
 
     notes = result["content"]
@@ -133,8 +130,8 @@ def core_analysis_node(state: OverallState) -> Dict[str, Any]:
         "total_cost": state.get("total_cost", 0.0) + cost,
         "total_tokens": {
             "input": state.get("total_tokens", {}).get("input", 0) + result["input_tokens"],
-            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"]
-        }
+            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"],
+        },
     }
 
 
@@ -147,7 +144,9 @@ def financial_analysis_node(state: OverallState) -> Dict[str, Any]:
     # Combine financial data from provider and search results
     financial_context = ""
     if state.get("financial_data"):
-        financial_context = f"Financial Data from APIs:\n{json.dumps(state['financial_data'], indent=2)}\n\n"
+        financial_context = (
+            f"Financial Data from APIs:\n{json.dumps(state['financial_data'], indent=2)}\n\n"
+        )
 
     # Extract financial info from search results
     search_financial = _extract_financial_from_search(state["search_results"])
@@ -175,11 +174,7 @@ Provide a comprehensive financial analysis including:
 Be specific with numbers and cite your sources.
 """
 
-    result = _create_completion(
-        prompt=prompt,
-        max_tokens=1500,
-        temperature=0.1
-    )
+    result = _create_completion(prompt=prompt, max_tokens=1500, temperature=0.1)
 
     analysis = result["content"]
     cost = result["cost"]
@@ -191,8 +186,8 @@ Be specific with numbers and cite your sources.
         "total_cost": state.get("total_cost", 0.0) + cost,
         "total_tokens": {
             "input": state.get("total_tokens", {}).get("input", 0) + result["input_tokens"],
-            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"]
-        }
+            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"],
+        },
     }
 
 
@@ -222,11 +217,7 @@ Provide analysis of:
 Be specific and cite sources where possible.
 """
 
-    result = _create_completion(
-        prompt=prompt,
-        max_tokens=1200,
-        temperature=0.1
-    )
+    result = _create_completion(prompt=prompt, max_tokens=1200, temperature=0.1)
 
     analysis = result["content"]
     cost = result["cost"]
@@ -234,19 +225,22 @@ Be specific and cite sources where possible.
     # Validate market share data if present in the analysis
     validator = MarketShareValidator(tolerance=5.0)
     validation_result, extracted_shares = validator.validate_from_text(
-        text=analysis,
-        company_name=state["company_name"]
+        text=analysis, company_name=state["company_name"]
     )
 
     # Add validation warnings to the analysis if issues found
     if extracted_shares and not validation_result.is_valid:
         validation_warning = "\n\n⚠️ **Market Share Data Quality Warning**\n"
         validation_warning += f"- Total market shares: {validation_result.total_percentage:.1f}%\n"
-        validation_warning += f"- Deviation from 100%: {validation_result.deviation_from_100:.1f}%\n"
+        validation_warning += (
+            f"- Deviation from 100%: {validation_result.deviation_from_100:.1f}%\n"
+        )
         for issue in validation_result.issues:
             validation_warning += f"- Issue: {issue}\n"
         if validation_result.corrected_shares:
-            validation_warning += f"- Suggested normalized shares: {validation_result.corrected_shares}\n"
+            validation_warning += (
+                f"- Suggested normalized shares: {validation_result.corrected_shares}\n"
+            )
         analysis += validation_warning
         logger.warning(f"[VALIDATION] Market share validation issues: {validation_result.issues}")
     elif extracted_shares and validation_result.warnings:
@@ -260,8 +254,8 @@ Be specific and cite sources where possible.
         "total_cost": state.get("total_cost", 0.0) + cost,
         "total_tokens": {
             "input": state.get("total_tokens", {}).get("input", 0) + result["input_tokens"],
-            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"]
-        }
+            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"],
+        },
     }
 
 
@@ -276,14 +270,10 @@ def esg_analysis_node(state: OverallState) -> Dict[str, Any]:
 
     prompt = ESG_ANALYSIS_PROMPT.format(
         company_name=state["company_name"],
-        context=esg_context or "Limited ESG data available from search results."
+        context=esg_context or "Limited ESG data available from search results.",
     )
 
-    result = _create_completion(
-        prompt=prompt,
-        max_tokens=1200,
-        temperature=0.1
-    )
+    result = _create_completion(prompt=prompt, max_tokens=1200, temperature=0.1)
 
     analysis = result["content"]
     cost = result["cost"]
@@ -295,8 +285,8 @@ def esg_analysis_node(state: OverallState) -> Dict[str, Any]:
         "total_cost": state.get("total_cost", 0.0) + cost,
         "total_tokens": {
             "input": state.get("total_tokens", {}).get("input", 0) + result["input_tokens"],
-            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"]
-        }
+            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"],
+        },
     }
 
 
@@ -311,14 +301,10 @@ def brand_analysis_node(state: OverallState) -> Dict[str, Any]:
 
     prompt = BRAND_AUDIT_PROMPT.format(
         company_name=state["company_name"],
-        search_results=brand_context or "Limited brand data available from search results."
+        search_results=brand_context or "Limited brand data available from search results.",
     )
 
-    result = _create_completion(
-        prompt=prompt,
-        max_tokens=1000,
-        temperature=0.1
-    )
+    result = _create_completion(prompt=prompt, max_tokens=1000, temperature=0.1)
 
     analysis = result["content"]
     cost = result["cost"]
@@ -330,14 +316,15 @@ def brand_analysis_node(state: OverallState) -> Dict[str, Any]:
         "total_cost": state.get("total_cost", 0.0) + cost,
         "total_tokens": {
             "input": state.get("total_tokens", {}).get("input", 0) + result["input_tokens"],
-            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"]
-        }
+            "output": state.get("total_tokens", {}).get("output", 0) + result["output_tokens"],
+        },
     }
 
 
 # =============================================================================
 # Helper Functions
 # =============================================================================
+
 
 def _format_search_results(results: List[Dict]) -> str:
     """Format search results for prompt."""
@@ -357,13 +344,21 @@ def _update_tokens(state: OverallState, usage) -> Dict[str, int]:
     current = state.get("total_tokens") or {}
     return {
         "input": current.get("input", 0) + usage.input_tokens,
-        "output": current.get("output", 0) + usage.output_tokens
+        "output": current.get("output", 0) + usage.output_tokens,
     }
 
 
 def _extract_financial_from_search(results: List[Dict]) -> str:
     """Extract financial information from search results."""
-    financial_keywords = ["revenue", "profit", "earnings", "financial", "billion", "million", "growth"]
+    financial_keywords = [
+        "revenue",
+        "profit",
+        "earnings",
+        "financial",
+        "billion",
+        "million",
+        "growth",
+    ]
     relevant = []
     for r in results:
         content = (r.get("content", "") or "").lower()
@@ -385,7 +380,15 @@ def _extract_market_from_search(results: List[Dict]) -> str:
 
 def _extract_esg_from_search(results: List[Dict]) -> str:
     """Extract ESG information from search results."""
-    esg_keywords = ["esg", "sustainability", "environmental", "social", "governance", "carbon", "diversity"]
+    esg_keywords = [
+        "esg",
+        "sustainability",
+        "environmental",
+        "social",
+        "governance",
+        "carbon",
+        "diversity",
+    ]
     relevant = []
     for r in results:
         content = (r.get("content", "") or "").lower()

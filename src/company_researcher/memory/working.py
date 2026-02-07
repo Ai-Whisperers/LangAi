@@ -18,12 +18,14 @@ def _utcnow() -> datetime:
     """Get current UTC time (timezone-aware)."""
     return datetime.now(timezone.utc)
 
-T = TypeVar('T')
+
+T = TypeVar("T")
 
 
 @dataclass
 class WorkingMemoryItem:
     """An item in working memory."""
+
     key: str
     value: Any
     created_at: float = field(default_factory=time.time)
@@ -89,7 +91,7 @@ class WorkingMemory:
         max_items: int = 50,
         default_ttl: float = None,  # Seconds, None = no expiry
         decay_half_life: float = 300,  # Seconds for importance decay
-        auto_cleanup: bool = True
+        auto_cleanup: bool = True,
     ):
         self.max_items = max_items
         self.default_ttl = default_ttl
@@ -103,7 +105,7 @@ class WorkingMemory:
         value: Any,
         ttl: float = None,
         importance: float = 1.0,
-        metadata: Dict[str, Any] = None
+        metadata: Dict[str, Any] = None,
     ) -> None:
         """
         Store a value in working memory.
@@ -120,7 +122,7 @@ class WorkingMemory:
             value=value,
             ttl=ttl or self.default_ttl,
             importance=importance,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
         self._items[key] = item
 
@@ -180,14 +182,12 @@ class WorkingMemory:
         while len(self._items) > self.max_items:
             least_important = min(
                 self._items.values(),
-                key=lambda x: x.importance * x.decay_factor(self.decay_half_life)
+                key=lambda x: x.importance * x.decay_factor(self.decay_half_life),
             )
             del self._items[least_important.key]
 
     def get_context(
-        self,
-        include_metadata: bool = False,
-        min_importance: float = 0
+        self, include_metadata: bool = False, min_importance: float = 0
     ) -> Dict[str, Any]:
         """
         Get current context as dictionary.
@@ -213,7 +213,7 @@ class WorkingMemory:
                     "importance": effective_importance,
                     "age_seconds": item.age_seconds(),
                     "access_count": item.access_count,
-                    "metadata": item.metadata
+                    "metadata": item.metadata,
                 }
             else:
                 context[key] = item.value
@@ -302,12 +302,14 @@ class ScratchpadMemory:
         else:
             self._slots[slot] = value
 
-        self._history.append({
-            "action": "write",
-            "slot": slot,
-            "value_type": type(value).__name__,
-            "timestamp": _utcnow().isoformat()
-        })
+        self._history.append(
+            {
+                "action": "write",
+                "slot": slot,
+                "value_type": type(value).__name__,
+                "timestamp": _utcnow().isoformat(),
+            }
+        )
 
         # Enforce max slots
         while len(self._slots) > self.max_slots:
@@ -351,6 +353,7 @@ class ScratchpadMemory:
         """
         if format == "json":
             import json
+
             return json.dumps(self._slots, indent=2, default=str)
 
         if format == "markdown":
@@ -379,10 +382,7 @@ class ScratchpadMemory:
 # Convenience functions
 
 
-def create_working_memory(
-    max_items: int = 50,
-    default_ttl: float = None
-) -> WorkingMemory:
+def create_working_memory(max_items: int = 50, default_ttl: float = None) -> WorkingMemory:
     """Create a working memory."""
     return WorkingMemory(max_items=max_items, default_ttl=default_ttl)
 

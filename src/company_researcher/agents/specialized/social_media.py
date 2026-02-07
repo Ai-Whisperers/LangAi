@@ -18,16 +18,15 @@ Refactored to use BaseSpecialistAgent for:
 """
 
 import re
-from typing import Dict, Any, List
 from dataclasses import dataclass, field
+from typing import Any, Dict, List
 
 from ...config import get_config
 from ...llm.client_factory import calculate_cost
 from ...state import OverallState
-from ...types import SocialPlatform, EngagementLevel, ContentStrategy  # Centralized enums
-from ..base import get_agent_logger, create_empty_result
+from ...types import ContentStrategy, EngagementLevel, SocialPlatform  # Centralized enums
+from ..base import create_empty_result, get_agent_logger
 from ..base.specialist import BaseSpecialistAgent, ParsingMixin
-
 
 # ============================================================================
 # Data Models
@@ -38,6 +37,7 @@ from ..base.specialist import BaseSpecialistAgent, ParsingMixin
 @dataclass
 class PlatformMetrics:
     """Metrics for a single platform."""
+
     platform: SocialPlatform
     followers: int = 0
     engagement_rate: float = 0.0
@@ -54,13 +54,14 @@ class PlatformMetrics:
             "engagement_rate": round(self.engagement_rate, 2),
             "posting_frequency": self.posting_frequency,
             "content_types": self.content_types,
-            "sentiment": self.sentiment
+            "sentiment": self.sentiment,
         }
 
 
 @dataclass
 class AudienceInsight:
     """Insight about the social media audience."""
+
     segment: str
     percentage: float
     engagement_level: EngagementLevel
@@ -71,13 +72,14 @@ class AudienceInsight:
             "segment": self.segment,
             "percentage": round(self.percentage, 1),
             "engagement_level": self.engagement_level.value,
-            "interests": self.interests
+            "interests": self.interests,
         }
 
 
 @dataclass
 class SocialMediaResult:
     """Complete social media analysis result."""
+
     company_name: str
     overall_presence: EngagementLevel = EngagementLevel.MODERATE
     social_score: float = 50.0
@@ -102,7 +104,7 @@ class SocialMediaResult:
             "top_platforms": self.top_platforms,
             "strengths": self.strengths,
             "opportunities": self.opportunities,
-            "recommendations": self.recommendations
+            "recommendations": self.recommendations,
         }
 
 
@@ -206,6 +208,7 @@ Begin your social media analysis:"""
 # Social Media Agent
 # ============================================================================
 
+
 class SocialMediaAgent(BaseSpecialistAgent[SocialMediaResult], ParsingMixin):
     """
     Social Media Agent for presence analysis.
@@ -235,8 +238,7 @@ class SocialMediaAgent(BaseSpecialistAgent[SocialMediaResult], ParsingMixin):
     def _get_prompt(self, company_name: str, formatted_results: str) -> str:
         """Build the social media analysis prompt."""
         return SOCIAL_MEDIA_PROMPT.format(
-            company_name=company_name,
-            search_results=formatted_results
+            company_name=company_name, search_results=formatted_results
         )
 
     def _format_search_results(self, results: List[Dict[str, Any]]) -> str:
@@ -245,8 +247,17 @@ class SocialMediaAgent(BaseSpecialistAgent[SocialMediaResult], ParsingMixin):
             return "No search results available"
 
         # Prioritize social media related results
-        social_keywords = ["twitter", "linkedin", "instagram", "facebook",
-                         "youtube", "tiktok", "social", "followers", "engagement"]
+        social_keywords = [
+            "twitter",
+            "linkedin",
+            "instagram",
+            "facebook",
+            "youtube",
+            "tiktok",
+            "social",
+            "followers",
+            "engagement",
+        ]
 
         scored_results = []
         for r in results:
@@ -259,17 +270,12 @@ class SocialMediaAgent(BaseSpecialistAgent[SocialMediaResult], ParsingMixin):
         formatted = []
         for _, r in scored_results[:12]:
             formatted.append(
-                f"Source: {r.get('title', 'N/A')}\n"
-                f"Content: {r.get('content', '')[:400]}...\n"
+                f"Source: {r.get('title', 'N/A')}\n" f"Content: {r.get('content', '')[:400]}...\n"
             )
 
         return "\n".join(formatted)
 
-    def _parse_analysis(
-        self,
-        company_name: str,
-        analysis: str
-    ) -> SocialMediaResult:
+    def _parse_analysis(self, company_name: str, analysis: str) -> SocialMediaResult:
         """Parse LLM analysis into structured result."""
         result = SocialMediaResult(company_name=company_name)
 
@@ -307,14 +313,16 @@ class SocialMediaAgent(BaseSpecialistAgent[SocialMediaResult], ParsingMixin):
             "facebook": SocialPlatform.FACEBOOK,
             "instagram": SocialPlatform.INSTAGRAM,
             "youtube": SocialPlatform.YOUTUBE,
-            "tiktok": SocialPlatform.TIKTOK
+            "tiktok": SocialPlatform.TIKTOK,
         }
 
         for name, platform in platforms.items():
             if name in analysis.lower():
                 # Try to extract follower count
                 followers = 0
-                followers_pattern = rf"{name}[:\s]*.*?(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:M|K|million|thousand|followers)"
+                followers_pattern = (
+                    rf"{name}[:\s]*.*?(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:M|K|million|thousand|followers)"
+                )
                 match = re.search(followers_pattern, analysis, re.IGNORECASE)
                 if match:
                     num_str = match.group(1).replace(",", "")
@@ -337,12 +345,14 @@ class SocialMediaAgent(BaseSpecialistAgent[SocialMediaResult], ParsingMixin):
                     except ValueError:
                         pass
 
-                metrics.append(PlatformMetrics(
-                    platform=platform,
-                    followers=followers,
-                    engagement_rate=engagement,
-                    posting_frequency="regular" if name in analysis.lower() else "unknown"
-                ))
+                metrics.append(
+                    PlatformMetrics(
+                        platform=platform,
+                        followers=followers,
+                        engagement_rate=engagement,
+                        posting_frequency="regular" if name in analysis.lower() else "unknown",
+                    )
+                )
 
         return metrics
 
@@ -367,7 +377,9 @@ class SocialMediaAgent(BaseSpecialistAgent[SocialMediaResult], ParsingMixin):
 
         if "thought leadership" in analysis_lower:
             return ContentStrategy.THOUGHT_LEADERSHIP
-        elif "product" in analysis_lower and ("focus" in analysis_lower or "centric" in analysis_lower):
+        elif "product" in analysis_lower and (
+            "focus" in analysis_lower or "centric" in analysis_lower
+        ):
             return ContentStrategy.PRODUCT_FOCUSED
         elif "community" in analysis_lower:
             return ContentStrategy.COMMUNITY_BUILDING
@@ -382,17 +394,24 @@ class SocialMediaAgent(BaseSpecialistAgent[SocialMediaResult], ParsingMixin):
         """Extract audience insights."""
         insights = []
         common_segments = [
-            "tech enthusiasts", "professionals", "millennials",
-            "gen z", "investors", "industry experts", "consumers"
+            "tech enthusiasts",
+            "professionals",
+            "millennials",
+            "gen z",
+            "investors",
+            "industry experts",
+            "consumers",
         ]
 
         for segment in common_segments:
             if segment.lower() in analysis.lower():
-                insights.append(AudienceInsight(
-                    segment=segment.title(),
-                    percentage=20.0,  # Default estimate
-                    engagement_level=EngagementLevel.MODERATE
-                ))
+                insights.append(
+                    AudienceInsight(
+                        segment=segment.title(),
+                        percentage=20.0,  # Default estimate
+                        engagement_level=EngagementLevel.MODERATE,
+                    )
+                )
 
         return insights[:4]
 
@@ -404,7 +423,9 @@ class SocialMediaAgent(BaseSpecialistAgent[SocialMediaResult], ParsingMixin):
         for name in platform_names:
             if name.lower() in analysis.lower():
                 # Check if mentioned positively
-                if any(word in analysis.lower() for word in ["strong", "active", "popular", "primary"]):
+                if any(
+                    word in analysis.lower() for word in ["strong", "active", "popular", "primary"]
+                ):
                     platforms.append(name)
 
         return platforms[:3] if platforms else ["Unknown"]
@@ -423,6 +444,7 @@ class SocialMediaAgent(BaseSpecialistAgent[SocialMediaResult], ParsingMixin):
 # ============================================================================
 # Agent Node Function
 # ============================================================================
+
 
 def social_media_agent_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -448,10 +470,7 @@ def social_media_agent_node(state: OverallState) -> Dict[str, Any]:
 
         # Run analysis
         agent = SocialMediaAgent(config)
-        result = agent.analyze(
-            company_name=company_name,
-            search_results=search_results
-        )
+        result = agent.analyze(company_name=company_name, search_results=search_results)
 
         cost = calculate_cost(500, 1500)
 
@@ -462,19 +481,16 @@ def social_media_agent_node(state: OverallState) -> Dict[str, Any]:
 
         return {
             "agent_outputs": {
-                "social_media": {
-                    **result.to_dict(),
-                    "analysis": result.analysis,
-                    "cost": cost
-                }
+                "social_media": {**result.to_dict(), "analysis": result.analysis, "cost": cost}
             },
-            "total_cost": cost
+            "total_cost": cost,
         }
 
 
 # ============================================================================
 # Factory Function
 # ============================================================================
+
 
 def create_social_media_agent() -> SocialMediaAgent:
     """Create a Social Media Agent instance."""

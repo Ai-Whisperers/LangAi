@@ -6,4 +6,4 @@ Contains:
 - utils/: Repository utilities (cleanup, imports)
 """
 
-__all__ = ['research', 'utils']
+__all__ = ["research", "utils"]

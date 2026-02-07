@@ -60,4 +60,3 @@ function Normalize {
 }
 
 Export-ModuleMember -Function Get-StatusGlyph, Normalize
-

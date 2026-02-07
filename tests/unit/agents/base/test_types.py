@@ -3,15 +3,15 @@
 import pytest
 
 from company_researcher.agents.base.types import (
-    AgentStatus,
-    TokenUsage,
-    AgentOutput,
-    AgentResult,
-    SearchResult,
     AgentConfig,
     AgentContext,
-    create_empty_result,
+    AgentOutput,
+    AgentResult,
+    AgentStatus,
+    SearchResult,
+    TokenUsage,
     create_agent_result,
+    create_empty_result,
     merge_agent_results,
 )
 
@@ -61,7 +61,7 @@ class TestAgentConfig:
             max_retries=5,
             timeout=60.0,
             max_sources=20,
-            content_truncate_length=1000
+            content_truncate_length=1000,
         )
         assert config.max_tokens == 2000
         assert config.temperature == 0.7
@@ -89,10 +89,7 @@ class TestAgentContext:
         metadata = {"source": "test"}
 
         ctx = AgentContext(
-            company_name="TestCorp",
-            search_results=search_results,
-            config=config,
-            metadata=metadata
+            company_name="TestCorp", search_results=search_results, config=config, metadata=metadata
         )
         assert ctx.company_name == "TestCorp"
         assert len(ctx.search_results) == 1
@@ -168,7 +165,7 @@ class TestCreateAgentResult:
             analysis="Test analysis",
             input_tokens=100,
             output_tokens=50,
-            cost=0.01
+            cost=0.01,
         )
 
         assert "agent_outputs" in result
@@ -184,7 +181,7 @@ class TestCreateAgentResult:
             analysis="Detailed analysis",
             input_tokens=100,
             output_tokens=50,
-            cost=0.01
+            cost=0.01,
         )
 
         output = result["agent_outputs"]["test_agent"]
@@ -193,11 +190,7 @@ class TestCreateAgentResult:
     def test_default_success_status(self):
         """create_agent_result should default to SUCCESS status."""
         result = create_agent_result(
-            agent_name="test_agent",
-            analysis="Test",
-            input_tokens=100,
-            output_tokens=50,
-            cost=0.01
+            agent_name="test_agent", analysis="Test", input_tokens=100, output_tokens=50, cost=0.01
         )
 
         output = result["agent_outputs"]["test_agent"]
@@ -212,7 +205,7 @@ class TestCreateAgentResult:
             input_tokens=100,
             output_tokens=50,
             cost=0.01,
-            status=AgentStatus.PARTIAL
+            status=AgentStatus.PARTIAL,
         )
 
         output = result["agent_outputs"]["test_agent"]
@@ -226,7 +219,7 @@ class TestCreateAgentResult:
             input_tokens=100,
             output_tokens=50,
             cost=0.01,
-            sources_used=5
+            sources_used=5,
         )
 
         output = result["agent_outputs"]["test_agent"]
@@ -240,7 +233,7 @@ class TestCreateAgentResult:
             input_tokens=100,
             output_tokens=50,
             cost=0.01,
-            confidence=0.85
+            confidence=0.85,
         )
 
         output = result["agent_outputs"]["test_agent"]
@@ -254,7 +247,7 @@ class TestCreateAgentResult:
             input_tokens=100,
             output_tokens=50,
             cost=0.01,
-            company_overview="Overview text"
+            company_overview="Overview text",
         )
 
         assert result["company_overview"] == "Overview text"
@@ -267,7 +260,7 @@ class TestCreateAgentResult:
             input_tokens=100,
             output_tokens=50,
             cost=0.01,
-            notes=None
+            notes=None,
         )
 
         assert "notes" not in result
@@ -279,11 +272,7 @@ class TestMergeAgentResults:
     def test_merge_single_result(self):
         """merge_agent_results with single result should return same."""
         result = create_agent_result(
-            agent_name="agent1",
-            analysis="Test",
-            input_tokens=100,
-            output_tokens=50,
-            cost=0.01
+            agent_name="agent1", analysis="Test", input_tokens=100, output_tokens=50, cost=0.01
         )
 
         merged = merge_agent_results(result)
@@ -299,14 +288,14 @@ class TestMergeAgentResults:
             analysis="Analysis 1",
             input_tokens=100,
             output_tokens=50,
-            cost=0.01
+            cost=0.01,
         )
         result2 = create_agent_result(
             agent_name="agent2",
             analysis="Analysis 2",
             input_tokens=200,
             output_tokens=100,
-            cost=0.02
+            cost=0.02,
         )
 
         merged = merge_agent_results(result1, result2)
@@ -325,7 +314,7 @@ class TestMergeAgentResults:
                 analysis=f"Analysis {i}",
                 input_tokens=100,
                 output_tokens=50,
-                cost=0.01
+                cost=0.01,
             )
             for i in range(5)
         ]
@@ -343,14 +332,14 @@ class TestMergeAgentResults:
             analysis="First analysis",
             input_tokens=100,
             output_tokens=50,
-            cost=0.01
+            cost=0.01,
         )
         result2 = create_agent_result(
             agent_name="agent2",
             analysis="Second analysis",
             input_tokens=100,
             output_tokens=50,
-            cost=0.01
+            cost=0.01,
         )
 
         merged = merge_agent_results(result1, result2)
@@ -366,14 +355,10 @@ class TestMergeAgentResults:
             input_tokens=100,
             output_tokens=50,
             cost=0.01,
-            company_overview="Overview"
+            company_overview="Overview",
         )
         result2 = create_agent_result(
-            agent_name="agent2",
-            analysis="Test",
-            input_tokens=100,
-            output_tokens=50,
-            cost=0.01
+            agent_name="agent2", analysis="Test", input_tokens=100, output_tokens=50, cost=0.01
         )
 
         merged = merge_agent_results(result1, result2)
@@ -388,7 +373,7 @@ class TestMergeAgentResults:
             input_tokens=100,
             output_tokens=50,
             cost=0.01,
-            quality_score=0.5
+            quality_score=0.5,
         )
         result2 = create_agent_result(
             agent_name="agent2",
@@ -396,7 +381,7 @@ class TestMergeAgentResults:
             input_tokens=100,
             output_tokens=50,
             cost=0.01,
-            quality_score=0.8
+            quality_score=0.8,
         )
 
         merged = merge_agent_results(result1, result2)
@@ -434,7 +419,7 @@ class TestAgentOutputTypedDict:
             "analysis": "Test analysis",
             "data_extracted": True,
             "cost": 0.01,
-            "tokens": {"input": 100, "output": 50}
+            "tokens": {"input": 100, "output": 50},
         }
         assert output["analysis"] == "Test analysis"
         assert output["data_extracted"] is True
@@ -449,7 +434,7 @@ class TestAgentOutputTypedDict:
             "status": "success",
             "error": "",
             "sources_used": 5,
-            "confidence": 0.85
+            "confidence": 0.85,
         }
         assert output["status"] == "success"
         assert output["confidence"] == 0.85
@@ -463,7 +448,7 @@ class TestSearchResultTypedDict:
         result: SearchResult = {
             "title": "Test Title",
             "url": "http://example.com",
-            "content": "Test content"
+            "content": "Test content",
         }
         assert result["title"] == "Test Title"
         assert result["url"] == "http://example.com"
@@ -474,6 +459,6 @@ class TestSearchResultTypedDict:
             "title": "Test",
             "url": "http://example.com",
             "content": "Test",
-            "score": 0.95
+            "score": 0.95,
         }
         assert result["score"] == 0.95

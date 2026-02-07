@@ -34,7 +34,7 @@ provenance:
 
 ## Examples (Few-Shot)
 
-**Input**: 
+**Input**:
 [Example Input]
 
 **Reasoning**:
@@ -60,4 +60,3 @@ provenance:
 
 **Related**: [Link to related prompts/rules]
 **Save to**: [Where results should be saved]
-

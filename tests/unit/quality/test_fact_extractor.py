@@ -5,13 +5,14 @@ Tests fact extraction, entity detection, categorization, and confidence assessme
 """
 
 import pytest
+
 from company_researcher.quality.fact_extractor import (
-    FactExtractor,
+    ClaimType,
     ExtractedFact,
     FactCategory,
-    ClaimType,
+    FactExtractor,
     extract_facts,
-    extract_from_all_agents
+    extract_from_all_agents,
 )
 
 
@@ -112,7 +113,7 @@ class TestFactExtractor:
         agent_output = {
             "analysis": "TestCorp reported revenue of $100M in Q4 2023.",
             "financial_analysis": "The company has strong profitability with 30% margins.",
-            "other_field": 12345  # Should be skipped
+            "other_field": 12345,  # Should be skipped
         }
 
         result = extractor.extract_from_agent_output(agent_output, "financial")
@@ -201,7 +202,7 @@ class TestExtractedFact:
             category=FactCategory.FINANCIAL,
             claim_type=ClaimType.NUMERICAL,
             source_agent="test",
-            confidence_hint=0.85
+            confidence_hint=0.85,
         )
 
         assert fact.content == "Test fact content"
@@ -229,13 +230,11 @@ class TestExtractedFact:
             content="Test content",
             category=FactCategory.FINANCIAL,
             source_agent="financial",
-            confidence_hint=0.9
+            confidence_hint=0.9,
         )
 
         source = Source(
-            url="https://example.com",
-            title="Test Source",
-            quality=SourceQuality.AUTHORITATIVE
+            url="https://example.com", title="Test Source", quality=SourceQuality.AUTHORITATIVE
         )
 
         research_fact = fact.to_research_fact(source)
@@ -245,4 +244,5 @@ class TestExtractedFact:
         assert research_fact.extracted_by == "financial"
         # High confidence (>0.7) should map to HIGH confidence level
         from company_researcher.quality.models import ConfidenceLevel
+
         assert research_fact.confidence == ConfidenceLevel.HIGH

@@ -37,11 +37,10 @@ provenance: { owner: team-ticket, last_review: 2025-11-04 }
 
 ### {{summary_date}} ({{work_type}})
 
-**Total Verified Events**: {{event_count}}  
-**Work Hours**: {{start_time}} to {{end_time}} ({{duration}})  
+**Total Verified Events**: {{event_count}}
+**Work Hours**: {{start_time}} to {{end_time}} ({{duration}})
 
 **Key Milestones**:
 {{#milestones}}
 - **{{milestone_time}}**: {{milestone_description}}
 {{/milestones}}
-

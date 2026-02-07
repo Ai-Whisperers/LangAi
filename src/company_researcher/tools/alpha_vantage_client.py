@@ -7,8 +7,9 @@ API Documentation: https://www.alphavantage.co/documentation/
 Free Tier: 25 API calls per day
 """
 
-from typing import Dict, Optional, Any
 from datetime import timedelta
+from typing import Any, Dict, Optional
+
 from ..utils import get_config, utc_now
 
 
@@ -61,12 +62,7 @@ class AlphaVantageClient:
 
         # Make API call (placeholder - would use requests library)
         # In production, would use: requests.get(self.base_url, params=params)
-        params = {
-            "function": function,
-            "symbol": symbol,
-            "apikey": self.api_key,
-            **kwargs
-        }
+        params = {"function": function, "symbol": symbol, "apikey": self.api_key, **kwargs}
 
         # For now, return mock data structure
         # In production implementation, this would make actual HTTP request
@@ -86,10 +82,10 @@ class AlphaVantageClient:
         # This is a placeholder - actual implementation would make HTTP requests
         return {
             "Information": f"Mock data for {function} - {symbol}. "
-                          "Replace with actual HTTP request in production.",
+            "Replace with actual HTTP request in production.",
             "symbol": symbol,
             "function": function,
-            "note": "This is mock data. Set up requests library for production use."
+            "note": "This is mock data. Set up requests library for production use.",
         }
 
     def get_company_overview(self, symbol: str) -> Optional[Dict[str, Any]]:
@@ -249,10 +245,7 @@ class AlphaVantageClient:
             Dictionary with all financial data
         """
         if not self.is_available():
-            return {
-                "available": False,
-                "reason": "Alpha Vantage API key not set"
-            }
+            return {"available": False, "reason": "Alpha Vantage API key not set"}
 
         print(f"[Alpha Vantage] Fetching comprehensive data for {symbol}...")
 
@@ -264,7 +257,7 @@ class AlphaVantageClient:
             "quote": self.get_quote(symbol),
             "income_statement": self.get_income_statement(symbol),
             "balance_sheet": self.get_balance_sheet(symbol),
-            "cash_flow": self.get_cash_flow(symbol)
+            "cash_flow": self.get_cash_flow(symbol),
         }
 
         print(f"[Alpha Vantage] Data fetched for {symbol}")
@@ -275,6 +268,7 @@ class AlphaVantageClient:
 # ==============================================================================
 # Helper Functions
 # ==============================================================================
+
 
 def extract_key_metrics(financials: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -306,38 +300,32 @@ def extract_key_metrics(financials: Dict[str, Any]) -> Dict[str, Any]:
     metrics = {
         "available": True,
         "symbol": financials["symbol"],
-
         # Valuation
         "market_cap": overview.get("MarketCapitalization"),
         "pe_ratio": overview.get("PERatio"),
         "peg_ratio": overview.get("PEGRatio"),
-
         # Profitability
         "revenue_ttm": overview.get("RevenueTTM"),
         "gross_profit_ttm": overview.get("GrossProfitTTM"),
         "ebitda": overview.get("EBITDA"),
         "profit_margin": overview.get("ProfitMargin"),
         "operating_margin": overview.get("OperatingMarginTTM"),
-
         # Financial Health
         "book_value": overview.get("BookValue"),
         "debt_to_equity": overview.get("DebtToEquity"),
         "return_on_equity": overview.get("ReturnOnEquityTTM"),
         "current_ratio": overview.get("CurrentRatio"),
-
         # Growth
         "revenue_growth_yoy": overview.get("QuarterlyRevenueGrowthYOY"),
         "earnings_growth_yoy": overview.get("QuarterlyEarningsGrowthYOY"),
-
         # Dividends
         "dividend_yield": overview.get("DividendYield"),
         "dividend_per_share": overview.get("DividendPerShare"),
-
         # Stock Price
         "52_week_high": overview.get("52WeekHigh"),
         "52_week_low": overview.get("52WeekLow"),
         "50_day_ma": overview.get("50DayMovingAverage"),
-        "200_day_ma": overview.get("200DayMovingAverage")
+        "200_day_ma": overview.get("200DayMovingAverage"),
     }
 
     return metrics

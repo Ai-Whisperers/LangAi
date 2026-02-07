@@ -151,4 +151,3 @@ catch {
     Write-Error "Failed to find condense candidates: $($_.Exception.Message)`nSolution: verify the root path exists and adjust thresholds if needed. Script: .cursor/scripts/housekeeping/find-condense-candidates.ps1"
     exit 1
 }
-

@@ -109,4 +109,3 @@ Role: User. Need: Reset password.
 
 - `.cursor/rules/agile/user-story-documentation-rule.mdc`
 - `.cursor/rules/agile/story-splitting-rule.mdc`
-

@@ -26,15 +26,16 @@ Usage:
     )
 """
 
-from typing import Dict, Any, Optional, List, Literal
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator
 from enum import Enum
+from typing import Any, Dict, List, Literal, Optional
 
+from pydantic import BaseModel, Field, field_validator
 
 # ============================================================================
 # Enums
 # ============================================================================
+
 
 class NodeStatus(str, Enum):
     """Status of a node execution."""
@@ -69,6 +70,7 @@ class ResearchDepth(str, Enum):
 # Base Models
 # ============================================================================
 
+
 class TokenUsage(BaseModel):
     """Token usage tracking."""
 
@@ -96,6 +98,7 @@ class CostMetrics(BaseModel):
 # ============================================================================
 # Node Output Models
 # ============================================================================
+
 
 class NodeOutput(BaseModel):
     """Base class for all node outputs."""
@@ -213,6 +216,7 @@ class ESGAnalysisOutput(AnalysisOutput):
 # Quality Models
 # ============================================================================
 
+
 class QualityMetrics(BaseModel):
     """Quality assessment metrics."""
 
@@ -263,6 +267,7 @@ class QualityOutput(NodeOutput):
 # Synthesis Output
 # ============================================================================
 
+
 class SynthesisOutput(NodeOutput):
     """Output from synthesizer node."""
 
@@ -278,6 +283,7 @@ class SynthesisOutput(NodeOutput):
 # Report Output
 # ============================================================================
 
+
 class ReportOutput(NodeOutput):
     """Output from report generation."""
 
@@ -290,6 +296,7 @@ class ReportOutput(NodeOutput):
 # ============================================================================
 # Agent Output Tracking
 # ============================================================================
+
 
 class AgentMetrics(BaseModel):
     """Metrics for an individual agent."""
@@ -321,6 +328,7 @@ class WorkflowMetrics(BaseModel):
 # Full State Models (for validation)
 # ============================================================================
 
+
 class InputStateModel(BaseModel):
     """Validated input state."""
 
@@ -339,6 +347,7 @@ class OutputStateModel(BaseModel):
 # ============================================================================
 # Helper Functions
 # ============================================================================
+
 
 def validate_node_output(output: Dict[str, Any], model: type) -> BaseModel:
     """
@@ -370,7 +379,7 @@ def create_node_output(
     cost: float = 0.0,
     input_tokens: int = 0,
     output_tokens: int = 0,
-    **kwargs
+    **kwargs,
 ) -> Dict[str, Any]:
     """
     Create a standard node output dictionary.
@@ -389,5 +398,5 @@ def create_node_output(
         "status": status.value,
         "total_cost": cost,
         "total_tokens": {"input": input_tokens, "output": output_tokens},
-        **kwargs
+        **kwargs,
     }

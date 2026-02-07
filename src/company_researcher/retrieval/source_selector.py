@@ -12,7 +12,8 @@ Key features:
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -21,6 +22,7 @@ logger = get_logger(__name__)
 @dataclass
 class RankedSource:
     """A source with relevance and diversity scores."""
+
     source: Dict[str, Any]
     relevance_score: float
     authority_score: float
@@ -30,12 +32,14 @@ class RankedSource:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         result = dict(self.source)
-        result.update({
-            "relevance_score": round(self.relevance_score, 3),
-            "authority_score": round(self.authority_score, 3),
-            "diversity_score": round(self.diversity_score, 3),
-            "combined_score": round(self.combined_score, 3)
-        })
+        result.update(
+            {
+                "relevance_score": round(self.relevance_score, 3),
+                "authority_score": round(self.authority_score, 3),
+                "diversity_score": round(self.diversity_score, 3),
+                "combined_score": round(self.combined_score, 3),
+            }
+        )
         return result
 
 
@@ -83,7 +87,8 @@ class SemanticSourceSelector:
 
         try:
             from sentence_transformers import SentenceTransformer
-            self._encoder = SentenceTransformer('all-MiniLM-L6-v2')
+
+            self._encoder = SentenceTransformer("all-MiniLM-L6-v2")
             self._use_embeddings = True
             logger.info("SemanticSourceSelector initialized with embedding model")
         except ImportError:
@@ -100,7 +105,7 @@ class SemanticSourceSelector:
         diversity_threshold: float = 0.7,
         authority_weight: float = 0.3,
         relevance_weight: float = 0.5,
-        diversity_weight: float = 0.2
+        diversity_weight: float = 0.2,
     ) -> List[Dict]:
         """
         Select most relevant and diverse sources.
@@ -127,18 +132,14 @@ class SemanticSourceSelector:
         ranked_sources = self._rank_sources(query, sources)
 
         # Greedy selection with diversity constraint
-        selected = self._select_diverse(
-            ranked_sources,
-            max_sources,
-            diversity_threshold
-        )
+        selected = self._select_diverse(ranked_sources, max_sources, diversity_threshold)
 
         # Recompute combined scores
         for rs in selected:
             rs.combined_score = (
-                rs.relevance_score * relevance_weight +
-                rs.authority_score * authority_weight +
-                rs.diversity_score * diversity_weight
+                rs.relevance_score * relevance_weight
+                + rs.authority_score * authority_weight
+                + rs.diversity_score * diversity_weight
             )
 
         # Sort by combined score
@@ -146,12 +147,7 @@ class SemanticSourceSelector:
 
         return [rs.to_dict() for rs in selected]
 
-    def select_for_task(
-        self,
-        task: str,
-        sources: List[Dict],
-        max_sources: int = 5
-    ) -> List[Dict]:
+    def select_for_task(self, task: str, sources: List[Dict], max_sources: int = 5) -> List[Dict]:
         """
         Select sources optimized for a specific task type.
 
@@ -169,7 +165,7 @@ class SemanticSourceSelector:
             "market": "market share competitive position industry trends",
             "product": "products services offerings technology features",
             "company": "company overview history headquarters leadership",
-            "competitive": "competitors comparison competitive advantage"
+            "competitive": "competitors comparison competitive advantage",
         }
 
         query = task_queries.get(task, task)
@@ -194,11 +190,7 @@ class SemanticSourceSelector:
 
         return self.select_sources(query, boosted_sources, max_sources)
 
-    def _rank_sources(
-        self,
-        query: str,
-        sources: List[Dict]
-    ) -> List[RankedSource]:
+    def _rank_sources(self, query: str, sources: List[Dict]) -> List[RankedSource]:
         """Rank sources by relevance and authority."""
         ranked = []
 
@@ -213,9 +205,7 @@ class SemanticSourceSelector:
         for source in sources:
             # Calculate relevance
             if query_embedding is not None:
-                relevance = self._calculate_semantic_relevance(
-                    query_embedding, source
-                )
+                relevance = self._calculate_semantic_relevance(query_embedding, source)
             else:
                 relevance = self._calculate_keyword_relevance(query, source)
 
@@ -226,21 +216,19 @@ class SemanticSourceSelector:
             # Calculate authority
             authority = self._calculate_authority(source)
 
-            ranked.append(RankedSource(
-                source=source,
-                relevance_score=relevance,
-                authority_score=authority,
-                diversity_score=1.0,  # Will be updated during selection
-                combined_score=0.0
-            ))
+            ranked.append(
+                RankedSource(
+                    source=source,
+                    relevance_score=relevance,
+                    authority_score=authority,
+                    diversity_score=1.0,  # Will be updated during selection
+                    combined_score=0.0,
+                )
+            )
 
         return ranked
 
-    def _calculate_semantic_relevance(
-        self,
-        query_embedding,
-        source: Dict
-    ) -> float:
+    def _calculate_semantic_relevance(self, query_embedding, source: Dict) -> float:
         """Calculate semantic relevance using embeddings."""
         content = source.get("content", "") or source.get("snippet", "") or source.get("body", "")
         title = source.get("title", "")
@@ -252,6 +240,7 @@ class SemanticSourceSelector:
 
         try:
             import numpy as np
+
             source_embedding = self._encoder.encode([text])[0]
 
             similarity = np.dot(query_embedding, source_embedding) / (
@@ -265,11 +254,7 @@ class SemanticSourceSelector:
             logger.debug(f"Embedding calculation failed: {e}")
             return 0.5
 
-    def _calculate_keyword_relevance(
-        self,
-        query: str,
-        source: Dict
-    ) -> float:
+    def _calculate_keyword_relevance(self, query: str, source: Dict) -> float:
         """Calculate relevance using keyword matching."""
         content = source.get("content", "") or source.get("snippet", "") or source.get("body", "")
         title = source.get("title", "")
@@ -278,8 +263,26 @@ class SemanticSourceSelector:
         query_terms = set(query.lower().split())
 
         # Remove stopwords
-        stopwords = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'to', 'of',
-                     'and', 'in', 'for', 'on', 'with', 'at', 'by', 'this', 'that'}
+        stopwords = {
+            "the",
+            "a",
+            "an",
+            "is",
+            "are",
+            "was",
+            "were",
+            "to",
+            "of",
+            "and",
+            "in",
+            "for",
+            "on",
+            "with",
+            "at",
+            "by",
+            "this",
+            "that",
+        }
         query_terms -= stopwords
 
         if not query_terms:
@@ -300,10 +303,7 @@ class SemanticSourceSelector:
         return 0.5  # Default for unknown domains
 
     def _select_diverse(
-        self,
-        ranked_sources: List[RankedSource],
-        max_sources: int,
-        diversity_threshold: float
+        self, ranked_sources: List[RankedSource], max_sources: int, diversity_threshold: float
     ) -> List[RankedSource]:
         """
         Select diverse sources using greedy algorithm.
@@ -318,7 +318,7 @@ class SemanticSourceSelector:
         sorted_sources = sorted(
             ranked_sources,
             key=lambda x: x.relevance_score * 0.7 + x.authority_score * 0.3,
-            reverse=True
+            reverse=True,
         )
 
         selected: List[RankedSource] = []
@@ -331,18 +331,14 @@ class SemanticSourceSelector:
             # Check diversity against already selected
             if selected and self._use_embeddings:
                 is_diverse = self._check_diversity(
-                    rs.source,
-                    selected_embeddings,
-                    diversity_threshold
+                    rs.source, selected_embeddings, diversity_threshold
                 )
 
                 if not is_diverse:
                     continue
 
                 # Update diversity score
-                rs.diversity_score = self._calculate_diversity_score(
-                    rs.source, selected_embeddings
-                )
+                rs.diversity_score = self._calculate_diversity_score(rs.source, selected_embeddings)
 
             selected.append(rs)
 
@@ -358,12 +354,7 @@ class SemanticSourceSelector:
 
         return selected
 
-    def _check_diversity(
-        self,
-        source: Dict,
-        selected_embeddings: List,
-        threshold: float
-    ) -> bool:
+    def _check_diversity(self, source: Dict, selected_embeddings: List, threshold: float) -> bool:
         """Check if source is sufficiently different from selected."""
         content = source.get("content", "") or source.get("snippet", "")
 
@@ -372,12 +363,11 @@ class SemanticSourceSelector:
 
         try:
             import numpy as np
+
             emb = self._encoder.encode([content[:1000]])[0]
 
             for sel_emb in selected_embeddings:
-                similarity = np.dot(emb, sel_emb) / (
-                    np.linalg.norm(emb) * np.linalg.norm(sel_emb)
-                )
+                similarity = np.dot(emb, sel_emb) / (np.linalg.norm(emb) * np.linalg.norm(sel_emb))
 
                 if similarity > threshold:
                     return False
@@ -387,11 +377,7 @@ class SemanticSourceSelector:
         except:
             return True
 
-    def _calculate_diversity_score(
-        self,
-        source: Dict,
-        selected_embeddings: List
-    ) -> float:
+    def _calculate_diversity_score(self, source: Dict, selected_embeddings: List) -> float:
         """Calculate how different this source is from selected ones."""
         if not selected_embeddings:
             return 1.0
@@ -402,14 +388,13 @@ class SemanticSourceSelector:
 
         try:
             import numpy as np
+
             emb = self._encoder.encode([content[:1000]])[0]
 
             # Average dissimilarity
             dissimilarities = []
             for sel_emb in selected_embeddings:
-                sim = np.dot(emb, sel_emb) / (
-                    np.linalg.norm(emb) * np.linalg.norm(sel_emb)
-                )
+                sim = np.dot(emb, sel_emb) / (np.linalg.norm(emb) * np.linalg.norm(sel_emb))
                 dissimilarities.append(1 - sim)
 
             return sum(dissimilarities) / len(dissimilarities)
@@ -418,9 +403,7 @@ class SemanticSourceSelector:
             return 0.5
 
     def get_coverage_analysis(
-        self,
-        selected_sources: List[Dict],
-        all_sources: List[Dict]
+        self, selected_sources: List[Dict], all_sources: List[Dict]
     ) -> Dict[str, Any]:
         """Analyze coverage of selected sources."""
         # Domain coverage
@@ -453,13 +436,14 @@ class SemanticSourceSelector:
             "selection_ratio": len(selected_sources) / len(all_sources) if all_sources else 0,
             "domain_coverage": len(selected_domains) / len(all_domains) if all_domains else 0,
             "selected_domains": list(selected_domains),
-            "authority_distribution": authority_tiers
+            "authority_distribution": authority_tiers,
         }
 
     def _extract_domain(self, url: str) -> str:
         """Extract domain from URL."""
         try:
             from urllib.parse import urlparse
+
             parsed = urlparse(url)
             return parsed.netloc or url
         except:

@@ -291,6 +291,6 @@ $FixScripts = '[
 
 ---
 
-**Extracted from**: `manage-code-quality-enforcement.prompt.md`  
-**Templar**: `.cursor/scripts/quality/manage-code-quality-enforcement.templar.ps1`  
+**Extracted from**: `manage-code-quality-enforcement.prompt.md`
+**Templar**: `.cursor/scripts/quality/manage-code-quality-enforcement.templar.ps1`
 **Use**: Pattern extraction only - adapt concrete implementations for your project

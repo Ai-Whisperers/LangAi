@@ -228,4 +228,4 @@ Epic
 - Collect feedback on documentation quality
 - Update templates based on lessons learned
 - Share best practices across teams
-- Maintain alignment with agile principles 
+- Maintain alignment with agile principles

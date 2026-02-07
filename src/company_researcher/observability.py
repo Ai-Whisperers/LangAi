@@ -27,8 +27,8 @@ LangSmith Integration:
 """
 
 import os
-from typing import Optional, Dict, Any, List
 from contextlib import contextmanager
+from typing import Any, Dict, List, Optional
 
 from .config import get_config
 from .utils import get_logger, utc_now
@@ -36,6 +36,7 @@ from .utils import get_logger, utc_now
 # Optional imports (gracefully handle if not installed)
 try:
     import agentops
+
     AGENTOPS_AVAILABLE = True
 except ImportError:
     AGENTOPS_AVAILABLE = False
@@ -44,13 +45,14 @@ except ImportError:
 # Import LangSmith integration from LLM module
 try:
     from .llm.langsmith_setup import (
-        init_langsmith as _init_langsmith_module,
-        is_langsmith_enabled as _is_langsmith_enabled,
+        create_run_tree,
+        flush_traces,
         get_langsmith_url,
         get_trace_stats,
-        flush_traces,
-        create_run_tree
     )
+    from .llm.langsmith_setup import init_langsmith as _init_langsmith_module
+    from .llm.langsmith_setup import is_langsmith_enabled as _is_langsmith_enabled
+
     LLM_MODULE_AVAILABLE = True
 except ImportError:
     LLM_MODULE_AVAILABLE = False
@@ -73,8 +75,31 @@ _current_session_id: Optional[str] = None
 
 
 # ============================================================================
+# Internal helpers
+# ============================================================================
+
+
+def _safe_call_ok(action: str, fn, *args, **kwargs) -> bool:
+    try:
+        fn(*args, **kwargs)
+        return True
+    except Exception as e:  # noqa: BLE001 - optional observability should never break core flow
+        logger.warning(f"[OBSERVABILITY] {action} failed: {e}")
+        return False
+
+
+def _safe_call(action: str, fn, *args, default=None, **kwargs):
+    try:
+        return fn(*args, **kwargs)
+    except Exception as e:  # noqa: BLE001 - optional observability should never break core flow
+        logger.warning(f"[OBSERVABILITY] {action} failed: {e}")
+        return default
+
+
+# ============================================================================
 # Initialization
 # ============================================================================
+
 
 def init_observability() -> Dict[str, Any]:
     """
@@ -97,47 +122,51 @@ def init_observability() -> Dict[str, Any]:
 
     # Initialize AgentOps
     if config.agentops_api_key and AGENTOPS_AVAILABLE:
-        try:
-            agentops.init(
-                api_key=config.agentops_api_key,
-                default_tags=["production", "company-researcher", "phase-4"],
-                auto_start_session=False  # We'll manually start sessions
-            )
+        ok = _safe_call_ok(
+            "AgentOps initialization",
+            agentops.init,
+            api_key=config.agentops_api_key,
+            default_tags=["production", "company-researcher", "phase-4"],
+            auto_start_session=False,  # We'll manually start sessions
+        )
+        if ok:
             _agentops_initialized = True
             results["agentops"] = True
             logger.info("[OBSERVABILITY] AgentOps initialized successfully")
-        except Exception as e:
-            logger.warning(f"[OBSERVABILITY] AgentOps initialization failed: {e}")
     elif config.agentops_api_key and not AGENTOPS_AVAILABLE:
         logger.warning("[OBSERVABILITY] AgentOps API key provided but agentops not installed")
 
     # Initialize LangSmith using the new LLM module
     if config.langsmith_api_key:
-        try:
-            if LLM_MODULE_AVAILABLE and _init_langsmith_module:
-                # Use the new comprehensive LangSmith initialization
-                langsmith_result = _init_langsmith_module(
-                    api_key=config.langsmith_api_key,
-                    project=config.langchain_project,
-                    endpoint=config.langchain_endpoint
+        if LLM_MODULE_AVAILABLE and _init_langsmith_module:
+            # Use the new comprehensive LangSmith initialization
+            langsmith_result = _safe_call(
+                "LangSmith initialization",
+                _init_langsmith_module,
+                api_key=config.langsmith_api_key,
+                project=config.langchain_project,
+                endpoint=config.langchain_endpoint,
+                default={},
+            )
+            _langsmith_initialized = bool(langsmith_result.get("enabled", False))
+            results["langsmith"] = _langsmith_initialized
+            results["langsmith_url"] = get_langsmith_url()
+            if _langsmith_initialized:
+                logger.info(
+                    f"[OBSERVABILITY] LangSmith tracing enabled (project: {config.langchain_project})"
                 )
-                _langsmith_initialized = langsmith_result.get("enabled", False)
-                results["langsmith"] = _langsmith_initialized
-                results["langsmith_url"] = get_langsmith_url()
-                if _langsmith_initialized:
-                    logger.info(f"[OBSERVABILITY] LangSmith tracing enabled (project: {config.langchain_project})")
-                    logger.info(f"[OBSERVABILITY] View traces at: {results['langsmith_url']}")
-            else:
-                # Fallback to environment variables only
-                os.environ["LANGCHAIN_TRACING_V2"] = "true"
-                os.environ["LANGCHAIN_API_KEY"] = config.langsmith_api_key
-                os.environ["LANGCHAIN_PROJECT"] = config.langchain_project
-                os.environ["LANGCHAIN_ENDPOINT"] = config.langchain_endpoint
-                _langsmith_initialized = True
-                results["langsmith"] = True
-                logger.info(f"[OBSERVABILITY] LangSmith tracing enabled (project: {config.langchain_project})")
-        except Exception as e:
-            logger.warning(f"[OBSERVABILITY] LangSmith initialization failed: {e}")
+                logger.info(f"[OBSERVABILITY] View traces at: {results['langsmith_url']}")
+        else:
+            # Fallback to environment variables only
+            os.environ["LANGCHAIN_TRACING_V2"] = "true"
+            os.environ["LANGCHAIN_API_KEY"] = config.langsmith_api_key
+            os.environ["LANGCHAIN_PROJECT"] = config.langchain_project
+            os.environ["LANGCHAIN_ENDPOINT"] = config.langchain_endpoint
+            _langsmith_initialized = True
+            results["langsmith"] = True
+            logger.info(
+                f"[OBSERVABILITY] LangSmith tracing enabled (project: {config.langchain_project})"
+            )
 
     # Summary
     if results["agentops"] or results["langsmith"]:
@@ -151,6 +180,7 @@ def init_observability() -> Dict[str, Any]:
 # ============================================================================
 # Session Management
 # ============================================================================
+
 
 @contextmanager
 def track_research_session(company_name: str, tags: Optional[List[str]] = None):
@@ -177,48 +207,42 @@ def track_research_session(company_name: str, tags: Optional[List[str]] = None):
 
     # Start AgentOps session
     if _agentops_initialized and AGENTOPS_AVAILABLE:
-        try:
-            session_id = agentops.start_session(tags=session_tags)
+        session_id = _safe_call("AgentOps start_session", agentops.start_session, tags=session_tags)
+        if session_id:
             _current_session_id = session_id
-            agentops.record_action(
+            _safe_call_ok(
+                "AgentOps record research_start",
+                agentops.record_action,
                 action_type="research_start",
-                params={"company": company_name, "timestamp": utc_now().isoformat()}
+                params={"company": company_name, "timestamp": utc_now().isoformat()},
             )
             logger.info(f"[OBSERVABILITY] AgentOps session started: {session_id}")
-        except Exception as e:
-            logger.warning(f"[OBSERVABILITY] Failed to start AgentOps session: {e}")
 
     try:
         yield session_id
     except Exception as e:
         # End session with error
         if _agentops_initialized and AGENTOPS_AVAILABLE:
-            try:
-                agentops.end_session(
-                    end_state="Fail",
-                    end_state_reason=str(e)
-                )
-                logger.info(f"[OBSERVABILITY] AgentOps session ended with error: {e}")
-            except Exception as end_error:
-                logger.warning(f"[OBSERVABILITY] Failed to end AgentOps session: {end_error}")
+            _safe_call_ok(
+                "AgentOps end_session (Fail)",
+                agentops.end_session,
+                end_state="Fail",
+                end_state_reason=str(e),
+            )
+            logger.info(f"[OBSERVABILITY] AgentOps session ended with error: {e}")
         raise
     else:
         # End session successfully
         if _agentops_initialized and AGENTOPS_AVAILABLE:
-            try:
-                agentops.end_session(end_state="Success")
-                logger.info("[OBSERVABILITY] AgentOps session ended successfully")
-            except Exception as e:
-                logger.warning(f"[OBSERVABILITY] Failed to end AgentOps session: {e}")
+            _safe_call_ok(
+                "AgentOps end_session (Success)", agentops.end_session, end_state="Success"
+            )
+            logger.info("[OBSERVABILITY] AgentOps session ended successfully")
     finally:
         _current_session_id = None
 
 
-def record_agent_event(
-    agent_name: str,
-    event_type: str,
-    data: Optional[Dict[str, Any]] = None
-):
+def record_agent_event(agent_name: str, event_type: str, data: Optional[Dict[str, Any]] = None):
     """
     Record an agent event to AgentOps.
 
@@ -230,13 +254,12 @@ def record_agent_event(
     if not _agentops_initialized or not AGENTOPS_AVAILABLE:
         return
 
-    try:
-        agentops.record_action(
-            action_type=f"{agent_name}_{event_type}",
-            params=data or {}
-        )
-    except Exception as e:
-        logger.warning(f"[OBSERVABILITY] Failed to record agent event: {e}")
+    _safe_call_ok(
+        "AgentOps record agent_event",
+        agentops.record_action,
+        action_type=f"{agent_name}_{event_type}",
+        params=data or {},
+    )
 
 
 def record_llm_call(
@@ -246,7 +269,7 @@ def record_llm_call(
     model: str,
     tokens: Dict[str, int],
     cost: float,
-    latency_ms: float
+    latency_ms: float,
 ):
     """
     Record an LLM call to AgentOps.
@@ -263,29 +286,24 @@ def record_llm_call(
     if not _agentops_initialized or not AGENTOPS_AVAILABLE:
         return
 
-    try:
-        agentops.record_action(
-            action_type="llm_call",
-            params={
-                "agent": agent_name,
-                "model": model,
-                "prompt_length": len(prompt),
-                "response_length": len(response),
-                "tokens_input": tokens.get("input", 0),
-                "tokens_output": tokens.get("output", 0),
-                "cost_usd": cost,
-                "latency_ms": latency_ms
-            }
-        )
-    except Exception as e:
-        logger.warning(f"[OBSERVABILITY] Failed to record LLM call: {e}")
+    _safe_call_ok(
+        "AgentOps record llm_call",
+        agentops.record_action,
+        action_type="llm_call",
+        params={
+            "agent": agent_name,
+            "model": model,
+            "prompt_length": len(prompt),
+            "response_length": len(response),
+            "tokens_input": tokens.get("input", 0),
+            "tokens_output": tokens.get("output", 0),
+            "cost_usd": cost,
+            "latency_ms": latency_ms,
+        },
+    )
 
 
-def record_quality_check(
-    quality_score: float,
-    missing_info: List[str],
-    iteration: int
-):
+def record_quality_check(quality_score: float, missing_info: List[str], iteration: int):
     """
     Record quality check results to AgentOps.
 
@@ -297,23 +315,23 @@ def record_quality_check(
     if not _agentops_initialized or not AGENTOPS_AVAILABLE:
         return
 
-    try:
-        agentops.record_action(
-            action_type="quality_check",
-            params={
-                "quality_score": quality_score,
-                "missing_count": len(missing_info),
-                "iteration": iteration,
-                "passed": quality_score >= 85.0
-            }
-        )
-    except Exception as e:
-        logger.warning(f"[OBSERVABILITY] Failed to record quality check: {e}")
+    _safe_call_ok(
+        "AgentOps record quality_check",
+        agentops.record_action,
+        action_type="quality_check",
+        params={
+            "quality_score": quality_score,
+            "missing_count": len(missing_info),
+            "iteration": iteration,
+            "passed": quality_score >= 85.0,
+        },
+    )
 
 
 # ============================================================================
 # Cost Tracking Enhancement (Phase 4.5)
 # ============================================================================
+
 
 class CostTracker:
     """
@@ -331,12 +349,7 @@ class CostTracker:
         self.total_cost: float = 0.0
 
     def track_agent_cost(
-        self,
-        agent_name: str,
-        model: str,
-        tokens: Dict[str, int],
-        cost: float,
-        iteration: int = 1
+        self, agent_name: str, model: str, tokens: Dict[str, int], cost: float, iteration: int = 1
     ):
         """
         Track cost for a specific agent call.
@@ -354,7 +367,7 @@ class CostTracker:
             "tokens": tokens,
             "cost": cost,
             "iteration": iteration,
-            "timestamp": utc_now().isoformat()
+            "timestamp": utc_now().isoformat(),
         }
 
         self.session_costs.append(cost_entry)
@@ -380,13 +393,16 @@ class CostTracker:
             "total_cost": self.total_cost,
             "by_agent": self.agent_costs.copy(),
             "calls": len(self.session_costs),
-            "average_per_call": self.total_cost / len(self.session_costs) if self.session_costs else 0.0
+            "average_per_call": (
+                self.total_cost / len(self.session_costs) if self.session_costs else 0.0
+            ),
         }
 
 
 # ============================================================================
 # Utility Functions
 # ============================================================================
+
 
 def is_observability_enabled() -> bool:
     """Check if any observability tool is enabled."""
@@ -417,7 +433,7 @@ def get_observability_status() -> Dict[str, Any]:
         "agentops": _agentops_initialized,
         "langsmith": _langsmith_initialized,
         "langsmith_url": get_langsmith_url() if _langsmith_initialized else None,
-        "session_id": _current_session_id
+        "session_id": _current_session_id,
     }
 
 

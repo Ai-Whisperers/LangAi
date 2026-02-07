@@ -13,8 +13,8 @@ Access the UI at: http://localhost:7860 (default)
 """
 
 import argparse
-import sys
 import os
+import sys
 import webbrowser
 from pathlib import Path
 
@@ -28,6 +28,7 @@ def check_langflow_installed():
     """Check if LangFlow is installed."""
     try:
         import langflow
+
         return True, getattr(langflow, "__version__", "unknown")
     except ImportError:
         return False, None
@@ -88,8 +89,10 @@ def start_langflow(port: int = 7860, host: str = "127.0.0.1", open_browser: bool
         sys.argv = [
             "langflow",
             "run",
-            "--host", host,
-            "--port", str(port),
+            "--host",
+            host,
+            "--port",
+            str(port),
         ]
 
         if components_path.exists():
@@ -118,30 +121,18 @@ def main():
         description="Start LangFlow with Company Researcher components"
     )
     parser.add_argument(
-        "--port", "-p",
-        type=int,
-        default=7860,
-        help="Port to run LangFlow on (default: 7860)"
+        "--port", "-p", type=int, default=7860, help="Port to run LangFlow on (default: 7860)"
     )
     parser.add_argument(
-        "--host", "-H",
-        type=str,
-        default="127.0.0.1",
-        help="Host to bind to (default: 127.0.0.1)"
+        "--host", "-H", type=str, default="127.0.0.1", help="Host to bind to (default: 127.0.0.1)"
     )
     parser.add_argument(
-        "--no-browser",
-        action="store_true",
-        help="Don't open browser automatically"
+        "--no-browser", action="store_true", help="Don't open browser automatically"
     )
 
     args = parser.parse_args()
 
-    start_langflow(
-        port=args.port,
-        host=args.host,
-        open_browser=not args.no_browser
-    )
+    start_langflow(port=args.port, host=args.host, open_browser=not args.no_browser)
 
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ from urllib.parse import urljoin, urlparse
 
 import httpx
 from bs4 import BeautifulSoup
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -37,7 +38,15 @@ PRIORITY_PATTERNS = {
             r"/nosotros",
             r"/equipo",
         ],
-        "keywords": ["team", "leadership", "management", "executives", "about us", "equipo", "nosotros"],
+        "keywords": [
+            "team",
+            "leadership",
+            "management",
+            "executives",
+            "about us",
+            "equipo",
+            "nosotros",
+        ],
         "priority": 10,
     },
     # Products & Services
@@ -150,6 +159,7 @@ EXCLUDE_PATTERNS = [
 @dataclass
 class LinkInfo:
     """Information about an extracted link."""
+
     url: str
     text: str
     category: str = "other"
@@ -160,6 +170,7 @@ class LinkInfo:
 @dataclass
 class PageContent:
     """Content extracted from a page."""
+
     url: str
     title: str
     text: str
@@ -173,6 +184,7 @@ class PageContent:
 @dataclass
 class DomainExplorationResult:
     """Result of domain exploration."""
+
     base_url: str
     domain: str
     pages_explored: List[PageContent] = field(default_factory=list)
@@ -275,11 +287,13 @@ class DomainExplorer:
 
         # Truncate if too long
         if len(text) > self.max_content_length:
-            text = text[:self.max_content_length] + "..."
+            text = text[: self.max_content_length] + "..."
 
         return text
 
-    def _extract_links(self, soup: BeautifulSoup, base_url: str, base_domain: str) -> List[LinkInfo]:
+    def _extract_links(
+        self, soup: BeautifulSoup, base_url: str, base_domain: str
+    ) -> List[LinkInfo]:
         """Extract and categorize links from HTML."""
         links = []
         seen_urls = set()
@@ -313,13 +327,15 @@ class DomainExplorer:
             # Categorize
             category, priority = self._categorize_link(full_url, link_text)
 
-            links.append(LinkInfo(
-                url=full_url,
-                text=link_text[:100],  # Truncate long text
-                category=category,
-                priority=priority,
-                is_internal=is_internal,
-            ))
+            links.append(
+                LinkInfo(
+                    url=full_url,
+                    text=link_text[:100],  # Truncate long text
+                    category=category,
+                    priority=priority,
+                    is_internal=is_internal,
+                )
+            )
 
         # Sort by priority (highest first)
         links.sort(key=lambda x: (-x.priority, x.url))
@@ -542,13 +558,15 @@ def format_exploration_for_research(result: DomainExplorationResult) -> List[Dic
         }
         score = category_scores.get(page.category, 0.60)
 
-        formatted.append({
-            "title": page.title or page.url,
-            "url": page.url,
-            "content": page.text[:2000],  # Truncate for API
-            "score": score,
-            "source": "domain_explorer",
-            "category": page.category,
-        })
+        formatted.append(
+            {
+                "title": page.title or page.url,
+                "url": page.url,
+                "content": page.text[:2000],  # Truncate for API
+                "score": score,
+                "source": "domain_explorer",
+                "category": page.category,
+            }
+        )
 
     return formatted

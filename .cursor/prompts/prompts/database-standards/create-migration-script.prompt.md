@@ -24,13 +24,13 @@ Please create a database migration script for the following change:
    * Author: [Your Name]
    * Date: [YYYY-MM-DD]
    * Version: [X.Y.Z]
-   * 
+   *
    * Dependencies:
    *   - [List any required prior scripts or objects]
-   * 
+   *
    * Rollback Strategy:
    *   - [How to undo this change]
-   * 
+   *
    * Testing:
    *   - [How to verify success]
    *******************************************************************************/
@@ -47,16 +47,16 @@ Please create a database migration script for the following change:
    ```sql
    BEGIN TRY
        BEGIN TRANSACTION;
-       
+
        -- Validation checks
        -- [Ensure preconditions are met]
-       
+
        -- Main migration logic
        -- [Actual changes here]
-       
+
        -- Verification checks
        -- [Confirm changes applied correctly]
-       
+
        COMMIT TRANSACTION;
        PRINT 'Migration completed successfully';
    END TRY
@@ -113,4 +113,3 @@ Apply standards from:
 - `.cursor/rules/database-standards/tracking-standards-rule.mdc`
 - `.cursor/rules/database-standards/mssql-standards-rule.mdc` (if MSSQL)
 - `.cursor/rules/database-standards/oracle-standards-rule.mdc` (if Oracle)
-

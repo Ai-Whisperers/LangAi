@@ -32,7 +32,7 @@ def main():
 
     # Show report preview
     print("\n=== Report Preview ===")
-    print(result['report'][:500] + "...")
+    print(result["report"][:500] + "...")
 
     return result
 

@@ -22,6 +22,7 @@ logger = get_logger(__name__)
 
 class CheckStatus(str, Enum):
     """Status of a check."""
+
     PASSED = "passed"
     FAILED = "failed"
     SKIPPED = "skipped"
@@ -31,6 +32,7 @@ class CheckStatus(str, Enum):
 @dataclass
 class CheckResult:
     """Result of a single check."""
+
     name: str
     status: CheckStatus
     message: str = ""
@@ -44,13 +46,14 @@ class CheckResult:
             "status": self.status.value,
             "message": self.message,
             "duration_ms": self.duration_ms,
-            "details": self.details
+            "details": self.details,
         }
 
 
 @dataclass
 class PrecommitResult:
     """Result of all pre-commit checks."""
+
     checks: List[CheckResult] = field(default_factory=list)
     passed: bool = True
     total_duration_ms: float = 0
@@ -68,7 +71,7 @@ class PrecommitResult:
             "passed": self.passed,
             "total_duration_ms": self.total_duration_ms,
             "checks": [c.to_dict() for c in self.checks],
-            "failed_checks": [c.name for c in self.checks if c.status == CheckStatus.FAILED]
+            "failed_checks": [c.name for c in self.checks if c.status == CheckStatus.FAILED],
         }
 
     def summary(self) -> str:
@@ -103,10 +106,7 @@ class PrecommitRunner:
         self._checks: List[tuple] = []
 
     def add_check(
-        self,
-        name: str,
-        check_fn: Callable[[], CheckResult],
-        enabled: bool = True
+        self, name: str, check_fn: Callable[[], CheckResult], enabled: bool = True
     ) -> None:
         """Add a check."""
         self._checks.append((name, check_fn, enabled))
@@ -133,11 +133,9 @@ class PrecommitRunner:
             if exclude and name in exclude:
                 continue
             if not enabled:
-                result.add_check(CheckResult(
-                    name=name,
-                    status=CheckStatus.SKIPPED,
-                    message="Check disabled"
-                ))
+                result.add_check(
+                    CheckResult(name=name, status=CheckStatus.SKIPPED, message="Check disabled")
+                )
                 continue
 
             # Run check
@@ -150,7 +148,7 @@ class PrecommitRunner:
                     name=name,
                     status=CheckStatus.ERROR,
                     message=str(e),
-                    duration_ms=(time.time() - start) * 1000
+                    duration_ms=(time.time() - start) * 1000,
                 )
 
             result.add_check(check_result)
@@ -164,13 +162,7 @@ class PrecommitRunner:
 def run_command(cmd: List[str], cwd: str = ".") -> tuple:
     """Run a command and return (success, output)."""
     try:
-        result = subprocess.run(
-            cmd,
-            cwd=cwd,
-            capture_output=True,
-            text=True,
-            timeout=300
-        )
+        result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=300)
         output = result.stdout + result.stderr
         return result.returncode == 0, output
     except subprocess.TimeoutExpired:
@@ -186,7 +178,7 @@ def check_ruff(path: str = ".") -> CheckResult:
         name="ruff",
         status=CheckStatus.PASSED if success else CheckStatus.FAILED,
         message="Ruff linting passed" if success else "Ruff found issues",
-        details={"output": output[:2000]}  # Truncate
+        details={"output": output[:2000]},  # Truncate
     )
 
 
@@ -198,7 +190,7 @@ def check_black(path: str = ".", check_only: bool = True) -> CheckResult:
         name="black",
         status=CheckStatus.PASSED if success else CheckStatus.FAILED,
         message="Black formatting passed" if success else "Black formatting issues",
-        details={"output": output[:2000]}
+        details={"output": output[:2000]},
     )
 
 
@@ -209,7 +201,7 @@ def check_mypy(path: str = ".") -> CheckResult:
         name="mypy",
         status=CheckStatus.PASSED if success else CheckStatus.FAILED,
         message="Type checking passed" if success else "Type errors found",
-        details={"output": output[:2000]}
+        details={"output": output[:2000]},
     )
 
 
@@ -224,7 +216,7 @@ def check_pytest(path: str = "tests/", markers: str = None) -> CheckResult:
         name="pytest",
         status=CheckStatus.PASSED if success else CheckStatus.FAILED,
         message="Tests passed" if success else "Tests failed",
-        details={"output": output[-2000:]}  # Last part (results)
+        details={"output": output[-2000:]},  # Last part (results)
     )
 
 
@@ -235,7 +227,7 @@ def check_bandit(path: str = ".") -> CheckResult:
         name="bandit",
         status=CheckStatus.PASSED if success else CheckStatus.FAILED,
         message="Security scan passed" if success else "Security issues found",
-        details={"output": output[:2000]}
+        details={"output": output[:2000]},
     )
 
 
@@ -247,7 +239,7 @@ def check_isort(path: str = ".", check_only: bool = True) -> CheckResult:
         name="isort",
         status=CheckStatus.PASSED if success else CheckStatus.FAILED,
         message="Import sorting passed" if success else "Import sorting issues",
-        details={"output": output[:2000]}
+        details={"output": output[:2000]},
     )
 
 
@@ -262,7 +254,7 @@ def check_docstring_coverage(path: str = "src/") -> CheckResult:
     path_obj = Path(path)
     for py_file in path_obj.rglob("*.py"):
         try:
-            with open(py_file, 'r') as f:
+            with open(py_file, "r") as f:
                 tree = ast.parse(f.read())
 
             for node in ast.walk(tree):
@@ -294,8 +286,8 @@ def check_docstring_coverage(path: str = "src/") -> CheckResult:
             "coverage": coverage,
             "total": total_items,
             "documented": documented_items,
-            "missing_sample": missing[:10]  # First 10 missing
-        }
+            "missing_sample": missing[:10],  # First 10 missing
+        },
     )
 
 
@@ -304,11 +296,11 @@ def check_no_debug(path: str = "src/") -> CheckResult:
     import re
 
     debug_patterns = [
-        r'\bprint\s*\(',
-        r'\bbreakpoint\s*\(',
-        r'\bpdb\.set_trace\s*\(',
-        r'\bimport\s+pdb\b',
-        r'\bdebugger\b',
+        r"\bprint\s*\(",
+        r"\bbreakpoint\s*\(",
+        r"\bpdb\.set_trace\s*\(",
+        r"\bimport\s+pdb\b",
+        r"\bdebugger\b",
     ]
 
     findings = []
@@ -316,7 +308,7 @@ def check_no_debug(path: str = "src/") -> CheckResult:
 
     for py_file in path_obj.rglob("*.py"):
         try:
-            with open(py_file, 'r') as f:
+            with open(py_file, "r") as f:
                 for i, line in enumerate(f, 1):
                     for pattern in debug_patterns:
                         if re.search(pattern, line):
@@ -329,8 +321,10 @@ def check_no_debug(path: str = "src/") -> CheckResult:
     return CheckResult(
         name="no_debug",
         status=CheckStatus.PASSED if not findings else CheckStatus.FAILED,
-        message="No debug statements" if not findings else f"Found {len(findings)} debug statements",
-        details={"findings": findings[:20]}  # First 20
+        message=(
+            "No debug statements" if not findings else f"Found {len(findings)} debug statements"
+        ),
+        details={"findings": findings[:20]},  # First 20
     )
 
 
@@ -338,21 +332,19 @@ def check_todo_fixme(path: str = "src/") -> CheckResult:
     """Check for TODO/FIXME comments."""
     import re
 
-    patterns = [r'\bTODO\b', r'\bFIXME\b', r'\bHACK\b', r'\bXXX\b']
+    patterns = [r"\bTODO\b", r"\bFIXME\b", r"\bHACK\b", r"\bXXX\b"]
     findings = []
     path_obj = Path(path)
 
     for py_file in path_obj.rglob("*.py"):
         try:
-            with open(py_file, 'r') as f:
+            with open(py_file, "r") as f:
                 for i, line in enumerate(f, 1):
                     for pattern in patterns:
                         if re.search(pattern, line, re.IGNORECASE):
-                            findings.append({
-                                "file": str(py_file),
-                                "line": i,
-                                "content": line.strip()[:100]
-                            })
+                            findings.append(
+                                {"file": str(py_file), "line": i, "content": line.strip()[:100]}
+                            )
                             break
         except Exception as e:
             logger.debug(f"Failed to check patterns in {py_file}: {e}")
@@ -363,7 +355,7 @@ def check_todo_fixme(path: str = "src/") -> CheckResult:
         name="todo_fixme",
         status=CheckStatus.PASSED,
         message=f"Found {len(findings)} TODO/FIXME comments",
-        details={"count": len(findings), "items": findings[:10]}
+        details={"count": len(findings), "items": findings[:10]},
     )
 
 
@@ -458,7 +450,7 @@ def install_precommit_hook(project_root: str = ".") -> bool:
     hook_path = hooks_dir / "pre-commit"
     hook_content = generate_precommit_hook()
 
-    with open(hook_path, 'w') as f:
+    with open(hook_path, "w") as f:
         f.write(hook_content)
 
     # Make executable (Unix)

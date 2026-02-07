@@ -60,7 +60,7 @@ class FundingHistory:
             "total_funding_usd": self.total_funding_usd,
             "rounds_count": len(self.funding_rounds),
             "ipo_status": self.ipo_status,
-            "total_investors": len(self.all_investors)
+            "total_investors": len(self.all_investors),
         }
 
 
@@ -93,20 +93,24 @@ class CrunchbaseClient:
             industry="Technology",
             employee_count=500,
             website=f"https://{name.lower().replace(' ', '')}.com",
-            categories=["SaaS", "Enterprise"]
+            categories=["SaaS", "Enterprise"],
         )
 
     def _mock_funding(self, name: str) -> FundingHistory:
         rounds = [
-            FundingRound(round_type=FundingType.SEED, amount_usd=2000000, investors=["Angel Investors"]),
-            FundingRound(round_type=FundingType.SERIES_A, amount_usd=10000000, investors=["VC Firm A"]),
+            FundingRound(
+                round_type=FundingType.SEED, amount_usd=2000000, investors=["Angel Investors"]
+            ),
+            FundingRound(
+                round_type=FundingType.SERIES_A, amount_usd=10000000, investors=["VC Firm A"]
+            ),
         ]
         return FundingHistory(
             company_name=name,
             total_funding_usd=12000000,
             funding_rounds=rounds,
             ipo_status="private",
-            all_investors=["Angel Investors", "VC Firm A"]
+            all_investors=["Angel Investors", "VC Firm A"],
         )
 
 

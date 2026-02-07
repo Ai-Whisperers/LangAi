@@ -18,23 +18,10 @@ Usage:
     )
 """
 
-from .models import (
-    IsolationLevel,
-    SharePolicy,
-    ContextVisibility,
-    ContextItem,
-    AgentContext,
-)
-
+from .builder import AgentContextBuilder, build_agent_context, create_isolation_manager
 from .filter import ContextFilter
-
 from .manager import ContextIsolationManager
-
-from .builder import (
-    AgentContextBuilder,
-    create_isolation_manager,
-    build_agent_context,
-)
+from .models import AgentContext, ContextItem, ContextVisibility, IsolationLevel, SharePolicy
 
 __all__ = [
     # Enums

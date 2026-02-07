@@ -14,32 +14,35 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
-from .ttl_cache import TTLCache, TTLCacheConfig
-from .redis_cache import RedisCache, RedisCacheConfig
 from ..utils import utc_now
+from .redis_cache import RedisCache, RedisCacheConfig
+from .ttl_cache import TTLCache, TTLCacheConfig
 
-K = TypeVar('K')
-V = TypeVar('V')
+K = TypeVar("K")
+V = TypeVar("V")
 
 
 class CacheTier(str, Enum):
     """Cache tiers for multi-level caching."""
-    MEMORY = "memory"      # Fast, local memory
-    REDIS = "redis"        # Distributed, persistent
-    ALL = "all"            # Both tiers
+
+    MEMORY = "memory"  # Fast, local memory
+    REDIS = "redis"  # Distributed, persistent
+    ALL = "all"  # Both tiers
 
 
 class InvalidationStrategy(str, Enum):
     """Cache invalidation strategies."""
-    IMMEDIATE = "immediate"   # Invalidate immediately
-    LAZY = "lazy"             # Mark as stale, invalidate on access
-    TTL = "ttl"               # Let TTL handle expiration
-    BROADCAST = "broadcast"   # Broadcast invalidation to all caches
+
+    IMMEDIATE = "immediate"  # Invalidate immediately
+    LAZY = "lazy"  # Mark as stale, invalidate on access
+    TTL = "ttl"  # Let TTL handle expiration
+    BROADCAST = "broadcast"  # Broadcast invalidation to all caches
 
 
 @dataclass
 class CacheConfig:
     """Configuration for cache manager."""
+
     # Memory cache settings
     memory_max_size: int = 10000
     memory_ttl: float = 300.0  # seconds
@@ -54,8 +57,8 @@ class CacheConfig:
     redis_ttl: int = 3600  # seconds
 
     # Multi-tier settings
-    write_through: bool = True   # Write to all tiers
-    read_through: bool = True    # Read from memory first, then Redis
+    write_through: bool = True  # Write to all tiers
+    read_through: bool = True  # Read from memory first, then Redis
 
     # Invalidation settings
     invalidation_strategy: InvalidationStrategy = InvalidationStrategy.IMMEDIATE
@@ -64,6 +67,7 @@ class CacheConfig:
 @dataclass
 class CacheEntry(Generic[V]):
     """Cache entry with metadata."""
+
     key: str
     value: V
     tier: CacheTier
@@ -78,6 +82,7 @@ class CacheEntry(Generic[V]):
 @dataclass
 class CacheStats:
     """Aggregated cache statistics."""
+
     memory_hits: int = 0
     memory_misses: int = 0
     redis_hits: int = 0
@@ -119,7 +124,7 @@ class CacheStats:
             "memory_size": self.memory_size,
             "memory_size_bytes": self.memory_size_bytes,
             "avg_read_time_ms": self.avg_read_time_ms,
-            "avg_write_time_ms": self.avg_write_time_ms
+            "avg_write_time_ms": self.avg_write_time_ms,
         }
 
 
@@ -147,22 +152,25 @@ class CacheManager(Generic[K, V]):
         self._config = config or CacheConfig()
 
         # Memory cache (always enabled)
-        self._memory_cache = TTLCache[K, CacheEntry[V]](TTLCacheConfig(
-            default_ttl=self._config.memory_ttl,
-            max_size=self._config.memory_max_size
-        ))
+        self._memory_cache = TTLCache[K, CacheEntry[V]](
+            TTLCacheConfig(
+                default_ttl=self._config.memory_ttl, max_size=self._config.memory_max_size
+            )
+        )
 
         # Redis cache (optional)
         self._redis_cache: Optional[RedisCache] = None
         if self._config.redis_enabled:
-            self._redis_cache = RedisCache(RedisCacheConfig(
-                host=self._config.redis_host,
-                port=self._config.redis_port,
-                db=self._config.redis_db,
-                password=self._config.redis_password,
-                prefix=self._config.redis_prefix,
-                default_ttl=self._config.redis_ttl
-            ))
+            self._redis_cache = RedisCache(
+                RedisCacheConfig(
+                    host=self._config.redis_host,
+                    port=self._config.redis_port,
+                    db=self._config.redis_db,
+                    password=self._config.redis_password,
+                    prefix=self._config.redis_prefix,
+                    default_ttl=self._config.redis_ttl,
+                )
+            )
 
         # Tag index for group invalidation
         self._tag_index: Dict[str, set] = {}
@@ -184,10 +192,7 @@ class CacheManager(Generic[K, V]):
             await self._redis_cache.disconnect()
 
     async def get(
-        self,
-        key: K,
-        default: Optional[V] = None,
-        tier: CacheTier = CacheTier.ALL
+        self, key: K, default: Optional[V] = None, tier: CacheTier = CacheTier.ALL
     ) -> Optional[V]:
         """
         Get value from cache.
@@ -224,11 +229,7 @@ class CacheManager(Generic[K, V]):
 
                     # Populate memory cache
                     if self._config.read_through and tier == CacheTier.ALL:
-                        entry = CacheEntry(
-                            key=str(key),
-                            value=value,
-                            tier=CacheTier.REDIS
-                        )
+                        entry = CacheEntry(key=str(key), value=value, tier=CacheTier.REDIS)
                         self._memory_cache.put(key, entry)
 
                     self._record_read_time(start)
@@ -245,7 +246,7 @@ class CacheManager(Generic[K, V]):
         value: V,
         ttl: Optional[float] = None,
         tags: Optional[List[str]] = None,
-        tier: CacheTier = CacheTier.ALL
+        tier: CacheTier = CacheTier.ALL,
     ) -> bool:
         """
         Put value into cache.
@@ -264,13 +265,7 @@ class CacheManager(Generic[K, V]):
         tags = tags or []
 
         # Create entry
-        entry = CacheEntry(
-            key=str(key),
-            value=value,
-            tier=tier,
-            ttl=ttl,
-            tags=tags
-        )
+        entry = CacheEntry(key=str(key), value=value, tier=tier, ttl=ttl, tags=tags)
 
         success = True
 
@@ -358,9 +353,9 @@ class CacheManager(Generic[K, V]):
 
         # Memory cache
         import fnmatch
+
         keys_to_delete = [
-            k for k in self._memory_cache.get_keys()
-            if fnmatch.fnmatch(str(k), pattern)
+            k for k in self._memory_cache.get_keys() if fnmatch.fnmatch(str(k), pattern)
         ]
 
         for key in keys_to_delete:
@@ -425,7 +420,7 @@ def create_cache_manager(
     redis_enabled: bool = False,
     redis_host: str = "localhost",
     redis_port: int = 6379,
-    **kwargs
+    **kwargs,
 ) -> CacheManager:
     """
     Factory function to create cache manager.
@@ -447,6 +442,6 @@ def create_cache_manager(
         redis_enabled=redis_enabled,
         redis_host=redis_host,
         redis_port=redis_port,
-        **kwargs
+        **kwargs,
     )
     return CacheManager(config)

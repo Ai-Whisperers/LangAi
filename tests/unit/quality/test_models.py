@@ -1,14 +1,15 @@
 """Tests for quality models module."""
 
-import pytest
 from datetime import datetime, timezone
 
+import pytest
+
 from company_researcher.quality.models import (
-    SourceQuality,
     ConfidenceLevel,
-    Source,
-    ResearchFact,
     QualityReport,
+    ResearchFact,
+    Source,
+    SourceQuality,
 )
 
 
@@ -73,7 +74,7 @@ class TestSource:
             url="http://example.com",
             title="Test Article",
             quality=SourceQuality.OFFICIAL,
-            quality_score=85
+            quality_score=85,
         )
         result = str(source)
         assert "Test Article" in result
@@ -82,11 +83,7 @@ class TestSource:
 
     def test_to_markdown(self):
         """Source to_markdown should format as markdown citation."""
-        source = Source(
-            url="http://example.com",
-            title="Test Article",
-            quality_score=75
-        )
+        source = Source(url="http://example.com", title="Test Article", quality_score=75)
         result = source.to_markdown()
         assert "[Test Article]" in result
         assert "http://example.com" in result
@@ -99,47 +96,31 @@ class TestResearchFact:
     @pytest.fixture
     def sample_source(self):
         """Create sample source for testing."""
-        return Source(
-            url="http://example.com",
-            title="Test Source"
-        )
+        return Source(url="http://example.com", title="Test Source")
 
     def test_create_fact(self, sample_source):
         """ResearchFact should store required fields."""
         fact = ResearchFact(
-            content="Revenue is $1 billion",
-            source=sample_source,
-            extracted_by="financial"
+            content="Revenue is $1 billion", source=sample_source, extracted_by="financial"
         )
         assert fact.content == "Revenue is $1 billion"
         assert fact.extracted_by == "financial"
 
     def test_default_confidence(self, sample_source):
         """ResearchFact should default to MEDIUM confidence."""
-        fact = ResearchFact(
-            content="Test fact",
-            source=sample_source,
-            extracted_by="test"
-        )
+        fact = ResearchFact(content="Test fact", source=sample_source, extracted_by="test")
         assert fact.confidence == ConfidenceLevel.MEDIUM
 
     def test_default_verified(self, sample_source):
         """ResearchFact should default to unverified."""
-        fact = ResearchFact(
-            content="Test fact",
-            source=sample_source,
-            extracted_by="test"
-        )
+        fact = ResearchFact(content="Test fact", source=sample_source, extracted_by="test")
         assert fact.verified is False
         assert fact.verified_by is None
 
     def test_str_method(self, sample_source):
         """ResearchFact __str__ should format correctly."""
         fact = ResearchFact(
-            content="Revenue is $1B",
-            source=sample_source,
-            extracted_by="financial",
-            verified=True
+            content="Revenue is $1B", source=sample_source, extracted_by="financial", verified=True
         )
         result = str(fact)
         assert "Revenue is $1B" in result
@@ -148,10 +129,7 @@ class TestResearchFact:
     def test_str_unverified(self, sample_source):
         """ResearchFact __str__ should show unverified marker."""
         fact = ResearchFact(
-            content="Test fact",
-            source=sample_source,
-            extracted_by="test",
-            verified=False
+            content="Test fact", source=sample_source, extracted_by="test", verified=False
         )
         result = str(fact)
         assert "❌" in result
@@ -162,7 +140,7 @@ class TestResearchFact:
             content="Revenue is $1B",
             source=sample_source,
             extracted_by="financial",
-            confidence=ConfidenceLevel.HIGH
+            confidence=ConfidenceLevel.HIGH,
         )
         result = fact.to_markdown()
         assert "Revenue is $1B" in result
@@ -180,7 +158,7 @@ class TestQualityReport:
             source_quality_score=90.0,
             verification_rate=80.0,
             recency_score=75.0,
-            completeness_score=85.0
+            completeness_score=85.0,
         )
         assert report.overall_score == 85.0
         assert report.source_quality_score == 90.0
@@ -192,7 +170,7 @@ class TestQualityReport:
             source_quality_score=50,
             verification_rate=50,
             recency_score=50,
-            completeness_score=50
+            completeness_score=50,
         )
         assert report.total_facts == 0
         assert report.verified_facts == 0
@@ -205,7 +183,7 @@ class TestQualityReport:
             source_quality_score=50,
             verification_rate=50,
             recency_score=50,
-            completeness_score=50
+            completeness_score=50,
         )
         assert report.missing_information == []
         assert report.strengths == []
@@ -218,7 +196,7 @@ class TestQualityReport:
             source_quality_score=90,
             verification_rate=90,
             recency_score=90,
-            completeness_score=90
+            completeness_score=90,
         )
         assert report.is_passing() is True
 
@@ -229,7 +207,7 @@ class TestQualityReport:
             source_quality_score=70,
             verification_rate=70,
             recency_score=70,
-            completeness_score=70
+            completeness_score=70,
         )
         assert report.is_passing() is False
 
@@ -240,7 +218,7 @@ class TestQualityReport:
             source_quality_score=75,
             verification_rate=75,
             recency_score=75,
-            completeness_score=75
+            completeness_score=75,
         )
         assert report.is_passing(threshold=70) is True
         assert report.is_passing(threshold=80) is False
@@ -256,7 +234,7 @@ class TestQualityReportGrades:
             source_quality_score=90,
             verification_rate=90,
             recency_score=90,
-            completeness_score=90
+            completeness_score=90,
         )
         assert report.get_grade() == "A"
 
@@ -267,7 +245,7 @@ class TestQualityReportGrades:
             source_quality_score=85,
             verification_rate=85,
             recency_score=85,
-            completeness_score=85
+            completeness_score=85,
         )
         assert report.get_grade() == "B"
 
@@ -278,7 +256,7 @@ class TestQualityReportGrades:
             source_quality_score=75,
             verification_rate=75,
             recency_score=75,
-            completeness_score=75
+            completeness_score=75,
         )
         assert report.get_grade() == "C"
 
@@ -289,7 +267,7 @@ class TestQualityReportGrades:
             source_quality_score=65,
             verification_rate=65,
             recency_score=65,
-            completeness_score=65
+            completeness_score=65,
         )
         assert report.get_grade() == "D"
 
@@ -300,27 +278,39 @@ class TestQualityReportGrades:
             source_quality_score=50,
             verification_rate=50,
             recency_score=50,
-            completeness_score=50
+            completeness_score=50,
         )
         assert report.get_grade() == "F"
 
     def test_grade_boundaries(self):
         """Test exact boundary values."""
         report_90 = QualityReport(
-            overall_score=90, source_quality_score=90,
-            verification_rate=90, recency_score=90, completeness_score=90
+            overall_score=90,
+            source_quality_score=90,
+            verification_rate=90,
+            recency_score=90,
+            completeness_score=90,
         )
         report_80 = QualityReport(
-            overall_score=80, source_quality_score=80,
-            verification_rate=80, recency_score=80, completeness_score=80
+            overall_score=80,
+            source_quality_score=80,
+            verification_rate=80,
+            recency_score=80,
+            completeness_score=80,
         )
         report_70 = QualityReport(
-            overall_score=70, source_quality_score=70,
-            verification_rate=70, recency_score=70, completeness_score=70
+            overall_score=70,
+            source_quality_score=70,
+            verification_rate=70,
+            recency_score=70,
+            completeness_score=70,
         )
         report_60 = QualityReport(
-            overall_score=60, source_quality_score=60,
-            verification_rate=60, recency_score=60, completeness_score=60
+            overall_score=60,
+            source_quality_score=60,
+            verification_rate=60,
+            recency_score=60,
+            completeness_score=60,
         )
 
         assert report_90.get_grade() == "A"
@@ -341,7 +331,7 @@ class TestQualityReportMarkdown:
             recency_score=75,
             completeness_score=85,
             total_facts=10,
-            verified_facts=8
+            verified_facts=8,
         )
         result = report.to_markdown()
 
@@ -356,7 +346,7 @@ class TestQualityReportMarkdown:
             source_quality_score=90,
             verification_rate=80,
             recency_score=75,
-            completeness_score=85
+            completeness_score=85,
         )
         result = report.to_markdown()
 
@@ -374,12 +364,12 @@ class TestQualityReportMarkdown:
             recency_score=75,
             completeness_score=85,
             total_facts=10,
-            verified_facts=8
+            verified_facts=8,
         )
         result = report.to_markdown()
 
         assert "10" in result  # total
-        assert "8" in result   # verified
+        assert "8" in result  # verified
 
     def test_to_markdown_includes_lists(self):
         """to_markdown should include strengths and recommendations."""
@@ -391,7 +381,7 @@ class TestQualityReportMarkdown:
             completeness_score=85,
             strengths=["Good sources"],
             missing_information=["Leadership info"],
-            recommendations=["Add more sources"]
+            recommendations=["Add more sources"],
         )
         result = report.to_markdown()
 
@@ -405,30 +395,18 @@ class TestSourceValidation:
 
     def test_quality_score_minimum(self):
         """Quality score should accept minimum value 0."""
-        source = Source(
-            url="http://example.com",
-            title="Test",
-            quality_score=0
-        )
+        source = Source(url="http://example.com", title="Test", quality_score=0)
         assert source.quality_score == 0
 
     def test_quality_score_maximum(self):
         """Quality score should accept maximum value 100."""
-        source = Source(
-            url="http://example.com",
-            title="Test",
-            quality_score=100
-        )
+        source = Source(url="http://example.com", title="Test", quality_score=100)
         assert source.quality_score == 100
 
     def test_quality_score_validation_error(self):
         """Quality score outside 0-100 should raise error."""
         with pytest.raises(ValueError):
-            Source(
-                url="http://example.com",
-                title="Test",
-                quality_score=150
-            )
+            Source(url="http://example.com", title="Test", quality_score=150)
 
 
 class TestQualityReportValidation:
@@ -441,7 +419,7 @@ class TestQualityReportValidation:
             source_quality_score=0,
             verification_rate=0,
             recency_score=0,
-            completeness_score=0
+            completeness_score=0,
         )
         assert report.overall_score == 0
 
@@ -452,7 +430,7 @@ class TestQualityReportValidation:
             source_quality_score=100,
             verification_rate=100,
             recency_score=100,
-            completeness_score=100
+            completeness_score=100,
         )
         assert report.overall_score == 100
 
@@ -464,5 +442,5 @@ class TestQualityReportValidation:
                 source_quality_score=100,
                 verification_rate=100,
                 recency_score=100,
-                completeness_score=100
+                completeness_score=100,
             )

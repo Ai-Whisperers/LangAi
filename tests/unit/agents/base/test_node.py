@@ -2,10 +2,7 @@
 
 import pytest
 
-from company_researcher.agents.base.node import (
-    NodeConfig,
-    format_search_results,
-)
+from company_researcher.agents.base.node import NodeConfig, format_search_results
 
 
 class TestNodeConfig:
@@ -49,7 +46,7 @@ class TestNodeConfig:
             temperature=0.5,
             max_sources=10,
             content_truncate_length=1000,
-            require_search_results=False
+            require_search_results=False,
         )
         assert config.agent_name == "custom"
         assert config.max_tokens == 2000
@@ -69,11 +66,9 @@ class TestFormatSearchResults:
 
     def test_single_result(self):
         """format_search_results should format single result."""
-        results = [{
-            "title": "Test Title",
-            "url": "http://example.com",
-            "content": "Test content here"
-        }]
+        results = [
+            {"title": "Test Title", "url": "http://example.com", "content": "Test content here"}
+        ]
         formatted = format_search_results(results)
 
         assert "Source 1: Test Title" in formatted
@@ -107,11 +102,7 @@ class TestFormatSearchResults:
     def test_content_truncation(self):
         """format_search_results should truncate long content."""
         long_content = "x" * 1000
-        results = [{
-            "title": "Test",
-            "url": "http://test.com",
-            "content": long_content
-        }]
+        results = [{"title": "Test", "url": "http://test.com", "content": long_content}]
         formatted = format_search_results(results, content_length=100)
 
         # Content should be truncated with ellipsis
@@ -120,11 +111,7 @@ class TestFormatSearchResults:
 
     def test_content_not_truncated_when_short(self):
         """format_search_results should not truncate short content."""
-        results = [{
-            "title": "Test",
-            "url": "http://test.com",
-            "content": "Short content"
-        }]
+        results = [{"title": "Test", "url": "http://test.com", "content": "Short content"}]
         formatted = format_search_results(results, content_length=500)
 
         assert "Short content" in formatted
@@ -135,30 +122,21 @@ class TestFormatSearchResults:
 
     def test_missing_title(self):
         """format_search_results should handle missing title."""
-        results = [{
-            "url": "http://test.com",
-            "content": "Content"
-        }]
+        results = [{"url": "http://test.com", "content": "Content"}]
         formatted = format_search_results(results)
 
         assert "N/A" in formatted
 
     def test_missing_url(self):
         """format_search_results should handle missing url."""
-        results = [{
-            "title": "Test",
-            "content": "Content"
-        }]
+        results = [{"title": "Test", "content": "Content"}]
         formatted = format_search_results(results)
 
         assert "URL: N/A" in formatted
 
     def test_missing_content(self):
         """format_search_results should handle missing content."""
-        results = [{
-            "title": "Test",
-            "url": "http://test.com"
-        }]
+        results = [{"title": "Test", "url": "http://test.com"}]
         formatted = format_search_results(results)
 
         assert "Content: N/A" in formatted
@@ -172,11 +150,9 @@ class TestFormatSearchResults:
 
     def test_non_string_content(self):
         """format_search_results should handle non-string content gracefully."""
-        results = [{
-            "title": "Test",
-            "url": "http://test.com",
-            "content": 12345  # Non-string content
-        }]
+        results = [
+            {"title": "Test", "url": "http://test.com", "content": 12345}  # Non-string content
+        ]
         # Should not raise exception
         formatted = format_search_results(results)
         assert "Source 1:" in formatted
@@ -206,11 +182,7 @@ class TestFormatSearchResults:
     def test_default_content_length(self):
         """format_search_results should default to 500 content length."""
         long_content = "x" * 1000
-        results = [{
-            "title": "Test",
-            "url": "http://test.com",
-            "content": long_content
-        }]
+        results = [{"title": "Test", "url": "http://test.com", "content": long_content}]
         formatted = format_search_results(results)
 
         # Content should be truncated at 500 chars plus ...
@@ -222,11 +194,13 @@ class TestFormatSearchResultsEdgeCases:
 
     def test_unicode_content(self):
         """format_search_results should handle unicode content."""
-        results = [{
-            "title": "日本語タイトル",
-            "url": "http://test.com",
-            "content": "Unicode content: 你好世界 🌍"
-        }]
+        results = [
+            {
+                "title": "日本語タイトル",
+                "url": "http://test.com",
+                "content": "Unicode content: 你好世界 🌍",
+            }
+        ]
         formatted = format_search_results(results)
 
         assert "日本語タイトル" in formatted
@@ -234,22 +208,20 @@ class TestFormatSearchResultsEdgeCases:
 
     def test_newlines_in_content(self):
         """format_search_results should handle newlines in content."""
-        results = [{
-            "title": "Test",
-            "url": "http://test.com",
-            "content": "Line 1\nLine 2\nLine 3"
-        }]
+        results = [{"title": "Test", "url": "http://test.com", "content": "Line 1\nLine 2\nLine 3"}]
         formatted = format_search_results(results)
 
         assert "Line 1" in formatted
 
     def test_special_characters(self):
         """format_search_results should handle special characters."""
-        results = [{
-            "title": "Test & <Special> \"Characters\"",
-            "url": "http://test.com/path?a=1&b=2",
-            "content": "Content with <html> & \"quotes\""
-        }]
+        results = [
+            {
+                "title": 'Test & <Special> "Characters"',
+                "url": "http://test.com/path?a=1&b=2",
+                "content": 'Content with <html> & "quotes"',
+            }
+        ]
         formatted = format_search_results(results)
 
         assert "&" in formatted
@@ -257,11 +229,7 @@ class TestFormatSearchResultsEdgeCases:
 
     def test_very_long_title(self):
         """format_search_results should handle very long titles."""
-        results = [{
-            "title": "T" * 500,
-            "url": "http://test.com",
-            "content": "Content"
-        }]
+        results = [{"title": "T" * 500, "url": "http://test.com", "content": "Content"}]
         formatted = format_search_results(results)
 
         # Title should not be truncated (no limit specified)
@@ -271,11 +239,7 @@ class TestFormatSearchResultsEdgeCases:
         """format_search_results should handle content at exact length boundary."""
         # Test content exactly at boundary
         exact_content = "x" * 500
-        results = [{
-            "title": "Test",
-            "url": "http://test.com",
-            "content": exact_content
-        }]
+        results = [{"title": "Test", "url": "http://test.com", "content": exact_content}]
         formatted = format_search_results(results, content_length=500)
 
         # Should not add ellipsis when exactly at limit
@@ -284,20 +248,14 @@ class TestFormatSearchResultsEdgeCases:
     def test_content_length_off_by_one(self):
         """format_search_results should truncate content one char over limit."""
         content = "x" * 501
-        results = [{
-            "title": "Test",
-            "url": "http://test.com",
-            "content": content
-        }]
+        results = [{"title": "Test", "url": "http://test.com", "content": content}]
         formatted = format_search_results(results, content_length=500)
 
         assert "..." in formatted
 
     def test_zero_max_sources(self):
         """format_search_results should handle zero max_sources."""
-        results = [
-            {"title": "Test", "url": "http://test.com", "content": "Content"}
-        ]
+        results = [{"title": "Test", "url": "http://test.com", "content": "Content"}]
         formatted = format_search_results(results, max_sources=0)
 
         # Should return empty or no sources
@@ -305,9 +263,7 @@ class TestFormatSearchResultsEdgeCases:
 
     def test_negative_max_sources(self):
         """format_search_results should handle negative max_sources gracefully."""
-        results = [
-            {"title": "Test", "url": "http://test.com", "content": "Content"}
-        ]
+        results = [{"title": "Test", "url": "http://test.com", "content": "Content"}]
         # Negative slicing returns empty in Python
         formatted = format_search_results(results, max_sources=-1)
 
@@ -316,11 +272,7 @@ class TestFormatSearchResultsEdgeCases:
 
     def test_list_content(self):
         """format_search_results should handle list content gracefully."""
-        results = [{
-            "title": "Test",
-            "url": "http://test.com",
-            "content": ["item1", "item2"]
-        }]
+        results = [{"title": "Test", "url": "http://test.com", "content": ["item1", "item2"]}]
         # Should not raise exception
         formatted = format_search_results(results)
         assert "Source 1:" in formatted

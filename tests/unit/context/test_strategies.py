@@ -11,18 +11,23 @@ Usage:
     python test_phase12_context.py
 """
 
-from src.company_researcher.context.write_strategy import (
-    Scratchpad, NotePriority
-)
-from src.company_researcher.context.select_strategy import (
-    ContextSelector, QueryProcessor, RetrievalResult
-)
 from src.company_researcher.context.compress_strategy import (
-    TextCompressor, KeyPointExtractor, CompressionLevel, ContentType
+    CompressionLevel,
+    ContentType,
+    KeyPointExtractor,
+    TextCompressor,
 )
 from src.company_researcher.context.isolate_strategy import (
-    ContextIsolationManager, ContextVisibility, AgentContextBuilder
+    AgentContextBuilder,
+    ContextIsolationManager,
+    ContextVisibility,
 )
+from src.company_researcher.context.select_strategy import (
+    ContextSelector,
+    QueryProcessor,
+    RetrievalResult,
+)
+from src.company_researcher.context.write_strategy import NotePriority, Scratchpad
 
 
 def test_scratchpad_basic():
@@ -37,20 +42,18 @@ def test_scratchpad_basic():
     id1 = scratchpad.write_observation(
         "Tesla reported Q3 2024 revenue of $25.2B",
         agent_source="financial_agent",
-        tags=["revenue", "q3_2024"]
+        tags=["revenue", "q3_2024"],
     )
 
     id2 = scratchpad.write_finding(
         "Revenue grew 8% year-over-year",
         agent_source="financial_agent",
         priority=NotePriority.HIGH,
-        tags=["growth"]
+        tags=["growth"],
     )
 
     id3 = scratchpad.write_hypothesis(
-        "EV market expansion driving growth",
-        agent_source="market_agent",
-        confidence=0.7
+        "EV market expansion driving growth", agent_source="market_agent", confidence=0.7
     )
 
     print(f"\n  Created {scratchpad.note_count} notes")
@@ -162,11 +165,7 @@ def test_query_processor():
     print(f"  Entities: {entities}")
 
     # Test intent classification
-    queries = [
-        "Tesla revenue growth 2024",
-        "market size for EVs",
-        "Tesla vs competitors"
-    ]
+    queries = ["Tesla revenue growth 2024", "market size for EVs", "Tesla vs competitors"]
     print("\n  Intent classification:")
     for q in queries:
         intent = processor.classify_intent(q)
@@ -392,16 +391,14 @@ def test_cross_agent_communication():
         from_agent="financial_agent",
         to_agent="market_agent",
         message="Revenue data is ready for analysis",
-        message_type="notification"
+        message_type="notification",
     )
 
     print(f"\n  Sent message: {msg_id}")
 
     # Broadcast
     count = manager.broadcast(
-        from_agent="synthesizer",
-        message="Starting final synthesis",
-        message_type="broadcast"
+        from_agent="synthesizer", message="Starting final synthesis", message_type="broadcast"
     )
 
     print(f"  Broadcast reached {count} agents")
@@ -428,7 +425,7 @@ def test_agent_context_builder():
         agent_type="financial",
         company_name="Tesla",
         task_description="Analyze Q3 2024 financial performance",
-        max_tokens=2000
+        max_tokens=2000,
     )
 
     print(f"\n  Built context ({len(context)} chars):")
@@ -474,6 +471,7 @@ def run_all_tests():
         except Exception as e:
             results.append((test_name, "FAILED", str(e)))
             import traceback
+
             traceback.print_exc()
 
     # Print summary

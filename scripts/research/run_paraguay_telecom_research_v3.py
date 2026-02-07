@@ -27,24 +27,22 @@ Generates ALL 9 section files:
 - 09_sources.md
 """
 
-import os
-import sys
 import json
 import logging
-import yaml
+import os
+import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
+import yaml
 
 # Setup path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 # ============================================================================
@@ -220,6 +218,7 @@ Create a comprehensive executive summary (500-800 words) covering:
 # Comprehensive Research Class
 # ============================================================================
 
+
 class ComprehensiveResearcher:
     """Full multi-agent research system."""
 
@@ -228,7 +227,7 @@ class ComprehensiveResearcher:
 
     def load_profile(self, profile_path: str) -> Dict[str, Any]:
         """Load company profile from YAML."""
-        with open(profile_path, encoding='utf-8') as f:
+        with open(profile_path, encoding="utf-8") as f:
             return yaml.safe_load(f)
 
     def generate_queries(self, profile: Dict[str, Any], category: str = "general") -> List[str]:
@@ -316,17 +315,15 @@ class ComprehensiveResearcher:
         for i, query in enumerate(queries):
             try:
                 response = self.search_router.search(
-                    query=query,
-                    max_results=10,
-                    quality="standard"  # Use Serper
+                    query=query, max_results=10, quality="standard"  # Use Serper
                 )
 
                 if response.success:
                     for r in response.results:
-                        url = r.url if hasattr(r, 'url') else r.get("url", "")
+                        url = r.url if hasattr(r, "url") else r.get("url", "")
                         if url and url not in seen_urls:
                             seen_urls.add(url)
-                            all_results.append(r.to_dict() if hasattr(r, 'to_dict') else r)
+                            all_results.append(r.to_dict() if hasattr(r, "to_dict") else r)
 
                 if (i + 1) % 10 == 0:
                     logger.info(f"  [{i+1}/{len(queries)}] {len(all_results)} unique results")
@@ -350,12 +347,8 @@ class ComprehensiveResearcher:
     def run_agent(self, prompt: str, task_type: str = "synthesis") -> str:
         """Run an analysis agent using smart_completion."""
         try:
-            result = smart_completion(
-                prompt=prompt,
-                task_type=task_type,
-                max_tokens=4000
-            )
-            return result.content if hasattr(result, 'content') else str(result)
+            result = smart_completion(prompt=prompt, task_type=task_type, max_tokens=4000)
+            return result.content if hasattr(result, "content") else str(result)
         except Exception as e:
             logger.error(f"Agent failed: {e}")
             return f"*Analysis unavailable: {e}*"
@@ -364,30 +357,24 @@ class ComprehensiveResearcher:
         """Run financial analysis agent."""
         logger.info("Running Financial Analysis Agent...")
         context = self.format_search_context(results)
-        prompt = FINANCIAL_ANALYSIS_PROMPT.format(
-            company_name=company_name,
-            search_context=context
-        )
+        prompt = FINANCIAL_ANALYSIS_PROMPT.format(company_name=company_name, search_context=context)
         return self.run_agent(prompt, "synthesis")
 
     def analyze_market(self, company_name: str, results: List[Dict]) -> str:
         """Run market analysis agent."""
         logger.info("Running Market Analysis Agent...")
         context = self.format_search_context(results)
-        prompt = MARKET_ANALYSIS_PROMPT.format(
-            company_name=company_name,
-            search_context=context
-        )
+        prompt = MARKET_ANALYSIS_PROMPT.format(company_name=company_name, search_context=context)
         return self.run_agent(prompt, "synthesis")
 
-    def analyze_competitive(self, company_name: str, results: List[Dict], competitors: List[str]) -> str:
+    def analyze_competitive(
+        self, company_name: str, results: List[Dict], competitors: List[str]
+    ) -> str:
         """Run competitive analysis agent."""
         logger.info("Running Competitive Analysis Agent...")
         context = self.format_search_context(results)
         prompt = COMPETITIVE_ANALYSIS_PROMPT.format(
-            company_name=company_name,
-            search_context=context,
-            competitors=", ".join(competitors)
+            company_name=company_name, search_context=context, competitors=", ".join(competitors)
         )
         return self.run_agent(prompt, "synthesis")
 
@@ -395,30 +382,21 @@ class ComprehensiveResearcher:
         """Run brand analysis agent."""
         logger.info("Running Brand Analysis Agent...")
         context = self.format_search_context(results)
-        prompt = BRAND_ANALYSIS_PROMPT.format(
-            company_name=company_name,
-            search_context=context
-        )
+        prompt = BRAND_ANALYSIS_PROMPT.format(company_name=company_name, search_context=context)
         return self.run_agent(prompt, "synthesis")
 
     def analyze_esg(self, company_name: str, results: List[Dict]) -> str:
         """Run ESG analysis agent."""
         logger.info("Running ESG Analysis Agent...")
         context = self.format_search_context(results)
-        prompt = ESG_ANALYSIS_PROMPT.format(
-            company_name=company_name,
-            search_context=context
-        )
+        prompt = ESG_ANALYSIS_PROMPT.format(company_name=company_name, search_context=context)
         return self.run_agent(prompt, "synthesis")
 
     def analyze_news_sentiment(self, company_name: str, results: List[Dict]) -> Dict[str, Any]:
         """Run news sentiment agent."""
         logger.info("Running News Sentiment Agent...")
         context = self.format_search_context(results)
-        prompt = NEWS_SENTIMENT_PROMPT.format(
-            company_name=company_name,
-            search_context=context
-        )
+        prompt = NEWS_SENTIMENT_PROMPT.format(company_name=company_name, search_context=context)
         response = self.run_agent(prompt, "extraction")
 
         # Parse structured response
@@ -430,17 +408,14 @@ class ComprehensiveResearcher:
             "key_topics": [],
             "positive_highlights": [],
             "negative_highlights": [],
-            "analysis": response
+            "analysis": response,
         }
 
     def analyze_risk(self, company_name: str, results: List[Dict]) -> Dict[str, Any]:
         """Run risk analysis agent."""
         logger.info("Running Risk Analysis Agent...")
         context = self.format_search_context(results)
-        prompt = RISK_ANALYSIS_PROMPT.format(
-            company_name=company_name,
-            search_context=context
-        )
+        prompt = RISK_ANALYSIS_PROMPT.format(company_name=company_name, search_context=context)
         response = self.run_agent(prompt, "synthesis")
 
         return {
@@ -454,17 +429,14 @@ class ComprehensiveResearcher:
                 "technology_risk": 60,
             },
             "risks": [],
-            "analysis": response
+            "analysis": response,
         }
 
     def analyze_investment(self, company_name: str, results: List[Dict]) -> Dict[str, Any]:
         """Run investment thesis agent."""
         logger.info("Running Investment Thesis Agent...")
         context = self.format_search_context(results)
-        prompt = INVESTMENT_THESIS_PROMPT.format(
-            company_name=company_name,
-            search_context=context
-        )
+        prompt = INVESTMENT_THESIS_PROMPT.format(company_name=company_name, search_context=context)
         response = self.run_agent(prompt, "synthesis")
 
         return {
@@ -484,7 +456,7 @@ class ComprehensiveResearcher:
         financial: str,
         market: str,
         competitive: str,
-        risk: str
+        risk: str,
     ) -> str:
         """Create executive summary synthesizing all analyses."""
         logger.info("Creating Executive Summary...")
@@ -494,7 +466,7 @@ class ComprehensiveResearcher:
             financial=financial[:1500],
             market=market[:1500],
             competitive=competitive[:1500],
-            risk=risk[:1000]
+            risk=risk[:1000],
         )
         return self.run_agent(prompt, "synthesis")
 
@@ -516,12 +488,11 @@ Return ONLY a number 0-100."""
 
         try:
             response = self.llm_router.generate(
-                prompt=prompt,
-                task_type="classification",
-                max_tokens=50
+                prompt=prompt, task_type="classification", max_tokens=50
             )
             import re
-            match = re.search(r'\d+', response)
+
+            match = re.search(r"\d+", response)
             if match:
                 return min(100, max(0, int(match.group())))
         except:
@@ -535,17 +506,19 @@ Return ONLY a number 0-100."""
         sources: List[Dict],
         quality_score: int,
         duration: float,
-        output_dir: Path
+        output_dir: Path,
     ):
         """Save all report sections."""
         output_dir.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         # Format sources
-        sources_text = "\n".join([
-            f"{i}. [{s.get('title', 'Unknown')}]({s.get('url', '#')})"
-            for i, s in enumerate(sources[:100], 1)
-        ])
+        sources_text = "\n".join(
+            [
+                f"{i}. [{s.get('title', 'Unknown')}]({s.get('url', '#')})"
+                for i, s in enumerate(sources[:100], 1)
+            ]
+        )
 
         # Full report
         full_report = f"""# {company_name} - Comprehensive Research Report
@@ -636,25 +609,37 @@ Return ONLY a number 0-100."""
 """
 
         # Save full report
-        (output_dir / "00_full_report.md").write_text(full_report, encoding='utf-8')
+        (output_dir / "00_full_report.md").write_text(full_report, encoding="utf-8")
 
         # Save individual sections
         sections = [
-            ("01_executive_summary.md", "Executive Summary", analyses.get('executive_summary', '')),
-            ("02_company_overview.md", "Company Overview", analyses.get('overview', '')),
-            ("03_financials.md", "Financial Analysis", analyses.get('financial', '')),
-            ("04_market_position.md", "Market Analysis", analyses.get('market', '')),
-            ("05_competitive_analysis.md", "Competitive Landscape", analyses.get('competitive', '')),
-            ("06_strategy.md", "Strategic Analysis", analyses.get('brand', '')),
+            ("01_executive_summary.md", "Executive Summary", analyses.get("executive_summary", "")),
+            ("02_company_overview.md", "Company Overview", analyses.get("overview", "")),
+            ("03_financials.md", "Financial Analysis", analyses.get("financial", "")),
+            ("04_market_position.md", "Market Analysis", analyses.get("market", "")),
+            (
+                "05_competitive_analysis.md",
+                "Competitive Landscape",
+                analyses.get("competitive", ""),
+            ),
+            ("06_strategy.md", "Strategic Analysis", analyses.get("brand", "")),
             ("07_sources.md", "Sources", sources_text),
-            ("08_esg_analysis.md", "ESG Analysis", analyses.get('esg', '')),
-            ("09_risk_assessment.md", "Risk Assessment", analyses.get('risk', {}).get('analysis', '')),
-            ("10_investment_thesis.md", "Investment Thesis", analyses.get('investment', {}).get('summary', '')),
+            ("08_esg_analysis.md", "ESG Analysis", analyses.get("esg", "")),
+            (
+                "09_risk_assessment.md",
+                "Risk Assessment",
+                analyses.get("risk", {}).get("analysis", ""),
+            ),
+            (
+                "10_investment_thesis.md",
+                "Investment Thesis",
+                analyses.get("investment", {}).get("summary", ""),
+            ),
         ]
 
         for filename, title, content in sections:
             filepath = output_dir / filename
-            filepath.write_text(f"# {company_name} - {title}\n\n{content}", encoding='utf-8')
+            filepath.write_text(f"# {company_name} - {title}\n\n{content}", encoding="utf-8")
 
         # Save metrics
         metrics = {
@@ -664,16 +649,18 @@ Return ONLY a number 0-100."""
             "total_sources": len(sources),
             "duration_seconds": duration,
         }
-        (output_dir / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding='utf-8')
+        (output_dir / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
 
         # Save extracted data
         extracted = {
-            "financial_summary": analyses.get('financial', '')[:1000],
-            "market_summary": analyses.get('market', '')[:1000],
-            "risk_profile": analyses.get('risk', {}),
-            "investment_thesis": analyses.get('investment', {}),
+            "financial_summary": analyses.get("financial", "")[:1000],
+            "market_summary": analyses.get("market", "")[:1000],
+            "risk_profile": analyses.get("risk", {}),
+            "investment_thesis": analyses.get("investment", {}),
         }
-        (output_dir / "extracted_data.json").write_text(json.dumps(extracted, indent=2, default=str), encoding='utf-8')
+        (output_dir / "extracted_data.json").write_text(
+            json.dumps(extracted, indent=2, default=str), encoding="utf-8"
+        )
 
         logger.info(f"Saved comprehensive report to {output_dir}")
 
@@ -689,7 +676,9 @@ Return ONLY a number 0-100."""
         logger.info("=" * 70)
         logger.info(f"  COMPREHENSIVE RESEARCH: {company_name}")
         logger.info(f"  Target: {SOURCE_TARGET}+ sources, {QUALITY_TARGET}% quality")
-        logger.info(f"  All Agents: Financial, Market, Competitive, Brand, ESG, News, Risk, Investment")
+        logger.info(
+            f"  All Agents: Financial, Market, Competitive, Brand, ESG, News, Risk, Investment"
+        )
         logger.info("=" * 70)
 
         # Get competitors
@@ -697,7 +686,17 @@ Return ONLY a number 0-100."""
 
         # Generate ALL queries for comprehensive research
         all_queries = []
-        for category in ["general", "financial", "market", "competitive", "brand", "esg", "news", "risk", "investment"]:
+        for category in [
+            "general",
+            "financial",
+            "market",
+            "competitive",
+            "brand",
+            "esg",
+            "news",
+            "risk",
+            "investment",
+        ]:
             queries = self.generate_queries(profile, category)
             all_queries.extend(queries)
 
@@ -718,46 +717,90 @@ Return ONLY a number 0-100."""
         analyses = {}
 
         # Financial Analysis
-        financial_results = [r for r in all_results if any(k in r.get("title", "").lower() for k in ["financial", "revenue", "profit", "earnings", "ebitda"])][:40]
+        financial_results = [
+            r
+            for r in all_results
+            if any(
+                k in r.get("title", "").lower()
+                for k in ["financial", "revenue", "profit", "earnings", "ebitda"]
+            )
+        ][:40]
         if len(financial_results) < 20:
             financial_results = all_results[:40]
-        analyses['financial'] = self.analyze_financial(company_name, financial_results)
+        analyses["financial"] = self.analyze_financial(company_name, financial_results)
 
         # Market Analysis
-        market_results = [r for r in all_results if any(k in r.get("title", "").lower() for k in ["market", "share", "customer", "subscriber", "coverage"])][:40]
+        market_results = [
+            r
+            for r in all_results
+            if any(
+                k in r.get("title", "").lower()
+                for k in ["market", "share", "customer", "subscriber", "coverage"]
+            )
+        ][:40]
         if len(market_results) < 20:
             market_results = all_results[:40]
-        analyses['market'] = self.analyze_market(company_name, market_results)
+        analyses["market"] = self.analyze_market(company_name, market_results)
 
         # Competitive Analysis
-        competitive_results = [r for r in all_results if any(k in r.get("title", "").lower() for k in ["competitor", "competition", "vs", "versus", "compare"])][:40]
+        competitive_results = [
+            r
+            for r in all_results
+            if any(
+                k in r.get("title", "").lower()
+                for k in ["competitor", "competition", "vs", "versus", "compare"]
+            )
+        ][:40]
         if len(competitive_results) < 20:
             competitive_results = all_results[:40]
-        analyses['competitive'] = self.analyze_competitive(company_name, competitive_results, competitors)
+        analyses["competitive"] = self.analyze_competitive(
+            company_name, competitive_results, competitors
+        )
 
         # Brand Analysis
-        brand_results = [r for r in all_results if any(k in r.get("title", "").lower() for k in ["brand", "reputation", "review", "customer", "satisfaction"])][:30]
+        brand_results = [
+            r
+            for r in all_results
+            if any(
+                k in r.get("title", "").lower()
+                for k in ["brand", "reputation", "review", "customer", "satisfaction"]
+            )
+        ][:30]
         if len(brand_results) < 15:
             brand_results = all_results[:30]
-        analyses['brand'] = self.analyze_brand(company_name, brand_results)
+        analyses["brand"] = self.analyze_brand(company_name, brand_results)
 
         # ESG Analysis
-        esg_results = [r for r in all_results if any(k in r.get("title", "").lower() for k in ["esg", "environment", "sustainability", "governance", "social"])][:30]
+        esg_results = [
+            r
+            for r in all_results
+            if any(
+                k in r.get("title", "").lower()
+                for k in ["esg", "environment", "sustainability", "governance", "social"]
+            )
+        ][:30]
         if len(esg_results) < 15:
             esg_results = all_results[:30]
-        analyses['esg'] = self.analyze_esg(company_name, esg_results)
+        analyses["esg"] = self.analyze_esg(company_name, esg_results)
 
         # News Sentiment
-        news_results = [r for r in all_results if any(k in r.get("title", "").lower() for k in ["news", "announce", "update", "2024", "2025"])][:30]
+        news_results = [
+            r
+            for r in all_results
+            if any(
+                k in r.get("title", "").lower()
+                for k in ["news", "announce", "update", "2024", "2025"]
+            )
+        ][:30]
         if len(news_results) < 15:
             news_results = all_results[:30]
-        analyses['news_sentiment'] = self.analyze_news_sentiment(company_name, news_results)
+        analyses["news_sentiment"] = self.analyze_news_sentiment(company_name, news_results)
 
         # Risk Analysis
-        analyses['risk'] = self.analyze_risk(company_name, all_results[:40])
+        analyses["risk"] = self.analyze_risk(company_name, all_results[:40])
 
         # Investment Thesis
-        analyses['investment'] = self.analyze_investment(company_name, all_results[:40])
+        analyses["investment"] = self.analyze_investment(company_name, all_results[:40])
 
         # Create company overview from search results
         overview_prompt = f"""Based on these search results, provide a comprehensive company overview for {company_name}:
@@ -772,20 +815,22 @@ Include:
 5. Parent company/ownership
 6. Key leadership if available"""
 
-        analyses['overview'] = self.run_agent(overview_prompt, "synthesis")
+        analyses["overview"] = self.run_agent(overview_prompt, "synthesis")
 
         # Create Executive Summary synthesizing all analyses
-        analyses['executive_summary'] = self.create_executive_summary(
+        analyses["executive_summary"] = self.create_executive_summary(
             company_name,
-            analyses['overview'],
-            analyses['financial'],
-            analyses['market'],
-            analyses['competitive'],
-            analyses.get('risk', {}).get('analysis', '')
+            analyses["overview"],
+            analyses["financial"],
+            analyses["market"],
+            analyses["competitive"],
+            analyses.get("risk", {}).get("analysis", ""),
         )
 
         # Check quality
-        quality_score = self.check_quality(analyses['executive_summary'] + analyses['financial'], len(all_results))
+        quality_score = self.check_quality(
+            analyses["executive_summary"] + analyses["financial"], len(all_results)
+        )
 
         duration = (datetime.now() - start_time).total_seconds()
 
@@ -799,7 +844,7 @@ Include:
             sources=all_results,
             quality_score=quality_score,
             duration=duration,
-            output_dir=output_dir
+            output_dir=output_dir,
         )
 
         logger.info("")
@@ -817,7 +862,7 @@ Include:
             "quality_score": quality_score,
             "sources_count": len(all_results),
             "duration": duration,
-            "output_dir": str(output_dir)
+            "output_dir": str(output_dir),
         }
 
 
@@ -847,6 +892,7 @@ def main():
             except Exception as e:
                 logger.error(f"Research failed for {profile_path}: {e}")
                 import traceback
+
                 traceback.print_exc()
         else:
             logger.error(f"Profile not found: {profile_path}")
@@ -858,15 +904,19 @@ def main():
 
     for r in results:
         print(f"\n  {r['company_name']}:")
-        print(f"    Quality: {r['quality_score']}/100 {'OK' if r['quality_score'] >= QUALITY_TARGET else 'BELOW TARGET'}")
-        print(f"    Sources: {r['sources_count']} {'OK' if r['sources_count'] >= SOURCE_TARGET else 'BELOW TARGET'}")
+        print(
+            f"    Quality: {r['quality_score']}/100 {'OK' if r['quality_score'] >= QUALITY_TARGET else 'BELOW TARGET'}"
+        )
+        print(
+            f"    Sources: {r['sources_count']} {'OK' if r['sources_count'] >= SOURCE_TARGET else 'BELOW TARGET'}"
+        )
         print(f"    Duration: {r['duration']:.1f}s")
         print(f"    Output: {r['output_dir']}")
         print(f"    Files: 10 comprehensive sections generated")
 
     if results:
-        avg_quality = sum(r['quality_score'] for r in results) / len(results)
-        total_sources = sum(r['sources_count'] for r in results)
+        avg_quality = sum(r["quality_score"] for r in results) / len(results)
+        total_sources = sum(r["sources_count"] for r in results)
         print(f"\n  Totals:")
         print(f"    Average Quality: {avg_quality:.1f}/100")
         print(f"    Total Sources: {total_sources}")

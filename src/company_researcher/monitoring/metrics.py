@@ -8,14 +8,15 @@ Centralized metrics collection:
 - Timer metrics
 """
 
-from typing import Dict, Any, List, Optional, Callable
+import statistics
+import threading
+import time
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from collections import defaultdict
-import time
-import threading
-import statistics
+from typing import Any, Callable, Dict, List, Optional
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -25,17 +26,20 @@ logger = get_logger(__name__)
 # Enums and Data Models
 # ============================================================================
 
+
 class MetricType(str, Enum):
     """Types of metrics."""
-    COUNTER = "counter"      # Monotonically increasing
-    GAUGE = "gauge"          # Point-in-time value
+
+    COUNTER = "counter"  # Monotonically increasing
+    GAUGE = "gauge"  # Point-in-time value
     HISTOGRAM = "histogram"  # Distribution of values
-    TIMER = "timer"          # Duration measurements
+    TIMER = "timer"  # Duration measurements
 
 
 @dataclass
 class Metric:
     """A recorded metric."""
+
     name: str
     type: MetricType
     value: float
@@ -50,18 +54,19 @@ class Metric:
             "value": self.value,
             "timestamp": self.timestamp.isoformat(),
             "labels": self.labels,
-            "unit": self.unit
+            "unit": self.unit,
         }
 
 
 @dataclass
 class MetricSummary:
     """Summary statistics for a metric."""
+
     name: str
     count: int = 0
     total: float = 0.0
-    min_value: float = float('inf')
-    max_value: float = float('-inf')
+    min_value: float = float("inf")
+    max_value: float = float("-inf")
     mean: float = 0.0
     std_dev: float = 0.0
     p50: float = 0.0
@@ -73,19 +78,20 @@ class MetricSummary:
             "name": self.name,
             "count": self.count,
             "total": round(self.total, 4),
-            "min": round(self.min_value, 4) if self.min_value != float('inf') else 0,
-            "max": round(self.max_value, 4) if self.max_value != float('-inf') else 0,
+            "min": round(self.min_value, 4) if self.min_value != float("inf") else 0,
+            "max": round(self.max_value, 4) if self.max_value != float("-inf") else 0,
             "mean": round(self.mean, 4),
             "std_dev": round(self.std_dev, 4),
             "p50": round(self.p50, 4),
             "p95": round(self.p95, 4),
-            "p99": round(self.p99, 4)
+            "p99": round(self.p99, 4),
         }
 
 
 # ============================================================================
 # Metrics Collector
 # ============================================================================
+
 
 class MetricsCollector:
     """
@@ -110,11 +116,7 @@ class MetricsCollector:
         summary = collector.get_summary("research.duration")
     """
 
-    def __init__(
-        self,
-        retention_hours: int = 24,
-        flush_interval_seconds: int = 60
-    ):
+    def __init__(self, retention_hours: int = 24, flush_interval_seconds: int = 60):
         """
         Initialize metrics collector.
 
@@ -142,96 +144,69 @@ class MetricsCollector:
     # Recording Metrics
     # ==========================================================================
 
-    def increment(
-        self,
-        name: str,
-        value: float = 1.0,
-        labels: Optional[Dict[str, str]] = None
-    ):
+    def increment(self, name: str, value: float = 1.0, labels: Optional[Dict[str, str]] = None):
         """Increment a counter metric."""
         with self._lock:
             key = self._make_key(name, labels)
             self._counters[key] += value
 
-            self._record(Metric(
-                name=name,
-                type=MetricType.COUNTER,
-                value=self._counters[key],
-                labels=labels or {}
-            ))
+            self._record(
+                Metric(
+                    name=name,
+                    type=MetricType.COUNTER,
+                    value=self._counters[key],
+                    labels=labels or {},
+                )
+            )
 
-    def decrement(
-        self,
-        name: str,
-        value: float = 1.0,
-        labels: Optional[Dict[str, str]] = None
-    ):
+    def decrement(self, name: str, value: float = 1.0, labels: Optional[Dict[str, str]] = None):
         """Decrement a counter (for gauges)."""
         with self._lock:
             key = self._make_key(name, labels)
             self._counters[key] -= value
 
-            self._record(Metric(
-                name=name,
-                type=MetricType.COUNTER,
-                value=self._counters[key],
-                labels=labels or {}
-            ))
+            self._record(
+                Metric(
+                    name=name,
+                    type=MetricType.COUNTER,
+                    value=self._counters[key],
+                    labels=labels or {},
+                )
+            )
 
-    def gauge(
-        self,
-        name: str,
-        value: float,
-        labels: Optional[Dict[str, str]] = None
-    ):
+    def gauge(self, name: str, value: float, labels: Optional[Dict[str, str]] = None):
         """Set a gauge metric."""
         with self._lock:
             key = self._make_key(name, labels)
             self._gauges[key] = value
 
-            self._record(Metric(
-                name=name,
-                type=MetricType.GAUGE,
-                value=value,
-                labels=labels or {}
-            ))
+            self._record(Metric(name=name, type=MetricType.GAUGE, value=value, labels=labels or {}))
 
-    def timing(
-        self,
-        name: str,
-        duration_seconds: float,
-        labels: Optional[Dict[str, str]] = None
-    ):
+    def timing(self, name: str, duration_seconds: float, labels: Optional[Dict[str, str]] = None):
         """Record a timing metric."""
         with self._lock:
             key = self._make_key(name, labels)
             self._timers[key].append(duration_seconds)
 
-            self._record(Metric(
-                name=name,
-                type=MetricType.TIMER,
-                value=duration_seconds,
-                labels=labels or {},
-                unit="seconds"
-            ))
+            self._record(
+                Metric(
+                    name=name,
+                    type=MetricType.TIMER,
+                    value=duration_seconds,
+                    labels=labels or {},
+                    unit="seconds",
+                )
+            )
 
-    def histogram(
-        self,
-        name: str,
-        value: float,
-        labels: Optional[Dict[str, str]] = None
-    ):
+    def histogram(self, name: str, value: float, labels: Optional[Dict[str, str]] = None):
         """Record a histogram metric."""
         with self._lock:
             key = self._make_key(name, labels)
             self._histograms[key].append(value)
 
-            self._record(Metric(
-                name=name,
-                type=MetricType.HISTOGRAM,
-                value=value,
-                labels=labels or {}
-            ))
+            self._record(
+                Metric(name=name, type=MetricType.HISTOGRAM, value=value, labels=labels or {})
+            )
 
     def _record(self, metric: Metric):
         """Record metric and notify callbacks."""
@@ -269,43 +244,26 @@ class MetricsCollector:
     # Research-Specific Metrics
     # ==========================================================================
 
-    def record_research_start(
-        self,
-        company_name: str,
-        depth: str = "standard"
-    ):
+    def record_research_start(self, company_name: str, depth: str = "standard"):
         """Record research start."""
         self.increment("research.started", labels={"depth": depth})
         self.gauge("research.active", self._counters.get("research.started", 0))
 
     def record_research_complete(
-        self,
-        company_name: str,
-        duration_seconds: float,
-        cost: float,
-        depth: str = "standard"
+        self, company_name: str, duration_seconds: float, cost: float, depth: str = "standard"
     ):
         """Record research completion."""
         self.increment("research.completed", labels={"depth": depth})
         self.timing("research.duration", duration_seconds, {"depth": depth})
         self.histogram("research.cost", cost, {"depth": depth})
 
-    def record_research_failed(
-        self,
-        company_name: str,
-        error: str,
-        depth: str = "standard"
-    ):
+    def record_research_failed(self, company_name: str, error: str, depth: str = "standard"):
         """Record research failure."""
         self.increment("research.failed", labels={"depth": depth})
         self.increment(f"research.errors.{error[:50]}")
 
     def record_agent_execution(
-        self,
-        agent_name: str,
-        duration_seconds: float,
-        tokens_used: int,
-        cost: float
+        self, agent_name: str, duration_seconds: float, tokens_used: int, cost: float
     ):
         """Record agent execution metrics."""
         self.timing(f"agent.{agent_name}.duration", duration_seconds)
@@ -313,13 +271,7 @@ class MetricsCollector:
         self.histogram(f"agent.{agent_name}.cost", cost)
         self.increment(f"agent.{agent_name}.calls")
 
-    def record_api_request(
-        self,
-        endpoint: str,
-        method: str,
-        status_code: int,
-        duration_ms: float
-    ):
+    def record_api_request(self, endpoint: str, method: str, status_code: int, duration_ms: float):
         """Record API request metrics."""
         self.increment("api.requests", labels={"endpoint": endpoint, "method": method})
         self.increment(f"api.status.{status_code}")
@@ -339,11 +291,7 @@ class MetricsCollector:
         key = self._make_key(name, labels)
         return self._gauges.get(key, 0.0)
 
-    def get_summary(
-        self,
-        name: str,
-        labels: Optional[Dict[str, str]] = None
-    ) -> MetricSummary:
+    def get_summary(self, name: str, labels: Optional[Dict[str, str]] = None) -> MetricSummary:
         """Get summary statistics for a metric."""
         key = self._make_key(name, labels)
 
@@ -378,10 +326,7 @@ class MetricsCollector:
         c = f + 1 if f + 1 < len(sorted_values) else f
         return sorted_values[f] + (k - f) * (sorted_values[c] - sorted_values[f])
 
-    def get_all_metrics(
-        self,
-        since: Optional[datetime] = None
-    ) -> List[Metric]:
+    def get_all_metrics(self, since: Optional[datetime] = None) -> List[Metric]:
         """Get all recorded metrics."""
         with self._lock:
             if since:
@@ -417,7 +362,7 @@ class MetricsCollector:
             "counters": dict(self._counters),
             "gauges": dict(self._gauges),
             "histograms": {k: self.get_summary(k).to_dict() for k in self._histograms},
-            "timers": {k: self.get_summary(k).to_dict() for k in self._timers}
+            "timers": {k: self.get_summary(k).to_dict() for k in self._timers},
         }
 
     def on_metric(self, callback: Callable[[Metric], None]):
@@ -448,15 +393,11 @@ class MetricsCollector:
 # Timer Context Manager
 # ============================================================================
 
+
 class _TimerContext:
     """Context manager for timing operations."""
 
-    def __init__(
-        self,
-        collector: MetricsCollector,
-        name: str,
-        labels: Optional[Dict[str, str]]
-    ):
+    def __init__(self, collector: MetricsCollector, name: str, labels: Optional[Dict[str, str]]):
         self._collector = collector
         self._name = name
         self._labels = labels
@@ -474,6 +415,7 @@ class _TimerContext:
 # ============================================================================
 # Factory Function
 # ============================================================================
+
 
 def create_metrics_collector(retention_hours: int = 24) -> MetricsCollector:
     """Create a metrics collector instance."""

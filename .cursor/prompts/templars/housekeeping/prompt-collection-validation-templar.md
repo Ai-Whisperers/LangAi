@@ -73,4 +73,3 @@ items:
 - [ ] All `items.path` entries exist
 - [ ] Missing collections have stub manifests proposed
 - [ ] Suggested fixes included for every gap
-

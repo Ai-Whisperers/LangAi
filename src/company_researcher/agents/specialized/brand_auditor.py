@@ -18,15 +18,14 @@ Refactored to use BaseSpecialistAgent for:
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 from ...config import get_config
 from ...llm.client_factory import calculate_cost
 from ...state import OverallState
-from ...types import BrandStrength, BrandHealth, SentimentCategory  # Centralized enums
-from ..base import get_agent_logger, create_empty_result
+from ...types import BrandHealth, BrandStrength, SentimentCategory  # Centralized enums
+from ..base import create_empty_result, get_agent_logger
 from ..base.specialist import BaseSpecialistAgent, ParsingMixin
-
 
 # ============================================================================
 # Data Models
@@ -37,6 +36,7 @@ from ..base.specialist import BaseSpecialistAgent, ParsingMixin
 @dataclass
 class BrandMetric:
     """A brand metric measurement."""
+
     name: str
     score: float  # 0-100
     benchmark: float = 50.0
@@ -49,13 +49,14 @@ class BrandMetric:
             "score": round(self.score, 1),
             "benchmark": self.benchmark,
             "trend": self.trend,
-            "notes": self.notes
+            "notes": self.notes,
         }
 
 
 @dataclass
 class BrandAttribute:
     """A brand attribute with perception data."""
+
     attribute: str
     strength: float  # 0-100
     relevance: float  # 0-100
@@ -66,13 +67,14 @@ class BrandAttribute:
             "attribute": self.attribute,
             "strength": round(self.strength, 1),
             "relevance": round(self.relevance, 1),
-            "differentiation": round(self.differentiation, 1)
+            "differentiation": round(self.differentiation, 1),
         }
 
 
 @dataclass
 class BrandAuditResult:
     """Complete brand audit result."""
+
     company_name: str
     overall_strength: BrandStrength = BrandStrength.MODERATE
     brand_score: float = 50.0
@@ -96,7 +98,7 @@ class BrandAuditResult:
             "key_messages": self.key_messages,
             "strengths": self.strengths,
             "weaknesses": self.weaknesses,
-            "recommendations": self.recommendations
+            "recommendations": self.recommendations,
         }
 
 
@@ -194,6 +196,7 @@ Begin your brand audit:"""
 # Brand Auditor Agent
 # ============================================================================
 
+
 class BrandAuditorAgent(BaseSpecialistAgent[BrandAuditResult], ParsingMixin):
     """
     Brand Auditor Agent for comprehensive brand analysis.
@@ -223,8 +226,7 @@ class BrandAuditorAgent(BaseSpecialistAgent[BrandAuditResult], ParsingMixin):
     def _get_prompt(self, company_name: str, formatted_results: str) -> str:
         """Build the brand audit prompt."""
         return BRAND_AUDIT_PROMPT.format(
-            company_name=company_name,
-            search_results=formatted_results
+            company_name=company_name, search_results=formatted_results
         )
 
     def _parse_analysis(self, company_name: str, analysis: str) -> BrandAuditResult:
@@ -239,7 +241,11 @@ class BrandAuditorAgent(BaseSpecialistAgent[BrandAuditResult], ParsingMixin):
 
         # Extract sentiment using ParsingMixin.extract_sentiment
         sentiment_str = self.extract_sentiment(analysis)
-        result.sentiment = SentimentCategory(sentiment_str) if sentiment_str in ["positive", "negative", "neutral", "mixed"] else SentimentCategory.NEUTRAL
+        result.sentiment = (
+            SentimentCategory(sentiment_str)
+            if sentiment_str in ["positive", "negative", "neutral", "mixed"]
+            else SentimentCategory.NEUTRAL
+        )
 
         # Extract lists using ParsingMixin.extract_list_items
         result.strengths = self.extract_list_items(analysis, "Strength")
@@ -255,8 +261,13 @@ class BrandAuditorAgent(BaseSpecialistAgent[BrandAuditResult], ParsingMixin):
 
     def _extract_metrics(self, analysis: str) -> List[BrandMetric]:
         """Extract brand metrics from analysis using ParsingMixin."""
-        metric_names = ["Brand Awareness", "Brand Recall", "Brand Loyalty",
-                       "Brand Trust", "Brand Relevance"]
+        metric_names = [
+            "Brand Awareness",
+            "Brand Recall",
+            "Brand Loyalty",
+            "Brand Trust",
+            "Brand Relevance",
+        ]
 
         # Use ParsingMixin.extract_metrics_table for standardized extraction
         metrics_dict = self.extract_metrics_table(analysis, metric_names)
@@ -264,11 +275,7 @@ class BrandAuditorAgent(BaseSpecialistAgent[BrandAuditResult], ParsingMixin):
         # Convert dict to BrandMetric objects
         metrics = []
         for name, data in metrics_dict.items():
-            metrics.append(BrandMetric(
-                name=name,
-                score=data["score"],
-                trend=data["trend"]
-            ))
+            metrics.append(BrandMetric(name=name, score=data["score"], trend=data["trend"]))
 
         return metrics
 
@@ -278,20 +285,28 @@ class BrandAuditorAgent(BaseSpecialistAgent[BrandAuditResult], ParsingMixin):
 
         # Look for common brand attributes
         attribute_keywords = [
-            "innovative", "reliable", "premium", "affordable",
-            "sustainable", "trustworthy", "modern", "traditional"
+            "innovative",
+            "reliable",
+            "premium",
+            "affordable",
+            "sustainable",
+            "trustworthy",
+            "modern",
+            "traditional",
         ]
 
         for keyword in attribute_keywords:
             if keyword.lower() in analysis.lower():
                 # Estimate scores based on context
                 strength = 60 if keyword in analysis else 40
-                attributes.append(BrandAttribute(
-                    attribute=keyword.capitalize(),
-                    strength=strength,
-                    relevance=70,
-                    differentiation=50
-                ))
+                attributes.append(
+                    BrandAttribute(
+                        attribute=keyword.capitalize(),
+                        strength=strength,
+                        relevance=70,
+                        differentiation=50,
+                    )
+                )
 
         return attributes[:5]
 
@@ -312,11 +327,7 @@ class BrandAuditorAgent(BaseSpecialistAgent[BrandAuditResult], ParsingMixin):
             return BrandStrength.WEAK
 
     # Backwards compatibility alias
-    def audit(
-        self,
-        company_name: str,
-        search_results: List[Dict[str, Any]]
-    ) -> BrandAuditResult:
+    def audit(self, company_name: str, search_results: List[Dict[str, Any]]) -> BrandAuditResult:
         """
         Perform brand audit (alias for analyze()).
 
@@ -328,6 +339,7 @@ class BrandAuditorAgent(BaseSpecialistAgent[BrandAuditResult], ParsingMixin):
 # ============================================================================
 # Agent Node Function
 # ============================================================================
+
 
 def brand_auditor_agent_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -353,10 +365,7 @@ def brand_auditor_agent_node(state: OverallState) -> Dict[str, Any]:
 
         # Run brand audit using base class analyze() method
         agent = BrandAuditorAgent(config)
-        result = agent.analyze(
-            company_name=company_name,
-            search_results=search_results
-        )
+        result = agent.analyze(company_name=company_name, search_results=search_results)
 
         # Calculate cost
         cost = calculate_cost(500, 1500)  # Estimated
@@ -368,19 +377,16 @@ def brand_auditor_agent_node(state: OverallState) -> Dict[str, Any]:
 
         return {
             "agent_outputs": {
-                "brand": {
-                    **result.to_dict(),
-                    "analysis": result.analysis,
-                    "cost": cost
-                }
+                "brand": {**result.to_dict(), "analysis": result.analysis, "cost": cost}
             },
-            "total_cost": cost
+            "total_cost": cost,
         }
 
 
 # ============================================================================
 # Factory Function
 # ============================================================================
+
 
 def create_brand_auditor() -> BrandAuditorAgent:
     """Create a Brand Auditor Agent instance."""

@@ -31,13 +31,13 @@ Create a concise tracker that captures actionable tasks and status without becom
 
 ## Usage Modes
 
-- **Basic**: Create a tracker from plan + progress  
+- **Basic**: Create a tracker from plan + progress
   `/create-tracker tracker.md tickets/EPP-1234/ plan.md progress.md`
 
-- **Comprehensive**: Include context/timeline for richer seeding  
+- **Comprehensive**: Include context/timeline for richer seeding
   `/create-tracker tracker.md tickets/EPP-1234/ plan.md progress.md context.md timeline.md requirements.md`
 
-- **Roadmap**: Use for higher-level cross-ticket tracking  
+- **Roadmap**: Use for higher-level cross-ticket tracking
   `/create-tracker roadmap.md tickets/EPP-1234/ plan.md progress.md`
 
 ---
@@ -107,7 +107,7 @@ Blockers: [if any, else “None”]
 
 ### Example 1: Basic Ticket Tracker
 
-**Input**:  
+**Input**:
 `/create-tracker tracker.md tickets/EPP-1234/ plan.md progress.md`
 
 **Expected Output (excerpt)**:
@@ -127,7 +127,7 @@ Blockers: None
 
 ### Example 2: Roadmap Tracker
 
-**Input**:  
+**Input**:
 `/create-tracker roadmap.md tickets/EPP-5555/ plan.md progress.md context.md`
 
 **Expected Output (excerpt)**:
@@ -151,4 +151,3 @@ Blockers: OAuth cert rotation pending
 - `tracker/update-tracker.prompt.md` — Reconcile an existing tracker with new evidence.
 - `ticket/resume-tracker-work.prompt.md` — Continue systematic work using an existing tracker.
 - `ticket/check-status.prompt.md` — Summarize ticket/document status before or after tracker creation.
-

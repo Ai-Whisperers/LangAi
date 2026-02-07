@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -20,6 +21,7 @@ logger = get_logger(__name__)
 
 class FreshnessLevel(str, Enum):
     """Freshness level indicators."""
+
     FRESH = "fresh"
     RECENT = "recent"
     AGING = "aging"
@@ -30,6 +32,7 @@ class FreshnessLevel(str, Enum):
 
 class DataType(str, Enum):
     """Types of data with different freshness requirements."""
+
     STOCK_PRICE = "stock_price"
     FINANCIAL_REPORT = "financial_report"
     NEWS = "news"
@@ -44,6 +47,7 @@ class DataType(str, Enum):
 @dataclass
 class FreshnessThreshold:
     """Threshold configuration for a data type."""
+
     data_type: DataType
     fresh_hours: float  # Fresh if younger than this
     recent_hours: float  # Recent if younger than this
@@ -73,63 +77,63 @@ DEFAULT_THRESHOLDS = {
         fresh_hours=1,
         recent_hours=4,
         aging_hours=24,
-        stale_hours=48
+        stale_hours=48,
     ),
     DataType.FINANCIAL_REPORT: FreshnessThreshold(
         data_type=DataType.FINANCIAL_REPORT,
         fresh_hours=24 * 30,  # 30 days
         recent_hours=24 * 90,  # 90 days
         aging_hours=24 * 180,  # 6 months
-        stale_hours=24 * 365  # 1 year
+        stale_hours=24 * 365,  # 1 year
     ),
     DataType.NEWS: FreshnessThreshold(
         data_type=DataType.NEWS,
         fresh_hours=6,
         recent_hours=24,
         aging_hours=72,
-        stale_hours=168  # 1 week
+        stale_hours=168,  # 1 week
     ),
     DataType.COMPANY_INFO: FreshnessThreshold(
         data_type=DataType.COMPANY_INFO,
         fresh_hours=24 * 7,  # 1 week
         recent_hours=24 * 30,  # 1 month
         aging_hours=24 * 90,  # 3 months
-        stale_hours=24 * 180  # 6 months
+        stale_hours=24 * 180,  # 6 months
     ),
     DataType.MARKET_DATA: FreshnessThreshold(
         data_type=DataType.MARKET_DATA,
         fresh_hours=24,
         recent_hours=24 * 7,
         aging_hours=24 * 30,
-        stale_hours=24 * 90
+        stale_hours=24 * 90,
     ),
     DataType.EMPLOYEE_COUNT: FreshnessThreshold(
         data_type=DataType.EMPLOYEE_COUNT,
         fresh_hours=24 * 30,
         recent_hours=24 * 90,
         aging_hours=24 * 180,
-        stale_hours=24 * 365
+        stale_hours=24 * 365,
     ),
     DataType.LEADERSHIP: FreshnessThreshold(
         data_type=DataType.LEADERSHIP,
         fresh_hours=24 * 7,
         recent_hours=24 * 30,
         aging_hours=24 * 90,
-        stale_hours=24 * 180
+        stale_hours=24 * 180,
     ),
     DataType.PRODUCT_INFO: FreshnessThreshold(
         data_type=DataType.PRODUCT_INFO,
         fresh_hours=24 * 7,
         recent_hours=24 * 30,
         aging_hours=24 * 90,
-        stale_hours=24 * 180
+        stale_hours=24 * 180,
     ),
     DataType.GENERAL: FreshnessThreshold(
         data_type=DataType.GENERAL,
         fresh_hours=24 * 7,
         recent_hours=24 * 30,
         aging_hours=24 * 90,
-        stale_hours=24 * 180
+        stale_hours=24 * 180,
     ),
 }
 
@@ -137,6 +141,7 @@ DEFAULT_THRESHOLDS = {
 @dataclass
 class FreshnessAssessment:
     """Assessment of data freshness."""
+
     data_type: DataType
     level: FreshnessLevel
     source_date: Optional[datetime]
@@ -158,7 +163,7 @@ class FreshnessAssessment:
             "age_description": self.age_description,
             "needs_refresh": self.needs_refresh,
             "refresh_priority": round(self.refresh_priority, 2),
-            "warnings": self.warnings
+            "warnings": self.warnings,
         }
 
 
@@ -168,37 +173,33 @@ class DateExtractor:
     # Common date patterns
     DATE_PATTERNS = [
         # ISO format
-        r'(\d{4}-\d{2}-\d{2})',
+        r"(\d{4}-\d{2}-\d{2})",
         # US format
-        r'(\d{1,2}/\d{1,2}/\d{4})',
+        r"(\d{1,2}/\d{1,2}/\d{4})",
         # Written format
-        r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2},? \d{4})',
+        r"((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2},? \d{4})",
         # Quarter references
-        r'(Q[1-4] \d{4})',
-        r'(Q[1-4]\'\d{2})',
+        r"(Q[1-4] \d{4})",
+        r"(Q[1-4]\'\d{2})",
         # Year references
-        r'FY(\d{4})',
-        r'fiscal year (\d{4})',
+        r"FY(\d{4})",
+        r"fiscal year (\d{4})",
     ]
 
     # Relative date patterns
     RELATIVE_PATTERNS = [
-        (r'today', 0),
-        (r'yesterday', 1),
-        (r'(\d+) days? ago', None),
-        (r'(\d+) weeks? ago', None),
-        (r'(\d+) months? ago', None),
-        (r'last week', 7),
-        (r'last month', 30),
-        (r'this week', 3),
-        (r'this month', 15),
+        (r"today", 0),
+        (r"yesterday", 1),
+        (r"(\d+) days? ago", None),
+        (r"(\d+) weeks? ago", None),
+        (r"(\d+) months? ago", None),
+        (r"last week", 7),
+        (r"last month", 30),
+        (r"this week", 3),
+        (r"this month", 15),
     ]
 
-    def extract_date(
-        self,
-        text: str,
-        metadata: Dict[str, Any] = None
-    ) -> Optional[datetime]:
+    def extract_date(self, text: str, metadata: Dict[str, Any] = None) -> Optional[datetime]:
         """
         Extract date from text or metadata.
 
@@ -211,7 +212,7 @@ class DateExtractor:
         """
         # Check metadata first
         if metadata:
-            for key in ['published_at', 'date', 'timestamp', 'published_date', 'created_at']:
+            for key in ["published_at", "date", "timestamp", "published_date", "created_at"]:
                 if key in metadata:
                     parsed = self._parse_date_value(metadata[key])
                     if parsed:
@@ -235,6 +236,7 @@ class DateExtractor:
         if isinstance(value, str):
             try:
                 from dateutil import parser
+
                 return parser.parse(value)
             except Exception as e:
                 logger.debug(f"Failed to parse date string '{value[:50]}': {e}")
@@ -248,6 +250,7 @@ class DateExtractor:
             if match:
                 try:
                     from dateutil import parser
+
                     return parser.parse(match.group(1))
                 except Exception as e:
                     logger.debug(f"Date pattern match failed to parse: {e}")
@@ -266,9 +269,9 @@ class DateExtractor:
                     # Extract number from match
                     try:
                         num = int(match.group(1))
-                        if 'week' in pattern:
+                        if "week" in pattern:
                             return now - timedelta(weeks=num)
-                        elif 'month' in pattern:
+                        elif "month" in pattern:
                             return now - timedelta(days=num * 30)
                         else:
                             return now - timedelta(days=num)
@@ -303,7 +306,7 @@ class FreshnessTracker:
     def __init__(
         self,
         thresholds: Dict[DataType, FreshnessThreshold] = None,
-        date_extractor: DateExtractor = None
+        date_extractor: DateExtractor = None,
     ):
         self.thresholds = thresholds or DEFAULT_THRESHOLDS
         self.date_extractor = date_extractor or DateExtractor()
@@ -313,7 +316,7 @@ class FreshnessTracker:
         data_type: DataType,
         source_date: datetime = None,
         content: str = None,
-        metadata: Dict[str, Any] = None
+        metadata: Dict[str, Any] = None,
     ) -> FreshnessAssessment:
         """
         Assess freshness of data.
@@ -350,7 +353,11 @@ class FreshnessTracker:
         level = threshold.get_level(age_hours)
 
         # Determine if refresh needed
-        needs_refresh = level in [FreshnessLevel.STALE, FreshnessLevel.OUTDATED, FreshnessLevel.UNKNOWN]
+        needs_refresh = level in [
+            FreshnessLevel.STALE,
+            FreshnessLevel.OUTDATED,
+            FreshnessLevel.UNKNOWN,
+        ]
 
         # Calculate refresh priority
         if level == FreshnessLevel.OUTDATED:
@@ -379,12 +386,11 @@ class FreshnessTracker:
             age_description=age_description,
             needs_refresh=needs_refresh,
             refresh_priority=refresh_priority,
-            warnings=warnings
+            warnings=warnings,
         )
 
     def assess_multiple(
-        self,
-        items: List[Tuple[DataType, Optional[datetime], str]]
+        self, items: List[Tuple[DataType, Optional[datetime], str]]
     ) -> List[FreshnessAssessment]:
         """
         Assess multiple items.
@@ -400,10 +406,7 @@ class FreshnessTracker:
             for data_type, source_date, content in items
         ]
 
-    def get_freshness_report(
-        self,
-        research_result: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def get_freshness_report(self, research_result: Dict[str, Any]) -> Dict[str, Any]:
         """
         Generate freshness report for research result.
 
@@ -442,29 +445,23 @@ class FreshnessTracker:
                 except Exception:
                     source_date = None
 
-            assessment = self.assess(
-                data_type=data_type,
-                source_date=source_date,
-                metadata=output
-            )
-            assessments.append({
-                "section": agent_name,
-                "assessment": assessment
-            })
+            assessment = self.assess(data_type=data_type, source_date=source_date, metadata=output)
+            assessments.append({"section": agent_name, "assessment": assessment})
 
         # Calculate overall freshness
         if assessments:
-            avg_priority = sum(
-                a["assessment"].refresh_priority for a in assessments
-            ) / len(assessments)
+            avg_priority = sum(a["assessment"].refresh_priority for a in assessments) / len(
+                assessments
+            )
             stale_count = sum(
-                1 for a in assessments
+                1
+                for a in assessments
                 if a["assessment"].level in [FreshnessLevel.STALE, FreshnessLevel.OUTDATED]
             )
             overall_level = (
-                FreshnessLevel.STALE if stale_count > len(assessments) / 2
-                else FreshnessLevel.FRESH if avg_priority < 0.2
-                else FreshnessLevel.AGING
+                FreshnessLevel.STALE
+                if stale_count > len(assessments) / 2
+                else FreshnessLevel.FRESH if avg_priority < 0.2 else FreshnessLevel.AGING
             )
         else:
             avg_priority = 0.5
@@ -476,14 +473,8 @@ class FreshnessTracker:
             "refresh_priority": round(avg_priority, 2),
             "stale_sections": stale_count,
             "total_sections": len(assessments),
-            "sections": [
-                {
-                    "name": a["section"],
-                    **a["assessment"].to_dict()
-                }
-                for a in assessments
-            ],
-            "refresh_recommendations": self._get_refresh_recommendations(assessments)
+            "sections": [{"name": a["section"], **a["assessment"].to_dict()} for a in assessments],
+            "refresh_recommendations": self._get_refresh_recommendations(assessments),
         }
 
     def _format_age(self, hours: float) -> str:
@@ -502,10 +493,7 @@ class FreshnessTracker:
             return f"{int(hours / (24 * 30))} months"
         return f"{int(hours / (24 * 365))} years"
 
-    def _get_refresh_recommendations(
-        self,
-        assessments: List[Dict]
-    ) -> List[str]:
+    def _get_refresh_recommendations(self, assessments: List[Dict]) -> List[str]:
         """Generate refresh recommendations."""
         recommendations = []
 
@@ -529,15 +517,14 @@ class FreshnessTracker:
 
 # Convenience functions
 
+
 def create_freshness_tracker() -> FreshnessTracker:
     """Create a freshness tracker."""
     return FreshnessTracker()
 
 
 def assess_data_freshness(
-    data_type: DataType,
-    source_date: datetime = None,
-    content: str = None
+    data_type: DataType, source_date: datetime = None, content: str = None
 ) -> FreshnessAssessment:
     """Assess freshness of data."""
     tracker = FreshnessTracker()

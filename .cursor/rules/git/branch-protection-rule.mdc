@@ -150,7 +150,7 @@ validate-branch-name:
         echo "✓ Primary branch"
         exit 0
       fi
-      
+
       if [[ $CI_COMMIT_REF_NAME =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
          [[ $CI_COMMIT_REF_NAME =~ ^release/[0-9]+\.[0-9]+$ ]] || \
          [[ $CI_COMMIT_REF_NAME =~ ^rc/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -265,7 +265,7 @@ jobs:
       - name: Check branch name
         run: |
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-          
+
           if [[ $BRANCH_NAME =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
              [[ $BRANCH_NAME =~ ^release/[0-9]+\.[0-9]+$ ]] || \
              [[ $BRANCH_NAME =~ ^rc/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -281,19 +281,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Build
         run: npm run build
-      
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -306,19 +306,19 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run tests
         run: npm run test:ci
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
@@ -334,19 +334,19 @@ jobs:
       startsWith(github.ref, 'refs/heads/hotfix/')
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Security audit
         run: npm audit --audit-level=moderate
-      
+
       - name: Run security scan
         run: npm run security-scan
 
@@ -361,13 +361,13 @@ jobs:
       url: https://staging.example.com
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Download build artifacts
         uses: actions/download-artifact@v3
         with:
           name: build-artifacts
           path: dist/
-      
+
       - name: Deploy to staging
         run: npm run deploy:staging
         env:
@@ -382,13 +382,13 @@ jobs:
       url: https://example.com
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Download build artifacts
         uses: actions/download-artifact@v3
         with:
           name: build-artifacts
           path: dist/
-      
+
       - name: Deploy to production
         run: npm run deploy:production
         env:
@@ -663,7 +663,7 @@ for BRANCH in $BRANCHES; do
     if [[ "$BRANCH" == "main" ]] || [[ "$BRANCH" == "develop" ]]; then
         continue
     fi
-    
+
     # Check if valid
     if [[ $BRANCH =~ ^(feature|fix|hotfix)/[A-Z]+-[0-9]+$ ]] || \
        [[ $BRANCH =~ ^release/[0-9]+\.[0-9]+$ ]] || \
@@ -703,7 +703,7 @@ git for-each-ref --sort=-committerdate refs/remotes/origin/ \
     if [[ "$branch" == "origin/main" ]] || [[ "$branch" == "origin/develop" ]]; then
       continue
     fi
-    
+
     # Check if older than 30 days
     days_old=$(( ($(date +%s) - $(date -d "$date" +%s)) / 86400 ))
     if [[ $days_old -gt 30 ]]; then

@@ -12,6 +12,7 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional
+
 from ...utils import get_logger
 
 logger = get_logger(__name__)
@@ -19,6 +20,7 @@ logger = get_logger(__name__)
 
 class ReportStatus(Enum):
     """Status of report generation."""
+
     APPROVED = "approved"
     BLOCKED = "blocked"
     WARNING = "warning"
@@ -26,6 +28,7 @@ class ReportStatus(Enum):
 
 class BlockReason(Enum):
     """Reasons for blocking report generation."""
+
     INSUFFICIENT_DATA = "insufficient_data"
     EMPTY_SECTIONS = "empty_sections"
     NO_FINANCIAL_DATA = "no_financial_data"
@@ -37,6 +40,7 @@ class BlockReason(Enum):
 @dataclass
 class QualityGateResult:
     """Result of quality gate check."""
+
     status: ReportStatus
     can_generate: bool
     block_reasons: List[BlockReason]
@@ -135,9 +139,13 @@ class QualityEnforcer:
             if score < self.SECTION_THRESHOLDS.get(section_name, 20):
                 if section_name in self.REQUIRED_SECTIONS:
                     block_reasons.append(BlockReason.EMPTY_SECTIONS)
-                    warnings.append(f"Critical section '{section_name}' has low quality (score: {score:.0f})")
+                    warnings.append(
+                        f"Critical section '{section_name}' has low quality (score: {score:.0f})"
+                    )
                 else:
-                    warnings.append(f"Section '{section_name}' has low quality (score: {score:.0f})")
+                    warnings.append(
+                        f"Section '{section_name}' has low quality (score: {score:.0f})"
+                    )
 
         # Calculate overall quality score
         if section_scores:
@@ -177,7 +185,7 @@ class QualityEnforcer:
             status=status,
             overall_score=overall_score,
             block_reasons=block_reasons,
-            warnings=warnings
+            warnings=warnings,
         )
 
         logger.info(f"Quality gate result: {status.value}, score={overall_score:.1f}")
@@ -190,7 +198,7 @@ class QualityEnforcer:
             section_scores=section_scores,
             warnings=warnings,
             improvements=improvements,
-            summary=summary
+            summary=summary,
         )
 
     def _parse_sections(self, content: str) -> Dict[str, str]:
@@ -285,17 +293,9 @@ class QualityEnforcer:
 
         return max(0, min(100, score))
 
-    def _check_specific_issues(
-        self,
-        content: str,
-        sections: Dict[str, str]
-    ) -> Dict[str, List]:
+    def _check_specific_issues(self, content: str, sections: Dict[str, str]) -> Dict[str, List]:
         """Check for specific quality issues."""
-        issues = {
-            "blocks": [],
-            "warnings": [],
-            "improvements": []
-        }
+        issues = {"blocks": [], "warnings": [], "improvements": []}
 
         content_lower = content.lower()
 
@@ -316,21 +316,29 @@ class QualityEnforcer:
         overview = sections.get("company_overview", "")
         if overview:
             # Check if overview is mostly "not available"
-            not_available_ratio = len(re.findall(r"not\s*available", overview.lower())) / max(1, len(overview.split()))
+            not_available_ratio = len(re.findall(r"not\s*available", overview.lower())) / max(
+                1, len(overview.split())
+            )
             if not_available_ratio > 0.1:
                 issues["blocks"].append(BlockReason.NO_COMPANY_INFO)
-                issues["improvements"].append("Retry search with multilingual queries for company overview")
+                issues["improvements"].append(
+                    "Retry search with multilingual queries for company overview"
+                )
 
         # Check key metrics
         metrics = sections.get("key_metrics", "")
         if metrics:
             # Count actual metrics vs "not available"
             metric_lines = [l for l in metrics.split("\n") if l.strip().startswith("-")]
-            empty_metrics = sum(1 for l in metric_lines if re.search(r"not\s*available|N/?A|unknown", l.lower()))
+            empty_metrics = sum(
+                1 for l in metric_lines if re.search(r"not\s*available|N/?A|unknown", l.lower())
+            )
 
             if metric_lines and empty_metrics / len(metric_lines) > 0.7:
                 issues["blocks"].append(BlockReason.NO_FINANCIAL_DATA)
-                issues["improvements"].append("Search for financial data using stock ticker or annual reports")
+                issues["improvements"].append(
+                    "Search for financial data using stock ticker or annual reports"
+                )
 
         # Check for low-effort content
         word_count = len(content.split())
@@ -356,7 +364,7 @@ class QualityEnforcer:
         status: ReportStatus,
         overall_score: float,
         block_reasons: List[BlockReason],
-        warnings: List[str]
+        warnings: List[str],
     ) -> str:
         """Generate quality gate summary."""
         if status == ReportStatus.BLOCKED:
@@ -383,11 +391,7 @@ class QualityEnforcer:
 
         return "\n".join(lines)
 
-    def generate_blocked_report(
-        self,
-        company_name: str,
-        result: QualityGateResult
-    ) -> str:
+    def generate_blocked_report(self, company_name: str, result: QualityGateResult) -> str:
         """Generate a placeholder report when blocked."""
         return f"""# {company_name} - Research Report
 
@@ -426,13 +430,9 @@ for generating a reliable report.
 
 
 def create_quality_enforcer(
-    min_score: float = 30.0,
-    block_on_empty: bool = True,
-    strict: bool = False
+    min_score: float = 30.0, block_on_empty: bool = True, strict: bool = False
 ) -> QualityEnforcer:
     """Factory function to create QualityEnforcer."""
     return QualityEnforcer(
-        min_overall_score=min_score,
-        block_on_empty_required=block_on_empty,
-        strict_mode=strict
+        min_overall_score=min_score, block_on_empty_required=block_on_empty, strict_mode=strict
     )

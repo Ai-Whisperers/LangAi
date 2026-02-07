@@ -3,9 +3,19 @@
   "permissions": {
     "deny": [
       "Shell(rm -rf *)",
-      "Shell(del /s *)"
+      "Shell(del /s *)",
+      "Shell(format *)",
+      "Shell(git push --force*)",
+      "Shell(git push -f*)",
+      "Shell(git reset --hard*)",
+      "Shell(git clean -fdx*)",
+      "Shell(docker system prune*)",
+      "Shell(docker rmi -f*)",
+      "Shell(kubectl delete*)",
+      "Shell(terraform destroy*)",
+      "Shell(aws *)",
+      "Shell(pip uninstall *)",
+      "Shell(npm uninstall -g*)"
     ]
   }
 }
-
-

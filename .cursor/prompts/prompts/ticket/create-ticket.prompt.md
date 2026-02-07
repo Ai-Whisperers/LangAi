@@ -157,9 +157,9 @@ Optionally include requirements:
 
 ## Usage Modes
 
-- **Quick**: Minimal summary only (uses defaults for requirements)  
+- **Quick**: Minimal summary only (uses defaults for requirements)
   `/create-ticket EPP-251: Patch audit logging`
-- **With Requirements**: Include acceptance criteria in `<requirements>` for richer seeding  
+- **With Requirements**: Include acceptance criteria in `<requirements>` for richer seeding
   (recommended for Complex)
 - **Re-run (refresh)**: Re-run with same ID to update docs when scope/requirements change
 
@@ -202,4 +202,3 @@ Optionally include requirements:
 - **Missing files**: Ensure working directory is repo root; re-run prompt.
 - **Wrong complexity**: Provide clearer scope/constraints in `<requirements>`.
 - **No branch suggestion**: Replace `[type]` with `feature/fix/hotfix` and supply `[slug]`.
-

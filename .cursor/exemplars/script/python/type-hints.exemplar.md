@@ -19,17 +19,17 @@ from pathlib import Path
 
 class CoverageThresholds(BaseModel):
     """Coverage threshold configuration with validation."""
-    
+
     line: int = Field(default=80, ge=0, le=100, description="Minimum line coverage percentage")
     branch: int = Field(default=70, ge=0, le=100, description="Minimum branch coverage percentage")
     public_api: int = Field(default=90, ge=0, le=100, description="Minimum public API coverage")
-    
+
     @validator('*')
     def validate_percentage(cls, v):
         if not 0 <= v <= 100:
             raise ValueError(f'Coverage must be 0-100, got {v}')
         return v
-    
+
     @root_validator
     def validate_threshold_logic(cls, values):
         if values.get('branch', 0) > values.get('line', 100):
@@ -39,13 +39,13 @@ class CoverageThresholds(BaseModel):
 
 class CoverageConfig(BaseModel):
     """Complete coverage configuration."""
-    
+
     configuration: str = Field(default="Release", pattern="^(Debug|Release)$")
     output_path: Optional[Path] = None
     thresholds: CoverageThresholds = Field(default_factory=CoverageThresholds)
     excluded_projects: List[str] = Field(default_factory=lambda: ["*.Tests", "*.Benchmarks"])
     enable_parallel: bool = Field(default=True)
-    
+
     class Config:
         validate_assignment = True
         extra = "forbid"  # Reject unknown fields
@@ -105,12 +105,12 @@ def analyze_coverage(
 ) -> Dict[str, float]:
     """
     Analyze coverage from file.
-    
+
     Args:
         coverage_file: Path to coverage XML file
         threshold: Minimum coverage percentage (0-100)
         enable_caching: Whether to use cached results
-    
+
     Returns:
         Dictionary with coverage metrics
     """
@@ -129,7 +129,7 @@ def load_config(
     """Load config from file if provided."""
     if config_file is None:
         return None
-    
+
     return load_yaml(config_file)
 ```
 
@@ -142,13 +142,13 @@ T = TypeVar('T')
 
 class Cache(Generic[T]):
     """Generic cache for any type."""
-    
+
     def __init__(self):
         self._cache: Dict[str, T] = {}
-    
+
     def get(self, key: str) -> Optional[T]:
         return self._cache.get(key)
-    
+
     def set(self, key: str, value: T) -> None:
         self._cache[key] = value
 ```
@@ -167,4 +167,3 @@ class Cache(Generic[T]):
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

@@ -103,4 +103,3 @@ public void Divide_WhenDivisorIsZero_ThrowsDivideByZeroException()
 
 **Applies Rules**:
 - `.cursor/rules/unit-testing/unit-test-coverage-rule.mdc`
-

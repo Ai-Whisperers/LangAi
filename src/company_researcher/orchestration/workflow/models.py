@@ -8,22 +8,25 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
+
 from ...utils import utc_now
 
 
 class NodeType(str, Enum):
     """Types of workflow nodes."""
-    AGENT = "agent"            # Agent execution node
-    ROUTER = "router"          # Conditional routing
-    PARALLEL = "parallel"      # Parallel execution
-    SEQUENCE = "sequence"      # Sequential execution
-    TRANSFORM = "transform"    # Data transformation
+
+    AGENT = "agent"  # Agent execution node
+    ROUTER = "router"  # Conditional routing
+    PARALLEL = "parallel"  # Parallel execution
+    SEQUENCE = "sequence"  # Sequential execution
+    TRANSFORM = "transform"  # Data transformation
     CHECKPOINT = "checkpoint"  # State checkpoint
-    END = "end"               # End node
+    END = "end"  # End node
 
 
 class ExecutionStatus(str, Enum):
     """Execution status."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -34,6 +37,7 @@ class ExecutionStatus(str, Enum):
 
 class RouteCondition(str, Enum):
     """Route condition types."""
+
     ALWAYS = "always"
     IF_DATA_PRESENT = "if_data_present"
     IF_QUALITY_HIGH = "if_quality_high"
@@ -44,6 +48,7 @@ class RouteCondition(str, Enum):
 @dataclass
 class NodeConfig:
     """Configuration for a workflow node."""
+
     name: str
     node_type: NodeType
     handler: Optional[Callable] = None
@@ -58,6 +63,7 @@ class NodeConfig:
 @dataclass
 class ExecutionResult:
     """Result of node execution."""
+
     node_name: str
     status: ExecutionStatus
     output: Any = None
@@ -74,13 +80,14 @@ class ExecutionResult:
             "output_type": type(self.output).__name__ if self.output else None,
             "error": self.error,
             "duration_ms": round(self.duration_ms, 2),
-            "retries": self.retries
+            "retries": self.retries,
         }
 
 
 @dataclass
 class WorkflowState:
     """State of workflow execution."""
+
     workflow_id: str
     status: ExecutionStatus = ExecutionStatus.PENDING
     current_node: Optional[str] = None
@@ -109,5 +116,5 @@ class WorkflowState:
             "completed": len(self.completed_nodes),
             "failed": len(self.failed_nodes),
             "duration_seconds": round(self.duration_seconds, 2),
-            "total_cost": round(self.total_cost, 4)
+            "total_cost": round(self.total_cost, 4),
         }

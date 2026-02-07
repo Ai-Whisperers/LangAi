@@ -5,33 +5,35 @@ Tests the metrics validator, data threshold checker, quality enforcer,
 and multilingual search generator.
 """
 
-import pytest
-import sys
 import os
+import sys
+
+import pytest
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import from consolidated research/ version
-from src.company_researcher.research.metrics_validator import (
-    MetricsValidator,
-    create_metrics_validator,
-    CompanyType,
-)
 from src.company_researcher.agents.research.data_threshold import (
     DataThresholdChecker,
     create_threshold_checker,
 )
+from src.company_researcher.agents.research.multilingual_search import (
+    Language,
+    MultilingualSearchGenerator,
+    Region,
+    create_multilingual_generator,
+)
 from src.company_researcher.agents.research.quality_enforcer import (
     QualityEnforcer,
-    create_quality_enforcer,
     ReportStatus,
+    create_quality_enforcer,
 )
-from src.company_researcher.agents.research.multilingual_search import (
-    MultilingualSearchGenerator,
-    create_multilingual_generator,
-    Language,
-    Region,
+
+# Import from consolidated research/ version
+from src.company_researcher.research.metrics_validator import (
+    CompanyType,
+    MetricsValidator,
+    create_metrics_validator,
 )
 
 
@@ -117,11 +119,26 @@ class TestDataThresholdChecker:
         """Test threshold check with good data."""
         checker = DataThresholdChecker()
         results = [
-            {"url": "https://example1.com/company", "content": "Revenue of $10 billion in 2024. Founded in 1990."},
-            {"url": "https://example2.com/about", "content": "Company overview with 5000 employees."},
-            {"url": "https://example3.com/financials", "content": "Market cap of $50 billion. Products include..."},
-            {"url": "https://news.com/article", "content": "Company announces new strategic initiative."},
-            {"url": "https://market.com/analysis", "content": "Competitors include Company A, Company B."},
+            {
+                "url": "https://example1.com/company",
+                "content": "Revenue of $10 billion in 2024. Founded in 1990.",
+            },
+            {
+                "url": "https://example2.com/about",
+                "content": "Company overview with 5000 employees.",
+            },
+            {
+                "url": "https://example3.com/financials",
+                "content": "Market cap of $50 billion. Products include...",
+            },
+            {
+                "url": "https://news.com/article",
+                "content": "Company announces new strategic initiative.",
+            },
+            {
+                "url": "https://market.com/analysis",
+                "content": "Competitors include Company A, Company B.",
+            },
         ]
 
         result = checker.check_threshold(results, "TestCompany", "public")
@@ -259,7 +276,7 @@ class TestMultilingualSearchGenerator:
             region=Region.LATAM_BRAZIL,
             language=Language.PORTUGUESE,
             topics=["financial", "overview"],
-            max_queries=10
+            max_queries=10,
         )
 
         assert len(queries) > 0

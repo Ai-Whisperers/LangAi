@@ -10,7 +10,7 @@ AI-powered company research using specialized agents running in parallel.
 
 ## What It Does
 
-The Company Researcher automatically researches companies using web search and AI analysis, delivering comprehensive reports in minutes.
+The system researches **companies and general topics** using web search, news, GitHub discovery, and AI synthesis, delivering citation-backed reports in minutes.
 
 **Key Features**:
 - **5 Specialized Agents** running in parallel: Researcher, Financial, Market, Product, Synthesizer
@@ -18,6 +18,7 @@ The Company Researcher automatically researches companies using web search and A
 - **Parallel Execution**: Fan-out/fan-in pattern for faster research
 - **Cost-Effective**: ~$0.08 per comprehensive company report
 - **Fast**: Complete research in 2-5 minutes
+- **Topic Mode (new)**: Research any topic (beginner → state-of-the-art), include latest-news references, and list related GitHub repositories
 
 ---
 
@@ -82,9 +83,14 @@ See [`docs/01-overview/INSTALLATION.md`](docs/01-overview/INSTALLATION.md) for d
 ```bash
 # Research a company
 python run_research.py --company "Microsoft"
+
+# Research a general topic
+python run_research.py --topic "Retrieval-Augmented Generation (RAG)"
 ```
 
-**Output**: Reports are saved under `outputs/research/<company>/` (see docs for details).
+**Output**:
+- Company reports: `outputs/research/<company>/` (CLI default)
+- Topic reports: `outputs/research/topics/<topic-slug>/00_full_report.md` (CLI default)
 
 See [`docs/01-overview/QUICKSTART.md`](docs/01-overview/QUICKSTART.md) for a complete walkthrough.
 

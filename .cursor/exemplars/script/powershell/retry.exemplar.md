@@ -18,20 +18,20 @@ function Invoke-WithRetry {
     param(
         [Parameter(Mandatory=$true)]
         [scriptblock]$ScriptBlock,
-        
+
         [Parameter(Mandatory=$false)]
         [int]$MaxRetries = 3,
-        
+
         [Parameter(Mandatory=$false)]
         [int]$DelaySeconds = 5,
-        
+
         [Parameter(Mandatory=$false)]
         [int]$BackoffMultiplier = 2
     )
-    
+
     $attempt = 1
     $currentDelay = $DelaySeconds
-    
+
     while ($attempt -le $MaxRetries) {
         try {
             return & $ScriptBlock
@@ -41,10 +41,10 @@ function Invoke-WithRetry {
                 Write-Log "All $MaxRetries retry attempts failed" -Level ERROR
                 throw
             }
-            
+
             Write-Log "Attempt $attempt failed: $($_.Exception.Message). Retrying in ${currentDelay}s..." -Level WARN
             Start-Sleep -Seconds $currentDelay
-            
+
             $currentDelay *= $BackoffMultiplier
             $attempt++
         }
@@ -107,28 +107,28 @@ foreach ($i in 1..$retries) {
 ```powershell
 function Invoke-WithRetry {
     param($ScriptBlock, $MaxRetries = 3)
-    
+
     $attempt = 1
     $delay = 5
-    
+
     while ($attempt -le $MaxRetries) {
         try {
             return & $ScriptBlock
         }
         catch {
             $isTransient = $false
-            
+
             # Check if error is transient
             if ($_.Exception -is [System.Net.WebException]) {
                 $status = $_.Exception.Response.StatusCode
                 # Retry on timeout, rate limit, server errors
                 $isTransient = $status -in @(408, 429, 500, 502, 503, 504)
             }
-            
+
             if (-not $isTransient -or $attempt -eq $MaxRetries) {
                 throw
             }
-            
+
             Write-Log "Transient error, retrying..." -Level WARN
             Start-Sleep -Seconds $delay
             $delay *= 2
@@ -176,4 +176,3 @@ Invoke-WithRetry {
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

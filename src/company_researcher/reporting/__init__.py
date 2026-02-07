@@ -8,28 +8,27 @@ Provides:
 - Export capabilities
 """
 
+from .citations import (
+    Citation,
+    CitationManager,
+    RelevanceScorer,
+    Source,
+    SourceClassifier,
+    SourceQuality,
+    SourceType,
+    classify_source,
+    create_citation_manager,
+)
 from .executive_summary import (
     ExecutiveSummary,
     ExecutiveSummaryGenerator,
-    KeyMetric,
     Highlight,
+    KeyMetric,
     RiskOpportunity,
-    SummarySection,
     SentimentType,
+    SummarySection,
     create_executive_summary_generator,
     generate_executive_summary,
-)
-
-from .citations import (
-    Source,
-    Citation,
-    SourceType,
-    SourceQuality,
-    SourceClassifier,
-    RelevanceScorer,
-    CitationManager,
-    create_citation_manager,
-    classify_source,
 )
 
 __all__ = [

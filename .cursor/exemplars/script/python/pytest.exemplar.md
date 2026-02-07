@@ -51,10 +51,10 @@ def test_threshold_validation_pass(analyzer):
 def test_threshold_validation_fail(analyzer):
     """Test threshold validation fails with low coverage."""
     results = {'line_coverage': 65, 'branch_coverage': 55}
-    
+
     with pytest.raises(ThresholdError) as exc_info:
         analyzer.validate_thresholds(results)
-    
+
     assert "line coverage" in str(exc_info.value).lower()
 
 
@@ -67,7 +67,7 @@ def test_threshold_validation_fail(analyzer):
 def test_threshold_validation_parametrized(analyzer, line, branch, expected):
     """Test threshold validation with multiple scenarios."""
     results = {'line_coverage': line, 'branch_coverage': branch}
-    
+
     if expected:
         assert analyzer.validate_thresholds(results) is True
     else:
@@ -87,4 +87,3 @@ def test_threshold_validation_parametrized(analyzer, line, branch, expected):
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

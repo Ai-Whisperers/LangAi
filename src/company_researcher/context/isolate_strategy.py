@@ -16,21 +16,17 @@ This file maintains backward compatibility with existing imports:
 """
 
 # Re-export all components from modular structure
-from .isolation import (
-    # Enums
-    IsolationLevel,
-    SharePolicy,
-    ContextVisibility,
-    # Data Models
-    ContextItem,
+from .isolation import (  # Enums; Data Models; Classes; Factory Functions
     AgentContext,
-    # Classes
+    AgentContextBuilder,
     ContextFilter,
     ContextIsolationManager,
-    AgentContextBuilder,
-    # Factory Functions
-    create_isolation_manager,
+    ContextItem,
+    ContextVisibility,
+    IsolationLevel,
+    SharePolicy,
     build_agent_context,
+    create_isolation_manager,
 )
 
 __all__ = [

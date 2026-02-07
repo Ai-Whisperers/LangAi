@@ -26,9 +26,9 @@ Examples:
     python scripts/batch_research.py --file ev_companies.txt
 """
 
-import sys
-import os
 import argparse
+import os
+import sys
 from pathlib import Path
 
 # Add project root to path
@@ -40,7 +40,7 @@ from src.company_researcher.batch import BatchResearcher
 
 def load_companies_from_file(file_path: str) -> list:
     """Load company names from text file (one per line)."""
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         companies = [line.strip() for line in f if line.strip()]
     return companies
 
@@ -54,60 +54,35 @@ Examples:
   %(prog)s Tesla Apple Microsoft Amazon
   %(prog)s --file companies.txt
   %(prog)s --workers 10 --output results/ Tesla Apple
-        """
+        """,
     )
 
+    parser.add_argument("companies", nargs="*", help="Company names to research (space-separated)")
+    parser.add_argument("-f", "--file", help="Load company names from file (one per line)")
     parser.add_argument(
-        'companies',
-        nargs='*',
-        help='Company names to research (space-separated)'
+        "-w", "--workers", type=int, default=5, help="Maximum parallel workers (default: 5)"
     )
     parser.add_argument(
-        '-f', '--file',
-        help='Load company names from file (one per line)'
+        "-o", "--output", default="outputs/batch", help="Output directory (default: outputs/batch)"
     )
     parser.add_argument(
-        '-w', '--workers',
-        type=int,
-        default=5,
-        help='Maximum parallel workers (default: 5)'
+        "--timeout", type=int, default=300, help="Timeout per company in seconds (default: 300)"
+    )
+    parser.add_argument("--no-save", action="store_true", help="Do not save results to disk")
+    parser.add_argument(
+        "--enhanced", action="store_true", help="Use enhanced research workflow (if available)"
+    )
+    parser.add_argument("--quiet", action="store_true", help="Suppress progress output")
+    parser.add_argument(
+        "--no-quality-check",
+        action="store_true",
+        help="Disable quality checking (faster but no quality metrics)",
     )
     parser.add_argument(
-        '-o', '--output',
-        default='outputs/batch',
-        help='Output directory (default: outputs/batch)'
-    )
-    parser.add_argument(
-        '--timeout',
-        type=int,
-        default=300,
-        help='Timeout per company in seconds (default: 300)'
-    )
-    parser.add_argument(
-        '--no-save',
-        action='store_true',
-        help='Do not save results to disk'
-    )
-    parser.add_argument(
-        '--enhanced',
-        action='store_true',
-        help='Use enhanced research workflow (if available)'
-    )
-    parser.add_argument(
-        '--quiet',
-        action='store_true',
-        help='Suppress progress output'
-    )
-    parser.add_argument(
-        '--no-quality-check',
-        action='store_true',
-        help='Disable quality checking (faster but no quality metrics)'
-    )
-    parser.add_argument(
-        '--quality-threshold',
+        "--quality-threshold",
         type=float,
         default=70.0,
-        help='Quality score threshold for flagging low quality (default: 70)'
+        help="Quality score threshold for flagging low quality (default: 70)",
     )
 
     args = parser.parse_args()
@@ -151,15 +126,13 @@ Examples:
         max_workers=args.workers,
         timeout_per_company=args.timeout,
         enable_quality_check=not args.no_quality_check,
-        quality_threshold=args.quality_threshold
+        quality_threshold=args.quality_threshold,
     )
 
     # Execute batch research
     try:
         result = researcher.research_batch(
-            companies=companies,
-            use_enhanced_workflow=args.enhanced,
-            show_progress=not args.quiet
+            companies=companies, use_enhanced_workflow=args.enhanced, show_progress=not args.quiet
         )
 
         print("\n" + "=" * 60)
@@ -174,13 +147,17 @@ Examples:
         print(f"   Avg Cost/Company: ${summary['avg_cost_per_company']}")
         print(f"\n⚡ Total Duration: {summary['duration_seconds']:.1f}s")
         print(f"   Avg Duration/Company: {summary['avg_duration_per_company']:.1f}s")
-        print(f"\n📦 Cache Hit Rate: {summary['cache_hit_rate']:.1%} ({summary['cache_hits']}/{summary['total_companies']})")
+        print(
+            f"\n📦 Cache Hit Rate: {summary['cache_hit_rate']:.1%} ({summary['cache_hits']}/{summary['total_companies']})"
+        )
 
         # Quality metrics
-        if not args.no_quality_check and summary.get('avg_quality_score', 0) > 0:
+        if not args.no_quality_check and summary.get("avg_quality_score", 0) > 0:
             print(f"\n📊 Avg Quality Score: {summary['avg_quality_score']:.1f}/100")
-            if summary['low_quality_count'] > 0:
-                print(f"⚠️  Low Quality Reports: {summary['low_quality_count']}/{summary['successful']}")
+            if summary["low_quality_count"] > 0:
+                print(
+                    f"⚠️  Low Quality Reports: {summary['low_quality_count']}/{summary['successful']}"
+                )
 
         # Save results
         if not args.no_save:
@@ -189,7 +166,7 @@ Examples:
             print(f"   - Comparison report: {output_dir}/00_comparison.md")
             print(f"   - Individual reports: {output_dir}/<company_name>.md")
             print(f"   - Summary JSON: {output_dir}/summary.json")
-            if not args.no_quality_check and summary.get('low_quality_count', 0) > 0:
+            if not args.no_quality_check and summary.get("low_quality_count", 0) > 0:
                 print(f"   - Quality issues report: {output_dir}/quality_issues.md")
 
         print("\n" + "=" * 60 + "\n")
@@ -206,6 +183,7 @@ Examples:
     except Exception as e:
         print(f"\n\n❌ Error during batch research: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

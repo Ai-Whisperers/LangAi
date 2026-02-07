@@ -16,18 +16,8 @@ Usage:
     repo.save_agent_output(run.id, "financial", analysis_text, cost)
 """
 
-from .models import (
-    Base,
-    Company,
-    ResearchRun,
-    AgentOutput,
-    Source,
-    CostLog
-)
-from .repository import (
-    ResearchRepository,
-    get_repository
-)
+from .models import AgentOutput, Base, Company, CostLog, ResearchRun, Source
+from .repository import ResearchRepository, get_repository
 
 __all__ = [
     # Models

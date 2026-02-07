@@ -416,7 +416,7 @@ Use for tickets marked "Complex Implementation":
 - Define acceptance criteria that are testable
 - Specify validation evidence required
 
-### In progress.md  
+### In progress.md
 - Document validation steps as they're completed
 - Record validation results (pass/fail)
 - Note issues found during validation

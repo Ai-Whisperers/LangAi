@@ -10,19 +10,20 @@ Usage:
     python scripts/test_scraping_integrations.py --test-all
 """
 
-import os
-import sys
 import argparse
 import logging
+import os
+import sys
 from typing import Optional
 
 # Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -37,17 +38,15 @@ def test_imports():
             create_firecrawl_client,
             create_scrapegraph_client,
         )
+
         print("✓ Firecrawl and ScrapeGraph clients imported successfully")
     except ImportError as e:
         print(f"✗ Import error for clients: {e}")
         return False
 
     try:
-        from company_researcher.crawling import (
-            WebScraper,
-            create_web_scraper,
-            ScrapingBackend,
-        )
+        from company_researcher.crawling import ScrapingBackend, WebScraper, create_web_scraper
+
         print("✓ WebScraper imported successfully")
     except ImportError as e:
         print(f"✗ Import error for WebScraper: {e}")
@@ -58,6 +57,7 @@ def test_imports():
             EnhancedResearcherAgent,
             create_enhanced_researcher_agent,
         )
+
         print("✓ EnhancedResearcherAgent imported successfully")
     except ImportError as e:
         print(f"✗ Import error for EnhancedResearcherAgent: {e}")
@@ -90,7 +90,7 @@ def test_web_scraper_backends():
     """Test WebScraper backend detection."""
     print("\n=== Testing WebScraper Backends ===\n")
 
-    from company_researcher.crawling import create_web_scraper, ScrapingBackend
+    from company_researcher.crawling import ScrapingBackend, create_web_scraper
 
     scraper = create_web_scraper()
     backends = scraper.get_available_backends()
@@ -196,8 +196,7 @@ def test_scrapegraph_client(url: str = "https://example.com"):
     if url != "https://example.com":
         print("\nTesting smart_scrape...")
         extract_result = client.smart_scrape(
-            url=url,
-            prompt="Extract the main heading and first paragraph"
+            url=url, prompt="Extract the main heading and first paragraph"
         )
         if extract_result.success:
             print(f"✓ ScrapeGraph smart_scrape successful")
@@ -216,14 +215,16 @@ def test_smart_extract(url: str = "https://microsoft.com/en-us/about"):
 
     scraper = create_web_scraper()
 
-    if not any(k for k in [os.getenv("FIRECRAWL_API_KEY"), os.getenv("SCRAPEGRAPH_API_KEY")]
-               if k and k != "your_firecrawl_key_here" and k != "your_scrapegraph_key_here"):
+    if not any(
+        k
+        for k in [os.getenv("FIRECRAWL_API_KEY"), os.getenv("SCRAPEGRAPH_API_KEY")]
+        if k and k != "your_firecrawl_key_here" and k != "your_scrapegraph_key_here"
+    ):
         print("⚠ Skipping smart extraction test (no API keys)")
         return True
 
     result = scraper.smart_extract(
-        url=url,
-        prompt="Extract company name, headquarters, and a brief description"
+        url=url, prompt="Extract company name, headquarters, and a brief description"
     )
 
     if result.success:

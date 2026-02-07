@@ -19,13 +19,13 @@ from typing import List, Dict, Optional
 
 class CoverageHistory:
     """Track coverage metrics over time using SQLite."""
-    
+
     def __init__(self, db_path: Path):
         self.db_path = db_path
         self.conn = sqlite3.connect(db_path)
         self.conn.row_factory = sqlite3.Row
         self._init_schema()
-    
+
     def _init_schema(self):
         """Create database schema if not exists."""
         self.conn.executescript("""
@@ -42,11 +42,11 @@ class CoverageHistory:
             CREATE INDEX IF NOT EXISTS idx_timestamp ON coverage_history(timestamp);
         """)
         self.conn.commit()
-    
+
     def record(self, metrics: Dict) -> int:
         """Record coverage metrics."""
         cursor = self.conn.execute("""
-            INSERT INTO coverage_history 
+            INSERT INTO coverage_history
             (timestamp, commit_hash, branch, line_coverage, branch_coverage, build_number, duration_seconds)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
@@ -60,16 +60,16 @@ class CoverageHistory:
         ))
         self.conn.commit()
         return cursor.lastrowid
-    
+
     def get_trend(self, days: int = 30) -> List[Dict]:
         """Get coverage trend for analysis."""
         cursor = self.conn.execute("""
-            SELECT * FROM coverage_history 
+            SELECT * FROM coverage_history
             WHERE datetime(timestamp) > datetime('now', '-{} days')
             ORDER BY timestamp ASC
         """.format(days))
         return [dict(row) for row in cursor.fetchall()]
-    
+
     def close(self):
         self.conn.close()
 
@@ -92,4 +92,3 @@ history.close()
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

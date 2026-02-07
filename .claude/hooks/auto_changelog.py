@@ -13,7 +13,7 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 
 class ChangelogGenerator:
@@ -28,31 +28,33 @@ class ChangelogGenerator:
         try:
             # Get commit hash
             commit_hash = subprocess.check_output(
-                ["git", "rev-parse", "HEAD"],
-                cwd=self.repo_root,
-                text=True
+                ["git", "rev-parse", "HEAD"], cwd=self.repo_root, text=True
             ).strip()
 
             # Get commit message
             commit_msg = subprocess.check_output(
-                ["git", "log", "-1", "--pretty=%B"],
-                cwd=self.repo_root,
-                text=True
+                ["git", "log", "-1", "--pretty=%B"], cwd=self.repo_root, text=True
             ).strip()
 
             # Get commit author and date
-            commit_info = subprocess.check_output(
-                ["git", "log", "-1", "--pretty=%an|%ae|%aI"],
-                cwd=self.repo_root,
-                text=True
-            ).strip().split("|")
+            commit_info = (
+                subprocess.check_output(
+                    ["git", "log", "-1", "--pretty=%an|%ae|%aI"], cwd=self.repo_root, text=True
+                )
+                .strip()
+                .split("|")
+            )
 
             # Get changed files
-            changed_files = subprocess.check_output(
-                ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", commit_hash],
-                cwd=self.repo_root,
-                text=True
-            ).strip().split("\n")
+            changed_files = (
+                subprocess.check_output(
+                    ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", commit_hash],
+                    cwd=self.repo_root,
+                    text=True,
+                )
+                .strip()
+                .split("\n")
+            )
 
             return {
                 "hash": commit_hash[:8],
@@ -60,7 +62,7 @@ class ChangelogGenerator:
                 "author": commit_info[0],
                 "email": commit_info[1],
                 "date": commit_info[2],
-                "files": [f for f in changed_files if f]
+                "files": [f for f in changed_files if f],
             }
         except subprocess.CalledProcessError:
             return None
@@ -91,12 +93,7 @@ class ChangelogGenerator:
         # Extract body and footer
         body = "\n".join(lines[1:]).strip() if len(lines) > 1 else ""
 
-        return {
-            "type": commit_type,
-            "scope": scope,
-            "description": description,
-            "body": body
-        }
+        return {"type": commit_type, "scope": scope, "description": description, "body": body}
 
     def categorize_commit(self, commit_type: str) -> str:
         """Categorize commit type for changelog sections."""
@@ -114,7 +111,7 @@ class ChangelogGenerator:
             "chore": "Maintenance",
             "ci": "CI/CD",
             "build": "Build System",
-            "revert": "Reverts"
+            "revert": "Reverts",
         }
         return categories.get(commit_type.lower(), "Other")
 
@@ -191,17 +188,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
                     # Insert after category header
                     insert_pos = unreleased_content.find("\n", category_pos) + 1
                     unreleased_content = (
-                        unreleased_content[:insert_pos] +
-                        entry + "\n" +
-                        unreleased_content[insert_pos:]
+                        unreleased_content[:insert_pos]
+                        + entry
+                        + "\n"
+                        + unreleased_content[insert_pos:]
                     )
                 else:
                     # Add new category
-                    insert_pos = unreleased_content.find("\n", unreleased_content.find("## [Unreleased]")) + 1
+                    insert_pos = (
+                        unreleased_content.find("\n", unreleased_content.find("## [Unreleased]"))
+                        + 1
+                    )
                     unreleased_content = (
-                        unreleased_content[:insert_pos] +
-                        f"\n### {category}\n\n{entry}\n" +
-                        unreleased_content[insert_pos:]
+                        unreleased_content[:insert_pos]
+                        + f"\n### {category}\n\n{entry}\n"
+                        + unreleased_content[insert_pos:]
                     )
 
                 # Replace in content
@@ -221,8 +222,7 @@ def main():
     # Get repository root
     try:
         repo_root = subprocess.check_output(
-            ["git", "rev-parse", "--show-toplevel"],
-            text=True
+            ["git", "rev-parse", "--show-toplevel"], text=True
         ).strip()
         repo_root = Path(repo_root)
     except subprocess.CalledProcessError:
@@ -242,7 +242,9 @@ def main():
     if generator.update_changelog(commit):
         print(f"Changelog updated with commit {commit['hash']}")
         print(f"  Type: {generator.parse_conventional_commit(commit['message'])['type']}")
-        print(f"  Description: {generator.parse_conventional_commit(commit['message'])['description']}")
+        print(
+            f"  Description: {generator.parse_conventional_commit(commit['message'])['description']}"
+        )
         print(f"\nRun 'git add CHANGELOG.md' to stage the changes")
         return 0
     else:

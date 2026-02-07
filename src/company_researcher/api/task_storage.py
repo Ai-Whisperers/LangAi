@@ -29,20 +29,16 @@ Usage:
 """
 
 # Import from storage package for backward compatibility
-from .storage import (
-    # Abstract interface
-    TaskStorage,
-    # Implementations
-    SQLiteTaskStorage,
-    RedisTaskStorage,
+from .storage import (  # Abstract interface; Implementations; Factory functions; Utilities
     InMemoryTaskStorage,
-    # Factory functions
-    get_task_storage,
-    set_task_storage,
-    init_task_storage,
-    # Utilities
-    _utcnow,
+    RedisTaskStorage,
+    SQLiteTaskStorage,
+    TaskStorage,
     _serialize_datetime,
+    _utcnow,
+    get_task_storage,
+    init_task_storage,
+    set_task_storage,
 )
 
 # Re-export all public APIs
@@ -156,11 +152,14 @@ if __name__ == "__main__":
         storage = await init_task_storage()
         print(f"   ✓ Initialized storage: {type(storage).__name__}")
 
-        await storage.save_task("factory_task", {
-            "company_name": "Factory Test",
-            "status": "pending",
-            "created_at": _utcnow().isoformat(),
-        })
+        await storage.save_task(
+            "factory_task",
+            {
+                "company_name": "Factory Test",
+                "status": "pending",
+                "created_at": _utcnow().isoformat(),
+            },
+        )
         print("   ✓ Saved task via factory storage")
 
         task = await storage.get_task("factory_task")

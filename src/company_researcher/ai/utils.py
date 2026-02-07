@@ -1,18 +1,19 @@
 """Common utilities for AI components."""
-from typing import Any, Dict, List, Optional, TypeVar, Type
-from pydantic import BaseModel
+
 import re
+from typing import Any, Dict, List, Optional, Type, TypeVar
+
+from pydantic import BaseModel
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
 
-T = TypeVar('T', bound=BaseModel)
+T = TypeVar("T", bound=BaseModel)
 
 
 def safe_parse_model(
-    data: Dict[str, Any],
-    model_class: Type[T],
-    default_factory: Optional[callable] = None
+    data: Dict[str, Any], model_class: Type[T], default_factory: Optional[callable] = None
 ) -> T:
     """
     Safely parse data into a Pydantic model.
@@ -45,12 +46,12 @@ def truncate_text(text: str, max_length: int = 8000, suffix: str = "...") -> str
 
     # Try to truncate at a sentence boundary
     truncated = text[:max_length]
-    last_period = truncated.rfind('.')
-    last_newline = truncated.rfind('\n')
+    last_period = truncated.rfind(".")
+    last_newline = truncated.rfind("\n")
 
     cut_point = max(last_period, last_newline)
     if cut_point > max_length * 0.8:  # Only use if we keep >80%
-        return truncated[:cut_point + 1] + suffix
+        return truncated[: cut_point + 1] + suffix
 
     return truncated + suffix
 
@@ -65,17 +66,17 @@ def extract_json_from_text(text: str) -> Optional[str]:
     - Raw JSON objects/arrays
     """
     # Try markdown code block first
-    json_match = re.search(r'```(?:json)?\s*([\s\S]*?)```', text)
+    json_match = re.search(r"```(?:json)?\s*([\s\S]*?)```", text)
     if json_match:
         return json_match.group(1).strip()
 
     # Try to find JSON object
-    obj_match = re.search(r'\{[\s\S]*\}', text)
+    obj_match = re.search(r"\{[\s\S]*\}", text)
     if obj_match:
         return obj_match.group(0)
 
     # Try to find JSON array
-    arr_match = re.search(r'\[[\s\S]*\]', text)
+    arr_match = re.search(r"\[[\s\S]*\]", text)
     if arr_match:
         return arr_match.group(0)
 
@@ -99,9 +100,9 @@ def normalize_confidence(value: Any) -> float:
 
     if isinstance(value, str):
         # Try percentage
-        if '%' in value:
+        if "%" in value:
             try:
-                return float(value.replace('%', '').strip()) / 100.0
+                return float(value.replace("%", "").strip()) / 100.0
             except ValueError:
                 pass
 
@@ -116,15 +117,15 @@ def normalize_confidence(value: Any) -> float:
 
         # Map text values
         text_map = {
-            'very_high': 0.95,
-            'high': 0.8,
-            'medium': 0.6,
-            'moderate': 0.6,
-            'low': 0.4,
-            'very_low': 0.2,
-            'none': 0.0
+            "very_high": 0.95,
+            "high": 0.8,
+            "medium": 0.6,
+            "moderate": 0.6,
+            "low": 0.4,
+            "very_low": 0.2,
+            "none": 0.0,
         }
-        return text_map.get(value.lower().replace(' ', '_'), 0.5)
+        return text_map.get(value.lower().replace(" ", "_"), 0.5)
 
     return 0.5  # Default
 
@@ -186,24 +187,27 @@ class CostTracker:
     def add_cost(self, cost: float, component: str, operation: str = ""):
         """Add a cost entry."""
         self._total_cost += cost
-        self._calls.append({
-            "cost": cost,
-            "component": component,
-            "operation": operation,
-            "cumulative": self._total_cost
-        })
+        self._calls.append(
+            {
+                "cost": cost,
+                "component": component,
+                "operation": operation,
+                "cumulative": self._total_cost,
+            }
+        )
 
         # Check thresholds
         if self._total_cost >= self.max_threshold:
             from .exceptions import AICostLimitExceeded
+
             raise AICostLimitExceeded(
-                component=component,
-                current_cost=self._total_cost,
-                limit=self.max_threshold
+                component=component, current_cost=self._total_cost, limit=self.max_threshold
             )
 
         if not self._warned and self._total_cost >= self.warn_threshold:
-            logger.warning(f"AI cost warning: ${self._total_cost:.4f} exceeds ${self.warn_threshold:.2f}")
+            logger.warning(
+                f"AI cost warning: ${self._total_cost:.4f} exceeds ${self.warn_threshold:.2f}"
+            )
             self._warned = True
 
     @property

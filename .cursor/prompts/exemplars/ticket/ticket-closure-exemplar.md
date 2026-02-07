@@ -59,4 +59,3 @@ Sources: plan.md, progress.md, context.md.
 
 ## When to Reference
 Use when closing tickets to ensure validation, documentation, and final steps are complete and explicitly stated.
-

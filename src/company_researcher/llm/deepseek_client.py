@@ -49,13 +49,15 @@ Usage:
     result = client.reason("Solve: 9.11 vs 9.8 which is larger?")
 """
 
-from openai import OpenAI, AsyncOpenAI
-from typing import Optional, Dict, Any, List, Callable, Union, AsyncGenerator, Generator
-from dataclasses import dataclass, field
-from threading import Lock
-from enum import Enum
-import json
 import asyncio
+import json
+from dataclasses import dataclass, field
+from enum import Enum
+from threading import Lock
+from typing import Any, AsyncGenerator, Callable, Dict, Generator, List, Optional, Union
+
+from openai import AsyncOpenAI, OpenAI
+
 from ..utils import get_config, get_logger
 
 logger = get_logger(__name__)
@@ -81,7 +83,7 @@ DEEPSEEK_PRICING = {
         "context_window": 64000,  # 64K for reasoner
         "max_output": 64000,
         "speed": 30,  # slower due to reasoning
-    }
+    },
 }
 
 
@@ -89,15 +91,17 @@ DEEPSEEK_PRICING = {
 # Task Types for Model Selection
 # =============================================================================
 
+
 class DeepSeekTaskType(Enum):
     """Task types for intelligent model selection."""
-    EXTRACTION = "extraction"      # Data extraction - use V3 (cheap)
+
+    EXTRACTION = "extraction"  # Data extraction - use V3 (cheap)
     CLASSIFICATION = "classification"  # Quick classification - use V3 (cheap)
-    ANALYSIS = "analysis"          # General analysis - use V3
-    SYNTHESIS = "synthesis"        # Report synthesis - use V3
-    REASONING = "reasoning"        # Complex reasoning - use R1
-    MATH = "math"                  # Math problems - use R1
-    CODE = "code"                  # Code generation - use V3 with FIM
+    ANALYSIS = "analysis"  # General analysis - use V3
+    SYNTHESIS = "synthesis"  # Report synthesis - use V3
+    REASONING = "reasoning"  # Complex reasoning - use R1
+    MATH = "math"  # Math problems - use R1
+    CODE = "code"  # Code generation - use V3 with FIM
     CONVERSATION = "conversation"  # Multi-turn chat - use V3
 
 
@@ -120,7 +124,7 @@ class DeepSeekModelSelector:
         cls,
         task_type: DeepSeekTaskType = DeepSeekTaskType.ANALYSIS,
         require_reasoning: bool = False,
-        max_cost_per_1m: Optional[float] = None
+        max_cost_per_1m: Optional[float] = None,
     ) -> str:
         """
         Select optimal model based on task type.
@@ -149,7 +153,10 @@ class DeepSeekModelSelector:
         task_lower = task.lower()
 
         # Reasoning tasks
-        if any(word in task_lower for word in ["reason", "think", "analyze deeply", "complex", "math", "calculate"]):
+        if any(
+            word in task_lower
+            for word in ["reason", "think", "analyze deeply", "complex", "math", "calculate"]
+        ):
             return "deepseek-reasoner"
 
         # Default to V3 for cost efficiency
@@ -160,9 +167,11 @@ class DeepSeekModelSelector:
 # Data Classes
 # =============================================================================
 
+
 @dataclass
 class DeepSeekResponse:
     """Response from DeepSeek API."""
+
     content: str
     input_tokens: int
     output_tokens: int
@@ -183,13 +192,14 @@ class DeepSeekResponse:
             "cached_tokens": self.cached_tokens,
             "reasoning_content": self.reasoning_content,
             "reasoning_tokens": self.reasoning_tokens,
-            "tool_calls": self.tool_calls
+            "tool_calls": self.tool_calls,
         }
 
 
 @dataclass
 class ToolDefinition:
     """Definition of a tool for function calling."""
+
     name: str
     description: str
     parameters: Dict[str, Any]
@@ -201,14 +211,15 @@ class ToolDefinition:
             "function": {
                 "name": self.name,
                 "description": self.description,
-                "parameters": self.parameters
-            }
+                "parameters": self.parameters,
+            },
         }
 
 
 # =============================================================================
 # Sync Client
 # =============================================================================
+
 
 class DeepSeekClient:
     """
@@ -228,7 +239,7 @@ class DeepSeekClient:
         api_key: Optional[str] = None,
         base_url: str = "https://api.deepseek.com",
         beta_base_url: str = "https://api.deepseek.com/beta",
-        default_model: str = "deepseek-chat"
+        default_model: str = "deepseek-chat",
     ):
         """
         Initialize DeepSeek client.
@@ -244,16 +255,12 @@ class DeepSeekClient:
             logger.warning("DeepSeek API key not found. Set DEEPSEEK_API_KEY env var.")
 
         # Standard client
-        self.client = OpenAI(
-            api_key=self.api_key,
-            base_url=base_url
-        ) if self.api_key else None
+        self.client = OpenAI(api_key=self.api_key, base_url=base_url) if self.api_key else None
 
         # Beta client for FIM and prefix completion
-        self.beta_client = OpenAI(
-            api_key=self.api_key,
-            base_url=beta_base_url
-        ) if self.api_key else None
+        self.beta_client = (
+            OpenAI(api_key=self.api_key, base_url=beta_base_url) if self.api_key else None
+        )
 
         self.default_model = default_model
         self._total_cost = 0.0
@@ -262,11 +269,7 @@ class DeepSeekClient:
         self._lock = Lock()
 
     def _calculate_cost(
-        self,
-        model: str,
-        input_tokens: int,
-        output_tokens: int,
-        cached_tokens: int = 0
+        self, model: str, input_tokens: int, output_tokens: int, cached_tokens: int = 0
     ) -> float:
         """Calculate cost for a request."""
         pricing = DEEPSEEK_PRICING.get(model, DEEPSEEK_PRICING["deepseek-chat"])
@@ -286,7 +289,7 @@ class DeepSeekClient:
         task_type: DeepSeekTaskType = DeepSeekTaskType.ANALYSIS,
         max_tokens: int = 4000,
         temperature: float = 0.0,
-        json_mode: bool = False
+        json_mode: bool = False,
     ) -> DeepSeekResponse:
         """
         Query DeepSeek with task-based model selection.
@@ -318,7 +321,7 @@ class DeepSeekClient:
             "model": model,
             "messages": messages,
             "max_tokens": max_tokens,
-            "temperature": temperature
+            "temperature": temperature,
         }
 
         if json_mode:
@@ -329,12 +332,12 @@ class DeepSeekClient:
         # Extract usage
         input_tokens = response.usage.prompt_tokens
         output_tokens = response.usage.completion_tokens
-        cached_tokens = getattr(response.usage, 'prompt_cache_hit_tokens', 0)
+        cached_tokens = getattr(response.usage, "prompt_cache_hit_tokens", 0)
 
         # Extract reasoning content for R1
         reasoning_content = None
         if model == "deepseek-reasoner":
-            reasoning_content = getattr(response.choices[0].message, 'reasoning_content', None)
+            reasoning_content = getattr(response.choices[0].message, "reasoning_content", None)
 
         cost = self._calculate_cost(model, input_tokens, output_tokens, cached_tokens)
 
@@ -352,14 +355,11 @@ class DeepSeekClient:
             model=response.model,
             cost=cost,
             cached_tokens=cached_tokens,
-            reasoning_content=reasoning_content
+            reasoning_content=reasoning_content,
         )
 
     def reason(
-        self,
-        prompt: str,
-        system: Optional[str] = None,
-        max_tokens: int = 8000
+        self, prompt: str, system: Optional[str] = None, max_tokens: int = 8000
     ) -> DeepSeekResponse:
         """
         Use DeepSeek R1 reasoning model with chain-of-thought.
@@ -382,7 +382,7 @@ class DeepSeekClient:
             system=system,
             model="deepseek-reasoner",
             max_tokens=max_tokens,
-            temperature=0.0
+            temperature=0.0,
         )
 
     def query_with_tools(
@@ -393,7 +393,7 @@ class DeepSeekClient:
         model: Optional[str] = None,
         max_tokens: int = 4000,
         temperature: float = 0.0,
-        auto_execute: bool = False
+        auto_execute: bool = False,
     ) -> DeepSeekResponse:
         """
         Query with tool use / function calling.
@@ -426,7 +426,7 @@ class DeepSeekClient:
             messages=messages,
             tools=tools_list,
             max_tokens=max_tokens,
-            temperature=temperature
+            temperature=temperature,
         )
 
         message = response.choices[0].message
@@ -440,7 +440,7 @@ class DeepSeekClient:
                 tool_call = {
                     "id": tc.id,
                     "name": tc.function.name,
-                    "arguments": json.loads(tc.function.arguments)
+                    "arguments": json.loads(tc.function.arguments),
                 }
                 tool_calls.append(tool_call)
 
@@ -456,7 +456,7 @@ class DeepSeekClient:
 
         input_tokens = response.usage.prompt_tokens
         output_tokens = response.usage.completion_tokens
-        cached_tokens = getattr(response.usage, 'prompt_cache_hit_tokens', 0)
+        cached_tokens = getattr(response.usage, "prompt_cache_hit_tokens", 0)
         cost = self._calculate_cost(model, input_tokens, output_tokens, cached_tokens)
 
         with self._lock:
@@ -470,7 +470,7 @@ class DeepSeekClient:
             model=model,
             cost=cost,
             cached_tokens=cached_tokens,
-            tool_calls=tool_calls
+            tool_calls=tool_calls,
         )
 
     def stream_query(
@@ -480,7 +480,7 @@ class DeepSeekClient:
         model: Optional[str] = None,
         task_type: DeepSeekTaskType = DeepSeekTaskType.ANALYSIS,
         max_tokens: int = 4000,
-        temperature: float = 0.0
+        temperature: float = 0.0,
     ) -> Generator[str, None, DeepSeekResponse]:
         """
         Stream response tokens in real-time.
@@ -514,7 +514,7 @@ class DeepSeekClient:
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
-            stream=True
+            stream=True,
         )
 
         full_content = ""
@@ -526,7 +526,7 @@ class DeepSeekClient:
                 full_content += text
                 yield text
             # For R1 model, capture reasoning
-            if hasattr(chunk.choices[0].delta, 'reasoning_content'):
+            if hasattr(chunk.choices[0].delta, "reasoning_content"):
                 rc = chunk.choices[0].delta.reasoning_content
                 if rc:
                     reasoning_content += rc
@@ -546,7 +546,7 @@ class DeepSeekClient:
             output_tokens=output_tokens,
             model=model,
             cost=cost,
-            reasoning_content=reasoning_content if reasoning_content else None
+            reasoning_content=reasoning_content if reasoning_content else None,
         )
 
     def fim_completion(
@@ -554,7 +554,7 @@ class DeepSeekClient:
         prefix: str,
         suffix: Optional[str] = None,
         model: str = "deepseek-chat",
-        max_tokens: int = 256
+        max_tokens: int = 256,
     ) -> DeepSeekResponse:
         """
         Fill-in-the-Middle completion for code.
@@ -576,11 +576,7 @@ class DeepSeekClient:
         if not self.beta_client:
             raise ValueError("DeepSeek beta client not initialized.")
 
-        kwargs: Dict[str, Any] = {
-            "model": model,
-            "prompt": prefix,
-            "max_tokens": max_tokens
-        }
+        kwargs: Dict[str, Any] = {"model": model, "prompt": prefix, "max_tokens": max_tokens}
 
         if suffix:
             kwargs["suffix"] = suffix
@@ -600,7 +596,7 @@ class DeepSeekClient:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             model=model,
-            cost=cost
+            cost=cost,
         )
 
     def prefix_completion(
@@ -609,7 +605,7 @@ class DeepSeekClient:
         assistant_prefix: str,
         model: str = "deepseek-chat",
         max_tokens: int = 1000,
-        stop: Optional[List[str]] = None
+        stop: Optional[List[str]] = None,
     ) -> DeepSeekResponse:
         """
         Continue from an assistant prefix (Beta).
@@ -634,16 +630,12 @@ class DeepSeekClient:
 
         # Add assistant prefix message
         all_messages = messages.copy()
-        all_messages.append({
-            "role": "assistant",
-            "content": assistant_prefix,
-            "prefix": True
-        })
+        all_messages.append({"role": "assistant", "content": assistant_prefix, "prefix": True})
 
         kwargs: Dict[str, Any] = {
             "model": model,
             "messages": all_messages,
-            "max_tokens": max_tokens
+            "max_tokens": max_tokens,
         }
 
         if stop:
@@ -664,15 +656,12 @@ class DeepSeekClient:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             model=model,
-            cost=cost
+            cost=cost,
         )
 
     # Convenience methods for research
     def extract_company_data(
-        self,
-        company_name: str,
-        search_results: str,
-        fields: List[str]
+        self, company_name: str, search_results: str, fields: List[str]
     ) -> Dict[str, Any]:
         """Extract structured company data."""
         fields_list = "\n".join(f"- {field}" for field in fields)
@@ -690,7 +679,7 @@ Include a "confidence" field (0-1) for each extracted value."""
             prompt=prompt,
             system="You are a data extraction specialist. Return valid JSON only.",
             task_type=DeepSeekTaskType.EXTRACTION,
-            json_mode=True
+            json_mode=True,
         )
 
         try:
@@ -698,21 +687,18 @@ Include a "confidence" field (0-1) for each extracted value."""
             data["_meta"] = {
                 "model": response.model,
                 "cost": response.cost,
-                "tokens": response.input_tokens + response.output_tokens
+                "tokens": response.input_tokens + response.output_tokens,
             }
             return data
         except json.JSONDecodeError:
             return {
                 "error": "Failed to parse JSON",
                 "raw_content": response.content,
-                "_meta": {"model": response.model, "cost": response.cost}
+                "_meta": {"model": response.model, "cost": response.cost},
             }
 
     def analyze_financials(
-        self,
-        company_name: str,
-        financial_data: str,
-        use_reasoning: bool = False
+        self, company_name: str, financial_data: str, use_reasoning: bool = False
     ) -> DeepSeekResponse:
         """Analyze company financials with optional deep reasoning."""
         prompt = f"""Analyze the financial data for {company_name}:
@@ -734,7 +720,7 @@ Be specific with numbers and cite sources."""
             return self.query(
                 prompt=prompt,
                 system="You are a senior financial analyst. Provide objective, data-driven analysis.",
-                task_type=DeepSeekTaskType.ANALYSIS
+                task_type=DeepSeekTaskType.ANALYSIS,
             )
 
     def get_stats(self) -> Dict[str, Any]:
@@ -744,8 +730,12 @@ Be specific with numbers and cite sources."""
                 "total_calls": self._total_calls,
                 "total_cost": self._total_cost,
                 "cache_hits": self._cache_hits,
-                "cache_hit_rate": self._cache_hits / self._total_calls if self._total_calls > 0 else 0,
-                "avg_cost_per_call": self._total_cost / self._total_calls if self._total_calls > 0 else 0
+                "cache_hit_rate": (
+                    self._cache_hits / self._total_calls if self._total_calls > 0 else 0
+                ),
+                "avg_cost_per_call": (
+                    self._total_cost / self._total_calls if self._total_calls > 0 else 0
+                ),
             }
 
     def reset_stats(self) -> None:
@@ -759,6 +749,7 @@ Be specific with numbers and cite sources."""
 # =============================================================================
 # Async Client
 # =============================================================================
+
 
 class AsyncDeepSeekClient:
     """
@@ -774,22 +765,18 @@ class AsyncDeepSeekClient:
         self,
         api_key: Optional[str] = None,
         base_url: str = "https://api.deepseek.com",
-        beta_base_url: str = "https://api.deepseek.com/beta"
+        beta_base_url: str = "https://api.deepseek.com/beta",
     ):
         """Initialize async client."""
         self.api_key = api_key or get_config("DEEPSEEK_API_KEY")
         if not self.api_key:
             logger.warning("DeepSeek API key not found.")
 
-        self.client = AsyncOpenAI(
-            api_key=self.api_key,
-            base_url=base_url
-        ) if self.api_key else None
+        self.client = AsyncOpenAI(api_key=self.api_key, base_url=base_url) if self.api_key else None
 
-        self.beta_client = AsyncOpenAI(
-            api_key=self.api_key,
-            base_url=beta_base_url
-        ) if self.api_key else None
+        self.beta_client = (
+            AsyncOpenAI(api_key=self.api_key, base_url=beta_base_url) if self.api_key else None
+        )
 
         self._total_cost = 0.0
         self._total_calls = 0
@@ -803,7 +790,7 @@ class AsyncDeepSeekClient:
         task_type: DeepSeekTaskType = DeepSeekTaskType.ANALYSIS,
         max_tokens: int = 4000,
         temperature: float = 0.0,
-        json_mode: bool = False
+        json_mode: bool = False,
     ) -> DeepSeekResponse:
         """Async query with task-based model selection."""
         if not self.client:
@@ -820,7 +807,7 @@ class AsyncDeepSeekClient:
             "model": model,
             "messages": messages,
             "max_tokens": max_tokens,
-            "temperature": temperature
+            "temperature": temperature,
         }
 
         if json_mode:
@@ -830,7 +817,7 @@ class AsyncDeepSeekClient:
 
         input_tokens = response.usage.prompt_tokens
         output_tokens = response.usage.completion_tokens
-        cached_tokens = getattr(response.usage, 'prompt_cache_hit_tokens', 0)
+        cached_tokens = getattr(response.usage, "prompt_cache_hit_tokens", 0)
 
         pricing = DEEPSEEK_PRICING.get(model, DEEPSEEK_PRICING["deepseek-chat"])
         uncached_input = input_tokens - cached_tokens
@@ -840,7 +827,7 @@ class AsyncDeepSeekClient:
 
         reasoning_content = None
         if model == "deepseek-reasoner":
-            reasoning_content = getattr(response.choices[0].message, 'reasoning_content', None)
+            reasoning_content = getattr(response.choices[0].message, "reasoning_content", None)
 
         async with self._lock:
             self._total_cost += cost
@@ -853,7 +840,7 @@ class AsyncDeepSeekClient:
             model=response.model,
             cost=cost,
             cached_tokens=cached_tokens,
-            reasoning_content=reasoning_content
+            reasoning_content=reasoning_content,
         )
 
     async def concurrent_queries(
@@ -862,7 +849,7 @@ class AsyncDeepSeekClient:
         system: Optional[str] = None,
         model: Optional[str] = None,
         task_type: DeepSeekTaskType = DeepSeekTaskType.ANALYSIS,
-        max_tokens: int = 4000
+        max_tokens: int = 4000,
     ) -> List[DeepSeekResponse]:
         """
         Execute multiple queries concurrently.
@@ -885,7 +872,7 @@ class AsyncDeepSeekClient:
                 system=system,
                 model=model,
                 task_type=task_type,
-                max_tokens=max_tokens
+                max_tokens=max_tokens,
             )
             for prompt in prompts
         ]
@@ -899,7 +886,7 @@ class AsyncDeepSeekClient:
         model: Optional[str] = None,
         task_type: DeepSeekTaskType = DeepSeekTaskType.ANALYSIS,
         max_tokens: int = 4000,
-        temperature: float = 0.0
+        temperature: float = 0.0,
     ) -> AsyncGenerator[str, None]:
         """Async streaming query."""
         if not self.client:
@@ -917,7 +904,7 @@ class AsyncDeepSeekClient:
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
-            stream=True
+            stream=True,
         )
 
         async for chunk in response:
@@ -931,7 +918,7 @@ class AsyncDeepSeekClient:
         system: Optional[str] = None,
         model: str = "deepseek-chat",
         max_tokens: int = 4000,
-        auto_execute: bool = False
+        auto_execute: bool = False,
     ) -> DeepSeekResponse:
         """Async tool use / function calling."""
         if not self.client:
@@ -945,10 +932,7 @@ class AsyncDeepSeekClient:
         tools_list = [t.to_dict() for t in tools]
 
         response = await self.client.chat.completions.create(
-            model=model,
-            messages=messages,
-            tools=tools_list,
-            max_tokens=max_tokens
+            model=model, messages=messages, tools=tools_list, max_tokens=max_tokens
         )
 
         message = response.choices[0].message
@@ -961,7 +945,7 @@ class AsyncDeepSeekClient:
                 tool_call = {
                     "id": tc.id,
                     "name": tc.function.name,
-                    "arguments": json.loads(tc.function.arguments)
+                    "arguments": json.loads(tc.function.arguments),
                 }
                 tool_calls.append(tool_call)
 
@@ -976,7 +960,7 @@ class AsyncDeepSeekClient:
 
         input_tokens = response.usage.prompt_tokens
         output_tokens = response.usage.completion_tokens
-        cached_tokens = getattr(response.usage, 'prompt_cache_hit_tokens', 0)
+        cached_tokens = getattr(response.usage, "prompt_cache_hit_tokens", 0)
 
         pricing = DEEPSEEK_PRICING["deepseek-chat"]
         cost = ((input_tokens - cached_tokens) / 1_000_000) * pricing["input"]
@@ -994,7 +978,7 @@ class AsyncDeepSeekClient:
             model=model,
             cost=cost,
             cached_tokens=cached_tokens,
-            tool_calls=tool_calls
+            tool_calls=tool_calls,
         )
 
     async def get_stats(self) -> Dict[str, Any]:
@@ -1003,7 +987,9 @@ class AsyncDeepSeekClient:
             return {
                 "total_calls": self._total_calls,
                 "total_cost": self._total_cost,
-                "avg_cost_per_call": self._total_cost / self._total_calls if self._total_calls > 0 else 0
+                "avg_cost_per_call": (
+                    self._total_cost / self._total_calls if self._total_calls > 0 else 0
+                ),
             }
 
 
@@ -1011,18 +997,13 @@ class AsyncDeepSeekClient:
 # Tool Creation Helpers
 # =============================================================================
 
+
 def create_tool(
-    name: str,
-    description: str,
-    parameters: Dict[str, Any],
-    function: Optional[Callable] = None
+    name: str, description: str, parameters: Dict[str, Any], function: Optional[Callable] = None
 ) -> ToolDefinition:
     """Create a tool definition for function calling."""
     return ToolDefinition(
-        name=name,
-        description=description,
-        parameters=parameters,
-        function=function
+        name=name, description=description, parameters=parameters, function=function
     )
 
 
@@ -1036,11 +1017,14 @@ def create_deepseek_research_tools() -> List[ToolDefinition]:
                 "type": "object",
                 "properties": {
                     "company_name": {"type": "string", "description": "Company name"},
-                    "metric_type": {"type": "string", "enum": ["revenue", "profit", "margin", "growth"]},
-                    "time_period": {"type": "string", "description": "Time period (e.g., Q1 2024)"}
+                    "metric_type": {
+                        "type": "string",
+                        "enum": ["revenue", "profit", "margin", "growth"],
+                    },
+                    "time_period": {"type": "string", "description": "Time period (e.g., Q1 2024)"},
                 },
-                "required": ["company_name", "metric_type"]
-            }
+                "required": ["company_name", "metric_type"],
+            },
         ),
         ToolDefinition(
             name="analyze_competitor",
@@ -1049,11 +1033,19 @@ def create_deepseek_research_tools() -> List[ToolDefinition]:
                 "type": "object",
                 "properties": {
                     "company_name": {"type": "string", "description": "Target company"},
-                    "competitors": {"type": "array", "items": {"type": "string"}, "description": "Competitor names"},
-                    "dimensions": {"type": "array", "items": {"type": "string"}, "description": "Analysis dimensions"}
+                    "competitors": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Competitor names",
+                    },
+                    "dimensions": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Analysis dimensions",
+                    },
                 },
-                "required": ["company_name"]
-            }
+                "required": ["company_name"],
+            },
         ),
         ToolDefinition(
             name="calculate_metrics",
@@ -1062,12 +1054,16 @@ def create_deepseek_research_tools() -> List[ToolDefinition]:
                 "type": "object",
                 "properties": {
                     "metric": {"type": "string", "enum": ["cagr", "margin", "ratio", "growth"]},
-                    "values": {"type": "array", "items": {"type": "number"}, "description": "Numeric values"},
-                    "periods": {"type": "integer", "description": "Number of periods"}
+                    "values": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "Numeric values",
+                    },
+                    "periods": {"type": "integer", "description": "Number of periods"},
                 },
-                "required": ["metric", "values"]
-            }
-        )
+                "required": ["metric", "values"],
+            },
+        ),
     ]
 
 

@@ -12,8 +12,9 @@ Usage:
 """
 
 from typing import Dict, List
-from src.company_researcher.workflows.parallel_agent_research import research_company
+
 from src.company_researcher.config import config
+from src.company_researcher.workflows.parallel_agent_research import research_company
 
 
 def analyze_research_costs(company_name: str) -> Dict:
@@ -61,24 +62,20 @@ def analyze_research_costs(company_name: str) -> Dict:
             "product": total_cost * 0.16,
         },
         "synthesizer": total_cost * 0.20,
-        "quality_check": total_cost * 0.10
+        "quality_check": total_cost * 0.10,
     }
 
     analysis = {
         "company": company_name,
         "total_cost": total_cost,
         "quality_score": quality_score,
-        "tokens": {
-            "input": input_tokens,
-            "output": output_tokens,
-            "total": total_token_count
-        },
+        "tokens": {"input": input_tokens, "output": output_tokens, "total": total_token_count},
         "metrics": {
             "cost_per_token": cost_per_token,
             "cost_per_quality_point": cost_per_quality_point,
-            "tokens_per_dollar": 1 / cost_per_token if cost_per_token > 0 else 0
+            "tokens_per_dollar": 1 / cost_per_token if cost_per_token > 0 else 0,
         },
-        "estimated_breakdown": estimated_breakdown
+        "estimated_breakdown": estimated_breakdown,
     }
 
     # Display analysis
@@ -98,28 +95,36 @@ def print_cost_analysis(analysis: Dict):
     print(f"\nTotal Cost: ${analysis['total_cost']:.4f}")
 
     # Token breakdown
-    tokens = analysis['tokens']
+    tokens = analysis["tokens"]
     print(f"\nToken Usage:")
     print(f"  Input Tokens:  {tokens['input']:>8,} ({tokens['input']/tokens['total']*100:.1f}%)")
     print(f"  Output Tokens: {tokens['output']:>8,} ({tokens['output']/tokens['total']*100:.1f}%)")
     print(f"  Total Tokens:  {tokens['total']:>8,}")
 
     # Cost metrics
-    metrics = analysis['metrics']
+    metrics = analysis["metrics"]
     print(f"\nCost Metrics:")
     print(f"  Cost per Token:         ${metrics['cost_per_token']:.6f}")
     print(f"  Tokens per Dollar:      {metrics['tokens_per_dollar']:,.0f}")
     print(f"  Cost per Quality Point: ${metrics['cost_per_quality_point']:.5f}")
 
     # Estimated breakdown
-    breakdown = analysis['estimated_breakdown']
+    breakdown = analysis["estimated_breakdown"]
     print(f"\nEstimated Cost Breakdown:")
-    print(f"  Researcher:    ${breakdown['researcher']:.4f} ({breakdown['researcher']/analysis['total_cost']*100:.0f}%)")
-    print(f"  Specialists:   ${sum(breakdown['specialists'].values()):.4f} ({sum(breakdown['specialists'].values())/analysis['total_cost']*100:.0f}%)")
-    for name, cost in breakdown['specialists'].items():
+    print(
+        f"  Researcher:    ${breakdown['researcher']:.4f} ({breakdown['researcher']/analysis['total_cost']*100:.0f}%)"
+    )
+    print(
+        f"  Specialists:   ${sum(breakdown['specialists'].values()):.4f} ({sum(breakdown['specialists'].values())/analysis['total_cost']*100:.0f}%)"
+    )
+    for name, cost in breakdown["specialists"].items():
         print(f"    - {name.capitalize()}: ${cost:.4f}")
-    print(f"  Synthesizer:   ${breakdown['synthesizer']:.4f} ({breakdown['synthesizer']/analysis['total_cost']*100:.0f}%)")
-    print(f"  Quality Check: ${breakdown['quality_check']:.4f} ({breakdown['quality_check']/analysis['total_cost']*100:.0f}%)")
+    print(
+        f"  Synthesizer:   ${breakdown['synthesizer']:.4f} ({breakdown['synthesizer']/analysis['total_cost']*100:.0f}%)"
+    )
+    print(
+        f"  Quality Check: ${breakdown['quality_check']:.4f} ({breakdown['quality_check']/analysis['total_cost']*100:.0f}%)"
+    )
 
 
 def batch_cost_analysis(companies: List[str]) -> Dict:
@@ -180,8 +185,8 @@ def batch_cost_analysis(companies: List[str]) -> Dict:
             "total_cost": total_cost,
             "avg_cost": avg_cost,
             "total_tokens": total_tokens,
-            "avg_quality": avg_quality
-        }
+            "avg_quality": avg_quality,
+        },
     }
 
 
@@ -194,28 +199,28 @@ def cost_optimization_tips():
     tips = [
         {
             "title": "1. Use Haiku for Simple Tasks",
-            "description": "Claude 3.5 Haiku is 10x cheaper than Sonnet for similar tasks"
+            "description": "Claude 3.5 Haiku is 10x cheaper than Sonnet for similar tasks",
         },
         {
             "title": "2. Reduce Search Results",
-            "description": "Fewer search results = less input tokens to analyze"
+            "description": "Fewer search results = less input tokens to analyze",
         },
         {
             "title": "3. Optimize Prompts",
-            "description": "Shorter, focused prompts reduce both input and output tokens"
+            "description": "Shorter, focused prompts reduce both input and output tokens",
         },
         {
             "title": "4. Adjust Quality Target",
-            "description": "Lower quality threshold (75 vs 85) means fewer iterations"
+            "description": "Lower quality threshold (75 vs 85) means fewer iterations",
         },
         {
             "title": "5. Cache Configuration",
-            "description": "Enable prompt caching for repeated research patterns"
+            "description": "Enable prompt caching for repeated research patterns",
         },
         {
             "title": "6. Selective Agent Execution",
-            "description": "Only run agents needed for specific use case"
-        }
+            "description": "Only run agents needed for specific use case",
+        },
     ]
 
     for tip in tips:
@@ -238,19 +243,12 @@ def main():
     print("=" * 70)
     print("EXAMPLE 2: Batch Cost Analysis")
     print("=" * 70)
-    batch_analysis = batch_cost_analysis([
-        "Microsoft",
-        "Tesla",
-        "OpenAI"
-    ])
+    batch_analysis = batch_cost_analysis(["Microsoft", "Tesla", "OpenAI"])
 
     # Optimization tips
     cost_optimization_tips()
 
-    return {
-        "single": analysis,
-        "batch": batch_analysis
-    }
+    return {"single": analysis, "batch": batch_analysis}
 
 
 if __name__ == "__main__":

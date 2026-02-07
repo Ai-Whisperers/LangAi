@@ -110,4 +110,3 @@ Detect missing helper scripts and recommend additions or references to existing 
 - `housekeeping/find-script-extraction-candidates.prompt.md`
 - `housekeeping/extract-script-templars-exemplars.prompt.md`
 - `script/validate-script-standards.prompt.md`
-

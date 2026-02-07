@@ -30,12 +30,14 @@ Usage:
     company_news = news.get_company_news("Apple Inc")
 """
 
-import feedparser
-from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 from datetime import datetime
 from threading import Lock
+from typing import Any, Dict, List, Optional
 from urllib.parse import quote
+
+import feedparser
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -44,6 +46,7 @@ logger = get_logger(__name__)
 @dataclass
 class NewsArticle:
     """A news article from Google News."""
+
     title: str
     link: str
     source: str
@@ -58,13 +61,14 @@ class NewsArticle:
             "source": self.source,
             "published": self.published.isoformat() if self.published else None,
             "published_str": self.published_str,
-            "summary": self.summary
+            "summary": self.summary,
         }
 
 
 @dataclass
 class NewsSearchResult:
     """Result from a news search."""
+
     query: str
     articles: List[NewsArticle]
     total_results: int = 0
@@ -77,7 +81,7 @@ class NewsSearchResult:
             "articles": [a.to_dict() for a in self.articles],
             "total_results": self.total_results,
             "success": self.success,
-            "error": self.error
+            "error": self.error,
         }
 
 
@@ -100,7 +104,7 @@ class GoogleNewsRSS:
         "entertainment": "ENTERTAINMENT",
         "sports": "SPORTS",
         "science": "SCIENCE",
-        "health": "HEALTH"
+        "health": "HEALTH",
     }
 
     # Language/country codes
@@ -115,11 +119,7 @@ class GoogleNewsRSS:
         "zh-CN": {"hl": "zh-CN", "gl": "CN", "ceid": "CN:zh-Hans"},
     }
 
-    def __init__(
-        self,
-        locale: str = "en-US",
-        timeout: int = 10
-    ):
+    def __init__(self, locale: str = "en-US", timeout: int = 10):
         """
         Initialize Google News RSS client.
 
@@ -180,14 +180,11 @@ class GoogleNewsRSS:
             source=source,
             published=published,
             published_str=published_str,
-            summary=entry.get("summary", "")
+            summary=entry.get("summary", ""),
         )
 
     def search(
-        self,
-        query: str,
-        max_results: int = 20,
-        when: Optional[str] = None
+        self, query: str, max_results: int = 20, when: Optional[str] = None
     ) -> NewsSearchResult:
         """
         Search Google News (with caching).
@@ -203,7 +200,8 @@ class GoogleNewsRSS:
         # Check cache first (6-hour TTL)
         cache_key = f"{query}:{max_results}:{when or 'all'}"
         try:
-            from .result_cache import get_cached_news, cache_news
+            from ..cache.result_cache import cache_news, get_cached_news
+
             cached = get_cached_news(cache_key)
             if cached:
                 logger.debug(f"[CACHE HIT] News search: '{query}'")
@@ -211,7 +209,7 @@ class GoogleNewsRSS:
                     query=query,
                     articles=[NewsArticle(**a) for a in cached],
                     total_results=len(cached),
-                    success=True
+                    success=True,
                 )
         except ImportError:
             pass
@@ -235,33 +233,22 @@ class GoogleNewsRSS:
 
             # Cache results (6 hours)
             try:
-                from .result_cache import cache_news
+                from ..cache.result_cache import cache_news
+
                 cache_news(cache_key, [a.to_dict() for a in articles])
                 logger.debug(f"[CACHED] News search: '{query}'")
             except ImportError:
                 pass
 
             return NewsSearchResult(
-                query=query,
-                articles=articles,
-                total_results=len(articles),
-                success=True
+                query=query, articles=articles, total_results=len(articles), success=True
             )
 
         except Exception as e:
             logger.error(f"Google News search error for '{query}': {e}")
-            return NewsSearchResult(
-                query=query,
-                articles=[],
-                success=False,
-                error=str(e)
-            )
+            return NewsSearchResult(query=query, articles=[], success=False, error=str(e))
 
-    def get_topic_news(
-        self,
-        topic: str,
-        max_results: int = 20
-    ) -> NewsSearchResult:
+    def get_topic_news(self, topic: str, max_results: int = 20) -> NewsSearchResult:
         """
         Get news for a specific topic.
 
@@ -291,19 +278,13 @@ class GoogleNewsRSS:
                 self._total_queries += 1
 
             return NewsSearchResult(
-                query=f"topic:{topic}",
-                articles=articles,
-                total_results=len(articles),
-                success=True
+                query=f"topic:{topic}", articles=articles, total_results=len(articles), success=True
             )
 
         except Exception as e:
             logger.error(f"Google News topic error for '{topic}': {e}")
             return NewsSearchResult(
-                query=f"topic:{topic}",
-                articles=[],
-                success=False,
-                error=str(e)
+                query=f"topic:{topic}", articles=[], success=False, error=str(e)
             )
 
     def get_company_news(
@@ -311,7 +292,7 @@ class GoogleNewsRSS:
         company_name: str,
         ticker: Optional[str] = None,
         max_results: int = 20,
-        when: str = "7d"
+        when: str = "7d",
     ) -> NewsSearchResult:
         """
         Get news for a specific company.
@@ -339,10 +320,7 @@ class GoogleNewsRSS:
         return self.search(query, max_results, when)
 
     def get_industry_news(
-        self,
-        industry: str,
-        max_results: int = 20,
-        when: str = "7d"
+        self, industry: str, max_results: int = 20, when: str = "7d"
     ) -> NewsSearchResult:
         """
         Get news for an industry.
@@ -358,10 +336,7 @@ class GoogleNewsRSS:
         query = f"{industry} industry market"
         return self.search(query, max_results, when)
 
-    def get_headlines(
-        self,
-        max_results: int = 20
-    ) -> NewsSearchResult:
+    def get_headlines(self, max_results: int = 20) -> NewsSearchResult:
         """
         Get top headlines.
 
@@ -384,26 +359,14 @@ class GoogleNewsRSS:
                 self._total_queries += 1
 
             return NewsSearchResult(
-                query="headlines",
-                articles=articles,
-                total_results=len(articles),
-                success=True
+                query="headlines", articles=articles, total_results=len(articles), success=True
             )
 
         except Exception as e:
             logger.error(f"Google News headlines error: {e}")
-            return NewsSearchResult(
-                query="headlines",
-                articles=[],
-                success=False,
-                error=str(e)
-            )
+            return NewsSearchResult(query="headlines", articles=[], success=False, error=str(e))
 
-    def get_geo_news(
-        self,
-        location: str,
-        max_results: int = 20
-    ) -> NewsSearchResult:
+    def get_geo_news(self, location: str, max_results: int = 20) -> NewsSearchResult:
         """
         Get news for a geographic location.
 
@@ -436,7 +399,7 @@ class GoogleNewsRSS:
             return {
                 "total_queries": self._total_queries,
                 "locale": self.locale,
-                "cost": 0.0  # FREE!
+                "cost": 0.0,  # FREE!
             }
 
     def reset_stats(self) -> None:

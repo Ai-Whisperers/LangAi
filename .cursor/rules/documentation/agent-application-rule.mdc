@@ -74,13 +74,13 @@ When user requests documentation-related work, categorize:
 
 1. **Documentation Creation/Improvement**: "Add XML documentation", "Document class"
    - → Execute Scenario A (Creating/Improving Documentation)
-   
+
 2. **Documentation Configuration**: "Enable XML generation", "Configure project"
    - → Execute Scenario B (Configuring Documentation)
-   
+
 3. **Documentation Testing**: "Test documentation", "Validate completeness"
    - → Execute Scenario C (Testing Documentation)
-   
+
 4. **Documentation Standards Reference**: "What are the standards?", "How to document?"
    - → Provide reference to `rule.documentation.standards.v1`
 

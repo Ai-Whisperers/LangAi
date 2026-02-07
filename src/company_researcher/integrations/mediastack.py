@@ -10,8 +10,8 @@ Documentation: https://mediastack.com/documentation
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from .base_client import BaseAPIClient
 from ..utils import get_logger
+from .base_client import BaseAPIClient
 
 logger = get_logger(__name__)
 
@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 @dataclass
 class MediastackArticle:
     """News article from Mediastack."""
+
     author: Optional[str]
     title: str
     description: str
@@ -42,7 +43,7 @@ class MediastackArticle:
             category=data.get("category", ""),
             language=data.get("language", ""),
             country=data.get("country", ""),
-            published_at=data.get("published_at", "")
+            published_at=data.get("published_at", ""),
         )
 
 
@@ -69,15 +70,10 @@ class MediastackClient(BaseAPIClient):
             env_var="MEDIASTACK_API_KEY",
             cache_ttl=900,  # 15 min cache matches delay
             rate_limit_calls=500,
-            rate_limit_period=2592000.0  # Monthly limit
+            rate_limit_period=2592000.0,  # Monthly limit
         )
 
-    async def _request(
-        self,
-        endpoint: str,
-        params: Optional[Dict] = None,
-        **kwargs
-    ):
+    async def _request(self, endpoint: str, params: Optional[Dict] = None, **kwargs):
         """Override to add API key to all requests."""
         params = params or {}
         params["access_key"] = self.api_key
@@ -91,7 +87,7 @@ class MediastackClient(BaseAPIClient):
         countries: Optional[List[str]] = None,
         languages: Optional[List[str]] = None,
         limit: int = 25,
-        offset: int = 0
+        offset: int = 0,
     ) -> List[MediastackArticle]:
         """
         Get live news articles.
@@ -112,10 +108,7 @@ class MediastackClient(BaseAPIClient):
             - general, business, technology, science
             - health, sports, entertainment
         """
-        params = {
-            "limit": min(limit, 100),
-            "offset": offset
-        }
+        params = {"limit": min(limit, 100), "offset": offset}
 
         if keywords:
             params["keywords"] = keywords
@@ -133,9 +126,7 @@ class MediastackClient(BaseAPIClient):
         return [MediastackArticle.from_dict(article) for article in articles]
 
     async def get_business_news(
-        self,
-        countries: Optional[List[str]] = None,
-        limit: int = 25
+        self, countries: Optional[List[str]] = None, limit: int = 25
     ) -> List[MediastackArticle]:
         """
         Get business news.
@@ -147,16 +138,10 @@ class MediastackClient(BaseAPIClient):
         Returns:
             List of MediastackArticle objects
         """
-        return await self.get_live_news(
-            categories=["business"],
-            countries=countries,
-            limit=limit
-        )
+        return await self.get_live_news(categories=["business"], countries=countries, limit=limit)
 
     async def get_tech_news(
-        self,
-        countries: Optional[List[str]] = None,
-        limit: int = 25
+        self, countries: Optional[List[str]] = None, limit: int = 25
     ) -> List[MediastackArticle]:
         """
         Get technology news.
@@ -168,17 +153,10 @@ class MediastackClient(BaseAPIClient):
         Returns:
             List of MediastackArticle objects
         """
-        return await self.get_live_news(
-            categories=["technology"],
-            countries=countries,
-            limit=limit
-        )
+        return await self.get_live_news(categories=["technology"], countries=countries, limit=limit)
 
     async def search_news(
-        self,
-        keywords: str,
-        categories: Optional[List[str]] = None,
-        limit: int = 25
+        self, keywords: str, categories: Optional[List[str]] = None, limit: int = 25
     ) -> List[MediastackArticle]:
         """
         Search for news by keywords.
@@ -191,17 +169,9 @@ class MediastackClient(BaseAPIClient):
         Returns:
             List of MediastackArticle objects
         """
-        return await self.get_live_news(
-            keywords=keywords,
-            categories=categories,
-            limit=limit
-        )
+        return await self.get_live_news(keywords=keywords, categories=categories, limit=limit)
 
-    async def get_company_news(
-        self,
-        company_name: str,
-        limit: int = 20
-    ) -> List[MediastackArticle]:
+    async def get_company_news(self, company_name: str, limit: int = 20) -> List[MediastackArticle]:
         """
         Get news about a company.
 
@@ -213,7 +183,5 @@ class MediastackClient(BaseAPIClient):
             List of MediastackArticle objects
         """
         return await self.search_news(
-            keywords=company_name,
-            categories=["business", "technology"],
-            limit=limit
+            keywords=company_name, categories=["business", "technology"], limit=limit
         )

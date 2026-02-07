@@ -13,10 +13,10 @@ provenance:
 
 # Entity Relationships: Units Domain
 
-**Domain**: Units Management  
-**Status**: Database Analysis Complete  
-**Created**: 2025-11-29  
-**Last Updated**: 2025-11-29  
+**Domain**: Units Management
+**Status**: Database Analysis Complete
+**Created**: 2025-11-29
+**Last Updated**: 2025-11-29
 **Source**: Oracle database configuration `GENDATABASE.ini`, C++ field access patterns
 
 ## Overview
@@ -81,10 +81,10 @@ Legend:
 
 ### Primary Key
 
-**Column**: `NR`  
-**Type**: `NUMBER` (maps to C# `long`)  
-**Constraint Name**: `PK_MEASUREMENTUNIT`  
-**Generation**: Auto-increment from sequence `GENCOUNTER_SEQ`  
+**Column**: `NR`
+**Type**: `NUMBER` (maps to C# `long`)
+**Constraint Name**: `PK_MEASUREMENTUNIT`
+**Generation**: Auto-increment from sequence `GENCOUNTER_SEQ`
 **Business Meaning**: System-assigned unique identifier for measurement units
 
 ```sql
@@ -107,11 +107,11 @@ CONSTRAINT UX_MEASUREMENTUNIT_UNIT UNIQUE (UNIT)
 
 #### Self-Reference: Counter Unit
 
-**Relationship**: MeasurementUnit ↔ MeasurementUnit  
-**Foreign Key Column**: `COUNTERUNITID`  
-**References**: `D_MEASUREMENTUNIT(NR)`  
-**Constraint Name**: `FK_MEASUREMENTUNIT_COUNTER`  
-**Cardinality**: 0..1 (optional counter unit)  
+**Relationship**: MeasurementUnit ↔ MeasurementUnit
+**Foreign Key Column**: `COUNTERUNITID`
+**References**: `D_MEASUREMENTUNIT(NR)`
+**Constraint Name**: `FK_MEASUREMENTUNIT_COUNTER`
+**Cardinality**: 0..1 (optional counter unit)
 **Delete Rule**: `ON DELETE SET NULL`
 
 **Business Purpose**: Establishes bidirectional conversion pairs for symmetry validation.
@@ -127,8 +127,8 @@ Validation: Factor_A * Factor_B ≈ 1.0 (application-level check)
 
 **SQL Definition**:
 ```sql
-CONSTRAINT FK_MEASUREMENTUNIT_COUNTER 
-    FOREIGN KEY (COUNTERUNITID) 
+CONSTRAINT FK_MEASUREMENTUNIT_COUNTER
+    FOREIGN KEY (COUNTERUNITID)
     REFERENCES D_MEASUREMENTUNIT(NR)
     ON DELETE SET NULL
 ```
@@ -140,11 +140,11 @@ public virtual MeasurementUnit? CounterUnit { get; set; }
 
 #### Cross-Domain: Meter Product
 
-**Relationship**: MeasurementUnit → MeterProduct  
-**Foreign Key Column**: `METERPRODUCTID`  
-**References**: `D_METERPRODUCT(NR)` (Products domain)  
-**Constraint Name**: `FK_MEASUREMENTUNIT_METERPRODUCT`  
-**Cardinality**: 0..1 (optional meter product association)  
+**Relationship**: MeasurementUnit → MeterProduct
+**Foreign Key Column**: `METERPRODUCTID`
+**References**: `D_METERPRODUCT(NR)` (Products domain)
+**Constraint Name**: `FK_MEASUREMENTUNIT_METERPRODUCT`
+**Cardinality**: 0..1 (optional meter product association)
 **Delete Rule**: `ON DELETE SET NULL`
 
 **Business Purpose**: Associates units with specific meter product types for default unit assignments.
@@ -161,8 +161,8 @@ Usage: Meter product defines which units are valid for that meter type
 
 **SQL Definition**:
 ```sql
-CONSTRAINT FK_MEASUREMENTUNIT_METERPRODUCT 
-    FOREIGN KEY (METERPRODUCTID) 
+CONSTRAINT FK_MEASUREMENTUNIT_METERPRODUCT
+    FOREIGN KEY (METERPRODUCTID)
     REFERENCES D_METERPRODUCT(NR)
     ON DELETE SET NULL
 ```
@@ -178,9 +178,9 @@ public virtual MeterProduct? MeterProduct { get; set; }
 
 #### Profile.UnitId → MeasurementUnit
 
-**Relationship**: Profile → MeasurementUnit  
-**Foreign Key Column**: `UNITID` in `D_PROFILE` table  
-**Cardinality**: Many-to-one (many profiles can use same unit)  
+**Relationship**: Profile → MeasurementUnit
+**Foreign Key Column**: `UNITID` in `D_PROFILE` table
+**Cardinality**: Many-to-one (many profiles can use same unit)
 **Business Purpose**: Profiles specify measurement units for consumption patterns
 
 **Example**:
@@ -218,9 +218,9 @@ public virtual ICollection<Profile> Profiles { get; set; }
 
 ### Primary Key Index
 
-**Index Name**: `PK_MEASUREMENTUNIT`  
-**Type**: Unique clustered index  
-**Columns**: `NR`  
+**Index Name**: `PK_MEASUREMENTUNIT`
+**Type**: Unique clustered index
+**Columns**: `NR`
 **Purpose**: Primary key enforcement and fast lookup by ID
 
 ```sql
@@ -229,9 +229,9 @@ CREATE UNIQUE INDEX PK_MEASUREMENTUNIT ON D_MEASUREMENTUNIT(NR);
 
 ### Business Key Index
 
-**Index Name**: `UX_MEASUREMENTUNIT_UNIT`  
-**Type**: Unique non-clustered index  
-**Columns**: `UNIT`  
+**Index Name**: `UX_MEASUREMENTUNIT_UNIT`
+**Type**: Unique non-clustered index
+**Columns**: `UNIT`
 **Purpose**: Fast lookup by unit symbol, enforces uniqueness
 
 ```sql
@@ -240,9 +240,9 @@ CREATE UNIQUE INDEX UX_MEASUREMENTUNIT_UNIT ON D_MEASUREMENTUNIT(UNIT);
 
 ### Classification Index
 
-**Index Name**: `IX_MEASUREMENTUNIT_UNITTYPE`  
-**Type**: Non-unique non-clustered index  
-**Columns**: `UNITTYPE`  
+**Index Name**: `IX_MEASUREMENTUNIT_UNITTYPE`
+**Type**: Non-unique non-clustered index
+**Columns**: `UNITTYPE`
 **Purpose**: Fast filtering by unit type for type-safe conversion operations
 
 ```sql
@@ -256,18 +256,18 @@ SELECT * FROM D_MEASUREMENTUNIT WHERE UNITTYPE = 0; -- All energy units
 
 ### Foreign Key Indexes
 
-**Index Name**: `IX_MEASUREMENTUNIT_COUNTERUNITID`  
-**Type**: Non-unique non-clustered index  
-**Columns**: `COUNTERUNITID`  
+**Index Name**: `IX_MEASUREMENTUNIT_COUNTERUNITID`
+**Type**: Non-unique non-clustered index
+**Columns**: `COUNTERUNITID`
 **Purpose**: Performance optimization for counter unit lookups and cascade operations
 
 ```sql
 CREATE INDEX IX_MEASUREMENTUNIT_COUNTERUNITID ON D_MEASUREMENTUNIT(COUNTERUNITID);
 ```
 
-**Index Name**: `IX_MEASUREMENTUNIT_METERPRODUCTID`  
-**Type**: Non-unique non-clustered index  
-**Columns**: `METERPRODUCTID`  
+**Index Name**: `IX_MEASUREMENTUNIT_METERPRODUCTID`
+**Type**: Non-unique non-clustered index
+**Columns**: `METERPRODUCTID`
 **Purpose**: Performance optimization for meter product relationships
 
 ```sql
@@ -280,7 +280,7 @@ CREATE INDEX IX_MEASUREMENTUNIT_METERPRODUCTID ON D_MEASUREMENTUNIT(METERPRODUCT
 
 These constraints are enforced by application logic, not database constraints:
 
-**1. Factor Positivity**  
+**1. Factor Positivity**
 - **Rule**: `FACTOR > 0`
 - **Enforcement**: Domain entity property validation
 - **Reason**: Database allows any numeric value, application ensures business rule
@@ -298,7 +298,7 @@ public decimal Factor
 }
 ```
 
-**2. Counter Unit Symmetry**  
+**2. Counter Unit Symmetry**
 - **Rule**: `Unit_A.Factor * Unit_B.Factor ≈ 1.0` where A and B are counter units
 - **Enforcement**: Domain service validation before save
 - **Reason**: Cannot be expressed as database CHECK constraint
@@ -307,7 +307,7 @@ public decimal Factor
 public void ValidateCounterUnitSymmetry()
 {
     if (CounterUnit == null) return;
-    
+
     const decimal tolerance = 0.000000001M;
     decimal product = this.Factor * CounterUnit.Factor;
     if (Math.Abs(product - 1.0M) > tolerance)
@@ -315,33 +315,33 @@ public void ValidateCounterUnitSymmetry()
 }
 ```
 
-**3. Switch Interval Range**  
+**3. Switch Interval Range**
 - **Rule**: `SWITCHINTERVAL BETWEEN 1 AND 60` or `NULL`
 - **Enforcement**: Domain entity validation
 - **Reason**: Business rule for standard intervals, application-specific
 
 ### Database-Level Constraints
 
-**1. Primary Key Constraint**  
+**1. Primary Key Constraint**
 ```sql
 CONSTRAINT PK_MEASUREMENTUNIT PRIMARY KEY (NR)
 ```
 - Ensures NR uniqueness
 - Clustered index for performance
 
-**2. Unique Constraint on Unit Symbol**  
+**2. Unique Constraint on Unit Symbol**
 ```sql
 CONSTRAINT UX_MEASUREMENTUNIT_UNIT UNIQUE (UNIT)
 ```
 - Prevents duplicate unit symbols within tenant
 - Non-clustered index for fast lookup
 
-**3. Foreign Key Constraints**  
+**3. Foreign Key Constraints**
 ```sql
-CONSTRAINT FK_MEASUREMENTUNIT_COUNTER 
+CONSTRAINT FK_MEASUREMENTUNIT_COUNTER
     FOREIGN KEY (COUNTERUNITID) REFERENCES D_MEASUREMENTUNIT(NR) ON DELETE SET NULL;
 
-CONSTRAINT FK_MEASUREMENTUNIT_METERPRODUCT 
+CONSTRAINT FK_MEASUREMENTUNIT_METERPRODUCT
     FOREIGN KEY (METERPRODUCTID) REFERENCES D_METERPRODUCT(NR) ON DELETE SET NULL;
 ```
 - Ensures referential integrity
@@ -371,7 +371,7 @@ UPDATE D_MEASUREMENTUNIT SET COUNTERUNITID = 1001 WHERE NR = 1000;
 **Validation Query**:
 ```sql
 -- Find asymmetric conversion pairs (should return 0 rows)
-SELECT 
+SELECT
     u1.NR as Unit1_NR,
     u1.UNIT as Unit1_Symbol,
     u1.FACTOR as Unit1_Factor,
@@ -415,7 +415,7 @@ NR    | UNIT | FACTOR    | ORDERNR
 **Query Example**:
 ```sql
 -- Find meter products and their default units
-SELECT 
+SELECT
     mp.NR as MeterProduct_NR,
     mp.PRODUCTNAME as MeterProduct_Name,
     u.NR as Unit_NR,
@@ -438,39 +438,39 @@ public class MeasurementUnitConfiguration : IEntityTypeConfiguration<Measurement
     public void Configure(EntityTypeBuilder<MeasurementUnit> builder)
     {
         builder.ToTable("D_MEASUREMENTUNIT");
-        
+
         // Primary key
         builder.HasKey(e => e.Nr);
         builder.Property(e => e.Nr).HasColumnName("NR").ValueGeneratedOnAdd();
-        
+
         // Unique constraint on Unit symbol
         builder.HasIndex(e => e.Unit).IsUnique().HasDatabaseName("UX_MEASUREMENTUNIT_UNIT");
         builder.Property(e => e.Unit).HasColumnName("UNIT").HasMaxLength(20).IsRequired();
-        
+
         // Classification index
         builder.HasIndex(e => e.UnitType).HasDatabaseName("IX_MEASUREMENTUNIT_UNITTYPE");
         builder.Property(e => e.UnitType).HasColumnName("UNITTYPE").IsRequired();
-        
+
         // Self-reference relationship
         builder.HasOne(e => e.CounterUnit)
             .WithMany()
             .HasForeignKey(e => e.CounterUnitId)
             .HasConstraintName("FK_MEASUREMENTUNIT_COUNTER")
             .OnDelete(DeleteBehavior.SetNull);
-        
+
         builder.HasIndex(e => e.CounterUnitId).HasDatabaseName("IX_MEASUREMENTUNIT_COUNTERUNITID");
         builder.Property(e => e.CounterUnitId).HasColumnName("COUNTERUNITID");
-        
+
         // Cross-domain relationship to MeterProduct
         builder.HasOne(e => e.MeterProduct)
             .WithMany()
             .HasForeignKey(e => e.MeterProductId)
             .HasConstraintName("FK_MEASUREMENTUNIT_METERPRODUCT")
             .OnDelete(DeleteBehavior.SetNull);
-        
+
         builder.HasIndex(e => e.MeterProductId).HasDatabaseName("IX_MEASUREMENTUNIT_METERPRODUCTID");
         builder.Property(e => e.MeterProductId).HasColumnName("METERPRODUCTID");
-        
+
         // Other fields
         builder.Property(e => e.Factor).HasColumnName("FACTOR").HasColumnType("decimal(18,9)").IsRequired();
         builder.Property(e => e.OrderNr).HasColumnName("ORDERNR");
@@ -513,14 +513,14 @@ public async Task<MeasurementUnit?> GetByUnitSymbolAsync(string unit)
     var cacheKey = $"Unit:{unit}";
     if (_unitCache.TryGetValue(cacheKey, out MeasurementUnit cachedUnit))
         return cachedUnit;
-    
+
     var dbUnit = await _context.MeasurementUnits
         .Include(u => u.CounterUnit)
         .FirstOrDefaultAsync(u => u.Unit == unit);
-    
+
     if (dbUnit != null)
         _unitCache.Set(cacheKey, dbUnit, TimeSpan.FromHours(24));
-    
+
     return dbUnit;
 }
 ```
@@ -569,7 +569,7 @@ WHERE FACTOR <= 0 OR FACTOR IS NULL;
 **Asymmetric Counter Unit Pairs**:
 ```sql
 -- Find counter unit pairs with asymmetric factors (should be 0 rows)
-SELECT 
+SELECT
     u1.NR, u1.UNIT, u1.FACTOR,
     u2.NR, u2.UNIT, u2.FACTOR,
     (u1.FACTOR * u2.FACTOR) as Product
@@ -587,11 +587,11 @@ WHERE ABS((u1.FACTOR * u2.FACTOR) - 1.0) > 0.000000001;
 
 ---
 
-**Migration Phase**: 2 - Specification Creation  
-**Generated by**: rule.migration.spec-create.v1  
-**Source System**: eBase C++ Database Configuration  
-**Analyzed Source**: GENDATABASE.ini, eBase/Units/*.cpp field access patterns  
-**Created**: 2025-11-29  
-**Last Updated**: 2025-11-29  
-**Status**: Database Review Complete  
+**Migration Phase**: 2 - Specification Creation
+**Generated by**: rule.migration.spec-create.v1
+**Source System**: eBase C++ Database Configuration
+**Analyzed Source**: GENDATABASE.ini, eBase/Units/*.cpp field access patterns
+**Created**: 2025-11-29
+**Last Updated**: 2025-11-29
+**Status**: Database Review Complete
 **Quality Gate**: Passed

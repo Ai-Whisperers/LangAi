@@ -26,22 +26,22 @@ Enhance a working prompt without breaking core value: add structure, examples, v
 - Time budget (quick / medium / deep)
 
 ## Deterministic Steps
-1) Analyze: strengths to preserve, gaps to fill, risks of regressions  
-2) Choose enhancement type: examples | structure | feature/validation | documentation | comprehensive  
-3) Plan: smallest set of changes that improves the prompt without bloat  
-4) Apply: add only necessary sections, examples, and validation; preserve working parts  
-5) Validate: run against prompt-creation-rule and registry format; spot-check usage  
+1) Analyze: strengths to preserve, gaps to fill, risks of regressions
+2) Choose enhancement type: examples | structure | feature/validation | documentation | comprehensive
+3) Plan: smallest set of changes that improves the prompt without bloat
+4) Apply: add only necessary sections, examples, and validation; preserve working parts
+5) Validate: run against prompt-creation-rule and registry format; spot-check usage
 
 ## Structure to Produce
-- Frontmatter: minimal, correct YAML; only needed fields (name, description, category, tags, argument-hint)  
-- Purpose: why and when to use; one short paragraph  
-- Required Context: bullets of inputs the user must supply  
-- Process: numbered steps tailored to the enhancement type  
-- Reasoning Process (for AI): short checklist of how to think; avoid verbosity  
-- Examples: 2–3 focused few-shots; no sprawling before/after dumps  
-- Expected Output: concise format spec; avoid over-detail  
-- Quality Criteria: 5–8 checklist items tied to gaps addressed  
-- Related: only high-value related prompts/rules  
+- Frontmatter: minimal, correct YAML; only needed fields (name, description, category, tags, argument-hint)
+- Purpose: why and when to use; one short paragraph
+- Required Context: bullets of inputs the user must supply
+- Process: numbered steps tailored to the enhancement type
+- Reasoning Process (for AI): short checklist of how to think; avoid verbosity
+- Examples: 2–3 focused few-shots; no sprawling before/after dumps
+- Expected Output: concise format spec; avoid over-detail
+- Quality Criteria: 5–8 checklist items tied to gaps addressed
+- Related: only high-value related prompts/rules
 
 ## Quality Bar (use to self-check)
 - No redundant sections (combine Purpose/Use When; remove star ratings/effectiveness fluff)
@@ -58,4 +58,3 @@ Enhance a working prompt without breaking core value: add structure, examples, v
 ```
 @enhance-prompt .cursor/prompts/prompt/example.prompt.md --type examples --time medium
 ```
-

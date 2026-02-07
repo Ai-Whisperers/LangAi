@@ -1,0 +1,74 @@
+---
+id: rule.testing.pytest-structure.v1
+name: Pytest Test Structure
+version: 1.0.0
+description: Enforce structure and naming conventions for pytest files
+globs: ["tests/**/*.py"]
+governs: ["tests/**/*.py"]
+alwaysApply: false
+requires: []
+---
+
+# Pytest Test Structure Rule
+
+## Purpose
+Ensure consistent test organization and naming for better maintainability and discoverability.
+
+## Standards
+
+### File Organization
+- All tests must reside in the `tests/` directory
+- Test files must start with `test_` or end with `_test.py`
+- Mirror the source code structure in `tests/` (e.g., `src/foo/bar.py` -> `tests/foo/test_bar.py`)
+
+### Naming Conventions
+- Test functions must start with `test_`
+- Test classes must start with `Test`
+- Use descriptive names: `test_<function_name>_<scenario>_<expected_result>`
+- Example: `test_calculate_total_with_tax_returns_correct_amount`
+
+### Structure
+- Use `pytest.fixture` for setup/teardown
+- Prefer functions for simple tests
+- Use classes (`Test*`) for grouping related tests
+- Use type hints in test code
+
+### Markers
+- Use custom markers in `pytest.ini` (e.g., `@pytest.mark.integration`)
+- Mark slow tests or those requiring external services
+
+## Examples
+
+**Good:**
+```python
+import pytest
+from src.math import calculate_total
+
+def test_calculate_total_empty_list_returns_zero():
+    assert calculate_total([], 0.1) == 0
+
+class TestCalculateTotal:
+    def test_with_valid_items(self):
+        assert calculate_total([10.0, 20.0], 0.1) == 33.0
+
+    def test_raises_value_error_on_negative_tax(self):
+        with pytest.raises(ValueError):
+            calculate_total([10.0], -0.1)
+```
+
+**Bad:**
+```python
+# Function doesn't start with test_
+def check_total():
+    assert calculate_total([], 0) == 0
+
+# Class doesn't start with Test
+class TotalTests:
+    pass
+```
+
+## Validation Checklist
+- [ ] Test files follow naming convention
+- [ ] Test functions start with `test_`
+- [ ] Source structure mirrored in `tests/` directory
+- [ ] Descriptive test names used

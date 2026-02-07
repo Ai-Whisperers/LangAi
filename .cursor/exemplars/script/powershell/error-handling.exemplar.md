@@ -18,11 +18,11 @@ $ErrorActionPreference = "Stop"
 try {
     Write-Host "Running tests..."
     dotnet test --configuration $Configuration
-    
+
     if ($LASTEXITCODE -ne 0) {
         throw "Tests failed with exit code $LASTEXITCODE"
     }
-    
+
     Write-Host "✅ Tests passed!" -ForegroundColor Green
 }
 catch {
@@ -86,10 +86,10 @@ catch [System.IO.FileNotFoundException] {
 try {
     dotnet build --configuration $Configuration
     if ($LASTEXITCODE -ne 0) { throw "Build failed" }
-    
+
     dotnet test --no-build
     if ($LASTEXITCODE -ne 0) { throw "Tests failed" }
-    
+
     dotnet pack --no-build
     if ($LASTEXITCODE -ne 0) { throw "Pack failed" }
 }
@@ -108,13 +108,13 @@ catch {
         ScriptLine = $_.InvocationInfo.ScriptLineNumber
         Command = $_.InvocationInfo.MyCommand.Name
     }
-    
+
     Write-Host "ERROR: $($errorDetails.Message)"
     Write-Host "  At: $($errorDetails.Command):$($errorDetails.ScriptLine)"
-    
+
     # Log to file for debugging
     $errorDetails | ConvertTo-Json | Out-File "$env:TEMP/error.json"
-    
+
     exit 1
 }
 ```
@@ -133,4 +133,3 @@ catch {
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

@@ -316,13 +316,13 @@ public class MeasurementUnitBusinessRule : IBusinessRule<MeasurementUnit>
     public ValidationResult Validate(MeasurementUnit entity)
     {
         var result = new ValidationResult();
-        
+
         if (string.IsNullOrWhiteSpace(entity.Unit))
             result.AddError("Unit", "Unit name is required");
-            
+
         if (entity.Factor <= 0)
             result.AddError("Factor", "Factor must be greater than zero");
-            
+
         return result;
     }
 }
@@ -339,4 +339,3 @@ public class MeasurementUnitBusinessRule : IBusinessRule<MeasurementUnit>
 - Implement proper audit trail for all entity changes
 - Consider caching strategies for frequently accessed entities
 - Ensure backward compatibility with existing EBASE systems
-

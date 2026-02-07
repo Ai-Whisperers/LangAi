@@ -35,15 +35,15 @@ Usage:
     print(table.markdown)
 """
 
+from .analyzer import HistoricalTrendAnalyzer
 from .models import (
-    TrendDirection,
-    MetricCategory,
     DataPoint,
-    TrendMetric,
+    MetricCategory,
     TrendAnalysis,
+    TrendDirection,
+    TrendMetric,
     TrendTable,
 )
-from .analyzer import HistoricalTrendAnalyzer
 
 # Re-export all public APIs
 __all__ = [

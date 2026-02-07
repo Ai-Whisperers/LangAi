@@ -351,4 +351,3 @@ See: `.cursor/prompts/prompt/create-new-prompt.prompt.md`
 - Innovation: 9/10
 
 **Recognition**: This prompt sets the gold standard for guided workflow design in prompt engineering.
-

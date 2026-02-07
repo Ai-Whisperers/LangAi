@@ -8,10 +8,10 @@ Builds optimized context for specific agent invocations by combining:
 - Global configuration
 """
 
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
-from .models import IsolationLevel, SharePolicy
 from .manager import ContextIsolationManager
+from .models import IsolationLevel, SharePolicy
 
 
 class AgentContextBuilder:
@@ -29,7 +29,7 @@ class AgentContextBuilder:
         self,
         isolation_manager: Optional[ContextIsolationManager] = None,
         memory=None,
-        scratchpad=None
+        scratchpad=None,
     ):
         """
         Initialize builder.
@@ -49,7 +49,7 @@ class AgentContextBuilder:
         agent_type: str,
         company_name: str,
         task_description: str,
-        max_tokens: int = 4000
+        max_tokens: int = 4000,
     ) -> str:
         """
         Build context string for agent invocation.
@@ -82,9 +82,7 @@ class AgentContextBuilder:
 
         # 4. Memory-based context
         if self._memory:
-            memory_ctx = self._get_memory_context(
-                company_name, agent_type, max_tokens // 3
-            )
+            memory_ctx = self._get_memory_context(company_name, agent_type, max_tokens // 3)
             if memory_ctx:
                 sections.append(f"## Research Memory\n{memory_ctx}\n")
 
@@ -99,7 +97,7 @@ class AgentContextBuilder:
 
         max_chars = max_tokens * 4  # Approximate
         if len(context) > max_chars:
-            context = context[:max_chars - 100] + "\n\n[Context truncated]"
+            context = context[: max_chars - 100] + "\n\n[Context truncated]"
 
         return context
 
@@ -117,21 +115,14 @@ class AgentContextBuilder:
 
         return "\n".join(lines)
 
-    def _get_memory_context(
-        self,
-        company_name: str,
-        agent_type: str,
-        max_chars: int
-    ) -> str:
+    def _get_memory_context(self, company_name: str, agent_type: str, max_chars: int) -> str:
         """Get relevant context from memory."""
         if not self._memory:
             return ""
 
         try:
             items = self._memory.recall_company(
-                company_name=company_name,
-                data_type=agent_type,
-                k=5
+                company_name=company_name, data_type=agent_type, k=5
             )
 
             lines = []
@@ -170,9 +161,9 @@ class AgentContextBuilder:
 # Factory Functions
 # ============================================================================
 
+
 def create_isolation_manager(
-    isolation_level: str = "moderate",
-    share_policy: str = "filtered"
+    isolation_level: str = "moderate", share_policy: str = "filtered"
 ) -> ContextIsolationManager:
     """
     Create a context isolation manager.
@@ -185,17 +176,12 @@ def create_isolation_manager(
         ContextIsolationManager instance
     """
     return ContextIsolationManager(
-        default_isolation=IsolationLevel(isolation_level),
-        default_policy=SharePolicy(share_policy)
+        default_isolation=IsolationLevel(isolation_level), default_policy=SharePolicy(share_policy)
     )
 
 
 def build_agent_context(
-    agent_type: str,
-    company_name: str,
-    task: str,
-    memory=None,
-    scratchpad=None
+    agent_type: str, company_name: str, task: str, memory=None, scratchpad=None
 ) -> str:
     """
     Quick function to build context for an agent.
@@ -215,5 +201,5 @@ def build_agent_context(
         agent_name=f"{agent_type}_agent",
         agent_type=agent_type,
         company_name=company_name,
-        task_description=task
+        task_description=task,
     )

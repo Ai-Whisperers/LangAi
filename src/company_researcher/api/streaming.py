@@ -8,12 +8,13 @@ Provides real-time progress updates during research:
 - Event-based progress tracking
 """
 
-from typing import Dict, Any, Optional, Callable, AsyncGenerator, List
+import asyncio
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-import asyncio
-import json
+from typing import Any, AsyncGenerator, Callable, Dict, List, Optional
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -21,6 +22,7 @@ logger = get_logger(__name__)
 
 class EventType(str, Enum):
     """Types of streaming events."""
+
     RESEARCH_STARTED = "research_started"
     AGENT_STARTED = "agent_started"
     AGENT_PROGRESS = "agent_progress"
@@ -42,6 +44,7 @@ class EventType(str, Enum):
 @dataclass
 class StreamEvent:
     """A streaming event with metadata."""
+
     event_type: EventType
     data: Dict[str, Any]
     timestamp: datetime = field(default_factory=utc_now)
@@ -108,7 +111,7 @@ class ProgressTracker:
         data: Dict[str, Any],
         agent_name: Optional[str] = None,
         progress_percent: Optional[float] = None,
-        message: Optional[str] = None
+        message: Optional[str] = None,
     ) -> StreamEvent:
         """Emit a streaming event."""
         event = StreamEvent(
@@ -116,7 +119,7 @@ class ProgressTracker:
             data=data,
             agent_name=agent_name or self._current_agent,
             progress_percent=progress_percent,
-            message=message
+            message=message,
         )
         self._events.append(event)
 
@@ -140,7 +143,7 @@ class ProgressTracker:
         await self.emit(
             EventType.RESEARCH_STARTED,
             {"company_name": company_name, "total_agents": total_agents},
-            message=f"Starting research on {company_name}"
+            message=f"Starting research on {company_name}",
         )
 
     async def complete_research(self, success: bool, summary: Dict[str, Any]) -> None:
@@ -153,7 +156,7 @@ class ProgressTracker:
             EventType.RESEARCH_COMPLETED,
             {"success": success, "summary": summary, "duration_seconds": duration},
             progress_percent=100.0,
-            message="Research completed" if success else "Research failed"
+            message="Research completed" if success else "Research failed",
         )
 
     async def start_agent(self, agent_name: str, description: str = "") -> None:
@@ -166,7 +169,7 @@ class ProgressTracker:
             {"agent_name": agent_name, "description": description},
             agent_name=agent_name,
             progress_percent=progress,
-            message=f"Agent {agent_name} started"
+            message=f"Agent {agent_name} started",
         )
 
     async def complete_agent(self, agent_name: str, result: Dict[str, Any]) -> None:
@@ -179,24 +182,18 @@ class ProgressTracker:
             {"agent_name": agent_name, "result_summary": result},
             agent_name=agent_name,
             progress_percent=progress,
-            message=f"Agent {agent_name} completed"
+            message=f"Agent {agent_name} completed",
         )
 
         if self._current_agent == agent_name:
             self._current_agent = None
 
     async def update_progress(
-        self,
-        progress_percent: float,
-        message: str,
-        data: Optional[Dict[str, Any]] = None
+        self, progress_percent: float, message: str, data: Optional[Dict[str, Any]] = None
     ) -> None:
         """Update progress within current agent."""
         await self.emit(
-            EventType.AGENT_PROGRESS,
-            data or {},
-            progress_percent=progress_percent,
-            message=message
+            EventType.AGENT_PROGRESS, data or {}, progress_percent=progress_percent, message=message
         )
 
     def get_events(self) -> List[StreamEvent]:
@@ -246,10 +243,7 @@ class StreamingResearchContext:
         """Async generator for streaming events."""
         while self._active or not self._event_queue.empty():
             try:
-                event = await asyncio.wait_for(
-                    self._event_queue.get(),
-                    timeout=1.0
-                )
+                event = await asyncio.wait_for(self._event_queue.get(), timeout=1.0)
                 if event is None:
                     break
                 yield event
@@ -301,8 +295,7 @@ def create_progress_tracker() -> ProgressTracker:
 
 
 def create_streaming_context(
-    company_name: str,
-    tracker: Optional[ProgressTracker] = None
+    company_name: str, tracker: Optional[ProgressTracker] = None
 ) -> StreamingResearchContext:
     """Create a streaming research context."""
     return StreamingResearchContext(company_name, tracker)

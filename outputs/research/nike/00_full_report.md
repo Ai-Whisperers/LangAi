@@ -16,7 +16,7 @@ Nike, Inc. (NYSE: NKE) faced revenue challenges in fiscal 2024, with annual reve
 
 **Mission/Vision:** Data not available from provided sources.
 
-**Leadership Team:** 
+**Leadership Team:**
 - CEO: Elliott Hill
 
 **Headquarters and Global Presence:** Nike is headquartered in Beaverton, Oregon, United States.
@@ -32,7 +32,7 @@ Nike, Inc. (NYSE: NKE) faced revenue challenges in fiscal 2024, with annual reve
 
 **Quarterly Results (Fiscal 2024):**
 - Q1 (Aug 2023): $12.94 billion
-- Q2 (Nov 2023): $13.39 billion  
+- Q2 (Nov 2023): $13.39 billion
 - Q3 (Feb 2024): $12.43 billion
 - Q4: $12.6 billion (down 2% reported, flat currency-neutral)
 

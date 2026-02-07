@@ -212,4 +212,3 @@ For issues with these meta-prompts:
 - Review Prompt Registry format rules
 - Reference related rule files
 - Look at exemplars/ for examples
-

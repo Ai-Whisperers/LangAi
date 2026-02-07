@@ -98,7 +98,7 @@ git commit
 3. Format output with colors and emojis
 4. Include exact locations and specific solutions
 
-**Read**: 
+**Read**:
 - `diagnostic-messages-rule.mdc` (20 min)
 - `zero-warnings-zero-errors-rule.mdc` (15 min)
 
@@ -246,4 +246,3 @@ npm test
 ---
 
 **TL;DR**: Zero warnings, zero errors before every commit. Every diagnostic should teach with WHAT + WHY + HOW. Quality is not negotiable.
-

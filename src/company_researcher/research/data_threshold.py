@@ -15,8 +15,9 @@ Features:
 
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Any, Tuple
 from enum import Enum
+from typing import Any, Dict, List, Tuple
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -24,6 +25,7 @@ logger = get_logger(__name__)
 
 class DataSufficiency(Enum):
     """Overall data sufficiency levels."""
+
     EXCELLENT = "excellent"  # 80%+ coverage
     GOOD = "good"  # 60-80% coverage
     ADEQUATE = "adequate"  # 40-60% coverage
@@ -33,6 +35,7 @@ class DataSufficiency(Enum):
 
 class RetryStrategy(Enum):
     """Strategies for retrying data collection."""
+
     MULTILINGUAL = "multilingual"  # Add queries in other languages
     PARENT_COMPANY = "parent_company"  # Search parent company data
     ALTERNATIVE_SOURCES = "alternative_sources"  # Try different data sources
@@ -46,6 +49,7 @@ class RetryStrategy(Enum):
 @dataclass
 class SectionCoverage:
     """Coverage assessment for a report section."""
+
     section_name: str
     expected_fields: int
     found_fields: int
@@ -61,6 +65,7 @@ class SectionCoverage:
 @dataclass
 class ThresholdResult:
     """Result of threshold checking."""
+
     passes_threshold: bool
     sufficiency: DataSufficiency
     overall_coverage: float
@@ -83,10 +88,10 @@ class ThresholdResult:
                 {
                     "name": s.section_name,
                     "coverage": round(s.coverage_pct, 1),
-                    "missing": s.missing_fields
+                    "missing": s.missing_fields,
                 }
                 for s in self.section_coverages
-            ]
+            ],
         }
 
 
@@ -128,8 +133,8 @@ class DataThresholdChecker:
             ],
             "critical_fields": ["revenue"],
             "value_patterns": [
-                r'\$[\d,]+(?:\.\d+)?(?:\s*(?:billion|million|B|M))?',
-                r'[\d,]+(?:\.\d+)?\s*%',
+                r"\$[\d,]+(?:\.\d+)?(?:\s*(?:billion|million|B|M))?",
+                r"[\d,]+(?:\.\d+)?\s*%",
             ],
         },
         "market": {
@@ -144,8 +149,8 @@ class DataThresholdChecker:
             ],
             "critical_fields": ["market_cap"],
             "value_patterns": [
-                r'\$[\d,]+(?:\.\d+)?(?:\s*(?:trillion|billion|million|T|B|M))?',
-                r'[\d,]+(?:\.\d+)?\s*%',
+                r"\$[\d,]+(?:\.\d+)?(?:\s*(?:trillion|billion|million|T|B|M))?",
+                r"[\d,]+(?:\.\d+)?\s*%",
             ],
         },
         "company_info": {
@@ -198,18 +203,18 @@ class DataThresholdChecker:
 
     # Patterns indicating missing data
     MISSING_DATA_PATTERNS = [
-        r'data\s+not\s+available',
-        r'not\s+available',
-        r'n/?a\b',
-        r'information\s+not\s+found',
-        r'no\s+data',
-        r'unable\s+to\s+find',
-        r'could\s+not\s+be\s+determined',
-        r'not\s+disclosed',
-        r'not\s+provided',
-        r'unavailable',
-        r'\-\s*$',  # Just a dash
-        r'^\s*\?\s*$',  # Just a question mark
+        r"data\s+not\s+available",
+        r"not\s+available",
+        r"n/?a\b",
+        r"information\s+not\s+found",
+        r"no\s+data",
+        r"unable\s+to\s+find",
+        r"could\s+not\s+be\s+determined",
+        r"not\s+disclosed",
+        r"not\s+provided",
+        r"unavailable",
+        r"\-\s*$",  # Just a dash
+        r"^\s*\?\s*$",  # Just a question mark
     ]
 
     # Minimum thresholds
@@ -220,15 +225,9 @@ class DataThresholdChecker:
     }
 
     def __init__(self):
-        self._missing_patterns = [
-            re.compile(p, re.IGNORECASE) for p in self.MISSING_DATA_PATTERNS
-        ]
+        self._missing_patterns = [re.compile(p, re.IGNORECASE) for p in self.MISSING_DATA_PATTERNS]
 
-    def check(
-        self,
-        research_data: Dict[str, Any],
-        strict_mode: bool = False
-    ) -> ThresholdResult:
+    def check(self, research_data: Dict[str, Any], strict_mode: bool = False) -> ThresholdResult:
         """
         Check if research data meets minimum thresholds.
 
@@ -244,11 +243,7 @@ class DataThresholdChecker:
         missing_critical = []
 
         for section_name, requirements in self.SECTION_REQUIREMENTS.items():
-            coverage = self._analyze_section(
-                research_data,
-                section_name,
-                requirements
-            )
+            coverage = self._analyze_section(research_data, section_name, requirements)
             section_coverages.append(coverage)
 
             # Track missing critical fields
@@ -258,10 +253,13 @@ class DataThresholdChecker:
 
         # Calculate overall coverage (weighted)
         total_weight = sum(r["weight"] for r in self.SECTION_REQUIREMENTS.values())
-        weighted_coverage = sum(
-            c.coverage_pct * self.SECTION_REQUIREMENTS[c.section_name]["weight"]
-            for c in section_coverages
-        ) / total_weight
+        weighted_coverage = (
+            sum(
+                c.coverage_pct * self.SECTION_REQUIREMENTS[c.section_name]["weight"]
+                for c in section_coverages
+            )
+            / total_weight
+        )
 
         # Determine sufficiency level
         sufficiency = self._determine_sufficiency(weighted_coverage)
@@ -279,24 +277,14 @@ class DataThresholdChecker:
             passes = passes and len(missing_critical) == 0
 
         # Determine recommended retry strategies
-        strategies = self._recommend_strategies(
-            section_coverages,
-            missing_critical,
-            research_data
-        )
+        strategies = self._recommend_strategies(section_coverages, missing_critical, research_data)
 
         # Can we proceed even if threshold not met?
-        can_proceed = (
-            weighted_coverage >= 15.0
-            and adequate_sections >= 1
-        )
+        can_proceed = weighted_coverage >= 15.0 and adequate_sections >= 1
 
         # Generate explanation
         explanation = self._generate_explanation(
-            weighted_coverage,
-            adequate_sections,
-            len(section_coverages),
-            missing_critical
+            weighted_coverage, adequate_sections, len(section_coverages), missing_critical
         )
 
         return ThresholdResult(
@@ -307,14 +295,11 @@ class DataThresholdChecker:
             missing_critical=missing_critical,
             recommended_strategies=strategies,
             can_proceed=can_proceed,
-            explanation=explanation
+            explanation=explanation,
         )
 
     def _analyze_section(
-        self,
-        research_data: Dict,
-        section_name: str,
-        requirements: Dict
+        self, research_data: Dict, section_name: str, requirements: Dict
     ) -> SectionCoverage:
         """Analyze coverage for a specific section."""
         expected_fields = requirements["expected_fields"]
@@ -334,9 +319,11 @@ class DataThresholdChecker:
 
         # Check for specific data values
         value_patterns = requirements.get("value_patterns", [])
-        has_specific_data = any(
-            re.search(p, content) for p in value_patterns
-        ) if value_patterns else len(found_fields) > 0
+        has_specific_data = (
+            any(re.search(p, content) for p in value_patterns)
+            if value_patterns
+            else len(found_fields) > 0
+        )
 
         # Calculate coverage
         coverage_pct = (len(found_fields) / len(expected_fields) * 100) if expected_fields else 0
@@ -347,27 +334,28 @@ class DataThresholdChecker:
             found_fields=len(found_fields),
             missing_fields=missing_fields,
             coverage_pct=coverage_pct,
-            has_specific_data=has_specific_data
+            has_specific_data=has_specific_data,
         )
 
-    def _get_section_content(
-        self,
-        research_data: Dict,
-        section_name: str
-    ) -> str:
+    def _get_section_content(self, research_data: Dict, section_name: str) -> str:
         """Extract content for a specific section."""
         # Map section names to potential data keys
         section_keys = {
-            "financial": ["financial", "financials", "financial_analysis",
-                         "agent_outputs.financial"],
-            "market": ["market", "market_position", "market_analysis",
-                      "agent_outputs.market"],
-            "company_info": ["company_overview", "overview", "company_info",
-                           "profile"],
-            "competitive": ["competitive", "competitors", "competitive_analysis",
-                          "agent_outputs.competitor"],
-            "products": ["products", "services", "products_services",
-                        "agent_outputs.product"],
+            "financial": [
+                "financial",
+                "financials",
+                "financial_analysis",
+                "agent_outputs.financial",
+            ],
+            "market": ["market", "market_position", "market_analysis", "agent_outputs.market"],
+            "company_info": ["company_overview", "overview", "company_info", "profile"],
+            "competitive": [
+                "competitive",
+                "competitors",
+                "competitive_analysis",
+                "agent_outputs.competitor",
+            ],
+            "products": ["products", "services", "products_services", "agent_outputs.product"],
             "strategy": ["strategy", "growth", "outlook", "strategic"],
         }
 
@@ -430,15 +418,13 @@ class DataThresholdChecker:
         self,
         section_coverages: List[SectionCoverage],
         missing_critical: List[str],
-        research_data: Dict
+        research_data: Dict,
     ) -> List[RetryStrategy]:
         """Recommend retry strategies based on gaps."""
         strategies = []
 
         # Check if any section has very low coverage
-        low_coverage_sections = [
-            c for c in section_coverages if c.coverage_pct < 20
-        ]
+        low_coverage_sections = [c for c in section_coverages if c.coverage_pct < 20]
 
         if low_coverage_sections:
             # Regional company likely - try multilingual
@@ -453,8 +439,7 @@ class DataThresholdChecker:
 
         # If financial data is missing
         financial_coverage = next(
-            (c for c in section_coverages if c.section_name == "financial"),
-            None
+            (c for c in section_coverages if c.section_name == "financial"), None
         )
         if financial_coverage and financial_coverage.coverage_pct < 30:
             strategies.append(RetryStrategy.PRESS_RELEASES)
@@ -480,7 +465,7 @@ class DataThresholdChecker:
         coverage: float,
         adequate_sections: int,
         total_sections: int,
-        missing_critical: List[str]
+        missing_critical: List[str],
     ) -> str:
         """Generate human-readable explanation."""
         parts = []
@@ -492,7 +477,9 @@ class DataThresholdChecker:
             parts.append(f"Missing critical data: {', '.join(missing_critical)}")
 
         if coverage < 25:
-            parts.append("INSUFFICIENT DATA for report generation. Recommend retry with alternative strategies.")
+            parts.append(
+                "INSUFFICIENT DATA for report generation. Recommend retry with alternative strategies."
+            )
         elif coverage < 40:
             parts.append("POOR coverage. Report would have significant gaps.")
         elif coverage < 60:
@@ -502,11 +489,7 @@ class DataThresholdChecker:
 
         return " | ".join(parts)
 
-    def check_source_count(
-        self,
-        sources: List[Dict],
-        minimum: int = 5
-    ) -> Tuple[bool, str]:
+    def check_source_count(self, sources: List[Dict], minimum: int = 5) -> Tuple[bool, str]:
         """
         Quick check on source count.
 
@@ -527,10 +510,8 @@ class DataThresholdChecker:
 
 # Convenience functions
 
-def check_data_threshold(
-    research_data: Dict[str, Any],
-    strict: bool = False
-) -> ThresholdResult:
+
+def check_data_threshold(research_data: Dict[str, Any], strict: bool = False) -> ThresholdResult:
     """
     Check if research data meets minimum thresholds.
 
@@ -545,9 +526,7 @@ def check_data_threshold(
     return checker.check(research_data, strict_mode=strict)
 
 
-def should_generate_report(
-    research_data: Dict[str, Any]
-) -> Tuple[bool, str]:
+def should_generate_report(research_data: Dict[str, Any]) -> Tuple[bool, str]:
     """
     Quick check if report should be generated.
 

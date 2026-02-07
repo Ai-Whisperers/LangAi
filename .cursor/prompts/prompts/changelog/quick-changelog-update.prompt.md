@@ -10,8 +10,8 @@ argument-hint: "Version number (e.g., 0.1.0-rc35)"
 
 Please quickly generate a CHANGELOG entry for a single release by analyzing recent commits.
 
-**Pattern**: Quick Single-Entry Pattern ⭐⭐⭐⭐  
-**Effectiveness**: Essential for fast CHANGELOG updates  
+**Pattern**: Quick Single-Entry Pattern ⭐⭐⭐⭐
+**Effectiveness**: Essential for fast CHANGELOG updates
 **Use When**: Single release needs documentation, CI/CD failure, or quick fix needed
 
 ---
@@ -97,7 +97,7 @@ Generate CHANGELOG entry for version X.Y.Z-rcN based on these commits
 **Use Case**: Incremental RC release
 
 ```
-Generate CHANGELOG.md entry for version 0.1.0-rc35 by analyzing 
+Generate CHANGELOG.md entry for version 0.1.0-rc35 by analyzing
 commits between release-0.1.0-rc34 and current HEAD.
 ```
 
@@ -113,7 +113,7 @@ Generate the missing entry quickly.
 **Use Case**: Consolidate several test releases into one entry
 
 ```
-Generate CHANGELOG.md entry that consolidates releases 
+Generate CHANGELOG.md entry that consolidates releases
 0.1.0-rc30 through 0.1.0-rc34 into a single entry for 0.1.0-rc35.
 
 Focus on user-facing changes, skip internal test iterations.
@@ -123,7 +123,7 @@ Focus on user-facing changes, skip internal test iterations.
 **Use Case**: Summarize all RCs into GA release entry
 
 ```
-Generate CHANGELOG.md entry for version 0.1.0 (GA release) that 
+Generate CHANGELOG.md entry for version 0.1.0 (GA release) that
 summarizes all RC releases from 0.1.0-rc1 to 0.1.0-rc35.
 
 Create "Archived Releases" section for early experimental RCs.
@@ -300,7 +300,7 @@ git push origin --tags
 ### Added
 - Feature description
 
-### Changed  
+### Changed
 - Change description
 
 ### Fixed
@@ -388,6 +388,6 @@ Get-Date -Format "yyyy-MM-dd"     # PowerShell
 
 ---
 
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)

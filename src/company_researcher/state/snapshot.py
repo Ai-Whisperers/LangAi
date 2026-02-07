@@ -12,9 +12,10 @@ import hashlib
 import json
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
 from ..utils import utc_now
 
 
@@ -25,6 +26,7 @@ class StateSnapshot:
 
     Snapshots are immutable - once created, they cannot be modified.
     """
+
     id: str
     state: Dict[str, Any]
     created_at: datetime
@@ -35,13 +37,13 @@ class StateSnapshot:
 
     def __post_init__(self):
         # Make state immutable by deep copying
-        object.__setattr__(self, 'state', copy.deepcopy(self.state))
+        object.__setattr__(self, "state", copy.deepcopy(self.state))
         # Mark as initialized to enable immutability
-        object.__setattr__(self, '_initialized', True)
+        object.__setattr__(self, "_initialized", True)
 
     def __setattr__(self, name, value):
         # Allow setting during initialization, block after
-        if getattr(self, '_initialized', False) and name != '_initialized':
+        if getattr(self, "_initialized", False) and name != "_initialized":
             raise AttributeError("Snapshots are immutable")
         object.__setattr__(self, name, value)
 
@@ -53,7 +55,7 @@ class StateSnapshot:
             "created_at": self.created_at.isoformat(),
             "checksum": self.checksum,
             "label": self.label,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     @classmethod
@@ -71,7 +73,7 @@ class StateSnapshot:
             created_at=created_at,
             checksum=data.get("checksum", ""),
             label=data.get("label"),
-            metadata=data.get("metadata", {})
+            metadata=data.get("metadata", {}),
         )
 
     def compare(self, other: "StateSnapshot") -> Dict[str, Any]:
@@ -87,14 +89,11 @@ class StateSnapshot:
             "other_id": other.id,
             "this_created": self.created_at.isoformat(),
             "other_created": other.created_at.isoformat(),
-            "differences": self._find_differences(self.state, other.state)
+            "differences": self._find_differences(self.state, other.state),
         }
 
     def _find_differences(
-        self,
-        state1: Dict[str, Any],
-        state2: Dict[str, Any],
-        path: str = ""
+        self, state1: Dict[str, Any], state2: Dict[str, Any], path: str = ""
     ) -> List[Dict[str, Any]]:
         """Find differences between two states."""
         differences = []
@@ -104,29 +103,23 @@ class StateSnapshot:
             current_path = f"{path}.{key}" if path else key
 
             if key not in state1:
-                differences.append({
-                    "path": current_path,
-                    "type": "added",
-                    "value": state2[key]
-                })
+                differences.append({"path": current_path, "type": "added", "value": state2[key]})
             elif key not in state2:
-                differences.append({
-                    "path": current_path,
-                    "type": "removed",
-                    "value": state1[key]
-                })
+                differences.append({"path": current_path, "type": "removed", "value": state1[key]})
             elif state1[key] != state2[key]:
                 if isinstance(state1[key], dict) and isinstance(state2[key], dict):
                     differences.extend(
                         self._find_differences(state1[key], state2[key], current_path)
                     )
                 else:
-                    differences.append({
-                        "path": current_path,
-                        "type": "changed",
-                        "old_value": state1[key],
-                        "new_value": state2[key]
-                    })
+                    differences.append(
+                        {
+                            "path": current_path,
+                            "type": "changed",
+                            "old_value": state1[key],
+                            "new_value": state2[key],
+                        }
+                    )
 
         return differences
 
@@ -152,6 +145,7 @@ class SnapshotStore:
         self.storage_dir = Path(storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         self._cache: Dict[str, StateSnapshot] = {}
+        self._last_created_at: Optional[datetime] = None
 
     def _calculate_checksum(self, state: Dict[str, Any]) -> str:
         """Calculate checksum for state."""
@@ -162,7 +156,7 @@ class SnapshotStore:
         self,
         state: Dict[str, Any],
         label: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> StateSnapshot:
         """
         Create a new snapshot.
@@ -175,13 +169,18 @@ class SnapshotStore:
         Returns:
             Created StateSnapshot
         """
+        created_at = utc_now()
+        if self._last_created_at is not None and created_at <= self._last_created_at:
+            created_at = self._last_created_at + timedelta(microseconds=1)
+        self._last_created_at = created_at
+
         snapshot = StateSnapshot(
             id=str(uuid.uuid4()),
             state=state,
-            created_at=utc_now(),
+            created_at=created_at,
             checksum=self._calculate_checksum(state),
             label=label,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         # Save to storage
@@ -193,7 +192,7 @@ class SnapshotStore:
     def _save(self, snapshot: StateSnapshot) -> None:
         """Save snapshot to storage."""
         filepath = self.storage_dir / f"{snapshot.id}.json"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(snapshot.to_dict(), f, indent=2, default=str)
 
     def load(self, snapshot_id: str) -> Optional[StateSnapshot]:
@@ -207,7 +206,7 @@ class SnapshotStore:
         if not filepath.exists():
             return None
 
-        with open(filepath, 'r') as f:
+        with open(filepath, "r") as f:
             data = json.load(f)
 
         snapshot = StateSnapshot.from_dict(data)
@@ -229,11 +228,7 @@ class SnapshotStore:
             return copy.deepcopy(snapshot.state)
         return None
 
-    def list(
-        self,
-        label: Optional[str] = None,
-        limit: int = 100
-    ) -> List[StateSnapshot]:
+    def list(self, label: Optional[str] = None, limit: int = 100) -> List[StateSnapshot]:
         """
         List snapshots.
 
@@ -247,7 +242,7 @@ class SnapshotStore:
         snapshots = []
 
         for filepath in self.storage_dir.glob("*.json"):
-            with open(filepath, 'r') as f:
+            with open(filepath, "r") as f:
                 data = json.load(f)
             snapshot = StateSnapshot.from_dict(data)
 
@@ -272,11 +267,7 @@ class SnapshotStore:
             return True
         return False
 
-    def compare(
-        self,
-        snapshot_id1: str,
-        snapshot_id2: str
-    ) -> Optional[Dict[str, Any]]:
+    def compare(self, snapshot_id1: str, snapshot_id2: str) -> Optional[Dict[str, Any]]:
         """Compare two snapshots."""
         snap1 = self.load(snapshot_id1)
         snap2 = self.load(snapshot_id2)
@@ -302,19 +293,14 @@ class SnapshotStore:
 
 # Convenience functions
 def create_snapshot(
-    state: Dict[str, Any],
-    label: Optional[str] = None,
-    storage_dir: str = "snapshots"
+    state: Dict[str, Any], label: Optional[str] = None, storage_dir: str = "snapshots"
 ) -> StateSnapshot:
     """Create a snapshot."""
     store = SnapshotStore(storage_dir)
     return store.create(state, label=label)
 
 
-def restore_snapshot(
-    snapshot_id: str,
-    storage_dir: str = "snapshots"
-) -> Optional[Dict[str, Any]]:
+def restore_snapshot(snapshot_id: str, storage_dir: str = "snapshots") -> Optional[Dict[str, Any]]:
     """Restore state from snapshot."""
     store = SnapshotStore(storage_dir)
     return store.restore(snapshot_id)

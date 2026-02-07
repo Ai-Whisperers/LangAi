@@ -79,4 +79,3 @@ C++: `double calc_tax(amt) { if (amt > 100) return amt * 0.2; return 0; }`
 
 **Applies Rules**:
 - `.cursor/rules/technical-specifications/business-rules-rule.mdc`
-

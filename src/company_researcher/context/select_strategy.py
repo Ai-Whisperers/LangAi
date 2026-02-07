@@ -11,38 +11,42 @@ The SELECT strategy retrieves the most relevant information
 from memory to augment agent context.
 """
 
-from typing import Dict, Any, List, Optional
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-import re
-from ..utils import utc_now
+from typing import Any, Dict, List, Optional
 
+from ..utils import utc_now
 
 # ============================================================================
 # Enums and Data Models
 # ============================================================================
 
+
 class RetrievalMode(str, Enum):
     """Retrieval modes."""
-    SEMANTIC = "semantic"      # Embedding-based similarity
-    KEYWORD = "keyword"        # Keyword matching
-    HYBRID = "hybrid"          # Combined semantic + keyword
-    TEMPORAL = "temporal"      # Time-based (recent first)
+
+    SEMANTIC = "semantic"  # Embedding-based similarity
+    KEYWORD = "keyword"  # Keyword matching
+    HYBRID = "hybrid"  # Combined semantic + keyword
+    TEMPORAL = "temporal"  # Time-based (recent first)
     STRUCTURED = "structured"  # Metadata-based
 
 
 class RelevanceThreshold(str, Enum):
     """Relevance score thresholds."""
-    STRICT = "strict"      # Only high relevance (>0.8)
+
+    STRICT = "strict"  # Only high relevance (>0.8)
     MODERATE = "moderate"  # Moderate relevance (>0.6)
-    RELAXED = "relaxed"    # Low relevance (>0.4)
-    ALL = "all"           # No filtering
+    RELAXED = "relaxed"  # Low relevance (>0.4)
+    ALL = "all"  # No filtering
 
 
 @dataclass
 class RetrievedChunk:
     """A retrieved chunk of information."""
+
     content: str
     source: str
     relevance_score: float
@@ -56,13 +60,14 @@ class RetrievedChunk:
             "source": self.source,
             "relevance_score": self.relevance_score,
             "metadata": self.metadata,
-            "chunk_type": self.chunk_type
+            "chunk_type": self.chunk_type,
         }
 
 
 @dataclass
 class RetrievalResult:
     """Result of a retrieval operation."""
+
     query: str
     chunks: List[RetrievedChunk]
     total_found: int
@@ -86,13 +91,14 @@ class RetrievalResult:
             "total_found": self.total_found,
             "mode": self.retrieval_mode.value,
             "average_relevance": round(self.average_relevance, 3),
-            "processing_time_ms": self.processing_time_ms
+            "processing_time_ms": self.processing_time_ms,
         }
 
 
 # ============================================================================
 # Query Processing
 # ============================================================================
+
 
 class QueryProcessor:
     """
@@ -176,17 +182,12 @@ class QueryProcessor:
         Returns:
             Dictionary of entity types to values
         """
-        entities = {
-            "companies": [],
-            "metrics": [],
-            "time_periods": [],
-            "topics": []
-        }
+        entities = {"companies": [], "metrics": [], "time_periods": [], "topics": []}
 
         # Common company indicators
         company_patterns = [
             r"(?:about|for|of)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)",
-            r"([A-Z][a-z]+(?:'s|'s)?)\s+(?:revenue|profit|market|growth)"
+            r"([A-Z][a-z]+(?:'s|'s)?)\s+(?:revenue|profit|market|growth)",
         ]
 
         for pattern in company_patterns:
@@ -204,7 +205,7 @@ class QueryProcessor:
             r"(20\d{2})",
             r"(Q[1-4]\s*20\d{2})",
             r"(last\s+(?:year|quarter|month))",
-            r"(this\s+(?:year|quarter))"
+            r"(this\s+(?:year|quarter))",
         ]
 
         for pattern in time_patterns:
@@ -230,7 +231,7 @@ class QueryProcessor:
             "market": ["market", "industry", "tam", "sam", "som", "size", "share"],
             "competitive": ["competitor", "competition", "rival", "vs", "versus", "alternative"],
             "product": ["product", "feature", "technology", "innovation", "offering"],
-            "general": ["overview", "about", "what is", "who is", "describe"]
+            "general": ["overview", "about", "what is", "who is", "describe"],
         }
 
         for intent, keywords in intent_patterns.items():
@@ -243,6 +244,7 @@ class QueryProcessor:
 # ============================================================================
 # Context Selector
 # ============================================================================
+
 
 class ContextSelector:
     """
@@ -269,7 +271,7 @@ class ContextSelector:
         self,
         memory=None,
         default_mode: RetrievalMode = RetrievalMode.HYBRID,
-        default_threshold: RelevanceThreshold = RelevanceThreshold.MODERATE
+        default_threshold: RelevanceThreshold = RelevanceThreshold.MODERATE,
     ):
         """
         Initialize context selector.
@@ -289,7 +291,7 @@ class ContextSelector:
             RelevanceThreshold.STRICT: 0.8,
             RelevanceThreshold.MODERATE: 0.6,
             RelevanceThreshold.RELAXED: 0.4,
-            RelevanceThreshold.ALL: 0.0
+            RelevanceThreshold.ALL: 0.0,
         }
 
     def set_memory(self, memory) -> None:
@@ -304,7 +306,7 @@ class ContextSelector:
         threshold: Optional[RelevanceThreshold] = None,
         company_filter: Optional[str] = None,
         type_filter: Optional[str] = None,
-        expand_query: bool = True
+        expand_query: bool = True,
     ) -> RetrievalResult:
         """
         Retrieve relevant chunks for a query.
@@ -322,6 +324,7 @@ class ContextSelector:
             RetrievalResult with matched chunks
         """
         import time
+
         start_time = time.time()
 
         mode = mode or self._default_mode
@@ -331,30 +334,18 @@ class ContextSelector:
         chunks = []
 
         if mode == RetrievalMode.SEMANTIC:
-            chunks = self._semantic_retrieve(
-                query, k * 2, company_filter, type_filter
-            )
+            chunks = self._semantic_retrieve(query, k * 2, company_filter, type_filter)
         elif mode == RetrievalMode.KEYWORD:
-            chunks = self._keyword_retrieve(
-                query, k * 2, company_filter, type_filter
-            )
+            chunks = self._keyword_retrieve(query, k * 2, company_filter, type_filter)
         elif mode == RetrievalMode.HYBRID:
             # Combine semantic and keyword
-            semantic_chunks = self._semantic_retrieve(
-                query, k, company_filter, type_filter
-            )
-            keyword_chunks = self._keyword_retrieve(
-                query, k, company_filter, type_filter
-            )
+            semantic_chunks = self._semantic_retrieve(query, k, company_filter, type_filter)
+            keyword_chunks = self._keyword_retrieve(query, k, company_filter, type_filter)
             chunks = self._merge_results(semantic_chunks, keyword_chunks)
         elif mode == RetrievalMode.TEMPORAL:
-            chunks = self._temporal_retrieve(
-                k * 2, company_filter, type_filter
-            )
+            chunks = self._temporal_retrieve(k * 2, company_filter, type_filter)
         elif mode == RetrievalMode.STRUCTURED:
-            chunks = self._structured_retrieve(
-                company_filter, type_filter, k * 2
-            )
+            chunks = self._structured_retrieve(company_filter, type_filter, k * 2)
 
         # Expand query if enabled
         if expand_query and len(chunks) < k:
@@ -388,15 +379,11 @@ class ContextSelector:
             chunks=final_chunks,
             total_found=len(unique_chunks),
             retrieval_mode=mode,
-            processing_time_ms=processing_time
+            processing_time_ms=processing_time,
         )
 
     def _semantic_retrieve(
-        self,
-        query: str,
-        k: int,
-        company_filter: Optional[str],
-        type_filter: Optional[str]
+        self, query: str, k: int, company_filter: Optional[str], type_filter: Optional[str]
     ) -> List[RetrievedChunk]:
         """Retrieve using semantic similarity."""
         if not self._memory:
@@ -404,10 +391,7 @@ class ContextSelector:
 
         try:
             results = self._memory.recall_similar(
-                query=query,
-                k=k,
-                company_name=company_filter,
-                data_type=type_filter
+                query=query, k=k, company_name=company_filter, data_type=type_filter
             )
 
             return [
@@ -416,7 +400,7 @@ class ContextSelector:
                     source=r.metadata.get("source_url", "memory"),
                     relevance_score=r.score,
                     metadata=r.metadata,
-                    chunk_type=r.metadata.get("data_type", "text")
+                    chunk_type=r.metadata.get("data_type", "text"),
                 )
                 for r in results
             ]
@@ -424,11 +408,7 @@ class ContextSelector:
             return []
 
     def _keyword_retrieve(
-        self,
-        query: str,
-        k: int,
-        company_filter: Optional[str],
-        type_filter: Optional[str]
+        self, query: str, k: int, company_filter: Optional[str], type_filter: Optional[str]
     ) -> List[RetrievedChunk]:
         """Retrieve using keyword matching."""
         if not self._memory:
@@ -445,16 +425,11 @@ class ContextSelector:
             # Use memory's recall with keyword-based approach
             if company_filter:
                 results = self._memory.recall_company(
-                    company_name=company_filter,
-                    query=query,
-                    data_type=type_filter,
-                    k=k
+                    company_name=company_filter, query=query, data_type=type_filter, k=k
                 )
             else:
                 results = self._memory.recall_similar(
-                    query=" ".join(keywords),
-                    k=k,
-                    data_type=type_filter
+                    query=" ".join(keywords), k=k, data_type=type_filter
                 )
 
             chunks = []
@@ -467,23 +442,22 @@ class ContextSelector:
                 # Combine with semantic score
                 combined_score = (r.score + keyword_score) / 2
 
-                chunks.append(RetrievedChunk(
-                    content=r.content,
-                    source=r.metadata.get("source_url", "memory"),
-                    relevance_score=combined_score,
-                    metadata=r.metadata,
-                    chunk_type=r.metadata.get("data_type", "text")
-                ))
+                chunks.append(
+                    RetrievedChunk(
+                        content=r.content,
+                        source=r.metadata.get("source_url", "memory"),
+                        relevance_score=combined_score,
+                        metadata=r.metadata,
+                        chunk_type=r.metadata.get("data_type", "text"),
+                    )
+                )
 
             return chunks
         except Exception:
             return []
 
     def _temporal_retrieve(
-        self,
-        k: int,
-        company_filter: Optional[str],
-        type_filter: Optional[str]
+        self, k: int, company_filter: Optional[str], type_filter: Optional[str]
     ) -> List[RetrievedChunk]:
         """Retrieve most recent items."""
         if not self._memory:
@@ -492,9 +466,7 @@ class ContextSelector:
         try:
             if company_filter:
                 results = self._memory.recall_company(
-                    company_name=company_filter,
-                    data_type=type_filter,
-                    k=k
+                    company_name=company_filter, data_type=type_filter, k=k
                 )
             else:
                 # Get from hot cache (most recent)
@@ -507,7 +479,7 @@ class ContextSelector:
                     source=r.metadata.get("source_url", "memory"),
                     relevance_score=0.7,  # Default score for temporal
                     metadata=r.metadata,
-                    chunk_type=r.metadata.get("data_type", "text")
+                    chunk_type=r.metadata.get("data_type", "text"),
                 )
                 for r in results
             ]
@@ -517,10 +489,7 @@ class ContextSelector:
             return []
 
     def _structured_retrieve(
-        self,
-        company_filter: Optional[str],
-        type_filter: Optional[str],
-        k: int
+        self, company_filter: Optional[str], type_filter: Optional[str], k: int
     ) -> List[RetrievedChunk]:
         """Retrieve by structured metadata filters."""
         if not self._memory or not company_filter:
@@ -528,9 +497,7 @@ class ContextSelector:
 
         try:
             results = self._memory.recall_company(
-                company_name=company_filter,
-                data_type=type_filter,
-                k=k
+                company_name=company_filter, data_type=type_filter, k=k
             )
 
             return [
@@ -539,7 +506,7 @@ class ContextSelector:
                     source=r.metadata.get("source_url", "memory"),
                     relevance_score=0.8,  # High score for exact match
                     metadata=r.metadata,
-                    chunk_type=r.metadata.get("data_type", "text")
+                    chunk_type=r.metadata.get("data_type", "text"),
                 )
                 for r in results
             ]
@@ -547,9 +514,7 @@ class ContextSelector:
             return []
 
     def _merge_results(
-        self,
-        list1: List[RetrievedChunk],
-        list2: List[RetrievedChunk]
+        self, list1: List[RetrievedChunk], list2: List[RetrievedChunk]
     ) -> List[RetrievedChunk]:
         """Merge and deduplicate two result lists."""
         merged = {}
@@ -574,7 +539,7 @@ class ContextSelector:
         result: RetrievalResult,
         max_chars: int = 8000,
         include_metadata: bool = False,
-        template: Optional[str] = None
+        template: Optional[str] = None,
     ) -> str:
         """
         Format retrieval results for LLM context.
@@ -620,12 +585,7 @@ class ContextSelector:
 
         return "".join(lines)
 
-    def _format_with_template(
-        self,
-        result: RetrievalResult,
-        template: str,
-        max_chars: int
-    ) -> str:
+    def _format_with_template(self, result: RetrievalResult, template: str, max_chars: int) -> str:
         """Format using custom template."""
         chunks_text = ""
         for i, chunk in enumerate(result.chunks, 1):
@@ -634,7 +594,7 @@ class ContextSelector:
                 content=chunk.content[:1000],
                 source=chunk.source,
                 score=chunk.relevance_score,
-                type=chunk.chunk_type
+                type=chunk.chunk_type,
             )
             if len(chunks_text) + len(chunk_text) > max_chars:
                 break
@@ -643,11 +603,7 @@ class ContextSelector:
         return chunks_text
 
     def select_for_task(
-        self,
-        task_type: str,
-        company_name: str,
-        additional_query: Optional[str] = None,
-        k: int = 5
+        self, task_type: str, company_name: str, additional_query: Optional[str] = None, k: int = 5
     ) -> RetrievalResult:
         """
         Select context optimized for a specific task type.
@@ -667,7 +623,7 @@ class ContextSelector:
             "market": f"{company_name} market size TAM SAM SOM industry trends",
             "competitive": f"{company_name} competitors competition market share rivals",
             "product": f"{company_name} products technology features innovation",
-            "overview": f"{company_name} company overview description business model"
+            "overview": f"{company_name} company overview description business model",
         }
 
         base_query = task_queries.get(task_type, f"{company_name} {task_type}")
@@ -679,7 +635,11 @@ class ContextSelector:
             mode=RetrievalMode.HYBRID,
             k=k,
             company_filter=company_name,
-            type_filter=task_type if task_type in ["financial", "market", "competitive", "product"] else None
+            type_filter=(
+                task_type
+                if task_type in ["financial", "market", "competitive", "product"]
+                else None
+            ),
         )
 
 
@@ -687,17 +647,13 @@ class ContextSelector:
 # Factory Functions
 # ============================================================================
 
+
 def create_selector(memory=None) -> ContextSelector:
     """Create a context selector."""
     return ContextSelector(memory=memory)
 
 
-def retrieve_for_agent(
-    memory,
-    agent_type: str,
-    company_name: str,
-    k: int = 5
-) -> str:
+def retrieve_for_agent(memory, agent_type: str, company_name: str, k: int = 5) -> str:
     """
     Retrieve and format context for a specific agent.
 
@@ -711,9 +667,5 @@ def retrieve_for_agent(
         Formatted context string
     """
     selector = ContextSelector(memory=memory)
-    result = selector.select_for_task(
-        task_type=agent_type,
-        company_name=company_name,
-        k=k
-    )
+    result = selector.select_for_task(task_type=agent_type, company_name=company_name, k=k)
     return selector.format_context(result, max_chars=4000, include_metadata=True)

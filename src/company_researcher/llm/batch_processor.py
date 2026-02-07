@@ -30,21 +30,22 @@ Usage:
     results = processor.wait_for_batch(batch_id)
 """
 
-from typing import List, Dict, Any, Optional, Callable
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from threading import Lock
-import time
+from typing import Any, Callable, Dict, List, Optional
 
 from anthropic import Anthropic
 
-from .client_factory import get_anthropic_client
 from ..utils import utc_now
+from .client_factory import get_anthropic_client
 
 
 @dataclass
 class BatchRequest:
     """Single request in a batch."""
+
     custom_id: str
     model: str
     max_tokens: int
@@ -57,6 +58,7 @@ class BatchRequest:
 @dataclass
 class BatchResult:
     """Result from a single batch request."""
+
     custom_id: str
     status: str  # success, error
     content: Optional[str] = None
@@ -73,13 +75,14 @@ class BatchResult:
             "input_tokens": self.input_tokens,
             "output_tokens": self.output_tokens,
             "error": self.error,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
 
 @dataclass
 class BatchStatus:
     """Status of a batch job."""
+
     batch_id: str
     status: str  # created, in_progress, ended, canceling, canceled
     total_requests: int = 0
@@ -119,9 +122,7 @@ class BatchProcessor:
         self._lock = Lock()
 
     def create_batch(
-        self,
-        requests: List[BatchRequest],
-        metadata: Optional[Dict[str, Any]] = None
+        self, requests: List[BatchRequest], metadata: Optional[Dict[str, Any]] = None
     ) -> str:
         """
         Create a batch of requests.
@@ -144,20 +145,15 @@ class BatchProcessor:
                 "model": req.model,
                 "max_tokens": req.max_tokens,
                 "temperature": req.temperature,
-                "messages": req.messages
+                "messages": req.messages,
             }
             if req.system:
                 params["system"] = req.system
 
-            batch_requests.append({
-                "custom_id": req.custom_id,
-                "params": params
-            })
+            batch_requests.append({"custom_id": req.custom_id, "params": params})
 
         # Create batch
-        batch = self.client.messages.batches.create(
-            requests=batch_requests
-        )
+        batch = self.client.messages.batches.create(requests=batch_requests)
 
         # Track batch
         with self._lock:
@@ -165,7 +161,7 @@ class BatchProcessor:
                 batch_id=batch.id,
                 status="created",
                 total_requests=len(requests),
-                created_at=utc_now()
+                created_at=utc_now(),
             )
 
         return batch.id
@@ -185,11 +181,13 @@ class BatchProcessor:
         status = BatchStatus(
             batch_id=batch.id,
             status=batch.processing_status,
-            total_requests=batch.request_counts.total if hasattr(batch, 'request_counts') else 0,
-            completed_requests=batch.request_counts.succeeded if hasattr(batch, 'request_counts') else 0,
-            failed_requests=batch.request_counts.errored if hasattr(batch, 'request_counts') else 0,
-            created_at=batch.created_at if hasattr(batch, 'created_at') else None,
-            ended_at=batch.ended_at if hasattr(batch, 'ended_at') else None
+            total_requests=batch.request_counts.total if hasattr(batch, "request_counts") else 0,
+            completed_requests=(
+                batch.request_counts.succeeded if hasattr(batch, "request_counts") else 0
+            ),
+            failed_requests=batch.request_counts.errored if hasattr(batch, "request_counts") else 0,
+            created_at=batch.created_at if hasattr(batch, "created_at") else None,
+            ended_at=batch.ended_at if hasattr(batch, "ended_at") else None,
         )
 
         # Update tracking
@@ -203,7 +201,7 @@ class BatchProcessor:
         batch_id: str,
         poll_interval: int = 30,
         timeout: int = 3600,
-        on_progress: Optional[Callable[[BatchStatus], None]] = None
+        on_progress: Optional[Callable[[BatchStatus], None]] = None,
     ) -> Dict[str, BatchResult]:
         """
         Wait for batch to complete and return results.
@@ -262,13 +260,17 @@ class BatchProcessor:
                     status="success",
                     content=message.content[0].text if message.content else None,
                     input_tokens=message.usage.input_tokens,
-                    output_tokens=message.usage.output_tokens
+                    output_tokens=message.usage.output_tokens,
                 )
             else:
                 results[custom_id] = BatchResult(
                     custom_id=custom_id,
                     status="error",
-                    error=str(result.result.error) if hasattr(result.result, 'error') else "Unknown error"
+                    error=(
+                        str(result.result.error)
+                        if hasattr(result.result, "error")
+                        else "Unknown error"
+                    ),
                 )
 
         return results
@@ -311,7 +313,7 @@ class BatchProcessor:
         max_tokens: int = 1000,
         system_prompt: Optional[str] = None,
         wait: bool = True,
-        on_progress: Optional[Callable[[BatchStatus], None]] = None
+        on_progress: Optional[Callable[[BatchStatus], None]] = None,
     ) -> Dict[str, BatchResult]:
         """
         Process multiple companies in a single batch.
@@ -330,17 +332,18 @@ class BatchProcessor:
         """
         requests = []
         for i, company in enumerate(companies):
-            requests.append(BatchRequest(
-                custom_id=f"company_{i}_{company.replace(' ', '_').lower()}",
-                model=model,
-                max_tokens=max_tokens,
-                system=system_prompt,
-                messages=[{
-                    "role": "user",
-                    "content": prompt_template.format(company_name=company)
-                }],
-                metadata={"company": company}
-            ))
+            requests.append(
+                BatchRequest(
+                    custom_id=f"company_{i}_{company.replace(' ', '_').lower()}",
+                    model=model,
+                    max_tokens=max_tokens,
+                    system=system_prompt,
+                    messages=[
+                        {"role": "user", "content": prompt_template.format(company_name=company)}
+                    ],
+                    metadata={"company": company},
+                )
+            )
 
         batch_id = self.create_batch(requests)
         print(f"[Batch] Created batch {batch_id} with {len(requests)} requests")
@@ -355,7 +358,7 @@ class BatchProcessor:
         companies: List[str],
         search_results_map: Dict[str, str],
         model: str = "claude-sonnet-4-5-20250929",
-        max_tokens: int = 1200
+        max_tokens: int = 1200,
     ) -> Dict[str, BatchResult]:
         """
         Batch financial analysis for multiple companies.
@@ -383,17 +386,21 @@ Be specific with numbers and dates. Cite sources."""
         for company in companies:
             search_results = search_results_map.get(company, "No search results available")
 
-            requests.append(BatchRequest(
-                custom_id=f"financial_{company.replace(' ', '_').lower()}",
-                model=model,
-                max_tokens=max_tokens,
-                system=system_prompt,
-                messages=[{
-                    "role": "user",
-                    "content": f"Company: {company}\n\nSearch Results:\n{search_results}\n\nExtract financial data:"
-                }],
-                metadata={"company": company, "analysis_type": "financial"}
-            ))
+            requests.append(
+                BatchRequest(
+                    custom_id=f"financial_{company.replace(' ', '_').lower()}",
+                    model=model,
+                    max_tokens=max_tokens,
+                    system=system_prompt,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": f"Company: {company}\n\nSearch Results:\n{search_results}\n\nExtract financial data:",
+                        }
+                    ],
+                    metadata={"company": company, "analysis_type": "financial"},
+                )
+            )
 
         batch_id = self.create_batch(requests)
         print(f"[Batch Financial] Created batch {batch_id}")
@@ -401,9 +408,7 @@ Be specific with numbers and dates. Cite sources."""
         return self.wait_for_batch(batch_id)
 
     def calculate_batch_cost_savings(
-        self,
-        results: Dict[str, BatchResult],
-        model: str = "claude-sonnet-4-20250514"
+        self, results: Dict[str, BatchResult], model: str = "claude-sonnet-4-20250514"
     ) -> Dict[str, float]:
         """
         Calculate cost savings from using batch API.
@@ -436,7 +441,9 @@ Be specific with numbers and dates. Cite sources."""
             "regular_cost": regular_cost,
             "batch_cost": batch_cost,
             "savings": regular_cost - batch_cost,
-            "savings_percent": ((regular_cost - batch_cost) / regular_cost * 100) if regular_cost > 0 else 0
+            "savings_percent": (
+                ((regular_cost - batch_cost) / regular_cost * 100) if regular_cost > 0 else 0
+            ),
         }
 
 

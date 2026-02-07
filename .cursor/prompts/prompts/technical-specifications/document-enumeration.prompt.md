@@ -22,11 +22,11 @@ Please create comprehensive technical specification for this enumeration:
    - Business purpose and context
 
 2. **Complete Value List**:
-   
+
    For each enum value, document:
    ```markdown
    ### [ValueName] = [NumericValue]
-   
+
    - **Business Meaning**: [What this value represents]
    - **When Used**: [Conditions for this value]
    - **Usage Frequency**: [Common/Rare/Deprecated]
@@ -96,4 +96,3 @@ Follow standards from:
 
 - `.cursor/rules/technical-specifications/enumeration-rule.mdc`
 - `.cursor/rules/technical-specifications/specification-anti-duplication-rule.mdc`
-

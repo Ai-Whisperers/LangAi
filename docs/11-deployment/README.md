@@ -71,5 +71,3 @@ Notes:
 
 - The deployment expects container port **8000** and probes **`/health`**
 - Secrets/config are injected via `company-researcher-secrets` / `company-researcher-config`
-
-

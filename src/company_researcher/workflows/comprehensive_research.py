@@ -14,67 +14,63 @@ Workflow Architecture:
     → Advanced Analysis → Synthesis & Output → END
 """
 
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
+
+from ..agents.research.competitive_matrix import create_competitive_matrix
+
+# Research modules
+from ..agents.research.multilingual_search import create_multilingual_generator
+from ..config import get_config
 
 # Import SearchRouter for multi-provider search with fallback
 from ..integrations.search_router import get_search_router
 
-from ..state import OverallState, InputState, OutputState, create_initial_state, create_output_state
-from ..config import get_config
-
-# Autonomous Discovery - enables learning from previous research
-from ..research.autonomous_discovery import (
-    load_previous_research,
-    load_all_previous_research,
-    analyze_research_gaps,
-    find_relevant_cross_company_data,
-    detect_inconsistencies,
-)
-
 # Quality modules
 from ..quality import (
+    SourceQualityAssessor,
     check_research_quality,
-    validate_research_data,
     detect_contradictions,
     score_facts,
-    SourceQualityAssessor,
+    validate_research_data,
 )
+
 # Source relevance filtering (market share validation is in nodes/comprehensive_analysis_nodes.py)
 from ..quality.source_assessor import AISourceRelevanceFilter
+
 # Fact extraction from research module
 from ..research import extract_facts
 
-# Research modules
-from ..agents.research.multilingual_search import (
-    create_multilingual_generator,
+# Autonomous Discovery - enables learning from previous research
+from ..research.autonomous_discovery import (
+    analyze_research_gaps,
+    detect_inconsistencies,
+    find_relevant_cross_company_data,
+    load_all_previous_research,
+    load_previous_research,
 )
-from ..agents.research.competitive_matrix import create_competitive_matrix
+from ..state import InputState, OutputState, OverallState, create_initial_state, create_output_state
+from ..utils import get_logger
 
 # Import nodes from modular package
-from .nodes import (
-    # Data collection
+from .nodes import (  # Data collection; Analysis; Enrichment; Output
+    brand_analysis_node,
+    core_analysis_node,
+    enrich_executive_summary_node,
+    esg_analysis_node,
+    extract_data_node,
     fetch_financial_data_node,
     fetch_news_node,
-    # Analysis
-    core_analysis_node,
     financial_analysis_node,
+    financial_comparison_node,
+    investment_thesis_node,
     market_analysis_node,
-    esg_analysis_node,
-    brand_analysis_node,
-    extract_data_node,
-    should_continue_research,
-    # Enrichment
     news_sentiment_node,
     risk_assessment_node,
-    financial_comparison_node,
-    # Output
-    investment_thesis_node,
-    enrich_executive_summary_node,
     save_comprehensive_report_node,
+    should_continue_research,
 )
-from ..utils import get_logger
 
 logger = get_logger(__name__)
 
@@ -82,6 +78,7 @@ logger = get_logger(__name__)
 # =============================================================================
 # Autonomous Discovery Node - Phase 0
 # =============================================================================
+
 
 def discovery_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -110,13 +107,17 @@ def discovery_node(state: OverallState) -> Dict[str, Any]:
     previous_quality = 0.0
 
     if previous:
-        logger.info(f"[DISCOVERY] Found previous research (Quality: {previous.quality_score:.1f}/100)")
+        logger.info(
+            f"[DISCOVERY] Found previous research (Quality: {previous.quality_score:.1f}/100)"
+        )
         previous_quality = previous.quality_score
 
         # Step 2: Analyze gaps
         gap_analysis = analyze_research_gaps(previous)
         missing_fields = gap_analysis.priority_fields  # Focus on high-priority gaps
-        logger.info(f"[DISCOVERY] Gap analysis: {gap_analysis.found_fields}/{gap_analysis.total_fields} fields found")
+        logger.info(
+            f"[DISCOVERY] Gap analysis: {gap_analysis.found_fields}/{gap_analysis.total_fields} fields found"
+        )
         logger.info(f"[DISCOVERY] Priority gaps: {missing_fields}")
 
         # Step 3: Load cross-company data
@@ -127,12 +128,12 @@ def discovery_node(state: OverallState) -> Dict[str, Any]:
 
             # Step 4: Detect inconsistencies
             inconsistencies = detect_inconsistencies(
-                company_name,
-                previous.extracted_fields,
-                all_research
+                company_name, previous.extracted_fields, all_research
             )
             if inconsistencies:
-                logger.warning(f"[DISCOVERY] Found {len(inconsistencies)} potential inconsistencies!")
+                logger.warning(
+                    f"[DISCOVERY] Found {len(inconsistencies)} potential inconsistencies!"
+                )
                 for inc in inconsistencies[:3]:
                     logger.warning(f"  - {inc.field_name}: {inc.explanation}")
     else:
@@ -152,16 +153,12 @@ def discovery_node(state: OverallState) -> Dict[str, Any]:
                 "field": d.field_name,
                 "value": d.value,
                 "context": d.context[:200] if d.context else "",
-                "confidence": d.confidence
+                "confidence": d.confidence,
             }
             for d in cross_company_data[:5]  # Limit to top 5
         ],
         "inconsistencies": [
-            {
-                "field": i.field_name,
-                "severity": i.severity,
-                "explanation": i.explanation
-            }
+            {"field": i.field_name, "severity": i.severity, "explanation": i.explanation}
             for i in inconsistencies
         ],
         "previous_extracted_fields": previous.extracted_fields if previous else {},
@@ -178,6 +175,7 @@ def discovery_node(state: OverallState) -> Dict[str, Any]:
 # =============================================================================
 # Comprehensive-Specific Nodes
 # =============================================================================
+
 
 def generate_queries_node(state: OverallState) -> Dict[str, Any]:
     """
@@ -203,7 +201,7 @@ def generate_queries_node(state: OverallState) -> Dict[str, Any]:
         region=region,
         language=language,
         max_queries=config.num_search_queries,
-        use_disambiguation=True  # Enable brand name disambiguation
+        use_disambiguation=True,  # Enable brand name disambiguation
     )
 
     queries = [mq.query for mq in ml_queries]
@@ -228,23 +226,37 @@ def generate_queries_node(state: OverallState) -> Dict[str, Any]:
     queries.extend(specialized_queries)
 
     # Limit total queries
-    queries = queries[:config.num_search_queries + 8]
+    queries = queries[: config.num_search_queries + 8]
 
     logger.info(f"[OK] Generated {len(queries)} queries")
 
     return {
         "search_queries": queries,
         "detected_region": region.value,
-        "detected_language": language.value
+        "detected_language": language.value,
     }
 
 
 def _is_executive_query(query: str) -> bool:
     """Check if query is looking for executive/leadership information."""
     executive_keywords = [
-        "ceo", "chief executive", "chief officer", "leadership", "management team",
-        "executives", "director", "gerente general", "presidente", "board of directors",
-        "appointed", "named as", "c-suite", "founder", "cfo", "cto", "coo"
+        "ceo",
+        "chief executive",
+        "chief officer",
+        "leadership",
+        "management team",
+        "executives",
+        "director",
+        "gerente general",
+        "presidente",
+        "board of directors",
+        "appointed",
+        "named as",
+        "c-suite",
+        "founder",
+        "cfo",
+        "cto",
+        "coo",
     ]
     query_lower = query.lower()
     return any(kw in query_lower for kw in executive_keywords)
@@ -278,7 +290,7 @@ def search_node(state: OverallState) -> Dict[str, Any]:
                 query=query,
                 quality="premium",
                 max_results=config.search_results_per_query,
-                min_results=min_results_threshold
+                min_results=min_results_threshold,
             )
 
             if response.success and response.results:
@@ -287,7 +299,9 @@ def search_node(state: OverallState) -> Dict[str, Any]:
                 all_results.append(results)
                 total_search_cost += response.cost
                 provider_info = f"[EXEC]" if is_executive else ""
-                logger.debug(f"[OK]{provider_info} Query '{query[:50]}...' via {response.provider}: {len(results)} results")
+                logger.debug(
+                    f"[OK]{provider_info} Query '{query[:50]}...' via {response.provider}: {len(results)} results"
+                )
             else:
                 logger.warning(f"Search failed for '{query}': {response.error}")
 
@@ -306,11 +320,13 @@ def search_node(state: OverallState) -> Dict[str, Any]:
             if url not in seen_urls:
                 seen_urls.add(url)
                 search_results.append(result)
-                sources.append({
-                    "title": result.get("title", ""),
-                    "url": url,
-                    "score": result.get("score", 0.0)
-                })
+                sources.append(
+                    {
+                        "title": result.get("title", ""),
+                        "url": url,
+                        "score": result.get("score", 0.0),
+                    }
+                )
 
     # Apply AI source relevance filtering to remove irrelevant sources
     # This filters out "Paraguay history" when researching "Personal Paraguay telecom"
@@ -323,7 +339,7 @@ def search_node(state: OverallState) -> Dict[str, Any]:
         sources=search_results,
         research_target=company_name,
         industry="telecom",  # Default to telecom for this project
-        company_context=state.get("discovery_context", {})
+        company_context=state.get("discovery_context", {}),
     )
 
     if original_count != len(search_results):
@@ -331,13 +347,17 @@ def search_node(state: OverallState) -> Dict[str, Any]:
 
     # Rebuild sources list from filtered results
     sources = [
-        {"title": r.get("title", ""), "url": r.get("url", ""), "score": r.get("relevance_score", 0.5)}
+        {
+            "title": r.get("title", ""),
+            "url": r.get("url", ""),
+            "score": r.get("relevance_score", 0.5),
+        }
         for r in search_results
     ]
 
     # Limit results
-    search_results = search_results[:config.max_search_results]
-    sources = sources[:config.max_search_results]
+    search_results = search_results[: config.max_search_results]
+    sources = sources[: config.max_search_results]
 
     # Log search stats
     stats = router.get_stats()
@@ -347,7 +367,7 @@ def search_node(state: OverallState) -> Dict[str, Any]:
     return {
         "search_results": search_results,
         "sources": sources,
-        "total_cost": state.get("total_cost", 0.0) + total_search_cost
+        "total_cost": state.get("total_cost", 0.0) + total_search_cost,
     }
 
 
@@ -361,7 +381,7 @@ def quality_check_node(state: OverallState) -> Dict[str, Any]:
     quality_result = check_research_quality(
         company_name=state["company_name"],
         extracted_data=state.get("company_overview", ""),
-        sources=state.get("sources", [])
+        sources=state.get("sources", []),
     )
 
     quality_score = quality_result["quality_score"]
@@ -375,14 +395,18 @@ def quality_check_node(state: OverallState) -> Dict[str, Any]:
         agent_outputs = state.get("agent_outputs", {})
         if agent_outputs:
             contradiction_report = detect_contradictions(agent_outputs)
-            contradictions = [
-                {
-                    "claim1": c.claim_a,
-                    "claim2": c.claim_b,
-                    "severity": c.severity.value if hasattr(c, "severity") else "medium"
-                }
-                for c in contradiction_report.contradictions
-            ] if hasattr(contradiction_report, "contradictions") else []
+            contradictions = (
+                [
+                    {
+                        "claim1": c.claim_a,
+                        "claim2": c.claim_b,
+                        "severity": c.severity.value if hasattr(c, "severity") else "medium",
+                    }
+                    for c in contradiction_report.contradictions
+                ]
+                if hasattr(contradiction_report, "contradictions")
+                else []
+            )
 
             if contradictions:
                 logger.info(f"[QUALITY] Found {len(contradictions)} contradictions")
@@ -396,10 +420,7 @@ def quality_check_node(state: OverallState) -> Dict[str, Any]:
     try:
         sources = state.get("sources", [])
         if sources:
-            validation_result = validate_research_data(
-                state.get("company_overview", ""),
-                sources
-            )
+            validation_result = validate_research_data(state.get("company_overview", ""), sources)
             if validation_result:
                 logger.info(f"[QUALITY] Validated {validation_result.validated_count} facts")
     except Exception as e:
@@ -412,7 +433,9 @@ def quality_check_node(state: OverallState) -> Dict[str, Any]:
         if facts:
             scored = score_facts(facts, state.get("sources", []))
             confidence_scores = {
-                "average_confidence": sum(f.confidence for f in scored) / len(scored) if scored else 0,
+                "average_confidence": (
+                    sum(f.confidence for f in scored) / len(scored) if scored else 0
+                ),
                 "high_confidence_count": sum(1 for f in scored if f.confidence > 0.7),
                 "low_confidence_count": sum(1 for f in scored if f.confidence < 0.3),
             }
@@ -444,15 +467,21 @@ def quality_check_node(state: OverallState) -> Dict[str, Any]:
         "quality_score": max(0, min(100, quality_score)),
         "missing_info": missing_info,
         "contradictions": contradictions,
-        "validation_result": validation_result.__dict__ if validation_result and hasattr(validation_result, "__dict__") else None,
+        "validation_result": (
+            validation_result.__dict__
+            if validation_result and hasattr(validation_result, "__dict__")
+            else None
+        ),
         "confidence_scores": confidence_scores,
         "source_quality": source_quality,
         "iteration_count": state.get("iteration_count", 0) + 1,
         "total_cost": state.get("total_cost", 0.0) + quality_result["cost"],
         "total_tokens": {
-            "input": state.get("total_tokens", {"input": 0, "output": 0})["input"] + quality_result["tokens"]["input"],
-            "output": state.get("total_tokens", {"input": 0, "output": 0})["output"] + quality_result["tokens"]["output"]
-        }
+            "input": state.get("total_tokens", {"input": 0, "output": 0})["input"]
+            + quality_result["tokens"]["input"],
+            "output": state.get("total_tokens", {"input": 0, "output": 0})["output"]
+            + quality_result["tokens"]["output"],
+        },
     }
 
 
@@ -465,8 +494,12 @@ def competitive_matrix_node(state: OverallState) -> Dict[str, Any]:
     company_name = state["company_name"]
     company_data = {
         "name": company_name,
-        "revenue": state.get("financial_data", {}).get("revenue") if state.get("financial_data") else None,
-        "market_share": state.get("key_metrics", {}).get("market_share") if state.get("key_metrics") else None,
+        "revenue": (
+            state.get("financial_data", {}).get("revenue") if state.get("financial_data") else None
+        ),
+        "market_share": (
+            state.get("key_metrics", {}).get("market_share") if state.get("key_metrics") else None
+        ),
     }
 
     competitors_data = []
@@ -475,9 +508,7 @@ def competitive_matrix_node(state: OverallState) -> Dict[str, Any]:
         competitors_data.append({"name": comp_name})
 
     matrix = create_competitive_matrix(
-        company_name=company_name,
-        company_data=company_data,
-        competitors_data=competitors_data
+        company_name=company_name, company_data=company_data, competitors_data=competitors_data
     )
 
     # Get company scores from matrix_data
@@ -510,6 +541,7 @@ def competitive_matrix_node(state: OverallState) -> Dict[str, Any]:
 # =============================================================================
 # Workflow Builder
 # =============================================================================
+
 
 def create_comprehensive_workflow() -> StateGraph:
     """
@@ -575,10 +607,7 @@ def create_comprehensive_workflow() -> StateGraph:
     workflow.add_conditional_edges(
         "quality_check",
         should_continue_research,
-        {
-            "iterate": "generate_queries",
-            "finish": "competitive_matrix"
-        }
+        {"iterate": "generate_queries", "finish": "competitive_matrix"},
     )
 
     # Phase 4
@@ -597,6 +626,7 @@ def create_comprehensive_workflow() -> StateGraph:
 # =============================================================================
 # Main Entry Point
 # =============================================================================
+
 
 def research_company_comprehensive(company_name: str) -> OutputState:
     """
@@ -617,10 +647,7 @@ def research_company_comprehensive(company_name: str) -> OutputState:
     workflow = create_comprehensive_workflow()
     initial_state = create_initial_state(company_name)
     # Increase recursion limit for complex multi-iteration workflows
-    final_state = workflow.invoke(
-        initial_state,
-        config={"recursion_limit": 50}
-    )
+    final_state = workflow.invoke(initial_state, config={"recursion_limit": 50})
     output = create_output_state(final_state)
 
     logger.info(f"\n{'='*60}")

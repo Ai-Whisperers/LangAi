@@ -78,4 +78,3 @@ Would you like to provide the research sources so I can populate this template w
 ---
 
 ## Sources
-

@@ -17,26 +17,21 @@ Usage:
             print(event.content, end="")
 """
 
-from typing import AsyncGenerator, Dict, Any, Optional, Literal
+import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime
-import asyncio
+from typing import Any, AsyncGenerator, Dict, Literal, Optional
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 
-from ...state.workflow import (
-    OverallState,
-    InputState,
-    OutputState,
-    create_initial_state,
-)
-from ..subgraphs import (
-    create_data_collection_subgraph,
-    create_analysis_subgraph,
-    create_quality_subgraph,
-    create_output_subgraph,
-)
+from ...state.workflow import InputState, OutputState, OverallState, create_initial_state
 from ...utils import get_logger, utc_now
+from ..subgraphs import (
+    create_analysis_subgraph,
+    create_data_collection_subgraph,
+    create_output_subgraph,
+    create_quality_subgraph,
+)
 
 logger = get_logger(__name__)
 
@@ -128,7 +123,7 @@ async def stream_research(
         data={
             "company_name": company_name,
             "message": f"Starting research for {company_name}",
-        }
+        },
     )
 
     # Build workflow
@@ -164,7 +159,7 @@ async def stream_research(
                             "cost": node_output.get("total_cost", 0),
                             "sources": len(node_output.get("sources", [])),
                             "quality_score": node_output.get("quality_score"),
-                        }
+                        },
                     )
 
                 if config.include_state_updates:
@@ -195,7 +190,7 @@ async def stream_research(
             data={
                 "company_name": company_name,
                 "message": "Research completed successfully",
-            }
+            },
         )
 
     except Exception as e:
@@ -225,10 +220,7 @@ async def stream_research_events(
     """
     logger.info(f"[STREAM] Starting detailed event streaming: {company_name}")
 
-    yield StreamEvent(
-        type="workflow_start",
-        data={"company_name": company_name}
-    )
+    yield StreamEvent(type="workflow_start", data={"company_name": company_name})
 
     # Build workflow
     graph = StateGraph(OverallState, input=InputState, output=OutputState)
@@ -248,18 +240,13 @@ async def stream_research_events(
     initial_state = create_initial_state(company_name)
 
     try:
-        async for event in compiled.astream_events(
-            initial_state,
-            version="v2"
-        ):
+        async for event in compiled.astream_events(initial_state, version="v2"):
             event_kind = event.get("event", "")
             event_name = event.get("name", "")
 
             if event_kind == "on_chain_start":
                 yield StreamEvent(
-                    type="node_start",
-                    node=event_name,
-                    data={"message": f"Starting {event_name}"}
+                    type="node_start", node=event_name, data={"message": f"Starting {event_name}"}
                 )
 
             elif event_kind == "on_chain_end":
@@ -269,7 +256,7 @@ async def stream_research_events(
                     node=event_name,
                     data={
                         "cost": output.get("total_cost", 0) if isinstance(output, dict) else 0,
-                    }
+                    },
                 )
 
             elif event_kind == "on_chat_model_stream" and include_tokens:
@@ -281,10 +268,7 @@ async def stream_research_events(
                         content=content,
                     )
 
-        yield StreamEvent(
-            type="workflow_complete",
-            data={"company_name": company_name}
-        )
+        yield StreamEvent(type="workflow_complete", data={"company_name": company_name})
 
     except Exception as e:
         logger.error(f"[STREAM] Error: {e}")
@@ -327,6 +311,7 @@ async def stream_to_callback(
 # Synchronous Streaming (for non-async contexts)
 # ============================================================================
 
+
 def stream_research_sync(
     company_name: str,
 ) -> "Generator[StreamEvent, None, None]":
@@ -366,6 +351,7 @@ def stream_research_sync(
 # ============================================================================
 # Progress Tracking
 # ============================================================================
+
 
 class ProgressTracker:
     """

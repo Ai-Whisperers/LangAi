@@ -32,11 +32,12 @@ Usage:
     comparison = researcher.generate_comparison(results)
 """
 
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass, field
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import Lock
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from threading import Lock
+from typing import Any, Dict, List, Optional
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -45,6 +46,7 @@ logger = get_logger(__name__)
 @dataclass
 class CompanyResearchResult:
     """Result from researching a single company."""
+
     company_name: str
     success: bool
     report: str = ""
@@ -65,6 +67,7 @@ class CompanyResearchResult:
 @dataclass
 class BatchResearchResult:
     """Result from batch research operation."""
+
     companies: List[str]
     results: List[CompanyResearchResult] = field(default_factory=list)
     total_cost: float = 0.0
@@ -94,7 +97,7 @@ class BatchResearchResult:
             "avg_cost_per_company": round(self.total_cost / max(self.success_count, 1), 4),
             "avg_duration_per_company": round(self.total_duration / max(len(self.companies), 1), 2),
             "avg_quality_score": round(self.avg_quality_score, 2),
-            "low_quality_count": self.low_quality_count
+            "low_quality_count": self.low_quality_count,
         }
 
 
@@ -112,7 +115,7 @@ class BatchResearcher:
         timeout_per_company: int = 300,
         enable_cache: bool = True,
         enable_quality_check: bool = True,
-        quality_threshold: float = 70.0
+        quality_threshold: float = 70.0,
     ):
         """
         Initialize batch researcher.
@@ -134,10 +137,7 @@ class BatchResearcher:
         self._progress: Dict[str, str] = {}  # company -> status
 
     def research_batch(
-        self,
-        companies: List[str],
-        use_enhanced_workflow: bool = False,
-        show_progress: bool = True
+        self, companies: List[str], use_enhanced_workflow: bool = False, show_progress: bool = True
     ) -> BatchResearchResult:
         """
         Research multiple companies in parallel.
@@ -165,9 +165,7 @@ class BatchResearcher:
             # Submit all tasks
             future_to_company = {
                 executor.submit(
-                    self._research_single_company,
-                    company,
-                    use_enhanced_workflow
+                    self._research_single_company, company, use_enhanced_workflow
                 ): company
                 for company in companies
             }
@@ -207,37 +205,45 @@ class BatchResearcher:
                                 quality_status = f" [Q:{result.quality_score:.0f}⚠]"
                             else:
                                 quality_status = f" [Q:{result.quality_score:.0f}]"
-                        print(f"  {status} [{completed}/{len(companies)}] {company} {cache_status}{quality_status}")
+                        print(
+                            f"  {status} [{completed}/{len(companies)}] {company} {cache_status}{quality_status}"
+                        )
 
                 except Exception as e:
                     logger.error(f"Error researching {company}: {e}")
-                    batch_result.results.append(CompanyResearchResult(
-                        company_name=company,
-                        success=False,
-                        error=str(e)
-                    ))
+                    batch_result.results.append(
+                        CompanyResearchResult(company_name=company, success=False, error=str(e))
+                    )
                     batch_result.failure_count += 1
 
         batch_result.total_duration = time.time() - start_time
 
         # Calculate quality metrics
         if self.enable_quality_check:
-            quality_scores = [r.quality_score for r in batch_result.results if r.quality_score is not None]
+            quality_scores = [
+                r.quality_score for r in batch_result.results if r.quality_score is not None
+            ]
             if quality_scores:
                 batch_result.avg_quality_score = sum(quality_scores) / len(quality_scores)
-                batch_result.low_quality_count = sum(1 for score in quality_scores if score < self.quality_threshold)
+                batch_result.low_quality_count = sum(
+                    1 for score in quality_scores if score < self.quality_threshold
+                )
 
-        logger.info(f"Batch research complete: {batch_result.success_count}/{len(companies)} successful")
-        logger.info(f"Total cost: ${batch_result.total_cost:.4f}, Duration: {batch_result.total_duration:.1f}s")
+        logger.info(
+            f"Batch research complete: {batch_result.success_count}/{len(companies)} successful"
+        )
+        logger.info(
+            f"Total cost: ${batch_result.total_cost:.4f}, Duration: {batch_result.total_duration:.1f}s"
+        )
         if self.enable_quality_check and batch_result.avg_quality_score > 0:
-            logger.info(f"Avg quality score: {batch_result.avg_quality_score:.1f}/100, Low quality: {batch_result.low_quality_count}")
+            logger.info(
+                f"Avg quality score: {batch_result.avg_quality_score:.1f}/100, Low quality: {batch_result.low_quality_count}"
+            )
 
         return batch_result
 
     def _research_single_company(
-        self,
-        company_name: str,
-        use_enhanced_workflow: bool = False
+        self, company_name: str, use_enhanced_workflow: bool = False
     ) -> CompanyResearchResult:
         """
         Research a single company.
@@ -260,26 +266,31 @@ class BatchResearcher:
             if use_enhanced_workflow:
                 try:
                     from ..state.workflow import research_workflow
+
                     workflow = research_workflow
                 except ImportError:
                     logger.warning("Enhanced workflow not available, using basic")
                     from ..graphs.research_graph import graph
+
                     workflow = graph
             else:
                 from ..graphs.research_graph import graph
+
                 workflow = graph
 
             # Execute research
-            result = workflow.invoke({
-                "company_name": company_name,
-                "queries": [],
-                "search_results": [],
-                "extracted_data": {},
-                "report": "",
-                "total_cost": 0.0,
-                "total_tokens": 0,
-                "error": None
-            })
+            result = workflow.invoke(
+                {
+                    "company_name": company_name,
+                    "queries": [],
+                    "search_results": [],
+                    "extracted_data": {},
+                    "report": "",
+                    "total_cost": 0.0,
+                    "total_tokens": 0,
+                    "error": None,
+                }
+            )
 
             duration = time.time() - start_time
 
@@ -305,7 +316,7 @@ class BatchResearcher:
                         quality_result = check_research_quality(
                             company_name=company_name,
                             extracted_data=extracted_data_str,
-                            sources=sources
+                            sources=sources,
                         )
 
                         quality_score = quality_result.get("quality_score")
@@ -339,7 +350,7 @@ class BatchResearcher:
                 quality_score=quality_score,
                 quality_issues=quality_issues,
                 quality_strengths=quality_strengths,
-                recommended_queries=recommended_queries
+                recommended_queries=recommended_queries,
             )
 
         except Exception as e:
@@ -350,16 +361,11 @@ class BatchResearcher:
                 self._progress[company_name] = "failed"
 
             return CompanyResearchResult(
-                company_name=company_name,
-                success=False,
-                duration_seconds=duration,
-                error=str(e)
+                company_name=company_name, success=False, duration_seconds=duration, error=str(e)
             )
 
     def generate_comparison(
-        self,
-        batch_result: BatchResearchResult,
-        comparison_fields: Optional[List[str]] = None
+        self, batch_result: BatchResearchResult, comparison_fields: Optional[List[str]] = None
     ) -> str:
         """
         Generate comparative report from batch results.
@@ -382,10 +388,7 @@ class BatchResearcher:
 
         # Default comparison fields
         if comparison_fields is None:
-            comparison_fields = [
-                "industry", "founded", "headquarters",
-                "revenue", "employees"
-            ]
+            comparison_fields = ["industry", "founded", "headquarters", "revenue", "employees"]
 
         # Build comparison report
         report = f"""# Company Comparison Report
@@ -457,7 +460,7 @@ class BatchResearcher:
 """
 
         # Add quality statistics if available
-        if summary.get('avg_quality_score', 0) > 0:
+        if summary.get("avg_quality_score", 0) > 0:
             report += f"""
 ### Quality Metrics
 
@@ -470,9 +473,7 @@ class BatchResearcher:
         return report
 
     def save_batch_results(
-        self,
-        batch_result: BatchResearchResult,
-        output_dir: str = "outputs/batch"
+        self, batch_result: BatchResearchResult, output_dir: str = "outputs/batch"
     ) -> str:
         """
         Save batch results to disk.
@@ -524,10 +525,10 @@ class BatchResearcher:
                     "quality_score": r.quality_score,
                     "quality_issues": r.quality_issues,
                     "quality_strengths": r.quality_strengths,
-                    "recommended_queries": r.recommended_queries
+                    "recommended_queries": r.recommended_queries,
                 }
                 for r in batch_result.results
-            ]
+            ],
         }
 
         summary_file = batch_dir / "summary.json"
@@ -535,7 +536,11 @@ class BatchResearcher:
 
         # Generate quality report for low-quality results
         if self.enable_quality_check:
-            low_quality = [r for r in batch_result.results if r.quality_score and r.quality_score < self.quality_threshold]
+            low_quality = [
+                r
+                for r in batch_result.results
+                if r.quality_score and r.quality_score < self.quality_threshold
+            ]
             if low_quality:
                 quality_report = self.generate_quality_report(low_quality)
                 quality_file = batch_dir / "quality_issues.md"
@@ -589,15 +594,15 @@ class BatchResearcher:
 
             report += "\n---\n\n"
 
-        report += "*Use these recommendations to improve research quality through additional searches.*\n"
+        report += (
+            "*Use these recommendations to improve research quality through additional searches.*\n"
+        )
         return report
 
 
 # Convenience functions
 def research_companies(
-    companies: List[str],
-    max_workers: int = 5,
-    save_results: bool = True
+    companies: List[str], max_workers: int = 5, save_results: bool = True
 ) -> BatchResearchResult:
     """
     Quick function to research multiple companies.

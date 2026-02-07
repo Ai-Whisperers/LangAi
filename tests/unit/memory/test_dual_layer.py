@@ -8,35 +8,33 @@ Tests the memory system components:
 - Research-specific operations
 """
 
-import pytest
 import time
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-# Hot layer imports
-from src.company_researcher.memory.lru_cache import (
-    LRUCache,
-    ResearchCache
-)
-
-# Cold layer imports
-from src.company_researcher.memory.vector_store import (
-    VectorDocument,
-    EmbeddingGenerator,
-    CHROMADB_AVAILABLE
-)
+import pytest
 
 # Dual-layer imports
 from src.company_researcher.memory.dual_layer import (
     DualLayerMemory,
     MemoryLayer,
     PromotionPolicy,
-    create_research_memory
+    create_research_memory,
 )
 
+# Hot layer imports
+from src.company_researcher.memory.lru_cache import LRUCache, ResearchCache
+
+# Cold layer imports
+from src.company_researcher.memory.vector_store import (
+    CHROMADB_AVAILABLE,
+    EmbeddingGenerator,
+    VectorDocument,
+)
 
 # ============================================================================
 # LRU Cache Tests
 # ============================================================================
+
 
 @pytest.mark.unit
 @pytest.mark.memory
@@ -136,6 +134,7 @@ class TestLRUCacheTTL:
 # Research Cache Tests
 # ============================================================================
 
+
 @pytest.mark.unit
 @pytest.mark.memory
 class TestResearchCache:
@@ -189,13 +188,14 @@ class TestResearchCache:
 # Embedding Generator Tests (Mocked)
 # ============================================================================
 
+
 @pytest.mark.unit
 @pytest.mark.memory
 class TestEmbeddingGenerator:
     """Test embedding generation with mocked OpenAI."""
 
-    @patch('src.company_researcher.memory.vector_store.OpenAI')
-    @patch('src.company_researcher.memory.vector_store.OPENAI_AVAILABLE', True)
+    @patch("src.company_researcher.memory.vector_store.OpenAI")
+    @patch("src.company_researcher.memory.vector_store.OPENAI_AVAILABLE", True)
     def test_embedding_generator_with_mock(self, mock_openai_class):
         """Test embedding generator with mocked OpenAI client."""
         # Setup mock
@@ -213,17 +213,14 @@ class TestEmbeddingGenerator:
         assert len(embedding) == 384
         assert all(isinstance(v, float) for v in embedding)
 
-    @patch('src.company_researcher.memory.vector_store.OpenAI')
-    @patch('src.company_researcher.memory.vector_store.OPENAI_AVAILABLE', True)
+    @patch("src.company_researcher.memory.vector_store.OpenAI")
+    @patch("src.company_researcher.memory.vector_store.OPENAI_AVAILABLE", True)
     def test_batch_embedding_with_mock(self, mock_openai_class):
         """Test batch embedding with mocked OpenAI client."""
         # Setup mock
         mock_client = MagicMock()
         mock_response = MagicMock()
-        mock_response.data = [
-            MagicMock(embedding=[0.1] * 384),
-            MagicMock(embedding=[0.2] * 384)
-        ]
+        mock_response.data = [MagicMock(embedding=[0.1] * 384), MagicMock(embedding=[0.2] * 384)]
         mock_client.embeddings.create.return_value = mock_response
         mock_openai_class.return_value = mock_client
 
@@ -238,7 +235,7 @@ class TestEmbeddingGenerator:
     def test_embedding_fallback(self):
         """Test embedding fallback without OpenAI."""
         # Create generator without API key to trigger fallback
-        with patch('src.company_researcher.memory.vector_store.get_config', return_value=None):
+        with patch("src.company_researcher.memory.vector_store.get_config", return_value=None):
             generator = EmbeddingGenerator(api_key=None)
 
             text = "Tesla is an electric vehicle company"
@@ -251,6 +248,7 @@ class TestEmbeddingGenerator:
 # ============================================================================
 # Vector Document Tests
 # ============================================================================
+
 
 @pytest.mark.unit
 @pytest.mark.memory
@@ -280,11 +278,7 @@ class TestVectorDocument:
 
     def test_document_creation(self):
         """Test creating a VectorDocument."""
-        doc = VectorDocument(
-            id="test_123",
-            content="Test content",
-            metadata={"company": "Tesla"}
-        )
+        doc = VectorDocument(id="test_123", content="Test content", metadata={"company": "Tesla"})
 
         assert doc.id == "test_123"
         assert doc.content == "Test content"
@@ -295,13 +289,14 @@ class TestVectorDocument:
 # Vector Store Tests (Mocked)
 # ============================================================================
 
+
 @pytest.mark.unit
 @pytest.mark.memory
 @pytest.mark.skipif(not CHROMADB_AVAILABLE, reason="ChromaDB not installed")
 class TestVectorStore:
     """Test vector store operations with mocked embeddings."""
 
-    @patch('src.company_researcher.memory.vector_store.EmbeddingGenerator')
+    @patch("src.company_researcher.memory.vector_store.EmbeddingGenerator")
     def test_vector_store_operations(self, mock_embedding_class):
         """Test vector store with mocked embeddings."""
         # Setup mock embedding generator
@@ -334,21 +329,18 @@ class TestVectorStore:
 # Dual-Layer Memory Tests (Mocked)
 # ============================================================================
 
+
 @pytest.mark.unit
 @pytest.mark.memory
 class TestDualLayerBasic:
     """Test dual-layer memory basic operations."""
 
-    @patch('src.company_researcher.memory.dual_layer.ResearchVectorStore')
-    @patch('src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE', False)
+    @patch("src.company_researcher.memory.dual_layer.ResearchVectorStore")
+    @patch("src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE", False)
     def test_dual_layer_hot_only(self, mock_vector_store):
         """Test dual-layer memory with hot layer only."""
         # Create memory without cold layer
-        memory = DualLayerMemory(
-            hot_max_size=100,
-            hot_ttl=3600,
-            cold_persist_dir=None
-        )
+        memory = DualLayerMemory(hot_max_size=100, hot_ttl=3600, cold_persist_dir=None)
 
         assert memory.cold_available == False
 
@@ -357,7 +349,7 @@ class TestDualLayerBasic:
             key="tesla_overview",
             content="Tesla Inc. is an American electric vehicle company.",
             metadata={"company": "tesla", "type": "overview"},
-            layer=MemoryLayer.HOT
+            layer=MemoryLayer.HOT,
         )
 
         # Recall by key
@@ -366,8 +358,8 @@ class TestDualLayerBasic:
         assert "Tesla" in item.content
         assert item.layer == MemoryLayer.HOT
 
-    @patch('src.company_researcher.memory.dual_layer.ResearchVectorStore')
-    @patch('src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE', True)
+    @patch("src.company_researcher.memory.dual_layer.ResearchVectorStore")
+    @patch("src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE", True)
     def test_dual_layer_with_cold(self, mock_vector_store_class):
         """Test dual-layer memory with both layers."""
         # Setup mock cold layer
@@ -375,11 +367,7 @@ class TestDualLayerBasic:
         mock_cold.count = 0
         mock_vector_store_class.return_value = mock_cold
 
-        memory = DualLayerMemory(
-            hot_max_size=100,
-            hot_ttl=3600,
-            cold_persist_dir="./test_data"
-        )
+        memory = DualLayerMemory(hot_max_size=100, hot_ttl=3600, cold_persist_dir="./test_data")
 
         assert memory.cold_available == True
 
@@ -389,7 +377,7 @@ class TestDualLayerBasic:
             content="Tesla Inc. is an American electric vehicle company.",
             metadata={"company": "tesla", "type": "overview"},
             company_name="Tesla",
-            data_type="overview"
+            data_type="overview",
         )
 
         # Recall by key should hit hot layer
@@ -403,8 +391,8 @@ class TestDualLayerBasic:
 class TestDualLayerSemanticSearch:
     """Test dual-layer semantic search."""
 
-    @patch('src.company_researcher.memory.dual_layer.ResearchVectorStore')
-    @patch('src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE', True)
+    @patch("src.company_researcher.memory.dual_layer.ResearchVectorStore")
+    @patch("src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE", True)
     def test_semantic_search_cold_layer(self, mock_vector_store_class):
         """Test semantic search through cold layer."""
         # Setup mock cold layer with search results
@@ -434,13 +422,14 @@ class TestDualLayerSemanticSearch:
 # Promotion Policy Tests
 # ============================================================================
 
+
 @pytest.mark.unit
 @pytest.mark.memory
 class TestPromotionPolicy:
     """Test promotion from cold to hot layer."""
 
-    @patch('src.company_researcher.memory.dual_layer.ResearchVectorStore')
-    @patch('src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE', True)
+    @patch("src.company_researcher.memory.dual_layer.ResearchVectorStore")
+    @patch("src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE", True)
     def test_promotion_policy_aggressive(self, mock_vector_store_class):
         """Test aggressive promotion policy."""
         mock_cold = MagicMock()
@@ -448,15 +437,13 @@ class TestPromotionPolicy:
         mock_vector_store_class.return_value = mock_cold
 
         memory = DualLayerMemory(
-            hot_max_size=100,
-            promotion_policy=PromotionPolicy.AGGRESSIVE,
-            promotion_threshold=1
+            hot_max_size=100, promotion_policy=PromotionPolicy.AGGRESSIVE, promotion_threshold=1
         )
 
         assert memory._promotion_policy == PromotionPolicy.AGGRESSIVE
 
-    @patch('src.company_researcher.memory.dual_layer.ResearchVectorStore')
-    @patch('src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE', True)
+    @patch("src.company_researcher.memory.dual_layer.ResearchVectorStore")
+    @patch("src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE", True)
     def test_promotion_policy_moderate(self, mock_vector_store_class):
         """Test moderate promotion policy."""
         mock_cold = MagicMock()
@@ -464,9 +451,7 @@ class TestPromotionPolicy:
         mock_vector_store_class.return_value = mock_cold
 
         memory = DualLayerMemory(
-            hot_max_size=100,
-            promotion_policy=PromotionPolicy.MODERATE,
-            promotion_threshold=2
+            hot_max_size=100, promotion_policy=PromotionPolicy.MODERATE, promotion_threshold=2
         )
 
         assert memory._promotion_policy == PromotionPolicy.MODERATE
@@ -476,13 +461,14 @@ class TestPromotionPolicy:
 # Factory Function Tests
 # ============================================================================
 
+
 @pytest.mark.unit
 @pytest.mark.memory
 class TestFactoryFunction:
     """Test factory function for creating memory."""
 
-    @patch('src.company_researcher.memory.dual_layer.ResearchVectorStore')
-    @patch('src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE', True)
+    @patch("src.company_researcher.memory.dual_layer.ResearchVectorStore")
+    @patch("src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE", True)
     def test_create_research_memory(self, mock_vector_store_class):
         """Test factory function creates memory correctly."""
         mock_cold = MagicMock()
@@ -493,21 +479,21 @@ class TestFactoryFunction:
             persist_dir="./test_data/memory",
             hot_size=200,
             hot_ttl=3600,
-            promotion_policy="aggressive"
+            promotion_policy="aggressive",
         )
 
         assert memory._hot._max_size == 200
         assert memory._promotion_policy == PromotionPolicy.AGGRESSIVE
 
-    @patch('src.company_researcher.memory.dual_layer.ResearchVectorStore')
-    @patch('src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE', False)
+    @patch("src.company_researcher.memory.dual_layer.ResearchVectorStore")
+    @patch("src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE", False)
     def test_create_research_memory_no_cold(self, mock_vector_store_class):
         """Test factory function without cold layer."""
         memory = create_research_memory(
             persist_dir="./test_data/memory",
             hot_size=100,
             hot_ttl=1800,
-            promotion_policy="conservative"
+            promotion_policy="conservative",
         )
 
         assert memory._hot._max_size == 100
@@ -519,13 +505,14 @@ class TestFactoryFunction:
 # Memory Stats Tests
 # ============================================================================
 
+
 @pytest.mark.unit
 @pytest.mark.memory
 class TestMemoryStats:
     """Test memory statistics tracking."""
 
-    @patch('src.company_researcher.memory.dual_layer.ResearchVectorStore')
-    @patch('src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE', False)
+    @patch("src.company_researcher.memory.dual_layer.ResearchVectorStore")
+    @patch("src.company_researcher.memory.dual_layer.CHROMADB_AVAILABLE", False)
     def test_get_stats(self, mock_vector_store):
         """Test getting memory statistics."""
         memory = DualLayerMemory(hot_max_size=100)

@@ -190,11 +190,11 @@ For rules requiring review:
 
 After syncing rule files, sync related assets:
 
-**Templars**: 
+**Templars**:
 - If rule requires templar not in target, sync templar too
 - Apply same version comparison logic
 
-**Exemplars**: 
+**Exemplars**:
 - Sync exemplars if referenced by synced rules
 - Maintain `use:` flags and warnings
 
@@ -508,7 +508,7 @@ Agent: cursor-agent | rule.authoring.rule-sync.v1
 
 ### Scenario: Syncing Ticket Rules from Foundation to Domain
 
-**Context**: 
+**Context**:
 - Source: `eneve.ebase.foundation` (primary development repo)
 - Target: `eneve.domain` (older repo needing updates)
 - Domain: `ticket/` rules
@@ -521,7 +521,7 @@ Agent: cursor-agent | rule.authoring.rule-sync.v1
    - plan-rule.mdc (v1.2.0)
    - progress-rule.mdc (v1.1.0)
    - context-rule.mdc (v1.0.0)
-   
+
    Target rules (eneve.domain/.cursor/rules/ticket/):
    - plan-rule.mdc (v1.0.0)
    - progress-rule.mdc (v1.1.0)
@@ -536,16 +536,16 @@ Agent: cursor-agent | rule.authoring.rule-sync.v1
 3. **Generate Report**:
    ```markdown
    # Rule Sync Analysis
-   
+
    **Source**: eneve.ebase.foundation
    **Target**: eneve.domain
-   
+
    ## Summary
    - Rules to Add: 1
    - Rules to Update: 1
    - Rules to Review: 0
    - Rules in Sync: 1
-   
+
    ## Actions Recommended
    1. Add: context-rule.mdc (new rule)
    2. Update: plan-rule.mdc (1.0.0 -> 1.2.0)
@@ -564,15 +564,15 @@ Agent: cursor-agent | rule.authoring.rule-sync.v1
 6. **Log**:
    ```markdown
    # Rule Sync Log
-   
+
    ## Sync Session: 2025-12-01 10:30 UTC
-   
+
    ### Rules Added
    - rule.ticket.context.v1 (1.0.0)
-   
+
    ### Rules Updated
    - rule.ticket.plan.v1 (1.0.0 -> 1.2.0)
-   
+
    ### Validation
    - ✅ All synced rules validated
    ```
@@ -592,7 +592,7 @@ Agent: cursor-agent | rule.authoring.rule-sync.v1
 
 ### Sync Triggers
 
-**Manual trigger** (recommended): 
+**Manual trigger** (recommended):
 - User initiates sync: "Sync rules from foundation to domain"
 - Review report before executing
 

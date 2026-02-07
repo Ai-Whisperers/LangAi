@@ -1,7 +1,10 @@
 """Configuration for AI components."""
-from pydantic import BaseModel, Field
-from typing import Optional
+
 import os
+from typing import Optional
+
+from pydantic import BaseModel, Field
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -82,31 +85,30 @@ class AIConfig(BaseModel):
             track_costs=get_bool("AI_TRACK_COSTS", True),
             max_cost_per_research=get_float("AI_MAX_COST_PER_RESEARCH", 1.00),
             warn_at_cost=get_float("AI_WARN_AT_COST", 0.50),
-
             sentiment=AIComponentConfig(
                 enabled=get_bool("AI_SENTIMENT_ENABLED", True),
-                fallback_to_legacy=get_bool("AI_SENTIMENT_FALLBACK", True)
+                fallback_to_legacy=get_bool("AI_SENTIMENT_FALLBACK", True),
             ),
             query_generation=AIComponentConfig(
                 enabled=get_bool("AI_QUERY_GEN_ENABLED", True),
-                fallback_to_legacy=get_bool("AI_QUERY_GEN_FALLBACK", True)
+                fallback_to_legacy=get_bool("AI_QUERY_GEN_FALLBACK", True),
             ),
             quality_assessment=AIComponentConfig(
                 enabled=get_bool("AI_QUALITY_ENABLED", True),
-                fallback_to_legacy=get_bool("AI_QUALITY_FALLBACK", True)
+                fallback_to_legacy=get_bool("AI_QUALITY_FALLBACK", True),
             ),
             data_extraction=AIComponentConfig(
                 enabled=get_bool("AI_EXTRACTION_ENABLED", True),
-                fallback_to_legacy=get_bool("AI_EXTRACTION_FALLBACK", True)
+                fallback_to_legacy=get_bool("AI_EXTRACTION_FALLBACK", True),
             ),
             classification=AIComponentConfig(
                 enabled=get_bool("AI_CLASSIFICATION_ENABLED", True),
-                fallback_to_legacy=get_bool("AI_CLASSIFICATION_FALLBACK", True)
+                fallback_to_legacy=get_bool("AI_CLASSIFICATION_FALLBACK", True),
             ),
             contradiction_detection=AIComponentConfig(
                 enabled=get_bool("AI_CONTRADICTION_ENABLED", True),
-                fallback_to_legacy=get_bool("AI_CONTRADICTION_FALLBACK", True)
-            )
+                fallback_to_legacy=get_bool("AI_CONTRADICTION_FALLBACK", True),
+            ),
         )
 
         logger.info(f"AI Config loaded: global_enabled={config.global_enabled}")
@@ -118,7 +120,7 @@ class AIConfig(BaseModel):
             return False
 
         component_config = getattr(self, component_name.replace("-", "_"), None)
-        if component_config and hasattr(component_config, 'enabled'):
+        if component_config and hasattr(component_config, "enabled"):
             return component_config.enabled
 
         return False

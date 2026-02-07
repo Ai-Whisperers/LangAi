@@ -80,7 +80,7 @@ Savings Rate = (Total Income - Total Expenses) / Total Income × 100
 **Benchmarks:**
 - Below 10%: Needs improvement
 - 10-20%: Good
-- 20-30%: Excellent  
+- 20-30%: Excellent
 - Above 30%: Outstanding
 
 ### Category Guidelines (% of income)
@@ -195,7 +195,7 @@ Customize the HTML_TEMPLATE in `generate_report.py` to adjust colors, fonts, or 
 **Monthly Review:**
 "Analyze my October spending and create a report"
 
-**Budget Optimization:**  
+**Budget Optimization:**
 "Where am I spending too much money?"
 
 **Trend Analysis:**
@@ -227,7 +227,7 @@ view references/financial_frameworks.md
 
 This includes:
 - The 50/30/20 budget rule
-- Category spending benchmarks  
+- Category spending benchmarks
 - Financial health indicators
 - Analysis workflow details
 - Visualization best practices

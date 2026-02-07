@@ -266,11 +266,11 @@ function Test-Unicode {
     [CmdletBinding()]
     [OutputType([bool])]
     param()
-    
+
     $psVersion = $PSVersionTable.PSVersion.Major
     $inAzure = $env:AGENT_TEMPDIRECTORY -ne $null
     $isUtf8Console = [Console]::OutputEncoding.CodePage -eq 65001
-    
+
     return ($psVersion -ge 7) -or $inAzure -or $isUtf8Console
 }
 
@@ -286,7 +286,7 @@ function Get-StatusEmoji {
         [ValidateSet('success', 'warning', 'error', 'info')]
         [string]$Status
     )
-    
+
     if (Test-Unicode) {
         $emojis = @{
             'success' = '✅'; 'warning' = '⚠️'
@@ -298,7 +298,7 @@ function Get-StatusEmoji {
             'error' = '[ERR]'; 'info' = '[INFO]'
         }
     }
-    
+
     return $emojis[$Status]
 }
 
@@ -426,4 +426,3 @@ This prompt guides:
 6. **Document**: Update help/docstrings and add tests
 
 **Goal**: Eliminate code duplication, centralize common logic, ensure consistent behavior.
-

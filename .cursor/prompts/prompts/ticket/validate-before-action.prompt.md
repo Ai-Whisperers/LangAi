@@ -10,8 +10,8 @@ argument-hint: "Specification file and optional ticket ID (e.g., @spec.md please
 
 This prompt enforces a two-phase workflow: validate understanding first, then execute after confirmation.
 
-**Pattern**: Validation-Before-Action Pattern ⭐⭐⭐⭐⭐  
-**Effectiveness**: Reduces errors by ~80%, prevents costly mistakes  
+**Pattern**: Validation-Before-Action Pattern ⭐⭐⭐⭐⭐
+**Effectiveness**: Reduces errors by ~80%, prevents costly mistakes
 **Use When**: Complex implementations, risky changes, detailed specifications
 
 ---
@@ -233,10 +233,10 @@ See exemplar for complete worked examples:
 
 ## Benefits
 
-✅ **Catch Misunderstandings Early** - Before any code is written  
-✅ **Build Confidence** - See AI understands requirements  
-✅ **Reduce Rework** - Fewer correction cycles  
-✅ **Learn Together** - Discussion reveals assumptions  
+✅ **Catch Misunderstandings Early** - Before any code is written
+✅ **Build Confidence** - See AI understands requirements
+✅ **Reduce Rework** - Fewer correction cycles
+✅ **Learn Together** - Discussion reveals assumptions
 ✅ **Risk Mitigation** - Prevent costly mistakes (especially for critical operations)
 
 ---
@@ -295,10 +295,8 @@ Ready to proceed?
 
 ---
 
-**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)  
-**Pattern ID**: #4 Validation-Before-Action  
-**Evidence**: conversations/JP/extracted/pattern-discovery-report.md  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)
+**Pattern ID**: #4 Validation-Before-Action
+**Evidence**: conversations/JP/extracted/pattern-discovery-report.md
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)
-
-

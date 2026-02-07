@@ -3558,15 +3558,2122 @@ PermissionError: [Errno 13] Permission denied: 'C:\\Users\\Alejandro\\Documents\
 
 ---
 
-
+Good news: the deployment/API entrypoints are now consistent (FastAPI has `/health`, Docker uses `company_researcher.api.main:app`, Celery commands point at `company_researcher.tasks`). Next I’ll run a focused internal-link check on `README.md` + `docs/` and fix any remaining broken references it finds.
 
 ---
 
 <tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
-<details><summary>Tool use: **run_terminal_cmd**</summary>
+<details><summary>Tool use: **run_terminal_cmd** • Run command: python -c "code=r'''import re, pathlib, sys
+root = pathlib.Path('.').resolve()
+scan_paths = [root / 'README.md', root / 'docs']
+broken = []
+files = []
+for p in scan_paths:
+    if p.is_file():
+        files.append(p)
+    elif p.is_dir():
+        files.extend([f for f in p.rglob('*.md') if f.is_file()])
+for path in files:
+    try:
+        text = path.read_text(encoding='utf-8')
+    except Exception:
+        text = path.read_text(encoding='utf-8', errors='ignore')
+    for m in re.finditer(r'\[[^\]]*\]\(([^)]+)\)', text):
+        target = m.group(1).strip()
+        if target.startswith(('http://','https://','mailto:','#')):
+            continue
+        target = target.split('#', 1)[0].strip()
+        if not target:
+            continue
+        if target.startswith('javascript:'):
+            continue
+        tpath = (path.parent / target).resolve()
+        if not tpath.exists():
+            broken.append((str(path.relative_to(root)), target))
+if broken:
+    print(f'BROKEN_LINKS={len(broken)}')
+    for p, t in broken[:200]:
+        print(f'{p} -> {t}')
+    sys.exit(1)
+print('OK')
+'''
+exec(code)"</summary>
+
+```bash
+python -c "code=r'''import re, pathlib, sys
+root = pathlib.Path('.').resolve()
+scan_paths = [root / 'README.md', root / 'docs']
+broken = []
+files = []
+for p in scan_paths:
+    if p.is_file():
+        files.append(p)
+    elif p.is_dir():
+        files.extend([f for f in p.rglob('*.md') if f.is_file()])
+for path in files:
+    try:
+        text = path.read_text(encoding='utf-8')
+    except Exception:
+        text = path.read_text(encoding='utf-8', errors='ignore')
+    for m in re.finditer(r'\[[^\]]*\]\(([^)]+)\)', text):
+        target = m.group(1).strip()
+        if target.startswith(('http://','https://','mailto:','#')):
+            continue
+        target = target.split('#', 1)[0].strip()
+        if not target:
+            continue
+        if target.startswith('javascript:'):
+            continue
+        tpath = (path.parent / target).resolve()
+        if not tpath.exists():
+            broken.append((str(path.relative_to(root)), target))
+if broken:
+    print(f'BROKEN_LINKS={len(broken)}')
+    for p, t in broken[:200]:
+        print(f'{p} -> {t}')
+    sys.exit(1)
+print('OK')
+'''
+exec(code)"
+```
+
+```
+OK
+
+```
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Updating the to-do list**
+
+I’m feeling good about the docs links being okay, so now it’s time to update my to-do list. I've finished updating the project docs and validating the document consistency. I think I need to call the function to write these updates down. This will help keep everything organized, and I want to make sure I don't miss anything moving forward! Let's get that done.</details></think>
+
+---
+
+<tool-use data-tool-type="task" data-tool-name="todo_write">
+<details><summary>Tool use: **todo_write** • Todo List</summary>
+
+- [x] Audit the .cursor/ documentation framework (rules, prompts, templars/exemplars) and extract the intended doc standards
+- [x] Inventory current project documentation (README, docs/, architecture, setup, env vars, deployment, troubleshooting) and gaps vs standards
+- [x] Update/create the missing project documentation files and cross-link them consistently
+- [x] Validate docs: paths/commands accurate, links not broken, formatting consistent with rules
 
 </details>
 </tool-use>
+
+---
+
+
+
+---
+
+### What I changed (docs + deploy now consistent)
+
+- **Fixed broken/outdated documentation links and commands**
+  - Updated root `README.md` to point to the real docs tree (`docs/README.md`, `docs/01-overview/*`, `docs/roadmap/`, etc.) and to use the real entrypoints (`python run_research.py --company ...`, `python examples/hello_research.py ...`).
+  - Updated `docs/README.md`, `docs/01-overview/README.md`, `docs/01-overview/INSTALLATION.md`, `docs/01-overview/QUICKSTART.md`, and `docs/09-scripts/README.md` so commands/paths match the current repo.
+
+- **Filled the previously-empty doc gaps**
+  - Added `docs/11-deployment/README.md`
+  - Added `docs/12-api-reference/README.md`
+
+- **Made deployment configs match the actual FastAPI implementation**
+  - Added a lightweight **`GET /health`** endpoint (for Docker/K8s probes): `src/company_researcher/api/app.py`
+  - Added a stable ASGI entrypoint: `src/company_researcher/api/main.py` (exports `app`)
+  - Fixed Docker CMD to run the correct module path: `deploy/Dockerfile`
+  - Fixed docker-compose Celery commands to use the real task app: `deploy/docker-compose.yml`
+  - Fixed docker-compose internal Chroma port wiring (service listens on 8000): `deploy/docker-compose.yml`
+
+- **Made docker-compose worker/scheduler actually installable**
+  - Added Celery to `requirements.txt`
+
+### Files added
+- `docs/11-deployment/README.md`
+- `docs/12-api-reference/README.md`
+- `src/company_researcher/api/main.py`
+- `run_research.py` (repo-root CLI entrypoint)
+- `INSTALLATION.md` (redirect stub)
+- `QUICK_START.md` (redirect stub)
+- `LICENSE` (MIT)
+- `.cursorrules`
+
+### Validation
+- Ran an internal-link check over `README.md` + `docs/` and it reports **OK (no broken relative links)**.
+
+---
+
+_**User (2025-12-15 23:32Z)**_
+
+@docs  make sure this is updated and explains all the code and everythig
+and explains everythiong we wnat to do and all the logic
+
+
+---
+
+_**Agent (model gpt-5.2-high, mode Agent)**_
+
+<think><details><summary>Thought Process</summary>
+**Planning documentation updates**
+
+The user's request for comprehensive documentation covering all code and logic feels quite extensive. I'm thinking we might need to refine our focus since we can't explain every single line. Instead, I'll create high-level documentation that points to modules, architecture, workflows, and more. I'll align everything with the existing docs structure and check for any gaps or missing sections. We should prioritize this task by making a to-do list and auditing the current documentation for clarity, especially on the newer sections.
+**Planning codebase documentation**
+
+I’m thinking about including a "Codebase tour" that links to modules and explains how to run everything. It makes sense to document entry points and core packages in a dedicated file like `docs/02-architecture/CODEBASE_TOUR.md`. I could illustrate the data flow, how research works, and clarify the roles of agents, analysis, and outputs. However, the user wants a comprehensive overview, so I can provide a mapping to key modules instead. I’ll also update the `README.md` to link to these new docs and create a roadmap index for future features.
+**Reviewing documentation quality**
+
+I need to quickly read through several README files to assess content quality and identify any gaps. This includes checking the architecture and agent documents, as well as reviewing the configuration and testing docs. I’ll use my tools to list the directory and read the files. It's also important to verify that the internal links work. I'll implement new documentation and update existing sections, ensuring we cover the roadmap clearly and create a "Vision & Roadmap" page with module references. I'll keep the style informative yet concise for the user’s needs.
+**Creating a comprehensive system guide**
+
+To satisfy the user's needs quickly, I’m considering creating a new "Complete System Guide" at `docs/00-system-guide/`. However, the existing structure starts with 01-overview, so maybe it’s better to add sections to the 01 or 02 documents. I plan to create `CODEBASE_TOUR.md` and `roadmap/README.md`, updating the docs index to include these. I’ll ensure we explain the API, deployment, and check on the `.cursor` documentation. I’ll outline the new docs I need to create, keeping the file set manageable while thoroughly covering essential information.
+**Updating documentation and code**
+
+I’m thinking of updating `docs/11-deployment/README.md` with environment variables for Docker Compose, like `APP_PORT`. I might also improve `docs/12-api-reference/README.md` to include minimal examples of requests and responses. I’ll use `codebase_search` to review the orchestrator flow and agent modules to ensure everything aligns. I want to confirm that the documentation reflects correct imports while being user-friendly. As I proceed with this, I’ll create a to-do list and run an internal link check to ensure all updates are in place.</details></think>
+
+---
+
+Got it — I’ll make `docs/` a true “system manual”: a clear codebase tour (entrypoints, modules, data flow), detailed workflow/agent logic, plus a “what we’re building next” roadmap index that ties to the existing `docs/roadmap/*`. Next I’ll scan the current docs sections for gaps/mismatches, then add a few high-signal docs pages and wire them into `docs/README.md` so everything is discoverable.
+
+---
+
+<tool-use data-tool-type="task" data-tool-name="todo_write">
+<details><summary>Tool use: **todo_write** • Todo List</summary>
+
+- [-] Scan existing docs/ sections for missing or outdated explanations (entrypoints, workflows, agents, outputs, deployment, API)
+- [ ] Add a codebase tour doc that maps entrypoints -> modules -> execution flow, with links into existing docs
+- [ ] Add workflow deep-dive doc describing orchestration vs LangGraph graph, state keys, quality loop, concurrency, outputs
+- [ ] Add agent catalog doc mapping each agent to code location, responsibilities, inputs/outputs, and where it’s used
+- [ ] Create/refresh docs/roadmap/README.md to explain what we want to do next and how roadmap files fit together
+- [ ] Re-run internal link validation for docs/ and fix any broken references
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: docs/02-architecture/README.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: docs/03-agents/README.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: docs/04-workflows/README.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: docs/06-configuration/README.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: docs/10-testing/README.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Updating documentation accuracy**
+
+I see that the existing documentation has inaccuracies, like referencing files that don’t exist, and the code structure is different than described. For example, orchestrator components are in one location, while graphs are in another, and I need to verify the workflows. My goal is to correct the documentation to align with the actual code and add a useful codebase tour without listing all the code. I should also ensure that the config docs reflect the right usage of Pydantic’s BaseSettings.
+**Correcting workflow documentation**
+
+I’m noticing that the workflow documentation mentions types like OverallState, which may need a deeper inspection in the scripts folder. I should utilize a grep command to search for terms like OverallState and StateGraph. It seems the existing documents contain inaccuracies, so my tasks should include fixing these misleading statements. The user wants comprehensive updates that explain the code and logic, so I plan to create a "Codebase Tour" document while updating current inaccuracies in the documentation, aligning it with the current implementation.
+**Checking file structure**
+
+I’m planning to use the list_dir tool on the src/company_researcher directory to see which files are present, specifically checking for `agents/core/researcher.py` and others. I think keeping it to one to three files should work best since I don't want to overload the process. I also need to consider how to manage the large documentation rules, as they may be irrelevant for this task. So, I’ll proceed with the tool calls to list the directories and subdirectories.</details></think>
+
+---
+
+Nice: the
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Updating documentation and code logic**
+
+I see that my final answer was blank, and that’s a problem. The user wants me to ensure the documentation is updated and to explain all the code and logic involved, which is quite a task! I need to keep using the tools to explore any gaps and create new documentation pages. I want to ensure my updates are concise, while also adhering to the file rules. I’ve noticed outdated references in the docs that need correcting.
+**Examining documentation discrepancies**
+
+The current documentation mentions LangGraph workflows in a location that may not actually exist, so I need to confirm this. I'll use glob or grep to find the actual workflow file. There’s a need to create new documentation covering a codebase tour, workflow details, an agent catalog, and a roadmap index. I’ll also check key parts of the code and reconcile configuration discrepancies, as some parts are incorrect. The user wants all the logic explained, but I can’t detail every line.
+**Creating comprehensive documentation**
+
+I'm planning to create documentation that explains everything, including an index and deep dives for major modules. While I can’t cover all details, I’ll capture key logic and patterns. The documentation will describe the modules, state, orchestration versus graph, output formats, caching, and quality scoring. I’ll also clarify which features are implemented versus aspirational, as the current docs have many uncertain claims like PDF and Excel outputs. I need to check those modules carefully and follow the system rules while making changes gradually.
+**Navigating documentation updates**
+
+The user's request to update the documentation indicates they want comprehensive changes. I can make multiple edits, but the rule states to "Make changes file by file" and allow for mistake-checking. That's a bit conflictual with the "autonomous" aspect. While we've previously done multiple edits, for this next step, I should stick to small, incremental updates. I’ll ensure to provide high-level updates after each set of edits, even though the rules suggest presenting everything in one chunk, which feels contradictory.
+**Clarifying documentation updates**
+
+I see we need to follow the "general coding rules," which suggests applying patches file by file. I’ll proceed by editing the documentation one at a time to remain compliant. First, I plan to verify that the documentation references correct files, checking for any missing ones. I'll then create a codebase tour and a detailed report on the workflow engine. Updating the agents catalog and configuration documentation is also essential, as they currently contain inaccuracies. Finally, I’ll validate all links within the documents to ensure everything is up to date. Let's start by scanning the necessary files!</details></think>
+
+---
+
+I’m going to turn `docs/` into an accurate “source-of-truth manual”: first I’ll find where the current docs are **wrong/outdated vs the real code**, then I’ll add a small set of high-signal deep-dive docs (codebase tour, workflow/engine, agents catalog, roadmap index) and finally re-run a link check to confirm everything is navigable.
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="list_dir">
+<details>
+            <summary>Tool use: **list_dir** • Listed directory, 0 results</summary>
+        
+No results found
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "parallel_agent_research\.py|workflows/parallel_agent_research|langgraph\.json|DATA_FLOW\.md|AGENT_PATTERNS\.md|LANGGRAPH\.md|STATE_MANAGEMENT\.md" in "docs" • 28 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `docs\analysis\KEY_FILES_REFERENCE.md` | `\| `src/company_researcher/workflows/parallel_agent_research.py` \| Multi-agent workflow \| Phase 9+ parallel agents \|` | L94 |
+| `docs\04-workflows\LANGGRAPH_STUDIO_GUIDE.md` | `- [x] Configuration file: `langgraph.json`` | L12 |
+| `docs\04-workflows\LANGGRAPH_STUDIO_GUIDE.md` | `5. Studio will read `langgraph.json` and show your graphs!` | L32 |
+| `docs\04-workflows\LANGGRAPH_STUDIO_GUIDE.md` | `├── langgraph.json          # Configuration (points to graphs)` | L71 |
+| `docs\04-workflows\LANGGRAPH_STUDIO_GUIDE.md` | `1. Check `langgraph.json` syntax` | L235 |
+| `docs\04-workflows\LANGGRAPH_STUDIO_GUIDE.md` | `3. Verify path in `langgraph.json` is correct` | L244 |
+| `docs\04-workflows\LANGGRAPH_STUDIO_GUIDE.md` | `### langgraph.json` | L297 |
+| `docs\04-workflows\LANGGRAPH_STUDIO_GUIDE.md` | `Add to `langgraph.json`:` | L409 |
+| `docs\04-workflows\LANGGRAPH_STUDIO_GUIDE.md` | `3. Verify path in `langgraph.json` is correct` | L451 |
+| `docs\roadmap\PARALLEL_WORKSTREAMS.md` | `6. src/company_researcher/workflows/parallel_agent_research.py` | L219 |
+| `docs\roadmap\AI_MIGRATION_IMPLEMENTATION_PLAN.md` | `#### 6.1 Modify `src/company_researcher/workflows/parallel_agent_research.py`` | L1859 |
+| `docs\roadmap\AI_MIGRATION_IMPLEMENTATION_PLAN.md` | `└── parallel_agent_research.py (MODIFY)` | L2197 |
+| `docs\02-architecture\diagrams\README.md` | `- [Data Flow](../DATA_FLOW.md)` | L363 |
+| `docs\02-architecture\diagrams\README.md` | `- [Agent Patterns](../AGENT_PATTERNS.md)` | L364 |
+| `docs\04-workflows\README.md` | `**Location**: `src/company_researcher/workflows/parallel_agent_research.py`` | L17 |
+| `docs\04-workflows\README.md` | `**File**: `langgraph.json`` | L341 |
+| `docs\04-workflows\README.md` | `"company_research": "./src/company_researcher/workflows/parallel_agent_research.py:app"` | L347 |
+| `docs\04-workflows\README.md` | `\| `parallel_agent_research` \| `workflows/parallel_agent_research.py` \| Main research workflow \|` | L377 |
+| `docs\03-agents\specialists\README.md` | `- [Agent Patterns](../../02-architecture/AGENT_PATTERNS.md)` | L344 |
+| `docs\03-agents\README.md` | `# workflows/parallel_agent_research.py` | L238 |
+| `docs\03-agents\README.md` | `\| [Agent Patterns](../02-architecture/AGENT_PATTERNS.md) \| Implementation patterns \|` | L259 |
+| `docs\02-architecture\SYSTEM_DESIGN.md` | `# workflows/parallel_agent_research.py` | L131 |
+| `docs\02-architecture\README.md` | `\| [Data Flow](DATA_FLOW.md) \| Data flow through system \|` | L107 |
+| `docs\02-architecture\README.md` | `\| [Agent Patterns](AGENT_PATTERNS.md) \| Agent implementation patterns \|` | L108 |
+| `docs\02-architecture\README.md` | `\| [LangGraph Integration](LANGGRAPH.md) \| LangGraph usage details \|` | L109 |
+| `docs\02-architecture\README.md` | `\| [State Management](STATE_MANAGEMENT.md) \| State architecture \|` | L110 |
+| `docs\02-architecture\README.md` | `- [Data Flow](DATA_FLOW.md) - Understand data movement` | L223 |
+| `docs\02-architecture\README.md` | `- [Agent Patterns](AGENT_PATTERNS.md) - Implementation patterns` | L224 |
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "src/company_researcher/workflows/*.py" • **6** results in **1** directory</summary>
+
+Directory: **c:\Users\Alejandro\Documents\Ivan\Work\Lang ai** (6 files)
+
+| File |
+|------|
+| `src\company_researcher\workflows\parallel_agent_research.py` |
+| `src\company_researcher\workflows\multi_agent_research.py` |
+| `src\company_researcher\workflows\comprehensive_research.py` |
+| `src\company_researcher\workflows\cache_aware_workflow.py` |
+| `src\company_researcher\workflows\__init__.py` |
+| `src\company_researcher\workflows\basic_research.py` |
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "src/company_researcher/graphs/*.py" • **4** results in **1** directory</summary>
+
+Directory: **c:\Users\Alejandro\Documents\Ivan\Work\Lang ai** (4 files)
+
+| File |
+|------|
+| `src\company_researcher\graphs\research_graph.py` |
+| `src\company_researcher\graphs\main_graph.py` |
+| `src\company_researcher\graphs\__init__.py` |
+| `src\company_researcher\graphs\simple_graph.py` |
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "langgraph.json" • **1** result in **1** directory</summary>
+
+Directory: **c:\Users\Alejandro\Documents\Ivan\Work\Lang ai** (1 file)
+
+| File |
+|------|
+| `langgraph.json` |
+
+</details>
+</tool-use>
+
+---
+
+Aha: the code actually *does* have `src/company_researcher/workflows/parallel_agent_research.py` and a real `langgraph.json`, so parts of the workflows docs are grounded — but the configuration/testing docs are still drifting (they describe a dataclass config that isn’t what `src/company_researcher/config.py` implements). Next I’ll read the real workflow + state + config modules and then update docs to match the actual execution paths and data structures.
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/company_researcher/workflows/parallel_agent_research.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/company_researcher/workflows/__init__.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/company_researcher/state.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: langgraph.json</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: docs/04-workflows/LANGGRAPH_STUDIO_GUIDE.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Reviewing documentation and files**
+
+I’m checking for the `research_config.yaml` file in `scripts/research` since earlier documentation indicates it exists, but my earlier file list didn’t show it. I need to search for `research_config.yaml` using glob. There's a mention of `config_loader`, which I had to correct in the documents, but some inaccuracies still remain. The user’s request for deeper explanations means we should enhance our documentation to reflect actual components and provide clear guidelines. I’ll systematically address these changes without massive rewrites, starting with correcting the `langgraph.json` references.
+**Checking variable names in files**
+
+I need to confirm whether the variable in the file is actually named “graph.” First, I’ll check the contents of `src/company_researcher/graphs/research_graph.py` to clarify things. I want to make sure that I'm referencing the correct variable, so reading through the file should help me identify what's actually defined there. It’s essential to get this right to avoid any confusion as I continue my work. Let’s go ahead and take a look!</details></think>
+
+---
+
+Good find: `langgraph.json` (and parts of `docs/04-workflows/LANGGRAPH_STUDIO_GUIDE.md`) point at `./src/graphs/...`, but the real graphs live under `src/company_researcher/graphs/`. Next I’ll read the actual graph modules to confirm the exported symbol names, then I’ll fix `langgraph.json` + the workflow docs so Studio instructions are copy/paste correct.
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/company_researcher/graphs/research_graph.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/company_researcher/graphs/simple_graph.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/company_researcher/graphs/__init__.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="list_dir">
+<details>
+            <summary>Tool use: **list_dir** • Listed directory, 0 results</summary>
+        
+No results found
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "**/research_config.yaml" • **0** result in **1** directory</summary>
+
+Directory: **c:\Users\Alejandro\Documents\Ivan\Work\Lang ai** (0 file)
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/graphs/research_graph.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/graphs/simple_graph.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/graphs/__init__.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "maga-campaign-generator|LANGCHAIN_API_KEY=lsv2|LANGFUSE" in "docs/04-workflows/LANGGRAPH_STUDIO_GUIDE.md" • 5 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `docs/04-workflows/LANGGRAPH_STUDIO_GUIDE.md` | `LANGCHAIN_API_KEY=lsv2_pt_...` | L327 |
+| `docs/04-workflows/LANGGRAPH_STUDIO_GUIDE.md` | `2. Project: `maga-campaign-generator`` | L332 |
+| `docs/04-workflows/LANGGRAPH_STUDIO_GUIDE.md` | `public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),` | L348 |
+| `docs/04-workflows/LANGGRAPH_STUDIO_GUIDE.md` | `secret_key=os.getenv("LANGFUSE_SECRET_KEY"),` | L349 |
+| `docs/04-workflows/LANGGRAPH_STUDIO_GUIDE.md` | `host=os.getenv("LANGFUSE_HOST")` | L350 |
+
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Updating documentation**
+
+I'm noticing that `src/graphs/research_graph.py` acts as a wrapper for the Studio's comprehensive workflow, which is great because `langgraph.json` refers to these wrappers. However, the `docs/04-workflows/README` has outdated content that needs to be aligned with the actual state definitions and node patterns. We might want to create a new set of documents instead of rewriting everything. 
+
+Additionally, I need to update `docs/06-configuration`, as it inaccurately mentions a nonexistent file, and the commands in `docs/10-testing` might need adjustments for Windows syntax.
+**Refining documentation process**
+
+I see that in `pyproject.toml`, the package is located in the `src` folder, which means the standard "pip install -e ." should work fine. This also allows tests to run without needing the PYTHONPATH, so I'll update the test documentation accordingly. 
+
+I think we should aim for minimal changes: creating a codebase tour and deep dive documentation while fixing outdated pages, especially in `docs/06-configuration`, `docs/04-workflows`, and `docs/03-agents`. I'll check for any missing files in `docs/02-architecture` and ensure to list them out.</details></think>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "docs/02-architecture/DATA_FLOW.md" • **0** result in **1** directory</summary>
+
+Directory: **c:\Users\Alejandro\Documents\Ivan\Work\Lang ai** (0 file)
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "docs/02-architecture/AGENT_PATTERNS.md" • **0** result in **1** directory</summary>
+
+Directory: **c:\Users\Alejandro\Documents\Ivan\Work\Lang ai** (0 file)
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "docs/02-architecture/LANGGRAPH.md" • **0** result in **1** directory</summary>
+
+Directory: **c:\Users\Alejandro\Documents\Ivan\Work\Lang ai** (0 file)
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "docs/02-architecture/STATE_MANAGEMENT.md" • **0** result in **1** directory</summary>
+
+Directory: **c:\Users\Alejandro\Documents\Ivan\Work\Lang ai** (0 file)
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "docs/roadmap/README.md" • **0** result in **1** directory</summary>
+
+Directory: **c:\Users\Alejandro\Documents\Ivan\Work\Lang ai** (0 file)
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Addressing missing documentation**
+
+It looks like the architecture README mentions some files that don't exist. I need to either create those files or adjust the references. I'll create several documents, including DATA_FLOW.md for data flow, AGENT_PATTERNS.md for agent structure, and LANGGRAPH.md for LangGraph usage. I'll also focus on creating STATE_MANAGEMENT.md for state schemas.
+
+Additionally, I want to create a CODEBASE_TOUR.md to give an overview of the codebase. I’ll ensure to update existing documents to link to these new files as needed.
+**Updating workflow documentation**
+
+The README for docs/04-workflows contains a large sample code that might be outdated, but I can adjust key parts like the workflow file locations. It points to a file that exists, but the code snippets may need to be updated to match the actual files. Since the user wants a thorough explanation of the code, providing accurate details is essential.
+
+I’ll also check the existence of basic workflows mentioned in the README. Additionally, the LANGGRAPH_STUDIO_GUIDE.md has inaccuracies, so that’ll need updating for clarity. Lastly, I’ll rewrite the configuration documentation and update testing instructions for better clarity and usability.
+**Creating agent catalog and updating documentation**
+
+I need to create an agent catalog in the docs/03-agents section. I'll ensure the necessary subfolders exist and address any broken references. I'll also create AGENTS_CATALOG.md to link main agents to their corresponding code.
+
+Next, I’ll inspect the relevant files for agents, the configuration documentation, and workflow updates. I plan to add a codebase tour and a roadmap README. While I’m reviewing src/company_researcher/config.py, I’ll document important fields, noting that environment variable names are typically uppercase and mention relevant files like pyproject.toml and requirements.txt.
+**Updating the todo list**
+
+I need to update the todo list, but I shouldn't mark the docs-gap-scan as done just yet since I'm still analyzing. I'll keep it marked as in progress until I finish scanning the major modules. I've already looked at the workflows, parallel, state, and graph wrappers, which is good.
+
+Now, I'll partially review `src/company_researcher/config.py` and check the env.example file for variables to ensure the documentation aligns correctly. It's important to have everything matched up. Let’s read the env.example now!</details></think>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: env.example</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/company_researcher/agents/__init__.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/company_researcher/workflows/comprehensive_research.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: docs/06-configuration/README.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Updating documentation process**
+
+I see that the documentation in docs/06-configuration needs to be revised to align with env.example and config.py. It's essential because env.example includes more providers than mentioned. I should inspect the config class in `src/company_researcher/config.py` as it extends BaseSettings and utilizes Field default_factory from os.getenv. I'll also check how `src/company_researcher/workflows/comprehensive_research.py` interacts with get_config and search_router. After that, we can start creating and updating the necessary documentation files.
+**Revising studio guide**
+
+I need to start with `docs/04-workflows/LANGGRAPH_STUDIO_GUIDE.md` by removing any mentions of "maga-campaign-generator" and updating the environment variable examples. The langfuse section can stay since env.example includes its variables, but I won't suggest adding secret keys since placeholders are already there. I'll adjust the project reference to `langai-research` or say the default is `LANGCHAIN_PROJECT` and mention that `LANGSMITH_API_KEY` is optional. Additionally, I should highlight the `LANGFUSE_*` variables and `LANGFUSE_ENABLED`, but I’ll focus on fixing key lines rather than overhauling the entire guide.</details></think>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: docs/04-workflows/LANGGRAPH_STUDIO_GUIDE.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Patching the API section**
+
+I need to replace `LANGCHAIN_API_KEY` with `LANGSMITH_API_KEY` since the `env.example` file specifies `LANGSMITH_API_KEY`. LangChain uses `LANGCHAIN_API_KEY`, but it's necessary to align with `env.example`. For LangSmith, I also need to ensure `LANGCHAIN_TRACING_V2=true` is included, as tracing is optional. I'll reference the docs for workflows, where I need to clarify that tracing uses either API key depending on the situation. I should update the project name to `langai-research` as well. Lastly, I'll confirm if the `langfuse` package is optional.</details></think>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "langfuse" in "requirements.txt" • 1 match</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `requirements.txt` | `langfuse>=2.0.0             # FREE - LangSmith alternative (50K obs/month free)` | L74 |
+
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Updating documentation**
+
+I’m thinking about updating the README in the architecture documentation to reflect the latest changes and possibly remove outdated mentions like the migration rule since it's not needed anymore. I need to ensure the new content is accurate and based on both the code and existing documentation. In the new sections, we'll provide file paths for each component while being careful not to make claims about features that haven't been implemented. Let’s also mention the overall workflow, and create a roadmap summary as well. Alright, it’s time to proceed with patches, starting with LANGGRAPH_STUDIO_GUIDE.md.</details></think>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/04-workflows/LANGGRAPH_STUDIO_GUIDE.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "7dff1dc3-f475-4ec4-96c2-a1a1ac6a3b3d"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "  ### LangSmith Integration\r\n  \r\n- Your graphs automatically trace to LangSmith because &#96;.env&#96; has:\r\n+ LangSmith tracing is optional. If enabled in &#96;.env&#96;, LangGraph runs can be traced to LangSmith.\r\n+ \r\n+ Typical &#96;.env&#96; settings:\r\n  &#96;&#96;&#96;bash\r\n  LANGCHAIN_TRACING_V2=true\r\n- LANGCHAIN_API_KEY=lsv2_pt_...\r\n+ LANGSMITH_API_KEY=lsv2_...\r\n+ LANGCHAIN_PROJECT=langai-research\r\n  &#96;&#96;&#96;\r\n  \r\n  **View traces:**\r\n  1. Go to https://smith.langchain.com/\r\n- 2. Project: &#96;maga-campaign-generator&#96;\r\n+ 2. Project: value of &#96;LANGCHAIN_PROJECT&#96; (example: &#96;langai-research&#96;)\r\n  3. See every execution with:\r\n     - Input/output for each node\r",
+        "oldStart": 322,
+        "newStart": 322,
+        "oldLines": 13,
+        "newLines": 16,
+        "linesRemoved": 3,
+        "linesAdded": 6
+      },
+      {
+        "diffString": "  ### Langfuse Integration\r\n  \r\n- Add Langfuse callback to graph:\r\n+ Langfuse is also supported (see &#96;env.example&#96; for &#96;LANGFUSE_*&#96; variables). Add a Langfuse callback to a graph invocation:\r\n  \r\n  &#96;&#96;&#96;python\r",
+        "oldStart": 340,
+        "newStart": 343,
+        "oldLines": 5,
+        "newLines": 5,
+        "linesRemoved": 1,
+        "linesAdded": 1
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/04-workflows/LANGGRAPH_STUDIO_GUIDE.md",
+  "contentsAfterEdit": "# LangGraph Studio Installation &amp; Usage Guide\r\n\r\n**Status:** ✅ Installed and Ready\r\n**Date:** 2025-12-05\r\n\r\n---\r\n\r\n## ✅ What's Installed\r\n\r\n- [x] LangGraph (v1.0.3)\r\n- [x] LangGraph CLI (v0.4.7)\r\n- [x] Configuration file: &#96;langgraph.json&#96;\r\n- [x] Example graphs: &#96;src/graphs/&#96;\r\n  - &#96;simple_graph.py&#96; - Basic test graph\r\n  - &#96;research_graph.py&#96; - Company research workflow\r\n\r\n---\r\n\r\n## 🚀 Quick Start\r\n\r\n### Option 1: Use LangGraph Desktop App (Recommended)\r\n\r\n**Download:**\r\n- **Windows:** https://github.com/langchain-ai/langgraph-studio/releases/latest\r\n- Look for: &#96;LangGraph-Studio-Setup-x.x.x.exe&#96;\r\n\r\n**Steps:**\r\n1. Download and install the desktop app\r\n2. Open LangGraph Studio\r\n3. Click \"Open Project\"\r\n4. Select this directory: &#96;C:\\Users\\Alejandro\\Documents\\Ivan\\Work\\Lang ai&#96;\r\n5. Studio will read &#96;langgraph.json&#96; and show your graphs!\r\n\r\n**Benefits:**\r\n- Beautiful visual interface\r\n- No command line needed\r\n- Built-in graph editor\r\n- State inspection\r\n- Debugging tools\r\n\r\n---\r\n\r\n### Option 2: Use CLI (Already Installed)\r\n\r\n**Start the dev server:**\r\n\r\n&#96;&#96;&#96;powershell\r\n# Navigate to project\r\ncd \"C:\\Users\\Alejandro\\Documents\\Ivan\\Work\\Lang ai\"\r\n\r\n# Activate your virtual environment\r\n.\\venv\\Scripts\\activate\r\n\r\n# Start LangGraph Studio server\r\npython -m langgraph_cli dev\r\n\r\n# OR use full path to langgraph command\r\nC:\\Users\\Alejandro\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python313\\Scripts\\langgraph.exe dev\r\n&#96;&#96;&#96;\r\n\r\n**Access:**\r\n- Browser: http://localhost:8123\r\n- API: http://localhost:8123/docs\r\n\r\n---\r\n\r\n## 📁 Project Structure\r\n\r\n&#96;&#96;&#96;\r\nLang ai/\r\n├── langgraph.json          # Configuration (points to graphs)\r\n├── .env                    # Your API keys (auto-loaded)\r\n│\r\n├── src/\r\n│   └── graphs/\r\n│       ├── simple_graph.py      # Test graph (3 steps)\r\n│       └── research_graph.py    # Company research workflow\r\n│\r\n└── outputs/                # Research reports saved here\r\n&#96;&#96;&#96;\r\n\r\n---\r\n\r\n## 🎨 Available Graphs\r\n\r\n### 1. Simple Test Graph\r\n\r\n**File:** &#96;src/graphs/simple_graph.py&#96;\r\n**Purpose:** Verify LangGraph Studio is working\r\n\r\n**Workflow:**\r\n&#96;&#96;&#96;\r\nSTART → step1 → step2 → step3 → END\r\n&#96;&#96;&#96;\r\n\r\n**Test it:**\r\n&#96;&#96;&#96;bash\r\npython src/graphs/simple_graph.py\r\n&#96;&#96;&#96;\r\n\r\n**Expected Output:**\r\n&#96;&#96;&#96;\r\n[OK] Graph executed successfully!\r\nOutput: Processed: Hello LangGraph! | Enhanced | Complete!\r\nSteps completed: 3\r\n&#96;&#96;&#96;\r\n\r\n**In Studio:**\r\n1. Select graph: &#96;simple_test&#96;\r\n2. Click \"Run\"\r\n3. Input: &#96;{\"input\": \"Test\", \"step\": 0}&#96;\r\n4. Watch it execute step-by-step!\r\n\r\n---\r\n\r\n### 2. Company Research Graph\r\n\r\n**File:** &#96;src/graphs/research_graph.py&#96;\r\n**Purpose:** Visualize complete company research workflow\r\n\r\n**Workflow:**\r\n&#96;&#96;&#96;\r\nSTART\r\n  ↓\r\ngenerate_queries (Claude generates 5 search queries)\r\n  ↓\r\nsearch_web (Tavily searches with all queries)\r\n  ↓\r\nextract_data (Claude extracts structured info)\r\n  ↓\r\ngenerate_report (Creates markdown report)\r\n  ↓\r\nEND\r\n&#96;&#96;&#96;\r\n\r\n**Test it:**\r\n&#96;&#96;&#96;bash\r\n# Make sure you have API keys in .env!\r\npython src/graphs/research_graph.py\r\n&#96;&#96;&#96;\r\n\r\n**Expected Output:**\r\n&#96;&#96;&#96;\r\n============================================================\r\n  Company Research Graph Test\r\n============================================================\r\n\r\nGenerating queries for: Tesla\r\nGenerated 5 queries\r\nSearching web with 5 queries...\r\n  Searching: Tesla company overview...\r\n  Searching: Tesla revenue financials...\r\n  ...\r\nFound 15 search results\r\nExtracting data from 15 results...\r\nExtracted data for: Tesla, Inc.\r\nGenerating report...\r\nReport generated (2341 characters)\r\n\r\n============================================================\r\n  Research Complete!\r\n============================================================\r\n\r\nCompany: Tesla\r\nQueries Generated: 5\r\nSearch Results: 15\r\nTotal Cost: $0.3214\r\nTotal Tokens: 12453\r\n\r\n[OK] Report generated (2341 chars)\r\n&#96;&#96;&#96;\r\n\r\n**In Studio:**\r\n1. Select graph: &#96;company_research&#96;\r\n2. Click \"Run\"\r\n3. Input:\r\n   &#96;&#96;&#96;json\r\n   {\r\n     \"company_name\": \"Tesla\",\r\n     \"queries\": [],\r\n     \"search_results\": [],\r\n     \"extracted_data\": {},\r\n     \"report\": \"\",\r\n     \"total_cost\": 0.0,\r\n     \"total_tokens\": 0,\r\n     \"error\": null\r\n   }\r\n   &#96;&#96;&#96;\r\n4. Watch each node execute!\r\n5. Inspect state at each step\r\n6. See the final report\r\n\r\n---\r\n\r\n## 🎯 Using LangGraph Studio\r\n\r\n### Visual Features\r\n\r\n**1. Graph Visualization**\r\n- See your workflow as a flowchart\r\n- Nodes = Steps in your process\r\n- Edges = Flow between steps\r\n- START/END nodes clearly marked\r\n\r\n**2. State Inspection**\r\n- Click any node to see its state\r\n- View inputs and outputs\r\n- Track how data flows through\r\n\r\n**3. Execution Controls**\r\n- **Run:** Execute the entire graph\r\n- **Step:** Execute one node at a time\r\n- **Pause:** Pause execution\r\n- **Reset:** Start over\r\n\r\n**4. Debugging**\r\n- Set breakpoints on nodes\r\n- Inspect intermediate results\r\n- See exactly where errors occur\r\n- View full stack traces\r\n\r\n**5. Streaming**\r\n- Watch results appear in real-time\r\n- See each node execute\r\n- Monitor progress\r\n\r\n---\r\n\r\n## 💡 Tips &amp; Tricks\r\n\r\n### Debugging Your Graph\r\n\r\n**Problem:** Graph doesn't execute\r\n**Solution:**\r\n1. Check &#96;langgraph.json&#96; syntax\r\n2. Verify graph imports work: &#96;python src/graphs/research_graph.py&#96;\r\n3. Check API keys in &#96;.env&#96;\r\n4. Look at Studio console for errors\r\n\r\n**Problem:** Can't see my graph\r\n**Solution:**\r\n1. Restart Studio\r\n2. Check graph is exported: &#96;graph = workflow.compile()&#96;\r\n3. Verify path in &#96;langgraph.json&#96; is correct\r\n\r\n**Problem:** Node fails during execution\r\n**Solution:**\r\n1. Click the failed node in Studio\r\n2. View the error message\r\n3. Check input state was valid\r\n4. Test the node function directly in Python\r\n\r\n---\r\n\r\n### Modifying Graphs\r\n\r\n**To add a new node:**\r\n\r\n&#96;&#96;&#96;python\r\n# 1. Define the function\r\ndef new_node(state: ResearchState) -&gt; dict:\r\n    \"\"\"What this node does\"\"\"\r\n    result = do_something(state['input'])\r\n    return {\"output\": result}\r\n\r\n# 2. Add to graph\r\nworkflow.add_node(\"new_node_name\", new_node)\r\n\r\n# 3. Connect it\r\nworkflow.add_edge(\"previous_node\", \"new_node_name\")\r\nworkflow.add_edge(\"new_node_name\", \"next_node\")\r\n\r\n# 4. Recompile\r\ngraph = workflow.compile()\r\n&#96;&#96;&#96;\r\n\r\n**To change the flow:**\r\n\r\n&#96;&#96;&#96;python\r\n# Conditional routing\r\ndef should_continue(state):\r\n    if state['quality_score'] &gt; 0.8:\r\n        return END\r\n    else:\r\n        return \"retry_node\"\r\n\r\nworkflow.add_conditional_edges(\r\n    \"check_quality\",\r\n    should_continue\r\n)\r\n&#96;&#96;&#96;\r\n\r\n---\r\n\r\n## 🔧 Configuration Reference\r\n\r\n### langgraph.json\r\n\r\n&#96;&#96;&#96;json\r\n{\r\n  \"dependencies\": [\r\n    \".\"  // Install from current directory (requirements.txt)\r\n  ],\r\n  \"graphs\": {\r\n    \"simple_test\": \"./src/graphs/simple_graph.py:graph\",\r\n    \"company_research\": \"./src/graphs/research_graph.py:graph\"\r\n  },\r\n  \"env\": \".env\"  // Load environment variables\r\n}\r\n&#96;&#96;&#96;\r\n\r\n**Fields:**\r\n- &#96;dependencies&#96;: What to install (pip packages or directories)\r\n- &#96;graphs&#96;: Map of graph names to file paths\r\n  - Format: &#96;\"name\": \"path/to/file.py:variable_name\"&#96;\r\n- &#96;env&#96;: Path to environment file (loads API keys)\r\n\r\n---\r\n\r\n## 📊 Monitoring &amp; Observability\r\n\r\n### LangSmith Integration\r\n\r\nLangSmith tracing is optional. If enabled in &#96;.env&#96;, LangGraph runs can be traced to LangSmith.\r\n\r\nTypical &#96;.env&#96; settings:\r\n&#96;&#96;&#96;bash\r\nLANGCHAIN_TRACING_V2=true\r\nLANGSMITH_API_KEY=lsv2_...\r\nLANGCHAIN_PROJECT=langai-research\r\n&#96;&#96;&#96;\r\n\r\n**View traces:**\r\n1. Go to https://smith.langchain.com/\r\n2. Project: value of &#96;LANGCHAIN_PROJECT&#96; (example: &#96;langai-research&#96;)\r\n3. See every execution with:\r\n   - Input/output for each node\r\n   - Token usage\r\n   - Costs\r\n   - Latency\r\n   - Errors\r\n\r\n### Langfuse Integration\r\n\r\nLangfuse is also supported (see &#96;env.example&#96; for &#96;LANGFUSE_*&#96; variables). Add a Langfuse callback to a graph invocation:\r\n\r\n&#96;&#96;&#96;python\r\nfrom langfuse.callback import CallbackHandler\r\n\r\nlangfuse_handler = CallbackHandler(\r\n    public_key=os.getenv(\"LANGFUSE_PUBLIC_KEY\"),\r\n    secret_key=os.getenv(\"LANGFUSE_SECRET_KEY\"),\r\n    host=os.getenv(\"LANGFUSE_HOST\")\r\n)\r\n\r\n# Use in graph\r\ngraph = workflow.compile()\r\nresult = graph.invoke(\r\n    state,\r\n    config={\"callbacks\": [langfuse_handler]}\r\n)\r\n&#96;&#96;&#96;\r\n\r\n---\r\n\r\n## 🚀 Next Steps\r\n\r\n### 1. Explore the Simple Graph (5 min)\r\n&#96;&#96;&#96;bash\r\n# Run it\r\npython src/graphs/simple_graph.py\r\n\r\n# Open in Studio and watch it execute\r\n&#96;&#96;&#96;\r\n\r\n### 2. Test Company Research (10 min)\r\n&#96;&#96;&#96;bash\r\n# Make sure API keys are set\r\necho $env:ANTHROPIC_API_KEY  # PowerShell\r\n# OR\r\necho %ANTHROPIC_API_KEY%     # CMD\r\n\r\n# Run it\r\npython src/graphs/research_graph.py\r\n\r\n# View in Studio - watch it research Tesla!\r\n&#96;&#96;&#96;\r\n\r\n### 3. Build Your Own Graph (30 min)\r\n\r\nCreate &#96;src/graphs/my_graph.py&#96;:\r\n\r\n&#96;&#96;&#96;python\r\nfrom typing import TypedDict\r\nfrom langgraph.graph import StateGraph, START, END\r\n\r\nclass MyState(TypedDict):\r\n    input: str\r\n    output: str\r\n\r\ndef my_node(state):\r\n    return {\"output\": f\"Processed: {state['input']}\"}\r\n\r\nworkflow = StateGraph(MyState)\r\nworkflow.add_node(\"process\", my_node)\r\nworkflow.add_edge(START, \"process\")\r\nworkflow.add_edge(\"process\", END)\r\n\r\ngraph = workflow.compile()\r\n&#96;&#96;&#96;\r\n\r\nAdd to &#96;langgraph.json&#96;:\r\n&#96;&#96;&#96;json\r\n{\r\n  \"graphs\": {\r\n    \"my_custom_graph\": \"./src/graphs/my_graph.py:graph\"\r\n  }\r\n}\r\n&#96;&#96;&#96;\r\n\r\nReload Studio → See your graph!\r\n\r\n---\r\n\r\n## 📚 Resources\r\n\r\n### Documentation\r\n- **LangGraph Docs:** https://langchain-ai.github.io/langgraph/\r\n- **LangGraph Studio:** https://github.com/langchain-ai/langgraph-studio\r\n- **Examples:** https://github.com/langchain-ai/langgraph/tree/main/examples\r\n\r\n### Tutorials\r\n- **LangGraph Quickstart:** https://langchain-ai.github.io/langgraph/tutorials/introduction/\r\n- **Multi-Agent Systems:** https://langchain-ai.github.io/langgraph/tutorials/multi_agent/\r\n- **Human-in-the-Loop:** https://langchain-ai.github.io/langgraph/tutorials/human_in_the_loop/\r\n\r\n### Community\r\n- **Discord:** https://discord.gg/langchain\r\n- **Forum:** https://community.langchain.com/\r\n- **GitHub:** https://github.com/langchain-ai/langgraph/discussions\r\n\r\n---\r\n\r\n## ❓ Troubleshooting\r\n\r\n### Issue: \"Cannot find graph\"\r\n&#96;&#96;&#96;\r\nError: Could not import graph from src/graphs/research_graph.py:graph\r\n&#96;&#96;&#96;\r\n\r\n**Fix:**\r\n1. Check the file exports &#96;graph&#96; variable\r\n2. Run &#96;python src/graphs/research_graph.py&#96; to test import\r\n3. Verify path in &#96;langgraph.json&#96; is correct\r\n\r\n---\r\n\r\n### Issue: \"Module not found\"\r\n&#96;&#96;&#96;\r\nModuleNotFoundError: No module named 'anthropic'\r\n&#96;&#96;&#96;\r\n\r\n**Fix:**\r\n&#96;&#96;&#96;bash\r\n# Make sure virtual environment is activated\r\n.\\venv\\Scripts\\activate\r\n\r\n# Install dependencies\r\npip install -r requirements.txt\r\n&#96;&#96;&#96;\r\n\r\n---\r\n\r\n### Issue: \"API key not found\"\r\n&#96;&#96;&#96;\r\nError: ANTHROPIC_API_KEY environment variable not set\r\n&#96;&#96;&#96;\r\n\r\n**Fix:**\r\n1. Check &#96;.env&#96; file exists\r\n2. Verify API keys are set\r\n3. Restart Studio (it loads .env on startup)\r\n\r\n---\r\n\r\n### Issue: Studio won't start\r\n&#96;&#96;&#96;\r\nError: Port 8123 already in use\r\n&#96;&#96;&#96;\r\n\r\n**Fix:**\r\n&#96;&#96;&#96;powershell\r\n# Find process using port 8123\r\nnetstat -ano | findstr :8123\r\n\r\n# Kill it\r\ntaskkill /PID &lt;process_id&gt; /F\r\n\r\n# Or use different port\r\npython -m langgraph_cli dev --port 8124\r\n&#96;&#96;&#96;\r\n\r\n---\r\n\r\n## ✅ Success Checklist\r\n\r\n- [ ] LangGraph Desktop App installed OR CLI working\r\n- [ ] Can open project in Studio\r\n- [ ] Can see both graphs (simple_test, company_research)\r\n- [ ] Can run simple_test graph successfully\r\n- [ ] Can run company_research graph successfully\r\n- [ ] Can inspect state at each node\r\n- [ ] Can view execution traces in LangSmith\r\n- [ ] Understand how to add new nodes\r\n- [ ] Understand how to modify workflow\r\n\r\n---\r\n\r\n**You're all set! LangGraph Studio is ready to visualize your Company Research workflow.** 🎉\r\n\r\n**Next:** Open LangGraph Studio → Select &#96;company_research&#96; → Click Run → Watch it research Tesla!\r\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "LANGCHAIN_API_KEY|maga-campaign-generator" in "docs/04-workflows/LANGGRAPH_STUDIO_GUIDE.md" • 0 matches</summary>
+
+Output mode: content
+
+
+_No matches found_
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Identifying file issues**
+
+It looks like I need to address a significant issue in the langgraph.json reference in the code. It's pointing to the wrong path for the parallel agent research file. I plan to fix this around line 341 and update the README to reflect the correct path. Additionally, there might be discrepancies in the table of available workflows like `deep_research`. I’ll check that as well, focusing on patching just the necessary parts.</details></think>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: docs/04-workflows/README.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Updating configuration references**
+
+I need to update the config snippet and remove any references to `workflows/deep_research.py`. It seems like that file might not exist anymore, but I did find `src/company_researcher/agents/research/deep_research.py`. However, I'm unsure about the workflow file itself. Earlier, I noticed workflows like multi_agent_research and comprehensive_research. To clarify everything, I should list the contents of the workflows directory, which includes 14 Python files. I'll use the list_dir function for `src/company_researcher/workflows`.</details></think>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="list_dir">
+<details>
+            <summary>Tool use: **list_dir** • Listed directory, 0 results</summary>
+        
+No results found
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Examining state usage**
+
+I’m noticing that it uses state["company_name"], but I also need to consider that state could require lists or other keys, and missing those could cause a crash. I wonder if they set up the initial state in the wrapper by calling create_initial_state. I should check `create_comprehensive_workflow()` at the bottom to see if it defines the input schema as `InputState` and then invokes create_initial_state. I’ll need to inspect this further and search in comprehensive_research for the usage of create_initial_state.</details></think>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "create_initial_state\(|InputState|set_entry_point" in "src/company_researcher/workflows/comprehensive_research.py" • 4 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `src/company_researcher/workflows/comprehensive_research.py` | `from ..state import InputState, OutputState, OverallState, create_initial_state, create_output_state` | L53 |
+| `src/company_researcher/workflows/comprehensive_research.py` | `workflow = StateGraph(OverallState, input=InputState, output=OutputState)` | L552 |
+| `src/company_researcher/workflows/comprehensive_research.py` | `workflow.set_entry_point("discovery")` | L586 |
+| `src/company_researcher/workflows/comprehensive_research.py` | `initial_state = create_initial_state(company_name)` | L648 |
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/company_researcher/workflows/comprehensive_research.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "src/graphs/research_graph.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "1427f524-4316-47c3-b02d-626eef4961c8"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "  from company_researcher.workflows.comprehensive_research import create_comprehensive_workflow\n  \n- # Create and compile the workflow for LangGraph Studio\n- workflow = create_comprehensive_workflow()\n- graph = workflow.compile()\n- \n- # Export for LangGraph Studio\n- __all__ = [\"graph\", \"workflow\"]\n+ # &#96;create_comprehensive_workflow()&#96; already returns a compiled LangGraph runnable.\n+ # LangGraph Studio expects an exported variable (by default &#96;graph&#96;) that is runnable.\n+ graph = create_comprehensive_workflow()\n+ \n+ __all__ = [\"graph\"]\n  ",
+        "oldStart": 8,
+        "newStart": 8,
+        "oldLines": 9,
+        "newLines": 8,
+        "linesRemoved": 6,
+        "linesAdded": 5
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM src/graphs/research_graph.py",
+  "contentsAfterEdit": "\"\"\"\nCompany Research Graph for LangGraph Studio.\n\nThis module exports the comprehensive research workflow as a compiled graph\nthat can be visualized and executed in LangGraph Studio.\n\"\"\"\n\nfrom company_researcher.workflows.comprehensive_research import create_comprehensive_workflow\n\n# &#96;create_comprehensive_workflow()&#96; already returns a compiled LangGraph runnable.\n# LangGraph Studio expects an exported variable (by default &#96;graph&#96;) that is runnable.\ngraph = create_comprehensive_workflow()\n\n__all__ = [\"graph\"]\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `src/graphs/research_graph.py`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Updating documentation**
+
+I'm thinking it's time to patch the README section in docs/04-workflows. I need to update the snippet and the table there to ensure everything is accurate. It's important to apply this patch effectively. I really want to make sure the information is clear and useful to anyone who refers to this documentation later. I'll take care of it promptly to keep everything in sync!</details></think>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/04-workflows/README.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "9af3c055-5eec-4e9a-8cce-c5a362685726"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "  &#96;&#96;&#96;json\n  {\n-     \"dependencies\": [\".\"],\n-     \"graphs\": {\n-         \"company_research\": \"./src/company_researcher/workflows/parallel_agent_research.py:app\"\n-     },\n-     \"env\": \".env\"\n+   \"dependencies\": [\n+     \".\"\n+   ],\n+   \"graphs\": {\n+     \"company_research\": \"./src/graphs/research_graph.py:graph\",\n+     \"simple_test\": \"./src/graphs/simple_graph.py:graph\"\n+   },\n+   \"env\": \".env\"\n  }\n  &#96;&#96;&#96;",
+        "oldStart": 343,
+        "newStart": 343,
+        "oldLines": 9,
+        "newLines": 12,
+        "linesRemoved": 5,
+        "linesAdded": 8
+      },
+      {
+        "diffString": "  | &#96;parallel_agent_research&#96; | &#96;workflows/parallel_agent_research.py&#96; | Main research workflow |\n  | &#96;basic_research&#96; | &#96;workflows/basic_research.py&#96; | Simple sequential workflow |\n- | &#96;deep_research&#96; | &#96;workflows/deep_research.py&#96; | Comprehensive analysis |\n+ | &#96;comprehensive_research&#96; | &#96;workflows/comprehensive_research.py&#96; | Full-feature research workflow |\n+ | &#96;cache_aware_workflow&#96; | &#96;workflows/cache_aware_workflow.py&#96; | Cache-aware workflow helpers |\n+ | &#96;multi_agent_research&#96; | &#96;workflows/multi_agent_research.py&#96; | Multi-agent workflow variant |\n  \n  ---",
+        "oldStart": 377,
+        "newStart": 380,
+        "oldLines": 5,
+        "newLines": 7,
+        "linesRemoved": 1,
+        "linesAdded": 3
+      },
+      {
+        "diffString": "  - [Agent Documentation](../03-agents/)\n  - [State Management](../07-state-management/)\n- - [LangGraph Guide](../guides/LANGGRAPH_STUDIO_GUIDE.md)\n+ - [LangGraph Studio Guide](LANGGRAPH_STUDIO_GUIDE.md)\n  \n  ---",
+        "oldStart": 384,
+        "newStart": 389,
+        "oldLines": 5,
+        "newLines": 5,
+        "linesRemoved": 1,
+        "linesAdded": 1
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/04-workflows/README.md",
+  "contentsAfterEdit": "# Workflow Documentation\n\nThis section documents the LangGraph workflows that orchestrate the research system.\n\n## Overview\n\nThe Company Researcher uses **LangGraph** for workflow orchestration. LangGraph provides:\n\n- **State machines**: Predictable execution flow\n- **Parallel execution**: Fan-out/fan-in patterns\n- **Conditional edges**: Dynamic routing\n- **Checkpointing**: Resume from interruptions\n- **Visual debugging**: LangGraph Studio\n\n## Main Workflow: Parallel Multi-Agent Research\n\n**Location**: &#96;src/company_researcher/workflows/parallel_agent_research.py&#96;\n\n### Workflow Diagram\n\n&#96;&#96;&#96;\n                    +---------------+\n                    |    START      |\n                    +-------+-------+\n                            |\n                            v\n                    +---------------+\n                    |  RESEARCHER   |\n                    |    AGENT      |\n                    +-------+-------+\n                            |\n            +---------------+---------------+\n            |               |               |\n            v               v               v\n    +------------+   +------------+   +------------+\n    |  FINANCIAL |   |   MARKET   |   |  PRODUCT   |\n    |   AGENT    |   |   AGENT    |   |   AGENT    |\n    +------+-----+   +------+-----+   +------+-----+\n            |               |               |\n            +---------------+---------------+\n                            |\n                            v\n                    +---------------+\n                    | SYNTHESIZER   |\n                    |    AGENT      |\n                    +-------+-------+\n                            |\n                            v\n                    +---------------+\n                    | LOGIC CRITIC  |\n                    |    AGENT      |\n                    +-------+-------+\n                            |\n                            v\n                    +---------------+\n                    | QUALITY CHECK |\n                    +-------+-------+\n                            |\n              +-------------+-------------+\n              |                           |\n              v                           v\n    +---------------+            +---------------+\n    | score &gt;= 85%  |            | score &lt; 85%   |\n    | OR iter &gt;= 2  |            | AND iter &lt; 2  |\n    +-------+-------+            +-------+-------+\n            |                           |\n            v                           v\n    +---------------+            +---------------+\n    | SAVE REPORT   |            |   ITERATE     |\n    +-------+-------+            +-------+-------+\n            |                           |\n            v                           |\n    +---------------+                   |\n    |     END       |&lt;------------------+\n    +---------------+\n&#96;&#96;&#96;\n\n### Workflow Definition\n\n&#96;&#96;&#96;python\nfrom langgraph.graph import StateGraph, END\nfrom company_researcher.state import OverallState\n\n# Create workflow\nworkflow = StateGraph(OverallState)\n\n# Add nodes\nworkflow.add_node(\"researcher\", researcher_node)\nworkflow.add_node(\"financial\", financial_agent_node)\nworkflow.add_node(\"market\", market_agent_node)\nworkflow.add_node(\"product\", product_agent_node)\nworkflow.add_node(\"competitor\", competitor_scout_node)\nworkflow.add_node(\"synthesizer\", synthesizer_node)\nworkflow.add_node(\"logic_critic\", logic_critic_node)\nworkflow.add_node(\"quality_check\", quality_check_node)\nworkflow.add_node(\"save_report\", save_report_node)\n\n# Set entry point\nworkflow.set_entry_point(\"researcher\")\n\n# Parallel edges (fan-out)\nworkflow.add_edge(\"researcher\", \"financial\")\nworkflow.add_edge(\"researcher\", \"market\")\nworkflow.add_edge(\"researcher\", \"product\")\nworkflow.add_edge(\"researcher\", \"competitor\")\n\n# Converge edges (fan-in)\nworkflow.add_edge(\"financial\", \"synthesizer\")\nworkflow.add_edge(\"market\", \"synthesizer\")\nworkflow.add_edge(\"product\", \"synthesizer\")\nworkflow.add_edge(\"competitor\", \"synthesizer\")\n\n# Sequential edges\nworkflow.add_edge(\"synthesizer\", \"logic_critic\")\nworkflow.add_edge(\"logic_critic\", \"quality_check\")\n\n# Conditional edge (iteration decision)\nworkflow.add_conditional_edges(\n    \"quality_check\",\n    should_iterate,\n    {\n        \"iterate\": \"researcher\",\n        \"finish\": \"save_report\"\n    }\n)\n\n# End point\nworkflow.add_edge(\"save_report\", END)\n\n# Compile\napp = workflow.compile()\n&#96;&#96;&#96;\n\n## Node Definitions\n\n### Researcher Node\n\n&#96;&#96;&#96;python\ndef researcher_node(state: OverallState) -&gt; Dict:\n    \"\"\"Generate queries and execute searches.\"\"\"\n    company = state[\"company_name\"]\n    iteration = state.get(\"iteration_count\", 0)\n\n    # Generate search queries\n    queries = generate_search_queries(company, iteration)\n\n    # Execute searches\n    results = execute_searches(queries)\n\n    # Extract sources\n    sources = extract_sources(results)\n\n    return {\n        \"search_queries\": queries,\n        \"search_results\": results,\n        \"sources\": sources,\n        \"iteration_count\": iteration + 1\n    }\n&#96;&#96;&#96;\n\n### Specialist Node Pattern\n\n&#96;&#96;&#96;python\n@agent_node(agent_name=\"financial\", max_tokens=2000)\ndef financial_agent_node(\n    state: OverallState,\n    logger: Logger,\n    client: Anthropic,\n    config: ResearchConfig\n) -&gt; Dict:\n    \"\"\"Analyze company financials.\"\"\"\n    company = state[\"company_name\"]\n    results = state[\"search_results\"]\n\n    # Run analysis\n    analysis = analyze_financials(company, results, client, config)\n\n    return {\n        \"agent_outputs\": {\"financial\": analysis},\n        \"total_cost\": analysis.cost\n    }\n&#96;&#96;&#96;\n\n### Quality Check Node\n\n&#96;&#96;&#96;python\ndef quality_check_node(state: OverallState) -&gt; Dict:\n    \"\"\"Check quality and decide on iteration.\"\"\"\n    # Calculate quality score\n    score = calculate_quality_score(state)\n\n    # Detect gaps\n    gaps = detect_gaps(state)\n\n    return {\n        \"quality_score\": score,\n        \"gaps_detected\": gaps\n    }\n&#96;&#96;&#96;\n\n### Conditional Router\n\n&#96;&#96;&#96;python\ndef should_iterate(state: OverallState) -&gt; str:\n    \"\"\"Determine if iteration is needed.\"\"\"\n    quality_score = state.get(\"quality_score\", 0)\n    iteration_count = state.get(\"iteration_count\", 0)\n\n    # Pass threshold\n    if quality_score &gt;= 85:\n        return \"finish\"\n\n    # Max iterations\n    if iteration_count &gt;= 2:\n        return \"finish\"\n\n    # Iterate\n    return \"iterate\"\n&#96;&#96;&#96;\n\n## State Management\n\n### State Schema\n\n&#96;&#96;&#96;python\nclass OverallState(TypedDict, total=False):\n    # Input\n    company_name: str\n\n    # Research data\n    search_queries: List[str]\n    search_results: Annotated[List[Dict], add]  # Parallel safe\n\n    # Company info\n    company_overview: Optional[str]\n    key_metrics: Optional[Dict]\n    products_services: Optional[List]\n    competitors: Optional[List]\n\n    # Agent outputs\n    agent_outputs: Annotated[Dict[str, Any], merge_dicts]\n\n    # Quality metrics\n    quality_score: Optional[float]\n    gaps_detected: Optional[List[str]]\n\n    # Control\n    iteration_count: int\n\n    # Cost tracking\n    total_cost: Annotated[float, add]\n    total_tokens: Annotated[Dict, add_tokens]\n\n    # Output\n    sources: Annotated[List[str], add]\n    report_path: Optional[str]\n&#96;&#96;&#96;\n\n### State Reducers\n\n&#96;&#96;&#96;python\ndef add(existing: List, new: List) -&gt; List:\n    \"\"\"Append new items to list.\"\"\"\n    return existing + new\n\ndef merge_dicts(existing: Dict, new: Dict) -&gt; Dict:\n    \"\"\"Merge dictionaries.\"\"\"\n    result = existing.copy()\n    result.update(new)\n    return result\n\ndef add_tokens(existing: Dict, new: Dict) -&gt; Dict:\n    \"\"\"Add token counts.\"\"\"\n    return {\n        \"input\": existing.get(\"input\", 0) + new.get(\"input\", 0),\n        \"output\": existing.get(\"output\", 0) + new.get(\"output\", 0)\n    }\n&#96;&#96;&#96;\n\n## Running Workflows\n\n### Basic Execution\n\n&#96;&#96;&#96;python\nfrom company_researcher.workflows import app\n\n# Run research\nresult = app.invoke({\n    \"company_name\": \"Microsoft\"\n})\n\nprint(f\"Quality: {result['quality_score']}\")\nprint(f\"Report: {result['report_path']}\")\n&#96;&#96;&#96;\n\n### With Checkpointing\n\n&#96;&#96;&#96;python\nfrom langgraph.checkpoint import MemorySaver\n\n# Create checkpointer\ncheckpointer = MemorySaver()\n\n# Compile with checkpointing\napp = workflow.compile(checkpointer=checkpointer)\n\n# Run with thread ID\nconfig = {\"configurable\": {\"thread_id\": \"research-1\"}}\nresult = app.invoke({\"company_name\": \"Microsoft\"}, config)\n\n# Resume if interrupted\nresult = app.invoke(None, config)  # Continues from checkpoint\n&#96;&#96;&#96;\n\n### Async Execution\n\n&#96;&#96;&#96;python\nimport asyncio\n\nasync def run_research(company: str):\n    result = await app.ainvoke({\"company_name\": company})\n    return result\n\n# Run\nresult = asyncio.run(run_research(\"Microsoft\"))\n&#96;&#96;&#96;\n\n### Streaming\n\n&#96;&#96;&#96;python\n# Stream events\nfor event in app.stream({\"company_name\": \"Microsoft\"}):\n    print(f\"Node: {event.get('node')}\")\n    print(f\"Output: {event.get('output')}\")\n&#96;&#96;&#96;\n\n## LangGraph Studio\n\n### Configuration\n\n**File**: &#96;langgraph.json&#96;\n\n&#96;&#96;&#96;json\n{\n  \"dependencies\": [\n    \".\"\n  ],\n  \"graphs\": {\n    \"company_research\": \"./src/graphs/research_graph.py:graph\",\n    \"simple_test\": \"./src/graphs/simple_graph.py:graph\"\n  },\n  \"env\": \".env\"\n}\n&#96;&#96;&#96;\n\n### Starting Studio\n\n&#96;&#96;&#96;bash\n# Install LangGraph Studio\npip install langgraph-studio\n\n# Start server\nlanggraph studio\n\n# Open browser to http://localhost:8000\n&#96;&#96;&#96;\n\n### Using Studio\n\n1. Select &#96;company_research&#96; graph\n2. Enter input: &#96;{\"company_name\": \"Microsoft\"}&#96;\n3. Click \"Run\"\n4. Watch agents execute in real-time\n5. Inspect state at each node\n\n## Available Workflows\n\n| Workflow | Location | Description |\n|----------|----------|-------------|\n| &#96;parallel_agent_research&#96; | &#96;workflows/parallel_agent_research.py&#96; | Main research workflow |\n| &#96;basic_research&#96; | &#96;workflows/basic_research.py&#96; | Simple sequential workflow |\n| &#96;comprehensive_research&#96; | &#96;workflows/comprehensive_research.py&#96; | Full-feature research workflow |\n| &#96;cache_aware_workflow&#96; | &#96;workflows/cache_aware_workflow.py&#96; | Cache-aware workflow helpers |\n| &#96;multi_agent_research&#96; | &#96;workflows/multi_agent_research.py&#96; | Multi-agent workflow variant |\n\n---\n\n**Related Documentation**:\n- [Agent Documentation](../03-agents/)\n- [State Management](../07-state-management/)\n- [LangGraph Studio Guide](LANGGRAPH_STUDIO_GUIDE.md)\n\n---\n\n**Last Updated**: December 2024\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/roadmap/README.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "9f6947a8-7240-41a3-9a42-c457f50f567a"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "- \n+ # Roadmap\n+ \n+ This folder captures **what we want to build next**, plus design notes and implementation plans.\n+ \n+ If you’re new, start here:\n+ \n+ 1. &#96;IMPLEMENTATION_STATUS.md&#96; — what’s implemented vs planned\n+ 2. &#96;PARALLEL_WORKSTREAMS.md&#96; — suggested parallel work tracks\n+ 3. &#96;TECHNOLOGY_IMPROVEMENT_PLAN.md&#96; — platform-level improvements (performance, reliability)\n+ \n+ ---\n+ \n+ ## API &amp; product surface\n+ \n+ - &#96;API_IMPLEMENTATION_PLAN.md&#96; — REST/WebSocket API roadmap\n+ \n+ ---\n+ \n+ ## Providers &amp; integrations\n+ \n+ - &#96;PROVIDER_HIERARCHY.md&#96; — which providers to prefer (fallback order)\n+ - &#96;AI_PROVIDERS_COMPARISON.md&#96; — model/provider tradeoffs\n+ - &#96;CLAUDE_API_IMPLEMENTATION.md&#96; — Anthropic/Claude integration notes\n+ - &#96;FREE_SERVICES_IMPLEMENTATION_PLAN.md&#96; — leveraging “free first” data sources\n+ \n+ ---\n+ \n+ ## Data enrichment &amp; research quality\n+ \n+ - &#96;DATA_ENRICHMENT_IMPLEMENTATION.md&#96; — enrichment modules and data sources\n+ - &#96;COST_OPTIMIZATION_ALTERNATIVES.md&#96; — cost control strategies\n+ \n+ ---\n+ \n+ ## Larger initiatives / exploration\n+ \n+ - &#96;AI_MIGRATION_IMPLEMENTATION_PLAN.md&#96; — migration-style plan for AI components\n+ - &#96;RESEARCH_OUTPUT_WISHLIST.md&#96; — desired output formats and structure\n+ - &#96;IMPROVEMENT_ROADMAP.md&#96; — backlog of improvements\n+ - &#96;CODEBASE_IMPROVEMENT_ROADMAP.md&#96; — refactors / technical debt\n+ \n+ ",
+        "oldStart": 1,
+        "newStart": 1,
+        "oldLines": 1,
+        "newLines": 42,
+        "linesRemoved": 1,
+        "linesAdded": 42
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/roadmap/README.md",
+  "contentsAfterEdit": "# Roadmap\r\n\r\nThis folder captures **what we want to build next**, plus design notes and implementation plans.\r\n\r\nIf you’re new, start here:\r\n\r\n1. &#96;IMPLEMENTATION_STATUS.md&#96; — what’s implemented vs planned\r\n2. &#96;PARALLEL_WORKSTREAMS.md&#96; — suggested parallel work tracks\r\n3. &#96;TECHNOLOGY_IMPROVEMENT_PLAN.md&#96; — platform-level improvements (performance, reliability)\r\n\r\n---\r\n\r\n## API &amp; product surface\r\n\r\n- &#96;API_IMPLEMENTATION_PLAN.md&#96; — REST/WebSocket API roadmap\r\n\r\n---\r\n\r\n## Providers &amp; integrations\r\n\r\n- &#96;PROVIDER_HIERARCHY.md&#96; — which providers to prefer (fallback order)\r\n- &#96;AI_PROVIDERS_COMPARISON.md&#96; — model/provider tradeoffs\r\n- &#96;CLAUDE_API_IMPLEMENTATION.md&#96; — Anthropic/Claude integration notes\r\n- &#96;FREE_SERVICES_IMPLEMENTATION_PLAN.md&#96; — leveraging “free first” data sources\r\n\r\n---\r\n\r\n## Data enrichment &amp; research quality\r\n\r\n- &#96;DATA_ENRICHMENT_IMPLEMENTATION.md&#96; — enrichment modules and data sources\r\n- &#96;COST_OPTIMIZATION_ALTERNATIVES.md&#96; — cost control strategies\r\n\r\n---\r\n\r\n## Larger initiatives / exploration\r\n\r\n- &#96;AI_MIGRATION_IMPLEMENTATION_PLAN.md&#96; — migration-style plan for AI components\r\n- &#96;RESEARCH_OUTPUT_WISHLIST.md&#96; — desired output formats and structure\r\n- &#96;IMPROVEMENT_ROADMAP.md&#96; — backlog of improvements\r\n- &#96;CODEBASE_IMPROVEMENT_ROADMAP.md&#96; — refactors / technical debt\r\n\r\n\r\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "outputs/|output_dir|report_path|write_text\(|open\(" in "src/company_researcher/workflows/nodes/comprehensive_output_nodes.py" • 11 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `src/company_researcher/workflows/nodes/comprehensive_output_nodes.py` | `output_dir = Path(config.output_dir) / state["company_name"].replace(" ", "_").lower()` | L156 |
+| `src/company_researcher/workflows/nodes/comprehensive_output_nodes.py` | `output_dir.mkdir(parents=True, exist_ok=True)` | L157 |
+| `src/company_researcher/workflows/nodes/comprehensive_output_nodes.py` | `report_path = output_dir / f"00_full_report.md"` | L274 |
+| `src/company_researcher/workflows/nodes/comprehensive_output_nodes.py` | `with open(report_path, "w", encoding="utf-8") as f:` | L275 |
+| `src/company_researcher/workflows/nodes/comprehensive_output_nodes.py` | `filepath = output_dir / filename` | L293 |
+| `src/company_researcher/workflows/nodes/comprehensive_output_nodes.py` | `with open(filepath, "w", encoding="utf-8") as f:` | L294 |
+| `src/company_researcher/workflows/nodes/comprehensive_output_nodes.py` | `metrics_path = output_dir / "metrics.json"` | L311 |
+| `src/company_researcher/workflows/nodes/comprehensive_output_nodes.py` | `with open(metrics_path, "w", encoding="utf-8") as f:` | L312 |
+| `src/company_researcher/workflows/nodes/comprehensive_output_nodes.py` | `logger.info(f"[OK] Comprehensive report saved: \{report_path\}")` | L315 |
+| `src/company_researcher/workflows/nodes/comprehensive_output_nodes.py` | `"report_path": str(report_path),` | L318 |
+| `src/company_researcher/workflows/nodes/comprehensive_output_nodes.py` | `"output_dir": str(output_dir),` | L319 |
+
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Checking configuration directory**
+
+I'm trying to find out the output directory from the config. I think I need to check if the field output_dir exists in the config. It’s probably a good idea to confirm by grepping in the config.py file for output_dir. This will help me ensure that I’m referencing the correct directory and avoid any mix-ups later! Let's see how it goes.</details></think>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "output_dir|Field\(.*output" in "src/company_researcher/config.py" • 2 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `src/company_researcher/config.py` | `llm_max_tokens: int = Field(default=4000, description="Maximum tokens for LLM output")` | L198 |
+| `src/company_researcher/config.py` | `output_dir: str = Field(default="outputs", description="Directory for research reports")` | L228 |
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/01-overview/CODEBASE_TOUR.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "c70e6319-9776-4f67-b8a6-1e3abefbf391"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "- \n+ # Codebase Tour\n+ \n+ This document is a high-level map of **where the code lives** and **how you run it**.\n+ \n+ ---\n+ \n+ ## Entry points (how you run the system)\n+ \n+ ### CLI (recommended for local use)\n+ \n+ - Repo entrypoint: &#96;run_research.py&#96;\n+   - Calls: &#96;scripts/research/cli.py&#96;\n+   - Modes:\n+     - default: orchestration engine (&#96;company_researcher.orchestration&#96;)\n+     - &#96;--use-graph&#96;: legacy LangGraph graph (&#96;src/company_researcher/graphs/research_graph.py&#96;)\n+ \n+ ### Minimal demo\n+ \n+ - &#96;examples/hello_research.py&#96;\n+   - Simple prototype script (useful as a “hello world” for the stack)\n+ \n+ ### API server (FastAPI)\n+ \n+ - ASGI app: &#96;company_researcher.api.main:app&#96; (deployment stable)\n+ - Local run: &#96;python -m company_researcher.api.app --host 0.0.0.0 --port 8000&#96;\n+ \n+ ### LangGraph Studio\n+ \n+ - Studio config: &#96;langgraph.json&#96;\n+ - Graph exports (wrappers for Studio):\n+   - &#96;src/graphs/simple_graph.py:graph&#96;\n+   - &#96;src/graphs/research_graph.py:graph&#96; (wraps the comprehensive workflow)\n+ \n+ ---\n+ \n+ ## Where the logic lives (major packages)\n+ \n+ ### &#96;src/company_researcher/agents/&#96;\n+ \n+ Agent implementations and the &#96;agent_node&#96; pattern.\n+ \n+ ### &#96;src/company_researcher/workflows/&#96;\n+ \n+ LangGraph workflows (graphs) that orchestrate agents, data collection, quality checks, and report output.\n+ \n+ Key files:\n+ - &#96;workflows/parallel_agent_research.py&#96;: parallel specialist workflow + logic-critic QA\n+ - &#96;workflows/comprehensive_research.py&#96;: full-feature sequential workflow built from modular nodes\n+ - &#96;workflows/nodes/&#96;: modular node implementations (data collection, analysis, enrichment, output)\n+ \n+ ### &#96;src/company_researcher/orchestration/&#96;\n+ \n+ A separate orchestration layer that returns a &#96;WorkflowState&#96; object and is used by the CLI default path.\n+ \n+ ### &#96;src/company_researcher/integrations/&#96;\n+ \n+ External providers (search, financial data, news, scraping) and routing/fallback logic.\n+ \n+ ### &#96;src/company_researcher/quality/&#96;\n+ \n+ Quality scoring, contradiction detection, validation, and source assessment.\n+ \n+ ### &#96;src/company_researcher/config.py&#96;\n+ \n+ Pydantic settings model (&#96;ResearchConfig&#96;) loaded from &#96;.env&#96; / environment variables via &#96;get_config()&#96;.\n+ \n+ ---\n+ \n+ ## Outputs (where results are written)\n+ \n+ Output location depends on the execution path:\n+ \n+ - **Comprehensive LangGraph workflow**: uses &#96;config.output_dir&#96; (default: &#96;outputs/&#96;)\n+ - **CLI wrapper** (&#96;run_research.py&#96;): writes to &#96;--output&#96; (default: &#96;outputs/research/&#96;)\n+ \n+ See:\n+ - &#96;src/company_researcher/config.py&#96; (&#96;output_dir&#96;)\n+ - &#96;scripts/research/cli.py&#96; (&#96;--output&#96;)\n+ - &#96;src/company_researcher/workflows/nodes/comprehensive_output_nodes.py&#96; (report writing)\n+ \n+ ",
+        "oldStart": 1,
+        "newStart": 1,
+        "oldLines": 1,
+        "newLines": 81,
+        "linesRemoved": 1,
+        "linesAdded": 81
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/01-overview/CODEBASE_TOUR.md",
+  "contentsAfterEdit": "# Codebase Tour\r\n\r\nThis document is a high-level map of **where the code lives** and **how you run it**.\r\n\r\n---\r\n\r\n## Entry points (how you run the system)\r\n\r\n### CLI (recommended for local use)\r\n\r\n- Repo entrypoint: &#96;run_research.py&#96;\r\n  - Calls: &#96;scripts/research/cli.py&#96;\r\n  - Modes:\r\n    - default: orchestration engine (&#96;company_researcher.orchestration&#96;)\r\n    - &#96;--use-graph&#96;: legacy LangGraph graph (&#96;src/company_researcher/graphs/research_graph.py&#96;)\r\n\r\n### Minimal demo\r\n\r\n- &#96;examples/hello_research.py&#96;\r\n  - Simple prototype script (useful as a “hello world” for the stack)\r\n\r\n### API server (FastAPI)\r\n\r\n- ASGI app: &#96;company_researcher.api.main:app&#96; (deployment stable)\r\n- Local run: &#96;python -m company_researcher.api.app --host 0.0.0.0 --port 8000&#96;\r\n\r\n### LangGraph Studio\r\n\r\n- Studio config: &#96;langgraph.json&#96;\r\n- Graph exports (wrappers for Studio):\r\n  - &#96;src/graphs/simple_graph.py:graph&#96;\r\n  - &#96;src/graphs/research_graph.py:graph&#96; (wraps the comprehensive workflow)\r\n\r\n---\r\n\r\n## Where the logic lives (major packages)\r\n\r\n### &#96;src/company_researcher/agents/&#96;\r\n\r\nAgent implementations and the &#96;agent_node&#96; pattern.\r\n\r\n### &#96;src/company_researcher/workflows/&#96;\r\n\r\nLangGraph workflows (graphs) that orchestrate agents, data collection, quality checks, and report output.\r\n\r\nKey files:\r\n- &#96;workflows/parallel_agent_research.py&#96;: parallel specialist workflow + logic-critic QA\r\n- &#96;workflows/comprehensive_research.py&#96;: full-feature sequential workflow built from modular nodes\r\n- &#96;workflows/nodes/&#96;: modular node implementations (data collection, analysis, enrichment, output)\r\n\r\n### &#96;src/company_researcher/orchestration/&#96;\r\n\r\nA separate orchestration layer that returns a &#96;WorkflowState&#96; object and is used by the CLI default path.\r\n\r\n### &#96;src/company_researcher/integrations/&#96;\r\n\r\nExternal providers (search, financial data, news, scraping) and routing/fallback logic.\r\n\r\n### &#96;src/company_researcher/quality/&#96;\r\n\r\nQuality scoring, contradiction detection, validation, and source assessment.\r\n\r\n### &#96;src/company_researcher/config.py&#96;\r\n\r\nPydantic settings model (&#96;ResearchConfig&#96;) loaded from &#96;.env&#96; / environment variables via &#96;get_config()&#96;.\r\n\r\n---\r\n\r\n## Outputs (where results are written)\r\n\r\nOutput location depends on the execution path:\r\n\r\n- **Comprehensive LangGraph workflow**: uses &#96;config.output_dir&#96; (default: &#96;outputs/&#96;)\r\n- **CLI wrapper** (&#96;run_research.py&#96;): writes to &#96;--output&#96; (default: &#96;outputs/research/&#96;)\r\n\r\nSee:\r\n- &#96;src/company_researcher/config.py&#96; (&#96;output_dir&#96;)\r\n- &#96;scripts/research/cli.py&#96; (&#96;--output&#96;)\r\n- &#96;src/company_researcher/workflows/nodes/comprehensive_output_nodes.py&#96; (report writing)\r\n\r\n\r\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/02-architecture/DATA_FLOW.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "2f2cd5dd-b020-4732-ae70-f6c7dccdce76"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "- \n+ # Data Flow\n+ \n+ This document explains **how data moves** through the system during a research run.\n+ \n+ ---\n+ \n+ ## 1) Inputs\n+ \n+ Most flows start from one of these inputs:\n+ \n+ - **CLI** (&#96;run_research.py&#96;): &#96;--company&#96;, &#96;--profile&#96;, or &#96;--market&#96;\n+ - **API** (&#96;company_researcher.api.*&#96;): JSON payloads like “start research”\n+ - **LangGraph Studio** (&#96;langgraph.json&#96;): graph input state\n+ \n+ At minimum, workflows require:\n+ \n+ - &#96;company_name&#96; (string)\n+ \n+ ---\n+ \n+ ## 2) Core research state (LangGraph workflows)\n+ \n+ The “workflow state” is a dictionary shaped by TypedDict schemas (plus reducers for parallel execution).\n+ \n+ Authoritative schema:\n+ \n+ - &#96;src/company_researcher/state.py&#96;\n+ \n+ Key categories in &#96;OverallState&#96;:\n+ \n+ - **Search**: &#96;search_queries&#96;, &#96;search_results&#96;, &#96;sources&#96;\n+ - **Analysis outputs**: &#96;company_overview&#96;, &#96;key_metrics&#96;, &#96;products_services&#96;, &#96;competitors&#96;, &#96;key_insights&#96;\n+ - **Quality loop**: &#96;quality_score&#96;, &#96;missing_info&#96;, &#96;iteration_count&#96;\n+ - **Costs/metrics**: &#96;total_cost&#96;, &#96;total_tokens&#96;, &#96;start_time&#96;\n+ - **Agent coordination**: &#96;agent_outputs&#96; (merged across parallel nodes)\n+ \n+ ---\n+ \n+ ## 3) Workflow layers\n+ \n+ There are multiple ways to orchestrate research:\n+ \n+ ### A) LangGraph workflows (&#96;src/company_researcher/workflows/&#96;)\n+ \n+ Example: **comprehensive workflow**\n+ \n+ - Builder: &#96;src/company_researcher/workflows/comprehensive_research.py&#96;\n+ - Node implementations: &#96;src/company_researcher/workflows/nodes/&#96;\n+ \n+ Typical flow:\n+ \n+ 1. **Discovery**: loads prior research, finds gaps (&#96;discovery_node&#96;)\n+ 2. **Query generation**: generates search queries\n+ 3. **Search + enrichment**: web search, financial data, news\n+ 4. **Analysis nodes**: core/financial/market/esg/brand/sentiment\n+ 5. **Quality**: extract structured facts + quality check + conditional iteration\n+ 6. **Advanced analysis**: competitive matrix, risk, investment thesis\n+ 7. **Output**: enrich executive summary then write markdown + metrics\n+ \n+ Output writing is handled in:\n+ \n+ - &#96;src/company_researcher/workflows/nodes/comprehensive_output_nodes.py&#96;\n+ \n+ ### B) Orchestration engine (&#96;src/company_researcher/orchestration/&#96;)\n+ \n+ The CLI default path uses a separate workflow executor that returns a &#96;WorkflowState&#96; object (with:\n+ &#96;status&#96;, &#96;completed_nodes&#96;, &#96;data&#96;, &#96;total_cost&#96;, etc.).\n+ \n+ ---\n+ \n+ ## 4) Outputs on disk\n+ \n+ Output locations depend on the execution path:\n+ \n+ - LangGraph comprehensive workflow: &#96;config.output_dir&#96; (default: &#96;outputs/&#96;)\n+ - CLI wrapper: &#96;--output&#96; flag (default: &#96;outputs/research/&#96;)\n+ \n+ The full report file is typically named &#96;00_full_report.md&#96; and saved under a company-specific folder.\n+ \n+ ",
+        "oldStart": 1,
+        "newStart": 1,
+        "oldLines": 1,
+        "newLines": 80,
+        "linesRemoved": 1,
+        "linesAdded": 80
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/02-architecture/DATA_FLOW.md",
+  "contentsAfterEdit": "# Data Flow\r\n\r\nThis document explains **how data moves** through the system during a research run.\r\n\r\n---\r\n\r\n## 1) Inputs\r\n\r\nMost flows start from one of these inputs:\r\n\r\n- **CLI** (&#96;run_research.py&#96;): &#96;--company&#96;, &#96;--profile&#96;, or &#96;--market&#96;\r\n- **API** (&#96;company_researcher.api.*&#96;): JSON payloads like “start research”\r\n- **LangGraph Studio** (&#96;langgraph.json&#96;): graph input state\r\n\r\nAt minimum, workflows require:\r\n\r\n- &#96;company_name&#96; (string)\r\n\r\n---\r\n\r\n## 2) Core research state (LangGraph workflows)\r\n\r\nThe “workflow state” is a dictionary shaped by TypedDict schemas (plus reducers for parallel execution).\r\n\r\nAuthoritative schema:\r\n\r\n- &#96;src/company_researcher/state.py&#96;\r\n\r\nKey categories in &#96;OverallState&#96;:\r\n\r\n- **Search**: &#96;search_queries&#96;, &#96;search_results&#96;, &#96;sources&#96;\r\n- **Analysis outputs**: &#96;company_overview&#96;, &#96;key_metrics&#96;, &#96;products_services&#96;, &#96;competitors&#96;, &#96;key_insights&#96;\r\n- **Quality loop**: &#96;quality_score&#96;, &#96;missing_info&#96;, &#96;iteration_count&#96;\r\n- **Costs/metrics**: &#96;total_cost&#96;, &#96;total_tokens&#96;, &#96;start_time&#96;\r\n- **Agent coordination**: &#96;agent_outputs&#96; (merged across parallel nodes)\r\n\r\n---\r\n\r\n## 3) Workflow layers\r\n\r\nThere are multiple ways to orchestrate research:\r\n\r\n### A) LangGraph workflows (&#96;src/company_researcher/workflows/&#96;)\r\n\r\nExample: **comprehensive workflow**\r\n\r\n- Builder: &#96;src/company_researcher/workflows/comprehensive_research.py&#96;\r\n- Node implementations: &#96;src/company_researcher/workflows/nodes/&#96;\r\n\r\nTypical flow:\r\n\r\n1. **Discovery**: loads prior research, finds gaps (&#96;discovery_node&#96;)\r\n2. **Query generation**: generates search queries\r\n3. **Search + enrichment**: web search, financial data, news\r\n4. **Analysis nodes**: core/financial/market/esg/brand/sentiment\r\n5. **Quality**: extract structured facts + quality check + conditional iteration\r\n6. **Advanced analysis**: competitive matrix, risk, investment thesis\r\n7. **Output**: enrich executive summary then write markdown + metrics\r\n\r\nOutput writing is handled in:\r\n\r\n- &#96;src/company_researcher/workflows/nodes/comprehensive_output_nodes.py&#96;\r\n\r\n### B) Orchestration engine (&#96;src/company_researcher/orchestration/&#96;)\r\n\r\nThe CLI default path uses a separate workflow executor that returns a &#96;WorkflowState&#96; object (with:\r\n&#96;status&#96;, &#96;completed_nodes&#96;, &#96;data&#96;, &#96;total_cost&#96;, etc.).\r\n\r\n---\r\n\r\n## 4) Outputs on disk\r\n\r\nOutput locations depend on the execution path:\r\n\r\n- LangGraph comprehensive workflow: &#96;config.output_dir&#96; (default: &#96;outputs/&#96;)\r\n- CLI wrapper: &#96;--output&#96; flag (default: &#96;outputs/research/&#96;)\r\n\r\nThe full report file is typically named &#96;00_full_report.md&#96; and saved under a company-specific folder.\r\n\r\n\r\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/02-architecture/STATE_MANAGEMENT.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "00f75392-ab82-40a1-82fc-64a461c7ac9b"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "- \n+ # State Management\n+ \n+ This system uses **shared state dictionaries** to pass data between workflow nodes, plus reducers to safely merge concurrent updates.\n+ \n+ ---\n+ \n+ ## LangGraph workflow state (&#96;OverallState&#96;)\n+ \n+ Authoritative definition:\n+ \n+ - &#96;src/company_researcher/state.py&#96;\n+ \n+ Key idea: several fields are annotated with reducers, so multiple nodes can update them safely:\n+ \n+ - &#96;search_results&#96;: &#96;Annotated[List[Dict[str, Any]], operator.add]&#96; (append semantics)\n+ - &#96;sources&#96;: &#96;Annotated[List[Dict[str, str]], operator.add]&#96; (append semantics)\n+ - &#96;agent_outputs&#96;: &#96;Annotated[Optional[Dict[str, Any]], merge_dicts]&#96; (merge semantics)\n+ - &#96;total_cost&#96;: &#96;Annotated[float, operator.add]&#96; (sum semantics)\n+ - &#96;total_tokens&#96;: &#96;Annotated[Dict[str, int], add_tokens]&#96; (sum-per-field)\n+ \n+ Reducers are implemented in the same file:\n+ \n+ - &#96;merge_dicts()&#96;\n+ - &#96;add_tokens()&#96;\n+ \n+ ---\n+ \n+ ## Creating initial state\n+ \n+ Workflows that use &#96;OverallState&#96; generally start from:\n+ \n+ - &#96;create_initial_state(company_name: str)&#96; in &#96;src/company_researcher/state.py&#96;\n+ \n+ That function fills required fields with sensible defaults (empty lists/dicts, counters, timestamps).\n+ \n+ ---\n+ \n+ ## Output state\n+ \n+ The “final output” for some workflows is normalized via:\n+ \n+ - &#96;create_output_state(state: OverallState) -&gt; OutputState&#96; in &#96;src/company_researcher/state.py&#96;\n+ \n+ This provides a compact payload:\n+ \n+ - report path\n+ - duration, cost, tokens\n+ - sources count, quality score, iterations\n+ \n+ ---\n+ \n+ ## Orchestration engine state (&#96;WorkflowState&#96;)\n+ \n+ The orchestration engine has its own state model:\n+ \n+ - &#96;src/company_researcher/orchestration/workflow/models.py&#96;\n+ \n+ This is a dataclass that tracks:\n+ \n+ - execution status, current node, completed nodes\n+ - &#96;data&#96; payload (dict) for results\n+ - timing and total cost\n+ \n+ ",
+        "oldStart": 1,
+        "newStart": 1,
+        "oldLines": 1,
+        "newLines": 64,
+        "linesRemoved": 1,
+        "linesAdded": 64
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/02-architecture/STATE_MANAGEMENT.md",
+  "contentsAfterEdit": "# State Management\r\n\r\nThis system uses **shared state dictionaries** to pass data between workflow nodes, plus reducers to safely merge concurrent updates.\r\n\r\n---\r\n\r\n## LangGraph workflow state (&#96;OverallState&#96;)\r\n\r\nAuthoritative definition:\r\n\r\n- &#96;src/company_researcher/state.py&#96;\r\n\r\nKey idea: several fields are annotated with reducers, so multiple nodes can update them safely:\r\n\r\n- &#96;search_results&#96;: &#96;Annotated[List[Dict[str, Any]], operator.add]&#96; (append semantics)\r\n- &#96;sources&#96;: &#96;Annotated[List[Dict[str, str]], operator.add]&#96; (append semantics)\r\n- &#96;agent_outputs&#96;: &#96;Annotated[Optional[Dict[str, Any]], merge_dicts]&#96; (merge semantics)\r\n- &#96;total_cost&#96;: &#96;Annotated[float, operator.add]&#96; (sum semantics)\r\n- &#96;total_tokens&#96;: &#96;Annotated[Dict[str, int], add_tokens]&#96; (sum-per-field)\r\n\r\nReducers are implemented in the same file:\r\n\r\n- &#96;merge_dicts()&#96;\r\n- &#96;add_tokens()&#96;\r\n\r\n---\r\n\r\n## Creating initial state\r\n\r\nWorkflows that use &#96;OverallState&#96; generally start from:\r\n\r\n- &#96;create_initial_state(company_name: str)&#96; in &#96;src/company_researcher/state.py&#96;\r\n\r\nThat function fills required fields with sensible defaults (empty lists/dicts, counters, timestamps).\r\n\r\n---\r\n\r\n## Output state\r\n\r\nThe “final output” for some workflows is normalized via:\r\n\r\n- &#96;create_output_state(state: OverallState) -&gt; OutputState&#96; in &#96;src/company_researcher/state.py&#96;\r\n\r\nThis provides a compact payload:\r\n\r\n- report path\r\n- duration, cost, tokens\r\n- sources count, quality score, iterations\r\n\r\n---\r\n\r\n## Orchestration engine state (&#96;WorkflowState&#96;)\r\n\r\nThe orchestration engine has its own state model:\r\n\r\n- &#96;src/company_researcher/orchestration/workflow/models.py&#96;\r\n\r\nThis is a dataclass that tracks:\r\n\r\n- execution status, current node, completed nodes\r\n- &#96;data&#96; payload (dict) for results\r\n- timing and total cost\r\n\r\n\r\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/02-architecture/LANGGRAPH.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "5e9f4e9c-dc56-4f14-b7ba-69f41986b837"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "- \n+ # LangGraph in this repo\n+ \n+ This repo uses **LangGraph** in three main places:\n+ \n+ ---\n+ \n+ ## 1) Workflows (primary orchestration graphs)\n+ \n+ Directory:\n+ \n+ - &#96;src/company_researcher/workflows/&#96;\n+ \n+ These files build LangGraph graphs over the shared &#96;OverallState&#96; schema (&#96;src/company_researcher/state.py&#96;).\n+ \n+ Examples:\n+ \n+ - &#96;workflows/parallel_agent_research.py&#96;: fan-out/fan-in + logic critic QA\n+ - &#96;workflows/comprehensive_research.py&#96;: full-feature workflow built from modular nodes\n+ \n+ ---\n+ \n+ ## 2) Packaged graphs (advanced / modular graph system)\n+ \n+ Directory:\n+ \n+ - &#96;src/company_researcher/graphs/&#96;\n+ \n+ This package contains:\n+ \n+ - legacy graphs (&#96;research_graph.py&#96;, &#96;simple_graph.py&#96;)\n+ - a larger modular graph architecture (&#96;main_graph.py&#96;, &#96;subgraphs/&#96;, &#96;streaming/&#96;, &#96;persistence/&#96;, etc.)\n+ \n+ ---\n+ \n+ ## 3) LangGraph Studio wrappers (what Studio loads)\n+ \n+ Directory:\n+ \n+ - &#96;src/graphs/&#96;\n+ \n+ These are small wrapper modules that export compiled graphs as module-level variables (usually &#96;graph&#96;) so LangGraph Studio can load them.\n+ \n+ Configured in:\n+ \n+ - &#96;langgraph.json&#96;\n+ \n+ ---\n+ \n+ ## Running LangGraph Studio\n+ \n+ 1. Ensure &#96;.env&#96; exists (copy from &#96;env.example&#96;)\n+ 2. Install dependencies\n+ 3. Run:\n+ \n+ &#96;&#96;&#96;bash\n+ langgraph studio\n+ &#96;&#96;&#96;\n+ \n+ The Studio UI reads &#96;langgraph.json&#96; to discover available graphs.\n+ \n+ ",
+        "oldStart": 1,
+        "newStart": 1,
+        "oldLines": 1,
+        "newLines": 61,
+        "linesRemoved": 1,
+        "linesAdded": 61
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/02-architecture/LANGGRAPH.md",
+  "contentsAfterEdit": "# LangGraph in this repo\r\n\r\nThis repo uses **LangGraph** in three main places:\r\n\r\n---\r\n\r\n## 1) Workflows (primary orchestration graphs)\r\n\r\nDirectory:\r\n\r\n- &#96;src/company_researcher/workflows/&#96;\r\n\r\nThese files build LangGraph graphs over the shared &#96;OverallState&#96; schema (&#96;src/company_researcher/state.py&#96;).\r\n\r\nExamples:\r\n\r\n- &#96;workflows/parallel_agent_research.py&#96;: fan-out/fan-in + logic critic QA\r\n- &#96;workflows/comprehensive_research.py&#96;: full-feature workflow built from modular nodes\r\n\r\n---\r\n\r\n## 2) Packaged graphs (advanced / modular graph system)\r\n\r\nDirectory:\r\n\r\n- &#96;src/company_researcher/graphs/&#96;\r\n\r\nThis package contains:\r\n\r\n- legacy graphs (&#96;research_graph.py&#96;, &#96;simple_graph.py&#96;)\r\n- a larger modular graph architecture (&#96;main_graph.py&#96;, &#96;subgraphs/&#96;, &#96;streaming/&#96;, &#96;persistence/&#96;, etc.)\r\n\r\n---\r\n\r\n## 3) LangGraph Studio wrappers (what Studio loads)\r\n\r\nDirectory:\r\n\r\n- &#96;src/graphs/&#96;\r\n\r\nThese are small wrapper modules that export compiled graphs as module-level variables (usually &#96;graph&#96;) so LangGraph Studio can load them.\r\n\r\nConfigured in:\r\n\r\n- &#96;langgraph.json&#96;\r\n\r\n---\r\n\r\n## Running LangGraph Studio\r\n\r\n1. Ensure &#96;.env&#96; exists (copy from &#96;env.example&#96;)\r\n2. Install dependencies\r\n3. Run:\r\n\r\n&#96;&#96;&#96;bash\r\nlanggraph studio\r\n&#96;&#96;&#96;\r\n\r\nThe Studio UI reads &#96;langgraph.json&#96; to discover available graphs.\r\n\r\n\r\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/02-architecture/AGENT_PATTERNS.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "70f281a5-a325-4c29-acb4-7bda921e04ef"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "- \n+ # Agent Patterns\n+ \n+ This repo implements “agents” as Python classes/functions, and integrates them into workflows using node functions that **read from state and return partial state updates**.\n+ \n+ ---\n+ \n+ ## Where agents live\n+ \n+ - &#96;src/company_researcher/agents/&#96;\n+ \n+ The &#96;agents&#96; package also exports many “node functions” used directly by workflows, for example:\n+ \n+ - &#96;researcher_agent_node&#96;\n+ - &#96;financial_agent_node&#96;\n+ - &#96;market_agent_node&#96;\n+ - &#96;product_agent_node&#96;\n+ - &#96;competitor_scout_agent_node&#96;\n+ - &#96;logic_critic_agent_node&#96;\n+ \n+ See:\n+ \n+ - &#96;src/company_researcher/agents/__init__.py&#96;\n+ \n+ ---\n+ \n+ ## Base infrastructure (node pattern)\n+ \n+ Core utilities live under:\n+ \n+ - &#96;src/company_researcher/agents/base/&#96;\n+ \n+ Common pattern:\n+ \n+ 1. Node reads &#96;company_name&#96;, &#96;search_results&#96;, and/or previous &#96;agent_outputs&#96;\n+ 2. Node calls LLM/providers (via integrations/llm modules)\n+ 3. Node returns a **dict** with a partial update, e.g.:\n+    - new/updated &#96;agent_outputs&#96;\n+    - cost/token increments\n+ \n+ Workflows then merge these updates into the shared state using reducers (see &#96;docs/02-architecture/STATE_MANAGEMENT.md&#96;).\n+ \n+ ---\n+ \n+ ## Parallel-safe updates\n+ \n+ When agents run in parallel (fan-out), their contributions must merge safely. The shared state supports this via:\n+ \n+ - list append reducers (&#96;operator.add&#96;)\n+ - dict merge reducers (&#96;merge_dicts&#96;)\n+ - numeric accumulators (&#96;operator.add&#96;, &#96;add_tokens&#96;)\n+ \n+ Authoritative reducers:\n+ \n+ - &#96;src/company_researcher/state.py&#96;\n+ \n+ ",
+        "oldStart": 1,
+        "newStart": 1,
+        "oldLines": 1,
+        "newLines": 56,
+        "linesRemoved": 1,
+        "linesAdded": 56
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/02-architecture/AGENT_PATTERNS.md",
+  "contentsAfterEdit": "# Agent Patterns\r\n\r\nThis repo implements “agents” as Python classes/functions, and integrates them into workflows using node functions that **read from state and return partial state updates**.\r\n\r\n---\r\n\r\n## Where agents live\r\n\r\n- &#96;src/company_researcher/agents/&#96;\r\n\r\nThe &#96;agents&#96; package also exports many “node functions” used directly by workflows, for example:\r\n\r\n- &#96;researcher_agent_node&#96;\r\n- &#96;financial_agent_node&#96;\r\n- &#96;market_agent_node&#96;\r\n- &#96;product_agent_node&#96;\r\n- &#96;competitor_scout_agent_node&#96;\r\n- &#96;logic_critic_agent_node&#96;\r\n\r\nSee:\r\n\r\n- &#96;src/company_researcher/agents/__init__.py&#96;\r\n\r\n---\r\n\r\n## Base infrastructure (node pattern)\r\n\r\nCore utilities live under:\r\n\r\n- &#96;src/company_researcher/agents/base/&#96;\r\n\r\nCommon pattern:\r\n\r\n1. Node reads &#96;company_name&#96;, &#96;search_results&#96;, and/or previous &#96;agent_outputs&#96;\r\n2. Node calls LLM/providers (via integrations/llm modules)\r\n3. Node returns a **dict** with a partial update, e.g.:\r\n   - new/updated &#96;agent_outputs&#96;\r\n   - cost/token increments\r\n\r\nWorkflows then merge these updates into the shared state using reducers (see &#96;docs/02-architecture/STATE_MANAGEMENT.md&#96;).\r\n\r\n---\r\n\r\n## Parallel-safe updates\r\n\r\nWhen agents run in parallel (fan-out), their contributions must merge safely. The shared state supports this via:\r\n\r\n- list append reducers (&#96;operator.add&#96;)\r\n- dict merge reducers (&#96;merge_dicts&#96;)\r\n- numeric accumulators (&#96;operator.add&#96;, &#96;add_tokens&#96;)\r\n\r\nAuthoritative reducers:\r\n\r\n- &#96;src/company_researcher/state.py&#96;\r\n\r\n\r\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/03-agents/AGENTS_CATALOG.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "267ae265-fcc4-437d-a31b-20780ad44a1d"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "- \n+ # Agents Catalog (code map)\n+ \n+ This is a “pointer map” from agent names to the authoritative code that implements them.\n+ \n+ ---\n+ \n+ ## Node functions used by workflows\n+ \n+ The workflows commonly import node functions directly from &#96;company_researcher.agents&#96;.\n+ \n+ Authoritative export list:\n+ \n+ - &#96;src/company_researcher/agents/__init__.py&#96;\n+ \n+ Examples (nodes):\n+ \n+ - Researcher: &#96;researcher_agent_node&#96; (&#96;agents/core/researcher.py&#96;)\n+ - Analyst: &#96;analyst_agent_node&#96; (&#96;agents/core/analyst.py&#96;)\n+ - Synthesizer: &#96;synthesizer_agent_node&#96; (&#96;agents/core/synthesizer.py&#96;)\n+ - Financial: &#96;financial_agent_node&#96; (&#96;agents/financial/financial.py&#96;)\n+ - Market: &#96;market_agent_node&#96; (&#96;agents/market/market.py&#96;)\n+ - Product: &#96;product_agent_node&#96; (&#96;agents/specialized/product.py&#96;)\n+ - Competitor scout: &#96;competitor_scout_agent_node&#96; (&#96;agents/market/competitor_scout.py&#96;)\n+ - Logic critic: &#96;logic_critic_agent_node&#96; (&#96;agents/quality/logic_critic.py&#96;)\n+ \n+ ---\n+ \n+ ## How agents “plug into” workflows\n+ \n+ Workflows call these node functions in one of two styles:\n+ \n+ - **Sequential pipelines** (comprehensive workflow): &#96;src/company_researcher/workflows/comprehensive_research.py&#96;\n+ - **Fan-out/fan-in** (parallel workflow): &#96;src/company_researcher/workflows/parallel_agent_research.py&#96;\n+ \n+ Nodes communicate through shared state; see:\n+ \n+ - &#96;docs/02-architecture/STATE_MANAGEMENT.md&#96;\n+ \n+ ",
+        "oldStart": 1,
+        "newStart": 1,
+        "oldLines": 1,
+        "newLines": 39,
+        "linesRemoved": 1,
+        "linesAdded": 39
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/03-agents/AGENTS_CATALOG.md",
+  "contentsAfterEdit": "# Agents Catalog (code map)\r\n\r\nThis is a “pointer map” from agent names to the authoritative code that implements them.\r\n\r\n---\r\n\r\n## Node functions used by workflows\r\n\r\nThe workflows commonly import node functions directly from &#96;company_researcher.agents&#96;.\r\n\r\nAuthoritative export list:\r\n\r\n- &#96;src/company_researcher/agents/__init__.py&#96;\r\n\r\nExamples (nodes):\r\n\r\n- Researcher: &#96;researcher_agent_node&#96; (&#96;agents/core/researcher.py&#96;)\r\n- Analyst: &#96;analyst_agent_node&#96; (&#96;agents/core/analyst.py&#96;)\r\n- Synthesizer: &#96;synthesizer_agent_node&#96; (&#96;agents/core/synthesizer.py&#96;)\r\n- Financial: &#96;financial_agent_node&#96; (&#96;agents/financial/financial.py&#96;)\r\n- Market: &#96;market_agent_node&#96; (&#96;agents/market/market.py&#96;)\r\n- Product: &#96;product_agent_node&#96; (&#96;agents/specialized/product.py&#96;)\r\n- Competitor scout: &#96;competitor_scout_agent_node&#96; (&#96;agents/market/competitor_scout.py&#96;)\r\n- Logic critic: &#96;logic_critic_agent_node&#96; (&#96;agents/quality/logic_critic.py&#96;)\r\n\r\n---\r\n\r\n## How agents “plug into” workflows\r\n\r\nWorkflows call these node functions in one of two styles:\r\n\r\n- **Sequential pipelines** (comprehensive workflow): &#96;src/company_researcher/workflows/comprehensive_research.py&#96;\r\n- **Fan-out/fan-in** (parallel workflow): &#96;src/company_researcher/workflows/parallel_agent_research.py&#96;\r\n\r\nNodes communicate through shared state; see:\r\n\r\n- &#96;docs/02-architecture/STATE_MANAGEMENT.md&#96;\r\n\r\n\r\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Updating documentation structure**
+
+I’m looking to enhance the documentation by adding new sections, specifically in `docs/README.md`, where I want to incorporate a codebase tour and a roadmap readme. Currently, it mainly lists the roadmap directory, so I’ll add a quick navigation section sorted by topic. I'll also make sure to include a link to the codebase tour in `docs/01-overview/README.md`. It's about improving accessibility, so I’ll apply these updates carefully!</details></think>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/README.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "7a0726fa-8980-47af-9c81-b06d50c0b383"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "  | Install the system | [Installation Guide](01-overview/INSTALLATION.md) |\r\n  | Understand how it works | [Architecture](02-architecture/README.md) |\r\n+ | Understand the code layout | [Codebase Tour](01-overview/CODEBASE_TOUR.md) |\r\n  | Learn about agents | [Agent Documentation](03-agents/README.md) |\r\n  | Configure the system | [Configuration Guide](06-configuration/README.md) |\r",
+        "oldStart": 12,
+        "newStart": 12,
+        "oldLines": 4,
+        "newLines": 5,
+        "linesAdded": 1
+      },
+      {
+        "diffString": "  | Deploy the system | [Deployment](11-deployment/README.md) |\r\n  | Call the API | [API Reference](12-api-reference/README.md) |\r\n- | See future plans | [Roadmap](roadmap/) |\r\n+ | See future plans | [Roadmap](roadmap/README.md) |\r\n  \r\n  ---\r",
+        "oldStart": 18,
+        "newStart": 19,
+        "oldLines": 5,
+        "newLines": 5,
+        "linesRemoved": 1,
+        "linesAdded": 1
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/README.md",
+  "contentsAfterEdit": "# Company Researcher Documentation\r\n\r\nComprehensive documentation for the AI-powered multi-agent company research system.\r\n\r\n---\r\n\r\n## Quick Navigation\r\n\r\n| I want to... | Go to... |\r\n|--------------|----------|\r\n| Get started quickly | [Quick Start](01-overview/QUICKSTART.md) |\r\n| Install the system | [Installation Guide](01-overview/INSTALLATION.md) |\r\n| Understand how it works | [Architecture](02-architecture/README.md) |\r\n| Understand the code layout | [Codebase Tour](01-overview/CODEBASE_TOUR.md) |\r\n| Learn about agents | [Agent Documentation](03-agents/README.md) |\r\n| Configure the system | [Configuration Guide](06-configuration/README.md) |\r\n| Run research | [Scripts &amp; CLI](09-scripts/README.md) |\r\n| Write tests | [Testing Guide](10-testing/README.md) |\r\n| Deploy the system | [Deployment](11-deployment/README.md) |\r\n| Call the API | [API Reference](12-api-reference/README.md) |\r\n| See future plans | [Roadmap](roadmap/README.md) |\r\n\r\n---\r\n\r\n## Documentation Structure\r\n\r\n&#96;&#96;&#96;\r\ndocs/\r\n├── 01-overview/                    # Getting started\r\n│   ├── README.md                   # Project overview\r\n│   ├── INSTALLATION.md             # Setup guide\r\n│   └── QUICKSTART.md               # 5-minute start\r\n│\r\n├── 02-architecture/                # System design\r\n│   ├── README.md                   # Architecture overview\r\n│   ├── SYSTEM_DESIGN.md            # Detailed design\r\n│   └── diagrams/                   # Visual diagrams\r\n│\r\n├── 03-agents/                      # AI agents\r\n│   ├── README.md                   # Agent overview\r\n│   ├── AGENT_CONTRACTS.md          # Input/output specifications\r\n│   ├── AGENT_DEVELOPMENT_GUIDE.md  # Creating agents\r\n│   ├── core/                       # Core agents\r\n│   ├── specialists/                # Specialist agents\r\n│   └── quality/                    # Quality agents\r\n│\r\n├── 04-workflows/                   # LangGraph workflows\r\n│   ├── README.md                   # Workflow documentation\r\n│   ├── WORKFLOW_LOGIC.md           # Decision logic &amp; state transitions\r\n│   └── LANGGRAPH_STUDIO_GUIDE.md   # Visual debugging\r\n│\r\n├── 05-integrations/                # External APIs\r\n│   ├── README.md                   # Integration overview\r\n│   ├── INTEGRATION_PATTERNS.md     # Fallback &amp; selection logic\r\n│   ├── search/                     # Search providers\r\n│   └── financial/                  # Financial data\r\n│\r\n├── 06-configuration/               # Configuration\r\n│   ├── README.md                   # Config options\r\n│   ├── THRESHOLD_RATIONALE.md      # Why thresholds are set\r\n│   ├── PROMPT_ENGINEERING.md       # Prompt design decisions\r\n│   └── llm-setup.md                # LLM configuration\r\n│\r\n├── 07-state-management/            # State flow\r\n├── 08-quality-system/              # Quality scoring\r\n│   ├── README.md                   # Quality overview\r\n│   └── QUALITY_LOGIC.md            # Scoring algorithms &amp; detection\r\n├── 09-scripts/                     # CLI tools\r\n├── 10-testing/                     # Testing guide\r\n├── 11-deployment/                  # Deployment (Docker/K8s)\r\n├── 12-api-reference/               # REST/WebSocket API reference\r\n│\r\n├── roadmap/                        # Future development\r\n│   ├── TECHNOLOGY_IMPROVEMENT_PLAN.md\r\n│   ├── API_IMPLEMENTATION_PLAN.md\r\n│   ├── IMPROVEMENT_ROADMAP.md\r\n│   └── CODEBASE_IMPROVEMENT_ROADMAP.md\r\n│\r\n└── README.md                       # This index\r\n&#96;&#96;&#96;\r\n\r\n---\r\n\r\n## System Overview\r\n\r\n**Company Researcher** is an AI-powered multi-agent system that automatically generates comprehensive company research reports.\r\n\r\n### Key Features\r\n\r\n- **Multi-Agent Architecture**: 5+ specialized agents analyze different business aspects\r\n- **Parallel Execution**: Agents run concurrently for faster research\r\n- **Quality Assurance**: Automatic fact verification and contradiction detection\r\n- **Iterative Improvement**: Automatically improves until 85%+ quality score\r\n- **Cost Tracking**: Real-time token and cost monitoring (~$0.08/report)\r\n\r\n### Technology Stack\r\n\r\n| Component | Technology |\r\n|-----------|------------|\r\n| Agent Orchestration | LangGraph |\r\n| LLM Framework | LangChain |\r\n| Primary LLM | Claude (Anthropic) |\r\n| Web Search | Tavily + DuckDuckGo |\r\n| Financial Data | yfinance, Alpha Vantage, FMP |\r\n| Observability | AgentOps, LangSmith |\r\n\r\n### Current Status\r\n\r\n**Phase**: Phase 4 Complete - Parallel Multi-Agent System\r\n\r\n| Metric | Target | Current |\r\n|--------|--------|---------|\r\n| Quality Score | 85%+ | 84.7% avg |\r\n| Cost per Report | ~$0.05 | ~$0.08 |\r\n| Time per Report | &lt;5 min | 2-5 min |\r\n\r\n---\r\n\r\n## Quick Example\r\n\r\n&#96;&#96;&#96;bash\r\n# Install\r\npip install -r requirements.txt\r\ncp env.example .env   # macOS/Linux\r\n# Windows PowerShell:\r\n#   Copy-Item env.example .env\r\n# Edit .env with API keys\r\n\r\n# Run research\r\npython run_research.py --company \"Microsoft\"\r\n&#96;&#96;&#96;\r\n\r\n**Output:**\r\n\r\n&#96;&#96;&#96;\r\noutputs/research/microsoft/\r\n├── 00_full_report.md\r\n├── 01_executive_summary.md\r\n├── 02_company_overview.md\r\n├── 03_financials.md\r\n├── 04_market_position.md\r\n├── 05_competitive_analysis.md\r\n├── 06_strategy.md\r\n├── 07_sources.md\r\n└── metrics.json\r\n&#96;&#96;&#96;\r\n\r\n---\r\n\r\n## Documentation by Topic\r\n\r\n### Getting Started\r\n\r\n| Document | Description |\r\n|----------|-------------|\r\n| [Project Overview](01-overview/README.md) | What is Company Researcher? |\r\n| [Installation](01-overview/INSTALLATION.md) | Setup and prerequisites |\r\n| [Quick Start](01-overview/QUICKSTART.md) | First research in 5 minutes |\r\n\r\n### Architecture &amp; Design\r\n\r\n| Document | Description |\r\n|----------|-------------|\r\n| [Architecture Overview](02-architecture/README.md) | System architecture |\r\n| [System Design](02-architecture/SYSTEM_DESIGN.md) | Detailed design docs |\r\n| [Diagrams](02-architecture/diagrams/README.md) | Visual diagrams |\r\n| [State Management](07-state-management/README.md) | State flow and reducers |\r\n\r\n### Agents\r\n\r\n| Document | Description |\r\n|----------|-------------|\r\n| [Agent Overview](03-agents/README.md) | All agents summary |\r\n| [Agent Contracts](03-agents/AGENT_CONTRACTS.md) | Input/output specifications |\r\n| [Agent Development](03-agents/AGENT_DEVELOPMENT_GUIDE.md) | Creating new agents |\r\n| [Core Agents](03-agents/core/README.md) | Researcher, Analyst, Synthesizer |\r\n| [Specialist Agents](03-agents/specialists/README.md) | Financial, Market, Product |\r\n| [Quality Agents](03-agents/quality/README.md) | Logic Critic, Quality Checker |\r\n\r\n### Workflows\r\n\r\n| Document | Description |\r\n|----------|-------------|\r\n| [Workflow Documentation](04-workflows/README.md) | LangGraph workflows |\r\n| [Workflow Logic](04-workflows/WORKFLOW_LOGIC.md) | Decision logic, state transitions |\r\n| [LangGraph Studio](04-workflows/LANGGRAPH_STUDIO_GUIDE.md) | Visual debugging |\r\n\r\n### Integrations\r\n\r\n| Document | Description |\r\n|----------|-------------|\r\n| [Integration Overview](05-integrations/README.md) | All integrations |\r\n| [Integration Patterns](05-integrations/INTEGRATION_PATTERNS.md) | Fallback &amp; selection logic |\r\n| [Search Providers](05-integrations/search/README.md) | Tavily, DuckDuckGo |\r\n| [Financial APIs](05-integrations/financial/README.md) | yfinance, Alpha Vantage |\r\n\r\n### Configuration &amp; Operations\r\n\r\n| Document | Description |\r\n|----------|-------------|\r\n| [Configuration Guide](06-configuration/README.md) | All configuration options |\r\n| [Threshold Rationale](06-configuration/THRESHOLD_RATIONALE.md) | Why thresholds are set |\r\n| [Prompt Engineering](06-configuration/PROMPT_ENGINEERING.md) | Prompt design decisions |\r\n| [LLM Setup](06-configuration/llm-setup.md) | LLM configuration |\r\n| [Scripts &amp; CLI](09-scripts/README.md) | Command-line tools |\r\n| [Quality System](08-quality-system/README.md) | Quality scoring |\r\n| [Quality Logic](08-quality-system/QUALITY_LOGIC.md) | Scoring algorithms |\r\n| [Testing Guide](10-testing/README.md) | Test suites |\r\n\r\n### Future Development\r\n\r\n| Document | Description |\r\n|----------|-------------|\r\n| [Implementation Status](roadmap/IMPLEMENTATION_STATUS.md) | ⭐ What's complete vs planned |\r\n| [Technology Improvements](roadmap/TECHNOLOGY_IMPROVEMENT_PLAN.md) | Tech stack optimization |\r\n| [API Implementation](roadmap/API_IMPLEMENTATION_PLAN.md) | REST API roadmap |\r\n| [Improvement Ideas](roadmap/IMPROVEMENT_ROADMAP.md) | 50 enhancement ideas |\r\n| [Technical Debt](roadmap/CODEBASE_IMPROVEMENT_ROADMAP.md) | Codebase improvements |\r\n\r\n---\r\n\r\n## Getting Help\r\n\r\n1. Check [Quick Start](01-overview/QUICKSTART.md)\r\n2. Review [Configuration](06-configuration/README.md)\r\n3. See [Testing Guide](10-testing/README.md) for troubleshooting\r\n\r\n---\r\n\r\n**Last Updated**: December 2025\r\n\r\n**Current Version**: Phase 4 - Parallel Multi-Agent System with Quality Integration\r\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/01-overview/README.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "3afa8b90-0a19-4107-b2ef-47e9771cd33a"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "  python run_research.py --company \"Microsoft\"\n  &#96;&#96;&#96;\n+ \n+ ## Codebase Tour\n+ \n+ If you want a guided map of the code (entrypoints, workflows, agents, outputs), read:\n+ \n+ - [Codebase Tour](CODEBASE_TOUR.md)\n  \n  ## Project Structure",
+        "oldStart": 87,
+        "newStart": 87,
+        "oldLines": 4,
+        "newLines": 10,
+        "linesAdded": 6
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/01-overview/README.md",
+  "contentsAfterEdit": "# Company Researcher - Project Overview\n\n## What is Company Researcher?\n\n**Company Researcher** is an AI-powered multi-agent research system that automatically generates comprehensive company research reports. Using specialized agents running in parallel, it delivers detailed analysis in 2-5 minutes at approximately $0.08 per research.\n\n## Key Capabilities\n\n| Capability | Description |\n|------------|-------------|\n| **Automated Research** | Input a company name, receive a complete research report |\n| **Multi-Agent System** | 5+ specialized agents analyze different aspects simultaneously |\n| **Quality Assurance** | Logic Critic agent verifies facts and detects contradictions |\n| **Iterative Refinement** | Automatically improves until reaching 85%+ quality score |\n| **Cost Tracking** | Real-time token and cost monitoring (~$0.08 per report) |\n| **Multiple Formats** | Output in Markdown, PDF, Excel, and more |\n\n## System Architecture Summary\n\n&#96;&#96;&#96;\nUSER INPUT (Company Name)\n         |\n         v\n    RESEARCHER AGENT\n    (Query Generation + Search)\n         |\n    [FAN-OUT] - Parallel Execution\n    /    |    \\       \\\n   v     v     v       v\nFINANCIAL MARKET PRODUCT COMPETITOR\n  AGENT   AGENT  AGENT    SCOUT\n   \\     |     /       /\n    [FAN-IN] - Synchronize\n         |\n         v\n  SYNTHESIZER AGENT\n  (Combine Results)\n         |\n         v\n  LOGIC CRITIC AGENT\n  (Quality Assurance)\n         |\n         v\n  QUALITY CHECK NODE\n  (Iterate if &lt; 85%)\n         |\n         v\n   MARKDOWN REPORT\n&#96;&#96;&#96;\n\n## Technology Stack\n\n| Component | Technology | Purpose |\n|-----------|------------|---------|\n| **Agent Orchestration** | LangGraph | Workflow definition and execution |\n| **LLM Framework** | LangChain | LLM abstractions and utilities |\n| **Primary LLM** | Claude (Anthropic) | Analysis and synthesis |\n| **Web Search** | Tavily + DuckDuckGo | Information gathering |\n| **Financial Data** | yfinance, Alpha Vantage, FMP | Market and financial metrics |\n| **Data Validation** | Pydantic | Type safety and validation |\n| **Observability** | AgentOps, LangSmith | Monitoring and debugging |\n\n## Current Status\n\n**Phase**: Phase 4 Complete - Parallel Multi-Agent System\n\n| Metric | Target | Current | Status |\n|--------|--------|---------|--------|\n| Success Rate | 85%+ quality | 67% (2/3) | In Progress |\n| Cost per Report | $0.05 | $0.08 | Acceptable |\n| Time per Report | &lt; 5 min | 2-5 min | On Target |\n| Quality Score | 85%+ | 84.7% avg | On Target |\n\n## Quick Start\n\n&#96;&#96;&#96;bash\n# 1. Install dependencies\npip install -r requirements.txt\n\n# 2. Configure environment\ncp env.example .env   # macOS/Linux\n# Windows PowerShell:\n#   Copy-Item env.example .env\n# Edit .env with your API keys\n\n# 3. Run research\npython run_research.py --company \"Microsoft\"\n&#96;&#96;&#96;\n\n## Codebase Tour\n\nIf you want a guided map of the code (entrypoints, workflows, agents, outputs), read:\n\n- [Codebase Tour](CODEBASE_TOUR.md)\n\n## Project Structure\n\n&#96;&#96;&#96;\ncompany-researcher/\n├── src/company_researcher/     # Main source code\n│   ├── agents/                 # AI agents\n│   ├── workflows/              # LangGraph workflows\n│   ├── integrations/           # External API clients\n│   ├── quality/                # Quality assurance\n│   ├── state.py                # State management\n│   └── config.py               # Configuration\n├── scripts/research/           # Research orchestration\n├── tests/                      # Test suites\n├── outputs/                    # Research reports\n└── docs/                       # Documentation (you are here)\n&#96;&#96;&#96;\n\n## Documentation Map\n\n| Section | Description |\n|---------|-------------|\n| [01-overview/](.) | Project overview and introduction |\n| [02-architecture/](../02-architecture/) | System design and patterns |\n| [03-agents/](../03-agents/) | Agent documentation |\n| [04-workflows/](../04-workflows/) | Workflow definitions |\n| [05-integrations/](../05-integrations/) | External API integrations |\n| [06-configuration/](../06-configuration/) | Configuration guide |\n| [07-state-management/](../07-state-management/) | State and data flow |\n| [08-quality-system/](../08-quality-system/) | Quality assurance |\n| [09-scripts/](../09-scripts/) | Scripts and CLI tools |\n| [10-testing/](../10-testing/) | Testing guide |\n| [11-deployment/](../11-deployment/) | Deployment guide |\n| [12-api-reference/](../12-api-reference/) | API documentation |\n\n## Key Concepts\n\n### Agents\n\nSpecialized AI workers that handle specific research domains:\n- **Researcher**: Generates search queries and gathers sources\n- **Financial Agent**: Analyzes revenue, profitability, financial health\n- **Market Agent**: Evaluates market position, trends, competitive dynamics\n- **Product Agent**: Catalogs products, technology stack, roadmap\n- **Competitor Scout**: Identifies competitors and positioning\n- **Synthesizer**: Combines all analyses into a coherent report\n- **Logic Critic**: Verifies facts and detects contradictions\n\n### Workflows\n\nLangGraph-based orchestration that defines:\n- Node execution order\n- Parallel vs sequential processing\n- Conditional branching (iterate vs finish)\n- State updates and merging\n\n### Quality-Driven Iteration\n\nThe system iteratively improves research quality:\n1. Initial research generates baseline report\n2. Quality check evaluates completeness (0-100 score)\n3. If score &lt; 85%, identify gaps and iterate\n4. Maximum 2 iterations to control costs\n5. Final report saved when quality threshold met\n\n## Example Output\n\nA typical research report includes:\n\n&#96;&#96;&#96;\noutputs/research/microsoft/\n├── 00_full_report.md       # Complete integrated report\n├── 01_executive_summary.md # Key findings and recommendations\n├── 02_company_overview.md  # Company background and history\n├── 03_financials.md        # Financial analysis\n├── 04_market_position.md   # Market positioning\n├── 05_competitive_analysis.md # Competitor comparison\n├── 06_strategy.md          # Strategic outlook\n├── 07_sources.md           # Source citations\n├── metrics.json            # Quality and cost metrics\n└── financial_data.json     # Raw financial data\n&#96;&#96;&#96;\n\n## Next Steps\n\n1. **Get Started**: Follow the [Installation Guide](INSTALLATION.md)\n2. **Learn Architecture**: Read [System Architecture](../02-architecture/README.md)\n3. **Understand Agents**: Explore [Agent Documentation](../03-agents/README.md)\n4. **Configure System**: See [Configuration Guide](../06-configuration/README.md)\n\n---\n\n**Last Updated**: December 2024\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Updating documentation links**
+
+I see that the references in the docs/02-architecture/README file exist now, which is great! Although I might consider updating the "Last updated" section, it's not absolutely necessary. The docs/02-architecture/diagrams/README had links to Data Flow and Agent Patterns that now exist, so no further action is needed there. Moving on, I’ll update the docs/03-agents/README to possibly link to the AGENTS_CATALOG doc and make minimal patches in the documentation index.</details></think>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "## Documentation Index|\[Core Agents\]|Agent Contracts" in "docs/03-agents/README.md" • 2 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `docs/03-agents/README.md` | `## Documentation Index` | L252 |
+| `docs/03-agents/README.md` | `\| [Core Agents](core/) \| Researcher, Analyst, Synthesizer \|` | L256 |
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: docs/03-agents/README.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/03-agents/README.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "f1dca162-1d71-482d-8117-c30bf39634e5"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "  | [Specialist Agents](specialists/) | Financial, Market, Product, etc. |\n  | [Quality Agents](quality/) | Logic Critic, Quality Checker |\n+ | [Agents Catalog](AGENTS_CATALOG.md) | Quick code map (agents → files) |\n  | [Agent Patterns](../02-architecture/AGENT_PATTERNS.md) | Implementation patterns |\n  ",
+        "oldStart": 257,
+        "newStart": 257,
+        "oldLines": 4,
+        "newLines": 5,
+        "linesAdded": 1
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/03-agents/README.md",
+  "contentsAfterEdit": "# Agent Documentation\n\nThis section documents all AI agents in the Company Researcher system.\n\n## Agent Overview\n\nThe system uses specialized AI agents, each focused on a specific research domain. Agents run in parallel where possible to maximize efficiency.\n\n&#96;&#96;&#96;\n                         AGENTS\n                           |\n        +------------------+------------------+\n        |                  |                  |\n     CORE              SPECIALIST         QUALITY\n        |                  |                  |\n   Researcher         Financial          Logic Critic\n   Analyst            Market\n   Synthesizer        Product\n                      Competitor Scout\n                      Brand Auditor\n                      Social Media\n&#96;&#96;&#96;\n\n## Agent Categories\n\n### Core Agents\n\nCore agents handle the main research workflow:\n\n| Agent | Purpose | Location |\n|-------|---------|----------|\n| **Researcher** | Query generation, search execution | &#96;agents/core/researcher.py&#96; |\n| **Analyst** | Data summarization and extraction | &#96;agents/core/analyst.py&#96; |\n| **Synthesizer** | Report generation and combination | &#96;agents/core/synthesizer.py&#96; |\n\n[Detailed Core Agent Documentation](core/)\n\n### Specialist Agents\n\nSpecialist agents analyze specific business domains:\n\n| Agent | Purpose | Location |\n|-------|---------|----------|\n| **Financial** | Revenue, profitability, metrics | &#96;agents/financial/&#96; |\n| **Market** | Market position, trends, share | &#96;agents/market/&#96; |\n| **Product** | Products, technology, roadmap | &#96;agents/specialized/&#96; |\n| **Competitor Scout** | Competitive intelligence | &#96;agents/research/&#96; |\n| **Brand Auditor** | Brand perception, reputation | &#96;agents/specialized/&#96; |\n| **Social Media** | Social presence analysis | &#96;agents/specialized/&#96; |\n\n[Detailed Specialist Agent Documentation](specialists/)\n\n### Quality Agents\n\nQuality agents ensure research accuracy:\n\n| Agent | Purpose | Location |\n|-------|---------|----------|\n| **Logic Critic** | Fact verification, contradiction detection | &#96;agents/quality/&#96; |\n| **Quality Checker** | Completeness scoring | &#96;quality/&#96; |\n\n[Detailed Quality Agent Documentation](quality/)\n\n## Agent Execution Flow\n\n&#96;&#96;&#96;\n1. RESEARCHER AGENT\n   Input: company_name\n   Output: search_queries, search_results, sources\n\n2. PARALLEL SPECIALISTS (Fan-Out)\n   ├── FINANCIAL AGENT\n   │   Input: search_results\n   │   Output: revenue, profitability, financial_health\n   │\n   ├── MARKET AGENT\n   │   Input: search_results\n   │   Output: market_size, trends, position\n   │\n   ├── PRODUCT AGENT\n   │   Input: search_results\n   │   Output: products, technology, roadmap\n   │\n   └── COMPETITOR AGENT\n       Input: search_results\n       Output: competitors, competitive_intensity\n\n3. SYNTHESIZER AGENT (Fan-In)\n   Input: all agent_outputs\n   Output: comprehensive_report, quality_score\n\n4. LOGIC CRITIC AGENT\n   Input: comprehensive_report\n   Output: verified_facts, contradictions, gaps\n&#96;&#96;&#96;\n\n## Agent Communication\n\nAgents communicate through shared state:\n\n&#96;&#96;&#96;python\n# Each agent returns partial state updates\nreturn {\n    \"agent_outputs\": {\n        \"financial\": {\n            \"revenue\": \"$198B\",\n            \"analysis\": \"Strong growth...\"\n        }\n    },\n    \"total_cost\": 0.05\n}\n&#96;&#96;&#96;\n\nState updates are merged using reducers:\n\n&#96;&#96;&#96;python\n# Parallel agent outputs merge automatically\nagent_outputs: Annotated[Dict, merge_dicts]\n&#96;&#96;&#96;\n\n## Agent Implementation Patterns\n\n### Pattern 1: BaseSpecialistAgent\n\nFor agents with complex parsing:\n\n&#96;&#96;&#96;python\nclass FinancialAgent(BaseSpecialistAgent[FinancialResult]):\n    def _get_prompt(self, company: str, results: List) -&gt; str:\n        return f\"Analyze financials for {company}...\"\n\n    def _parse_analysis(self, response: str) -&gt; FinancialResult:\n        return parse_financial_data(response)\n&#96;&#96;&#96;\n\n### Pattern 2: @agent_node Decorator\n\nFor simpler agents:\n\n&#96;&#96;&#96;python\n@agent_node(agent_name=\"market\", max_tokens=1500)\ndef market_agent_node(state, logger, client, config):\n    # Agent logic\n    return {\"agent_outputs\": {\"market\": result}}\n&#96;&#96;&#96;\n\n### Pattern 3: Custom Class\n\nFor agents with external integrations:\n\n&#96;&#96;&#96;python\nclass EnhancedFinancialAgent:\n    def __init__(self, config):\n        self.llm = get_anthropic_client(config)\n        self.alpha_vantage = AlphaVantageClient(config)\n        self.yfinance = YFinanceClient()\n\n    def analyze(self, company: str) -&gt; FinancialResult:\n        # Combine LLM + external data\n        pass\n&#96;&#96;&#96;\n\n## Agent Configuration\n\nEach agent has configurable parameters:\n\n&#96;&#96;&#96;python\n# config.py\nresearcher_max_tokens: int = 1000\nresearcher_temperature: float = 0.0\n\nfinancial_max_tokens: int = 2000\nfinancial_temperature: float = 0.0\n\nmarket_max_tokens: int = 1500\nmarket_temperature: float = 0.0\n&#96;&#96;&#96;\n\n## Creating a New Agent\n\n### Step 1: Define Result Type\n\n&#96;&#96;&#96;python\n@dataclass\nclass MyAgentResult:\n    analysis: str\n    metrics: Dict[str, Any]\n    confidence: float\n&#96;&#96;&#96;\n\n### Step 2: Implement Agent\n\n&#96;&#96;&#96;python\n@agent_node(agent_name=\"my_agent\", max_tokens=1500)\ndef my_agent_node(\n    state: OverallState,\n    logger: Logger,\n    client: Anthropic,\n    config: ResearchConfig\n) -&gt; Dict[str, Any]:\n    # Get data from state\n    company = state[\"company_name\"]\n    results = state[\"search_results\"]\n\n    # Build prompt\n    prompt = f\"\"\"\n    Analyze {company} for [specific aspect].\n\n    Search Results:\n    {format_results(results)}\n\n    Provide:\n    1. Analysis\n    2. Key metrics\n    3. Confidence score\n    \"\"\"\n\n    # Call LLM\n    response = client.messages.create(\n        model=config.llm_model,\n        max_tokens=1500,\n        messages=[{\"role\": \"user\", \"content\": prompt}]\n    )\n\n    # Parse response\n    result = parse_response(response)\n\n    # Return state update\n    return {\n        \"agent_outputs\": {\"my_agent\": result},\n        \"total_cost\": calculate_cost(response.usage)\n    }\n&#96;&#96;&#96;\n\n### Step 3: Register in Workflow\n\n&#96;&#96;&#96;python\n# workflows/parallel_agent_research.py\nworkflow.add_node(\"my_agent\", my_agent_node)\nworkflow.add_edge(\"researcher\", \"my_agent\")\nworkflow.add_edge(\"my_agent\", \"synthesizer\")\n&#96;&#96;&#96;\n\n### Step 4: Add Configuration\n\n&#96;&#96;&#96;python\n# config.py\nmy_agent_max_tokens: int = 1500\nmy_agent_temperature: float = 0.0\n&#96;&#96;&#96;\n\n## Documentation Index\n\n| Document | Description |\n|----------|-------------|\n| [Core Agents](core/) | Researcher, Analyst, Synthesizer |\n| [Specialist Agents](specialists/) | Financial, Market, Product, etc. |\n| [Quality Agents](quality/) | Logic Critic, Quality Checker |\n| [Agents Catalog](AGENTS_CATALOG.md) | Quick code map (agents → files) |\n| [Agent Patterns](../02-architecture/AGENT_PATTERNS.md) | Implementation patterns |\n\n---\n\n**Last Updated**: December 2024\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: docs/06-configuration/README.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="mcp" data-tool-name="mcp_filesystem_write_file">
+<details>
+          <summary>Tool use: **mcp_filesystem_write_file**</summary>
+      
+*Called tool*: filesystem - write_file: Create a new file or completely overwrite an existing file with new content. Use with caution as it will overwrite existing files without warning. Handles text content with proper encoding. Only works within allowed directories.
+
+*Parameters*:
+  * path: docs/06-configuration/README.md
+  * content: # Configuration Guide
+
+This section documents how the Company Researcher is configured at runtime.
+
+---
+
+## Sources of configuration
+
+Configuration comes from:
+
+1. **Environment variables** (recommended): `.env` loaded via `python-dotenv`
+2. **Defaults** defined in code: `src/company_researcher/config.py`
+
+The authoritative configuration model is:
+
+- `company_researcher.config.ResearchConfig`
+
+---
+
+## Quick setup
+
+1. Copy the example file:
+
+```bash
+cp env.example .env   # macOS/Linux
+# Windows PowerShell:
+#   Copy-Item env.example .env
+```
+
+2. Fill in the keys you need.
+
+---
+
+## Required keys
+
+These are required for the default “LLM + web research” flows:
+
+- `ANTHROPIC_API_KEY` (Claude)
+- `TAVILY_API_KEY` (web search)
+
+See `env.example` for full commentary and placeholders.
+
+---
+
+## Optional keys
+
+The system can enrich research using additional providers when keys are present:
+
+- **Financial**: `ALPHA_VANTAGE_API_KEY`, `FMP_API_KEY`, `FINNHUB_API_KEY`, `POLYGON_API_KEY`
+- **News**: `NEWSAPI_KEY`, `GNEWS_API_KEY`, `MEDIASTACK_API_KEY`
+- **Company data**: `HUNTER_API_KEY`, `GITHUB_TOKEN`, `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`
+
+---
+
+## Observability / tracing (optional)
+
+Configured via `.env`:
+
+- `AGENTOPS_API_KEY` (AgentOps)
+- `LANGSMITH_API_KEY`, `LANGCHAIN_TRACING_V2`, `LANGCHAIN_PROJECT` (LangSmith)
+- `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST`, `LANGFUSE_ENABLED` (Langfuse)
+
+---
+
+## AI feature toggles (optional)
+
+The repo includes feature flags for AI-assisted components:
+
+- `AI_GLOBAL_ENABLED`
+- `AI_SENTIMENT_ENABLED`
+- `AI_QUERY_ENABLED`
+- `AI_QUALITY_ENABLED`
+- `AI_EXTRACTION_ENABLED`
+
+And cost guardrails:
+
+- `AI_COST_WARN_THRESHOLD`
+- `AI_COST_MAX_THRESHOLD`
+
+See `env.example` for defaults.
+
+---
+
+## Code usage
+
+To access validated configuration in Python:
+
+```python
+from company_researcher.config import get_config
+
+config = get_config()
+print(config.output_dir)
+```
+
+`get_config()` creates a singleton and validates key formats where applicable.
+
+---
+
+## Output directory
+
+Some workflows write reports under `config.output_dir` (default: `outputs/`).
+
+Other entrypoints (like the CLI wrapper) may write to a separate folder (default: `outputs/research/`) via their own `--output` flag.
+
+---
+
+**Related documentation**
+
+- [Installation Guide](../01-overview/INSTALLATION.md)
+- [Codebase Tour](../01-overview/CODEBASE_TOUR.md)
+- [Deployment](../11-deployment/README.md)
+
+
+*Result*:
+Access denied - path outside allowed directories: C:\Users\Alejandro\docs\06-configuration\README.md not in 
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: docs/06-configuration/README.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Preparing to apply patch**
+
+I’m getting ready to write the `apply_patch` function to replace the entire file with new content. This involves removing all the existing content and adding in the new stuff, which feels like a big task, but I'm up for it! I’ll draft the patch to update the file `docs/06-configuration/README.md` accordingly. I have to remember to include those leading spaces in the lines; it’s important for formatting. Let's tackle this!</details></think>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/06-configuration/README.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "2cf819e7-89d2-4a2d-af3d-b3118f5f85b2"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "  # Configuration Guide\n  \n- This section documents all configuration options for the Company Researcher.\n- \n- ## Overview\n- \n- Configuration is managed through:\n- \n- 1. **Environment Variables** (&#96;.env&#96;) - API keys and secrets\n- 2. **Python Config** (&#96;config.py&#96;) - Application settings\n- 3. **YAML Config** (&#96;research_config.yaml&#96;) - Research parameters\n- 4. **CLI Arguments** - Runtime overrides\n- \n- &#96;&#96;&#96;\n- Priority (highest to lowest):\n- CLI Arguments &gt; Environment Variables &gt; YAML Config &gt; Default Values\n- &#96;&#96;&#96;\n- \n- ## Environment Variables (.env)\n- \n- ### Required Keys\n- \n- &#96;&#96;&#96;env\n- # LLM Provider (Required)\n- ANTHROPIC_API_KEY=sk-ant-api03-...\n- &#96;&#96;&#96;\n- \n- ### Recommended Keys\n- \n- &#96;&#96;&#96;env\n- # Search (Recommended for better results)\n- TAVILY_API_KEY=tvly-...\n- &#96;&#96;&#96;\n- \n- ### Optional Keys\n- \n- &#96;&#96;&#96;env\n- # Financial Data\n- ALPHA_VANTAGE_API_KEY=...\n- FMP_API_KEY=...\n- FINNHUB_API_KEY=...\n- POLYGON_API_KEY=...\n- \n- # News\n- GNEWS_API_KEY=...\n- NEWSAPI_API_KEY=...\n- MEDIASTACK_API_KEY=...\n- \n- # Company Data\n- HUNTER_API_KEY=...\n- GITHUB_TOKEN=...\n- REDDIT_CLIENT_ID=...\n- REDDIT_CLIENT_SECRET=...\n- \n- # Observability\n- AGENTOPS_API_KEY=...\n- LANGSMITH_API_KEY=...\n- LANGCHAIN_TRACING_V2=true\n- LANGCHAIN_PROJECT=company-researcher\n- \n- # OpenAI (Fallback LLM)\n- OPENAI_API_KEY=...\n- &#96;&#96;&#96;\n- \n- ## Python Configuration (config.py)\n- \n- **Location**: &#96;src/company_researcher/config.py&#96;\n- \n- ### ResearchConfig Class\n- \n- &#96;&#96;&#96;python\n- @dataclass\n- class ResearchConfig:\n-     # API Keys\n-     anthropic_api_key: str\n-     tavily_api_key: Optional[str] = None\n-     alpha_vantage_api_key: Optional[str] = None\n-     fmp_api_key: Optional[str] = None\n- \n-     # Model Settings\n-     llm_model: str = \"claude-3-5-sonnet-20241022\"\n-     llm_temperature: float = 0.0\n-     llm_max_tokens: int = 4096\n- \n-     # Search Settings\n-     num_search_queries: int = 3\n-     max_search_results: int = 10\n-     search_strategy: str = \"free_first\"\n- \n-     # Quality Settings\n-     quality_threshold: float = 85.0\n-     max_iterations: int = 2\n- \n-     # Agent Settings (50+ parameters)\n-     researcher_max_tokens: int = 1000\n-     analyst_max_tokens: int = 2000\n-     financial_max_tokens: int = 2000\n-     market_max_tokens: int = 1500\n-     product_max_tokens: int = 1500\n-     synthesizer_max_tokens: int = 4000\n- \n-     # Output Settings\n-     output_dir: str = \"outputs/research\"\n-     report_formats: List[str] = field(default_factory=lambda: [\"md\"])\n- \n-     # Observability\n-     enable_agentops: bool = False\n-     enable_langsmith: bool = False\n- &#96;&#96;&#96;\n- \n- ### Loading Configuration\n- \n- &#96;&#96;&#96;python\n- from company_researcher.config import ResearchConfig\n- \n- # Load from environment\n- config = ResearchConfig.from_env()\n- \n- # Override with YAML\n- config = config.merge_yaml(\"research_config.yaml\")\n- \n- # Override with CLI args\n- config = config.override(\n-     llm_model=\"claude-3-haiku-20240307\",\n-     max_iterations=1\n- )\n- &#96;&#96;&#96;\n- \n- ## YAML Configuration (research_config.yaml)\n- \n- **Location**: &#96;scripts/research/research_config.yaml&#96;\n- \n- ### Full Configuration File\n- \n- &#96;&#96;&#96;yaml\n- # Research Configuration\n- \n- # Research depth: quick, standard, comprehensive\n- depth: standard\n- \n- # LLM Settings\n- llm:\n-   model: claude-3-5-sonnet-20241022\n-   temperature: 0.0\n-   max_tokens: 4096\n- \n- # Search Settings\n- search:\n-   strategy: free_first  # free_first, auto, tavily_only\n-   num_queries: 3\n-   max_results: 10\n-   min_free_sources: 20\n-   tavily_refinement: true\n-   include_domains: []\n-   exclude_domains:\n-     - pinterest.com\n-     - instagram.com\n- \n- # Quality Settings\n- quality:\n-   threshold: 85.0\n-   min_sections: 6\n-   require_financials: true\n- \n- # Gap Filling\n- gap_filling:\n-   enabled: true\n-   max_iterations: 2\n-   min_quality_score: 85.0\n- \n- # Output Settings\n- output:\n-   formats:\n-     - md\n-     - pdf  # Requires reportlab\n-     - excel  # Requires openpyxl\n-   base_dir: outputs/research\n-   sections:\n-     - executive_summary\n-     - company_overview\n-     - financials\n-     - market_position\n-     - competitive_analysis\n-     - strategy\n-     - sources\n- \n- # Caching\n- cache:\n-   enabled: true\n-   ttl_days: 7\n-   directory: .research_cache\n- \n- # Agent-Specific Settings\n- agents:\n-   researcher:\n-     max_tokens: 1000\n-     temperature: 0.0\n-   financial:\n-     max_tokens: 2000\n-     temperature: 0.0\n-     external_sources:\n-       - yfinance\n-       - alpha_vantage\n-       - fmp\n-   market:\n-     max_tokens: 1500\n-     temperature: 0.0\n-   product:\n-     max_tokens: 1500\n-     temperature: 0.0\n-   synthesizer:\n-     max_tokens: 4000\n-     temperature: 0.0\n- \n- # Financial Data Sources\n- financial:\n-   primary: yfinance\n-   fallback:\n-     - alpha_vantage\n-     - fmp\n-   cache_ttl: 3600  # 1 hour\n- \n- # News Settings\n- news:\n-   lookback_days: 30\n-   max_articles: 20\n-   sources:\n-     - gnews\n-     - newsapi\n- \n- # Rate Limits (per minute)\n- rate_limits:\n-   tavily: 100\n-   duckduckgo: 10\n-   alpha_vantage: 5\n-   fmp: 10\n- \n- # Timeouts (seconds)\n- timeouts:\n-   search: 30\n-   financial: 30\n-   llm: 120\n-   total: 600  # 10 minutes max\n- \n- # Logging\n- logging:\n-   level: INFO\n-   format: structured\n-   file: logs/research.log\n- &#96;&#96;&#96;\n- \n- ## Configuration by Use Case\n- \n- ### Quick Research (Minimal Cost)\n- \n- &#96;&#96;&#96;yaml\n- depth: quick\n- search:\n-   strategy: free_first\n-   max_results: 5\n- gap_filling:\n-   enabled: false\n- output:\n-   formats: [md]\n- &#96;&#96;&#96;\n- \n- ### Standard Research (Balanced)\n- \n- &#96;&#96;&#96;yaml\n- depth: standard\n- search:\n-   strategy: free_first\n-   tavily_refinement: true\n- gap_filling:\n-   enabled: true\n-   max_iterations: 2\n- output:\n-   formats: [md]\n- &#96;&#96;&#96;\n- \n- ### Comprehensive Research (Maximum Quality)\n- \n- &#96;&#96;&#96;yaml\n- depth: comprehensive\n- search:\n-   strategy: auto\n-   max_results: 20\n- gap_filling:\n-   enabled: true\n-   max_iterations: 3\n- quality:\n-   threshold: 90.0\n- output:\n-   formats: [md, pdf, excel]\n- &#96;&#96;&#96;\n- \n- ### Cost-Optimized (Budget Limit)\n- \n- &#96;&#96;&#96;python\n- # config.py\n- max_cost_per_research: float = 0.10  # $0.10 max\n- llm_model: str = \"claude-3-haiku-20240307\"  # Cheaper model\n- &#96;&#96;&#96;\n- \n- ## CLI Configuration\n+ This section documents how the Company Researcher is configured at runtime.\n+ \n+ ---\n+ \n+ ## Sources of configuration\n+ \n+ Configuration comes from:\n+ \n+ 1. **Environment variables** (recommended): &#96;.env&#96; loaded via &#96;python-dotenv&#96;\n+ 2. **Defaults** defined in code: &#96;src/company_researcher/config.py&#96;\n+ \n+ The authoritative configuration model is:\n+ \n+ - &#96;company_researcher.config.ResearchConfig&#96;\n+ \n+ ---\n+ \n+ ## Quick setup\n+ \n+ 1. Copy the example file:\n  \n  &#96;&#96;&#96;bash\n- # Override config via CLI\n- python scripts/research/cli.py research \"Microsoft\" \\\n-     --depth comprehensive \\\n-     --format pdf \\\n-     --iterations 3 \\\n-     --quality-threshold 90\n- \n- # Use custom config file\n- python scripts/research/cli.py research \"Microsoft\" \\\n-     --config my_config.yaml\n- \n- # Disable caching\n- python scripts/research/cli.py research \"Microsoft\" \\\n-     --no-cache\n- \n- # Verbose logging\n- python scripts/research/cli.py research \"Microsoft\" \\\n-     --verbose\n- &#96;&#96;&#96;\n- \n- ## Configuration Validation\n+ cp env.example .env   # macOS/Linux\n+ # Windows PowerShell:\n+ #   Copy-Item env.example .env\n+ &#96;&#96;&#96;\n+ \n+ 2. Fill in the keys you need.\n+ \n+ ---\n+ \n+ ## Required keys\n+ \n+ These are required for the default “LLM + web research” flows:\n+ \n+ - &#96;ANTHROPIC_API_KEY&#96; (Claude)\n+ - &#96;TAVILY_API_KEY&#96; (web search)\n+ \n+ See &#96;env.example&#96; for full commentary and placeholders.\n+ \n+ ---\n+ \n+ ## Optional keys\n+ \n+ The system can enrich research using additional providers when keys are present:\n+ \n+ - **Financial**: &#96;ALPHA_VANTAGE_API_KEY&#96;, &#96;FMP_API_KEY&#96;, &#96;FINNHUB_API_KEY&#96;, &#96;POLYGON_API_KEY&#96;\n+ - **News**: &#96;NEWSAPI_KEY&#96;, &#96;GNEWS_API_KEY&#96;, &#96;MEDIASTACK_API_KEY&#96;\n+ - **Company data**: &#96;HUNTER_API_KEY&#96;, &#96;GITHUB_TOKEN&#96;, &#96;REDDIT_CLIENT_ID&#96;, &#96;REDDIT_CLIENT_SECRET&#96;\n+ \n+ &#96;env.example&#96; also includes optional LLM providers for cost/performance tradeoffs (DeepSeek, Gemini, Groq, etc.).\n+ \n+ ---\n+ \n+ ## Observability / tracing (optional)\n+ \n+ Configured via &#96;.env&#96;:\n+ \n+ - &#96;AGENTOPS_API_KEY&#96; (AgentOps)\n+ - &#96;LANGSMITH_API_KEY&#96;, &#96;LANGCHAIN_TRACING_V2&#96;, &#96;LANGCHAIN_PROJECT&#96; (LangSmith)\n+ - &#96;LANGFUSE_PUBLIC_KEY&#96;, &#96;LANGFUSE_SECRET_KEY&#96;, &#96;LANGFUSE_HOST&#96;, &#96;LANGFUSE_ENABLED&#96; (Langfuse)\n+ \n+ ---\n+ \n+ ## AI feature toggles (optional)\n+ \n+ Feature flags:\n+ \n+ - &#96;AI_GLOBAL_ENABLED&#96;\n+ - &#96;AI_SENTIMENT_ENABLED&#96;\n+ - &#96;AI_QUERY_ENABLED&#96;\n+ - &#96;AI_QUALITY_ENABLED&#96;\n+ - &#96;AI_EXTRACTION_ENABLED&#96;\n+ \n+ Cost guardrails:\n+ \n+ - &#96;AI_COST_WARN_THRESHOLD&#96;\n+ - &#96;AI_COST_MAX_THRESHOLD&#96;\n+ \n+ Defaults and guidance are documented in &#96;env.example&#96;.\n+ \n+ ---\n+ \n+ ## Code usage\n+ \n+ To access validated configuration in Python:\n  \n  &#96;&#96;&#96;python\n- from company_researcher.config import validate_config\n+ from company_researcher.config import get_config\n  \n- config = ResearchConfig.from_env()\n- \n- # Validate configuration\n- errors = validate_config(config)\n- if errors:\n-     for error in errors:\n-         print(f\"Config error: {error}\")\n-     sys.exit(1)\n- &#96;&#96;&#96;\n- \n- ### Validation Rules\n- \n- | Check | Validation |\n- |-------|------------|\n- | API Key | ANTHROPIC_API_KEY is set |\n- | Model | Model is valid Claude model |\n- | Thresholds | quality_threshold between 0-100 |\n- | Iterations | max_iterations &gt;= 1 |\n- | Output Dir | output_dir is writable |\n- \n- ## Environment-Specific Config\n- \n- ### Development\n- \n- &#96;&#96;&#96;env\n- # .env.development\n- ANTHROPIC_API_KEY=sk-ant-...\n- LLM_MODEL=claude-3-haiku-20240307  # Cheaper\n- LANGCHAIN_TRACING_V2=true\n- LANGSMITH_API_KEY=...\n- &#96;&#96;&#96;\n- \n- ### Production\n- \n- &#96;&#96;&#96;env\n- # .env.production\n- ANTHROPIC_API_KEY=sk-ant-...\n- LLM_MODEL=claude-3-5-sonnet-20241022\n- AGENTOPS_API_KEY=...\n- ENABLE_COST_TRACKING=true\n- &#96;&#96;&#96;\n+ config = get_config()\n+ print(config.output_dir)\n+ &#96;&#96;&#96;\n+ \n+ &#96;get_config()&#96; creates a singleton and validates key formats where applicable.\n+ \n+ ---\n+ \n+ ## Output directory\n+ \n+ Some LangGraph workflows write reports under &#96;config.output_dir&#96; (default: &#96;outputs/&#96;).\n+ \n+ Other entrypoints (like the CLI wrapper) may write to a separate folder (default: &#96;outputs/research/&#96;) via their own &#96;--output&#96; flag.\n  \n  ---\n  \n- **Related Documentation**:\n+ **Related documentation**\n+ \n  - [Installation Guide](../01-overview/INSTALLATION.md)\n- - [Integrations](../05-integrations/)\n- - [Deployment](../11-deployment/)\n- \n- ---\n- \n- **Last Updated**: December 2024\n+ - [Codebase Tour](../01-overview/CODEBASE_TOUR.md)\n+ - [Deployment](../11-deployment/README.md)\n  ",
+        "oldStart": 1,
+        "newStart": 1,
+        "oldLines": 385,
+        "newLines": 114,
+        "linesRemoved": 373,
+        "linesAdded": 102
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/06-configuration/README.md",
+  "contentsAfterEdit": "# Configuration Guide\n\nThis section documents how the Company Researcher is configured at runtime.\n\n---\n\n## Sources of configuration\n\nConfiguration comes from:\n\n1. **Environment variables** (recommended): &#96;.env&#96; loaded via &#96;python-dotenv&#96;\n2. **Defaults** defined in code: &#96;src/company_researcher/config.py&#96;\n\nThe authoritative configuration model is:\n\n- &#96;company_researcher.config.ResearchConfig&#96;\n\n---\n\n## Quick setup\n\n1. Copy the example file:\n\n&#96;&#96;&#96;bash\ncp env.example .env   # macOS/Linux\n# Windows PowerShell:\n#   Copy-Item env.example .env\n&#96;&#96;&#96;\n\n2. Fill in the keys you need.\n\n---\n\n## Required keys\n\nThese are required for the default “LLM + web research” flows:\n\n- &#96;ANTHROPIC_API_KEY&#96; (Claude)\n- &#96;TAVILY_API_KEY&#96; (web search)\n\nSee &#96;env.example&#96; for full commentary and placeholders.\n\n---\n\n## Optional keys\n\nThe system can enrich research using additional providers when keys are present:\n\n- **Financial**: &#96;ALPHA_VANTAGE_API_KEY&#96;, &#96;FMP_API_KEY&#96;, &#96;FINNHUB_API_KEY&#96;, &#96;POLYGON_API_KEY&#96;\n- **News**: &#96;NEWSAPI_KEY&#96;, &#96;GNEWS_API_KEY&#96;, &#96;MEDIASTACK_API_KEY&#96;\n- **Company data**: &#96;HUNTER_API_KEY&#96;, &#96;GITHUB_TOKEN&#96;, &#96;REDDIT_CLIENT_ID&#96;, &#96;REDDIT_CLIENT_SECRET&#96;\n\n&#96;env.example&#96; also includes optional LLM providers for cost/performance tradeoffs (DeepSeek, Gemini, Groq, etc.).\n\n---\n\n## Observability / tracing (optional)\n\nConfigured via &#96;.env&#96;:\n\n- &#96;AGENTOPS_API_KEY&#96; (AgentOps)\n- &#96;LANGSMITH_API_KEY&#96;, &#96;LANGCHAIN_TRACING_V2&#96;, &#96;LANGCHAIN_PROJECT&#96; (LangSmith)\n- &#96;LANGFUSE_PUBLIC_KEY&#96;, &#96;LANGFUSE_SECRET_KEY&#96;, &#96;LANGFUSE_HOST&#96;, &#96;LANGFUSE_ENABLED&#96; (Langfuse)\n\n---\n\n## AI feature toggles (optional)\n\nFeature flags:\n\n- &#96;AI_GLOBAL_ENABLED&#96;\n- &#96;AI_SENTIMENT_ENABLED&#96;\n- &#96;AI_QUERY_ENABLED&#96;\n- &#96;AI_QUALITY_ENABLED&#96;\n- &#96;AI_EXTRACTION_ENABLED&#96;\n\nCost guardrails:\n\n- &#96;AI_COST_WARN_THRESHOLD&#96;\n- &#96;AI_COST_MAX_THRESHOLD&#96;\n\nDefaults and guidance are documented in &#96;env.example&#96;.\n\n---\n\n## Code usage\n\nTo access validated configuration in Python:\n\n&#96;&#96;&#96;python\nfrom company_researcher.config import get_config\n\nconfig = get_config()\nprint(config.output_dir)\n&#96;&#96;&#96;\n\n&#96;get_config()&#96; creates a singleton and validates key formats where applicable.\n\n---\n\n## Output directory\n\nSome LangGraph workflows write reports under &#96;config.output_dir&#96; (default: &#96;outputs/&#96;).\n\nOther entrypoints (like the CLI wrapper) may write to a separate folder (default: &#96;outputs/research/&#96;) via their own &#96;--output&#96; flag.\n\n---\n\n**Related documentation**\n\n- [Installation Guide](../01-overview/INSTALLATION.md)\n- [Codebase Tour](../01-overview/CODEBASE_TOUR.md)\n- [Deployment](../11-deployment/README.md)\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Updating testing documentation**
+
+I need to fix the documentation for testing to ensure it includes the correct commands and mentions installation. It relies on PYTHONPATH, which we can update. There may be inaccuracies regarding conftest, so I'll make minimal adjustments. I’ll include commands like "pip install -r requirements.txt -r requirements-dev.txt," "pip install -e .", and instructions to run pytest. Additionally, I'll provide the relevant markers from pyproject and remove any outdated references to PYTHONPATH, particularly in the "Running Tests" sections.</details></think>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: docs/10-testing/README.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Updating commands and configurations**
+
+I’m thinking about how to replace the command block with more precise ones. So I’ll use:
+
+```
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+pip install -e .
+pytest
+```
+
+For coverage, I should go with `pytest --cov=src/company_researcher` since it aligns with the tool’s coverage config. Good news, there’s no need for PYTHONPATH because `pip install -e .` handles imports. I’ll also want to update all the tests to remove the PYTHONPATH environment to keep it cross-platform. Let’s make these adjustments!</details></think>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/10-testing/README.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "fdcb9448-0064-477a-ace4-2f462eb34297"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "  \n  &#96;&#96;&#96;bash\n+ # Install (once)\n+ pip install -r requirements.txt\n+ pip install -r requirements-dev.txt\n+ pip install -e .\n+ \n  # Run all tests\n- PYTHONPATH=\".:$PYTHONPATH\" pytest tests/\n+ pytest tests/\n  \n  # With coverage\n- PYTHONPATH=\".:$PYTHONPATH\" pytest tests/ --cov=src/company_researcher\n+ pytest tests/ --cov=src/company_researcher\n  \n  # Verbose output\n- PYTHONPATH=\".:$PYTHONPATH\" pytest tests/ -v\n+ pytest tests/ -v\n  &#96;&#96;&#96;\n  ",
+        "oldStart": 31,
+        "newStart": 31,
+        "oldLines": 12,
+        "newLines": 17,
+        "linesRemoved": 3,
+        "linesAdded": 8
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/10-testing/README.md",
+  "contentsAfterEdit": "# Testing Guide\n\nThis section documents the testing strategy and test suites for Company Researcher.\n\n## Overview\n\n&#96;&#96;&#96;\ntests/\n├── unit/                  # Unit tests (fast, no external deps)\n├── integration/           # Integration tests\n├── conftest.py            # Pytest configuration\n├── test_quality_modules.py\n├── test_enhanced_workflow_integration.py\n├── test_investment_thesis.py\n├── test_risk_quantifier.py\n└── test_competitive_matrix.py\n&#96;&#96;&#96;\n\n## Test Categories\n\n| Category | Description | Speed | External Deps |\n|----------|-------------|-------|---------------|\n| **Unit** | Single function/class | Fast | None |\n| **Integration** | Multiple components | Medium | Some |\n| **E2E** | Full workflow | Slow | All |\n| **API** | External API tests | Slow | API keys |\n\n## Running Tests\n\n### All Tests\n\n&#96;&#96;&#96;bash\n# Install (once)\npip install -r requirements.txt\npip install -r requirements-dev.txt\npip install -e .\n\n# Run all tests\npytest tests/\n\n# With coverage\npytest tests/ --cov=src/company_researcher\n\n# Verbose output\npytest tests/ -v\n&#96;&#96;&#96;\n\n### By Category\n\n&#96;&#96;&#96;bash\n# Unit tests only\npytest tests/ -m unit\n\n# Integration tests\npytest tests/ -m integration\n\n# Slow tests\npytest tests/ -m slow\n\n# Tests requiring API keys\npytest tests/ -m requires_api\n&#96;&#96;&#96;\n\n### Specific Tests\n\n&#96;&#96;&#96;bash\n# Single test file\npytest tests/test_quality_modules.py\n\n# Single test function\npytest tests/test_quality_modules.py::test_quality_score_calculation\n\n# Pattern matching\npytest tests/ -k \"quality\"\n&#96;&#96;&#96;\n\n## Test Configuration\n\n### pytest.ini / pyproject.toml\n\n&#96;&#96;&#96;toml\n[tool.pytest.ini_options]\ntestpaths = [\"tests\"]\npython_files = [\"test_*.py\"]\npython_functions = [\"test_*\"]\nmarkers = [\n    \"unit: Unit tests (fast, no external dependencies)\",\n    \"integration: Integration tests (may use external services)\",\n    \"slow: Slow tests\",\n    \"requires_api: Requires API keys\",\n    \"requires_llm: Requires LLM access\"\n]\nasyncio_mode = \"auto\"\nfilterwarnings = [\n    \"ignore::DeprecationWarning\"\n]\n&#96;&#96;&#96;\n\n### conftest.py\n\n&#96;&#96;&#96;python\nimport pytest\nfrom company_researcher.config import ResearchConfig\n\n@pytest.fixture\ndef config():\n    \"\"\"Default test configuration.\"\"\"\n    return ResearchConfig(\n        anthropic_api_key=\"test-key\",\n        tavily_api_key=\"test-key\",\n        llm_model=\"claude-3-haiku-20240307\",\n        max_iterations=1\n    )\n\n@pytest.fixture\ndef sample_search_results():\n    \"\"\"Sample search results for testing.\"\"\"\n    return [\n        {\n            \"title\": \"Microsoft Q3 2024 Results\",\n            \"url\": \"https://example.com/msft\",\n            \"content\": \"Microsoft reported revenue of $198B...\"\n        }\n    ]\n\n@pytest.fixture\ndef sample_state():\n    \"\"\"Sample workflow state.\"\"\"\n    return {\n        \"company_name\": \"Microsoft\",\n        \"search_results\": [],\n        \"agent_outputs\": {},\n        \"iteration_count\": 0\n    }\n&#96;&#96;&#96;\n\n## Writing Tests\n\n### Unit Tests\n\n&#96;&#96;&#96;python\n# tests/unit/test_quality_checker.py\n\nimport pytest\nfrom company_researcher.quality import calculate_quality_score\n\nclass TestQualityChecker:\n\n    def test_quality_score_complete_data(self, sample_state):\n        \"\"\"Test quality score with complete data.\"\"\"\n        sample_state[\"agent_outputs\"] = {\n            \"financial\": {\"revenue\": \"$198B\"},\n            \"market\": {\"market_share\": \"35%\"},\n            \"product\": {\"products\": [\"Azure\"]}\n        }\n\n        score = calculate_quality_score(sample_state)\n\n        assert score &gt;= 80\n        assert score &lt;= 100\n\n    def test_quality_score_missing_data(self, sample_state):\n        \"\"\"Test quality score with missing data.\"\"\"\n        score = calculate_quality_score(sample_state)\n\n        assert score &lt; 50\n\n    def test_quality_score_partial_data(self, sample_state):\n        \"\"\"Test quality score with partial data.\"\"\"\n        sample_state[\"agent_outputs\"] = {\n            \"financial\": {\"revenue\": \"$198B\"}\n        }\n\n        score = calculate_quality_score(sample_state)\n\n        assert 30 &lt;= score &lt;= 70\n&#96;&#96;&#96;\n\n### Integration Tests\n\n&#96;&#96;&#96;python\n# tests/integration/test_workflow.py\n\nimport pytest\nfrom company_researcher.workflows import app\n\n@pytest.mark.integration\n@pytest.mark.requires_api\nasync def test_full_workflow(config):\n    \"\"\"Test complete research workflow.\"\"\"\n    result = await app.ainvoke({\n        \"company_name\": \"Microsoft\"\n    })\n\n    assert result[\"quality_score\"] &gt;= 0\n    assert \"report_path\" in result\n    assert result[\"iteration_count\"] &gt;= 1\n\n@pytest.mark.integration\nasync def test_workflow_with_mock_search(config, mocker):\n    \"\"\"Test workflow with mocked search.\"\"\"\n    mocker.patch(\n        \"company_researcher.integrations.tavily_search\",\n        return_value=sample_search_results\n    )\n\n    result = await app.ainvoke({\n        \"company_name\": \"TestCorp\"\n    })\n\n    assert result is not None\n&#96;&#96;&#96;\n\n### Agent Tests\n\n&#96;&#96;&#96;python\n# tests/unit/test_financial_agent.py\n\nimport pytest\nfrom company_researcher.agents.financial import FinancialAgent\n\nclass TestFinancialAgent:\n\n    def test_parse_revenue(self):\n        \"\"\"Test revenue parsing from text.\"\"\"\n        agent = FinancialAgent(config)\n\n        result = agent._parse_revenue(\"Revenue was $198 billion\")\n\n        assert result == \"$198B\"\n\n    def test_parse_growth(self):\n        \"\"\"Test growth rate parsing.\"\"\"\n        agent = FinancialAgent(config)\n\n        result = agent._parse_growth(\"grew 7% year-over-year\")\n\n        assert result == \"7%\"\n\n    def test_analyze_complete(self, sample_search_results):\n        \"\"\"Test complete financial analysis.\"\"\"\n        agent = FinancialAgent(config)\n\n        result = agent.analyze(\"Microsoft\", sample_search_results)\n\n        assert \"revenue\" in result\n        assert \"analysis\" in result\n&#96;&#96;&#96;\n\n### Quality Tests\n\n&#96;&#96;&#96;python\n# tests/test_quality_modules.py\n\nimport pytest\nfrom company_researcher.quality import (\n    ContradictionDetector,\n    detect_gaps\n)\n\nclass TestContradictionDetector:\n\n    def test_detect_numeric_contradiction(self):\n        \"\"\"Test detection of numeric contradictions.\"\"\"\n        detector = ContradictionDetector()\n\n        agent_outputs = {\n            \"financial\": {\"employees\": \"220,000\"},\n            \"analyst\": {\"employees\": \"200,000\"}\n        }\n\n        contradictions = detector.detect(agent_outputs)\n\n        assert len(contradictions) &gt;= 1\n        assert any(c.type == \"numeric\" for c in contradictions)\n\n    def test_no_contradiction(self):\n        \"\"\"Test no false positives.\"\"\"\n        detector = ContradictionDetector()\n\n        agent_outputs = {\n            \"financial\": {\"revenue\": \"$198B\"},\n            \"analyst\": {\"revenue\": \"$198B\"}\n        }\n\n        contradictions = detector.detect(agent_outputs)\n\n        assert len(contradictions) == 0\n\nclass TestGapDetector:\n\n    def test_detect_missing_revenue(self, sample_state):\n        \"\"\"Test detection of missing revenue.\"\"\"\n        gaps = detect_gaps(sample_state)\n\n        assert \"revenue\" in \" \".join(gaps).lower()\n\n    def test_no_gaps_complete_data(self, sample_state):\n        \"\"\"Test no gaps with complete data.\"\"\"\n        sample_state[\"agent_outputs\"] = {\n            \"financial\": {\"revenue\": \"$198B\", \"growth\": \"7%\"},\n            \"market\": {\"market_share\": \"35%\"},\n            \"product\": {\"products\": [\"Azure\"]}\n        }\n        sample_state[\"products_services\"] = [\"Azure\"]\n        sample_state[\"competitors\"] = [\"AWS\"]\n\n        gaps = detect_gaps(sample_state)\n\n        assert len(gaps) == 0\n&#96;&#96;&#96;\n\n## Mocking External Services\n\n### Mock LLM Responses\n\n&#96;&#96;&#96;python\n@pytest.fixture\ndef mock_anthropic(mocker):\n    \"\"\"Mock Anthropic client.\"\"\"\n    mock_response = mocker.Mock()\n    mock_response.content = [mocker.Mock(text=\"Analysis result\")]\n    mock_response.usage = mocker.Mock(input_tokens=100, output_tokens=50)\n\n    mock_client = mocker.Mock()\n    mock_client.messages.create.return_value = mock_response\n\n    mocker.patch(\n        \"company_researcher.llm.get_anthropic_client\",\n        return_value=mock_client\n    )\n\n    return mock_client\n&#96;&#96;&#96;\n\n### Mock Search\n\n&#96;&#96;&#96;python\n@pytest.fixture\ndef mock_search(mocker):\n    \"\"\"Mock search provider.\"\"\"\n    mocker.patch(\n        \"company_researcher.integrations.tavily_search\",\n        return_value=[\n            {\"title\": \"Test\", \"url\": \"https://test.com\", \"content\": \"Test content\"}\n        ]\n    )\n&#96;&#96;&#96;\n\n### Mock Financial Data\n\n&#96;&#96;&#96;python\n@pytest.fixture\ndef mock_yfinance(mocker):\n    \"\"\"Mock yfinance.\"\"\"\n    mock_ticker = mocker.Mock()\n    mock_ticker.info = {\n        \"totalRevenue\": 198000000000,\n        \"marketCap\": 2800000000000\n    }\n\n    mocker.patch(\n        \"yfinance.Ticker\",\n        return_value=mock_ticker\n    )\n&#96;&#96;&#96;\n\n## Test Coverage\n\n### Generate Coverage Report\n\n&#96;&#96;&#96;bash\n# HTML report\npytest tests/ --cov=src/company_researcher --cov-report=html\n\n# Terminal report\npytest tests/ --cov=src/company_researcher --cov-report=term-missing\n\n# XML report (for CI)\npytest tests/ --cov=src/company_researcher --cov-report=xml\n&#96;&#96;&#96;\n\n### Coverage Targets\n\n| Component | Target | Current |\n|-----------|--------|---------|\n| Agents | 80% | - |\n| Workflows | 70% | - |\n| Quality | 90% | - |\n| Integrations | 60% | - |\n| Config | 90% | - |\n\n## CI/CD Integration\n\n### GitHub Actions\n\n&#96;&#96;&#96;yaml\n# .github/workflows/test.yml\n\nname: Tests\n\non: [push, pull_request]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n\n      - name: Set up Python\n        uses: actions/setup-python@v4\n        with:\n          python-version: '3.11'\n\n      - name: Install dependencies\n        run: |\n          pip install -r requirements.txt\n          pip install -r requirements-dev.txt\n\n      - name: Run tests\n        env:\n          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}\n        run: |\n          pytest tests/ --cov=src/company_researcher --cov-report=xml\n\n      - name: Upload coverage\n        uses: codecov/codecov-action@v3\n&#96;&#96;&#96;\n\n---\n\n**Related Documentation**:\n- [Quality System](../08-quality-system/)\n- [Agent Documentation](../03-agents/)\n- [Configuration](../06-configuration/)\n\n---\n\n**Last Updated**: December 2024\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/04-workflows/WORKFLOW_DEEP_DIVE.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "e0114672-c6ff-4bf0-b2ad-5bc39ea8f517"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "- \n+ # Workflow Deep Dive\n+ \n+ This document explains the main workflow implementations and their decision logic.\n+ \n+ ---\n+ \n+ ## 1) Parallel multi-agent workflow (fan-out / fan-in)\n+ \n+ File:\n+ \n+ - &#96;src/company_researcher/workflows/parallel_agent_research.py&#96;\n+ \n+ High-level flow:\n+ \n+ 1. **Researcher** gathers sources\n+ 2. **Parallel specialists** run (financial, market, product, competitor scout)\n+ 3. **Synthesizer** combines specialist outputs\n+ 4. **Logic critic** performs QA\n+ 5. **Quality check** decides whether to iterate\n+ 6. **Save report** writes a markdown report\n+ \n+ Iteration logic lives in &#96;check_quality_node()&#96;:\n+ \n+ - If quality is below the threshold, it increases &#96;iteration_count&#96; and returns &#96;missing_info&#96;\n+ - A conditional edge determines whether to loop or finish\n+ \n+ State schema and reducers:\n+ \n+ - &#96;src/company_researcher/state.py&#96;\n+ \n+ ---\n+ \n+ ## 2) Comprehensive workflow (full feature graph)\n+ \n+ File:\n+ \n+ - &#96;src/company_researcher/workflows/comprehensive_research.py&#96;\n+ \n+ This workflow is built from modular nodes in:\n+ \n+ - &#96;src/company_researcher/workflows/nodes/&#96;\n+ \n+ Key design points:\n+ \n+ - Uses &#96;StateGraph(OverallState, input=InputState, output=OutputState)&#96;\n+ - Starts from &#96;create_initial_state(company_name)&#96;\n+ - Uses conditional edges in &#96;should_continue_research&#96; to decide whether to iterate after quality checking\n+ - Writes outputs via &#96;save_comprehensive_report_node&#96; (markdown + metrics)\n+ \n+ ---\n+ \n+ ## 3) Running workflows\n+ \n+ ### From Python\n+ \n+ - Full-feature workflow helper:\n+   - &#96;company_researcher.workflows.research_company_comprehensive(company_name)&#96;\n+ \n+ ### From LangGraph Studio\n+ \n+ Studio loads wrapper modules defined in &#96;langgraph.json&#96;:\n+ \n+ - &#96;src/graphs/research_graph.py:graph&#96; (exports the compiled comprehensive workflow)\n+ - &#96;src/graphs/simple_graph.py:graph&#96; (tiny test graph)\n+ \n+ ### From the CLI\n+ \n+ The repo CLI (&#96;run_research.py&#96;) calls &#96;scripts/research/cli.py&#96; which supports:\n+ \n+ - Default orchestration path (returns a &#96;WorkflowState&#96;)\n+ - &#96;--use-graph&#96; (runs the legacy graph from &#96;src/company_researcher/graphs/research_graph.py&#96;)\n+ \n+ ---\n+ \n+ ## 4) State and outputs\n+ \n+ - State schema (LangGraph workflows): &#96;src/company_researcher/state.py&#96;\n+ - Output writer (comprehensive workflow): &#96;src/company_researcher/workflows/nodes/comprehensive_output_nodes.py&#96;\n+ \n+ ",
+        "oldStart": 1,
+        "newStart": 1,
+        "oldLines": 1,
+        "newLines": 80,
+        "linesRemoved": 1,
+        "linesAdded": 80
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/04-workflows/WORKFLOW_DEEP_DIVE.md",
+  "contentsAfterEdit": "# Workflow Deep Dive\r\n\r\nThis document explains the main workflow implementations and their decision logic.\r\n\r\n---\r\n\r\n## 1) Parallel multi-agent workflow (fan-out / fan-in)\r\n\r\nFile:\r\n\r\n- &#96;src/company_researcher/workflows/parallel_agent_research.py&#96;\r\n\r\nHigh-level flow:\r\n\r\n1. **Researcher** gathers sources\r\n2. **Parallel specialists** run (financial, market, product, competitor scout)\r\n3. **Synthesizer** combines specialist outputs\r\n4. **Logic critic** performs QA\r\n5. **Quality check** decides whether to iterate\r\n6. **Save report** writes a markdown report\r\n\r\nIteration logic lives in &#96;check_quality_node()&#96;:\r\n\r\n- If quality is below the threshold, it increases &#96;iteration_count&#96; and returns &#96;missing_info&#96;\r\n- A conditional edge determines whether to loop or finish\r\n\r\nState schema and reducers:\r\n\r\n- &#96;src/company_researcher/state.py&#96;\r\n\r\n---\r\n\r\n## 2) Comprehensive workflow (full feature graph)\r\n\r\nFile:\r\n\r\n- &#96;src/company_researcher/workflows/comprehensive_research.py&#96;\r\n\r\nThis workflow is built from modular nodes in:\r\n\r\n- &#96;src/company_researcher/workflows/nodes/&#96;\r\n\r\nKey design points:\r\n\r\n- Uses &#96;StateGraph(OverallState, input=InputState, output=OutputState)&#96;\r\n- Starts from &#96;create_initial_state(company_name)&#96;\r\n- Uses conditional edges in &#96;should_continue_research&#96; to decide whether to iterate after quality checking\r\n- Writes outputs via &#96;save_comprehensive_report_node&#96; (markdown + metrics)\r\n\r\n---\r\n\r\n## 3) Running workflows\r\n\r\n### From Python\r\n\r\n- Full-feature workflow helper:\r\n  - &#96;company_researcher.workflows.research_company_comprehensive(company_name)&#96;\r\n\r\n### From LangGraph Studio\r\n\r\nStudio loads wrapper modules defined in &#96;langgraph.json&#96;:\r\n\r\n- &#96;src/graphs/research_graph.py:graph&#96; (exports the compiled comprehensive workflow)\r\n- &#96;src/graphs/simple_graph.py:graph&#96; (tiny test graph)\r\n\r\n### From the CLI\r\n\r\nThe repo CLI (&#96;run_research.py&#96;) calls &#96;scripts/research/cli.py&#96; which supports:\r\n\r\n- Default orchestration path (returns a &#96;WorkflowState&#96;)\r\n- &#96;--use-graph&#96; (runs the legacy graph from &#96;src/company_researcher/graphs/research_graph.py&#96;)\r\n\r\n---\r\n\r\n## 4) State and outputs\r\n\r\n- State schema (LangGraph workflows): &#96;src/company_researcher/state.py&#96;\r\n- Output writer (comprehensive workflow): &#96;src/company_researcher/workflows/nodes/comprehensive_output_nodes.py&#96;\r\n\r\n\r\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="apply_patch">
+<details>
+<summary>Tool use: **apply_patch**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "docs/04-workflows/README.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "fb74658f-3c0c-421f-954b-d4aaae334c0e"
+}
+```
+Result:
+
+```json
+{
+  "diff": {
+    "chunks": [
+      {
+        "diffString": "  | &#96;cache_aware_workflow&#96; | &#96;workflows/cache_aware_workflow.py&#96; | Cache-aware workflow helpers |\n  | &#96;multi_agent_research&#96; | &#96;workflows/multi_agent_research.py&#96; | Multi-agent workflow variant |\n+ \n+ See also: [Workflow Deep Dive](WORKFLOW_DEEP_DIVE.md)\n  \n  ---",
+        "oldStart": 383,
+        "newStart": 383,
+        "oldLines": 4,
+        "newLines": 6,
+        "linesAdded": 2
+      }
+    ],
+    "editor": "EDITOR_AI"
+  },
+  "shouldAutoFixLints": true,
+  "resultForModel": "Success. Updated the following files:\nM docs/04-workflows/README.md",
+  "contentsAfterEdit": "# Workflow Documentation\n\nThis section documents the LangGraph workflows that orchestrate the research system.\n\n## Overview\n\nThe Company Researcher uses **LangGraph** for workflow orchestration. LangGraph provides:\n\n- **State machines**: Predictable execution flow\n- **Parallel execution**: Fan-out/fan-in patterns\n- **Conditional edges**: Dynamic routing\n- **Checkpointing**: Resume from interruptions\n- **Visual debugging**: LangGraph Studio\n\n## Main Workflow: Parallel Multi-Agent Research\n\n**Location**: &#96;src/company_researcher/workflows/parallel_agent_research.py&#96;\n\n### Workflow Diagram\n\n&#96;&#96;&#96;\n                    +---------------+\n                    |    START      |\n                    +-------+-------+\n                            |\n                            v\n                    +---------------+\n                    |  RESEARCHER   |\n                    |    AGENT      |\n                    +-------+-------+\n                            |\n            +---------------+---------------+\n            |               |               |\n            v               v               v\n    +------------+   +------------+   +------------+\n    |  FINANCIAL |   |   MARKET   |   |  PRODUCT   |\n    |   AGENT    |   |   AGENT    |   |   AGENT    |\n    +------+-----+   +------+-----+   +------+-----+\n            |               |               |\n            +---------------+---------------+\n                            |\n                            v\n                    +---------------+\n                    | SYNTHESIZER   |\n                    |    AGENT      |\n                    +-------+-------+\n                            |\n                            v\n                    +---------------+\n                    | LOGIC CRITIC  |\n                    |    AGENT      |\n                    +-------+-------+\n                            |\n                            v\n                    +---------------+\n                    | QUALITY CHECK |\n                    +-------+-------+\n                            |\n              +-------------+-------------+\n              |                           |\n              v                           v\n    +---------------+            +---------------+\n    | score &gt;= 85%  |            | score &lt; 85%   |\n    | OR iter &gt;= 2  |            | AND iter &lt; 2  |\n    +-------+-------+            +-------+-------+\n            |                           |\n            v                           v\n    +---------------+            +---------------+\n    | SAVE REPORT   |            |   ITERATE     |\n    +-------+-------+            +-------+-------+\n            |                           |\n            v                           |\n    +---------------+                   |\n    |     END       |&lt;------------------+\n    +---------------+\n&#96;&#96;&#96;\n\n### Workflow Definition\n\n&#96;&#96;&#96;python\nfrom langgraph.graph import StateGraph, END\nfrom company_researcher.state import OverallState\n\n# Create workflow\nworkflow = StateGraph(OverallState)\n\n# Add nodes\nworkflow.add_node(\"researcher\", researcher_node)\nworkflow.add_node(\"financial\", financial_agent_node)\nworkflow.add_node(\"market\", market_agent_node)\nworkflow.add_node(\"product\", product_agent_node)\nworkflow.add_node(\"competitor\", competitor_scout_node)\nworkflow.add_node(\"synthesizer\", synthesizer_node)\nworkflow.add_node(\"logic_critic\", logic_critic_node)\nworkflow.add_node(\"quality_check\", quality_check_node)\nworkflow.add_node(\"save_report\", save_report_node)\n\n# Set entry point\nworkflow.set_entry_point(\"researcher\")\n\n# Parallel edges (fan-out)\nworkflow.add_edge(\"researcher\", \"financial\")\nworkflow.add_edge(\"researcher\", \"market\")\nworkflow.add_edge(\"researcher\", \"product\")\nworkflow.add_edge(\"researcher\", \"competitor\")\n\n# Converge edges (fan-in)\nworkflow.add_edge(\"financial\", \"synthesizer\")\nworkflow.add_edge(\"market\", \"synthesizer\")\nworkflow.add_edge(\"product\", \"synthesizer\")\nworkflow.add_edge(\"competitor\", \"synthesizer\")\n\n# Sequential edges\nworkflow.add_edge(\"synthesizer\", \"logic_critic\")\nworkflow.add_edge(\"logic_critic\", \"quality_check\")\n\n# Conditional edge (iteration decision)\nworkflow.add_conditional_edges(\n    \"quality_check\",\n    should_iterate,\n    {\n        \"iterate\": \"researcher\",\n        \"finish\": \"save_report\"\n    }\n)\n\n# End point\nworkflow.add_edge(\"save_report\", END)\n\n# Compile\napp = workflow.compile()\n&#96;&#96;&#96;\n\n## Node Definitions\n\n### Researcher Node\n\n&#96;&#96;&#96;python\ndef researcher_node(state: OverallState) -&gt; Dict:\n    \"\"\"Generate queries and execute searches.\"\"\"\n    company = state[\"company_name\"]\n    iteration = state.get(\"iteration_count\", 0)\n\n    # Generate search queries\n    queries = generate_search_queries(company, iteration)\n\n    # Execute searches\n    results = execute_searches(queries)\n\n    # Extract sources\n    sources = extract_sources(results)\n\n    return {\n        \"search_queries\": queries,\n        \"search_results\": results,\n        \"sources\": sources,\n        \"iteration_count\": iteration + 1\n    }\n&#96;&#96;&#96;\n\n### Specialist Node Pattern\n\n&#96;&#96;&#96;python\n@agent_node(agent_name=\"financial\", max_tokens=2000)\ndef financial_agent_node(\n    state: OverallState,\n    logger: Logger,\n    client: Anthropic,\n    config: ResearchConfig\n) -&gt; Dict:\n    \"\"\"Analyze company financials.\"\"\"\n    company = state[\"company_name\"]\n    results = state[\"search_results\"]\n\n    # Run analysis\n    analysis = analyze_financials(company, results, client, config)\n\n    return {\n        \"agent_outputs\": {\"financial\": analysis},\n        \"total_cost\": analysis.cost\n    }\n&#96;&#96;&#96;\n\n### Quality Check Node\n\n&#96;&#96;&#96;python\ndef quality_check_node(state: OverallState) -&gt; Dict:\n    \"\"\"Check quality and decide on iteration.\"\"\"\n    # Calculate quality score\n    score = calculate_quality_score(state)\n\n    # Detect gaps\n    gaps = detect_gaps(state)\n\n    return {\n        \"quality_score\": score,\n        \"gaps_detected\": gaps\n    }\n&#96;&#96;&#96;\n\n### Conditional Router\n\n&#96;&#96;&#96;python\ndef should_iterate(state: OverallState) -&gt; str:\n    \"\"\"Determine if iteration is needed.\"\"\"\n    quality_score = state.get(\"quality_score\", 0)\n    iteration_count = state.get(\"iteration_count\", 0)\n\n    # Pass threshold\n    if quality_score &gt;= 85:\n        return \"finish\"\n\n    # Max iterations\n    if iteration_count &gt;= 2:\n        return \"finish\"\n\n    # Iterate\n    return \"iterate\"\n&#96;&#96;&#96;\n\n## State Management\n\n### State Schema\n\n&#96;&#96;&#96;python\nclass OverallState(TypedDict, total=False):\n    # Input\n    company_name: str\n\n    # Research data\n    search_queries: List[str]\n    search_results: Annotated[List[Dict], add]  # Parallel safe\n\n    # Company info\n    company_overview: Optional[str]\n    key_metrics: Optional[Dict]\n    products_services: Optional[List]\n    competitors: Optional[List]\n\n    # Agent outputs\n    agent_outputs: Annotated[Dict[str, Any], merge_dicts]\n\n    # Quality metrics\n    quality_score: Optional[float]\n    gaps_detected: Optional[List[str]]\n\n    # Control\n    iteration_count: int\n\n    # Cost tracking\n    total_cost: Annotated[float, add]\n    total_tokens: Annotated[Dict, add_tokens]\n\n    # Output\n    sources: Annotated[List[str], add]\n    report_path: Optional[str]\n&#96;&#96;&#96;\n\n### State Reducers\n\n&#96;&#96;&#96;python\ndef add(existing: List, new: List) -&gt; List:\n    \"\"\"Append new items to list.\"\"\"\n    return existing + new\n\ndef merge_dicts(existing: Dict, new: Dict) -&gt; Dict:\n    \"\"\"Merge dictionaries.\"\"\"\n    result = existing.copy()\n    result.update(new)\n    return result\n\ndef add_tokens(existing: Dict, new: Dict) -&gt; Dict:\n    \"\"\"Add token counts.\"\"\"\n    return {\n        \"input\": existing.get(\"input\", 0) + new.get(\"input\", 0),\n        \"output\": existing.get(\"output\", 0) + new.get(\"output\", 0)\n    }\n&#96;&#96;&#96;\n\n## Running Workflows\n\n### Basic Execution\n\n&#96;&#96;&#96;python\nfrom company_researcher.workflows import app\n\n# Run research\nresult = app.invoke({\n    \"company_name\": \"Microsoft\"\n})\n\nprint(f\"Quality: {result['quality_score']}\")\nprint(f\"Report: {result['report_path']}\")\n&#96;&#96;&#96;\n\n### With Checkpointing\n\n&#96;&#96;&#96;python\nfrom langgraph.checkpoint import MemorySaver\n\n# Create checkpointer\ncheckpointer = MemorySaver()\n\n# Compile with checkpointing\napp = workflow.compile(checkpointer=checkpointer)\n\n# Run with thread ID\nconfig = {\"configurable\": {\"thread_id\": \"research-1\"}}\nresult = app.invoke({\"company_name\": \"Microsoft\"}, config)\n\n# Resume if interrupted\nresult = app.invoke(None, config)  # Continues from checkpoint\n&#96;&#96;&#96;\n\n### Async Execution\n\n&#96;&#96;&#96;python\nimport asyncio\n\nasync def run_research(company: str):\n    result = await app.ainvoke({\"company_name\": company})\n    return result\n\n# Run\nresult = asyncio.run(run_research(\"Microsoft\"))\n&#96;&#96;&#96;\n\n### Streaming\n\n&#96;&#96;&#96;python\n# Stream events\nfor event in app.stream({\"company_name\": \"Microsoft\"}):\n    print(f\"Node: {event.get('node')}\")\n    print(f\"Output: {event.get('output')}\")\n&#96;&#96;&#96;\n\n## LangGraph Studio\n\n### Configuration\n\n**File**: &#96;langgraph.json&#96;\n\n&#96;&#96;&#96;json\n{\n  \"dependencies\": [\n    \".\"\n  ],\n  \"graphs\": {\n    \"company_research\": \"./src/graphs/research_graph.py:graph\",\n    \"simple_test\": \"./src/graphs/simple_graph.py:graph\"\n  },\n  \"env\": \".env\"\n}\n&#96;&#96;&#96;\n\n### Starting Studio\n\n&#96;&#96;&#96;bash\n# Install LangGraph Studio\npip install langgraph-studio\n\n# Start server\nlanggraph studio\n\n# Open browser to http://localhost:8000\n&#96;&#96;&#96;\n\n### Using Studio\n\n1. Select &#96;company_research&#96; graph\n2. Enter input: &#96;{\"company_name\": \"Microsoft\"}&#96;\n3. Click \"Run\"\n4. Watch agents execute in real-time\n5. Inspect state at each node\n\n## Available Workflows\n\n| Workflow | Location | Description |\n|----------|----------|-------------|\n| &#96;parallel_agent_research&#96; | &#96;workflows/parallel_agent_research.py&#96; | Main research workflow |\n| &#96;basic_research&#96; | &#96;workflows/basic_research.py&#96; | Simple sequential workflow |\n| &#96;comprehensive_research&#96; | &#96;workflows/comprehensive_research.py&#96; | Full-feature research workflow |\n| &#96;cache_aware_workflow&#96; | &#96;workflows/cache_aware_workflow.py&#96; | Cache-aware workflow helpers |\n| &#96;multi_agent_research&#96; | &#96;workflows/multi_agent_research.py&#96; | Multi-agent workflow variant |\n\nSee also: [Workflow Deep Dive](WORKFLOW_DEEP_DIVE.md)\n\n---\n\n**Related Documentation**:\n- [Agent Documentation](../03-agents/)\n- [State Management](../07-state-management/)\n- [LangGraph Studio Guide](LANGGRAPH_STUDIO_GUIDE.md)\n\n---\n\n**Last Updated**: December 2024\n"
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Updating documentation references**
+
+I see that we've created a `docs/07-state-management`, but we also made `architecture/STATE_MANAGEMENT`. It's not a problem. I need to fix `docs/02-architecture/README`, which has references to Data Flow and other updates that are now available. 
+
+Also, I ought to review `docs/04-workflows/LANGGRAPH_STUDIO_GUIDE`, as it might still reference code that is outdated. We should ensure everything is up to date, especially the `langgraph.json` content and make sure `docs/10-testing` reflects actual markers and tests properly. Simplifying the documentation could help clarify things for users.
+**Updating testing documentation**
+
+I need to focus on the requirement to ensure everything is updated in the documentation. I should remove any fictional examples and replace them with accurate references to actual tests and their focuses. It looks like `docs/10-testing` is quite cluttered and may incorrectly show modules that potentially don’t exist, like `company_researcher.quality.calculate_quality_score`. 
+
+Since the user wants detailed explanations of all code and logic, I think it’s okay to keep things conceptual but accurate. I might find it easier to simplify `docs/10-testing` with concise, accurate instructions and link directly to the actual tests directory. Additionally, I’ll have to fix the snippets referencing incorrect aspects like `ResearchConfig`. Let's take a look at `tests/conftest.py` to understand the actual fixtures.</details></think>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: tests/conftest.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+**Revising testing documentation**
+
+I’m noticing that the conftest sample in docs/10-testing is incorrect. I’ll rewrite it to match the actual approach, removing the need for pip install -e since tests already set sys.path. I'll also simplify things by cutting out long hypothetical examples. 
+
+Instead, I’ll focus on the test structure, running commands, defined markers in pyproject, and mention the fixtures in tests/conftest.py. Plus, I'll note that external API calls are mocked by default. To update the README effectively, I’ll use apply_patch for a complete replacement.
+**Updating README efficiently**
+
+I think it’s better to use a "delete + new" approach by replacing the entire file instead of patching line by line. I’ll read through the entire docs/10-testing/README.md, which has 434 lines, to create a patch. 
+
+While I could also patch the wrong snippets, that seems a bit overwhelming. I’ll read the file fully first, then use apply_patch with context to specify the start and end, ensuring we remove everything correctly without unnecessary old lines sticking around.
+**Streamlining file updates**
+
+I realize I must include the entire old file, so perhaps I could use delete_file to simplify things. I can utilize functions.delete_file to remove the existing docs/10-testing/README.md and then use apply_patch to add the new file content. This approach seems easier than dealing with a huge patch.
+
+I'll go ahead and utilize the delete_file tool since that’s allowed, ensuring I create the new file with apply_patch afterward. Let's proceed with this sequentially!</details></think>
+
+---
+
+Nice: the real source of truth for testing is `tests/conftest.py` (it already sets `PYTHONPATH` and disables external API calls by default). Next I’ll rewrite `docs/10-testing/README.md` to match how tests actually run in this repo (fixtures, markers, and Windows-friendly commands), instead of the current placeholder examples.
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="delete_file">
+<details><summary>Tool use: **delete_file**</summary>
+
+Explanation: Replace outdated testing documentation with an accurate version aligned to the current pytest setup and fixtures.
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
 
 ---
 

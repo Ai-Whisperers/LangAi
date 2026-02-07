@@ -18,46 +18,51 @@ import re
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Set, Optional
-
+from typing import Dict, List, Optional, Set
 
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
 
 SKIP_DIRS: Set[str] = {
-    '__pycache__', 'venv', '.venv', 'node_modules', '.git',
-    'htmlcov', '.pytest_cache', '.mypy_cache'
+    "__pycache__",
+    "venv",
+    ".venv",
+    "node_modules",
+    ".git",
+    "htmlcov",
+    ".pytest_cache",
+    ".mypy_cache",
 }
 
 # Known modules that need specific import levels
 IMPORT_LEVEL_RULES = {
     # Files in agents/core/ need 3 dots to reach company_researcher/
-    'agents/core': {
-        'modules': ['config', 'state', 'prompts', 'quality', 'tools', 'memory'],
-        'required_level': 3,
+    "agents/core": {
+        "modules": ["config", "state", "prompts", "quality", "tools", "memory"],
+        "required_level": 3,
     },
     # Files in agents/<subdir>/ need 3 dots
-    'agents/financial': {
-        'modules': ['config', 'state', 'prompts', 'quality', 'tools', 'memory'],
-        'required_level': 3,
+    "agents/financial": {
+        "modules": ["config", "state", "prompts", "quality", "tools", "memory"],
+        "required_level": 3,
     },
-    'agents/market': {
-        'modules': ['config', 'state', 'prompts', 'quality', 'tools', 'memory'],
-        'required_level': 3,
+    "agents/market": {
+        "modules": ["config", "state", "prompts", "quality", "tools", "memory"],
+        "required_level": 3,
     },
-    'agents/specialized': {
-        'modules': ['config', 'state', 'prompts', 'quality', 'tools', 'memory'],
-        'required_level': 3,
+    "agents/specialized": {
+        "modules": ["config", "state", "prompts", "quality", "tools", "memory"],
+        "required_level": 3,
     },
-    'agents/research': {
-        'modules': ['config', 'state', 'prompts', 'quality', 'tools', 'memory'],
-        'required_level': 3,
+    "agents/research": {
+        "modules": ["config", "state", "prompts", "quality", "tools", "memory"],
+        "required_level": 3,
     },
     # Files directly in agents/ need 2 dots
-    'agents': {
-        'modules': ['config', 'state', 'prompts', 'quality', 'tools', 'memory'],
-        'required_level': 2,
+    "agents": {
+        "modules": ["config", "state", "prompts", "quality", "tools", "memory"],
+        "required_level": 2,
     },
 }
 
@@ -65,6 +70,7 @@ IMPORT_LEVEL_RULES = {
 # ============================================================================
 # UTILITY FUNCTIONS
 # ============================================================================
+
 
 def get_project_root() -> Path:
     """Get the project root directory."""
@@ -79,7 +85,7 @@ def should_skip(path: Path) -> bool:
 def find_python_files(root_dir: Path) -> List[Path]:
     """Find all Python files in directory."""
     python_files = []
-    for path in root_dir.rglob('*.py'):
+    for path in root_dir.rglob("*.py"):
         if not should_skip(path):
             python_files.append(path)
     return sorted(python_files)
@@ -88,6 +94,7 @@ def find_python_files(root_dir: Path) -> List[Path]:
 # ============================================================================
 # IMPORT ANALYZER
 # ============================================================================
+
 
 class ImportAnalyzer(ast.NodeVisitor):
     """AST visitor to extract import information."""
@@ -101,31 +108,35 @@ class ImportAnalyzer(ast.NodeVisitor):
     def visit_Import(self, node):
         """Visit regular import statements."""
         for alias in node.names:
-            self.imports.append({
-                'type': 'import',
-                'module': alias.name,
-                'asname': alias.asname,
-                'line': node.lineno,
-                'level': 0
-            })
+            self.imports.append(
+                {
+                    "type": "import",
+                    "module": alias.name,
+                    "asname": alias.asname,
+                    "line": node.lineno,
+                    "level": 0,
+                }
+            )
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node):
         """Visit from...import statements."""
-        self.imports.append({
-            'type': 'from_import',
-            'module': node.module,
-            'names': [alias.name for alias in node.names],
-            'line': node.lineno,
-            'level': node.level
-        })
+        self.imports.append(
+            {
+                "type": "from_import",
+                "module": node.module,
+                "names": [alias.name for alias in node.names],
+                "line": node.lineno,
+                "level": node.level,
+            }
+        )
         self.generic_visit(node)
 
 
 def analyze_file(filepath: Path, project_root: Path) -> Dict:
     """Analyze a single Python file for imports."""
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             content = f.read()
 
         tree = ast.parse(content, filename=str(filepath))
@@ -133,27 +144,27 @@ def analyze_file(filepath: Path, project_root: Path) -> Dict:
         analyzer.visit(tree)
 
         return {
-            'filepath': filepath,
-            'relative_path': filepath.relative_to(project_root),
-            'imports': analyzer.imports,
-            'errors': analyzer.errors,
-            'success': True
+            "filepath": filepath,
+            "relative_path": filepath.relative_to(project_root),
+            "imports": analyzer.imports,
+            "errors": analyzer.errors,
+            "success": True,
         }
     except SyntaxError as e:
         return {
-            'filepath': filepath,
-            'relative_path': filepath.relative_to(project_root),
-            'imports': [],
-            'errors': [f"Syntax error: {e}"],
-            'success': False
+            "filepath": filepath,
+            "relative_path": filepath.relative_to(project_root),
+            "imports": [],
+            "errors": [f"Syntax error: {e}"],
+            "success": False,
         }
     except Exception as e:
         return {
-            'filepath': filepath,
-            'relative_path': filepath.relative_to(project_root),
-            'imports': [],
-            'errors': [f"Error: {e}"],
-            'success': False
+            "filepath": filepath,
+            "relative_path": filepath.relative_to(project_root),
+            "imports": [],
+            "errors": [f"Error: {e}"],
+            "success": False,
         }
 
 
@@ -161,18 +172,18 @@ def validate_import(import_info: Dict, filepath: Path, src_root: Path) -> List[s
     """Validate a relative import path."""
     issues = []
 
-    if import_info['type'] != 'from_import' or import_info['level'] == 0:
+    if import_info["type"] != "from_import" or import_info["level"] == 0:
         return issues
 
-    file_str = str(filepath).replace('\\', '/')
-    module_name = import_info['module']
+    file_str = str(filepath).replace("\\", "/")
+    module_name = import_info["module"]
 
     # Check against rules
     for path_pattern, rule in IMPORT_LEVEL_RULES.items():
         if path_pattern in file_str:
-            if module_name in rule['modules']:
-                required = rule['required_level']
-                actual = import_info['level']
+            if module_name in rule["modules"]:
+                required = rule["required_level"]
+                actual = import_info["level"]
                 if actual < required:
                     issues.append(
                         f"Line {import_info['line']}: Import '{module_name}' needs "
@@ -187,6 +198,7 @@ def validate_import(import_info: Dict, filepath: Path, src_root: Path) -> List[s
 # IMPORT FIXER
 # ============================================================================
 
+
 class ImportFixer:
     """Fix relative imports in Python files."""
 
@@ -198,17 +210,17 @@ class ImportFixer:
     def fix_file(self, filepath: Path) -> bool:
         """Fix relative imports in a single file."""
         try:
-            with open(filepath, 'r', encoding='utf-8') as f:
+            with open(filepath, "r", encoding="utf-8") as f:
                 content = f.read()
 
             original = content
-            file_str = str(filepath).replace('\\', '/')
+            file_str = str(filepath).replace("\\", "/")
 
             # Determine required level based on file location
             for path_pattern, rule in IMPORT_LEVEL_RULES.items():
                 if path_pattern in file_str:
-                    required = rule['required_level']
-                    for module in rule['modules']:
+                    required = rule["required_level"]
+                    for module in rule["modules"]:
                         # Fix imports with insufficient dots
                         for level in range(1, required):
                             old_pattern = f"from {'.' * level}{module} import"
@@ -218,7 +230,7 @@ class ImportFixer:
 
             if content != original:
                 if not self.dry_run:
-                    with open(filepath, 'w', encoding='utf-8') as f:
+                    with open(filepath, "w", encoding="utf-8") as f:
                         f.write(content)
                 self.fixed_files.append(filepath)
                 return True
@@ -244,6 +256,7 @@ class ImportFixer:
 # REPORT GENERATOR
 # ============================================================================
 
+
 def generate_validation_report(results: List[Dict], project_root: Path) -> str:
     """Generate import validation report."""
     lines = []
@@ -253,9 +266,9 @@ def generate_validation_report(results: List[Dict], project_root: Path) -> str:
     lines.append("")
 
     total_files = len(results)
-    success_files = sum(1 for r in results if r['success'])
-    total_imports = sum(len(r['imports']) for r in results)
-    total_issues = sum(len(r['errors']) for r in results)
+    success_files = sum(1 for r in results if r["success"])
+    total_imports = sum(len(r["imports"]) for r in results)
+    total_issues = sum(len(r["errors"]) for r in results)
 
     lines.append(f"Total Files: {total_files}")
     lines.append(f"  Successful: {success_files}")
@@ -265,7 +278,7 @@ def generate_validation_report(results: List[Dict], project_root: Path) -> str:
     lines.append("")
 
     # Files with issues
-    files_with_issues = [r for r in results if r['errors']]
+    files_with_issues = [r for r in results if r["errors"]]
     if files_with_issues:
         lines.append("=" * 80)
         lines.append("FILES WITH ISSUES")
@@ -274,7 +287,7 @@ def generate_validation_report(results: List[Dict], project_root: Path) -> str:
 
         for result in files_with_issues:
             lines.append(f"[FILE] {result['relative_path']}")
-            for error in result['errors']:
+            for error in result["errors"]:
                 lines.append(f"  [!] {error}")
             lines.append("")
     else:
@@ -291,10 +304,10 @@ def generate_validation_report(results: List[Dict], project_root: Path) -> str:
     relative_levels = defaultdict(int)
 
     for result in results:
-        for imp in result['imports']:
-            import_stats[imp['type']] += 1
-            if imp['type'] == 'from_import' and imp['level'] > 0:
-                relative_levels[imp['level']] += 1
+        for imp in result["imports"]:
+            import_stats[imp["type"]] += 1
+            if imp["type"] == "from_import" and imp["level"] > 0:
+                relative_levels[imp["level"]] += 1
 
     lines.append("Import Types:")
     for imp_type, count in sorted(import_stats.items()):
@@ -315,11 +328,11 @@ def generate_validation_report(results: List[Dict], project_root: Path) -> str:
 
     module_counts = defaultdict(int)
     for result in results:
-        for imp in result['imports']:
-            if imp['type'] == 'import':
-                module_counts[imp['module']] += 1
-            elif imp['type'] == 'from_import' and imp['module']:
-                module_counts[imp['module']] += 1
+        for imp in result["imports"]:
+            if imp["type"] == "import":
+                module_counts[imp["module"]] += 1
+            elif imp["type"] == "from_import" and imp["module"]:
+                module_counts[imp["module"]] += 1
 
     for module, count in sorted(module_counts.items(), key=lambda x: x[1], reverse=True)[:15]:
         lines.append(f"  {count:3d}  {module}")
@@ -332,10 +345,11 @@ def generate_validation_report(results: List[Dict], project_root: Path) -> str:
 # CLI COMMANDS
 # ============================================================================
 
+
 def cmd_validate(args):
     """Validate all Python imports."""
     project_root = get_project_root()
-    src_root = project_root / 'src'
+    src_root = project_root / "src"
 
     print("[*] Scanning for Python files...")
     python_files = find_python_files(src_root)
@@ -347,10 +361,10 @@ def cmd_validate(args):
         result = analyze_file(filepath, project_root)
 
         # Validate relative imports
-        if result['success']:
-            for imp in result['imports']:
+        if result["success"]:
+            for imp in result["imports"]:
                 issues = validate_import(imp, filepath, src_root)
-                result['errors'].extend(issues)
+                result["errors"].extend(issues)
 
         results.append(result)
 
@@ -364,13 +378,13 @@ def cmd_validate(args):
     print(report)
 
     # Save report
-    report_path = project_root / 'import_validation_report.txt'
-    with open(report_path, 'w', encoding='utf-8') as f:
+    report_path = project_root / "import_validation_report.txt"
+    with open(report_path, "w", encoding="utf-8") as f:
         f.write(report)
     print(f"[*] Report saved to: {report_path}")
 
     # Exit code
-    total_issues = sum(len(r['errors']) for r in results)
+    total_issues = sum(len(r["errors"]) for r in results)
     if total_issues:
         print(f"\n[!] Found {total_issues} import issues")
         sys.exit(1)
@@ -390,8 +404,8 @@ def cmd_fix(args):
     print("")
 
     # Target the agents directory specifically
-    src_root = project_root / 'src'
-    agents_dir = src_root / 'company_researcher' / 'agents'
+    src_root = project_root / "src"
+    agents_dir = src_root / "company_researcher" / "agents"
 
     if not agents_dir.exists():
         print(f"[!] Agents directory not found: {agents_dir}")
@@ -415,12 +429,14 @@ def cmd_fix(args):
 # MAIN
 # ============================================================================
 
+
 def main():
     """Main entry point."""
     # UTF-8 for Windows
-    if sys.platform == 'win32':
+    if sys.platform == "win32":
         import io
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
     parser = argparse.ArgumentParser(
         description="Import Validation and Fix Utility",
@@ -430,19 +446,20 @@ Examples:
   python -m scripts.utils.imports validate         # Validate all imports
   python -m scripts.utils.imports fix              # Fix imports (dry run)
   python -m scripts.utils.imports fix --execute    # Actually fix imports
-"""
+""",
     )
 
-    subparsers = parser.add_subparsers(dest='command', help='Commands')
+    subparsers = parser.add_subparsers(dest="command", help="Commands")
 
     # Validate command
-    validate_parser = subparsers.add_parser('validate', help='Validate all Python imports')
+    validate_parser = subparsers.add_parser("validate", help="Validate all Python imports")
     validate_parser.set_defaults(func=cmd_validate)
 
     # Fix command
-    fix_parser = subparsers.add_parser('fix', help='Fix relative imports')
-    fix_parser.add_argument('--execute', action='store_true',
-                            help='Actually fix imports (default is dry run)')
+    fix_parser = subparsers.add_parser("fix", help="Fix relative imports")
+    fix_parser.add_argument(
+        "--execute", action="store_true", help="Actually fix imports (default is dry run)"
+    )
     fix_parser.set_defaults(func=cmd_fix)
 
     args = parser.parse_args()
@@ -454,5 +471,5 @@ Examples:
     args.func(args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

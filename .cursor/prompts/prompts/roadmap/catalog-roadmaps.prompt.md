@@ -101,4 +101,3 @@ Create a concise catalog of all roadmap files at the ticket-folder level and ind
 - `.cursor/rules/ticket/status-rule.mdc`
 - `.cursor/rules/ticket/timeline-tracking-rule.mdc`
 - `.cursor/prompts/roadmap/create-update-roadmap.prompt.md`
-

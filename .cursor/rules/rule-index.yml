@@ -1,4 +1,8 @@
 rules:
+  # Project
+  rule.project.stack-guardrails.v1: project/stack-guardrails-rule.mdc
+  rule.project.context-efficiency.v1: project/context-efficiency-rule.mdc
+
   # Agile
   rule.agile.agent-application.v1: agile/agent-application-rule.mdc
   rule.agile.business-feature-documentation.v1: agile/business-feature-documentation-rule.mdc
@@ -180,7 +184,9 @@ exemplars:
   exemplar.technical-specifications.enumeration.v1: .cursor/exemplars/technical-specifications/enumeration-exemplar.md
   exemplar.technical-specifications.integration-points.v1: .cursor/exemplars/technical-specifications/integration-points-exemplar.md
   exemplar.ticket.plan.bad.v1: .cursor/exemplars/ticket/plan-bad-exemplar.md
-  exemplar.code-analysis.example.v1: .cursor/prompts/exemplars/code-analysis-example.md
+  # NOTE: this repo's prompt exemplars are nested under `.cursor/prompts/exemplars/`.
+  # Keep this mapping aligned to an actual file to avoid broken references.
+  exemplar.prompt.authoring.creation.v1: .cursor/prompts/exemplars/prompt/prompt-creation-exemplar.md
 
 prompts:
   # CICD
@@ -205,9 +211,6 @@ prompts:
   prompt.rule-authoring.validate-rule-compliance.v1: .cursor/prompts/prompts/rule-authoring/validate-rule-compliance.prompt.md
 
   # Pattern Discovery & Library
-  prompt.pattern-discovery.how-to.v1: .cursor/prompts/HOW-TO-USE-PATTERN-DISCOVERY.md
-  prompt.pattern-discovery.quick-reference.v1: .cursor/prompts/PATTERN-QUICK-REFERENCE.md
   prompt.library.readme.v1: .cursor/prompts/README.md
   prompt.library.index.v1: .cursor/prompts/INDEX.md
   prompt.templars.general-task-template.v1: .cursor/prompts/templars/general-task-template.md
-

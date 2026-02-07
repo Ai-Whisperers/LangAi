@@ -32,7 +32,7 @@ Check [core principles rule](../core-principles-rule.mdc):
 
 ### Step 3: Language-Specific Validation
 
-**PowerShell**: Check [PowerShell standards](../powershell-standards-rule.mdc)  
+**PowerShell**: Check [PowerShell standards](../powershell-standards-rule.mdc)
 - Enforce runtime baseline: `#Requires -Version 7.2` and `#Requires -PSEdition Core` at top of every script/module.
 **Python**: Check [Python standards](../python-standards-rule.mdc)
 
@@ -58,4 +58,3 @@ List missing criteria for next quality level.
 
 ---
 Produced-by: prompt.scripts.validate-standards.v1 | ts=2025-12-07T00:00:00Z
-

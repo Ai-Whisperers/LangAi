@@ -1,20 +1,22 @@
 """Tests for AI data extractor."""
-import pytest
-from unittest.mock import AsyncMock, patch
+
 import json
+from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from company_researcher.ai.extraction import (
     AIDataExtractor,
-    get_data_extractor,
-    reset_data_extractor,
-    CompanyType,
     CompanyClassification,
-    FactCategory,
-    FactType,
+    CompanyType,
     ContradictionSeverity,
     ExtractedFact,
-    FinancialData,
     ExtractionResult,
+    FactCategory,
+    FactType,
+    FinancialData,
+    get_data_extractor,
+    reset_data_extractor,
 )
 
 
@@ -69,7 +71,7 @@ class TestExtractionModels:
             is_listed=True,
             stock_ticker="TSLA",
             stock_exchange="NASDAQ",
-            confidence=0.95
+            confidence=0.95,
         )
 
         assert classification.company_name == "Tesla Inc."
@@ -88,7 +90,7 @@ class TestExtractionModels:
             currency="USD",
             time_period="2023",
             source_text="Tesla revenue was $81.5 billion in 2023",
-            confidence=0.9
+            confidence=0.9,
         )
 
         assert fact.category == FactCategory.FINANCIAL
@@ -103,7 +105,7 @@ class TestExtractionModels:
             revenue_currency="USD",
             revenue_period="FY2023",
             market_cap=500000000000,
-            employee_count=140000
+            employee_count=140000,
         )
 
         assert financial.revenue == 81500000000
@@ -120,11 +122,7 @@ class TestExtractionModels:
         assert financial.get_best_size_indicator() == "$1,000,000,000 market cap"
 
         # With revenue (highest priority)
-        financial = FinancialData(
-            revenue=5000000000,
-            market_cap=1000000000,
-            employee_count=1000
-        )
+        financial = FinancialData(revenue=5000000000, market_cap=1000000000, employee_count=1000)
         assert financial.get_best_size_indicator() == "$5,000,000,000 revenue"
 
     def test_extraction_result_get_facts_methods(self):
@@ -135,21 +133,21 @@ class TestExtractionModels:
                 fact_type=FactType.REVENUE,
                 value="$100M",
                 source_text="Revenue",
-                confidence=0.9
+                confidence=0.9,
             ),
             ExtractedFact(
                 category=FactCategory.FINANCIAL,
                 fact_type=FactType.PROFIT,
                 value="$10M",
                 source_text="Profit",
-                confidence=0.8
+                confidence=0.8,
             ),
             ExtractedFact(
                 category=FactCategory.COMPANY_INFO,
                 fact_type=FactType.EMPLOYEE_COUNT,
                 value="500",
                 source_text="Employees",
-                confidence=0.85
+                confidence=0.85,
             ),
         ]
 
@@ -161,14 +159,14 @@ class TestExtractionModels:
             region="North America",
             country="United States",
             country_code="US",
-            confidence=0.9
+            confidence=0.9,
         )
 
         result = ExtractionResult(
             company_classification=classification,
             financial_data=FinancialData(),
             all_facts=facts,
-            extraction_confidence=0.85
+            extraction_confidence=0.85,
         )
 
         financial_facts = result.get_facts_by_category(FactCategory.FINANCIAL)
@@ -190,59 +188,62 @@ class TestAIDataExtractor:
     @pytest.fixture
     def mock_classification_response(self):
         """Mock LLM response for classification."""
-        return json.dumps({
-            "company_name": "Grupo Bimbo",
-            "normalized_name": "Grupo Bimbo",
-            "company_type": "public",
-            "industry": "Food & Beverage",
-            "sub_industry": "Bakery Products",
-            "region": "Latin America",
-            "country": "Mexico",
-            "country_code": "MX",
-            "stock_ticker": "BIMBOA",
-            "stock_exchange": "BMV",
-            "is_listed": True,
-            "is_conglomerate": True,
-            "is_subsidiary": False,
-            "confidence": 0.95,
-            "reasoning": "Major Mexican public company on BMV"
-        })
+        return json.dumps(
+            {
+                "company_name": "Grupo Bimbo",
+                "normalized_name": "Grupo Bimbo",
+                "company_type": "public",
+                "industry": "Food & Beverage",
+                "sub_industry": "Bakery Products",
+                "region": "Latin America",
+                "country": "Mexico",
+                "country_code": "MX",
+                "stock_ticker": "BIMBOA",
+                "stock_exchange": "BMV",
+                "is_listed": True,
+                "is_conglomerate": True,
+                "is_subsidiary": False,
+                "confidence": 0.95,
+                "reasoning": "Major Mexican public company on BMV",
+            }
+        )
 
     @pytest.fixture
     def mock_facts_response(self):
         """Mock LLM response for fact extraction."""
-        return json.dumps({
-            "facts": [
-                {
-                    "category": "financial",
-                    "fact_type": "revenue",
-                    "value": "$20.1 billion",
-                    "value_normalized": 20100000000,
-                    "currency": "USD",
-                    "time_period": "2023",
-                    "source_text": "Revenue reached $20.1 billion in 2023",
-                    "confidence": 0.9
-                },
-                {
-                    "category": "company_info",
-                    "fact_type": "employee_count",
-                    "value": "136,000",
-                    "value_normalized": 136000,
-                    "source_text": "employs approximately 136,000 people",
-                    "confidence": 0.85
-                }
-            ]
-        })
+        return json.dumps(
+            {
+                "facts": [
+                    {
+                        "category": "financial",
+                        "fact_type": "revenue",
+                        "value": "$20.1 billion",
+                        "value_normalized": 20100000000,
+                        "currency": "USD",
+                        "time_period": "2023",
+                        "source_text": "Revenue reached $20.1 billion in 2023",
+                        "confidence": 0.9,
+                    },
+                    {
+                        "category": "company_info",
+                        "fact_type": "employee_count",
+                        "value": "136,000",
+                        "value_normalized": 136000,
+                        "source_text": "employs approximately 136,000 people",
+                        "confidence": 0.85,
+                    },
+                ]
+            }
+        )
 
     @pytest.mark.asyncio
     async def test_classify_company(self, extractor, mock_classification_response):
         """Test company classification."""
-        with patch.object(extractor, '_async_call_llm', new_callable=AsyncMock) as mock_call:
+        with patch.object(extractor, "_async_call_llm", new_callable=AsyncMock) as mock_call:
             mock_call.return_value = mock_classification_response
 
             result = await extractor.classify_company(
-                company_name="Grupo Bimbo",
-                context="Mexican multinational bakery company..."
+                company_name="Grupo Bimbo", context="Mexican multinational bakery company..."
             )
 
             assert result.company_type == CompanyType.PUBLIC
@@ -254,13 +255,13 @@ class TestAIDataExtractor:
     @pytest.mark.asyncio
     async def test_extract_facts(self, extractor, mock_facts_response):
         """Test fact extraction."""
-        with patch.object(extractor, '_async_call_llm', new_callable=AsyncMock) as mock_call:
+        with patch.object(extractor, "_async_call_llm", new_callable=AsyncMock) as mock_call:
             mock_call.return_value = mock_facts_response
 
             # Text must be at least 50 characters for extraction to proceed
             facts = await extractor.extract_facts(
                 text="Grupo Bimbo is a Mexican multinational bakery company. Its revenue reached $20.1 billion in 2023, making it one of the largest bakery companies in the world.",
-                company_name="Grupo Bimbo"
+                company_name="Grupo Bimbo",
             )
 
             assert len(facts) == 2
@@ -271,61 +272,62 @@ class TestAIDataExtractor:
     @pytest.mark.asyncio
     async def test_extract_facts_empty_text(self, extractor):
         """Test fact extraction with empty text."""
-        facts = await extractor.extract_facts(
-            text="",
-            company_name="Test"
-        )
+        facts = await extractor.extract_facts(text="", company_name="Test")
         assert facts == []
 
     @pytest.mark.asyncio
     async def test_extract_facts_short_text(self, extractor):
         """Test fact extraction with very short text."""
-        facts = await extractor.extract_facts(
-            text="Hello",
-            company_name="Test"
-        )
+        facts = await extractor.extract_facts(text="Hello", company_name="Test")
         assert facts == []
 
     @pytest.mark.asyncio
     async def test_extract_all(self, extractor):
         """Test complete extraction pipeline."""
-        mock_class = json.dumps({
-            "company_name": "Tesla",
-            "normalized_name": "Tesla",
-            "company_type": "public",
-            "industry": "Automotive",
-            "region": "North America",
-            "country": "United States",
-            "country_code": "US",
-            "stock_ticker": "TSLA",
-            "is_listed": True,
-            "confidence": 0.95
-        })
+        mock_class = json.dumps(
+            {
+                "company_name": "Tesla",
+                "normalized_name": "Tesla",
+                "company_type": "public",
+                "industry": "Automotive",
+                "region": "North America",
+                "country": "United States",
+                "country_code": "US",
+                "stock_ticker": "TSLA",
+                "is_listed": True,
+                "confidence": 0.95,
+            }
+        )
 
-        mock_facts = json.dumps({
-            "facts": [
-                {
-                    "category": "financial",
-                    "fact_type": "revenue",
-                    "value": "$81.5B",
-                    "value_normalized": 81500000000,
-                    "currency": "USD",
-                    "time_period": "2023",
-                    "source_text": "Tesla revenue was $81.5B",
-                    "confidence": 0.9
-                }
-            ]
-        })
+        mock_facts = json.dumps(
+            {
+                "facts": [
+                    {
+                        "category": "financial",
+                        "fact_type": "revenue",
+                        "value": "$81.5B",
+                        "value_normalized": 81500000000,
+                        "currency": "USD",
+                        "time_period": "2023",
+                        "source_text": "Tesla revenue was $81.5B",
+                        "confidence": 0.9,
+                    }
+                ]
+            }
+        )
 
-        with patch.object(extractor, '_async_call_llm', new_callable=AsyncMock) as mock_call:
+        with patch.object(extractor, "_async_call_llm", new_callable=AsyncMock) as mock_call:
             mock_call.side_effect = [mock_class, mock_facts]
 
             # Content must be at least 50 characters for fact extraction to proceed
             result = await extractor.extract_all(
                 company_name="Tesla",
                 search_results=[
-                    {"url": "https://example.com", "content": "Tesla Inc. reported record revenue of $81.5B for fiscal year 2023. The electric vehicle company continues to lead the EV market with strong growth."}
-                ]
+                    {
+                        "url": "https://example.com",
+                        "content": "Tesla Inc. reported record revenue of $81.5B for fiscal year 2023. The electric vehicle company continues to lead the EV market with strong growth.",
+                    }
+                ],
             )
 
             assert result.company_classification.company_type == CompanyType.PUBLIC
@@ -335,28 +337,28 @@ class TestAIDataExtractor:
     @pytest.mark.asyncio
     async def test_contradiction_detection(self, extractor):
         """Test contradiction detection and resolution."""
-        mock_response = json.dumps({
-            "is_contradiction": True,
-            "severity": "high",
-            "difference_percentage": 35,
-            "can_be_resolved": True,
-            "resolution_explanation": "Different fiscal years",
-            "most_likely_value": 81500000000,
-            "reasoning": "One source uses 2023, other uses 2022 data"
-        })
+        mock_response = json.dumps(
+            {
+                "is_contradiction": True,
+                "severity": "high",
+                "difference_percentage": 35,
+                "can_be_resolved": True,
+                "resolution_explanation": "Different fiscal years",
+                "most_likely_value": 81500000000,
+                "reasoning": "One source uses 2023, other uses 2022 data",
+            }
+        )
 
-        with patch.object(extractor, '_async_call_llm', new_callable=AsyncMock) as mock_call:
+        with patch.object(extractor, "_async_call_llm", new_callable=AsyncMock) as mock_call:
             mock_call.return_value = mock_response
 
             values = [
                 {"value": 81500000000, "source": "Reuters", "period": "2023"},
-                {"value": 53800000000, "source": "Blog", "period": "2022"}
+                {"value": 53800000000, "source": "Blog", "period": "2022"},
             ]
 
             result = await extractor.resolve_contradiction(
-                fact_type="financial:revenue",
-                values=values,
-                company_name="Tesla"
+                fact_type="financial:revenue", values=values, company_name="Tesla"
             )
 
             assert result.is_contradiction is True
@@ -366,21 +368,22 @@ class TestAIDataExtractor:
     @pytest.mark.asyncio
     async def test_detect_country(self, extractor):
         """Test country detection."""
-        mock_response = json.dumps({
-            "country": "Brazil",
-            "country_code": "BR",
-            "region": "Latin America",
-            "confidence": 0.9,
-            "indicators_found": [".com.br domain", "R$ currency"],
-            "reasoning": "Brazilian domain and currency indicators"
-        })
+        mock_response = json.dumps(
+            {
+                "country": "Brazil",
+                "country_code": "BR",
+                "region": "Latin America",
+                "confidence": 0.9,
+                "indicators_found": [".com.br domain", "R$ currency"],
+                "reasoning": "Brazilian domain and currency indicators",
+            }
+        )
 
-        with patch.object(extractor, '_async_call_llm', new_callable=AsyncMock) as mock_call:
+        with patch.object(extractor, "_async_call_llm", new_callable=AsyncMock) as mock_call:
             mock_call.return_value = mock_response
 
             result = await extractor.detect_country(
-                company_name="Petrobras",
-                clues="Website: petrobras.com.br, Revenue: R$ 500 billion"
+                company_name="Petrobras", clues="Website: petrobras.com.br, Revenue: R$ 500 billion"
             )
 
             assert result.country == "Brazil"
@@ -393,13 +396,12 @@ class TestAIDataExtractor:
         """Test that classification falls back when AI fails."""
         from company_researcher.ai.extraction.models import CompanyType
 
-        with patch.object(extractor, '_async_call_llm', new_callable=AsyncMock) as mock_call:
+        with patch.object(extractor, "_async_call_llm", new_callable=AsyncMock) as mock_call:
             mock_call.side_effect = Exception("LLM Error")
 
             # Should return fallback classification, not raise
             result = await extractor.classify_company(
-                company_name="Unknown Company",
-                context="Some context"
+                company_name="Unknown Company", context="Some context"
             )
 
             # Verify fallback classification
@@ -444,7 +446,7 @@ class TestDataExtractorHelpers:
         results = [
             {"url": "https://example.com.br/article", "content": ""},
             {"url": "https://example.mx/noticias", "content": ""},
-            {"url": "https://example.com/news", "content": ""}
+            {"url": "https://example.com/news", "content": ""},
         ]
 
         languages = extractor._detect_languages(results)
@@ -465,14 +467,14 @@ class TestDataExtractorHelpers:
                 fact_type=FactType.REVENUE,
                 value="$100M",
                 source_text="Revenue",
-                confidence=0.8
+                confidence=0.8,
             ),
             ExtractedFact(
                 category=FactCategory.FINANCIAL,
                 fact_type=FactType.PROFIT,
                 value="$10M",
                 source_text="Profit",
-                confidence=0.6
+                confidence=0.6,
             ),
         ]
 
@@ -487,14 +489,14 @@ class TestDataExtractorHelpers:
                 fact_type=FactType.REVENUE,
                 value="$100M",
                 source_text="Revenue",
-                confidence=0.9
+                confidence=0.9,
             ),
             ExtractedFact(
                 category=FactCategory.FINANCIAL,
                 fact_type=FactType.PROFIT,
                 value="$10M",
                 source_text="Profit",
-                confidence=0.8
+                confidence=0.8,
             ),
         ]
 
@@ -515,7 +517,7 @@ class TestDataExtractorHelpers:
                 currency="USD",
                 time_period="2023",
                 source_text="Revenue was $81.5B",
-                confidence=0.9
+                confidence=0.9,
             ),
             ExtractedFact(
                 category=FactCategory.COMPANY_INFO,
@@ -523,7 +525,7 @@ class TestDataExtractorHelpers:
                 value="140,000",
                 value_normalized=140000,
                 source_text="140,000 employees",
-                confidence=0.85
+                confidence=0.85,
             ),
         ]
 
@@ -571,7 +573,7 @@ class TestDataExtractorParsingEdgeCases:
             "industry": "Tech",
             "region": "NA",
             "country": "US",
-            "country_code": "US"
+            "country_code": "US",
         }
 
         result = extractor._parse_classification(data, "Test")
@@ -584,7 +586,7 @@ class TestDataExtractorParsingEdgeCases:
             "fact_type": "revenue",
             "value": "$100M",
             "source_text": "Revenue",
-            "confidence": 0.8
+            "confidence": 0.8,
         }
 
         result = extractor._parse_fact(data, None)
@@ -597,7 +599,7 @@ class TestDataExtractorParsingEdgeCases:
             "fact_type": "invalid_type",
             "value": "$100M",
             "source_text": "Some value",
-            "confidence": 0.8
+            "confidence": 0.8,
         }
 
         result = extractor._parse_fact(data, None)
@@ -605,11 +607,7 @@ class TestDataExtractorParsingEdgeCases:
 
     def test_parse_contradiction_with_invalid_severity(self, extractor):
         """Test contradiction parsing with invalid severity."""
-        data = {
-            "is_contradiction": True,
-            "severity": "invalid_severity",
-            "reasoning": "Test"
-        }
+        data = {"is_contradiction": True, "severity": "invalid_severity", "reasoning": "Test"}
 
         result = extractor._parse_contradiction(data, "test_type", [])
         assert result.severity == ContradictionSeverity.MEDIUM

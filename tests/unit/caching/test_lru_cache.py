@@ -1,14 +1,15 @@
 """Tests for LRU cache implementation."""
 
-import pytest
 import threading
 import time
 from unittest.mock import MagicMock
 
+import pytest
+
 from company_researcher.caching.lru_cache import (
+    CacheItem,
     LRUCache,
     LRUCacheConfig,
-    CacheItem,
     create_lru_cache,
 )
 
@@ -26,11 +27,7 @@ class TestLRUCacheConfig:
     def test_custom_config(self):
         """LRUCacheConfig should accept custom values."""
         callback = MagicMock()
-        config = LRUCacheConfig(
-            max_size=500,
-            max_memory_mb=10.0,
-            on_evict=callback
-        )
+        config = LRUCacheConfig(max_size=500, max_memory_mb=10.0, on_evict=callback)
         assert config.max_size == 500
         assert config.max_memory_mb == 10.0
         assert config.on_evict is callback
@@ -42,13 +39,10 @@ class TestCacheItem:
     def test_cache_item_stores_value(self):
         """CacheItem should store value and metadata."""
         from datetime import datetime, timezone
+
         now = datetime.now(timezone.utc)
         item = CacheItem(
-            value="test_value",
-            created_at=now,
-            last_accessed=now,
-            access_count=1,
-            size_bytes=100
+            value="test_value", created_at=now, last_accessed=now, access_count=1, size_bytes=100
         )
         assert item.value == "test_value"
         assert item.access_count == 1
@@ -235,10 +229,7 @@ class TestLRUCacheThreadSafety:
             except Exception as e:
                 errors.append(e)
 
-        threads = [
-            threading.Thread(target=put_items, args=(f"t{i}", 100))
-            for i in range(5)
-        ]
+        threads = [threading.Thread(target=put_items, args=(f"t{i}", 100)) for i in range(5)]
 
         for t in threads:
             t.start()
@@ -270,9 +261,7 @@ class TestLRUCacheThreadSafety:
             except Exception as e:
                 errors.append(e)
 
-        threads = [
-            threading.Thread(target=reader) for _ in range(3)
-        ] + [
+        threads = [threading.Thread(target=reader) for _ in range(3)] + [
             threading.Thread(target=writer) for _ in range(2)
         ]
 

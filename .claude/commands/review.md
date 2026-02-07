@@ -18,4 +18,3 @@ description: Run the full review gate locally and trigger CI visibility.
 ## Tips
 - Run `/review` before every push to keep the main branch green.
 - If workflows fail, fix the root cause and rerun `/review` to confirm.
-

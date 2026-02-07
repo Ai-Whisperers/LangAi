@@ -14,14 +14,14 @@ Companies by Region:
                    Tigo Honduras, Kolbi Costa Rica
 """
 
+import json
+import logging
 import os
 import sys
-import json
 import time
-import logging
-from pathlib import Path
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Setup path
 project_root = Path(__file__).parent
@@ -33,13 +33,11 @@ logs_dir.mkdir(exist_ok=True)
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler(
-            f'logs/telecom_research_{datetime.now():%Y%m%d_%H%M%S}.log'
-        )
-    ]
+        logging.FileHandler(f"logs/telecom_research_{datetime.now():%Y%m%d_%H%M%S}.log"),
+    ],
 )
 logger = logging.getLogger(__name__)
 
@@ -58,7 +56,7 @@ TELECOM_COMPANIES = {
                 "score": 95,
                 "market_share": "45%",
                 "competitors": ["Personal Paraguay", "Claro Paraguay"],
-                "context": "Largest mobile operator in Paraguay, part of Millicom"
+                "context": "Largest mobile operator in Paraguay, part of Millicom",
             },
             {
                 "name": "Personal Paraguay",
@@ -67,7 +65,7 @@ TELECOM_COMPANIES = {
                 "score": 90,
                 "market_share": "35%",
                 "competitors": ["Tigo Paraguay", "Claro Paraguay"],
-                "context": "Second largest mobile operator in Paraguay"
+                "context": "Second largest mobile operator in Paraguay",
             },
             {
                 "name": "Claro Paraguay",
@@ -76,9 +74,9 @@ TELECOM_COMPANIES = {
                 "score": 85,
                 "market_share": "20%",
                 "competitors": ["Tigo Paraguay", "Personal Paraguay"],
-                "context": "Third mobile operator in Paraguay, part of America Movil"
+                "context": "Third mobile operator in Paraguay, part of America Movil",
             },
-        ]
+        ],
     },
     "brazil": {
         "region_name": "Brazil",
@@ -90,7 +88,7 @@ TELECOM_COMPANIES = {
                 "score": 95,
                 "market_share": "33%",
                 "competitors": ["Claro Brasil", "TIM Brasil", "Oi"],
-                "context": "Largest telecom in Brazil with 15M+ social followers"
+                "context": "Largest telecom in Brazil with 15M+ social followers",
             },
             {
                 "name": "Claro Brasil",
@@ -99,7 +97,7 @@ TELECOM_COMPANIES = {
                 "score": 92,
                 "market_share": "25%",
                 "competitors": ["Vivo Brazil", "TIM Brasil", "Oi"],
-                "context": "Second largest telecom in Brazil, strong network"
+                "context": "Second largest telecom in Brazil, strong network",
             },
             {
                 "name": "TIM Brasil",
@@ -108,9 +106,9 @@ TELECOM_COMPANIES = {
                 "score": 88,
                 "market_share": "24%",
                 "competitors": ["Vivo Brazil", "Claro Brasil", "Oi"],
-                "context": "Third largest mobile operator in Brazil"
+                "context": "Third largest mobile operator in Brazil",
             },
-        ]
+        ],
     },
     "argentina": {
         "region_name": "Argentina",
@@ -122,7 +120,7 @@ TELECOM_COMPANIES = {
                 "score": 90,
                 "market_share": "35%",
                 "competitors": ["Claro Argentina", "Movistar Argentina"],
-                "context": "Largest mobile operator in Argentina"
+                "context": "Largest mobile operator in Argentina",
             },
             {
                 "name": "Claro Argentina",
@@ -131,7 +129,7 @@ TELECOM_COMPANIES = {
                 "score": 88,
                 "market_share": "30%",
                 "competitors": ["Personal Argentina", "Movistar Argentina"],
-                "context": "Second largest mobile operator in Argentina"
+                "context": "Second largest mobile operator in Argentina",
             },
             {
                 "name": "Movistar Argentina",
@@ -140,9 +138,9 @@ TELECOM_COMPANIES = {
                 "score": 85,
                 "market_share": "25%",
                 "competitors": ["Personal Argentina", "Claro Argentina"],
-                "context": "Third mobile operator in Argentina"
+                "context": "Third mobile operator in Argentina",
             },
-        ]
+        ],
     },
     "chile": {
         "region_name": "Chile",
@@ -154,7 +152,7 @@ TELECOM_COMPANIES = {
                 "score": 88,
                 "market_share": "30%",
                 "competitors": ["Movistar Chile", "Claro Chile", "WOM Chile"],
-                "context": "Largest telecom in Chile"
+                "context": "Largest telecom in Chile",
             },
             {
                 "name": "Movistar Chile",
@@ -163,7 +161,7 @@ TELECOM_COMPANIES = {
                 "score": 85,
                 "market_share": "28%",
                 "competitors": ["Entel Chile", "Claro Chile", "WOM Chile"],
-                "context": "Second largest telecom in Chile"
+                "context": "Second largest telecom in Chile",
             },
             {
                 "name": "Claro Chile",
@@ -172,7 +170,7 @@ TELECOM_COMPANIES = {
                 "score": 80,
                 "market_share": "22%",
                 "competitors": ["Entel Chile", "Movistar Chile", "WOM Chile"],
-                "context": "Third largest telecom in Chile"
+                "context": "Third largest telecom in Chile",
             },
             {
                 "name": "WOM Chile",
@@ -181,9 +179,9 @@ TELECOM_COMPANIES = {
                 "score": 78,
                 "market_share": "18%",
                 "competitors": ["Entel Chile", "Movistar Chile", "Claro Chile"],
-                "context": "Disruptor brand in Chilean telecom market"
+                "context": "Disruptor brand in Chilean telecom market",
             },
-        ]
+        ],
     },
     "central_america": {
         "region_name": "Central America",
@@ -195,7 +193,7 @@ TELECOM_COMPANIES = {
                 "score": 75,
                 "country": "Guatemala",
                 "competitors": ["Claro Guatemala"],
-                "context": "Leading mobile operator in Guatemala"
+                "context": "Leading mobile operator in Guatemala",
             },
             {
                 "name": "Claro Guatemala",
@@ -204,7 +202,7 @@ TELECOM_COMPANIES = {
                 "score": 72,
                 "country": "Guatemala",
                 "competitors": ["Tigo Guatemala"],
-                "context": "Second mobile operator in Guatemala"
+                "context": "Second mobile operator in Guatemala",
             },
             {
                 "name": "Tigo El Salvador",
@@ -213,7 +211,7 @@ TELECOM_COMPANIES = {
                 "score": 70,
                 "country": "El Salvador",
                 "competitors": ["Claro El Salvador"],
-                "context": "Mobile operator in El Salvador"
+                "context": "Mobile operator in El Salvador",
             },
             {
                 "name": "Tigo Honduras",
@@ -222,10 +220,10 @@ TELECOM_COMPANIES = {
                 "score": 70,
                 "country": "Honduras",
                 "competitors": ["Claro Honduras"],
-                "context": "Mobile operator in Honduras"
+                "context": "Mobile operator in Honduras",
             },
-        ]
-    }
+        ],
+    },
 }
 
 # =============================================================================
@@ -235,9 +233,9 @@ TELECOM_COMPANIES = {
 OUTPUT_DIR = Path("outputs/telecom_research")
 RESEARCH_CONFIG = {
     "delay_between_companies": 15,  # Seconds between companies
-    "skip_existing": False,          # Set True to skip already researched
-    "min_score": 70,                 # Minimum priority score to research
-    "max_per_region": None,          # None = all companies
+    "skip_existing": False,  # Set True to skip already researched
+    "min_score": 70,  # Minimum priority score to research
+    "max_per_region": None,  # None = all companies
 }
 
 
@@ -254,10 +252,7 @@ def check_existing_research(company_name: str) -> bool:
     return full_report.exists()
 
 
-def run_company_research(
-    company: Dict[str, Any],
-    region: str
-) -> Optional[Dict[str, Any]]:
+def run_company_research(company: Dict[str, Any], region: str) -> Optional[Dict[str, Any]]:
     """
     Run comprehensive research for a single company.
     """
@@ -301,13 +296,14 @@ def run_company_research(
                 "region": region,
                 "success": False,
                 "duration": duration,
-                "error": "Empty result"
+                "error": "Empty result",
             }
 
     except Exception as e:
         duration = (datetime.now() - start_time).total_seconds()
         logger.error(f"[FAILED] {company_name}: {e}")
         import traceback
+
         traceback.print_exc()
 
         return {
@@ -315,7 +311,7 @@ def run_company_research(
             "region": region,
             "success": False,
             "duration": duration,
-            "error": str(e)
+            "error": str(e),
         }
 
 
@@ -341,9 +337,7 @@ def save_batch_summary(results: List[Dict], start_time: datetime):
     for r in results:
         region = r.get("region", "Unknown")
         if region not in summary["results_by_region"]:
-            summary["results_by_region"][region] = {
-                "total": 0, "successful": 0, "failed": 0
-            }
+            summary["results_by_region"][region] = {"total": 0, "successful": 0, "failed": 0}
         summary["results_by_region"][region]["total"] += 1
         if r.get("success"):
             summary["results_by_region"][region]["successful"] += 1
@@ -352,7 +346,7 @@ def save_batch_summary(results: List[Dict], start_time: datetime):
 
     # Save summary
     summary_path = OUTPUT_DIR / f"_batch_summary_{start_time:%Y%m%d_%H%M%S}.json"
-    with open(summary_path, 'w', encoding='utf-8') as f:
+    with open(summary_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2, ensure_ascii=False, default=str)
 
     logger.info(f"Summary saved to: {summary_path}")
@@ -378,7 +372,9 @@ def print_companies_to_research():
 
         for c in filtered:
             status = "EXISTS" if check_existing_research(c["name"]) else "NEW"
-            print(f"  [{c.get('priority', 'P?')}] {c['name']:25} Score: {c.get('score', 0):3} [{status}]")
+            print(
+                f"  [{c.get('priority', 'P?')}] {c['name']:25} Score: {c.get('score', 0):3} [{status}]"
+            )
 
         total += len(filtered)
 
@@ -439,7 +435,7 @@ def main():
 
         # Apply max per region limit
         if RESEARCH_CONFIG["max_per_region"]:
-            filtered = filtered[:RESEARCH_CONFIG["max_per_region"]]
+            filtered = filtered[: RESEARCH_CONFIG["max_per_region"]]
 
         print(f"\n{'#' * 70}")
         print(f"# REGION: {region_name} ({len(filtered)} companies)")
@@ -455,12 +451,14 @@ def main():
             # Check if should skip existing
             if RESEARCH_CONFIG["skip_existing"] and check_existing_research(company["name"]):
                 logger.info(f"[SKIP] {company['name']} - Already researched")
-                results.append({
-                    "company": company["name"],
-                    "region": region_name,
-                    "success": True,
-                    "skipped": True
-                })
+                results.append(
+                    {
+                        "company": company["name"],
+                        "region": region_name,
+                        "success": True,
+                        "skipped": True,
+                    }
+                )
                 continue
 
             # Run research

@@ -5,13 +5,16 @@ Converts the multi-conglomerate YAML files into individual company profiles
 suitable for the research system.
 """
 
-import yaml
 import os
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any, Dict, List
+
+import yaml
 
 
-def create_company_profile(conglomerate: Dict[str, Any], country: str, region: str) -> Dict[str, Any]:
+def create_company_profile(
+    conglomerate: Dict[str, Any], country: str, region: str
+) -> Dict[str, Any]:
     """Create a research-compatible company profile from conglomerate data."""
 
     # Extract key figures
@@ -51,7 +54,7 @@ def create_company_profile(conglomerate: Dict[str, Any], country: str, region: s
         "Strategic initiatives and expansion plans",
         "Corporate governance and family ownership structure",
         "M&A activity and recent acquisitions",
-        "ESG initiatives and sustainability"
+        "ESG initiatives and sustainability",
     ]
 
     # Build priority queries
@@ -62,7 +65,7 @@ def create_company_profile(conglomerate: Dict[str, Any], country: str, region: s
         f"{name} subsidiaries portfolio",
         f"{name} financial results",
         f"{name} expansion strategy",
-        f"{name} competitive position {country}"
+        f"{name} competitive position {country}",
     ]
 
     # Get stock info if available
@@ -110,13 +113,10 @@ def create_company_profile(conglomerate: Dict[str, Any], country: str, region: s
                 "revenues": revenues,
             },
             "services": services[:15],  # Limit to 15 main subsidiaries
-            "notes": notes
+            "notes": notes,
         },
-        "research": {
-            "focus_areas": research_focus,
-            "priority_queries": priority_queries
-        },
-        "competitors": competitors
+        "research": {"focus_areas": research_focus, "priority_queries": priority_queries},
+        "competitors": competitors,
     }
 
     return profile
@@ -125,7 +125,7 @@ def create_company_profile(conglomerate: Dict[str, Any], country: str, region: s
 def process_country_file(filepath: Path, output_dir: Path) -> List[str]:
     """Process a country YAML file and generate individual profiles."""
 
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with open(filepath, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
     country = data.get("country", filepath.stem.replace("_", " ").title())
@@ -151,8 +151,13 @@ def process_country_file(filepath: Path, output_dir: Path) -> List[str]:
 
                     # Generate filename
                     safe_name = cong.get("name", "unknown").lower()
-                    safe_name = safe_name.replace(" ", "_").replace("/", "_").replace("(", "").replace(")", "")
-                    safe_name = ''.join(c for c in safe_name if c.isalnum() or c == '_')
+                    safe_name = (
+                        safe_name.replace(" ", "_")
+                        .replace("/", "_")
+                        .replace("(", "")
+                        .replace(")", "")
+                    )
+                    safe_name = "".join(c for c in safe_name if c.isalnum() or c == "_")
 
                     # Create country subfolder
                     country_dir = output_dir / country_name.lower().replace(" ", "_")
@@ -160,8 +165,14 @@ def process_country_file(filepath: Path, output_dir: Path) -> List[str]:
 
                     output_path = country_dir / f"{safe_name}.yaml"
 
-                    with open(output_path, 'w', encoding='utf-8') as f:
-                        yaml.dump(profile, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+                    with open(output_path, "w", encoding="utf-8") as f:
+                        yaml.dump(
+                            profile,
+                            f,
+                            default_flow_style=False,
+                            allow_unicode=True,
+                            sort_keys=False,
+                        )
 
                     generated.append(str(output_path))
                     print(f"  Generated: {output_path.name}")
@@ -172,8 +183,10 @@ def process_country_file(filepath: Path, output_dir: Path) -> List[str]:
 
             # Generate filename
             safe_name = cong.get("name", "unknown").lower()
-            safe_name = safe_name.replace(" ", "_").replace("/", "_").replace("(", "").replace(")", "")
-            safe_name = ''.join(c for c in safe_name if c.isalnum() or c == '_')
+            safe_name = (
+                safe_name.replace(" ", "_").replace("/", "_").replace("(", "").replace(")", "")
+            )
+            safe_name = "".join(c for c in safe_name if c.isalnum() or c == "_")
 
             # Create country subfolder
             country_dir = output_dir / country.lower().replace(" ", "_")
@@ -181,7 +194,7 @@ def process_country_file(filepath: Path, output_dir: Path) -> List[str]:
 
             output_path = country_dir / f"{safe_name}.yaml"
 
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(output_path, "w", encoding="utf-8") as f:
                 yaml.dump(profile, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
             generated.append(str(output_path))
@@ -208,7 +221,7 @@ def main():
         "colombia.yaml",
         "argentina.yaml",
         "peru.yaml",
-        "central_america.yaml"
+        "central_america.yaml",
     ]
 
     all_generated = []
@@ -240,12 +253,12 @@ def main():
                 "Assets under management",
                 "Number of subsidiaries",
                 "Geographic presence",
-                "Family ownership percentage"
-            ]
+                "Family ownership percentage",
+            ],
         }
     }
 
-    with open(output_dir / "_market_config.yaml", 'w', encoding='utf-8') as f:
+    with open(output_dir / "_market_config.yaml", "w", encoding="utf-8") as f:
         yaml.dump(market_config, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
     print(f"\nMarket config created: {output_dir / '_market_config.yaml'}")

@@ -9,14 +9,8 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Callable, Dict, List
 
-from .models import (
-    ExecutionStatus,
-    RouteCondition,
-    NodeConfig,
-    ExecutionResult,
-    WorkflowState,
-)
 from ...utils import utc_now
+from .models import ExecutionResult, ExecutionStatus, NodeConfig, RouteCondition, WorkflowState
 
 
 class NodeExecutor:
@@ -33,10 +27,7 @@ class NodeExecutor:
     """
 
     def __init__(
-        self,
-        nodes: Dict[str, NodeConfig],
-        max_parallel: int = 4,
-        enable_retries: bool = True
+        self, nodes: Dict[str, NodeConfig], max_parallel: int = 4, enable_retries: bool = True
     ):
         """
         Initialize executor.
@@ -56,11 +47,7 @@ class NodeExecutor:
         self._on_node_complete: List[Callable] = []
         self._on_node_error: List[Callable] = []
 
-    def execute_agent_node(
-        self,
-        node: NodeConfig,
-        state: WorkflowState
-    ) -> ExecutionResult:
+    def execute_agent_node(self, node: NodeConfig, state: WorkflowState) -> ExecutionResult:
         """Execute an agent node."""
         start_time = time.time()
         result = ExecutionResult(node_name=node.name, status=ExecutionStatus.RUNNING)
@@ -117,11 +104,7 @@ class NodeExecutor:
 
         return result
 
-    def execute_parallel_nodes(
-        self,
-        node: NodeConfig,
-        state: WorkflowState
-    ) -> ExecutionResult:
+    def execute_parallel_nodes(self, node: NodeConfig, state: WorkflowState) -> ExecutionResult:
         """Execute child nodes in parallel."""
         start_time = time.time()
         result = ExecutionResult(node_name=node.name, status=ExecutionStatus.RUNNING)
@@ -130,11 +113,7 @@ class NodeExecutor:
         for child_name in node.children:
             child_node = self._nodes.get(child_name)
             if child_node and child_node.handler:
-                future = self._executor.submit(
-                    self.execute_agent_node,
-                    child_node,
-                    state
-                )
+                future = self._executor.submit(self.execute_agent_node, child_node, state)
                 futures[future] = child_name
 
         # Wait for all to complete
@@ -152,9 +131,7 @@ class NodeExecutor:
                     state.failed_nodes.append(child_name)
             except Exception as e:
                 child_results[child_name] = ExecutionResult(
-                    node_name=child_name,
-                    status=ExecutionStatus.FAILED,
-                    error=str(e)
+                    node_name=child_name, status=ExecutionStatus.FAILED, error=str(e)
                 )
                 state.failed_nodes.append(child_name)
 
@@ -165,10 +142,7 @@ class NodeExecutor:
         return result
 
     def execute_sequence_nodes(
-        self,
-        node: NodeConfig,
-        state: WorkflowState,
-        execute_from_node_callback: Callable
+        self, node: NodeConfig, state: WorkflowState, execute_from_node_callback: Callable
     ) -> ExecutionResult:
         """Execute child nodes in sequence."""
         start_time = time.time()
@@ -187,7 +161,7 @@ class NodeExecutor:
         node: NodeConfig,
         state: WorkflowState,
         check_condition_callback: Callable,
-        execute_from_node_callback: Callable
+        execute_from_node_callback: Callable,
     ) -> ExecutionResult:
         """Execute router node (selects path based on conditions)."""
         result = ExecutionResult(node_name=node.name, status=ExecutionStatus.RUNNING)
@@ -209,11 +183,7 @@ class NodeExecutor:
 
         return result
 
-    def execute_transform_node(
-        self,
-        node: NodeConfig,
-        state: WorkflowState
-    ) -> ExecutionResult:
+    def execute_transform_node(self, node: NodeConfig, state: WorkflowState) -> ExecutionResult:
         """Execute data transformation node."""
         result = ExecutionResult(node_name=node.name, status=ExecutionStatus.RUNNING)
 
@@ -230,11 +200,7 @@ class NodeExecutor:
 
         return result
 
-    def execute_checkpoint_node(
-        self,
-        node: NodeConfig,
-        state: WorkflowState
-    ) -> ExecutionResult:
+    def execute_checkpoint_node(self, node: NodeConfig, state: WorkflowState) -> ExecutionResult:
         """Execute checkpoint node (state snapshot)."""
         result = ExecutionResult(node_name=node.name, status=ExecutionStatus.RUNNING)
 
@@ -243,7 +209,7 @@ class NodeExecutor:
             "timestamp": utc_now().isoformat(),
             "completed_nodes": state.completed_nodes.copy(),
             "data_keys": list(state.data.keys()),
-            "total_cost": state.total_cost
+            "total_cost": state.total_cost,
         }
 
         result.output = checkpoint
@@ -251,11 +217,7 @@ class NodeExecutor:
 
         return result
 
-    async def execute_node_async(
-        self,
-        node: NodeConfig,
-        state: WorkflowState
-    ) -> ExecutionResult:
+    async def execute_node_async(self, node: NodeConfig, state: WorkflowState) -> ExecutionResult:
         """Execute a single node asynchronously."""
         start_time = time.time()
         result = ExecutionResult(node_name=node.name, status=ExecutionStatus.RUNNING)

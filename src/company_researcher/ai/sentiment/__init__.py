@@ -1,12 +1,13 @@
 """AI-powered sentiment analysis module."""
+
 from .analyzer import AISentimentAnalyzer, get_sentiment_analyzer
 from .models import (
-    SentimentLevel,
     EntitySentiment,
-    SentimentAnalysisResult,
     NewsCategorization,
     NewsCategory,
-    SentimentAggregation
+    SentimentAggregation,
+    SentimentAnalysisResult,
+    SentimentLevel,
 )
 
 __all__ = [

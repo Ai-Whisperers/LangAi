@@ -8,7 +8,7 @@ governs: **/*.ps1, **/*.py
 implements: scripts.core-principles
 requires: []
 model_hints: { temp: 0.2, top_p: 0.9 }
-provenance: 
+provenance:
   owner: team-devops
   last_review: 2025-12-07
   created: 2025-12-07
@@ -134,16 +134,16 @@ param(
     [Parameter(Mandatory=$false, HelpMessage="Build configuration to use")]
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release",
-    
+
     # Output directory (defaults to temp if not specified)
     [Parameter(Mandatory=$false, HelpMessage="Directory to write output files")]
     [string]$OutputPath = "$env:TEMP/script-output",
-    
+
     # Minimum threshold
     [Parameter(Mandatory=$false, HelpMessage="Minimum percentage required")]
     [ValidateRange(0, 100)]
     [int]$MinThreshold = 80,
-    
+
     # Whether to fail on threshold violation
     [Parameter(Mandatory=$false, HelpMessage="Fail script if threshold not met")]
     [switch]$FailOnThreshold
@@ -159,34 +159,34 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Script description here"
     )
-    
+
     parser.add_argument(
         '--configuration',
         choices=['Debug', 'Release'],
         default='Release',
         help='Build configuration to use'
     )
-    
+
     parser.add_argument(
         '--output-path',
         type=Path,
         default=Path.home() / '.cache' / 'script-output',
         help='Directory to write output files'
     )
-    
+
     parser.add_argument(
         '--min-threshold',
         type=int,
         default=80,
         help='Minimum percentage required (0-100)'
     )
-    
+
     parser.add_argument(
         '--fail-on-threshold',
         action='store_true',
         help='Fail script if threshold not met'
     )
-    
+
     return parser.parse_args()
 ```
 
@@ -218,15 +218,15 @@ $ErrorActionPreference = "Stop"
 
 try {
     Write-Host "Running operation..."
-    
+
     # External command execution
     dotnet test --configuration $Configuration
-    
+
     # Check exit code
     if ($LASTEXITCODE -ne 0) {
         throw "Tests failed with exit code $LASTEXITCODE"
     }
-    
+
     Write-Host "✅ Operation completed successfully!" -ForegroundColor Green
     exit 0
 }
@@ -235,7 +235,7 @@ catch {
     if ($env:AGENT_TEMPDIRECTORY) {
         Write-Host "##vso[task.logissue type=error]$($_.Exception.Message)"
     }
-    
+
     Write-Host "❌ Operation failed: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host "Check configuration and prerequisites." -ForegroundColor Yellow
     exit 1
@@ -255,30 +255,30 @@ import subprocess
 def main():
     try:
         print("Running operation...")
-        
+
         # External command execution
         result = subprocess.run(
             ['dotnet', 'test', '--configuration', config.configuration],
             capture_output=True,
             text=True
         )
-        
+
         # Check exit code
         if result.returncode != 0:
             raise RuntimeError(f"Tests failed with exit code {result.returncode}")
-        
+
         print("✅ Operation completed successfully!")
         return 0
-        
+
     except Exception as e:
         # Azure Pipelines logging
         if os.getenv('AGENT_TEMPDIRECTORY'):
             print(f"##vso[task.logissue type=error]{str(e)}")
-        
+
         print(f"❌ Operation failed: {str(e)}", file=sys.stderr)
         print("Check configuration and prerequisites.")
         return 1
-    
+
     finally:
         # Cleanup
         cleanup_temp_files()
@@ -324,7 +324,7 @@ param(
 if (Test-Path $ConfigFile) {
     Write-Host "Loading configuration from: $ConfigFile"
     $config = Get-Content $ConfigFile | ConvertFrom-Json
-    
+
     # Override parameters with config values (if not explicitly set)
     if (-not $PSBoundParameters.ContainsKey('MinThreshold')) {
         $MinThreshold = $config.MinThreshold
@@ -343,7 +343,7 @@ def load_config(config_file: Path):
     if not config_file.exists():
         logger.info("No config file found, using defaults")
         return {}
-    
+
     try:
         with open(config_file) as f:
             config = yaml.safe_load(f)
@@ -477,13 +477,13 @@ function Test-Unicode {
     $psVersion = $PSVersionTable.PSVersion.Major
     $inAzure = $env:AGENT_TEMPDIRECTORY -ne $null
     $isUtf8Console = [Console]::OutputEncoding.CodePage -eq 65001
-    
+
     return ($psVersion -ge 7) -or $inAzure -or $isUtf8Console
 }
 
 function Get-StatusEmoji {
     param([string]$Status)
-    
+
     if (Test-Unicode) {
         return @{
             'success' = '✅'
@@ -535,11 +535,11 @@ def supports_unicode() -> bool:
     # PowerShell 7+ always supports Unicode
     if sys.version_info >= (3, 9) and os.getenv('PSModulePath'):
         return True
-    
+
     # Azure Pipelines supports Unicode
     if os.getenv('AGENT_TEMPDIRECTORY'):
         return True
-    
+
     # Check console encoding
     try:
         return sys.stdout.encoding.lower() in ['utf-8', 'utf8']

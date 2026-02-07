@@ -8,21 +8,23 @@ Provides:
 - Connection pooling
 """
 
-import json
 import hashlib
+import json
 from dataclasses import dataclass
 from typing import Any, Dict, Generic, List, Optional, TypeVar
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
 
-K = TypeVar('K')
-V = TypeVar('V')
+K = TypeVar("K")
+V = TypeVar("V")
 
 
 @dataclass
 class RedisCacheConfig:
     """Configuration for Redis cache."""
+
     host: str = "localhost"
     port: int = 6379
     db: int = 0
@@ -63,6 +65,8 @@ class RedisCache(Generic[K, V]):
         self._connected = False
         self._hits = 0
         self._misses = 0
+        # Initialized on successful connect() when redis-py is available.
+        self._redis_error: type[BaseException] = Exception
 
     async def connect(self) -> bool:
         """
@@ -73,7 +77,12 @@ class RedisCache(Generic[K, V]):
         """
         try:
             import redis.asyncio as redis
+        except ImportError as e:
+            raise ImportError("Redis package not installed. Install with: pip install redis") from e
 
+        self._redis_error = getattr(getattr(redis, "exceptions", None), "RedisError", Exception)
+
+        try:
             self._redis = redis.Redis(
                 host=self._config.host,
                 port=self._config.port,
@@ -82,21 +91,16 @@ class RedisCache(Generic[K, V]):
                 socket_timeout=self._config.socket_timeout,
                 retry_on_timeout=self._config.retry_on_timeout,
                 decode_responses=self._config.decode_responses,
-                max_connections=self._config.max_connections
+                max_connections=self._config.max_connections,
             )
 
             # Test connection
             await self._redis.ping()
             self._connected = True
             return True
-
-        except ImportError:
-            raise ImportError(
-                "Redis package not installed. Install with: pip install redis"
-            )
-        except Exception as e:
+        except self._redis_error as e:
             self._connected = False
-            raise ConnectionError(f"Failed to connect to Redis: {e}")
+            raise ConnectionError(f"Failed to connect to Redis: {e}") from e
 
     async def disconnect(self) -> None:
         """Disconnect from Redis server."""
@@ -116,11 +120,10 @@ class RedisCache(Generic[K, V]):
 
     def _serialize(self, value: V) -> str:
         """Serialize value for storage."""
-        return json.dumps({
-            "value": value,
-            "stored_at": utc_now().isoformat(),
-            "type": type(value).__name__
-        }, default=str)
+        return json.dumps(
+            {"value": value, "stored_at": utc_now().isoformat(), "type": type(value).__name__},
+            default=str,
+        )
 
     def _deserialize(self, data: str) -> V:
         """Deserialize stored value."""
@@ -151,16 +154,11 @@ class RedisCache(Generic[K, V]):
             else:
                 self._misses += 1
                 return default
-        except Exception:
+        except (self._redis_error, ValueError, TypeError, json.JSONDecodeError):
             self._misses += 1
             return default
 
-    async def put(
-        self,
-        key: K,
-        value: V,
-        ttl: Optional[int] = None
-    ) -> bool:
+    async def put(self, key: K, value: V, ttl: Optional[int] = None) -> bool:
         """
         Put value into Redis.
 
@@ -182,7 +180,7 @@ class RedisCache(Generic[K, V]):
             data = self._serialize(value)
             await self._redis.setex(redis_key, actual_ttl, data)
             return True
-        except Exception:
+        except (self._redis_error, TypeError, ValueError):
             return False
 
     async def delete(self, key: K) -> bool:
@@ -195,7 +193,7 @@ class RedisCache(Generic[K, V]):
         try:
             result = await self._redis.delete(redis_key)
             return result > 0
-        except Exception:
+        except self._redis_error:
             return False
 
     async def exists(self, key: K) -> bool:
@@ -207,7 +205,7 @@ class RedisCache(Generic[K, V]):
 
         try:
             return await self._redis.exists(redis_key) > 0
-        except Exception:
+        except self._redis_error:
             return False
 
     async def get_ttl(self, key: K) -> Optional[int]:
@@ -220,7 +218,7 @@ class RedisCache(Generic[K, V]):
         try:
             ttl = await self._redis.ttl(redis_key)
             return ttl if ttl > 0 else None
-        except Exception:
+        except self._redis_error:
             return None
 
     async def refresh_ttl(self, key: K, ttl: Optional[int] = None) -> bool:
@@ -233,7 +231,7 @@ class RedisCache(Generic[K, V]):
 
         try:
             return await self._redis.expire(redis_key, actual_ttl)
-        except Exception:
+        except self._redis_error:
             return False
 
     async def get_many(self, keys: List[K]) -> Dict[K, Optional[V]]:
@@ -254,14 +252,10 @@ class RedisCache(Generic[K, V]):
                     self._misses += 1
                     result[key] = None
             return result
-        except Exception:
+        except (self._redis_error, ValueError, TypeError, json.JSONDecodeError):
             return {k: None for k in keys}
 
-    async def put_many(
-        self,
-        items: Dict[K, V],
-        ttl: Optional[int] = None
-    ) -> bool:
+    async def put_many(self, items: Dict[K, V], ttl: Optional[int] = None) -> bool:
         """Put multiple values at once."""
         if not self._connected:
             return False
@@ -276,7 +270,7 @@ class RedisCache(Generic[K, V]):
                 pipe.setex(redis_key, actual_ttl, data)
             await pipe.execute()
             return True
-        except Exception:
+        except (self._redis_error, TypeError, ValueError):
             return False
 
     async def delete_many(self, keys: List[K]) -> int:
@@ -288,7 +282,7 @@ class RedisCache(Generic[K, V]):
 
         try:
             return await self._redis.delete(*redis_keys)
-        except Exception:
+        except self._redis_error:
             return 0
 
     async def clear_prefix(self, prefix: str = "") -> int:
@@ -306,7 +300,7 @@ class RedisCache(Generic[K, V]):
             if keys:
                 return await self._redis.delete(*keys)
             return 0
-        except Exception:
+        except self._redis_error:
             return 0
 
     async def get_keys(self, pattern: str = "*") -> List[str]:
@@ -323,7 +317,7 @@ class RedisCache(Generic[K, V]):
                 clean_key = key.replace(self._config.prefix, "", 1)
                 keys.append(clean_key)
             return keys
-        except Exception:
+        except self._redis_error:
             return []
 
     async def get_stats(self) -> Dict[str, Any]:
@@ -336,7 +330,7 @@ class RedisCache(Generic[K, V]):
             "hits": self._hits,
             "misses": self._misses,
             "hit_rate": hit_rate,
-            "prefix": self._config.prefix
+            "prefix": self._config.prefix,
         }
 
         if self._connected:
@@ -344,7 +338,7 @@ class RedisCache(Generic[K, V]):
                 info = await self._redis.info("memory")
                 stats["used_memory"] = info.get("used_memory_human", "unknown")
                 stats["used_memory_bytes"] = info.get("used_memory", 0)
-            except Exception as e:
+            except self._redis_error as e:
                 logger.debug(f"Failed to get Redis memory info: {e}")
 
         return stats
@@ -361,7 +355,7 @@ def create_redis_cache(
     db: int = 0,
     password: Optional[str] = None,
     prefix: str = "company_researcher:",
-    default_ttl: int = 3600
+    default_ttl: int = 3600,
 ) -> RedisCache:
     """
     Factory function to create Redis cache.
@@ -378,11 +372,6 @@ def create_redis_cache(
         Configured RedisCache instance
     """
     config = RedisCacheConfig(
-        host=host,
-        port=port,
-        db=db,
-        password=password,
-        prefix=prefix,
-        default_ttl=default_ttl
+        host=host, port=port, db=db, password=password, prefix=prefix, default_ttl=default_ttl
     )
     return RedisCache(config)

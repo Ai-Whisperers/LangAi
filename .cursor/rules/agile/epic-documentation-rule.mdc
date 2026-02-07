@@ -161,4 +161,4 @@ Updated: 2025-11-04T14:30:00Z by rule.agile.epic-documentation.v1
 - [ ] Risk assessment includes mitigation strategies
 - [ ] No OPSEC violations (internal URLs, credentials, personal emails)
 - [ ] Provenance footer appended with timestamp
-- [ ] Markdown formatting follows structure requirements 
+- [ ] Markdown formatting follows structure requirements

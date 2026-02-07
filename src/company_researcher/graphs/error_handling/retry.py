@@ -24,13 +24,13 @@ Usage:
         ...
 """
 
-from typing import Dict, Any, Callable, Optional, Tuple, Type
-from dataclasses import dataclass, field
-from enum import Enum
-import functools
 import asyncio
+import functools
 import random
 import time
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Callable, Dict, Optional, Tuple, Type
 
 from ...state.workflow import OverallState
 from ...utils import get_logger
@@ -263,9 +263,7 @@ def retry_node(
                     )
                     time.sleep(delay)
                 else:
-                    logger.error(
-                        f"[RETRY] {node_func.__name__} exhausted retries: {e}"
-                    )
+                    logger.error(f"[RETRY] {node_func.__name__} exhausted retries: {e}")
 
         if last_exception:
             raise last_exception
@@ -278,6 +276,7 @@ def retry_node(
 # ============================================================================
 # Retry Context Manager
 # ============================================================================
+
 
 class RetryContext:
     """

@@ -10,8 +10,8 @@ argument-hint: "Version number or 'auto' for automatic detection"
 
 Please analyze git commit history between release tags and generate accurate CHANGELOG.md entries following Keep a Changelog format.
 
-**Pattern**: Git History Analysis Pattern ⭐⭐⭐⭐⭐  
-**Effectiveness**: Essential for comprehensive CHANGELOG generation  
+**Pattern**: Git History Analysis Pattern ⭐⭐⭐⭐⭐
+**Effectiveness**: Essential for comprehensive CHANGELOG generation
 **Use When**: Multiple releases need documentation, CHANGELOG rebuild, or catching up on undocumented releases
 
 ---
@@ -431,7 +431,7 @@ git push
 
 ---
 
-**Created**: 2025-12-06  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
-**Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)  
+**Created**: 2025-12-06
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
+**Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)
 **Changelog**: Added automatic version detection from release branch to optimize CI/CD workflow

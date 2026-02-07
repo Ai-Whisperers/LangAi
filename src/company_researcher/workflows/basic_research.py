@@ -7,36 +7,32 @@ Workflow:
     Input → Generate Queries → Search → Analyze → Extract Data → Save Report → Output
 """
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 
-from ..state import OverallState, InputState, OutputState, create_initial_state, create_output_state
 from ..agents.core.company_classifier import classify_company_node
+from ..state import InputState, OutputState, OverallState, create_initial_state, create_output_state
 
 # Import all workflow nodes from the nodes package
-from .nodes import (
-    # Search nodes
+from .nodes import (  # Search nodes; Analysis nodes; Enrichment nodes; Output nodes
+    analyze_node,
+    check_quality_node,
+    competitive_analysis_node,
+    extract_data_node,
     generate_queries_node,
+    investment_thesis_node,
+    news_sentiment_node,
+    risk_assessment_node,
+    save_report_node,
     search_node,
     sec_edgar_node,
-    website_scraping_node,
-    # Analysis nodes
-    analyze_node,
-    extract_data_node,
-    check_quality_node,
     should_continue_research,
-    # Enrichment nodes
-    news_sentiment_node,
-    competitive_analysis_node,
-    risk_assessment_node,
-    # Output nodes
-    investment_thesis_node,
-    save_report_node,
+    website_scraping_node,
 )
-
 
 # ============================================================================
 # Workflow Graph Construction
 # ============================================================================
+
 
 def create_research_workflow() -> StateGraph:
     """
@@ -57,23 +53,54 @@ def create_research_workflow() -> StateGraph:
         Compiled StateGraph workflow
     """
     # Create graph
-    workflow = StateGraph(OverallState, input=InputState, output=OutputState)
+    # NOTE:
+    # This workflow returns the full OverallState so we can derive a stable OutputState
+    # via create_output_state() (metrics, duration, etc). Several nodes only update
+    # parts of the state, and do not construct OutputState directly.
+    workflow = StateGraph(OverallState)
+
+    def _ensure_state_update(node_fn):
+        """
+        LangGraph requires each node to update at least one state key.
+        Some nodes (and many tests) legitimately behave as no-ops and return {}.
+        Treat that as a no-op update to an idempotent key so the graph can proceed.
+        """
+
+        def _wrapped(state: dict) -> dict:
+            out = node_fn(state)
+            if isinstance(out, dict) and out:
+                return out
+            # Idempotent no-op update; satisfies LangGraph's validation.
+            company = state.get("company_name") or state.get("subject") or ""
+            return {"company_name": company}
+
+        return _wrapped
 
     # Add nodes
-    workflow.add_node("classify_company", classify_company_node)  # First node - classify company
-    workflow.add_node("generate_queries", generate_queries_node)
-    workflow.add_node("search", search_node)
-    workflow.add_node("sec_edgar", sec_edgar_node)  # FREE SEC filings for US companies
-    workflow.add_node("website_scraping", website_scraping_node)  # FREE Wikipedia + Jina website scraping
-    workflow.add_node("analyze", analyze_node)
-    workflow.add_node("extract_data", extract_data_node)
-    workflow.add_node("check_quality", check_quality_node)
+    workflow.add_node(
+        "classify_company", _ensure_state_update(classify_company_node)
+    )  # First node - classify company
+    workflow.add_node("generate_queries", _ensure_state_update(generate_queries_node))
+    workflow.add_node("search", _ensure_state_update(search_node))
+    workflow.add_node(
+        "sec_edgar", _ensure_state_update(sec_edgar_node)
+    )  # FREE SEC filings for US companies
+    workflow.add_node(
+        "website_scraping", _ensure_state_update(website_scraping_node)
+    )  # FREE Wikipedia + Jina website scraping
+    workflow.add_node("analyze", _ensure_state_update(analyze_node))
+    workflow.add_node("extract_data", _ensure_state_update(extract_data_node))
+    workflow.add_node("check_quality", _ensure_state_update(check_quality_node))
     # Enhanced analysis nodes
-    workflow.add_node("news_sentiment", news_sentiment_node)
-    workflow.add_node("competitive_analysis", competitive_analysis_node)
-    workflow.add_node("risk_assessment", risk_assessment_node)
-    workflow.add_node("investment_thesis", investment_thesis_node)
-    workflow.add_node("save_report", save_report_node)
+    #
+    # NOTE: LangGraph disallows node IDs that collide with state keys.
+    # Our OverallState includes keys like "news_sentiment" and "investment_thesis",
+    # so the node IDs must be different to avoid ValueError during graph construction.
+    workflow.add_node("news_sentiment_step", _ensure_state_update(news_sentiment_node))
+    workflow.add_node("competitive_analysis", _ensure_state_update(competitive_analysis_node))
+    workflow.add_node("risk_assessment", _ensure_state_update(risk_assessment_node))
+    workflow.add_node("investment_thesis_step", _ensure_state_update(investment_thesis_node))
+    workflow.add_node("save_report", _ensure_state_update(save_report_node))
 
     # Define edges - classify_company is the entry point
     workflow.set_entry_point("classify_company")
@@ -82,8 +109,8 @@ def create_research_workflow() -> StateGraph:
     workflow.add_edge("search", "sec_edgar")  # Fetch SEC filings after web search
     workflow.add_edge("sec_edgar", "website_scraping")  # Scrape Wikipedia + company websites (FREE)
     workflow.add_edge("website_scraping", "analyze")
-    workflow.add_edge("analyze", "news_sentiment")  # Add sentiment analysis after search
-    workflow.add_edge("news_sentiment", "extract_data")
+    workflow.add_edge("analyze", "news_sentiment_step")  # Add sentiment analysis after search
+    workflow.add_edge("news_sentiment_step", "extract_data")
     workflow.add_edge("extract_data", "check_quality")
 
     # Conditional edge from check_quality
@@ -92,14 +119,14 @@ def create_research_workflow() -> StateGraph:
         should_continue_research,
         {
             "iterate": "generate_queries",  # Loop back to improve
-            "finish": "competitive_analysis"  # Quality is good, proceed to analysis
-        }
+            "finish": "competitive_analysis",  # Quality is good, proceed to analysis
+        },
     )
 
     # Enhanced analysis pipeline
     workflow.add_edge("competitive_analysis", "risk_assessment")
-    workflow.add_edge("risk_assessment", "investment_thesis")
-    workflow.add_edge("investment_thesis", "save_report")
+    workflow.add_edge("risk_assessment", "investment_thesis_step")
+    workflow.add_edge("investment_thesis_step", "save_report")
     workflow.add_edge("save_report", END)
 
     return workflow.compile()
@@ -108,6 +135,7 @@ def create_research_workflow() -> StateGraph:
 # ============================================================================
 # Main Research Function
 # ============================================================================
+
 
 def research_company(company_name: str) -> OutputState:
     """
@@ -142,7 +170,9 @@ def research_company(company_name: str) -> OutputState:
     print(f"Report: {output['report_path']}")
     print(f"Duration: {output['metrics']['duration_seconds']:.1f}s")
     print(f"Cost: ${output['metrics']['cost_usd']:.4f}")
-    print(f"Tokens: {output['metrics']['tokens']['input']:,} in, {output['metrics']['tokens']['output']:,} out")
+    print(
+        f"Tokens: {output['metrics']['tokens']['input']:,} in, {output['metrics']['tokens']['output']:,} out"
+    )
     print(f"Sources: {output['metrics']['sources_count']}")
     print(f"{'='*60}\n")
 

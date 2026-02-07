@@ -12,10 +12,10 @@ Configuration via environment variables in settings.local.json:
 Usage: Automatically triggered by Claude Code PostToolUse hook
 """
 
+import json
 import os
 import sys
-import json
-from datetime import datetime, date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -30,15 +30,15 @@ COST_TRACKING_FILE = Path.home() / ".claude" / "cost_tracking.json"
 # Approximate costs - actual costs may vary
 COSTS = {
     "input": {
-        "haiku": 0.25,     # $0.25 per 1M input tokens
-        "sonnet": 3.00,    # $3.00 per 1M input tokens
-        "opus": 15.00      # $15.00 per 1M input tokens
+        "haiku": 0.25,  # $0.25 per 1M input tokens
+        "sonnet": 3.00,  # $3.00 per 1M input tokens
+        "opus": 15.00,  # $15.00 per 1M input tokens
     },
     "output": {
-        "haiku": 1.25,     # $1.25 per 1M output tokens
-        "sonnet": 15.00,   # $15.00 per 1M output tokens
-        "opus": 75.00      # $75.00 per 1M output tokens
-    }
+        "haiku": 1.25,  # $1.25 per 1M output tokens
+        "sonnet": 15.00,  # $15.00 per 1M output tokens
+        "opus": 75.00,  # $75.00 per 1M output tokens
+    },
 }
 
 
@@ -47,23 +47,13 @@ def load_cost_tracking() -> Dict:
     Load cost tracking data from file.
     """
     if not COST_TRACKING_FILE.exists():
-        return {
-            "daily_costs": {},
-            "weekly_costs": {},
-            "monthly_costs": {},
-            "sessions": []
-        }
+        return {"daily_costs": {}, "weekly_costs": {}, "monthly_costs": {}, "sessions": []}
 
     try:
         with open(COST_TRACKING_FILE, "r") as f:
             return json.load(f)
     except Exception:
-        return {
-            "daily_costs": {},
-            "weekly_costs": {},
-            "monthly_costs": {},
-            "sessions": []
-        }
+        return {"daily_costs": {}, "weekly_costs": {}, "monthly_costs": {}, "sessions": []}
 
 
 def save_cost_tracking(data: Dict):
@@ -76,11 +66,7 @@ def save_cost_tracking(data: Dict):
         json.dump(data, f, indent=2)
 
 
-def estimate_operation_cost(
-    model: str,
-    input_tokens: int,
-    output_tokens: int
-) -> float:
+def estimate_operation_cost(model: str, input_tokens: int, output_tokens: int) -> float:
     """
     Estimate cost for a single operation.
 
@@ -124,12 +110,7 @@ def get_daily_spend(tracking_data: Dict) -> Tuple[float, List[Dict]]:
     return total, breakdown
 
 
-def update_daily_spend(
-    tracking_data: Dict,
-    operation: str,
-    cost: float,
-    model: str
-):
+def update_daily_spend(tracking_data: Dict, operation: str, cost: float, model: str):
     """
     Update daily spending with new operation.
     """
@@ -139,19 +120,18 @@ def update_daily_spend(
         tracking_data["daily_costs"] = {}
 
     if today not in tracking_data["daily_costs"]:
-        tracking_data["daily_costs"][today] = {
-            "total": 0.0,
-            "breakdown": []
-        }
+        tracking_data["daily_costs"][today] = {"total": 0.0, "breakdown": []}
 
     today_data = tracking_data["daily_costs"][today]
     today_data["total"] += cost
-    today_data["breakdown"].append({
-        "operation": operation,
-        "cost": cost,
-        "model": model,
-        "timestamp": datetime.now().isoformat()
-    })
+    today_data["breakdown"].append(
+        {
+            "operation": operation,
+            "cost": cost,
+            "model": model,
+            "timestamp": datetime.now().isoformat(),
+        }
+    )
 
 
 def check_budget_alert(current_spend: float) -> Dict:
@@ -175,7 +155,7 @@ def check_budget_alert(current_spend: float) -> Dict:
         "percentage": percentage,
         "current_spend": current_spend,
         "daily_budget": DAILY_BUDGET,
-        "remaining": remaining
+        "remaining": remaining,
     }
 
 
@@ -198,7 +178,9 @@ def suggest_optimizations(alert: Dict, breakdown: List[Dict]) -> List[str]:
     sonnet_cost = sum(op["cost"] for op in breakdown if "sonnet" in op["model"].lower())
     haiku_cost = sum(op["cost"] for op in breakdown if "haiku" in op["model"].lower())
 
-    sonnet_percentage = (sonnet_cost / alert["current_spend"] * 100) if alert["current_spend"] > 0 else 0
+    sonnet_percentage = (
+        (sonnet_cost / alert["current_spend"] * 100) if alert["current_spend"] > 0 else 0
+    )
 
     if sonnet_percentage > 30:
         suggestions.append(
@@ -233,7 +215,9 @@ def format_alert(alert: Dict, breakdown: List[Dict]) -> str:
     output = []
     output.append(f"\n{color}Cost Alert:{NC}")
     output.append("")
-    output.append(f"  Daily spending: ${alert['current_spend']:.2f} / ${alert['daily_budget']:.2f} ({alert['percentage']:.0f}%)")
+    output.append(
+        f"  Daily spending: ${alert['current_spend']:.2f} / ${alert['daily_budget']:.2f} ({alert['percentage']:.0f}%)"
+    )
     output.append(f"  Remaining: ${alert['remaining']:.2f}")
     output.append("")
 

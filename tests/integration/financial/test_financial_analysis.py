@@ -11,16 +11,19 @@ Usage:
     python test_phase7_financial.py
 """
 
-from src.company_researcher.tools.alpha_vantage_client import AlphaVantageClient, extract_key_metrics
-from src.company_researcher.tools.sec_edgar_parser import SECEdgarParser, is_public_company
-from src.company_researcher.tools.financial_analysis_utils import (
-    calculate_yoy_growth,
-    calculate_cagr,
-    analyze_revenue_trend,
-    analyze_profitability,
-    analyze_financial_health
-)
 from src.company_researcher.agents.financial.enhanced_financial import infer_ticker_symbol
+from src.company_researcher.tools.alpha_vantage_client import (
+    AlphaVantageClient,
+    extract_key_metrics,
+)
+from src.company_researcher.tools.financial_analysis_utils import (
+    analyze_financial_health,
+    analyze_profitability,
+    analyze_revenue_trend,
+    calculate_cagr,
+    calculate_yoy_growth,
+)
+from src.company_researcher.tools.sec_edgar_parser import SECEdgarParser, is_public_company
 
 
 def test_alpha_vantage():
@@ -98,11 +101,7 @@ def test_financial_utils():
 
     # Test revenue trend analysis
     print("\n  Testing revenue trend analysis...")
-    revenue_history = [
-        ("2021", 50.0),
-        ("2022", 65.0),
-        ("2023", 81.5)
-    ]
+    revenue_history = [("2021", 50.0), ("2022", 65.0), ("2023", 81.5)]
     trend = analyze_revenue_trend(revenue_history)
     print(f"  Trend available: {trend.get('available', False)}")
     if trend.get("available"):
@@ -112,11 +111,7 @@ def test_financial_utils():
     # Test profitability analysis
     print("\n  Testing profitability analysis...")
     profitability = analyze_profitability(
-        revenue=100.0,
-        gross_profit=25.0,
-        operating_income=15.0,
-        net_income=10.0,
-        ebitda=20.0
+        revenue=100.0, gross_profit=25.0, operating_income=15.0, net_income=10.0, ebitda=20.0
     )
     print(f"  Gross Margin: {profitability.get('gross_margin')}%")
     print(f"  Operating Margin: {profitability.get('operating_margin')}%")
@@ -132,7 +127,7 @@ def test_financial_utils():
         current_liabilities=30.0,
         inventory=10.0,
         operating_cash_flow=20.0,
-        capex=8.0
+        capex=8.0,
     )
     print(f"  Debt-to-Equity: {health.get('debt_to_equity')}")
     print(f"  Current Ratio: {health.get('current_ratio')}")
@@ -149,13 +144,7 @@ def test_ticker_inference():
     print("TEST 4: Ticker Symbol Inference")
     print("=" * 70)
 
-    companies = [
-        "Tesla",
-        "Microsoft",
-        "Stripe",
-        "OpenAI",
-        "Amazon"
-    ]
+    companies = ["Tesla", "Microsoft", "Stripe", "OpenAI", "Amazon"]
 
     print("\n  Testing ticker inference...")
     for company in companies:
@@ -178,7 +167,7 @@ def test_enhanced_agent():
     print("  - Would incur API costs")
 
     print("\n  Skipping full agent test in validation script")
-    print("  Run actual research to test: python examples/hello_research.py \"Tesla\"")
+    print('  Run actual research to test: python examples/hello_research.py "Tesla"')
 
     print("\n[OK] Enhanced agent structure validated\n")
 
@@ -196,7 +185,7 @@ def run_all_tests():
         ("SEC EDGAR Parser", test_sec_edgar),
         ("Financial Utilities", test_financial_utils),
         ("Ticker Inference", test_ticker_inference),
-        ("Enhanced Agent", test_enhanced_agent)
+        ("Enhanced Agent", test_enhanced_agent),
     ]
 
     results = []

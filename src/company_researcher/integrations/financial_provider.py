@@ -13,8 +13,9 @@ Failed providers are logged and skipped for subsequent calls during the session.
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Callable
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -22,6 +23,7 @@ logger = get_logger(__name__)
 
 class ProviderStatus(Enum):
     """Provider availability status."""
+
     AVAILABLE = "available"
     RATE_LIMITED = "rate_limited"
     ERROR = "error"
@@ -31,6 +33,7 @@ class ProviderStatus(Enum):
 @dataclass
 class ProviderState:
     """Tracks state of a financial data provider."""
+
     name: str
     status: ProviderStatus = ProviderStatus.AVAILABLE
     last_call: Optional[datetime] = None
@@ -51,9 +54,7 @@ class ProviderState:
             return False
         if self.daily_limit and self.calls_today >= self.daily_limit:
             self.status = ProviderStatus.RATE_LIMITED
-            self.reset_time = utc_now().replace(
-                hour=0, minute=0, second=0
-            ) + timedelta(days=1)
+            self.reset_time = utc_now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
             return False
         return True
 
@@ -70,6 +71,7 @@ class ProviderState:
 @dataclass
 class FinancialData:
     """Unified financial data structure."""
+
     ticker: str
     company_name: Optional[str] = None
 
@@ -181,12 +183,8 @@ class FinancialData:
 
     def _assess_quality(self):
         """Assess data completeness."""
-        critical_fields = [
-            "current_price", "market_cap", "revenue", "net_income", "pe_ratio"
-        ]
-        important_fields = [
-            "employees", "sector", "industry", "gross_margin", "profit_margin"
-        ]
+        critical_fields = ["current_price", "market_cap", "revenue", "net_income", "pe_ratio"]
+        important_fields = ["employees", "sector", "industry", "gross_margin", "profit_margin"]
 
         critical_count = sum(1 for f in critical_fields if getattr(self, f) is not None)
         important_count = sum(1 for f in important_fields if getattr(self, f) is not None)
@@ -212,10 +210,7 @@ class FinancialDataProvider:
     """
 
     def __init__(
-        self,
-        config: Any,
-        providers: Optional[List[str]] = None,
-        enable_caching: bool = True
+        self, config: Any, providers: Optional[List[str]] = None, enable_caching: bool = True
     ):
         """
         Initialize the financial data provider.
@@ -262,17 +257,12 @@ class FinancialDataProvider:
                 logger.debug(f"Polygon API key not configured, skipping")
                 continue
 
-            self.providers[name] = ProviderState(
-                name=name,
-                daily_limit=daily_limit
-            )
+            self.providers[name] = ProviderState(name=name, daily_limit=daily_limit)
             self._provider_funcs[name] = func
             logger.info(f"Registered financial provider: {name}")
 
     def get_financial_data(
-        self,
-        ticker: str,
-        force_refresh: bool = False
+        self, ticker: str, force_refresh: bool = False
     ) -> Optional[FinancialData]:
         """
         Get financial data for a ticker using fallback chain.
@@ -372,7 +362,6 @@ class FinancialDataProvider:
             employees=info.get("fullTimeEmployees"),
             description=info.get("longBusinessSummary"),
             website=info.get("website"),
-
             current_price=info.get("regularMarketPrice") or info.get("currentPrice"),
             market_cap=info.get("marketCap"),
             previous_close=info.get("previousClose"),
@@ -382,7 +371,6 @@ class FinancialDataProvider:
             fifty_two_week_low=info.get("fiftyTwoWeekLow"),
             volume=info.get("volume"),
             avg_volume=info.get("averageVolume"),
-
             pe_ratio=info.get("trailingPE"),
             forward_pe=info.get("forwardPE"),
             peg_ratio=info.get("pegRatio"),
@@ -390,7 +378,6 @@ class FinancialDataProvider:
             price_to_sales=info.get("priceToSalesTrailing12Months"),
             ev_to_ebitda=info.get("enterpriseToEbitda"),
             ev_to_revenue=info.get("enterpriseToRevenue"),
-
             revenue=info.get("totalRevenue"),
             revenue_growth=info.get("revenueGrowth"),
             gross_profit=info.get("grossProfits"),
@@ -401,28 +388,23 @@ class FinancialDataProvider:
             profit_margin=info.get("profitMargins"),
             ebitda=info.get("ebitda"),
             eps=info.get("trailingEps"),
-
             total_cash=info.get("totalCash"),
             total_debt=info.get("totalDebt"),
             debt_to_equity=info.get("debtToEquity"),
             current_ratio=info.get("currentRatio"),
             book_value=info.get("bookValue"),
-
             dividend_rate=info.get("dividendRate"),
             dividend_yield=info.get("dividendYield"),
             payout_ratio=info.get("payoutRatio"),
-
             return_on_equity=info.get("returnOnEquity"),
             return_on_assets=info.get("returnOnAssets"),
             beta=info.get("beta"),
-
             target_price=info.get("targetMeanPrice"),
             target_high=info.get("targetHighPrice"),
             target_low=info.get("targetLowPrice"),
             analyst_recommendation=info.get("recommendationKey"),
             num_analyst_opinions=info.get("numberOfAnalystOpinions"),
-
-            data_sources=["yfinance"]
+            data_sources=["yfinance"],
         )
 
     def _fetch_fmp(self, ticker: str) -> Optional[FinancialData]:
@@ -455,7 +437,7 @@ class FinancialDataProvider:
             ceo=profile.ceo if profile else None,
             current_price=profile.price if profile else None,
             market_cap=profile.market_cap if profile else None,
-            data_sources=["fmp"]
+            data_sources=["fmp"],
         )
 
         # Add income statement data
@@ -508,7 +490,7 @@ class FinancialDataProvider:
             country=profile.get("country"),
             website=profile.get("weburl"),
             market_cap=profile.get("marketCapitalization"),
-            data_sources=["finnhub"]
+            data_sources=["finnhub"],
         )
 
         # Add quote data
@@ -555,7 +537,7 @@ class FinancialDataProvider:
             employees=details.get("total_employees"),
             market_cap=details.get("market_cap"),
             website=details.get("homepage_url"),
-            data_sources=["polygon"]
+            data_sources=["polygon"],
         )
 
         # Add price data
@@ -576,7 +558,7 @@ class FinancialDataProvider:
                 "calls_today": state.calls_today,
                 "daily_limit": state.daily_limit,
                 "last_call": state.last_call.isoformat() if state.last_call else None,
-                "last_error": state.last_error
+                "last_error": state.last_error,
             }
             for name, state in self.providers.items()
         }

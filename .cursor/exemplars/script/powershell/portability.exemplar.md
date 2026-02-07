@@ -126,4 +126,3 @@ Write-Host ".NET SDK found at: $($dotnetPath.Source)"
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

@@ -9,8 +9,9 @@ API: https://www.sec.gov/edgar/sec-api-documentation
 Note: SEC requires User-Agent header with contact info
 """
 
-from typing import Dict, List, Optional, Any
 from datetime import timedelta
+from typing import Any, Dict, List, Optional
+
 from ..utils import utc_now
 
 
@@ -81,7 +82,7 @@ class SECEdgarParser:
         return {
             "note": "Mock SEC EDGAR data. Replace with actual HTTP request.",
             "params": params,
-            "timestamp": utc_now().isoformat()
+            "timestamp": utc_now().isoformat(),
         }
 
     def search_company(self, company_name: str) -> Optional[Dict[str, Any]]:
@@ -102,17 +103,14 @@ class SECEdgarParser:
             return {
                 "company_name": company_name,
                 "cik": "0000000000",  # Mock CIK
-                "note": "Mock data. In production, would search SEC database."
+                "note": "Mock data. In production, would search SEC database.",
             }
         except Exception as e:
             print(f"[SEC EDGAR] Error searching for {company_name}: {e}")
             return None
 
     def get_company_filings(
-        self,
-        cik: str,
-        filing_type: str = "10-K",
-        count: int = 5
+        self, cik: str, filing_type: str = "10-K", count: int = 5
     ) -> List[Dict[str, Any]]:
         """
         Get recent filings for a company.
@@ -133,7 +131,7 @@ class SECEdgarParser:
                 "CIK": cik,
                 "type": filing_type,
                 "count": count,
-                "output": "atom"
+                "output": "atom",
             }
 
             data = self._make_request(**params)
@@ -145,7 +143,7 @@ class SECEdgarParser:
                     "filing_date": "2024-01-31",
                     "accession_number": "0000000000-00-000000",
                     "url": f"{self.base_url}/Archives/edgar/data/{cik}/...",
-                    "note": "Mock filing data"
+                    "note": "Mock filing data",
                 }
             ]
         except Exception as e:
@@ -205,13 +203,10 @@ class SECEdgarParser:
             "net_income": None,
             "assets": None,
             "liabilities": None,
-            "equity": None
+            "equity": None,
         }
 
-    def get_company_financials(
-        self,
-        company_name: str
-    ) -> Dict[str, Any]:
+    def get_company_financials(self, company_name: str) -> Dict[str, Any]:
         """
         Get comprehensive financial data from SEC filings.
 
@@ -235,7 +230,7 @@ class SECEdgarParser:
         if not company_info:
             return {
                 "available": False,
-                "reason": f"Company '{company_name}' not found in SEC database"
+                "reason": f"Company '{company_name}' not found in SEC database",
             }
 
         cik = company_info["cik"]
@@ -254,7 +249,7 @@ class SECEdgarParser:
             "latest_10q": latest_10q,
             "annual_financials": None,  # Would be parsed from 10-K
             "quarterly_financials": None,  # Would be parsed from 10-Q
-            "note": "Mock data. In production, would parse actual filings."
+            "note": "Mock data. In production, would parse actual filings.",
         }
 
         print(f"[SEC EDGAR] Financials fetched for {company_name}")
@@ -265,6 +260,7 @@ class SECEdgarParser:
 # ==============================================================================
 # Helper Functions
 # ==============================================================================
+
 
 def extract_revenue_trends(financials: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -289,7 +285,7 @@ def extract_revenue_trends(financials: Dict[str, Any]) -> Dict[str, Any]:
         "quarterly_revenue": [],  # List of (quarter, revenue) tuples
         "yoy_growth": None,
         "cagr_3_year": None,
-        "note": "Mock data. In production, would calculate from actual filings."
+        "note": "Mock data. In production, would calculate from actual filings.",
     }
 
 
@@ -314,7 +310,7 @@ def extract_profitability_metrics(financials: Dict[str, Any]) -> Dict[str, Any]:
         "net_margin": None,
         "ebitda": None,
         "ebitda_margin": None,
-        "note": "Mock data. In production, would calculate from actual filings."
+        "note": "Mock data. In production, would calculate from actual filings.",
     }
 
 
@@ -340,7 +336,7 @@ def extract_financial_health(financials: Dict[str, Any]) -> Dict[str, Any]:
         "current_ratio": None,
         "quick_ratio": None,
         "free_cash_flow": None,
-        "note": "Mock data. In production, would calculate from actual filings."
+        "note": "Mock data. In production, would calculate from actual filings.",
     }
 
 

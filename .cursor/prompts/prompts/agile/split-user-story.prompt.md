@@ -66,4 +66,3 @@ Follow guidelines from:
 
 - `.cursor/rules/agile/story-splitting-rule.mdc`
 - `.cursor/rules/agile/user-story-documentation-rule.mdc`
-

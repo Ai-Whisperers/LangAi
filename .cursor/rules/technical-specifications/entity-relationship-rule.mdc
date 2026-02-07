@@ -107,7 +107,7 @@ docs/technical/[domain]/
 - **Database Schema Structure**: Table structure and constraints
 - **Migration Considerations**: Special requirements for C++ to C# conversion
 
-### **What to Avoid**  
+### **What to Avoid**
 - **Detailed Field Specifications**: Individual field meanings belong in separate domain object files
 - **Domain Object Business Rules**: Entity-specific rules belong in domain object files
 - **Generic Schemas**: Don't create typical/expected schemas without verification
@@ -129,7 +129,7 @@ docs/technical/[domain]/
 
 ### **Verification Requirements**
 - All entities verified against source system analysis
-- All relationships confirmed through code or configuration analysis  
+- All relationships confirmed through code or configuration analysis
 - All field names and types validated against actual system
 - All constraints based on observed system behavior
 

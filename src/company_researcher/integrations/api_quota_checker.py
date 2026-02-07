@@ -20,10 +20,10 @@ import json
 
 # Import from quota package
 from .quota import (
-    QuotaStatus,
+    APIQuotaChecker,
     QuotaInfo,
     QuotaReport,
-    APIQuotaChecker,
+    QuotaStatus,
     check_all_quotas,
     check_all_quotas_async,
 )
@@ -43,6 +43,7 @@ __all__ = [
 # CLI Entry Point
 # =========================================================================
 
+
 def main():
     """Run quota check from command line."""
     import argparse
@@ -51,15 +52,9 @@ def main():
         description="Check API quotas and balances for all integrations"
     )
     parser.add_argument(
-        "--json", "-j",
-        action="store_true",
-        help="Output as JSON instead of formatted text"
+        "--json", "-j", action="store_true", help="Output as JSON instead of formatted text"
     )
-    parser.add_argument(
-        "--output", "-o",
-        type=str,
-        help="Save report to file"
-    )
+    parser.add_argument("--output", "-o", type=str, help="Save report to file")
 
     args = parser.parse_args()
 

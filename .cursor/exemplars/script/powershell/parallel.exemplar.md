@@ -16,11 +16,11 @@
 # Parallel (3-10x faster)
 $results = $packages | ForEach-Object -Parallel {
     param($pkg = $_)
-    
+
     # Each iteration runs in separate runspace
     $lineCoverage = [double]$pkg.'line-rate' * 100
     $branchCoverage = [double]$pkg.'branch-rate' * 100
-    
+
     [PSCustomObject]@{
         Name = $pkg.name
         LineCoverage = $lineCoverage
@@ -45,7 +45,7 @@ $results = @()
 foreach ($package in $packages) {
     $lineCoverage = [double]$package.'line-rate' * 100
     $branchCoverage = [double]$package.'branch-rate' * 100
-    
+
     $results += [PSCustomObject]@{
         Name = $package.name
         LineCoverage = $lineCoverage
@@ -68,7 +68,7 @@ foreach ($package in $packages) {
 $threshold = 80
 $results = $items | ForEach-Object -Parallel {
     param($item, $minThreshold)
-    
+
     if ($item.Value -ge $minThreshold) {
         [PSCustomObject]@{ Name = $item.Name; Status = "Pass" }
     }
@@ -82,7 +82,7 @@ $results = $items | ForEach-Object -Parallel {
 ```powershell
 $results = $files | ForEach-Object -Parallel {
     param($file = $_)
-    
+
     try {
         $content = Get-Content $file -ErrorAction Stop
         return @{ File = $file; Lines = $content.Count; Status = "Success" }
@@ -141,4 +141,3 @@ foreach ($num in 1..10) {
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

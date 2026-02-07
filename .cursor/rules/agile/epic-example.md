@@ -154,7 +154,7 @@ Tier 1 BRP customers need split EBASE environments for market standard processes
 - **Risk**: Configuration table schemas may change between versions
 - **Impact**: High - Could break extraction/update logic
 - **Probability**: Medium
-- **Mitigation**: 
+- **Mitigation**:
   - Schema versioning and compatibility checks
   - Automated schema validation
   - Support for multiple schema versions
@@ -275,5 +275,3 @@ Tier 1 BRP customers need split EBASE environments for market standard processes
 7. TF-007 (Improves usability)
 8. TF-008 (Optional enhancement)
 ```
-
-

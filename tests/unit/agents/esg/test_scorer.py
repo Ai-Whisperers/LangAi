@@ -3,11 +3,11 @@
 import pytest
 
 from company_researcher.agents.esg.models import (
-    ESGCategory,
-    ESGRating,
-    ControversySeverity,
-    ESGMetric,
     Controversy,
+    ControversySeverity,
+    ESGCategory,
+    ESGMetric,
+    ESGRating,
     ESGScore,
 )
 from company_researcher.agents.esg.scorer import ESGScorer
@@ -51,7 +51,7 @@ class TestESGScorerCalculateScore:
                 name="Carbon Emissions",
                 category=ESGCategory.ENVIRONMENTAL,
                 value=1000,
-                trend="improving"
+                trend="improving",
             )
         ]
         score = scorer.calculate_score(metrics, [])
@@ -62,10 +62,7 @@ class TestESGScorerCalculateScore:
         """Declining metrics should decrease category scores."""
         metrics = [
             ESGMetric(
-                name="Safety Incidents",
-                category=ESGCategory.SOCIAL,
-                value=10,
-                trend="declining"
+                name="Safety Incidents", category=ESGCategory.SOCIAL, value=10, trend="declining"
             )
         ]
         score = scorer.calculate_score(metrics, [])
@@ -76,10 +73,7 @@ class TestESGScorerCalculateScore:
         """Metrics above benchmark should increase score."""
         metrics = [
             ESGMetric(
-                name="Board Independence",
-                category=ESGCategory.GOVERNANCE,
-                value=80,
-                benchmark=60.0
+                name="Board Independence", category=ESGCategory.GOVERNANCE, value=80, benchmark=60.0
             )
         ]
         score = scorer.calculate_score(metrics, [])
@@ -93,7 +87,7 @@ class TestESGScorerCalculateScore:
                 name="Renewable Energy",
                 category=ESGCategory.ENVIRONMENTAL,
                 value=20,
-                benchmark=50.0
+                benchmark=50.0,
             )
         ]
         score = scorer.calculate_score(metrics, [])
@@ -107,7 +101,7 @@ class TestESGScorerCalculateScore:
                 title="Environmental Incident",
                 description="Major pollution event",
                 category=ESGCategory.ENVIRONMENTAL,
-                severity=ControversySeverity.HIGH
+                severity=ControversySeverity.HIGH,
             )
         ]
         score = scorer.calculate_score([], controversies)
@@ -121,7 +115,7 @@ class TestESGScorerCalculateScore:
                 title="Major Scandal",
                 description="...",
                 category=ESGCategory.GOVERNANCE,
-                severity=ControversySeverity.SEVERE
+                severity=ControversySeverity.SEVERE,
             )
         ]
         moderate = [
@@ -129,7 +123,7 @@ class TestESGScorerCalculateScore:
                 title="Minor Issue",
                 description="...",
                 category=ESGCategory.GOVERNANCE,
-                severity=ControversySeverity.MODERATE
+                severity=ControversySeverity.MODERATE,
             )
         ]
         score_severe = scorer.calculate_score([], severe)
@@ -145,7 +139,7 @@ class TestESGScorerCalculateScore:
                 description="...",
                 category=ESGCategory.SOCIAL,
                 severity=ControversySeverity.HIGH,
-                resolved=False
+                resolved=False,
             )
         ]
         resolved = [
@@ -154,7 +148,7 @@ class TestESGScorerCalculateScore:
                 description="...",
                 category=ESGCategory.SOCIAL,
                 severity=ControversySeverity.HIGH,
-                resolved=True
+                resolved=True,
             )
         ]
         score_unresolved = scorer.calculate_score([], unresolved)
@@ -171,7 +165,7 @@ class TestESGScorerCalculateScore:
                 category=ESGCategory.ENVIRONMENTAL,
                 value=100,
                 trend="improving",
-                benchmark=50.0
+                benchmark=50.0,
             )
             for i in range(20)
         ]
@@ -191,10 +185,12 @@ class TestESGScorerCalculateScore:
 
         # All categories should be elevated equally, so overall should match
         assert score.overall_score == pytest.approx(
-            (score.environmental_score * 0.33 +
-             score.social_score * 0.33 +
-             score.governance_score * 0.34),
-            rel=0.01
+            (
+                score.environmental_score * 0.33
+                + score.social_score * 0.33
+                + score.governance_score * 0.34
+            ),
+            rel=0.01,
         )
 
 
@@ -252,12 +248,10 @@ class TestESGScorerConfidence:
     def test_more_metrics_higher_confidence(self, scorer):
         """More metrics should increase confidence."""
         few_metrics = [
-            ESGMetric(name=f"M{i}", category=ESGCategory.ENVIRONMENTAL, value=i)
-            for i in range(3)
+            ESGMetric(name=f"M{i}", category=ESGCategory.ENVIRONMENTAL, value=i) for i in range(3)
         ]
         many_metrics = [
-            ESGMetric(name=f"M{i}", category=ESGCategory.ENVIRONMENTAL, value=i)
-            for i in range(15)
+            ESGMetric(name=f"M{i}", category=ESGCategory.ENVIRONMENTAL, value=i) for i in range(15)
         ]
         conf_few = scorer._calculate_confidence(few_metrics, [])
         conf_many = scorer._calculate_confidence(many_metrics, [])
@@ -266,9 +260,7 @@ class TestESGScorerConfidence:
 
     def test_category_coverage_increases_confidence(self, scorer):
         """Covering all categories should increase confidence."""
-        single_category = [
-            ESGMetric(name="E1", category=ESGCategory.ENVIRONMENTAL, value=1)
-        ]
+        single_category = [ESGMetric(name="E1", category=ESGCategory.ENVIRONMENTAL, value=1)]
         all_categories = [
             ESGMetric(name="E", category=ESGCategory.ENVIRONMENTAL, value=1),
             ESGMetric(name="S", category=ESGCategory.SOCIAL, value=1),
@@ -281,11 +273,11 @@ class TestESGScorerConfidence:
 
     def test_sourced_metrics_increase_confidence(self, scorer):
         """Metrics with sources should increase confidence."""
-        unsourced = [
-            ESGMetric(name="M1", category=ESGCategory.ENVIRONMENTAL, value=1, source="")
-        ]
+        unsourced = [ESGMetric(name="M1", category=ESGCategory.ENVIRONMENTAL, value=1, source="")]
         sourced = [
-            ESGMetric(name="M1", category=ESGCategory.ENVIRONMENTAL, value=1, source="Annual Report")
+            ESGMetric(
+                name="M1", category=ESGCategory.ENVIRONMENTAL, value=1, source="Annual Report"
+            )
         ]
         conf_unsourced = scorer._calculate_confidence(unsourced, [])
         conf_sourced = scorer._calculate_confidence(sourced, [])
@@ -295,12 +287,7 @@ class TestESGScorerConfidence:
     def test_confidence_capped_at_one(self, scorer):
         """Confidence should not exceed 1.0."""
         many_sourced = [
-            ESGMetric(
-                name=f"M{i}",
-                category=list(ESGCategory)[i % 3],
-                value=i,
-                source="Source"
-            )
+            ESGMetric(name=f"M{i}", category=list(ESGCategory)[i % 3], value=i, source="Source")
             for i in range(20)
         ]
         confidence = scorer._calculate_confidence(many_sourced, [])
@@ -322,7 +309,7 @@ class TestESGScorerStrengthsRisks:
                 name="Carbon Emissions",
                 category=ESGCategory.ENVIRONMENTAL,
                 value=1000,
-                trend="improving"
+                trend="improving",
             )
         ]
         strengths, risks = scorer.identify_strengths_risks(metrics, [])
@@ -333,10 +320,7 @@ class TestESGScorerStrengthsRisks:
         """Declining metrics should be identified as risks."""
         metrics = [
             ESGMetric(
-                name="Safety Incidents",
-                category=ESGCategory.SOCIAL,
-                value=10,
-                trend="declining"
+                name="Safety Incidents", category=ESGCategory.SOCIAL, value=10, trend="declining"
             )
         ]
         strengths, risks = scorer.identify_strengths_risks(metrics, [])
@@ -350,7 +334,7 @@ class TestESGScorerStrengthsRisks:
                 name="Renewable Energy",
                 category=ESGCategory.ENVIRONMENTAL,
                 value=90,
-                benchmark=50.0
+                benchmark=50.0,
             )
         ]
         strengths, risks = scorer.identify_strengths_risks(metrics, [])
@@ -361,10 +345,7 @@ class TestESGScorerStrengthsRisks:
         """Below benchmark metrics should be risks."""
         metrics = [
             ESGMetric(
-                name="Board Diversity",
-                category=ESGCategory.GOVERNANCE,
-                value=20,
-                benchmark=50.0
+                name="Board Diversity", category=ESGCategory.GOVERNANCE, value=20, benchmark=50.0
             )
         ]
         strengths, risks = scorer.identify_strengths_risks(metrics, [])
@@ -378,7 +359,7 @@ class TestESGScorerStrengthsRisks:
                 title="Major Scandal",
                 description="...",
                 category=ESGCategory.GOVERNANCE,
-                severity=ControversySeverity.SEVERE
+                severity=ControversySeverity.SEVERE,
             )
         ]
         strengths, risks = scorer.identify_strengths_risks([], controversies)
@@ -389,10 +370,7 @@ class TestESGScorerStrengthsRisks:
         """Strengths and risks should be limited to 5 each."""
         metrics = [
             ESGMetric(
-                name=f"Metric {i}",
-                category=ESGCategory.ENVIRONMENTAL,
-                value=100,
-                trend="improving"
+                name=f"Metric {i}", category=ESGCategory.ENVIRONMENTAL, value=100, trend="improving"
             )
             for i in range(10)
         ]
@@ -411,12 +389,13 @@ class TestESGScorerRecommendations:
 
     def test_missing_category_recommendation(self, scorer):
         """Missing category should generate disclosure recommendation."""
-        metrics = [
-            ESGMetric(name="E", category=ESGCategory.ENVIRONMENTAL, value=1)
-        ]
+        metrics = [ESGMetric(name="E", category=ESGCategory.ENVIRONMENTAL, value=1)]
         score = ESGScore(
-            overall_score=50, overall_rating=ESGRating.BBB,
-            environmental_score=50, social_score=50, governance_score=50
+            overall_score=50,
+            overall_rating=ESGRating.BBB,
+            environmental_score=50,
+            social_score=50,
+            governance_score=50,
         )
         recs = scorer.generate_recommendations(metrics, score, [])
 
@@ -428,8 +407,11 @@ class TestESGScorerRecommendations:
         """Low category score should generate improvement recommendation."""
         metrics = []
         score = ESGScore(
-            overall_score=40, overall_rating=ESGRating.BB,
-            environmental_score=30, social_score=50, governance_score=40
+            overall_score=40,
+            overall_rating=ESGRating.BB,
+            environmental_score=30,
+            social_score=50,
+            governance_score=40,
         )
         recs = scorer.generate_recommendations(metrics, score, [])
 
@@ -439,8 +421,11 @@ class TestESGScorerRecommendations:
         """Risks should generate corresponding recommendations."""
         metrics = []
         score = ESGScore(
-            overall_score=50, overall_rating=ESGRating.BBB,
-            environmental_score=50, social_score=50, governance_score=50
+            overall_score=50,
+            overall_rating=ESGRating.BBB,
+            environmental_score=50,
+            social_score=50,
+            governance_score=50,
         )
         risks = ["Environmental: Major pollution issue"]
         recs = scorer.generate_recommendations(metrics, score, risks)
@@ -451,14 +436,13 @@ class TestESGScorerRecommendations:
         """Recommendations should be limited to 5."""
         metrics = []  # No metrics = all categories missing
         score = ESGScore(
-            overall_score=20, overall_rating=ESGRating.CCC,
-            environmental_score=20, social_score=20, governance_score=20
+            overall_score=20,
+            overall_rating=ESGRating.CCC,
+            environmental_score=20,
+            social_score=20,
+            governance_score=20,
         )
-        risks = [
-            "Environmental: Issue 1",
-            "Social: Issue 2",
-            "Governance: Issue 3"
-        ]
+        risks = ["Environmental: Issue 1", "Social: Issue 2", "Governance: Issue 3"]
         recs = scorer.generate_recommendations(metrics, score, risks)
 
         assert len(recs) <= 5
@@ -467,8 +451,11 @@ class TestESGScorerRecommendations:
         """Recommendations should not have duplicates."""
         metrics = []
         score = ESGScore(
-            overall_score=20, overall_rating=ESGRating.CCC,
-            environmental_score=20, social_score=20, governance_score=20
+            overall_score=20,
+            overall_rating=ESGRating.CCC,
+            environmental_score=20,
+            social_score=20,
+            governance_score=20,
         )
         risks = [
             "Environmental: Issue 1",

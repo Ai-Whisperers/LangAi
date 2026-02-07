@@ -92,7 +92,7 @@ class TaskStorage(ABC):
         status: Optional[str] = None,
         company: Optional[str] = None,
         limit: int = 50,
-        offset: int = 0
+        offset: int = 0,
     ) -> List[Dict[str, Any]]:
         """
         List tasks with optional filtering.

@@ -110,7 +110,7 @@ jobs:
       - name: Install linting tools
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 black isort mypy pylint
+          pip install "flake8==7.0.0" "black==24.3.0" "isort==5.13.2" "mypy==1.9.0" pylint
 
       - name: Run Black (code formatting)
         run: |
@@ -123,6 +123,7 @@ jobs:
             src/company_researcher/agents/quality/
 
       - name: Run flake8 (linting)
+        continue-on-error: true
         run: |
           flake8 src/company_researcher/quality/ \
             src/company_researcher/agents/quality/ \

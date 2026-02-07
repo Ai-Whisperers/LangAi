@@ -7,26 +7,23 @@ Contains utility tools for various operations:
 - SEC EDGAR parser for regulatory filings
 """
 
-from .alpha_vantage_client import (
-    AlphaVantageClient,
-    extract_key_metrics,
-)
+from .alpha_vantage_client import AlphaVantageClient, extract_key_metrics
 from .competitor_analysis_utils import (
     CompetitorType,
-    ThreatLevel,
-    TechStackAnalyzer,
     GitHubMetrics,
-    classify_competitor,
-    assess_threat_level,
+    TechStackAnalyzer,
+    ThreatLevel,
+    aggregate_review_sentiment,
     analyze_competitive_positioning,
     analyze_patent_portfolio,
-    aggregate_review_sentiment,
+    assess_threat_level,
+    classify_competitor,
 )
 from .sec_edgar_parser import (
     SECEdgarParser,
-    extract_revenue_trends,
-    extract_profitability_metrics,
     extract_financial_health,
+    extract_profitability_metrics,
+    extract_revenue_trends,
     is_public_company,
 )
 

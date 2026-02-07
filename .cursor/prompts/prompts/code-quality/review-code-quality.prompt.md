@@ -118,4 +118,3 @@ public void do_thing(string x) {
 - `.cursor/rules/clean-code.mdc`
 - `.cursor/rules/code-quality-and-best-practices.mdc`
 - `.cursor/rules/dry-principle.mdc`
-

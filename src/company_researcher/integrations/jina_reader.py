@@ -29,11 +29,13 @@ Usage:
     facts = reader.extract_facts("https://company.com/about")
 """
 
-import requests
-from typing import Optional, Dict, Any, List
+import time
 from dataclasses import dataclass
 from threading import Lock
-import time
+from typing import Any, Dict, List, Optional
+
+import requests
+
 from ..utils import get_config, get_logger
 
 logger = get_logger(__name__)
@@ -42,6 +44,7 @@ logger = get_logger(__name__)
 @dataclass
 class JinaResult:
     """Result from Jina Reader."""
+
     url: str
     content: str
     title: Optional[str] = None
@@ -60,13 +63,14 @@ class JinaResult:
             "success": self.success,
             "error": self.error,
             "response_time_ms": self.response_time_ms,
-            "token_count": self.token_count
+            "token_count": self.token_count,
         }
 
 
 @dataclass
 class JinaSearchResult:
     """Result from Jina Search."""
+
     query: str
     results: List[Dict[str, str]]
     total_results: int = 0
@@ -90,11 +94,7 @@ class JinaReader:
     BASE_URL = "https://r.jina.ai"
     SEARCH_URL = "https://s.jina.ai"
 
-    def __init__(
-        self,
-        api_key: Optional[str] = None,
-        timeout: int = 30
-    ):
+    def __init__(self, api_key: Optional[str] = None, timeout: int = 30):
         """
         Initialize Jina Reader.
 
@@ -109,10 +109,7 @@ class JinaReader:
         self._total_tokens = 0
         self._lock = Lock()
 
-        self.headers = {
-            "Accept": "text/plain",
-            "User-Agent": "CompanyResearcher/1.0"
-        }
+        self.headers = {"Accept": "text/plain", "User-Agent": "CompanyResearcher/1.0"}
 
         if self.api_key:
             self.headers["Authorization"] = f"Bearer {api_key}"
@@ -122,7 +119,7 @@ class JinaReader:
         url: str,
         target_selector: Optional[str] = None,
         wait_for_selector: Optional[str] = None,
-        remove_selector: Optional[str] = None
+        remove_selector: Optional[str] = None,
     ) -> JinaResult:
         """
         Convert a URL to markdown.
@@ -151,11 +148,7 @@ class JinaReader:
             if remove_selector:
                 headers["X-Remove-Selector"] = remove_selector
 
-            response = requests.get(
-                request_url,
-                headers=headers,
-                timeout=self.timeout
-            )
+            response = requests.get(request_url, headers=headers, timeout=self.timeout)
 
             response_time = (time.time() - start_time) * 1000
             content = response.text
@@ -170,8 +163,8 @@ class JinaReader:
 
             # Parse title if present (usually first line)
             title = None
-            lines = content.split('\n')
-            if lines and lines[0].startswith('# '):
+            lines = content.split("\n")
+            if lines and lines[0].startswith("# "):
                 title = lines[0][2:].strip()
 
             return JinaResult(
@@ -181,7 +174,7 @@ class JinaReader:
                 success=response.status_code == 200,
                 error=None if response.status_code == 200 else f"HTTP {response.status_code}",
                 response_time_ms=response_time,
-                token_count=token_count
+                token_count=token_count,
             )
 
         except Exception as e:
@@ -191,14 +184,10 @@ class JinaReader:
                 content="",
                 success=False,
                 error=str(e),
-                response_time_ms=(time.time() - start_time) * 1000
+                response_time_ms=(time.time() - start_time) * 1000,
             )
 
-    def search(
-        self,
-        query: str,
-        num_results: int = 5
-    ) -> JinaSearchResult:
+    def search(self, query: str, num_results: int = 5) -> JinaSearchResult:
         """
         Search the web and get markdown results.
 
@@ -212,26 +201,22 @@ class JinaReader:
         try:
             request_url = f"{self.SEARCH_URL}/{query}"
 
-            response = requests.get(
-                request_url,
-                headers=self.headers,
-                timeout=self.timeout
-            )
+            response = requests.get(request_url, headers=self.headers, timeout=self.timeout)
 
             content = response.text
 
             # Parse search results (Jina returns markdown with links)
             results = []
-            lines = content.split('\n')
+            lines = content.split("\n")
 
             for line in lines:
-                if line.startswith('- [') and '](' in line:
+                if line.startswith("- [") and "](" in line:
                     # Parse markdown link: - [Title](URL)
                     try:
-                        title_end = line.index('](')
-                        url_end = line.index(')', title_end)
+                        title_end = line.index("](")
+                        url_end = line.index(")", title_end)
                         title = line[3:title_end]
-                        url = line[title_end + 2:url_end]
+                        url = line[title_end + 2 : url_end]
                         results.append({"title": title, "url": url})
                     except ValueError:
                         continue
@@ -240,25 +225,14 @@ class JinaReader:
                 self._total_requests += 1
 
             return JinaSearchResult(
-                query=query,
-                results=results[:num_results],
-                total_results=len(results),
-                success=True
+                query=query, results=results[:num_results], total_results=len(results), success=True
             )
 
         except Exception as e:
             logger.error(f"Jina Search error for '{query}': {e}")
-            return JinaSearchResult(
-                query=query,
-                results=[],
-                success=False,
-                error=str(e)
-            )
+            return JinaSearchResult(query=query, results=[], success=False, error=str(e))
 
-    def extract_facts(
-        self,
-        url: str
-    ) -> Dict[str, Any]:
+    def extract_facts(self, url: str) -> Dict[str, Any]:
         """
         Extract key facts from a URL.
 
@@ -282,14 +256,10 @@ class JinaReader:
             "title": result.title,
             "content_preview": result.content[:1000],
             "token_count": result.token_count,
-            "full_content": result.content
+            "full_content": result.content,
         }
 
-    def read_company_page(
-        self,
-        url: str,
-        page_type: str = "about"
-    ) -> JinaResult:
+    def read_company_page(self, url: str, page_type: str = "about") -> JinaResult:
         """
         Read a company page with optimized selectors.
 
@@ -305,23 +275,17 @@ class JinaReader:
             "about": "main, article, .about, .company-info, [class*='about']",
             "team": ".team, .leadership, .executives, [class*='team']",
             "careers": ".jobs, .careers, .openings, [class*='career']",
-            "investors": ".investor, .financials, [class*='investor']"
+            "investors": ".investor, .financials, [class*='investor']",
         }
 
         # Remove common non-content elements
         remove = "nav, footer, header, .cookie, .popup, .modal, aside"
 
         return self.read_url(
-            url=url,
-            target_selector=selectors.get(page_type),
-            remove_selector=remove
+            url=url, target_selector=selectors.get(page_type), remove_selector=remove
         )
 
-    def batch_read(
-        self,
-        urls: List[str],
-        delay_ms: int = 100
-    ) -> List[JinaResult]:
+    def batch_read(self, urls: List[str], delay_ms: int = 100) -> List[JinaResult]:
         """
         Read multiple URLs with rate limiting.
 
@@ -350,7 +314,7 @@ class JinaReader:
                 "total_requests": self._total_requests,
                 "total_tokens": self._total_tokens,
                 "cost": 0.0,  # FREE!
-                "has_api_key": self.api_key is not None
+                "has_api_key": self.api_key is not None,
             }
 
     def reset_stats(self) -> None:

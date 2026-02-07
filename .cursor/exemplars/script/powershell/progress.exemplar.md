@@ -19,15 +19,15 @@ $current = 0
 foreach ($package in $packages) {
     $current++
     $percentComplete = ($current / $totalPackages) * 100
-    
+
     Write-Progress -Activity "Analyzing Coverage" `
                    -Status "Package: $($package.name) ($current of $totalPackages)" `
                    -PercentComplete $percentComplete `
                    -CurrentOperation "Processing line coverage"
-    
+
     # Analysis logic here
     $result = Analyze-Package -Package $package
-    
+
     Start-Sleep -Milliseconds 100  # Simulate work
 }
 
@@ -74,28 +74,28 @@ $projectNum = 0
 foreach ($project in $projects) {
     $projectNum++
     $projectPercent = ($projectNum / $totalProjects) * 100
-    
+
     Write-Progress -Activity "Analyzing Projects" `
                    -Status "Project $projectNum of $totalProjects" `
                    -PercentComplete $projectPercent `
                    -Id 1
-    
+
     $files = Get-ChildItem -Path $project.Path -Filter "*.cs"
     $fileNum = 0
-    
+
     foreach ($file in $files) {
         $fileNum++
         $filePercent = ($fileNum / $files.Count) * 100
-        
+
         Write-Progress -Activity "Analyzing Files" `
                        -Status "File $fileNum of $($files.Count)" `
                        -PercentComplete $filePercent `
                        -ParentId 1 `
                        -Id 2
-        
+
         # Analyze file
     }
-    
+
     Write-Progress -Activity "Analyzing Files" -Completed -Id 2
 }
 
@@ -110,12 +110,12 @@ $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 foreach ($item in $items) {
     $current++
     $percentComplete = ($current / $total) * 100
-    
+
     $elapsed = $stopwatch.Elapsed.TotalSeconds
     $rate = $current / $elapsed
     $remaining = ($total - $current) / $rate
     $eta = [TimeSpan]::FromSeconds($remaining)
-    
+
     Write-Progress -Activity "Processing Items" `
                    -Status "$current of $total (ETA: $($eta.ToString('mm\:ss')))" `
                    -PercentComplete $percentComplete
@@ -129,11 +129,11 @@ $current = 0
 
 while ($condition) {
     $current++
-    
+
     Write-Progress -Activity "Processing Stream" `
                    -Status "Processed $current items" `
                    -PercentComplete -1  # -1 = indeterminate
-    
+
     # Process item
 }
 ```
@@ -157,4 +157,3 @@ while ($condition) {
 
 ---
 Produced-by: rule.scripts.exemplars.v1 | ts=2025-12-07T00:00:00Z
-

@@ -14,7 +14,7 @@ langgraph==0.2.45
 
 # LangChain - LLM abstractions and utilities
 langchain==0.3.7
-langchain-core==0.3.15
+langchain-core==0.3.29
 langchain-community==0.3.5
 
 # LLM Providers
@@ -47,21 +47,36 @@ asyncio==3.4.3              # Async I/O
 
 # Web scraping and content extraction
 playwright==1.48.0          # Anti-bot browser automation
-beautifulsoup4==4.12.0      # HTML parsing
+beautifulsoup4==4.12.3      # HTML parsing
 lxml==5.3.0                 # Fast HTML/XML processing
-requests==2.32.0            # HTTP client
+requests==2.31.0            # HTTP client (agentops==0.3.0 pins requests==2.31.0)
 httpx==0.27.0               # Modern HTTP client
 
 # LLM-ready web scraping (Enhanced - Phase 5)
 firecrawl-py>=1.0.0         # Firecrawl API - scrape, crawl, extract
-scrapegraph-py>=1.0.0       # ScrapeGraph API - AI-powered extraction
+#
+# ScrapeGraph is optional and intentionally not installed by default in CI because it
+# forces newer dependencies (aiohttp / beautifulsoup4 / pydantic) that can conflict
+# with a pinned LangChain/LangGraph stack.
+#
+# Install locally if you need it:
+#   pip install "scrapegraph-py>=1.44.0"
 
 # =============================================================================
 # FREE ALTERNATIVES (Cost Optimization - 90%+ savings)
 # =============================================================================
 
 # Free Web Scraping
-crawl4ai>=0.3.0             # FREE - Firecrawl alternative, async, LLM-ready
+# Crawl4AI is optional and intentionally not installed by default because it can
+# force newer dependency versions (notably aiohttp / playwright) that may conflict
+# with this repo's pinned LangChain/LangGraph stack on some platforms.
+#
+# Install locally if you need it (also required: `playwright install`):
+#   pip install "crawl4ai>=0.3.0"
+#   playwright install
+# NOTE: If pip reports a dependency conflict, allow pip to upgrade aiohttp/playwright
+# for your environment or install Crawl4AI in an isolated venv dedicated to scraping.
+# crawl4ai>=0.3.0            # FREE - Firecrawl alternative, async, LLM-ready
 feedparser>=6.0.0           # FREE - RSS parsing for Google News
 
 # Free Observability
@@ -122,16 +137,18 @@ structlog==24.4.0           # Structured logging
 
 # Observability
 agentops==0.3.0             # Agent observability (highly recommended!)
-langsmith==0.1.0            # LangChain debugging & tracing (FULLY INTEGRATED)
+langsmith==0.1.147          # LangChain debugging & tracing (compatible with langchain-core==0.3.15)
 
 # =============================================================================
-# LANGFLOW - Visual Workflow Builder
+# LANGFLOW - Visual Workflow Builder (OPTIONAL)
 # =============================================================================
-
-# LangFlow for visual workflow design
-# Install with: pip install langflow
-# Or full: pip install langflow[all]
-langflow==1.0.0             # Visual workflow builder (optional but recommended)
+#
+# LangFlow is optional and intentionally not installed by default in CI because it
+# has its own evolving dependency constraints that can conflict with a pinned
+# LangChain/LangGraph stack.
+#
+# Install locally if you need it:
+#   pip install "langflow>=1.6.9"
 
 # Error tracking
 sentry-sdk[fastapi]==2.16.0 # Error monitoring (optional)
@@ -146,7 +163,7 @@ prometheus-client==0.21.0   # Metrics export (optional)
 # CLI
 typer==0.12.0               # CLI framework
 rich==13.9.0                # Terminal formatting
-click==8.1.0                # CLI utilities
+click==8.1.7                # CLI utilities (duckduckgo-search requires click>=8.1.7)
 
 # Progress bars
 tqdm==4.66.0                # Progress bars

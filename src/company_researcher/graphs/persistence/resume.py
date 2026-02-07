@@ -27,21 +27,21 @@ Usage:
     print(f"Quality score: {state.values.get('quality_score')}")
 """
 
-from typing import Dict, Any, Optional, List, Tuple
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
-import uuid
+from typing import Any, Dict, List, Optional, Tuple
 
-from ..main_graph import create_research_workflow, WorkflowConfig
-from .checkpointer import get_checkpointer, CheckpointerConfig
 from ...state.workflow import (
-    OverallState,
     InputState,
     OutputState,
+    OverallState,
     create_initial_state,
     create_output_state,
 )
 from ...utils import get_logger, utc_now
+from ..main_graph import WorkflowConfig, create_research_workflow
+from .checkpointer import CheckpointerConfig, get_checkpointer
 
 logger = get_logger(__name__)
 
@@ -90,21 +90,24 @@ def research_with_checkpoint(
     print(f"{'='*60}")
 
     # Get checkpointer
-    checkpointer = get_checkpointer(
-        config=checkpointer_config
-    ) if checkpointer_config else get_checkpointer()
+    checkpointer = (
+        get_checkpointer(config=checkpointer_config) if checkpointer_config else get_checkpointer()
+    )
 
     # Create workflow with checkpointing
     if config is None:
         config = WorkflowConfig.standard()
 
-    workflow_builder = create_research_workflow.__wrapped__ if hasattr(
-        create_research_workflow, '__wrapped__'
-    ) else None
+    workflow_builder = (
+        create_research_workflow.__wrapped__
+        if hasattr(create_research_workflow, "__wrapped__")
+        else None
+    )
 
     # We need to get uncompiled graph, compile with checkpointer
-    from ..main_graph import create_research_workflow as _create_workflow
     from langgraph.graph import StateGraph
+
+    from ..main_graph import create_research_workflow as _create_workflow
 
     # Create workflow config
     workflow = _create_workflow(config)
@@ -112,13 +115,14 @@ def research_with_checkpoint(
     # Recompile with checkpointer
     # Note: This is a workaround since workflow is already compiled
     # In production, you'd want to compile once with checkpointer
-    from ..subgraphs import (
-        create_data_collection_subgraph,
-        create_analysis_subgraph,
-        create_quality_subgraph,
-        create_output_subgraph,
-    )
     from langgraph.graph import END
+
+    from ..subgraphs import (
+        create_analysis_subgraph,
+        create_data_collection_subgraph,
+        create_output_subgraph,
+        create_quality_subgraph,
+    )
 
     graph = StateGraph(OverallState, input=InputState, output=OutputState)
 
@@ -144,9 +148,7 @@ def research_with_checkpoint(
         return "iterate"
 
     graph.add_conditional_edges(
-        "quality",
-        should_iterate,
-        {"iterate": "data_collection", "complete": "output"}
+        "quality", should_iterate, {"iterate": "data_collection", "complete": "output"}
     )
     graph.add_edge("output", END)
 
@@ -207,18 +209,19 @@ def resume_research(
     print(f"{'='*60}")
 
     # Get checkpointer
-    checkpointer = get_checkpointer(
-        config=checkpointer_config
-    ) if checkpointer_config else get_checkpointer()
+    checkpointer = (
+        get_checkpointer(config=checkpointer_config) if checkpointer_config else get_checkpointer()
+    )
 
     # Rebuild workflow with same checkpointer
+    from langgraph.graph import END, StateGraph
+
     from ..subgraphs import (
-        create_data_collection_subgraph,
         create_analysis_subgraph,
-        create_quality_subgraph,
+        create_data_collection_subgraph,
         create_output_subgraph,
+        create_quality_subgraph,
     )
-    from langgraph.graph import StateGraph, END
 
     graph = StateGraph(OverallState, input=InputState, output=OutputState)
 
@@ -239,9 +242,7 @@ def resume_research(
         return "iterate"
 
     graph.add_conditional_edges(
-        "quality",
-        should_iterate,
-        {"iterate": "data_collection", "complete": "output"}
+        "quality", should_iterate, {"iterate": "data_collection", "complete": "output"}
     )
     graph.add_edge("output", END)
 
@@ -293,12 +294,12 @@ def get_workflow_state(
     Returns:
         Dictionary with state information
     """
-    checkpointer = get_checkpointer(
-        config=checkpointer_config
-    ) if checkpointer_config else get_checkpointer()
+    checkpointer = (
+        get_checkpointer(config=checkpointer_config) if checkpointer_config else get_checkpointer()
+    )
 
     # Rebuild minimal workflow just to get state
-    from langgraph.graph import StateGraph, END
+    from langgraph.graph import END, StateGraph
 
     graph = StateGraph(OverallState, input=InputState, output=OutputState)
     graph.add_node("placeholder", lambda x: x)
@@ -388,6 +389,7 @@ def delete_checkpoint(
 # Async Support
 # ============================================================================
 
+
 async def async_research_with_checkpoint(
     company_name: str,
     thread_id: Optional[str] = None,
@@ -412,13 +414,14 @@ async def async_research_with_checkpoint(
     checkpointer = await get_async_checkpointer()
 
     # Build workflow
+    from langgraph.graph import END, StateGraph
+
     from ..subgraphs import (
-        create_data_collection_subgraph,
         create_analysis_subgraph,
-        create_quality_subgraph,
+        create_data_collection_subgraph,
         create_output_subgraph,
+        create_quality_subgraph,
     )
-    from langgraph.graph import StateGraph, END
 
     graph = StateGraph(OverallState, input=InputState, output=OutputState)
 
@@ -461,13 +464,14 @@ async def async_resume_research(thread_id: str) -> OutputState:
     checkpointer = await get_async_checkpointer()
 
     # Build workflow (same as async_research_with_checkpoint)
+    from langgraph.graph import END, StateGraph
+
     from ..subgraphs import (
-        create_data_collection_subgraph,
         create_analysis_subgraph,
-        create_quality_subgraph,
+        create_data_collection_subgraph,
         create_output_subgraph,
+        create_quality_subgraph,
     )
-    from langgraph.graph import StateGraph, END
 
     graph = StateGraph(OverallState, input=InputState, output=OutputState)
 

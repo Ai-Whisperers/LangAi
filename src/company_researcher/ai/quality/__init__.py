@@ -45,19 +45,15 @@ Usage:
         print(f"Focus areas: {report.focus_areas_for_iteration}")
 """
 
-from .assessor import (
-    AIQualityAssessor,
-    get_quality_assessor,
-    reset_quality_assessor,
-)
+from .assessor import AIQualityAssessor, get_quality_assessor, reset_quality_assessor
 from .models import (
-    QualityLevel,
-    SourceType,
-    ContentQualityAssessment,
-    SourceQualityAssessment,
     ConfidenceAssessment,
-    SectionRequirements,
+    ContentQualityAssessment,
     OverallQualityReport,
+    QualityLevel,
+    SectionRequirements,
+    SourceQualityAssessment,
+    SourceType,
 )
 
 __all__ = [

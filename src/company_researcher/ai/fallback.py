@@ -1,20 +1,20 @@
 """Fallback handlers for AI components."""
-from typing import Callable, TypeVar, Any, Optional
-from functools import wraps
-import asyncio
 
+import asyncio
+from functools import wraps
+from typing import Any, Callable, Optional, TypeVar
+
+from ..utils import get_logger
 from .config import get_ai_config
 from .exceptions import AIFallbackTriggered
-from ..utils import get_logger
 
 logger = get_logger(__name__)
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def with_fallback(
-    legacy_func: Callable[..., T],
-    component_name: str
+    legacy_func: Callable[..., T], component_name: str
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """
     Decorator to add fallback to legacy logic.
@@ -61,10 +61,11 @@ def with_fallback(
                         component=component_name,
                         message="AI failed and fallback disabled",
                         original_error=e,
-                        used_fallback=False
+                        used_fallback=False,
                     )
 
         return wrapper
+
     return decorator
 
 
@@ -99,7 +100,7 @@ class FallbackHandler:
         legacy_func: Callable,
         *args,
         use_ai: Optional[bool] = None,
-        **kwargs
+        **kwargs,
     ) -> Any:
         """
         Execute AI function with fallback to legacy.
@@ -120,11 +121,7 @@ class FallbackHandler:
         # Determine if we should use AI
         should_use_ai = use_ai
         if should_use_ai is None:
-            should_use_ai = (
-                config.global_enabled and
-                component_config and
-                component_config.enabled
-            )
+            should_use_ai = config.global_enabled and component_config and component_config.enabled
 
         if not should_use_ai:
             self._legacy_only_count += 1
@@ -165,13 +162,9 @@ class FallbackHandler:
             "fallback_count": self._fallback_count,
             "legacy_only_count": self._legacy_only_count,
             "ai_success_rate": (
-                self._ai_success_count / total_ai_attempts
-                if total_ai_attempts > 0 else 0
+                self._ai_success_count / total_ai_attempts if total_ai_attempts > 0 else 0
             ),
-            "ai_usage_rate": (
-                total_ai_attempts / total_calls
-                if total_calls > 0 else 0
-            )
+            "ai_usage_rate": (total_ai_attempts / total_calls if total_calls > 0 else 0),
         }
 
     def reset_stats(self):
@@ -201,10 +194,7 @@ class FallbackRegistry:
 
     def get_all_stats(self) -> dict:
         """Get stats for all handlers."""
-        return {
-            name: handler.get_stats()
-            for name, handler in self._handlers.items()
-        }
+        return {name: handler.get_stats() for name, handler in self._handlers.items()}
 
     def reset_all_stats(self):
         """Reset stats for all handlers."""

@@ -42,7 +42,8 @@ Quality: Standard (per script standards). Uses Write-Progress for visibility.
 param(
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]
-[string]$PromptsRoot = $(if ($PSScriptRoot) { Join-Path $PSScriptRoot "..\\.cursor\\prompts" } else { Join-Path (Get-Location).Path ".cursor\\prompts" }),
+    # Script lives in `.cursor/scripts/housekeeping/`; default prompts root is `.cursor/prompts/`.
+    [string]$PromptsRoot = $(if ($PSScriptRoot) { Join-Path $PSScriptRoot "..\\..\\prompts" } else { Join-Path (Get-Location).Path ".cursor\\prompts" }),
 
     [Parameter(Mandatory = $false)]
     [switch]$PassThru,
@@ -198,4 +199,3 @@ catch {
     Write-Section "❌ Validation failed: $($_.Exception.Message)" 'Red'
     exit 1
 }
-

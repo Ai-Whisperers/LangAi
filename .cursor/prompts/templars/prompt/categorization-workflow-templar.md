@@ -387,23 +387,23 @@ When moving [artifacts]:
 ## Customization Points
 
 ### Category System
-**Placeholder**: `[category-1]`, `[category-2]`, etc.  
+**Placeholder**: `[category-1]`, `[category-2]`, etc.
 **Guidance**: Define the category structure for your domain. List all standard categories with clear descriptions and criteria.
 
 ### Decision Tree
-**Placeholder**: `[Question N]? → [category-N]/`  
+**Placeholder**: `[Question N]? → [category-N]/`
 **Guidance**: Create questions that map artifacts to categories. Questions should be yes/no or clear criteria checks.
 
 ### Special Locations
-**Placeholder**: `[special-1]/`, `[staging-location]/`, etc.  
+**Placeholder**: `[special-1]/`, `[staging-location]/`, etc.
 **Guidance**: Identify temporary/special locations in your system (staging, extracted, templates, etc.).
 
 ### Move Operations
-**Placeholder**: `[Command to move...]`, `[Move command syntax]`  
+**Placeholder**: `[Command to move...]`, `[Move command syntax]`
 **Guidance**: Provide actual commands for your platform (PowerShell, bash, Git, etc.).
 
 ### Metadata Updates
-**Placeholder**: `[metadata field]`, `[metadata-before]`, `[metadata-after]`  
+**Placeholder**: `[metadata field]`, `[metadata-before]`, `[metadata-after]`
 **Guidance**: Show what metadata fields need updating when artifacts move (category field, tags, paths, etc.).
 
 ## Example Usage (Applying This Templar)
@@ -412,7 +412,7 @@ When moving [artifacts]:
 
 **Categories**: `unit/`, `integration/`, `e2e/`, `fixtures/`, `mocks/`
 
-**Decision Tree**: 
+**Decision Tree**:
 - Tests single function? → `unit/`
 - Tests multiple services? → `integration/`
 - Tests full system? → `e2e/`

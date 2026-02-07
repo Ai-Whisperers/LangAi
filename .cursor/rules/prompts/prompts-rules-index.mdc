@@ -87,9 +87,9 @@ This rule framework governs the creation of effective, reusable prompts, extract
 
 ### 0. Agent Application Rule
 
-**File**: `agent-application-rule.mdc`  
-**ID**: `rule.prompts.agent-application.v1`  
-**Version**: 1.0.0  
+**File**: `agent-application-rule.mdc`
+**ID**: `rule.prompts.agent-application.v1`
+**Version**: 1.0.0
 **Purpose**: Guide AI agent on when and how to apply prompt rules
 
 **Apply When**:
@@ -108,9 +108,9 @@ This rule framework governs the creation of effective, reusable prompts, extract
 
 ### 1. Prompt Creation Rule
 
-**File**: `prompt-creation-rule.mdc`  
-**ID**: `rule.prompts.creation.v1`  
-**Version**: 1.0.0  
+**File**: `prompt-creation-rule.mdc`
+**ID**: `rule.prompts.creation.v1`
+**Version**: 1.0.0
 **Purpose**: Define standards for creating effective, reusable prompts
 
 **Apply When**:
@@ -132,7 +132,7 @@ This rule framework governs the creation of effective, reusable prompts, extract
 **Core Patterns**:
 
 1. Constrained Generation
-2. Guided Analysis  
+2. Guided Analysis
 3. Iterative Refinement
 4. Context Building
 5. Chain of Thought (Reasoning)
@@ -140,9 +140,9 @@ This rule framework governs the creation of effective, reusable prompts, extract
 
 ### 2. Prompt Extraction Rule
 
-**File**: `prompt-extraction-rule.mdc`  
-**ID**: `rule.prompts.extraction.v1`  
-**Version**: 1.0.0  
+**File**: `prompt-extraction-rule.mdc`
+**ID**: `rule.prompts.extraction.v1`
+**Version**: 1.0.0
 **Purpose**: Extract prompt patterns, templars, and exemplars from conversations
 
 **Apply When**:
@@ -174,9 +174,9 @@ This rule framework governs the creation of effective, reusable prompts, extract
 
 ### 3. Prompt Registry Integration Rule
 
-**File**: `prompt-registry-integration-rule.mdc`  
-**ID**: `rule.prompts.registry-integration.v1`  
-**Version**: 1.0.0  
+**File**: `prompt-registry-integration-rule.mdc`
+**ID**: `rule.prompts.registry-integration.v1`
+**Version**: 1.0.0
 **Purpose**: Integration standards for Prompt Registry extension with Cursor
 
 **Apply When**:
@@ -294,7 +294,7 @@ Prompts reference and apply:
 ```text
 User: "I keep asking you to analyze test coverage. Let's make a standard prompt."
 
-Agent: 
+Agent:
 1. Applies agent-application-rule → identifies "create prompt" trigger
 2. Applies prompt-creation-rule → quality standards
 3. Applies prompt-registry-integration-rule → .prompt.md format

@@ -44,8 +44,8 @@ As a system administrator, I need to extract configuration data in various forma
 ## User Stories
 
 ### Primary User Story
-**As a** system administrator  
-**I want to** extract bootstrapped configuration data from different EBASE environments in various formats  
+**As a** system administrator
+**I want to** extract bootstrapped configuration data from different EBASE environments in various formats
 **So that** I can analyze, compare, and backup core configuration data for standardization purposes
 
 **Acceptance Criteria:**
@@ -71,8 +71,8 @@ As a system administrator, I need to extract configuration data in various forma
 ### Secondary User Stories
 
 #### 1. Data Analysis Story
-**As a** data analyst  
-**I want to** export configuration data in different formats  
+**As a** data analyst
+**I want to** export configuration data in different formats
 **So that** I can perform analysis using my preferred tools (Excel, Python, Power BI)
 
 **Acceptance Criteria:**
@@ -82,8 +82,8 @@ As a system administrator, I need to extract configuration data in various forma
 - Data types are preserved in all formats
 
 #### 2. Backup Story
-**As a** configuration manager  
-**I want to** create backups of configuration data in multiple formats  
+**As a** configuration manager
+**I want to** create backups of configuration data in multiple formats
 **So that** I can restore environments if needed and maintain historical records
 
 **Acceptance Criteria:**
@@ -350,5 +350,3 @@ As a system administrator, I need to extract configuration data in various forma
 - [ ] Deployment guide created
 - [ ] Rollback plan documented
 ```
-
-

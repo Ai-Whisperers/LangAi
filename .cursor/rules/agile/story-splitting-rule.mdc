@@ -398,7 +398,7 @@ Updated: {{timestamp}} by rule.agile.story-splitting.v1 | split-into={{count}} s
 Use this checklist during story grooming/planning:
 
 - [ ] Story points > 8 or estimation very uncertain
-- [ ] Story touches 3+ major components/systems  
+- [ ] Story touches 3+ major components/systems
 - [ ] Cannot be completed and tested in one sprint
 - [ ] Multiple critical paths that could be delivered separately
 - [ ] Acceptance criteria naturally group into distinct areas

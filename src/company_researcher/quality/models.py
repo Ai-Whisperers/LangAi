@@ -8,38 +8,41 @@ Enhanced with:
 - MarketShareValidator: Validates competitor market shares sum to ~100%
 """
 
-from pydantic import BaseModel, Field
 from datetime import datetime
 from enum import Enum
-from typing import Optional, List, Dict, Any, Tuple
-from ..utils import utc_now
+from typing import Any, Dict, List, Optional, Tuple
 
+from pydantic import BaseModel, Field
+
+from ..utils import utc_now
 
 # ============================================================================
 # Enumerations
 # ============================================================================
 
+
 class SourceQuality(str, Enum):
     """Source quality tiers for automatic assessment."""
 
-    OFFICIAL = "OFFICIAL"              # .gov, .edu, investor relations
-    AUTHORITATIVE = "AUTHORITATIVE"    # Bloomberg, Reuters, WSJ
-    REPUTABLE = "REPUTABLE"            # Forbes, TechCrunch, CNBC
-    COMMUNITY = "COMMUNITY"            # Reddit, HN, forums
-    UNKNOWN = "UNKNOWN"                # Unverified sources
+    OFFICIAL = "OFFICIAL"  # .gov, .edu, investor relations
+    AUTHORITATIVE = "AUTHORITATIVE"  # Bloomberg, Reuters, WSJ
+    REPUTABLE = "REPUTABLE"  # Forbes, TechCrunch, CNBC
+    COMMUNITY = "COMMUNITY"  # Reddit, HN, forums
+    UNKNOWN = "UNKNOWN"  # Unverified sources
 
 
 class ConfidenceLevel(str, Enum):
     """Confidence levels for research facts."""
 
-    HIGH = "HIGH"        # Multiple authoritative sources
-    MEDIUM = "MEDIUM"    # Single authoritative or multiple reputable
-    LOW = "LOW"          # Community sources or unverified
+    HIGH = "HIGH"  # Multiple authoritative sources
+    MEDIUM = "MEDIUM"  # Single authoritative or multiple reputable
+    LOW = "LOW"  # Community sources or unverified
 
 
 # ============================================================================
 # Core Models
 # ============================================================================
+
 
 class Source(BaseModel):
     """Metadata for a research source.
@@ -184,6 +187,7 @@ class QualityReport(BaseModel):
 # Market Share Validator
 # ============================================================================
 
+
 class MarketShareValidationResult(BaseModel):
     """Result of market share validation."""
 
@@ -230,7 +234,7 @@ class MarketShareValidator:
         self,
         market_shares: List[Dict[str, Any]],
         country: Optional[str] = None,
-        year: Optional[int] = None
+        year: Optional[int] = None,
     ) -> MarketShareValidationResult:
         """
         Validate that market shares sum to approximately 100%.
@@ -244,9 +248,7 @@ class MarketShareValidator:
         Returns:
             MarketShareValidationResult with validation details
         """
-        result = MarketShareValidationResult(
-            competitors=market_shares
-        )
+        result = MarketShareValidationResult(competitors=market_shares)
 
         if not market_shares:
             result.issues.append("No market share data provided")
@@ -257,12 +259,12 @@ class MarketShareValidator:
         valid_entries = []
 
         for entry in market_shares:
-            name = entry.get('name', 'Unknown')
-            share = entry.get('share', entry.get('market_share', 0))
+            name = entry.get("name", "Unknown")
+            share = entry.get("share", entry.get("market_share", 0))
 
             # Handle string percentages like "51.4%"
             if isinstance(share, str):
-                share = share.replace('%', '').strip()
+                share = share.replace("%", "").strip()
                 try:
                     share = float(share)
                 except ValueError:
@@ -303,12 +305,9 @@ class MarketShareValidator:
             # Attempt to normalize
             if total > 0:
                 result.corrected_shares = {
-                    e['name']: round((e['share'] / total) * 100, 1)
-                    for e in valid_entries
+                    e["name"]: round((e["share"] / total) * 100, 1) for e in valid_entries
                 }
-                result.warnings.append(
-                    f"Suggested normalized shares: {result.corrected_shares}"
-                )
+                result.warnings.append(f"Suggested normalized shares: {result.corrected_shares}")
 
         else:
             result.is_valid = True
@@ -316,14 +315,14 @@ class MarketShareValidator:
         # Additional sanity checks
         if len(valid_entries) >= 2:
             # Check for suspiciously round numbers that might be estimates
-            round_count = sum(1 for e in valid_entries if e['share'] == int(e['share']))
+            round_count = sum(1 for e in valid_entries if e["share"] == int(e["share"]))
             if round_count == len(valid_entries):
                 result.warnings.append(
                     "All market shares are round numbers - may be estimates rather than actual data"
                 )
 
             # Check for duplicate values
-            shares_only = [e['share'] for e in valid_entries]
+            shares_only = [e["share"] for e in valid_entries]
             if len(shares_only) != len(set(shares_only)):
                 result.warnings.append(
                     "Some competitors have identical market shares - verify data accuracy"
@@ -332,9 +331,7 @@ class MarketShareValidator:
         return result
 
     def validate_from_text(
-        self,
-        text: str,
-        company_name: str
+        self, text: str, company_name: str
     ) -> Tuple[MarketShareValidationResult, List[Dict[str, float]]]:
         """
         Extract and validate market shares from report text.
@@ -351,9 +348,9 @@ class MarketShareValidator:
         # Pattern to extract market share mentions
         # Matches: "Company X has 45.2% market share" or "Company X (45.2%)"
         patterns = [
-            r'(\w+(?:\s+\w+)?)\s+(?:has|holds|with|at)?\s*(\d+\.?\d*)\s*%\s*(?:market share|share|of the market)',
-            r'(\w+(?:\s+\w+)?)\s*[\(\[](\d+\.?\d*)\s*%[\)\]]',
-            r'market share[:\s]+(\w+(?:\s+\w+)?)\s*[\(\[]?(\d+\.?\d*)\s*%',
+            r"(\w+(?:\s+\w+)?)\s+(?:has|holds|with|at)?\s*(\d+\.?\d*)\s*%\s*(?:market share|share|of the market)",
+            r"(\w+(?:\s+\w+)?)\s*[\(\[](\d+\.?\d*)\s*%[\)\]]",
+            r"market share[:\s]+(\w+(?:\s+\w+)?)\s*[\(\[]?(\d+\.?\d*)\s*%",
         ]
 
         extracted = []
@@ -367,10 +364,7 @@ class MarketShareValidator:
                 if name.lower() not in seen_names:
                     seen_names.add(name.lower())
                     try:
-                        extracted.append({
-                            "name": name,
-                            "share": float(share)
-                        })
+                        extracted.append({"name": name, "share": float(share)})
                     except ValueError:
                         continue
 
@@ -379,8 +373,7 @@ class MarketShareValidator:
 
 
 def validate_market_shares(
-    shares: List[Dict[str, Any]],
-    tolerance: float = 5.0
+    shares: List[Dict[str, Any]], tolerance: float = 5.0
 ) -> MarketShareValidationResult:
     """
     Convenience function to validate market shares.

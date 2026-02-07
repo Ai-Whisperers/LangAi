@@ -24,8 +24,8 @@ import json
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
-from .models import TaskStorage, _utcnow, _serialize_datetime
 from ...utils import get_logger
+from .models import TaskStorage, _serialize_datetime, _utcnow
 
 logger = get_logger(__name__)
 
@@ -47,7 +47,7 @@ class RedisTaskStorage(TaskStorage):
         db: int = 0,
         password: Optional[str] = None,
         prefix: str = "research:",
-        task_ttl: int = 604800  # 7 days
+        task_ttl: int = 604800,  # 7 days
     ):
         self.host = host
         self.port = port
@@ -57,25 +57,29 @@ class RedisTaskStorage(TaskStorage):
         self.task_ttl = task_ttl
         self._redis: Optional[Any] = None
         self._connected = False
+        self._redis_error: type[BaseException] = Exception
 
     async def connect(self) -> bool:
         """Connect to Redis."""
         try:
             import redis.asyncio as redis
+        except ImportError as e:
+            raise ImportError("redis package not installed") from e
 
+        self._redis_error = getattr(getattr(redis, "exceptions", None), "RedisError", Exception)
+
+        try:
             self._redis = redis.Redis(
                 host=self.host,
                 port=self.port,
                 db=self.db,
                 password=self.password,
-                decode_responses=True
+                decode_responses=True,
             )
             await self._redis.ping()
             self._connected = True
             return True
-        except ImportError:
-            raise ImportError("redis package not installed")
-        except Exception as e:
+        except self._redis_error as e:
             logger.error(f"Failed to connect to Redis: {e}")
             return False
 
@@ -98,24 +102,17 @@ class RedisTaskStorage(TaskStorage):
 
         try:
             data = json.dumps(task, default=_serialize_datetime)
-            await self._redis.setex(
-                self._task_key(task_id),
-                self.task_ttl,
-                data
-            )
+            await self._redis.setex(self._task_key(task_id), self.task_ttl, data)
 
             # Add to task index for listing
-            await self._redis.zadd(
-                f"{self.prefix}tasks:index",
-                {task_id: _utcnow().timestamp()}
-            )
+            await self._redis.zadd(f"{self.prefix}tasks:index", {task_id: _utcnow().timestamp()})
 
             # Add to status-specific set
             status = task.get("status", "pending")
             await self._redis.sadd(f"{self.prefix}tasks:status:{status}", task_id)
 
             return True
-        except Exception as e:
+        except (self._redis_error, TypeError, ValueError) as e:
             logger.error(f"Failed to save task {task_id}: {e}")
             return False
 
@@ -129,7 +126,7 @@ class RedisTaskStorage(TaskStorage):
             if data:
                 return json.loads(data)
             return None
-        except Exception as e:
+        except (self._redis_error, json.JSONDecodeError, ValueError, TypeError) as e:
             logger.error(f"Failed to get task {task_id}: {e}")
             return None
 
@@ -148,7 +145,7 @@ class RedisTaskStorage(TaskStorage):
             try:
                 await self._redis.srem(f"{self.prefix}tasks:status:{old_status}", task_id)
                 await self._redis.sadd(f"{self.prefix}tasks:status:{new_status}", task_id)
-            except Exception as e:
+            except self._redis_error as e:
                 logger.debug(f"Failed to update task status index: {e}")
 
         return await self.save_task(task_id, task)
@@ -167,7 +164,7 @@ class RedisTaskStorage(TaskStorage):
             await self._redis.zrem(f"{self.prefix}tasks:index", task_id)
             result = await self._redis.delete(self._task_key(task_id))
             return result > 0
-        except Exception as e:
+        except self._redis_error as e:
             logger.error(f"Failed to delete task {task_id}: {e}")
             return False
 
@@ -176,7 +173,7 @@ class RedisTaskStorage(TaskStorage):
         status: Optional[str] = None,
         company: Optional[str] = None,
         limit: int = 50,
-        offset: int = 0
+        offset: int = 0,
     ) -> List[Dict[str, Any]]:
         """List tasks with filtering."""
         if not self._connected:
@@ -190,9 +187,7 @@ class RedisTaskStorage(TaskStorage):
             else:
                 # Get from sorted index (newest first)
                 task_ids = await self._redis.zrevrange(
-                    f"{self.prefix}tasks:index",
-                    offset,
-                    offset + limit - 1
+                    f"{self.prefix}tasks:index", offset, offset + limit - 1
                 )
 
             tasks = []
@@ -207,10 +202,10 @@ class RedisTaskStorage(TaskStorage):
 
             # Apply offset/limit for status filter (already applied for index)
             if status:
-                tasks = tasks[offset:offset + limit]
+                tasks = tasks[offset : offset + limit]
 
             return tasks
-        except Exception as e:
+        except self._redis_error as e:
             logger.error(f"Failed to list tasks: {e}")
             return []
 
@@ -221,13 +216,9 @@ class RedisTaskStorage(TaskStorage):
 
         try:
             data = json.dumps(batch, default=_serialize_datetime)
-            await self._redis.setex(
-                self._batch_key(batch_id),
-                self.task_ttl,
-                data
-            )
+            await self._redis.setex(self._batch_key(batch_id), self.task_ttl, data)
             return True
-        except Exception as e:
+        except (self._redis_error, TypeError, ValueError) as e:
             logger.error(f"Failed to save batch {batch_id}: {e}")
             return False
 
@@ -241,7 +232,7 @@ class RedisTaskStorage(TaskStorage):
             if data:
                 return json.loads(data)
             return None
-        except Exception as e:
+        except (self._redis_error, json.JSONDecodeError, ValueError, TypeError) as e:
             logger.error(f"Failed to get batch {batch_id}: {e}")
             return None
 
@@ -264,7 +255,7 @@ class RedisTaskStorage(TaskStorage):
                 return await self._redis.scard(f"{self.prefix}tasks:status:{status}")
             else:
                 return await self._redis.zcard(f"{self.prefix}tasks:index")
-        except Exception:
+        except self._redis_error:
             return 0
 
     async def cleanup_old_tasks(self, max_age_days: int = 7) -> int:
@@ -277,9 +268,7 @@ class RedisTaskStorage(TaskStorage):
 
             # Get old task IDs
             old_task_ids = await self._redis.zrangebyscore(
-                f"{self.prefix}tasks:index",
-                "-inf",
-                cutoff
+                f"{self.prefix}tasks:index", "-inf", cutoff
             )
 
             count = 0
@@ -288,6 +277,6 @@ class RedisTaskStorage(TaskStorage):
                     count += 1
 
             return count
-        except Exception as e:
+        except self._redis_error as e:
             logger.error(f"Failed to cleanup old tasks: {e}")
             return 0

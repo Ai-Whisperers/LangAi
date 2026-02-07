@@ -6,6 +6,7 @@ black>=24.10.0              # Code formatter
 ruff>=0.7.0                 # Fast linter (replaces flake8, pylint, etc.)
 mypy>=1.13.0                # Static type checker
 isort>=5.13.0               # Import sorter
+packaging==23.2             # Keep compatible with langchain-core (<25) and agentops (==23.2)
 
 # Testing
 pytest>=8.3.0               # Test framework
@@ -31,8 +32,12 @@ pre-commit>=4.0.0           # Git hooks framework
 
 # Profiling & Performance
 py-spy>=0.3.14              # Sampling profiler
-memray>=1.14.0              # Memory profiler
+# memray does not support Windows (sys_platform == "win32") as of current versions.
+memray>=1.14.0; sys_platform != "win32"  # Memory profiler (non-Windows only)
 line-profiler>=4.1.0        # Line-by-line profiling
+
+# Execution (optional)
+ray>=2.0.0                   # Ray local/cluster execution backend (optional)
 
 # Jupyter (for experimentation)
 jupyter>=1.1.0              # Jupyter notebook
@@ -45,5 +50,8 @@ types-redis>=4.6.0          # Type stubs for Redis
 types-aiofiles>=24.1.0      # Type stubs for aiofiles
 
 # CI/CD
-tox>=4.21.0                 # Testing in multiple environments
+# tox is optional. Recent tox versions require packaging>=25, which conflicts with the
+# pinned core stack in requirements.txt (langchain-core requires packaging<25; agentops pins 23.2).
+# Install tox in an isolated tooling venv if you need it.
+# tox>=4.21.0                # Testing in multiple environments
 coverage[toml]>=7.6.0       # Coverage with pyproject.toml support

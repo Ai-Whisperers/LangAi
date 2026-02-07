@@ -7,12 +7,14 @@ Dataclasses for spans and metrics.
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+
 from ...utils import utc_now
 
 
 @dataclass
 class SpanContext:
     """Context for distributed tracing spans."""
+
     trace_id: str
     span_id: str
     parent_span_id: Optional[str] = None
@@ -24,6 +26,7 @@ class SpanContext:
 @dataclass
 class SpanEvent:
     """Event recorded within a span."""
+
     name: str
     timestamp: datetime
     attributes: Dict[str, Any] = field(default_factory=dict)
@@ -32,6 +35,7 @@ class SpanEvent:
 @dataclass
 class Span:
     """A distributed tracing span."""
+
     name: str
     context: SpanContext
     start_time: datetime
@@ -45,11 +49,7 @@ class Span:
 
     def add_event(self, name: str, attributes: Dict[str, Any] = None) -> None:
         """Add an event to the span."""
-        self.events.append(SpanEvent(
-            name=name,
-            timestamp=utc_now(),
-            attributes=attributes or {}
-        ))
+        self.events.append(SpanEvent(name=name, timestamp=utc_now(), attributes=attributes or {}))
 
     def set_attribute(self, key: str, value: Any) -> None:
         """Set a span attribute."""
@@ -62,11 +62,14 @@ class Span:
 
     def record_exception(self, exception: Exception) -> None:
         """Record an exception on the span."""
-        self.add_event("exception", {
-            "exception.type": type(exception).__name__,
-            "exception.message": str(exception),
-            "exception.stacktrace": ""  # Would include traceback
-        })
+        self.add_event(
+            "exception",
+            {
+                "exception.type": type(exception).__name__,
+                "exception.message": str(exception),
+                "exception.stacktrace": "",  # Would include traceback
+            },
+        )
         self.set_status("ERROR", str(exception))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -80,21 +83,24 @@ class Span:
             "end_time_unix_nano": int(self.end_time.timestamp() * 1e9) if self.end_time else None,
             "kind": self.kind,
             "status": {"code": self.status, "message": self.status_message},
-            "attributes": [{"key": k, "value": {"stringValue": str(v)}} for k, v in self.attributes.items()],
+            "attributes": [
+                {"key": k, "value": {"stringValue": str(v)}} for k, v in self.attributes.items()
+            ],
             "events": [
                 {
                     "name": e.name,
                     "timeUnixNano": int(e.timestamp.timestamp() * 1e9),
-                    "attributes": e.attributes
+                    "attributes": e.attributes,
                 }
                 for e in self.events
-            ]
+            ],
         }
 
 
 @dataclass
 class MetricPoint:
     """A single metric measurement."""
+
     timestamp: datetime
     value: float
     attributes: Dict[str, str] = field(default_factory=dict)

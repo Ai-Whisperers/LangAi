@@ -13,8 +13,9 @@ Key improvements over pattern-based detection:
 
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Any
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -22,24 +23,27 @@ logger = get_logger(__name__)
 
 class GapConfidence(Enum):
     """Confidence level that a gap exists."""
-    CONFIRMED = "confirmed"      # Definitely missing - multiple signals
-    LIKELY = "likely"            # Probably missing - strong signals
-    POSSIBLE = "possible"        # Might be missing - some signals
-    COVERED = "covered"          # Information appears present
+
+    CONFIRMED = "confirmed"  # Definitely missing - multiple signals
+    LIKELY = "likely"  # Probably missing - strong signals
+    POSSIBLE = "possible"  # Might be missing - some signals
+    COVERED = "covered"  # Information appears present
 
 
 class CoverageLevel(Enum):
     """Level of coverage for a field."""
+
     COMPREHENSIVE = "comprehensive"  # Multiple specific data points
-    ADEQUATE = "adequate"            # Basic information present
-    PARTIAL = "partial"              # Mentioned but incomplete
-    ABSENT = "absent"                # Not covered at all
-    NEGATIVE = "negative"            # Explicitly stated as unavailable
+    ADEQUATE = "adequate"  # Basic information present
+    PARTIAL = "partial"  # Mentioned but incomplete
+    ABSENT = "absent"  # Not covered at all
+    NEGATIVE = "negative"  # Explicitly stated as unavailable
 
 
 @dataclass
 class GapAssessment:
     """Assessment of a gap in research coverage."""
+
     category: str
     field: str
     confidence: GapConfidence
@@ -59,13 +63,14 @@ class GapAssessment:
             "signals": self.signals,
             "evidence": self.evidence,
             "recommendation": self.recommendation,
-            "priority": self.priority
+            "priority": self.priority,
         }
 
 
 @dataclass
 class CoverageAssessment:
     """Detailed coverage assessment for a field."""
+
     level: CoverageLevel
     evidence: List[str]
     specific_mentions: int
@@ -88,7 +93,7 @@ FIELD_REQUIREMENTS = {
             ],
             "min_specific_mentions": 2,
             "priority": 10,
-            "authoritative_domains": ["sec.gov", "investor.", "ir.", "10-K", "10-Q"]
+            "authoritative_domains": ["sec.gov", "investor.", "ir.", "10-K", "10-Q"],
         },
         "profit_margin": {
             "keywords": ["profit margin", "gross margin", "operating margin", "net margin"],
@@ -101,7 +106,7 @@ FIELD_REQUIREMENTS = {
             ],
             "min_specific_mentions": 1,
             "priority": 8,
-            "authoritative_domains": ["sec.gov", "investor.", "yahoo"]
+            "authoritative_domains": ["sec.gov", "investor.", "yahoo"],
         },
         "market_cap": {
             "keywords": ["market cap", "market capitalization", "valuation"],
@@ -114,7 +119,7 @@ FIELD_REQUIREMENTS = {
             ],
             "min_specific_mentions": 1,
             "priority": 9,
-            "authoritative_domains": ["yahoo", "bloomberg", "reuters"]
+            "authoritative_domains": ["yahoo", "bloomberg", "reuters"],
         },
         "pe_ratio": {
             "keywords": ["p/e ratio", "pe ratio", "price to earnings", "price-to-earnings"],
@@ -126,8 +131,8 @@ FIELD_REQUIREMENTS = {
             ],
             "min_specific_mentions": 1,
             "priority": 7,
-            "authoritative_domains": ["yahoo", "bloomberg"]
-        }
+            "authoritative_domains": ["yahoo", "bloomberg"],
+        },
     },
     "market": {
         "market_share": {
@@ -142,7 +147,7 @@ FIELD_REQUIREMENTS = {
             ],
             "min_specific_mentions": 1,
             "priority": 8,
-            "authoritative_domains": ["statista", "ibisworld", "gartner"]
+            "authoritative_domains": ["statista", "ibisworld", "gartner"],
         },
         "market_size": {
             "keywords": ["market size", "TAM", "total addressable market", "industry size"],
@@ -155,7 +160,7 @@ FIELD_REQUIREMENTS = {
             ],
             "min_specific_mentions": 1,
             "priority": 7,
-            "authoritative_domains": ["statista", "grandviewresearch", "marketsandmarkets"]
+            "authoritative_domains": ["statista", "grandviewresearch", "marketsandmarkets"],
         },
         "competitors": {
             "keywords": ["competitor", "competition", "rival", "competitive landscape"],
@@ -168,8 +173,8 @@ FIELD_REQUIREMENTS = {
             ],
             "min_specific_mentions": 2,
             "priority": 6,
-            "authoritative_domains": []
-        }
+            "authoritative_domains": [],
+        },
     },
     "company": {
         "employees": {
@@ -183,7 +188,7 @@ FIELD_REQUIREMENTS = {
             ],
             "min_specific_mentions": 1,
             "priority": 5,
-            "authoritative_domains": ["linkedin", "yahoo"]
+            "authoritative_domains": ["linkedin", "yahoo"],
         },
         "headquarters": {
             "keywords": ["headquarters", "HQ", "based in", "headquartered"],
@@ -194,7 +199,7 @@ FIELD_REQUIREMENTS = {
             "negative_patterns": [],
             "min_specific_mentions": 1,
             "priority": 4,
-            "authoritative_domains": []
+            "authoritative_domains": [],
         },
         "founded": {
             "keywords": ["founded", "established", "started", "inception"],
@@ -204,7 +209,7 @@ FIELD_REQUIREMENTS = {
             "negative_patterns": [],
             "min_specific_mentions": 1,
             "priority": 3,
-            "authoritative_domains": []
+            "authoritative_domains": [],
         },
         "ceo": {
             "keywords": ["CEO", "chief executive", "founder", "leader"],
@@ -215,8 +220,8 @@ FIELD_REQUIREMENTS = {
             "negative_patterns": [],
             "min_specific_mentions": 1,
             "priority": 6,
-            "authoritative_domains": ["linkedin", "bloomberg"]
-        }
+            "authoritative_domains": ["linkedin", "bloomberg"],
+        },
     },
     "product": {
         "products": {
@@ -230,7 +235,7 @@ FIELD_REQUIREMENTS = {
             ],
             "min_specific_mentions": 2,
             "priority": 7,
-            "authoritative_domains": []
+            "authoritative_domains": [],
         },
         "technology": {
             "keywords": ["technology", "tech stack", "platform", "infrastructure"],
@@ -241,9 +246,9 @@ FIELD_REQUIREMENTS = {
             "negative_patterns": [],
             "min_specific_mentions": 1,
             "priority": 5,
-            "authoritative_domains": []
-        }
-    }
+            "authoritative_domains": [],
+        },
+    },
 }
 
 
@@ -281,14 +286,11 @@ class SemanticGapDetector:
             for field_name, config in fields.items():
                 self._compiled_patterns[section][field_name] = {
                     "required": [re.compile(p, re.IGNORECASE) for p in config["required_patterns"]],
-                    "negative": [re.compile(p, re.IGNORECASE) for p in config["negative_patterns"]]
+                    "negative": [re.compile(p, re.IGNORECASE) for p in config["negative_patterns"]],
                 }
 
     def detect_gaps(
-        self,
-        report_text: str,
-        sources: List[Dict],
-        agent_outputs: Dict[str, Any]
+        self, report_text: str, sources: List[Dict], agent_outputs: Dict[str, Any]
     ) -> List[GapAssessment]:
         """
         Detect gaps using multiple signals.
@@ -312,17 +314,13 @@ class SemanticGapDetector:
                 evidence = []
 
                 # Signal 1: Check for explicit "not available" patterns
-                has_explicit_gap = self._check_explicit_gap_patterns(
-                    all_text, field_name, section
-                )
+                has_explicit_gap = self._check_explicit_gap_patterns(all_text, field_name, section)
                 if has_explicit_gap:
                     signals.append("explicit_gap_phrase")
                     evidence.append("Found explicit 'not available' statement")
 
                 # Signal 2: Check keyword presence vs substance
-                coverage = self._assess_field_coverage(
-                    all_text, field_name, section
-                )
+                coverage = self._assess_field_coverage(all_text, field_name, section)
 
                 if coverage.level == CoverageLevel.NEGATIVE:
                     signals.append("explicit_unavailable")
@@ -344,9 +342,7 @@ class SemanticGapDetector:
                     evidence.append("No authoritative source found")
 
                 # Signal 4: Cross-agent consistency
-                agent_gap = self._check_agent_coverage(
-                    agent_outputs, field_name, section
-                )
+                agent_gap = self._check_agent_coverage(agent_outputs, field_name, section)
                 if agent_gap:
                     signals.append("agent_gap")
                     evidence.append(agent_gap)
@@ -356,16 +352,20 @@ class SemanticGapDetector:
                 final_coverage = coverage.level
 
                 if confidence != GapConfidence.COVERED:
-                    gaps.append(GapAssessment(
-                        category=section,
-                        field=field_name,
-                        confidence=confidence,
-                        coverage_level=final_coverage,
-                        signals=signals,
-                        evidence=evidence,
-                        recommendation=self._generate_recommendation(field_name, section, signals),
-                        priority=self._calculate_priority(config["priority"], confidence)
-                    ))
+                    gaps.append(
+                        GapAssessment(
+                            category=section,
+                            field=field_name,
+                            confidence=confidence,
+                            coverage_level=final_coverage,
+                            signals=signals,
+                            evidence=evidence,
+                            recommendation=self._generate_recommendation(
+                                field_name, section, signals
+                            ),
+                            priority=self._calculate_priority(config["priority"], confidence),
+                        )
+                    )
 
         return sorted(gaps, key=lambda g: g.priority, reverse=True)
 
@@ -375,8 +375,13 @@ class SemanticGapDetector:
 
         for agent_name, output in agent_outputs.items():
             if isinstance(output, dict):
-                for key in ['analysis', 'content', 'company_overview',
-                           'financial_analysis', 'market_analysis']:
+                for key in [
+                    "analysis",
+                    "content",
+                    "company_overview",
+                    "financial_analysis",
+                    "market_analysis",
+                ]:
                     if key in output and isinstance(output[key], str):
                         parts.append(output[key])
             elif isinstance(output, str):
@@ -384,12 +389,7 @@ class SemanticGapDetector:
 
         return "\n\n".join(parts)
 
-    def _check_explicit_gap_patterns(
-        self,
-        text: str,
-        field_name: str,
-        section: str
-    ) -> bool:
+    def _check_explicit_gap_patterns(self, text: str, field_name: str, section: str) -> bool:
         """Check for explicit 'not available' patterns."""
         patterns = self._compiled_patterns.get(section, {}).get(field_name, {})
         negative_patterns = patterns.get("negative", [])
@@ -401,10 +401,7 @@ class SemanticGapDetector:
         return False
 
     def _assess_field_coverage(
-        self,
-        text: str,
-        field_name: str,
-        section: str
+        self, text: str, field_name: str, section: str
     ) -> CoverageAssessment:
         """Assess coverage level for a specific field."""
         config = FIELD_REQUIREMENTS[section][field_name]
@@ -418,9 +415,7 @@ class SemanticGapDetector:
             if match:
                 evidence.append(f"Negative: '{match.group()}'")
                 return CoverageAssessment(
-                    level=CoverageLevel.NEGATIVE,
-                    evidence=evidence,
-                    specific_mentions=0
+                    level=CoverageLevel.NEGATIVE, evidence=evidence, specific_mentions=0
                 )
 
         # Check keyword presence
@@ -450,15 +445,11 @@ class SemanticGapDetector:
             level = CoverageLevel.ABSENT
 
         return CoverageAssessment(
-            level=level,
-            evidence=evidence,
-            specific_mentions=specific_mentions
+            level=level, evidence=evidence, specific_mentions=specific_mentions
         )
 
     def _check_source_authority(
-        self,
-        sources: List[Dict],
-        authoritative_domains: List[str]
+        self, sources: List[Dict], authoritative_domains: List[str]
     ) -> bool:
         """Check if any source is from authoritative domain."""
         if not authoritative_domains:
@@ -473,10 +464,7 @@ class SemanticGapDetector:
         return False
 
     def _check_agent_coverage(
-        self,
-        agent_outputs: Dict[str, Any],
-        field_name: str,
-        section: str
+        self, agent_outputs: Dict[str, Any], field_name: str, section: str
     ) -> Optional[str]:
         """Check for cross-agent coverage issues."""
         # Map sections to expected agents
@@ -484,7 +472,7 @@ class SemanticGapDetector:
             "financial": ["financial", "synthesizer"],
             "market": ["market", "competitor", "synthesizer"],
             "company": ["researcher", "synthesizer"],
-            "product": ["product", "synthesizer"]
+            "product": ["product", "synthesizer"],
         }
 
         expected_agents = section_agents.get(section, [])
@@ -526,16 +514,11 @@ class SemanticGapDetector:
             GapConfidence.CONFIRMED: 1.0,
             GapConfidence.LIKELY: 0.8,
             GapConfidence.POSSIBLE: 0.5,
-            GapConfidence.COVERED: 0.0
+            GapConfidence.COVERED: 0.0,
         }
         return int(base_priority * confidence_multiplier[confidence])
 
-    def _generate_recommendation(
-        self,
-        field_name: str,
-        section: str,
-        signals: List[str]
-    ) -> str:
+    def _generate_recommendation(self, field_name: str, section: str, signals: List[str]) -> str:
         """Generate recommendation for addressing the gap."""
         config = FIELD_REQUIREMENTS[section][field_name]
 
@@ -549,7 +532,7 @@ class SemanticGapDetector:
             return f"Found mention of {field_name} but no specific data. Verify and add concrete numbers/facts."
 
         if "no_authoritative_source" in signals:
-            domains = config.get('authoritative_domains', [])
+            domains = config.get("authoritative_domains", [])
             if domains:
                 return f"Add authoritative source from: {', '.join(domains)}"
 
@@ -568,7 +551,7 @@ class SemanticGapDetector:
             "possible_count": len(possible),
             "high_priority_gaps": [g.field for g in gaps if g.priority >= 7],
             "by_section": self._group_by_section(gaps),
-            "top_recommendations": [g.recommendation for g in gaps[:5]]
+            "top_recommendations": [g.recommendation for g in gaps[:5]],
         }
 
     def _group_by_section(self, gaps: List[GapAssessment]) -> Dict[str, List[str]]:

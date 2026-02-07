@@ -8,11 +8,11 @@ Provides:
 """
 
 from .self_reflection import (
+    ConfidenceLevel,
+    ReflectionAspect,
+    ReflectionScore,
     SelfReflectionMixin,
     SelfReflectionResult,
-    ReflectionScore,
-    ReflectionAspect,
-    ConfidenceLevel,
     create_reflective_agent,
 )
 

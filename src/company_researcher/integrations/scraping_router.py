@@ -23,6 +23,7 @@ Usage:
 
 import asyncio
 import hashlib
+import json
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -30,7 +31,7 @@ from enum import Enum
 from pathlib import Path
 from threading import Lock
 from typing import Optional
-import json
+
 from ..utils import get_logger, utc_now
 
 logger = get_logger(__name__)
@@ -38,6 +39,7 @@ logger = get_logger(__name__)
 
 class ScrapingProvider(str, Enum):
     """Available scraping providers."""
+
     CRAWL4AI = "crawl4ai"
     JINA_READER = "jina_reader"
     FIRECRAWL = "firecrawl"
@@ -46,17 +48,19 @@ class ScrapingProvider(str, Enum):
 
 class ScrapingQuality(str, Enum):
     """Quality tier for scraping."""
-    FREE = "free"           # Only use free providers
-    STANDARD = "standard"   # Free first, fall back to paid
-    PREMIUM = "premium"     # Use best provider regardless of cost
+
+    FREE = "free"  # Only use free providers
+    STANDARD = "standard"  # Free first, fall back to paid
+    PREMIUM = "premium"  # Use best provider regardless of cost
 
 
 @dataclass
 class ScrapeResult:
     """Result from a scraping operation."""
+
     url: str
-    content: str           # Main content (markdown or text)
-    html: Optional[str]    # Raw HTML if available
+    content: str  # Main content (markdown or text)
+    html: Optional[str]  # Raw HTML if available
     title: Optional[str]
     provider: ScrapingProvider
     success: bool
@@ -75,6 +79,7 @@ class ScrapeResult:
 @dataclass
 class ProviderStatus:
     """Status of a scraping provider."""
+
     provider: ScrapingProvider
     available: bool
     last_used: Optional[datetime]
@@ -119,7 +124,7 @@ class ScrapingRouter:
         cache_dir: Optional[Path] = None,
         cache_ttl_hours: int = 24,
         max_retries: int = 2,
-        default_quality: ScrapingQuality = ScrapingQuality.STANDARD
+        default_quality: ScrapingQuality = ScrapingQuality.STANDARD,
     ):
         """
         Initialize scraping router.
@@ -149,30 +154,47 @@ class ScrapingRouter:
 
     def _init_providers(self):
         """Lazy initialize providers."""
+
+        def _try_init(label: str, init_fn):
+            try:
+                return init_fn()
+            except Exception as e:  # noqa: BLE001 - best-effort optional dependencies
+                logger.warning(f"{label} not available: {e}")
+                return None
+
         # Import here to avoid circular imports
-        try:
-            from .crawl4ai_client import get_crawl4ai
-            self._crawl4ai = get_crawl4ai()
-        except Exception as e:
-            logger.warning(f"Crawl4AI not available: {e}")
+        if self._crawl4ai is None:
+            self._crawl4ai = _try_init(
+                "Crawl4AI",
+                lambda: __import__(
+                    "company_researcher.integrations.crawl4ai_client", fromlist=["get_crawl4ai"]
+                ).get_crawl4ai(),
+            )
 
-        try:
-            from .jina_reader import get_jina_reader
-            self._jina = get_jina_reader()
-        except Exception as e:
-            logger.warning(f"Jina Reader not available: {e}")
+        if self._jina is None:
+            self._jina = _try_init(
+                "Jina Reader",
+                lambda: __import__(
+                    "company_researcher.integrations.jina_reader", fromlist=["get_jina_reader"]
+                ).get_jina_reader(),
+            )
 
-        try:
-            from .firecrawl_client import FirecrawlClient
-            self._firecrawl = FirecrawlClient()
-        except Exception as e:
-            logger.warning(f"Firecrawl not available: {e}")
+        if self._firecrawl is None:
+            self._firecrawl = _try_init(
+                "Firecrawl",
+                lambda: __import__(
+                    "company_researcher.integrations.firecrawl_client", fromlist=["FirecrawlClient"]
+                ).FirecrawlClient(),
+            )
 
-        try:
-            from .scrapegraph_client import ScrapeGraphClient
-            self._scrapegraph = ScrapeGraphClient()
-        except Exception as e:
-            logger.warning(f"ScrapeGraph not available: {e}")
+        if self._scrapegraph is None:
+            self._scrapegraph = _try_init(
+                "ScrapeGraph",
+                lambda: __import__(
+                    "company_researcher.integrations.scrapegraph_client",
+                    fromlist=["ScrapeGraphClient"],
+                ).ScrapeGraphClient(),
+            )
 
     def _get_cache_key(self, url: str) -> str:
         """Generate cache key for URL."""
@@ -205,9 +227,9 @@ class ScrapingRouter:
                 success=True,
                 metadata=data.get("metadata", {}),
                 timestamp=timestamp,
-                cost=0.0  # Cached = free
+                cost=0.0,  # Cached = free
             )
-        except Exception as e:
+        except (OSError, KeyError, ValueError, TypeError, json.JSONDecodeError) as e:
             logger.warning(f"Cache read error: {e}")
             return None
 
@@ -227,25 +249,22 @@ class ScrapingRouter:
                 "title": result.title,
                 "provider": result.provider.value,
                 "metadata": result.metadata,
-                "timestamp": result.timestamp.isoformat()
+                "timestamp": result.timestamp.isoformat(),
             }
 
             with open(cache_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
-        except Exception as e:
+        except (OSError, TypeError, ValueError) as e:
             logger.warning(f"Cache write error: {e}")
 
-    def _select_provider(
-        self,
-        url: str,
-        quality: ScrapingQuality
-    ) -> list[ScrapingProvider]:
+    def _select_provider(self, url: str, quality: ScrapingQuality) -> list[ScrapingProvider]:
         """
         Select providers to try based on URL and quality.
 
         Returns ordered list of providers to try.
         """
         from urllib.parse import urlparse
+
         domain = urlparse(url).netloc.lower()
 
         providers = []
@@ -259,30 +278,31 @@ class ScrapingRouter:
 
         if quality == ScrapingQuality.FREE:
             # Only free providers
-            providers = [
-                ScrapingProvider.CRAWL4AI,
-                ScrapingProvider.JINA_READER
-            ]
+            providers = [ScrapingProvider.CRAWL4AI, ScrapingProvider.JINA_READER]
         elif quality == ScrapingQuality.PREMIUM:
             # Best quality first
             if preferred:
                 providers = [preferred]
-            providers.extend([
-                ScrapingProvider.FIRECRAWL,
-                ScrapingProvider.SCRAPEGRAPH,
-                ScrapingProvider.CRAWL4AI,
-                ScrapingProvider.JINA_READER
-            ])
+            providers.extend(
+                [
+                    ScrapingProvider.FIRECRAWL,
+                    ScrapingProvider.SCRAPEGRAPH,
+                    ScrapingProvider.CRAWL4AI,
+                    ScrapingProvider.JINA_READER,
+                ]
+            )
         else:  # STANDARD
             # Free first, then paid
             if preferred and preferred in [ScrapingProvider.CRAWL4AI, ScrapingProvider.JINA_READER]:
                 providers = [preferred]
-            providers.extend([
-                ScrapingProvider.CRAWL4AI,
-                ScrapingProvider.JINA_READER,
-                ScrapingProvider.FIRECRAWL,
-                ScrapingProvider.SCRAPEGRAPH
-            ])
+            providers.extend(
+                [
+                    ScrapingProvider.CRAWL4AI,
+                    ScrapingProvider.JINA_READER,
+                    ScrapingProvider.FIRECRAWL,
+                    ScrapingProvider.SCRAPEGRAPH,
+                ]
+            )
 
         # Remove duplicates while preserving order
         seen = set()
@@ -307,31 +327,19 @@ class ScrapingRouter:
                 title=None,
                 provider=ScrapingProvider.CRAWL4AI,
                 success=False,
-                error="Crawl4AI not available"
+                error="Crawl4AI not available",
             )
 
-        try:
-            result = await self._crawl4ai.scrape(url)
-            return ScrapeResult(
-                url=url,
-                content=result.markdown or result.text or "",
-                html=result.html,
-                title=result.title,
-                provider=ScrapingProvider.CRAWL4AI,
-                success=True,
-                metadata={"links": result.links, "images": result.images}
-            )
-        except Exception as e:
-            logger.warning(f"Crawl4AI failed for {url}: {e}")
-            return ScrapeResult(
-                url=url,
-                content="",
-                html=None,
-                title=None,
-                provider=ScrapingProvider.CRAWL4AI,
-                success=False,
-                error=str(e)
-            )
+        result = await self._crawl4ai.scrape(url)
+        return ScrapeResult(
+            url=url,
+            content=result.markdown or result.text or "",
+            html=result.html,
+            title=result.title,
+            provider=ScrapingProvider.CRAWL4AI,
+            success=True,
+            metadata={"links": result.links, "images": result.images},
+        )
 
     async def _scrape_with_jina(self, url: str) -> ScrapeResult:
         """Scrape using Jina Reader."""
@@ -346,31 +354,19 @@ class ScrapingRouter:
                 title=None,
                 provider=ScrapingProvider.JINA_READER,
                 success=False,
-                error="Jina Reader not available"
+                error="Jina Reader not available",
             )
 
-        try:
-            result = await self._jina.read(url)
-            return ScrapeResult(
-                url=url,
-                content=result.content,
-                html=None,  # Jina returns markdown only
-                title=result.title,
-                provider=ScrapingProvider.JINA_READER,
-                success=True,
-                metadata={"word_count": result.word_count}
-            )
-        except Exception as e:
-            logger.warning(f"Jina Reader failed for {url}: {e}")
-            return ScrapeResult(
-                url=url,
-                content="",
-                html=None,
-                title=None,
-                provider=ScrapingProvider.JINA_READER,
-                success=False,
-                error=str(e)
-            )
+        result = await self._jina.read(url)
+        return ScrapeResult(
+            url=url,
+            content=result.content,
+            html=None,  # Jina returns markdown only
+            title=result.title,
+            provider=ScrapingProvider.JINA_READER,
+            success=True,
+            metadata={"word_count": result.word_count},
+        )
 
     async def _scrape_with_firecrawl(self, url: str) -> ScrapeResult:
         """Scrape using Firecrawl."""
@@ -385,36 +381,22 @@ class ScrapingRouter:
                 title=None,
                 provider=ScrapingProvider.FIRECRAWL,
                 success=False,
-                error="Firecrawl not available"
+                error="Firecrawl not available",
             )
 
-        try:
-            # Firecrawl has sync API, wrap in executor
-            loop = asyncio.get_running_loop()
-            result = await loop.run_in_executor(
-                None, self._firecrawl.scrape_url, url
-            )
+        # Firecrawl has sync API, wrap in executor
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(None, self._firecrawl.scrape_url, url)
 
-            return ScrapeResult(
-                url=url,
-                content=result.get("markdown", "") or result.get("content", ""),
-                html=result.get("html"),
-                title=result.get("title"),
-                provider=ScrapingProvider.FIRECRAWL,
-                success=True,
-                cost=0.01  # ~$0.01/page
-            )
-        except Exception as e:
-            logger.warning(f"Firecrawl failed for {url}: {e}")
-            return ScrapeResult(
-                url=url,
-                content="",
-                html=None,
-                title=None,
-                provider=ScrapingProvider.FIRECRAWL,
-                success=False,
-                error=str(e)
-            )
+        return ScrapeResult(
+            url=url,
+            content=result.get("markdown", "") or result.get("content", ""),
+            html=result.get("html"),
+            title=result.get("title"),
+            provider=ScrapingProvider.FIRECRAWL,
+            success=True,
+            cost=0.01,  # ~$0.01/page
+        )
 
     async def _scrape_with_scrapegraph(self, url: str) -> ScrapeResult:
         """Scrape using ScrapeGraph."""
@@ -429,42 +411,28 @@ class ScrapingRouter:
                 title=None,
                 provider=ScrapingProvider.SCRAPEGRAPH,
                 success=False,
-                error="ScrapeGraph not available"
+                error="ScrapeGraph not available",
             )
 
-        try:
-            loop = asyncio.get_running_loop()
-            result = await loop.run_in_executor(
-                None, self._scrapegraph.scrape, url
-            )
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(None, self._scrapegraph.scrape, url)
 
-            return ScrapeResult(
-                url=url,
-                content=result.get("content", ""),
-                html=result.get("html"),
-                title=result.get("title"),
-                provider=ScrapingProvider.SCRAPEGRAPH,
-                success=True,
-                cost=0.01
-            )
-        except Exception as e:
-            logger.warning(f"ScrapeGraph failed for {url}: {e}")
-            return ScrapeResult(
-                url=url,
-                content="",
-                html=None,
-                title=None,
-                provider=ScrapingProvider.SCRAPEGRAPH,
-                success=False,
-                error=str(e)
-            )
+        return ScrapeResult(
+            url=url,
+            content=result.get("content", ""),
+            html=result.get("html"),
+            title=result.get("title"),
+            provider=ScrapingProvider.SCRAPEGRAPH,
+            success=True,
+            cost=0.01,
+        )
 
     async def scrape(
         self,
         url: str,
         quality: Optional[ScrapingQuality] = None,
         use_cache: bool = True,
-        force_provider: Optional[ScrapingProvider] = None
+        force_provider: Optional[ScrapingProvider] = None,
     ) -> ScrapeResult:
         """
         Scrape a URL with automatic provider fallback.
@@ -497,24 +465,29 @@ class ScrapingRouter:
         last_error = None
         for provider in providers:
             logger.info(f"Trying {provider.value} for {url}")
-
-            if provider == ScrapingProvider.CRAWL4AI:
-                result = await self._scrape_with_crawl4ai(url)
-            elif provider == ScrapingProvider.JINA_READER:
-                result = await self._scrape_with_jina(url)
-            elif provider == ScrapingProvider.FIRECRAWL:
-                result = await self._scrape_with_firecrawl(url)
-            elif provider == ScrapingProvider.SCRAPEGRAPH:
-                result = await self._scrape_with_scrapegraph(url)
-            else:
+            try:
+                if provider == ScrapingProvider.CRAWL4AI:
+                    result = await self._scrape_with_crawl4ai(url)
+                elif provider == ScrapingProvider.JINA_READER:
+                    result = await self._scrape_with_jina(url)
+                elif provider == ScrapingProvider.FIRECRAWL:
+                    result = await self._scrape_with_firecrawl(url)
+                elif provider == ScrapingProvider.SCRAPEGRAPH:
+                    result = await self._scrape_with_scrapegraph(url)
+                else:
+                    continue
+            except Exception as e:  # noqa: BLE001 - per-provider failures are expected
+                logger.warning(f"{provider.value} failed for {url}: {e}")
+                last_error = str(e)
                 continue
 
             if result.success and result.content:
                 # Track cost
                 try:
                     from .cost_tracker import track_cost
+
                     track_cost(provider.value.replace("_", "-"), 1)
-                except Exception as e:
+                except (ImportError, AttributeError, OSError, ValueError, TypeError) as e:
                     logger.debug(f"Failed to track cost for {provider.value}: {e}")
 
                 # Cache successful result
@@ -534,14 +507,11 @@ class ScrapingRouter:
             title=None,
             provider=providers[0] if providers else ScrapingProvider.CRAWL4AI,
             success=False,
-            error=f"All providers failed. Last error: {last_error}"
+            error=f"All providers failed. Last error: {last_error}",
         )
 
     async def scrape_batch(
-        self,
-        urls: list[str],
-        quality: Optional[ScrapingQuality] = None,
-        max_concurrent: int = 5
+        self, urls: list[str], quality: Optional[ScrapingQuality] = None, max_concurrent: int = 5
     ) -> list[ScrapeResult]:
         """
         Scrape multiple URLs concurrently.
@@ -563,11 +533,7 @@ class ScrapingRouter:
         tasks = [scrape_with_limit(url) for url in urls]
         return await asyncio.gather(*tasks)
 
-    def scrape_sync(
-        self,
-        url: str,
-        quality: Optional[ScrapingQuality] = None
-    ) -> ScrapeResult:
+    def scrape_sync(self, url: str, quality: Optional[ScrapingQuality] = None) -> ScrapeResult:
         """
         Synchronous wrapper for scrape().
 
@@ -595,14 +561,16 @@ class ScrapingRouter:
         ]
 
         for provider, client in providers:
-            statuses.append(ProviderStatus(
-                provider=provider,
-                available=client is not None,
-                last_used=self._provider_stats.get(provider, {}).get("last_used"),
-                success_rate=self._provider_stats.get(provider, {}).get("success_rate", 0.0),
-                avg_response_time=self._provider_stats.get(provider, {}).get("avg_time", 0.0),
-                errors_today=self._provider_stats.get(provider, {}).get("errors_today", 0)
-            ))
+            statuses.append(
+                ProviderStatus(
+                    provider=provider,
+                    available=client is not None,
+                    last_used=self._provider_stats.get(provider, {}).get("last_used"),
+                    success_rate=self._provider_stats.get(provider, {}).get("success_rate", 0.0),
+                    avg_response_time=self._provider_stats.get(provider, {}).get("avg_time", 0.0),
+                    errors_today=self._provider_stats.get(provider, {}).get("errors_today", 0),
+                )
+            )
 
         return statuses
 
@@ -630,7 +598,7 @@ class ScrapingRouter:
 
                 cache_file.unlink()
                 cleared += 1
-            except Exception as e:
+            except (OSError, KeyError, ValueError, TypeError, json.JSONDecodeError) as e:
                 logger.warning(f"Error clearing cache file {cache_file}: {e}")
 
         logger.info(f"Cleared {cleared} cache entries")
@@ -643,8 +611,7 @@ _router_lock = Lock()
 
 
 def get_scraping_router(
-    cache_dir: Optional[Path] = None,
-    default_quality: ScrapingQuality = ScrapingQuality.STANDARD
+    cache_dir: Optional[Path] = None, default_quality: ScrapingQuality = ScrapingQuality.STANDARD
 ) -> ScrapingRouter:
     """
     Get or create singleton scraping router.
@@ -660,16 +627,12 @@ def get_scraping_router(
 
     with _router_lock:
         if _scraping_router is None:
-            _scraping_router = ScrapingRouter(
-                cache_dir=cache_dir,
-                default_quality=default_quality
-            )
+            _scraping_router = ScrapingRouter(cache_dir=cache_dir, default_quality=default_quality)
         return _scraping_router
 
 
 async def smart_scrape(
-    url: str,
-    quality: ScrapingQuality = ScrapingQuality.STANDARD
+    url: str, quality: ScrapingQuality = ScrapingQuality.STANDARD
 ) -> ScrapeResult:
     """
     Quick function to scrape a URL with smart provider routing.
@@ -686,8 +649,7 @@ async def smart_scrape(
 
 
 def smart_scrape_sync(
-    url: str,
-    quality: ScrapingQuality = ScrapingQuality.STANDARD
+    url: str, quality: ScrapingQuality = ScrapingQuality.STANDARD
 ) -> ScrapeResult:
     """
     Synchronous version of smart_scrape.
@@ -706,6 +668,7 @@ def smart_scrape_sync(
 # Example usage
 if __name__ == "__main__":
     import asyncio
+
     logging.basicConfig(level=logging.INFO)
 
     async def demo():

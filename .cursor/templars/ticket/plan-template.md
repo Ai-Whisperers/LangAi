@@ -54,4 +54,3 @@ provenance: { owner: team-ticket, last_review: 2025-12-06 }
 
 ---
 *Plan created: {{timestamp}}*
-

@@ -13,8 +13,8 @@ from pathlib import Path
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from company_researcher.workflows.basic_research import research_company
 from company_researcher.config import get_config
+from company_researcher.workflows.basic_research import research_company
 
 
 def main():
@@ -51,6 +51,7 @@ def main():
     except Exception as e:
         print(f"\n\n[ERROR] Error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

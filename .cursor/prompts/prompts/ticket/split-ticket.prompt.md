@@ -80,8 +80,8 @@ Decompose a parent ticket into actionable sub-tickets that together deliver the 
 ```markdown
 ## 🧩 Proposed Sub-Tickets for [PARENT_TICKET_ID]
 
-**Parent Summary**: [PARENT_SUMMARY]  
-**Objective**: [PARENT_OBJECTIVE]  
+**Parent Summary**: [PARENT_SUMMARY]
+**Objective**: [PARENT_OBJECTIVE]
 **Due**: [DUE_DATE or "Not provided"]
 
 ### 📋 Sub-Tickets
@@ -149,7 +149,7 @@ Or with richer context:
 
 ## Usage Modes
 
-- **Quick**: Parent ID + short summary only (auto-deduces scope from summary)  
+- **Quick**: Parent ID + short summary only (auto-deduces scope from summary)
   `/split-ticket EPP-400: Improve audit exports`
 - **Guided**: Provide objective/constraints/risks/due date in XML for better slicing
 - **Re-plan**: Re-run with updated constraints to adjust dependencies and ordering
@@ -199,4 +199,3 @@ Or with richer context:
 - `ticket/create-ticket.prompt.md` — create each sub-ticket skeleton
 - `ticket/start-ticket.prompt.md` — initialize ticket documentation and plan
 - `ticket/update-progress.prompt.md` — log work sessions
-

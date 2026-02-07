@@ -405,8 +405,7 @@ After completing setup, verify:
 
 ---
 
-**Prompt Version:** 1.0.0  
-**Created:** 2025-11-30  
-**Target:** .NET Projects (any maturity level)  
+**Prompt Version:** 1.0.0
+**Created:** 2025-11-30
+**Target:** .NET Projects (any maturity level)
 **Default Maturity:** Level 3 (Production-Ready)
-

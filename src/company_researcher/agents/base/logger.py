@@ -6,16 +6,18 @@ Provides consistent formatting and log levels.
 """
 
 import logging
-from datetime import datetime
-from typing import Optional, Dict, Any
 from contextlib import contextmanager
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Dict, Optional
+
 from ...utils import utc_now
 
 
 @dataclass
 class AgentLogContext:
     """Context for agent logging."""
+
     agent_name: str
     company_name: str
     start_time: datetime
@@ -47,7 +49,7 @@ class AgentLogger:
         agent_name: str,
         logger: Optional[logging.Logger] = None,
         log_level: int = logging.INFO,
-        show_separator: bool = True
+        show_separator: bool = True,
     ):
         """
         Initialize agent logger.
@@ -89,7 +91,7 @@ class AgentLogger:
             agent_name=self.agent_name,
             company_name=company_name,
             start_time=utc_now(),
-            metadata=metadata
+            metadata=metadata,
         )
 
         try:
@@ -127,7 +129,9 @@ class AgentLogger:
 
     def error(self, message: str, exc_info: bool = False, **kwargs):
         """Log an error message."""
-        self._logger.error(f"[{self.agent_name.title()}] ERROR: {message}", exc_info=exc_info, **kwargs)
+        self._logger.error(
+            f"[{self.agent_name.title()}] ERROR: {message}", exc_info=exc_info, **kwargs
+        )
 
     def complete(self, cost: float = 0.0, message: str = "Analysis complete"):
         """Log successful completion of agent."""
@@ -148,7 +152,9 @@ class AgentLogger:
     def progress(self, current: int, total: int, message: str = "Processing"):
         """Log progress through items."""
         percent = (current / total * 100) if total > 0 else 0
-        self._logger.debug(f"[{self.agent_name.title()}] {message}: {current}/{total} ({percent:.0f}%)")
+        self._logger.debug(
+            f"[{self.agent_name.title()}] {message}: {current}/{total} ({percent:.0f}%)"
+        )
 
 
 # Module-level loggers for convenience
@@ -172,9 +178,7 @@ def get_agent_logger(agent_name: str, **kwargs) -> AgentLogger:
 
 
 def configure_agent_logging(
-    level: int = logging.INFO,
-    format_string: Optional[str] = None,
-    show_separators: bool = True
+    level: int = logging.INFO, format_string: Optional[str] = None, show_separators: bool = True
 ):
     """
     Configure logging for all agents.

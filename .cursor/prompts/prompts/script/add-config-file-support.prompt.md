@@ -43,4 +43,3 @@ if (Test-Path $ConfigFile) {
 
 ---
 Produced-by: prompt.scripts.add-config.v1 | ts=2025-12-07T00:00:00Z
-

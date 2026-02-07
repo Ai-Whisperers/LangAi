@@ -1,5 +1,6 @@
 """Integration layer for AI components in workflow."""
-from typing import Dict, Any, Optional, List, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from .config import get_ai_config
 from .utils import CostTracker, get_logger
@@ -39,8 +40,7 @@ class AIIntegrationLayer:
     def __init__(self):
         self.config = get_ai_config()
         self.cost_tracker = CostTracker(
-            warn_threshold=self.config.warn_at_cost,
-            max_threshold=self.config.max_cost_per_research
+            warn_threshold=self.config.warn_at_cost, max_threshold=self.config.max_cost_per_research
         )
         self._sentiment = None
         self._query_gen = None
@@ -56,6 +56,7 @@ class AIIntegrationLayer:
         """Lazy load sentiment analyzer."""
         if self._sentiment is None and self.config.sentiment.enabled:
             from .sentiment import get_sentiment_analyzer
+
             self._sentiment = get_sentiment_analyzer()
         return self._sentiment
 
@@ -64,6 +65,7 @@ class AIIntegrationLayer:
         """Lazy load query generator."""
         if self._query_gen is None and self.config.query_generation.enabled:
             from .query import get_query_generator
+
             self._query_gen = get_query_generator()
         return self._query_gen
 
@@ -72,6 +74,7 @@ class AIIntegrationLayer:
         """Lazy load quality assessor."""
         if self._quality is None and self.config.quality_assessment.enabled:
             from .quality import get_quality_assessor
+
             self._quality = get_quality_assessor()
         return self._quality
 
@@ -80,14 +83,12 @@ class AIIntegrationLayer:
         """Lazy load data extractor."""
         if self._extraction is None and self.config.data_extraction.enabled:
             from .extraction import get_data_extractor
+
             self._extraction = get_data_extractor()
         return self._extraction
 
     async def generate_search_queries(
-        self,
-        company_name: str,
-        context: Optional[Dict] = None,
-        num_queries: int = 10
+        self, company_name: str, context: Optional[Dict] = None, num_queries: int = 10
     ) -> List[str]:
         """
         Generate AI-enhanced search queries.
@@ -113,7 +114,7 @@ class AIIntegrationLayer:
                 known_region=context.get("region") if context else None,
                 is_public=context.get("is_public") if context else None,
                 stock_ticker=context.get("ticker") if context else None,
-                languages=context.get("languages", ["en"]) if context else ["en"]
+                languages=context.get("languages", ["en"]) if context else ["en"],
             )
 
             result = await self.query_generator.generate_queries(ctx, num_queries)
@@ -134,9 +135,7 @@ class AIIntegrationLayer:
             raise
 
     async def analyze_news_sentiment(
-        self,
-        articles: List[Dict[str, Any]],
-        company_name: str
+        self, articles: List[Dict[str, Any]], company_name: str
     ) -> Dict[str, Any]:
         """
         Analyze sentiment of news articles.
@@ -172,17 +171,14 @@ class AIIntegrationLayer:
                 "negative_ratio": aggregation.negative_ratio,
                 "top_positive_factors": aggregation.top_positive_factors,
                 "top_negative_factors": aggregation.top_negative_factors,
-                "source": "ai"
+                "source": "ai",
             }
 
         except Exception as e:
             logger.error(f"AI sentiment analysis failed: {e}")
             return {"overall": "neutral", "confidence": 0.0, "source": "error", "error": str(e)}
 
-    async def assess_research_quality(
-        self,
-        state: "OverallState"
-    ) -> Dict[str, Any]:
+    async def assess_research_quality(self, state: "OverallState") -> Dict[str, Any]:
         """
         Assess quality of research results.
 
@@ -217,7 +213,7 @@ class AIIntegrationLayer:
             report = await self.quality_assessor.process(
                 company_name=state.get("company_name", "Unknown"),
                 sections=sections,
-                sources=sources
+                sources=sources,
             )
 
             # Track cost
@@ -237,7 +233,7 @@ class AIIntegrationLayer:
                 "recommendations": report.recommendations,
                 "focus_areas": report.focus_areas_for_iteration,
                 "section_scores": report.section_scores,
-                "source": "ai"
+                "source": "ai",
             }
 
         except Exception as e:
@@ -247,9 +243,7 @@ class AIIntegrationLayer:
             raise
 
     async def extract_structured_data(
-        self,
-        company_name: str,
-        search_results: List[Dict]
+        self, company_name: str, search_results: List[Dict]
     ) -> Dict[str, Any]:
         """
         Extract structured data from search results.
@@ -288,25 +282,25 @@ class AIIntegrationLayer:
                 "financial": {
                     "revenue": result.financial_data.revenue if result.financial_data else None,
                     "profit": result.financial_data.profit if result.financial_data else None,
-                    "market_cap": result.financial_data.market_cap if result.financial_data else None,
-                    "employee_count": result.financial_data.employee_count if result.financial_data else None,
+                    "market_cap": (
+                        result.financial_data.market_cap if result.financial_data else None
+                    ),
+                    "employee_count": (
+                        result.financial_data.employee_count if result.financial_data else None
+                    ),
                 },
                 "coverage": result.data_coverage,
                 "confidence": result.extraction_confidence,
                 "facts_count": result.facts_extracted,
                 "has_contradictions": result.has_critical_contradictions,
-                "source": "ai"
+                "source": "ai",
             }
 
         except Exception as e:
             logger.error(f"AI data extraction failed: {e}")
             return {"source": "error", "error": str(e)}
 
-    async def classify_company(
-        self,
-        company_name: str,
-        context: str
-    ) -> Dict[str, Any]:
+    async def classify_company(self, company_name: str, context: str) -> Dict[str, Any]:
         """
         Classify company type and details.
 
@@ -321,9 +315,7 @@ class AIIntegrationLayer:
             return self._legacy_classify(company_name)
 
         try:
-            classification = await self.data_extractor.classify_company(
-                company_name, context
-            )
+            classification = await self.data_extractor.classify_company(company_name, context)
 
             return {
                 "company_type": classification.company_type.value,
@@ -335,7 +327,7 @@ class AIIntegrationLayer:
                 "stock_ticker": classification.stock_ticker,
                 "is_conglomerate": classification.is_conglomerate,
                 "confidence": classification.confidence,
-                "source": "ai"
+                "source": "ai",
             }
 
         except Exception as e:
@@ -350,7 +342,7 @@ class AIIntegrationLayer:
             "total_cost": self.cost_tracker.total_cost,
             "breakdown": self.cost_tracker.get_breakdown(),
             "warn_threshold": self.cost_tracker.warn_threshold,
-            "max_threshold": self.cost_tracker.max_threshold
+            "max_threshold": self.cost_tracker.max_threshold,
         }
 
     def reset_cost_tracking(self):
@@ -377,14 +369,13 @@ class AIIntegrationLayer:
 
     def is_ai_available(self) -> bool:
         """Check if any AI component is available."""
-        return (
-            self.config.global_enabled and
-            any([
+        return self.config.global_enabled and any(
+            [
                 self.config.sentiment.enabled,
                 self.config.query_generation.enabled,
                 self.config.quality_assessment.enabled,
                 self.config.data_extraction.enabled,
-            ])
+            ]
         )
 
     # Legacy fallbacks
@@ -448,7 +439,7 @@ class AIIntegrationLayer:
             "recommendations": [],
             "focus_areas": gaps[:3],
             "section_scores": {},
-            "source": "legacy"
+            "source": "legacy",
         }
 
     def _legacy_classify(self, company_name: str) -> Dict[str, Any]:
@@ -463,7 +454,7 @@ class AIIntegrationLayer:
             "stock_ticker": None,
             "is_conglomerate": False,
             "confidence": 0.0,
-            "source": "legacy"
+            "source": "legacy",
         }
 
 

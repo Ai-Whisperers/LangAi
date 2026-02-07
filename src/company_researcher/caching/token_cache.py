@@ -13,13 +13,14 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from .lru_cache import LRUCache, LRUCacheConfig
 from ..utils import utc_now
+from .lru_cache import LRUCache, LRUCacheConfig
 
 
 @dataclass
 class TokenUsage:
     """Token usage for a single request."""
+
     request_id: str
     model: str
     prompt_tokens: int
@@ -49,7 +50,7 @@ class TokenUsage:
             "completion_cost": self.completion_cost,
             "total_cost": self.total_cost,
             "operation": self.operation,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
 
@@ -66,7 +67,7 @@ MODEL_PRICING = {
     "claude-3-haiku": {"prompt": 0.00025, "completion": 0.00125},
     "claude-3.5-sonnet": {"prompt": 0.003, "completion": 0.015},
     # Default
-    "default": {"prompt": 0.01, "completion": 0.03}
+    "default": {"prompt": 0.01, "completion": 0.03},
 }
 
 
@@ -93,11 +94,7 @@ class TokenCache:
         by_model = cache.get_usage_by_model()
     """
 
-    def __init__(
-        self,
-        max_entries: int = 10000,
-        retention_hours: int = 24
-    ):
+    def __init__(self, max_entries: int = 10000, retention_hours: int = 24):
         self._cache = LRUCache[str, TokenUsage](LRUCacheConfig(max_size=max_entries))
         self._history: List[TokenUsage] = []
         self._retention_hours = retention_hours
@@ -117,7 +114,7 @@ class TokenCache:
         prompt_tokens: int,
         completion_tokens: int,
         operation: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> TokenUsage:
         """
         Track token usage for a request.
@@ -148,7 +145,7 @@ class TokenCache:
             completion_cost=completion_cost,
             total_cost=prompt_cost + completion_cost,
             operation=operation,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         with self._lock:
@@ -168,7 +165,7 @@ class TokenCache:
                     "completion_tokens": 0,
                     "total_tokens": 0,
                     "total_cost": 0.0,
-                    "request_count": 0
+                    "request_count": 0,
                 }
             self._usage_by_model[model]["prompt_tokens"] += prompt_tokens
             self._usage_by_model[model]["completion_tokens"] += completion_tokens
@@ -184,7 +181,7 @@ class TokenCache:
                         "completion_tokens": 0,
                         "total_tokens": 0,
                         "total_cost": 0.0,
-                        "request_count": 0
+                        "request_count": 0,
                     }
                 self._usage_by_operation[operation]["prompt_tokens"] += prompt_tokens
                 self._usage_by_operation[operation]["completion_tokens"] += completion_tokens
@@ -212,12 +209,12 @@ class TokenCache:
                 "request_count": len(self._history),
                 "avg_tokens_per_request": (
                     (self._total_prompt_tokens + self._total_completion_tokens) / len(self._history)
-                    if self._history else 0
+                    if self._history
+                    else 0
                 ),
                 "avg_cost_per_request": (
-                    self._total_cost / len(self._history)
-                    if self._history else 0
-                )
+                    self._total_cost / len(self._history) if self._history else 0
+                ),
             }
 
     def get_usage_by_model(self) -> Dict[str, Dict[str, Any]]:
@@ -230,11 +227,7 @@ class TokenCache:
         with self._lock:
             return dict(self._usage_by_operation)
 
-    def get_recent_usage(
-        self,
-        hours: int = 1,
-        limit: int = 100
-    ) -> List[TokenUsage]:
+    def get_recent_usage(self, hours: int = 1, limit: int = 100) -> List[TokenUsage]:
         """Get recent usage entries."""
         with self._lock:
             cutoff = utc_now() - timedelta(hours=hours)
@@ -254,7 +247,7 @@ class TokenCache:
                         hourly[hour_key] = {
                             "total_tokens": 0,
                             "total_cost": 0.0,
-                            "request_count": 0
+                            "request_count": 0,
                         }
                     hourly[hour_key]["total_tokens"] += usage.total_tokens
                     hourly[hour_key]["total_cost"] += usage.total_cost
@@ -262,12 +255,7 @@ class TokenCache:
 
             return hourly
 
-    def estimate_cost(
-        self,
-        model: str,
-        prompt_tokens: int,
-        completion_tokens: int
-    ) -> float:
+    def estimate_cost(self, model: str, prompt_tokens: int, completion_tokens: int) -> float:
         """Estimate cost for given token counts."""
         pricing = MODEL_PRICING.get(model, MODEL_PRICING["default"])
         prompt_cost = (prompt_tokens / 1000) * pricing["prompt"]
@@ -309,7 +297,7 @@ def track_tokens(
     prompt_tokens: int,
     completion_tokens: int,
     operation: Optional[str] = None,
-    **metadata
+    **metadata,
 ) -> TokenUsage:
     """
     Track token usage with global cache.
@@ -332,5 +320,5 @@ def track_tokens(
         prompt_tokens=prompt_tokens,
         completion_tokens=completion_tokens,
         operation=operation,
-        metadata=metadata
+        metadata=metadata,
     )

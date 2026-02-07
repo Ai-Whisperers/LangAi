@@ -14,4 +14,3 @@ items:
     kind: prompt
   - path: prompts/unit-testing/validate-test-quality.prompt.md
     kind: prompt
-

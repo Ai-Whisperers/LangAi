@@ -19,6 +19,7 @@ from typing import Any, Dict, Optional, Set
 @dataclass
 class SanitizationConfig:
     """Configuration for input sanitization."""
+
     max_length: int = 10000
     allow_unicode: bool = True
     strip_whitespace: bool = True
@@ -52,12 +53,27 @@ class InputSanitizer:
 
         # Default allowed HTML tags and attributes
         self._allowed_tags = self.config.allowed_html_tags or {
-            'p', 'br', 'b', 'i', 'u', 'strong', 'em', 'ul', 'ol', 'li',
-            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre'
+            "p",
+            "br",
+            "b",
+            "i",
+            "u",
+            "strong",
+            "em",
+            "ul",
+            "ol",
+            "li",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "blockquote",
+            "code",
+            "pre",
         }
-        self._allowed_attrs = self.config.allowed_html_attrs or {
-            'class', 'id'
-        }
+        self._allowed_attrs = self.config.allowed_html_attrs or {"class", "id"}
 
         # Dangerous patterns
         self._sql_patterns = [
@@ -88,11 +104,7 @@ class InputSanitizer:
             r"url\s*\(",  # CSS url
         ]
 
-    def sanitize(
-        self,
-        value: str,
-        max_length: int = None
-    ) -> str:
+    def sanitize(self, value: str, max_length: int = None) -> str:
         """
         General-purpose sanitization.
 
@@ -112,10 +124,10 @@ class InputSanitizer:
 
         # Normalize unicode
         if self.config.normalize_unicode:
-            value = unicodedata.normalize('NFKC', value)
+            value = unicodedata.normalize("NFKC", value)
 
         # Remove null bytes
-        value = value.replace('\x00', '')
+        value = value.replace("\x00", "")
 
         # Enforce max length
         max_len = max_length or self.config.max_length
@@ -125,10 +137,7 @@ class InputSanitizer:
         return value
 
     def sanitize_html(
-        self,
-        html_content: str,
-        allowed_tags: Set[str] = None,
-        allowed_attrs: Set[str] = None
+        self, html_content: str, allowed_tags: Set[str] = None, allowed_attrs: Set[str] = None
     ) -> str:
         """
         Sanitize HTML content.
@@ -151,32 +160,24 @@ class InputSanitizer:
         for tag in tags:
             # Opening tags
             safe_content = re.sub(
-                rf'&lt;({tag})(&gt;|(\s[^&]*?)&gt;)',
-                r'<\1\2>'.replace('&gt;', '>'),
+                rf"&lt;({tag})(&gt;|(\s[^&]*?)&gt;)",
+                r"<\1\2>".replace("&gt;", ">"),
                 safe_content,
-                flags=re.IGNORECASE
+                flags=re.IGNORECASE,
             )
             # Self-closing tags
             safe_content = re.sub(
-                rf'&lt;({tag})\s*/&gt;',
-                r'<\1/>',
-                safe_content,
-                flags=re.IGNORECASE
+                rf"&lt;({tag})\s*/&gt;", r"<\1/>", safe_content, flags=re.IGNORECASE
             )
             # Closing tags
-            safe_content = re.sub(
-                rf'&lt;/({tag})&gt;',
-                r'</\1>',
-                safe_content,
-                flags=re.IGNORECASE
-            )
+            safe_content = re.sub(rf"&lt;/({tag})&gt;", r"</\1>", safe_content, flags=re.IGNORECASE)
 
         return safe_content
 
     def strip_html(self, html_content: str) -> str:
         """Remove all HTML tags."""
         # Remove tags
-        text = re.sub(r'<[^>]+>', '', html_content)
+        text = re.sub(r"<[^>]+>", "", html_content)
         # Decode entities
         text = html.unescape(text)
         return text
@@ -201,7 +202,7 @@ class InputSanitizer:
 
         # Remove dangerous patterns
         for pattern in self._sql_patterns:
-            value = re.sub(pattern, '', value, flags=re.IGNORECASE)
+            value = re.sub(pattern, "", value, flags=re.IGNORECASE)
 
         return value
 
@@ -229,10 +230,10 @@ class InputSanitizer:
 
         # Remove dangerous characters
         for pattern in self._command_patterns:
-            value = re.sub(pattern, '', value)
+            value = re.sub(pattern, "", value)
 
         # Only allow alphanumeric, dash, underscore, dot, space
-        value = re.sub(r'[^a-zA-Z0-9\-_.\s]', '', value)
+        value = re.sub(r"[^a-zA-Z0-9\-_.\s]", "", value)
 
         return value
 
@@ -257,33 +258,33 @@ class InputSanitizer:
         path = self.sanitize(path)
 
         # Remove path traversal
-        path = path.replace('..', '')
+        path = path.replace("..", "")
 
         # Remove absolute path indicators
-        path = path.lstrip('/\\')
+        path = path.lstrip("/\\")
 
         # Remove drive letters (Windows)
-        path = re.sub(r'^[a-zA-Z]:', '', path)
+        path = re.sub(r"^[a-zA-Z]:", "", path)
 
         # Only allow safe characters
-        path = re.sub(r'[^a-zA-Z0-9\-_./\\]', '', path)
+        path = re.sub(r"[^a-zA-Z0-9\-_./\\]", "", path)
 
         # Normalize path separators
-        path = path.replace('\\', '/')
+        path = path.replace("\\", "/")
 
         # Remove double slashes
-        path = re.sub(r'/+', '/', path)
+        path = re.sub(r"/+", "/", path)
 
         return path
 
     def is_path_traversal(self, path: str) -> bool:
         """Check if path contains traversal attempt."""
         dangerous_patterns = [
-            r'\.\.',
-            r'^/',
-            r'^[a-zA-Z]:',
-            r'%2e%2e',  # URL encoded ..
-            r'%252e',  # Double encoded .
+            r"\.\.",
+            r"^/",
+            r"^[a-zA-Z]:",
+            r"%2e%2e",  # URL encoded ..
+            r"%252e",  # Double encoded .
         ]
         for pattern in dangerous_patterns:
             if re.search(pattern, path, re.IGNORECASE):
@@ -305,7 +306,7 @@ class InputSanitizer:
 
         # Remove dangerous patterns
         for pattern in self._xss_patterns:
-            value = re.sub(pattern, '', value, flags=re.IGNORECASE)
+            value = re.sub(pattern, "", value, flags=re.IGNORECASE)
 
         return value
 
@@ -316,11 +317,7 @@ class InputSanitizer:
                 return True
         return False
 
-    def sanitize_dict(
-        self,
-        data: Dict[str, Any],
-        recursive: bool = True
-    ) -> Dict[str, Any]:
+    def sanitize_dict(self, data: Dict[str, Any], recursive: bool = True) -> Dict[str, Any]:
         """
         Sanitize all string values in a dictionary.
 
@@ -343,9 +340,11 @@ class InputSanitizer:
                 result[safe_key] = self.sanitize_dict(value, recursive)
             elif isinstance(value, list) and recursive:
                 result[safe_key] = [
-                    self.sanitize(v) if isinstance(v, str)
-                    else self.sanitize_dict(v, recursive) if isinstance(v, dict)
-                    else v
+                    (
+                        self.sanitize(v)
+                        if isinstance(v, str)
+                        else self.sanitize_dict(v, recursive) if isinstance(v, dict) else v
+                    )
                     for v in value
                 ]
             else:
@@ -439,29 +438,29 @@ def sanitize_filename(filename: str) -> str:
         Safe filename with dangerous characters removed
     """
     # Remove path components (only keep filename)
-    filename = filename.replace('\\', '/').split('/')[-1]
+    filename = filename.replace("\\", "/").split("/")[-1]
 
     # Remove null bytes
-    filename = filename.replace('\x00', '')
+    filename = filename.replace("\x00", "")
 
     # Remove or replace dangerous characters
     dangerous_chars = '<>:"/\\|?*'
     for char in dangerous_chars:
-        filename = filename.replace(char, '_')
+        filename = filename.replace(char, "_")
 
     # Remove control characters
-    filename = ''.join(c for c in filename if ord(c) >= 32)
+    filename = "".join(c for c in filename if ord(c) >= 32)
 
     # Limit length
     if len(filename) > 255:
-        name, ext = filename.rsplit('.', 1) if '.' in filename else (filename, '')
+        name, ext = filename.rsplit(".", 1) if "." in filename else (filename, "")
         if ext:
-            filename = name[:250] + '.' + ext[:4]
+            filename = name[:250] + "." + ext[:4]
         else:
             filename = filename[:255]
 
     # Prevent empty filename
-    if not filename or filename.strip() == '':
-        filename = 'unnamed_file'
+    if not filename or filename.strip() == "":
+        filename = "unnamed_file"
 
     return filename

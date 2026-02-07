@@ -81,4 +81,3 @@ Ticket: EPP-123. Title: Fix login bug. Changes: Updated auth service, added unit
 **Applies Rules**:
 - `.cursor/rules/git/branch-lifecycle-rule.mdc`
 - `.cursor/rules/development-commit-message.mdc`
-

@@ -14,6 +14,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
+
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -27,7 +28,7 @@ class RateLimitExceeded(Exception):
         message: str = "Rate limit exceeded",
         retry_after: float = 0,
         limit: int = 0,
-        remaining: int = 0
+        remaining: int = 0,
     ):
         super().__init__(message)
         self.retry_after = retry_after
@@ -38,6 +39,7 @@ class RateLimitExceeded(Exception):
 @dataclass
 class RateLimitConfig:
     """Configuration for rate limiting."""
+
     requests_per_minute: int = 60
     requests_per_hour: int = 1000
     requests_per_day: int = 10000
@@ -49,6 +51,7 @@ class RateLimitConfig:
 @dataclass
 class RateLimitState:
     """State for a rate-limited entity."""
+
     key: str
     requests: List[float] = field(default_factory=list)
     tokens: float = 0
@@ -88,7 +91,7 @@ class RateLimiter:
         requests_per_hour: int = None,
         burst_size: int = None,
         state_ttl_seconds: int = 3600,  # 1 hour default TTL
-        cleanup_interval_seconds: int = 300  # 5 minutes
+        cleanup_interval_seconds: int = 300,  # 5 minutes
     ):
         self.config = config or RateLimitConfig()
 
@@ -142,7 +145,7 @@ class RateLimiter:
                     "Rate limit exceeded. Please try again later.",
                     retry_after=retry_after,
                     limit=self.config.requests_per_minute,
-                    remaining=0
+                    remaining=0,
                 )
 
             # Refill tokens (token bucket)
@@ -161,7 +164,7 @@ class RateLimiter:
                     "Rate limit exceeded. Please try again later.",
                     retry_after=retry_after,
                     limit=self.config.requests_per_minute,
-                    remaining=0
+                    remaining=0,
                 )
 
             # Consume tokens
@@ -174,9 +177,7 @@ class RateLimiter:
         """Get or create state for a key."""
         if key not in self._states:
             self._states[key] = RateLimitState(
-                key=key,
-                tokens=float(self.config.burst_size),
-                last_refill=time.time()
+                key=key, tokens=float(self.config.burst_size), last_refill=time.time()
             )
         return self._states[key]
 
@@ -184,10 +185,7 @@ class RateLimiter:
         """Refill tokens based on time elapsed."""
         elapsed = now - state.last_refill
         tokens_to_add = elapsed * self._refill_rate
-        state.tokens = min(
-            state.tokens + tokens_to_add,
-            float(self.config.burst_size)
-        )
+        state.tokens = min(state.tokens + tokens_to_add, float(self.config.burst_size))
         state.last_refill = now
 
     def _cleanup_old_requests(self, state: RateLimitState, now: float) -> None:
@@ -223,7 +221,7 @@ class RateLimiter:
             "limit": self.config.requests_per_minute,
             "remaining": max(0, int(state.tokens)),
             "reset_at": datetime.now(timezone.utc) + timedelta(seconds=60),
-            "window_requests": len(state.requests)
+            "window_requests": len(state.requests),
         }
 
     def get_limit_info(self, key: str) -> Dict[str, Any]:
@@ -281,7 +279,8 @@ class RateLimiter:
 
             # Find stale states (no activity within TTL)
             stale_keys = [
-                key for key, state in self._states.items()
+                key
+                for key, state in self._states.items()
                 if now - state.last_activity > self._state_ttl
                 and (state.blocked_until is None or state.blocked_until < now)
             ]
@@ -311,7 +310,8 @@ class RateLimiter:
 
         with self._lock:
             stale_keys = [
-                key for key, state in self._states.items()
+                key
+                for key, state in self._states.items()
                 if now - state.last_activity > self._state_ttl
                 and (state.blocked_until is None or state.blocked_until < now)
             ]
@@ -324,11 +324,7 @@ class RateLimiter:
 
         return cleaned
 
-    def limit(
-        self,
-        key_func: Callable[..., str] = None,
-        cost: int = 1
-    ) -> Callable:
+    def limit(self, key_func: Callable[..., str] = None, cost: int = 1) -> Callable:
         """
         Decorator to apply rate limiting.
 
@@ -346,6 +342,7 @@ class RateLimiter:
             def api_call(user_id):  # Uses first arg as key
                 ...
         """
+
         def decorator(func: Callable) -> Callable:
             @functools.wraps(func)
             def wrapper(*args, **kwargs):
@@ -354,8 +351,8 @@ class RateLimiter:
                     key = key_func(*args, **kwargs)
                 elif args:
                     key = str(args[0])
-                elif 'user_id' in kwargs:
-                    key = str(kwargs['user_id'])
+                elif "user_id" in kwargs:
+                    key = str(kwargs["user_id"])
                 else:
                     key = func.__name__
 
@@ -370,8 +367,8 @@ class RateLimiter:
                     key = key_func(*args, **kwargs)
                 elif args:
                     key = str(args[0])
-                elif 'user_id' in kwargs:
-                    key = str(kwargs['user_id'])
+                elif "user_id" in kwargs:
+                    key = str(kwargs["user_id"])
                 else:
                     key = func.__name__
 
@@ -379,9 +376,11 @@ class RateLimiter:
                 return await func(*args, **kwargs)
 
             import asyncio
+
             if asyncio.iscoroutinefunction(func):
                 return async_wrapper
             return wrapper
+
         return decorator
 
 
@@ -397,7 +396,7 @@ class SlidingWindowRateLimiter:
         limit: int,
         window_seconds: int = 60,
         state_ttl_seconds: int = 3600,
-        cleanup_interval_seconds: int = 300
+        cleanup_interval_seconds: int = 300,
     ):
         self.limit = limit
         self.window_seconds = window_seconds
@@ -460,8 +459,7 @@ class SlidingWindowRateLimiter:
                 return
 
             stale_keys = [
-                key for key, last in self._last_activity.items()
-                if now - last > self._state_ttl
+                key for key, last in self._last_activity.items() if now - last > self._state_ttl
             ]
 
             for key in stale_keys:
@@ -486,7 +484,7 @@ class FixedWindowRateLimiter:
         limit: int,
         window_seconds: int = 60,
         state_ttl_windows: int = 60,  # Number of windows to keep state
-        cleanup_interval_seconds: int = 300
+        cleanup_interval_seconds: int = 300,
     ):
         self.limit = limit
         self.window_seconds = window_seconds
@@ -542,8 +540,7 @@ class FixedWindowRateLimiter:
             stale_threshold = current_window_id - self._state_ttl_windows
 
             stale_keys = [
-                key for key, (window_id, _) in self._windows.items()
-                if window_id < stale_threshold
+                key for key, (window_id, _) in self._windows.items() if window_id < stale_threshold
             ]
 
             for key in stale_keys:
@@ -558,12 +555,6 @@ class FixedWindowRateLimiter:
 # Convenience functions
 
 
-def create_rate_limiter(
-    requests_per_minute: int = 60,
-    burst_size: int = 10
-) -> RateLimiter:
+def create_rate_limiter(requests_per_minute: int = 60, burst_size: int = 10) -> RateLimiter:
     """Create a rate limiter."""
-    return RateLimiter(
-        requests_per_minute=requests_per_minute,
-        burst_size=burst_size
-    )
+    return RateLimiter(requests_per_minute=requests_per_minute, burst_size=burst_size)

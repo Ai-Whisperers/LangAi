@@ -20,10 +20,10 @@ Produce a concise, source-backed status snapshot from ticket artifacts, surfacin
 - Files: context.md, progress.md; optional timeline.md, references.md
 
 ## Deterministic Steps
-1) Gather sources: context.md, progress.md, timeline.md (if present)  
-2) Extract: current focus, latest actions, blockers, decisions  
-3) Synthesize: status summary + blockers + next 3 steps  
-4) Cite sources used; note any missing artifacts  
+1) Gather sources: context.md, progress.md, timeline.md (if present)
+2) Extract: current focus, latest actions, blockers, decisions
+3) Synthesize: status summary + blockers + next 3 steps
+4) Cite sources used; note any missing artifacts
 
 ## Expected Output
 - Status: 1–2 sentences
@@ -42,4 +42,3 @@ Produce a concise, source-backed status snapshot from ticket artifacts, surfacin
 ```
 @check-status PROMPTS-EXTRACT
 ```
-

@@ -11,6 +11,6 @@ Usage:
 All research logic, agents, workflows, and tools are in src/company_researcher.
 """
 
-from .cli import main, create_argument_parser
+from .cli import create_argument_parser, main
 
 __all__ = ["main", "create_argument_parser"]

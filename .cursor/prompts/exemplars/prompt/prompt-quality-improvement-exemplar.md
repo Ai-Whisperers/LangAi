@@ -68,11 +68,11 @@ Use to produce a concise status snapshot from existing ticket docs.
 
 ## Examples
 ### Example 1: Happy Path
-Input: ticket files present  
+Input: ticket files present
 Output: brief status + blockers + next steps
 
 ### Example 2: Missing Timeline
-Input: context/progress only  
+Input: context/progress only
 Output: status + note timeline missing + next steps
 
 ## Expected Output
@@ -96,4 +96,3 @@ Output: status + note timeline missing + next steps
 
 ## When to Reference
 Use when you need a concrete model of a full “improve” pass that keeps prompts small, compliant, and maintainable.
-

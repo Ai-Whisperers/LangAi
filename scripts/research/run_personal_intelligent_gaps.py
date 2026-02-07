@@ -12,16 +12,17 @@ This is the solution to: "the targeted search queries should be generated
 with AI with the discovery, not static hardcoded queries"
 """
 
+import json
 import os
 import sys
-import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -41,7 +42,7 @@ def main():
     report_path = output_dir / "00_full_report.md"
     report_text = ""
     if report_path.exists():
-        with open(report_path, 'r', encoding='utf-8') as f:
+        with open(report_path, "r", encoding="utf-8") as f:
             report_text = f.read()
         print(f"[OK] Loaded report: {len(report_text)} chars")
     else:
@@ -51,7 +52,7 @@ def main():
     metrics_path = output_dir / "metrics.json"
     research_data = {}
     if metrics_path.exists():
-        with open(metrics_path, 'r', encoding='utf-8') as f:
+        with open(metrics_path, "r", encoding="utf-8") as f:
             research_data = json.load(f)
         print(f"[OK] Loaded metrics: {research_data}")
 
@@ -68,7 +69,7 @@ def main():
         "competitors": ["Tigo Paraguay", "Claro Paraguay"],
         "key_segments": ["Mobile services", "Internet", "Business solutions"],
         "year": datetime.now().year,
-        "language_hints": ["Spanish", "Guarani region"]
+        "language_hints": ["Spanish", "Guarani region"],
     }
 
     print(f"\n[INFO] Company Context:")
@@ -86,12 +87,12 @@ def main():
         research_data=research_data,
         report_text=report_text,
         company_context=company_context,
-        preferred_provider="tavily"  # Skip DuckDuckGo which is timing out
+        preferred_provider="tavily",  # Skip DuckDuckGo which is timing out
     )
 
     # Save results
     result_path = output_dir / "intelligent_gap_fill_result.json"
-    with open(result_path, 'w', encoding='utf-8') as f:
+    with open(result_path, "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2, ensure_ascii=False, default=str)
     print(f"\n[OK] Saved results to: {result_path}")
 
@@ -105,7 +106,7 @@ def main():
     print(f"Gaps Filled: {result.get('gaps_filled', 0)}")
     print(f"High Confidence Fills: {result.get('high_confidence_fills', 0)}")
 
-    filled_data = result.get('filled_data', {})
+    filled_data = result.get("filled_data", {})
     if filled_data:
         print("\n--- FILLED DATA ---")
         for field, data in filled_data.items():
@@ -116,12 +117,14 @@ def main():
             print(f"  Category: {data.get('category', 'N/A')}")
             print(f"  Priority: {data.get('priority', 'N/A')}")
 
-    unfilled = result.get('unfilled_gaps', [])
+    unfilled = result.get("unfilled_gaps", [])
     if unfilled:
         print(f"\n--- UNFILLED GAPS ({len(unfilled)}) ---")
         for gap in unfilled[:5]:  # Show first 5
-            print(f"\n{gap.get('field', 'N/A')} ({gap.get('category', 'N/A')}, {gap.get('priority', 'N/A')}):")
-            queries = gap.get('queries_tried', [])
+            print(
+                f"\n{gap.get('field', 'N/A')} ({gap.get('category', 'N/A')}, {gap.get('priority', 'N/A')}):"
+            )
+            queries = gap.get("queries_tried", [])
             if queries:
                 print(f"  Queries tried: {len(queries)}")
                 for q in queries[:2]:
@@ -149,7 +152,7 @@ def main():
 
 """
     for field, data in filled_data.items():
-        confidence_pct = data.get('confidence', 0) * 100
+        confidence_pct = data.get("confidence", 0) * 100
         report += f"""### {field}
 - **Value:** {data.get('value', 'N/A')}
 - **Source:** {data.get('source', 'N/A')}
@@ -196,7 +199,7 @@ This approach addresses the limitation of static, hardcoded queries by dynamical
 """
 
     report_path = output_dir / "intelligent_gap_fill_report.md"
-    with open(report_path, 'w', encoding='utf-8') as f:
+    with open(report_path, "w", encoding="utf-8") as f:
         f.write(report)
     print(f"\n[OK] Saved report to: {report_path}")
 

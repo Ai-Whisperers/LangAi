@@ -106,7 +106,7 @@ TECH-DATA-WAREHOUSE: Data Warehouse Infrastructure Setup
 ## Overview
 Provision and configure Snowflake cloud data warehouse as centralized data repository for all reporting dashboards. This technical enabler provides the foundational data layer required for real-time PowerBI reporting.
 
-**Type**: Infrastructure Enabler  
+**Type**: Infrastructure Enabler
 **Supported Business Features**:
 - FEAT-RPT-SALES-DASH (Sales Dashboard)
 - FEAT-RPT-FINANCE-DASH (Finance Dashboard)
@@ -325,4 +325,3 @@ graph LR
 ---
 
 **Provenance**: Created 2025-12-08 | Updated 2025-12-08 (PROMPTS-OPTIMIZE) | Pattern: Technical Enabler Documentation
-

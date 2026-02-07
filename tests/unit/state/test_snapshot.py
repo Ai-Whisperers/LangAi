@@ -1,13 +1,14 @@
 """Tests for state snapshot functionality."""
 
-import pytest
-import tempfile
 import shutil
+import tempfile
 from datetime import datetime, timezone
 
+import pytest
+
 from company_researcher.state.snapshot import (
-    StateSnapshot,
     SnapshotStore,
+    StateSnapshot,
     create_snapshot,
     restore_snapshot,
 )
@@ -24,7 +25,7 @@ class TestStateSnapshot:
             created_at=datetime.now(timezone.utc),
             checksum="abc123",
             label="test-label",
-            metadata={"source": "test"}
+            metadata={"source": "test"},
         )
         assert snap.id == "snap-id"
         assert snap.state == {"key": "value"}
@@ -37,7 +38,7 @@ class TestStateSnapshot:
             id="snap-id",
             state={"key": "value"},
             created_at=datetime.now(timezone.utc),
-            checksum="abc123"
+            checksum="abc123",
         )
 
         with pytest.raises(AttributeError, match="immutable"):
@@ -47,10 +48,7 @@ class TestStateSnapshot:
         """StateSnapshot should deep copy the state."""
         original = {"nested": {"value": 1}}
         snap = StateSnapshot(
-            id="snap-id",
-            state=original,
-            created_at=datetime.now(timezone.utc),
-            checksum="abc123"
+            id="snap-id", state=original, created_at=datetime.now(timezone.utc), checksum="abc123"
         )
 
         original["nested"]["value"] = 999
@@ -65,7 +63,7 @@ class TestStateSnapshot:
             created_at=created,
             checksum="checksum123",
             label="test",
-            metadata={"tag": "unit"}
+            metadata={"tag": "unit"},
         )
         result = snap.to_dict()
 
@@ -83,7 +81,7 @@ class TestStateSnapshot:
             "created_at": "2024-06-01T10:30:00+00:00",
             "checksum": "chk123",
             "label": "restored",
-            "metadata": {"source": "backup"}
+            "metadata": {"source": "backup"},
         }
         snap = StateSnapshot.from_dict(data)
 
@@ -113,13 +111,13 @@ class TestStateSnapshotComparison:
             id="snap-1",
             state={"key": "value"},
             created_at=datetime.now(timezone.utc),
-            checksum="same-checksum"
+            checksum="same-checksum",
         )
         snap2 = StateSnapshot(
             id="snap-2",
             state={"key": "value"},
             created_at=datetime.now(timezone.utc),
-            checksum="same-checksum"
+            checksum="same-checksum",
         )
 
         result = snap1.compare(snap2)
@@ -133,13 +131,13 @@ class TestStateSnapshotComparison:
             id="snap-1",
             state={"key": "old"},
             created_at=datetime.now(timezone.utc),
-            checksum="checksum-1"
+            checksum="checksum-1",
         )
         snap2 = StateSnapshot(
             id="snap-2",
             state={"key": "new"},
             created_at=datetime.now(timezone.utc),
-            checksum="checksum-2"
+            checksum="checksum-2",
         )
 
         result = snap1.compare(snap2)
@@ -155,13 +153,13 @@ class TestStateSnapshotComparison:
             id="snap-1",
             state={"original": 1},
             created_at=datetime.now(timezone.utc),
-            checksum="chk1"
+            checksum="chk1",
         )
         snap2 = StateSnapshot(
             id="snap-2",
             state={"original": 1, "added": 2},
             created_at=datetime.now(timezone.utc),
-            checksum="chk2"
+            checksum="chk2",
         )
 
         result = snap1.compare(snap2)
@@ -177,13 +175,13 @@ class TestStateSnapshotComparison:
             id="snap-1",
             state={"original": 1, "removed": 2},
             created_at=datetime.now(timezone.utc),
-            checksum="chk1"
+            checksum="chk1",
         )
         snap2 = StateSnapshot(
             id="snap-2",
             state={"original": 1},
             created_at=datetime.now(timezone.utc),
-            checksum="chk2"
+            checksum="chk2",
         )
 
         result = snap1.compare(snap2)
@@ -199,13 +197,13 @@ class TestStateSnapshotComparison:
             id="snap-1",
             state={"nested": {"inner": "old"}},
             created_at=datetime.now(timezone.utc),
-            checksum="chk1"
+            checksum="chk1",
         )
         snap2 = StateSnapshot(
             id="snap-2",
             state={"nested": {"inner": "new"}},
             created_at=datetime.now(timezone.utc),
-            checksum="chk2"
+            checksum="chk2",
         )
 
         result = snap1.compare(snap2)

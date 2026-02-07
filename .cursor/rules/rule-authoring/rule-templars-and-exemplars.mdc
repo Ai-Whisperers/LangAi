@@ -403,16 +403,16 @@ Tools must check `use:` flag:
 ```python
 def load_file(file_id, current_phase):
     metadata = parse_front_matter(file_id)
-    
+
     if metadata['kind'] == 'exemplar':
         use_flag = metadata.get('use', '')
-        
+
         if current_phase == 'write' and 'write' not in use_flag:
             raise Exception(f"Cannot load exemplar {file_id} during write phase")
-        
+
         if use_flag == 'critic-only' and current_phase != 'critic':
             raise Exception(f"Exemplar {file_id} restricted to critic phase")
-    
+
     return load_content(file_id)
 ```
 

@@ -15,7 +15,7 @@ World-class senior ml/ai engineer skill for production-grade AI/ML/Data systems.
 # Core Tool 1
 python scripts/model_deployment_pipeline.py --input data/ --output results/
 
-# Core Tool 2  
+# Core Tool 2
 python scripts/rag_system_builder.py --target project/ --analyze
 
 # Core Tool 3

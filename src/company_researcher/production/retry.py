@@ -8,28 +8,29 @@ Robust retry mechanisms:
 - Circuit breaker integration
 """
 
-from typing import TypeVar, Callable, Optional
-from dataclasses import dataclass
-from functools import wraps
 import asyncio
+import logging
 import random
 import time
-import logging
+from dataclasses import dataclass
+from functools import wraps
+from typing import Callable, Optional, TypeVar
 
-
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 # ============================================================================
 # Configuration
 # ============================================================================
 
+
 @dataclass
 class RetryConfig:
     """Retry configuration."""
+
     max_attempts: int = 3
     initial_delay: float = 1.0  # seconds
-    max_delay: float = 60.0     # seconds
+    max_delay: float = 60.0  # seconds
     backoff_multiplier: float = 2.0
     jitter: bool = True
     jitter_range: float = 0.1  # ±10%
@@ -51,6 +52,7 @@ class RetryConfig:
 # ============================================================================
 # Retry Policy
 # ============================================================================
+
 
 class RetryPolicy:
     """
@@ -76,7 +78,7 @@ class RetryPolicy:
         jitter: bool = True,
         retryable: Optional[tuple] = None,
         non_retryable: Optional[tuple] = None,
-        on_retry: Optional[Callable] = None
+        on_retry: Optional[Callable] = None,
     ):
         """
         Initialize retry policy.
@@ -98,16 +100,18 @@ class RetryPolicy:
             backoff_multiplier=backoff,
             jitter=jitter,
             retryable_exceptions=retryable or (Exception,),
-            non_retryable_exceptions=non_retryable or ()
+            non_retryable_exceptions=non_retryable or (),
         )
         self._on_retry = on_retry
         self._logger = logging.getLogger("retry")
 
     def __call__(self, func: Callable[..., T]) -> Callable[..., T]:
         """Use as decorator."""
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             return self.execute(func, *args, **kwargs)
+
         return wrapper
 
     def execute(self, func: Callable[..., T], *args, **kwargs) -> T:
@@ -189,12 +193,13 @@ class RetryPolicy:
 # Decorator Functions
 # ============================================================================
 
+
 def retry(
     max_attempts: int = 3,
     initial_delay: float = 1.0,
     backoff: float = 2.0,
     exceptions: tuple = (Exception,),
-    on_retry: Optional[Callable] = None
+    on_retry: Optional[Callable] = None,
 ):
     """
     Decorator for retry with exponential backoff.
@@ -209,13 +214,14 @@ def retry(
         initial_delay=initial_delay,
         backoff=backoff,
         retryable=exceptions,
-        on_retry=on_retry
+        on_retry=on_retry,
     )
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
         def wrapper(*args, **kwargs):
             return policy.execute(func, *args, **kwargs)
+
         return wrapper
 
     return decorator
@@ -226,7 +232,7 @@ def retry_async(
     initial_delay: float = 1.0,
     backoff: float = 2.0,
     exceptions: tuple = (Exception,),
-    on_retry: Optional[Callable] = None
+    on_retry: Optional[Callable] = None,
 ):
     """
     Decorator for async retry with exponential backoff.
@@ -241,13 +247,14 @@ def retry_async(
         initial_delay=initial_delay,
         backoff=backoff,
         retryable=exceptions,
-        on_retry=on_retry
+        on_retry=on_retry,
     )
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
         async def wrapper(*args, **kwargs):
             return await policy.execute_async(func, *args, **kwargs)
+
         return wrapper
 
     return decorator
@@ -257,11 +264,8 @@ def retry_async(
 # Retry with Circuit Breaker
 # ============================================================================
 
-def retry_with_breaker(
-    breaker_name: str,
-    max_attempts: int = 3,
-    backoff: float = 2.0
-):
+
+def retry_with_breaker(breaker_name: str, max_attempts: int = 3, backoff: float = 2.0):
     """
     Combine retry with circuit breaker.
 
@@ -270,21 +274,18 @@ def retry_with_breaker(
         def call_api():
             ...
     """
-    from .circuit_breaker import get_circuit_breaker, CircuitOpenError
+    from .circuit_breaker import CircuitOpenError, get_circuit_breaker
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         breaker = get_circuit_breaker(breaker_name)
         policy = RetryPolicy(
-            max_attempts=max_attempts,
-            backoff=backoff,
-            non_retryable=(CircuitOpenError,)
+            max_attempts=max_attempts, backoff=backoff, non_retryable=(CircuitOpenError,)
         )
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            return policy.execute(
-                lambda: breaker.call(func, *args, **kwargs)
-            )
+            return policy.execute(lambda: breaker.call(func, *args, **kwargs))
+
         return wrapper
 
     return decorator
@@ -294,14 +295,9 @@ def retry_with_breaker(
 # Factory Function
 # ============================================================================
 
+
 def create_retry_policy(
-    max_attempts: int = 3,
-    initial_delay: float = 1.0,
-    backoff: float = 2.0
+    max_attempts: int = 3, initial_delay: float = 1.0, backoff: float = 2.0
 ) -> RetryPolicy:
     """Create a retry policy instance."""
-    return RetryPolicy(
-        max_attempts=max_attempts,
-        initial_delay=initial_delay,
-        backoff=backoff
-    )
+    return RetryPolicy(max_attempts=max_attempts, initial_delay=initial_delay, backoff=backoff)

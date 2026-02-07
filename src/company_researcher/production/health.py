@@ -7,22 +7,24 @@ Health monitoring:
 - Readiness and liveness probes
 """
 
-from typing import Dict, Any, List, Optional, Callable
+import asyncio
+import logging
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-import time
-import logging
-import asyncio
-from ..utils import utc_now
+from typing import Any, Callable, Dict, List, Optional
 
+from ..utils import utc_now
 
 # ============================================================================
 # Enums and Data Models
 # ============================================================================
 
+
 class HealthStatus(str, Enum):
     """Health status levels."""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -32,6 +34,7 @@ class HealthStatus(str, Enum):
 @dataclass
 class HealthCheck:
     """Result of a health check."""
+
     name: str
     status: HealthStatus
     message: str = ""
@@ -46,13 +49,14 @@ class HealthCheck:
             "message": self.message,
             "duration_ms": round(self.duration_ms, 2),
             "details": self.details,
-            "timestamp": self.timestamp.isoformat()
+            "timestamp": self.timestamp.isoformat(),
         }
 
 
 @dataclass
 class HealthReport:
     """Complete health report."""
+
     status: HealthStatus
     checks: List[HealthCheck]
     timestamp: datetime = field(default_factory=utc_now)
@@ -68,13 +72,14 @@ class HealthReport:
             "is_healthy": self.is_healthy,
             "checks": [c.to_dict() for c in self.checks],
             "timestamp": self.timestamp.isoformat(),
-            "version": self.version
+            "version": self.version,
         }
 
 
 # ============================================================================
 # Health Checker
 # ============================================================================
+
 
 class HealthChecker:
     """
@@ -101,11 +106,7 @@ class HealthChecker:
             return 200
     """
 
-    def __init__(
-        self,
-        timeout_seconds: float = 5.0,
-        version: str = "1.0.0"
-    ):
+    def __init__(self, timeout_seconds: float = 5.0, version: str = "1.0.0"):
         """
         Initialize health checker.
 
@@ -123,9 +124,11 @@ class HealthChecker:
 
     def _add_default_checks(self):
         """Add default health checks."""
+
         # Memory check
         def check_memory() -> HealthCheck:
             import psutil
+
             mem = psutil.virtual_memory()
             status = HealthStatus.HEALTHY if mem.percent < 90 else HealthStatus.DEGRADED
 
@@ -133,20 +136,21 @@ class HealthChecker:
                 name="memory",
                 status=status,
                 message=f"Memory usage: {mem.percent}%",
-                details={"percent": mem.percent, "available_gb": mem.available / (1024**3)}
+                details={"percent": mem.percent, "available_gb": mem.available / (1024**3)},
             )
 
         # Disk check
         def check_disk() -> HealthCheck:
             import psutil
-            disk = psutil.disk_usage('/')
+
+            disk = psutil.disk_usage("/")
             status = HealthStatus.HEALTHY if disk.percent < 90 else HealthStatus.DEGRADED
 
             return HealthCheck(
                 name="disk",
                 status=status,
                 message=f"Disk usage: {disk.percent}%",
-                details={"percent": disk.percent, "free_gb": disk.free / (1024**3)}
+                details={"percent": disk.percent, "free_gb": disk.free / (1024**3)},
             )
 
         try:
@@ -155,12 +159,7 @@ class HealthChecker:
         except ImportError:
             pass
 
-    def add_check(
-        self,
-        name: str,
-        check_func: Callable[[], HealthCheck],
-        critical: bool = False
-    ):
+    def add_check(self, name: str, check_func: Callable[[], HealthCheck], critical: bool = False):
         """
         Add a health check.
 
@@ -190,23 +189,20 @@ class HealthChecker:
                 # Update overall status
                 if result.status == HealthStatus.UNHEALTHY:
                     overall_status = HealthStatus.UNHEALTHY
-                elif result.status == HealthStatus.DEGRADED and overall_status == HealthStatus.HEALTHY:
+                elif (
+                    result.status == HealthStatus.DEGRADED
+                    and overall_status == HealthStatus.HEALTHY
+                ):
                     overall_status = HealthStatus.DEGRADED
 
             except Exception as e:
                 self._logger.error(f"Health check '{name}' failed: {e}")
-                results.append(HealthCheck(
-                    name=name,
-                    status=HealthStatus.UNHEALTHY,
-                    message=str(e)
-                ))
+                results.append(
+                    HealthCheck(name=name, status=HealthStatus.UNHEALTHY, message=str(e))
+                )
                 overall_status = HealthStatus.UNHEALTHY
 
-        return HealthReport(
-            status=overall_status,
-            checks=results,
-            version=self._version
-        )
+        return HealthReport(status=overall_status, checks=results, version=self._version)
 
     async def run_checks_async(self) -> HealthReport:
         """Run all health checks asynchronously."""
@@ -218,10 +214,7 @@ class HealthChecker:
                 start = time.time()
 
                 if asyncio.iscoroutinefunction(check_func):
-                    result = await asyncio.wait_for(
-                        check_func(),
-                        timeout=self._timeout
-                    )
+                    result = await asyncio.wait_for(check_func(), timeout=self._timeout)
                 else:
                     result = await asyncio.to_thread(check_func)
 
@@ -230,30 +223,29 @@ class HealthChecker:
 
                 if result.status == HealthStatus.UNHEALTHY:
                     overall_status = HealthStatus.UNHEALTHY
-                elif result.status == HealthStatus.DEGRADED and overall_status == HealthStatus.HEALTHY:
+                elif (
+                    result.status == HealthStatus.DEGRADED
+                    and overall_status == HealthStatus.HEALTHY
+                ):
                     overall_status = HealthStatus.DEGRADED
 
             except asyncio.TimeoutError:
-                results.append(HealthCheck(
-                    name=name,
-                    status=HealthStatus.UNHEALTHY,
-                    message=f"Check timed out after {self._timeout}s"
-                ))
+                results.append(
+                    HealthCheck(
+                        name=name,
+                        status=HealthStatus.UNHEALTHY,
+                        message=f"Check timed out after {self._timeout}s",
+                    )
+                )
                 overall_status = HealthStatus.UNHEALTHY
 
             except Exception as e:
-                results.append(HealthCheck(
-                    name=name,
-                    status=HealthStatus.UNHEALTHY,
-                    message=str(e)
-                ))
+                results.append(
+                    HealthCheck(name=name, status=HealthStatus.UNHEALTHY, message=str(e))
+                )
                 overall_status = HealthStatus.UNHEALTHY
 
-        return HealthReport(
-            status=overall_status,
-            checks=results,
-            version=self._version
-        )
+        return HealthReport(status=overall_status, checks=results, version=self._version)
 
     # ==========================================================================
     # Convenience Methods
@@ -272,15 +264,16 @@ class HealthChecker:
 # Built-in Check Factories
 # ============================================================================
 
+
 def create_api_health_check(
-    url: str,
-    timeout: float = 5.0,
-    name: str = "api"
+    url: str, timeout: float = 5.0, name: str = "api"
 ) -> Callable[[], HealthCheck]:
     """Create an API health check."""
+
     def check() -> HealthCheck:
         try:
             import httpx
+
             response = httpx.get(url, timeout=timeout)
 
             if response.status_code == 200:
@@ -288,45 +281,35 @@ def create_api_health_check(
                     name=name,
                     status=HealthStatus.HEALTHY,
                     message=f"API responding at {url}",
-                    details={"status_code": response.status_code}
+                    details={"status_code": response.status_code},
                 )
             else:
                 return HealthCheck(
                     name=name,
                     status=HealthStatus.DEGRADED,
                     message=f"API returned {response.status_code}",
-                    details={"status_code": response.status_code}
+                    details={"status_code": response.status_code},
                 )
 
         except Exception as e:
-            return HealthCheck(
-                name=name,
-                status=HealthStatus.UNHEALTHY,
-                message=str(e)
-            )
+            return HealthCheck(name=name, status=HealthStatus.UNHEALTHY, message=str(e))
 
     return check
 
 
 def create_database_health_check(
-    connection_string: str,
-    name: str = "database"
+    connection_string: str, name: str = "database"
 ) -> Callable[[], HealthCheck]:
     """Create a database health check."""
+
     def check() -> HealthCheck:
         try:
             # This is a placeholder - implement based on your database
             return HealthCheck(
-                name=name,
-                status=HealthStatus.HEALTHY,
-                message="Database connection OK"
+                name=name, status=HealthStatus.HEALTHY, message="Database connection OK"
             )
         except Exception as e:
-            return HealthCheck(
-                name=name,
-                status=HealthStatus.UNHEALTHY,
-                message=str(e)
-            )
+            return HealthCheck(name=name, status=HealthStatus.UNHEALTHY, message=str(e))
 
     return check
 
@@ -335,15 +318,10 @@ def create_database_health_check(
 # Factory Functions
 # ============================================================================
 
-def create_health_checker(
-    timeout_seconds: float = 5.0,
-    version: str = "1.0.0"
-) -> HealthChecker:
+
+def create_health_checker(timeout_seconds: float = 5.0, version: str = "1.0.0") -> HealthChecker:
     """Create a health checker instance."""
-    return HealthChecker(
-        timeout_seconds=timeout_seconds,
-        version=version
-    )
+    return HealthChecker(timeout_seconds=timeout_seconds, version=version)
 
 
 def run_health_checks() -> Dict[str, Any]:

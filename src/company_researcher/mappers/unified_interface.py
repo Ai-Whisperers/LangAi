@@ -10,18 +10,12 @@ Provides:
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from .base_mapper import (
-    BaseMapper,
-    FrameworkType,
-    MappedGraph,
-    MappedNode,
-    NodeType,
-)
+from .base_mapper import BaseMapper, FrameworkType, MappedGraph, MappedNode, NodeType
 from .crewai_mapper import CrewAIMapper
 from .langgraph_mapper import LangGraphMapper
 from .openai_agents_mapper import OpenAIAgentsMapper
-from .swarm_mapper import SwarmMapper
 from .pydantic_mapper import PydanticMapper
+from .swarm_mapper import SwarmMapper
 
 
 @dataclass
@@ -31,6 +25,7 @@ class UnifiedAgent:
 
     Provides a common interface regardless of source framework.
     """
+
     name: str
     role: str
     goal: str
@@ -51,7 +46,7 @@ class UnifiedAgent:
             backstory=node.backstory or "",
             tools=node.tools,
             source_framework=node.framework,
-            config=node.config
+            config=node.config,
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -64,7 +59,7 @@ class UnifiedAgent:
             "backstory": self.backstory,
             "tools": self.tools,
             "source_framework": self.source_framework.value,
-            "config": self.config
+            "config": self.config,
         }
 
 
@@ -75,6 +70,7 @@ class UnifiedWorkflow:
 
     Provides a common interface for workflow operations.
     """
+
     name: str
     agents: List[UnifiedAgent]
     graph: MappedGraph
@@ -117,10 +113,7 @@ class UnifiedWorkflow:
             "graph": self.graph.to_dict(),
             "source_framework": self.source_framework.value,
             "config": self.config,
-            "statistics": {
-                "agent_count": self.agent_count,
-                "tool_count": self.tool_count
-            }
+            "statistics": {"agent_count": self.agent_count, "tool_count": self.tool_count},
         }
 
     def convert_to(self, target_framework: FrameworkType) -> Any:
@@ -165,33 +158,36 @@ def detect_framework(source: Any) -> FrameworkType:
         Detected FrameworkType
     """
     # Check for LangGraph
-    if hasattr(source, 'get_graph') or hasattr(source, 'nodes') and hasattr(source, 'edges'):
+    if hasattr(source, "get_graph") or hasattr(source, "nodes") and hasattr(source, "edges"):
         return FrameworkType.LANGGRAPH
 
     # Check for CrewAI
-    if hasattr(source, 'agents') and hasattr(source, 'tasks'):
+    if hasattr(source, "agents") and hasattr(source, "tasks"):
         return FrameworkType.CREWAI
 
     # Check for class with CrewBase-like decorators
     if isinstance(source, type):
         for name, method in vars(source).items():
-            if hasattr(method, '_agent_config') or hasattr(method, '_task_config'):
+            if hasattr(method, "_agent_config") or hasattr(method, "_task_config"):
                 return FrameworkType.CREWAI
 
     # Check for Swarm
-    if hasattr(source, 'functions') and hasattr(source, 'instructions'):
+    if hasattr(source, "functions") and hasattr(source, "instructions"):
         return FrameworkType.SWARM
 
     # Check for OpenAI Agents
-    if hasattr(source, 'handoffs') or (hasattr(source, 'tools') and hasattr(source, 'instructions')):
+    if hasattr(source, "handoffs") or (
+        hasattr(source, "tools") and hasattr(source, "instructions")
+    ):
         return FrameworkType.OPENAI_AGENTS
 
     # Check for Pydantic
     try:
         from pydantic import BaseModel
+
         if isinstance(source, type) and issubclass(source, BaseModel):
             return FrameworkType.PYDANTIC
-        if hasattr(source, 'model_fields') or hasattr(source, '__fields__'):
+        if hasattr(source, "model_fields") or hasattr(source, "__fields__"):
             return FrameworkType.PYDANTIC
     except ImportError:
         pass
@@ -200,9 +196,7 @@ def detect_framework(source: Any) -> FrameworkType:
 
 
 def create_unified_workflow(
-    source: Any,
-    name: Optional[str] = None,
-    framework: Optional[FrameworkType] = None
+    source: Any, name: Optional[str] = None, framework: Optional[FrameworkType] = None
 ) -> UnifiedWorkflow:
     """
     Create a UnifiedWorkflow from any framework source.
@@ -247,15 +241,11 @@ def create_unified_workflow(
         agents=agents,
         graph=graph,
         source_framework=framework,
-        config=graph.config
+        config=graph.config,
     )
 
 
-def convert_workflow(
-    source: Any,
-    target_framework: FrameworkType,
-    compile: bool = False
-) -> Any:
+def convert_workflow(source: Any, target_framework: FrameworkType, compile: bool = False) -> Any:
     """
     Convert a workflow from one framework to another.
 
@@ -283,16 +273,13 @@ def convert_workflow(
     # Convert
     result = target_mapper.to_langgraph(unified.graph)
 
-    if compile and hasattr(result, 'compile'):
+    if compile and hasattr(result, "compile"):
         return result.compile()
 
     return result
 
 
-def compare_workflows(
-    workflow1: UnifiedWorkflow,
-    workflow2: UnifiedWorkflow
-) -> Dict[str, Any]:
+def compare_workflows(workflow1: UnifiedWorkflow, workflow2: UnifiedWorkflow) -> Dict[str, Any]:
     """
     Compare two unified workflows.
 
@@ -302,22 +289,22 @@ def compare_workflows(
     comparison = {
         "frameworks": {
             "workflow1": workflow1.source_framework.value,
-            "workflow2": workflow2.source_framework.value
+            "workflow2": workflow2.source_framework.value,
         },
         "agent_comparison": {
             "workflow1_count": workflow1.agent_count,
             "workflow2_count": workflow2.agent_count,
             "common_agents": [],
             "unique_to_workflow1": [],
-            "unique_to_workflow2": []
+            "unique_to_workflow2": [],
         },
         "tool_comparison": {
             "workflow1_tools": workflow1.get_tools(),
             "workflow2_tools": workflow2.get_tools(),
             "common_tools": [],
             "unique_to_workflow1": [],
-            "unique_to_workflow2": []
-        }
+            "unique_to_workflow2": [],
+        },
     }
 
     # Compare agents

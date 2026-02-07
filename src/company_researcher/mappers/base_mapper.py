@@ -9,11 +9,13 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Type
+
 from ..utils import utc_now
 
 
 class FrameworkType(str, Enum):
     """Supported agent frameworks."""
+
     LANGGRAPH = "langgraph"
     CREWAI = "crewai"
     OPENAI_AGENTS = "openai_agents"
@@ -27,6 +29,7 @@ class FrameworkType(str, Enum):
 
 class NodeType(str, Enum):
     """Types of nodes in agent graphs."""
+
     AGENT = "agent"
     TASK = "task"
     TOOL = "tool"
@@ -45,6 +48,7 @@ class MappedNode:
 
     This abstraction allows converting between different frameworks.
     """
+
     id: str
     name: str
     node_type: NodeType
@@ -93,7 +97,7 @@ class MappedNode:
             "config": self.config,
             "metadata": self.metadata,
             "source_file": self.source_file,
-            "source_line": self.source_line
+            "source_line": self.source_line,
         }
 
 
@@ -102,6 +106,7 @@ class MappedEdge:
     """
     Unified representation of an edge between nodes.
     """
+
     source: str
     target: str
     edge_type: str = "default"  # "default", "conditional", "loop"
@@ -123,7 +128,7 @@ class MappedEdge:
             "edge_type": self.edge_type,
             "condition": self.condition,
             "route_map": self.route_map,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
 
@@ -132,6 +137,7 @@ class MappedGraph:
     """
     Unified representation of an agent workflow graph.
     """
+
     name: str
     framework: FrameworkType
     nodes: List[MappedNode] = field(default_factory=list)
@@ -195,7 +201,7 @@ class MappedGraph:
             "config": self.config,
             "metadata": self.metadata,
             "analyzed_at": self.analyzed_at.isoformat(),
-            "node_counts": {k.value: v for k, v in self.get_node_types().items()}
+            "node_counts": {k.value: v for k, v in self.get_node_types().items()},
         }
 
     def to_mermaid(self) -> str:
@@ -229,7 +235,7 @@ class MappedGraph:
             NodeType.ENTRY: ("([", "])"),
             NodeType.EXIT: ("([", "])"),
             NodeType.SUBGRAPH: ("[/", "/]"),
-            NodeType.CUSTOM: ("[", "]")
+            NodeType.CUSTOM: ("[", "]"),
         }
         return shapes.get(node_type, ("[", "]"))
 
@@ -312,5 +318,5 @@ class BaseMapper(ABC):
             "tool_count": len(graph.get_tool_nodes()),
             "has_entry": graph.entry_point is not None,
             "exit_count": len(graph.exit_points),
-            "conditional_edges": len([e for e in graph.edges if e.edge_type == "conditional"])
+            "conditional_edges": len([e for e in graph.edges if e.edge_type == "conditional"]),
         }

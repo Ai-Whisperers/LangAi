@@ -52,4 +52,3 @@ Provide:
 4. Suggested documentation improvements (show before/after)
 
 Apply standards from `.cursor/rules/documentation/documentation-standards-rule.mdc`.
-

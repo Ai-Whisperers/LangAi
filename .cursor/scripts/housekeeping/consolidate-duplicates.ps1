@@ -110,5 +110,3 @@ catch {
     Write-Host "$(Get-StatusGlyph 'error') Failure: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
-
-

@@ -21,12 +21,12 @@ Usage:
 """
 
 from .research_tasks import (
-    app,
-    research_single_company,
-    research_batch_companies,
-    update_company_data,
-    generate_report,
     CELERY_AVAILABLE,
+    app,
+    generate_report,
+    research_batch_companies,
+    research_single_company,
+    update_company_data,
 )
 
 __all__ = [

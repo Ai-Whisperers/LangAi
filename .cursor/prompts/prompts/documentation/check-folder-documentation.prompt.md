@@ -43,4 +43,3 @@ Please perform a comprehensive XML documentation check on the following folder:
 Apply the documentation standards from `.cursor/rules/documentation/documentation-standards-rule.mdc`.
 
 Do not make any changes yet - provide the analysis report first.
-

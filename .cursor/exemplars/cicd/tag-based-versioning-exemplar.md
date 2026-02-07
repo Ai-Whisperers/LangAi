@@ -12,11 +12,11 @@ provenance:
 
 # Exemplar: Tag-Based Versioning CI/CD Pipeline
 
-**Type:** Exemplar  
-**Category:** CI/CD  
-**Created:** 2025-12-04  
-**Updated:** 2025-12-04  
-**Pattern:** Tag-triggered releases with RC workflow  
+**Type:** Exemplar
+**Category:** CI/CD
+**Created:** 2025-12-04
+**Updated:** 2025-12-04
+**Pattern:** Tag-triggered releases with RC workflow
 **Implementation Status:** 59/60 (Framework Ready) - Reference Implementation
 
 ---
@@ -25,7 +25,7 @@ provenance:
 
 This exemplar demonstrates the **REFERENCE IMPLEMENTATION** (59/60) of a tag-based versioning CI/CD pipeline deployed in eneve.domain:
 
-> **⚠️ IMPORTANT: Manual Publishing Required**  
+> **⚠️ IMPORTANT: Manual Publishing Required**
 > This 59/60 implementation does NOT automatically publish to NuGet feeds. Packages are built and available as pipeline artifacts, but publishing requires manual download and upload. See "Upgrade to 60/60" section for automated publishing setup.
 
 **What's Operational (59/60):**
@@ -417,7 +417,7 @@ variables:
    # Create test tag
    git checkout release/0.0
    git tag -a test-0.0.1-rc1 -m "RC1 test" && git push origin test-0.0.1-rc1
-   
+
    # Download artifact from Azure DevOps → Artifacts
    # Manually publish if needed
    ```
@@ -465,10 +465,10 @@ variables:
 
 ---
 
-**Exemplar ID:** exemplar.cicd.tag-based-versioning.v2  
-**Version:** 2.0.0 (Reference Implementation - 59/60)  
-**Status:** Framework-Ready (Manual Publishing Required)  
-**Reference:** eneve.domain (59/60 - Deployed and Operational)  
+**Exemplar ID:** exemplar.cicd.tag-based-versioning.v2
+**Version:** 2.0.0 (Reference Implementation - 59/60)
+**Status:** Framework-Ready (Manual Publishing Required)
+**Reference:** eneve.domain (59/60 - Deployed and Operational)
 **Last Updated:** 2025-12-04
 
 **Notes:**
@@ -476,4 +476,3 @@ variables:
 - PowerShell placeholders for publishing (framework ready, manual publishing required)
 - Upgrade path to 60/60 documented above for automated feed publishing
 - All quality gates operational; packages require manual distribution until feed configuration complete
-

@@ -10,8 +10,8 @@ argument-hint: "Project or Ticket ID (e.g., @EPP-192 please review status)"
 
 This prompt requests a comprehensive status review of a project, epic, or ticket.
 
-**Pattern**: Status Check Pattern ⭐⭐⭐⭐  
-**Effectiveness**: Essential for informed decision-making  
+**Pattern**: Status Check Pattern ⭐⭐⭐⭐
+**Effectiveness**: Essential for informed decision-making
 **Use When**: Understanding progress, deciding next actions, coordinating cross-repo work
 
 ---
@@ -140,9 +140,9 @@ When providing status check, AI must structure response as:
 ```markdown
 ## Current Status Summary: [TICKET/PROJECT-ID]
 
-**[Item]**: [Name]  
-**Overall Progress**: [X]% complete  
-**Started**: [Date]  
+**[Item]**: [Name]
+**Overall Progress**: [X]% complete
+**Started**: [Date]
 **Last Activity**: [Date]
 
 ---
@@ -243,7 +243,7 @@ When providing status check, AI must structure response as:
 - ✅ Joining someone else's work
 - ✅ Need to understand rationale behind current state
 
-**Key Difference**: 
+**Key Difference**:
 - **Status** = reporting (where we are, what's left)
 - **Catchup** = storytelling (what happened, why decisions made)
 
@@ -339,9 +339,8 @@ What's happening with the project?
 
 ---
 
-**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)  
-**Pattern ID**: #6 Status Check Pattern  
-**Evidence**: conversations/JP/extracted/pattern-discovery-report.md  
-**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0  
+**Source**: Pattern Discovery Analysis (48 conversations, Nov 22 - Dec 01, 2025)
+**Pattern ID**: #6 Status Check Pattern
+**Evidence**: conversations/JP/extracted/pattern-discovery-report.md
+**Follows**: `.cursor/rules/prompts/prompt-creation-rule.mdc` v1.0.0
 **Improved**: 2025-12-08 (PROMPTS-OPTIMIZE ticket)
-

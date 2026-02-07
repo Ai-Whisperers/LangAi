@@ -1,11 +1,14 @@
 """Pydantic models for AI data extraction."""
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class CompanyType(str, Enum):
     """Company type classification."""
+
     PUBLIC = "public"
     PRIVATE = "private"
     STARTUP = "startup"
@@ -18,6 +21,7 @@ class CompanyType(str, Enum):
 
 class FactCategory(str, Enum):
     """Category of extracted facts."""
+
     FINANCIAL = "financial"
     COMPANY_INFO = "company_info"
     PRODUCT = "product"
@@ -31,6 +35,7 @@ class FactCategory(str, Enum):
 
 class FactType(str, Enum):
     """Specific type of fact."""
+
     # Financial
     REVENUE = "revenue"
     PROFIT = "profit"
@@ -66,6 +71,7 @@ class FactType(str, Enum):
 
 class ContradictionSeverity(str, Enum):
     """Severity of data contradiction."""
+
     CRITICAL = "critical"  # >50% difference
     HIGH = "high"  # 30-50% difference
     MEDIUM = "medium"  # 20-30% difference
@@ -118,10 +124,7 @@ class ExtractedFact(BaseModel):
 
     # Value
     value: Any = Field(description="Extracted value")
-    value_normalized: Optional[float] = Field(
-        default=None,
-        description="Normalized numeric value"
-    )
+    value_normalized: Optional[float] = Field(default=None, description="Normalized numeric value")
     unit: Optional[str] = Field(default=None, description="Unit of measurement")
     currency: Optional[str] = Field(default=None, description="Currency if monetary")
 
@@ -189,16 +192,13 @@ class ContradictionAnalysis(BaseModel):
     """Analysis of contradicting facts."""
 
     fact_type: str = Field(description="Type of fact with contradiction")
-    values_found: List[Dict[str, Any]] = Field(
-        description="All values found with sources"
-    )
+    values_found: List[Dict[str, Any]] = Field(description="All values found with sources")
 
     # Analysis
     is_contradiction: bool = Field(description="Whether this is a true contradiction")
     severity: ContradictionSeverity = Field(description="How severe the contradiction is")
     difference_percentage: Optional[float] = Field(
-        default=None,
-        description="Percentage difference between values"
+        default=None, description="Percentage difference between values"
     )
 
     # Resolution
@@ -231,12 +231,10 @@ class ExtractionResult(BaseModel):
 
     # Coverage metrics
     data_coverage: Dict[str, float] = Field(
-        default_factory=dict,
-        description="Coverage score per category"
+        default_factory=dict, description="Coverage score per category"
     )
     extraction_confidence: float = Field(
-        ge=0.0, le=1.0,
-        description="Overall extraction confidence"
+        ge=0.0, le=1.0, description="Overall extraction confidence"
     )
 
     # Metadata

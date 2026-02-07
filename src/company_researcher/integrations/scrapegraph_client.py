@@ -10,7 +10,9 @@ ScrapeGraph uses LLMs to intelligently extract data from websites:
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Type
+
 from pydantic import BaseModel
+
 from ..utils import get_config, get_logger
 
 logger = get_logger(__name__)
@@ -19,6 +21,7 @@ logger = get_logger(__name__)
 @dataclass
 class SmartScrapedData:
     """Result from AI-powered smart scraping."""
+
     url: str
     prompt: str
     extracted_data: Any = None
@@ -31,6 +34,7 @@ class SmartScrapedData:
 @dataclass
 class MarkdownResult:
     """Result from converting URL to markdown."""
+
     url: str
     markdown: str = ""
     success: bool = True
@@ -40,6 +44,7 @@ class MarkdownResult:
 @dataclass
 class CrawlExtractResult:
     """Result from crawling with extraction."""
+
     base_url: str
     pages: List[Dict[str, Any]] = field(default_factory=list)
     total_pages: int = 0
@@ -50,6 +55,7 @@ class CrawlExtractResult:
 @dataclass
 class SearchScrapedResult:
     """Result from search and scrape."""
+
     query: str
     results: List[Dict[str, Any]] = field(default_factory=list)
     reference_urls: List[str] = field(default_factory=list)
@@ -113,6 +119,7 @@ class ScrapeGraphClient:
                     "ScrapeGraph API key required. Set SCRAPEGRAPH_API_KEY env var or pass api_key parameter."
                 )
             from scrapegraph_py import Client
+
             self._client = Client(api_key=self.api_key)
         return self._client
 
@@ -363,6 +370,7 @@ def url_to_markdown(url: str, api_key: str = None) -> str:
 # Pydantic models for common extraction schemas
 class CompanyBasicInfo(BaseModel):
     """Basic company information schema."""
+
     name: str = ""
     description: str = ""
     industry: str = ""
@@ -373,6 +381,7 @@ class CompanyBasicInfo(BaseModel):
 
 class ExecutiveInfo(BaseModel):
     """Executive information schema."""
+
     name: str
     title: str = ""
     linkedin_url: str = ""
@@ -380,6 +389,7 @@ class ExecutiveInfo(BaseModel):
 
 class CompanyLeadership(BaseModel):
     """Company leadership schema."""
+
     company_name: str = ""
     executives: List[ExecutiveInfo] = []
     board_members: List[ExecutiveInfo] = []
@@ -387,6 +397,7 @@ class CompanyLeadership(BaseModel):
 
 class ProductInfo(BaseModel):
     """Product information schema."""
+
     name: str
     description: str = ""
     category: str = ""
@@ -395,6 +406,7 @@ class ProductInfo(BaseModel):
 
 class CompanyProducts(BaseModel):
     """Company products schema."""
+
     company_name: str = ""
     products: List[ProductInfo] = []
     services: List[str] = []
@@ -402,6 +414,7 @@ class CompanyProducts(BaseModel):
 
 class FinancialHighlights(BaseModel):
     """Financial highlights schema."""
+
     revenue: str = ""
     revenue_growth: str = ""
     profit: str = ""
@@ -431,13 +444,15 @@ def format_scrapegraph_for_research(results: List[SmartScrapedData]) -> List[Dic
         else:
             content = str(content)
 
-        formatted.append({
-            "title": f"AI Extraction: {result.prompt[:50]}...",
-            "url": result.url,
-            "content": content[:4000],  # Truncate for API limits
-            "score": 0.90,  # High score for AI extraction
-            "source": "scrapegraph",
-            "extracted_data": result.extracted_data,
-        })
+        formatted.append(
+            {
+                "title": f"AI Extraction: {result.prompt[:50]}...",
+                "url": result.url,
+                "content": content[:4000],  # Truncate for API limits
+                "score": 0.90,  # High score for AI extraction
+                "source": "scrapegraph",
+                "extracted_data": result.extracted_data,
+            }
+        )
 
     return formatted
